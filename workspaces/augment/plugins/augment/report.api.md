@@ -5,21 +5,52 @@
 ```ts
 import { AdminConfigEntry } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { AgentLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ApiRef } from '@backstage/frontend-plugin-api';
 import { augmentAccessPermission } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AugmentStatus } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { BrandingConfig } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { ChatAgentConfig } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ChatMessage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatResponse as ChatResponse_2 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { DEFAULT_BRANDING } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DevSpacesCreateWorkspaceRequest } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DevSpacesCreateWorkspaceResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DevSpacesHealthResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DevSpacesListWorkspacesResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { DevSpacesWorkspace } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { DocumentInfo } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { EvaluationResult } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { FileFormat } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { InputTokensDetails } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { KagentiAgentCard } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiAgentDetail } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiBuildInfo } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiBuildListItem } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiBuildStrategy } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiCreateAgentRequest } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiCreateAgentResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiCreateToolRequest } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiCreateToolResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiDashboardConfig } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiFeatureFlags } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiFinalizeAgentBuildRequest } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiFinalizeToolBuildRequest } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiMcpInvokeResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiMcpToolSchema } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiMigratableAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiMigrateAgentResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiMigrateAllResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiRouteStatus } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiToolDetail } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiToolSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { KagentiTriggerBuildRunResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { MCPServerStatus } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { OutputTokensDetails } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -36,8 +67,14 @@ import { RagTestResult } from '@red-hat-developer-hub/backstage-plugin-augment-c
 import { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamAgentHandoffEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamArtifactEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamAuthRequiredEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamBackendToolExecutingEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamCitationEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamCompletedEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamErrorEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { StreamFormRequestEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamRagResultsEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamReasoningDeltaEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamReasoningDoneEvent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -71,13 +108,7 @@ export { augmentAccessPermission };
 
 // @public
 export interface AugmentApi {
-  chat(
-    messages: ChatMessage[],
-    enableRAG?: boolean,
-    signal?: AbortSignal,
-    previousResponseId?: string,
-    conversationId?: string,
-  ): Promise<ChatResponse>;
+  bulkPublishAgents(agentIds: string[], published: boolean): Promise<void>;
   chatStream(
     messages: ChatMessage[],
     onEvent: StreamingEventCallback,
@@ -85,6 +116,7 @@ export interface AugmentApi {
     signal?: AbortSignal,
     previousResponseId?: string,
     conversationId?: string,
+    model?: string,
   ): Promise<void>;
   chatStreamWithSession(
     messages: ChatMessage[],
@@ -92,31 +124,83 @@ export interface AugmentApi {
     sessionId: string,
     enableRAG?: boolean,
     signal?: AbortSignal,
+    model?: string,
   ): Promise<void>;
+  // (undocumented)
+  checkDevSpacesHealth(): Promise<DevSpacesHealthResponse>;
+  // (undocumented)
+  connectKagentiTool(
+    namespace: string,
+    name: string,
+  ): Promise<{
+    tools: KagentiMcpToolSchema[];
+  }>;
   connectVectorStore(vectorStoreId: string): Promise<{
     activeVectorStoreIds: string[];
   }>;
   createConversation(): Promise<{
     conversationId: string;
   }>;
-  createSession(title?: string): Promise<ChatSessionSummary>;
+  // (undocumented)
+  createDevSpacesWorkspace(
+    request: DevSpacesCreateWorkspaceRequest,
+  ): Promise<DevSpacesCreateWorkspaceResponse>;
+  // (undocumented)
+  createKagentiAgent(
+    body: KagentiCreateAgentRequest,
+  ): Promise<KagentiCreateAgentResponse>;
+  // (undocumented)
+  createKagentiTool(
+    body: KagentiCreateToolRequest,
+  ): Promise<KagentiCreateToolResponse>;
+  createSession(
+    title?: string,
+    model?: string,
+    providerId?: string,
+  ): Promise<ChatSessionSummary>;
   createVectorStore(
     config?: Record<string, unknown>,
   ): Promise<VectorStoreCreateResult>;
   deleteAdminConfig(key: AdminConfigKey): Promise<{
     deleted: boolean;
   }>;
-  deleteConversation(
-    responseId: string,
-    conversationId?: string,
-  ): Promise<boolean>;
+  // (undocumented)
+  deleteDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
   deleteDocument(
     fileId: string,
     vectorStoreId?: string,
   ): Promise<{
     success: boolean;
   }>;
+  // (undocumented)
+  deleteKagentiAgent(namespace: string, name: string): Promise<void>;
+  // (undocumented)
+  deleteKagentiTool(namespace: string, name: string): Promise<void>;
   deleteSession(sessionId: string): Promise<boolean>;
+  demoteAgent(
+    agentId: string,
+    targetStage?: AgentLifecycleStage,
+  ): Promise<{
+    lifecycleStage: string;
+  }>;
+  demoteToolLifecycle(
+    toolId: string,
+    targetStage?: AgentLifecycleStage,
+  ): Promise<{
+    lifecycleStage: string;
+  }>;
+  // (undocumented)
+  finalizeKagentiAgentBuild(
+    namespace: string,
+    name: string,
+    body?: KagentiFinalizeAgentBuildRequest,
+  ): Promise<KagentiCreateAgentResponse>;
+  // (undocumented)
+  finalizeToolBuild(
+    namespace: string,
+    name: string,
+    body?: KagentiFinalizeToolBuildRequest,
+  ): Promise<KagentiCreateToolResponse>;
   generateRagAnswer(
     query: string,
     maxResults?: number,
@@ -137,28 +221,66 @@ export interface AugmentApi {
   }>;
   getAdminSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
   getBranding(): Promise<BrandingConfig>;
-  getConversation(responseId: string): Promise<ConversationDetails | null>;
-  getConversationInputs(responseId: string): Promise<{
-    items: ConversationInputItem[];
-    hasMore: boolean;
-  }>;
-  getConversationItems(conversationId: string): Promise<{
-    items: ConversationInputItem[];
-  }>;
-  getConversationMessages(conversationId: string): Promise<ProcessedMessage[]>;
+  // (undocumented)
+  getDevSpacesWorkspace(
+    namespace: string,
+    name: string,
+  ): Promise<DevSpacesWorkspace>;
   getEffectiveConfig(): Promise<Record<string, unknown>>;
   getEvaluationStatus(): Promise<EvaluationStatusResponse>;
+  // (undocumented)
+  getKagentiAgent(
+    namespace: string,
+    name: string,
+  ): Promise<
+    KagentiAgentDetail & {
+      agentCard?: KagentiAgentCard;
+    }
+  >;
+  // (undocumented)
+  getKagentiAgentRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<KagentiRouteStatus>;
+  // (undocumented)
+  getKagentiBuildInfo(
+    namespace: string,
+    name: string,
+  ): Promise<KagentiBuildInfo>;
+  // (undocumented)
+  getKagentiDashboards(): Promise<KagentiDashboardConfig>;
+  // (undocumented)
+  getKagentiFeatureFlags(): Promise<KagentiFeatureFlags>;
+  // (undocumented)
+  getKagentiTool(namespace: string, name: string): Promise<KagentiToolDetail>;
   getPromptGroups(): Promise<PromptGroup[]>;
   getQuickActions(): Promise<QuickAction[]>;
   getSafetyStatus(): Promise<SafetyStatusResponse>;
   getSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
+  getSessionState(sessionId: string): Promise<Record<string, unknown>>;
   getStatus(): Promise<AugmentStatus>;
+  // (undocumented)
+  getToolBuildInfo(namespace: string, name: string): Promise<KagentiBuildInfo>;
+  // (undocumented)
+  getToolRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<KagentiRouteStatus>;
+  // Warning: (ae-forgotten-export) The symbol "TourDefinition" needs to be exported by the entry point index.d.ts
+  getTours(): Promise<TourDefinition[]>;
   getVectorStoreConfig(): Promise<{
     config: VectorStoreConfig;
     source: 'yaml' | 'database' | 'merged';
   }>;
   getVectorStoreStatus(): Promise<VectorStoreStatusResult>;
   getWorkflows(): Promise<Workflow[]>;
+  // (undocumented)
+  invokeKagentiTool(
+    namespace: string,
+    name: string,
+    toolName: string,
+    args?: Record<string, unknown>,
+  ): Promise<KagentiMcpInvokeResponse>;
   listActiveVectorStores(): Promise<{
     stores: Array<
       VectorStoreInfo & {
@@ -178,18 +300,52 @@ export interface AugmentApi {
       updatedBy: string;
     }>
   >;
-  listAllSessions(): Promise<ChatSessionSummary[]>;
-  listConversations(
+  // Warning: (tsdoc-param-tag-with-invalid-name) The @param block should be followed by a valid parameter name: The identifier cannot non-word characters
+  listAgents(options?: { published?: boolean }): Promise<ChatAgent[]>;
+  listAllSessions(
     limit?: number,
-    order?: 'asc' | 'desc',
-    after?: string,
-  ): Promise<{
-    conversations: ConversationSummary[];
-    hasMore: boolean;
-    lastId?: string;
-  }>;
-  listDocuments(): Promise<DocumentInfo[]>;
+    offset?: number,
+  ): Promise<ChatSessionSummary[]>;
+  // (undocumented)
+  listDevSpacesWorkspaces(
+    namespace: string,
+  ): Promise<DevSpacesListWorkspacesResponse>;
   listDocumentsForStore(vectorStoreId: string): Promise<DocumentInfo[]>;
+  // (undocumented)
+  listKagentiAgents(
+    namespace?: string,
+    options?: {
+      includeCards?: boolean;
+    },
+  ): Promise<{
+    agents: (KagentiAgentSummary & {
+      agentCard?: KagentiAgentCard;
+    })[];
+  }>;
+  // (undocumented)
+  listKagentiBuildStrategies(): Promise<{
+    strategies: KagentiBuildStrategy[];
+  }>;
+  // (undocumented)
+  listKagentiMigratableAgents(): Promise<{
+    agents: KagentiMigratableAgent[];
+  }>;
+  // (undocumented)
+  listKagentiNamespaces(enabledOnly?: boolean): Promise<{
+    namespaces: string[];
+    defaultNamespace?: string;
+  }>;
+  // (undocumented)
+  listKagentiShipwrightBuilds(options?: {
+    namespace?: string;
+    allNamespaces?: boolean;
+  }): Promise<{
+    builds: KagentiBuildListItem[];
+  }>;
+  // (undocumented)
+  listKagentiTools(namespace?: string): Promise<{
+    tools: KagentiToolSummary[];
+  }>;
   listModels(): Promise<
     Array<{
       id: string;
@@ -201,7 +357,45 @@ export interface AugmentApi {
     providers: ProviderDescriptor[];
     activeProviderId: string;
   }>;
-  listSessions(limit?: number, offset?: number): Promise<ChatSessionSummary[]>;
+  listSessions(
+    limit?: number,
+    offset?: number,
+    providerId?: string,
+  ): Promise<ChatSessionSummary[]>;
+  listToolsWithLifecycle(options?: { published?: boolean }): Promise<
+    (KagentiToolSummary & {
+      published?: boolean;
+      lifecycleStage?: AgentLifecycleStage;
+      version?: number;
+    })[]
+  >;
+  // (undocumented)
+  migrateAllKagentiAgents(options?: {
+    namespace?: string;
+    dryRun?: boolean;
+    deleteOld?: boolean;
+  }): Promise<KagentiMigrateAllResponse>;
+  // (undocumented)
+  migrateKagentiAgent(
+    namespace: string,
+    name: string,
+    deleteOld?: boolean,
+  ): Promise<KagentiMigrateAgentResponse>;
+  promoteAgent(
+    agentId: string,
+    targetStage?: AgentLifecycleStage,
+  ): Promise<{
+    lifecycleStage: string;
+    version: number;
+  }>;
+  promoteToolLifecycle(
+    toolId: string,
+    targetStage?: AgentLifecycleStage,
+  ): Promise<{
+    lifecycleStage: string;
+    version: number;
+  }>;
+  publishAgent(agentId: string): Promise<void>;
   removeVectorStore(
     vectorStoreId: string,
     permanent?: boolean,
@@ -226,6 +420,15 @@ export interface AugmentApi {
   ): Promise<{
     warnings?: string[];
   }>;
+  // (undocumented)
+  stopDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
+  submitMessageFeedback(payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  }): Promise<boolean>;
   submitToolApproval(
     responseId: string,
     callId: string,
@@ -266,7 +469,10 @@ export interface AugmentApi {
     type?: string,
     headers?: Record<string, string>,
   ): Promise<McpTestConnectionResult>;
-  testModelConnection(model?: string): Promise<{
+  testModelConnection(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -278,17 +484,26 @@ export interface AugmentApi {
     vectorStoreId?: string,
     vectorStoreIds?: string[],
   ): Promise<RagTestResult>;
+  // (undocumented)
+  triggerKagentiBuild(
+    namespace: string,
+    name: string,
+  ): Promise<KagentiTriggerBuildRunResponse>;
+  // (undocumented)
+  triggerToolBuild(
+    namespace: string,
+    name: string,
+  ): Promise<KagentiTriggerBuildRunResponse>;
+  unpublishAgent(agentId: string): Promise<void>;
+  updateAgentConfig(
+    agentId: string,
+    config: Partial<ChatAgentConfig>,
+  ): Promise<void>;
   uploadDocument(
     file: File,
     vectorStoreId?: string,
     replace?: boolean,
   ): Promise<UploadResult>;
-  walkResponseChain(responseId: string): Promise<{
-    messages: Array<{
-      role: 'user' | 'assistant';
-      text: string;
-    }>;
-  }>;
 }
 
 // @public
@@ -315,6 +530,18 @@ export { AugmentStatus };
 export const augmentTranslationRef: TranslationRef<
   'plugin.augment',
   {
+    readonly 'chat.disclaimer': string;
+    readonly 'chat.emptySessionTitle': string;
+    readonly 'chat.emptySessionHint': string;
+    readonly 'chat.messagesUnavailableTitle': string;
+    readonly 'chat.messagesUnavailableHint': string;
+    readonly 'chat.you': string;
+    readonly 'chat.editMessage': string;
+    readonly 'chat.cancelEdit': string;
+    readonly 'chat.submitEdit': string;
+    readonly 'chat.copiedToClipboard': string;
+    readonly 'chat.copyResponse': string;
+    readonly 'chat.regenerateResponse': string;
     readonly 'securityGate.configurationRequired': string;
     readonly 'securityGate.configurationErrors': string;
     readonly 'securityGate.configurationErrorLabel': string;
@@ -329,10 +556,19 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'adminOnboarding.openCommandCenterDescription': string;
     readonly 'adminOnboarding.switchHint': string;
     readonly 'commandCenter.title': string;
-    readonly 'commandCenter.branding': string;
+    readonly 'commandCenter.sandbox': string;
+    readonly 'commandCenter.home': string;
     readonly 'commandCenter.agents': string;
-    readonly 'commandCenter.backToChat': string;
     readonly 'commandCenter.platform': string;
+    readonly 'commandCenter.branding': string;
+    readonly 'commandCenter.backToChat': string;
+    readonly 'commandCenter.agentCatalog': string;
+    readonly 'commandCenter.toolCatalog': string;
+    readonly 'commandCenter.buildPipelines': string;
+    readonly 'commandCenter.orchestration': string;
+    readonly 'commandCenter.platformConfig': string;
+    readonly 'commandCenter.observability': string;
+    readonly 'commandCenter.administration': string;
     readonly 'providerOffline.title': string;
     readonly 'providerOffline.backendUnreachable': string;
     readonly 'providerOffline.modelUnreachable': string;
@@ -340,18 +576,6 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'switchDialog.message': string;
     readonly 'switchDialog.stay': string;
     readonly 'switchDialog.switchAnyway': string;
-    readonly 'chat.disclaimer': string;
-    readonly 'chat.emptySessionTitle': string;
-    readonly 'chat.emptySessionHint': string;
-    readonly 'chat.messagesUnavailableTitle': string;
-    readonly 'chat.messagesUnavailableHint': string;
-    readonly 'chat.you': string;
-    readonly 'chat.editMessage': string;
-    readonly 'chat.cancelEdit': string;
-    readonly 'chat.submitEdit': string;
-    readonly 'chat.copiedToClipboard': string;
-    readonly 'chat.copyResponse': string;
-    readonly 'chat.regenerateResponse': string;
     readonly 'chatInput.newConversation': string;
     readonly 'chatInput.newConversationShortcut': string;
     readonly 'chatInput.startNewConversation': string;
@@ -360,6 +584,7 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'chatInput.stopGeneration': string;
     readonly 'chatInput.stopMessageGeneration': string;
     readonly 'chatInput.sendMessage': string;
+    readonly 'chatInput.selectAgentPrompt': string;
     readonly 'welcomeScreen.logoAlt': string;
     readonly 'welcomeScreen.emptyPromptHint': string;
     readonly 'welcomeScreen.logoError': string;
@@ -372,6 +597,7 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'conversationHistory.startChatting': string;
     readonly 'conversationHistory.noMatchingConversations': string;
     readonly 'conversationHistory.deleteConversation': string;
+    readonly 'conversationHistory.renameConversation': string;
     readonly 'conversationHistory.searchPlaceholder': string;
     readonly 'conversationHistory.clearSearch': string;
     readonly 'conversationHistory.mine': string;
@@ -382,9 +608,9 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'conversationHistory.older': string;
     readonly 'rightPane.collapse': string;
     readonly 'rightPane.admin': string;
+    readonly 'rightPane.expand': string;
     readonly 'rightPane.openCommandCenter': string;
     readonly 'rightPane.commandCenter': string;
-    readonly 'rightPane.expand': string;
     readonly 'rightPane.expandSidebar': string;
     readonly 'rightPane.collapseSidebar': string;
     readonly 'rightPane.scrollToBottom': string;
@@ -394,6 +620,7 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'agentInfo.offline': string;
     readonly 'agentInfo.connecting': string;
     readonly 'agentInfo.ready': string;
+    readonly 'agentInfo.selectAgentHint': string;
     readonly 'agentInfo.team': string;
     readonly 'agentInfo.vectorRag': string;
     readonly 'agentInfo.vectorStoreUnavailable': string;
@@ -401,6 +628,8 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'agentInfo.mcpConnected': string;
     readonly 'agentInfo.mcpDisconnected': string;
     readonly 'toolApproval.running': string;
+    readonly 'toolApproval.approve': string;
+    readonly 'toolApproval.reject': string;
     readonly 'toolApproval.destructiveOperation': string;
     readonly 'toolApproval.requiresApproval': string;
     readonly 'toolApproval.toolExecution': string;
@@ -408,8 +637,6 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'toolApproval.rejectHint': string;
     readonly 'toolApproval.enterKey': string;
     readonly 'toolApproval.escapeKey': string;
-    readonly 'toolApproval.reject': string;
-    readonly 'toolApproval.approve': string;
     readonly 'toolApproval.invalidJson': string;
     readonly 'toolApproval.editJson': string;
     readonly 'toolApproval.hideEditor': string;
@@ -455,6 +682,7 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'tokenUsage.reportedBy': string;
     readonly 'agentsPanel.reset': string;
     readonly 'agentsPanel.mcpServers': string;
+    readonly 'agentsPanel.instructions': string;
     readonly 'agentsPanel.transfers': string;
     readonly 'agentsPanel.delegates': string;
     readonly 'agentsPanel.startingAgent': string;
@@ -471,7 +699,6 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'agentsPanel.topology': string;
     readonly 'agentsPanel.outConnections': string;
     readonly 'agentsPanel.inConnections': string;
-    readonly 'agentsPanel.instructions': string;
     readonly 'agentsPanel.inheritBasePrompt': string;
     readonly 'agentsPanel.agentInstructions': string;
     readonly 'agentsPanel.applyTemplate': string;
@@ -513,12 +740,74 @@ export const augmentTranslationRef: TranslationRef<
     readonly 'keyboardShortcuts.showHelp': string;
     readonly 'keyboardShortcuts.approveTool': string;
     readonly 'keyboardShortcuts.rejectTool': string;
+    readonly 'keyboardShortcuts.navigateMessages': string;
     readonly 'confirmDialog.cancel': string;
     readonly 'confirmDialog.confirm': string;
+    readonly 'onboardingBanner.title': string;
+    readonly 'onboardingBanner.subtitle': string;
+    readonly 'onboardingBanner.dismissAriaLabel': string;
+    readonly 'onboardingBanner.step1Title': string;
+    readonly 'onboardingBanner.step1Description': string;
+    readonly 'onboardingBanner.step2Title': string;
+    readonly 'onboardingBanner.step2Description': string;
+    readonly 'onboardingBanner.step3Title': string;
+    readonly 'onboardingBanner.step3Description': string;
+    readonly 'agentGallery.heading': string;
+    readonly 'agentGallery.searchPlaceholder': string;
+    readonly 'agentGallery.noAgentsTitle': string;
+    readonly 'agentGallery.searchAriaLabel': string;
+    readonly 'agentGallery.tabAll': string;
+    readonly 'agentGallery.tabRecent': string;
+    readonly 'agentGallery.tabPinned': string;
+    readonly 'agentGallery.listAriaLabel': string;
+    readonly 'agentGallery.noMatchSearch': string;
+    readonly 'agentGallery.noAgentsInCategory': string;
+    readonly 'agentGallery.retry': string;
+    readonly 'agentGallery.noAgentsHint': string;
+    readonly 'agentDetail.details': string;
+    readonly 'agentDetail.about': string;
+    readonly 'agentDetail.streaming': string;
+    readonly 'agentDetail.capabilities': string;
+    readonly 'agentDetail.closeAriaLabel': string;
+    readonly 'agentDetail.skillsWithCount': string;
+    readonly 'agentDetail.skillFallback': string;
+    readonly 'agentDetail.nonStreaming': string;
+    readonly 'agentDetail.a2aProtocol': string;
+    readonly 'agentDetail.fieldNamespace': string;
+    readonly 'agentDetail.fieldName': string;
+    readonly 'agentDetail.fieldVersion': string;
+    readonly 'agentDetail.fieldEndpoint': string;
+    readonly 'agentDetail.startConversation': string;
+    readonly 'formRequestCard.submit': string;
+    readonly 'formRequestCard.cancel': string;
+    readonly 'formRequestCard.inputRequired': string;
+    readonly 'authRequiredCard.oauthTitle': string;
+    readonly 'authRequiredCard.oauthSubtitle': string;
+    readonly 'authRequiredCard.signIn': string;
+    readonly 'authRequiredCard.afterSignInHint': string;
+    readonly 'authRequiredCard.signedIn': string;
+    readonly 'authRequiredCard.noUrlHint': string;
+    readonly 'authRequiredCard.credentialsTitle': string;
+    readonly 'authRequiredCard.credentialsSubtitle': string;
+    readonly 'authRequiredCard.submitCredentials': string;
+    readonly 'artifact.download': string;
+    readonly 'artifact.collapse': string;
+    readonly 'artifact.copied': string;
+    readonly 'artifact.expand': string;
+    readonly 'artifact.streaming': string;
+    readonly 'artifact.defaultName': string;
+    readonly 'artifact.headerAriaLabel': string;
+    readonly 'artifact.copyContent': string;
+    readonly 'artifact.downloadAriaLabel': string;
+    readonly 'citation.sourcesWithCount': string;
+    readonly 'citation.unnamedSource': string;
+    readonly 'chatHeader.changeAgent': string;
   }
 >;
 
 export { BrandingConfig };
+
+export { ChatAgentConfig };
 
 export { ChatMessage };
 
@@ -539,6 +828,8 @@ export interface ChatSessionSummary {
   createdAt: string;
   // (undocumented)
   id: string;
+  model?: string;
+  providerId?: string;
   // (undocumented)
   title: string;
   // (undocumented)
@@ -652,6 +943,17 @@ export interface McpTestConnectionResult {
 // @public
 export interface Message {
   agentName?: string;
+  artifacts?: Array<{
+    artifactId: string;
+    name?: string;
+    description?: string;
+    content: string;
+  }>;
+  citations?: Array<{
+    title?: string;
+    url?: string;
+    snippet?: string;
+  }>;
   conversationId?: string;
   errorCode?: string;
   // @deprecated (undocumented)
@@ -680,6 +982,7 @@ export { OutputTokensDetails };
 
 // @public
 export interface ProcessedMessage {
+  agentName?: string;
   createdAt?: string;
   // (undocumented)
   ragSources?: Array<{
@@ -689,6 +992,7 @@ export interface ProcessedMessage {
     fileId?: string;
     attributes?: Record<string, unknown>;
   }>;
+  reasoning?: string;
   // (undocumented)
   role: 'user' | 'assistant';
   // (undocumented)
@@ -703,6 +1007,7 @@ export interface ProcessedMessage {
     error?: string;
     status: string;
   }>;
+  usage?: ResponseUsage;
 }
 
 export { PromptCapabilities };
@@ -746,9 +1051,21 @@ export interface SessionMessagesResponse {
   sessionCreatedAt?: string;
 }
 
+export { StreamAgentHandoffEvent };
+
+export { StreamArtifactEvent };
+
+export { StreamAuthRequiredEvent };
+
+export { StreamBackendToolExecutingEvent };
+
+export { StreamCitationEvent };
+
 export { StreamCompletedEvent };
 
 export { StreamErrorEvent };
+
+export { StreamFormRequestEvent };
 
 // @public
 export type StreamingEvent = NormalizedStreamEvent;
