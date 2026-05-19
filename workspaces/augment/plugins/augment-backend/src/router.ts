@@ -113,15 +113,19 @@ export async function createRouter({
   });
 
   const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-  router.use((req, _res, next) => {
+  const CSRF_EXEMPT_PATHS = new Set(['/health']);
+  router.use((req, res, next) => {
     if (!MUTATING_METHODS.has(req.method)) {
       next();
       return;
     }
+    if (CSRF_EXEMPT_PATHS.has(req.path)) {
+      next();
+      return;
+    }
     if (!req.headers['x-backstage-request']) {
-      logger.debug(
-        `CSRF check: ${req.method} ${req.path} missing X-Backstage-Request header`,
-      );
+      res.status(403).json({ error: 'Missing X-Backstage-Request header' });
+      return;
     }
     next();
   });

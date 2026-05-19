@@ -369,4 +369,32 @@ describe('ChatSessionService (with database)', () => {
       );
     });
   });
+
+  describe('purgeExpiredSessions', () => {
+    it('purges sessions older than retention period', async () => {
+      const s1 = await service.createSession('user:default/old', 'Old chat');
+
+      const past = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString();
+      await db('augment_sessions')
+        .where('id', s1.id)
+        .update({ updated_at: past });
+
+      const s2 = await service.createSession('user:default/new', 'New chat');
+
+      const purged = await service.purgeExpiredSessions(90);
+      expect(purged).toBe(1);
+
+      const remaining = await service.getSession(s2.id, 'user:default/new');
+      expect(remaining).toBeDefined();
+
+      const gone = await service.getSession(s1.id, 'user:default/old');
+      expect(gone).toBeNull();
+    });
+
+    it('returns 0 when no sessions expired', async () => {
+      await service.createSession('user:default/fresh', 'Fresh chat');
+      const purged = await service.purgeExpiredSessions(90);
+      expect(purged).toBe(0);
+    });
+  });
 });

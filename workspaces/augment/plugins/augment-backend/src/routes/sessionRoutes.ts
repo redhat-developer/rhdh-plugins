@@ -108,6 +108,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           actor: userRef,
           target: session.id,
           outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
         });
         res.json({ session });
       },
@@ -179,6 +180,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           actor: userRef,
           target: req.params.sessionId,
           outcome: deleted ? 'success' : 'failure',
+          sourceIp: AuditLogger.extractIp(req),
         });
         res.json({ success: deleted });
       },

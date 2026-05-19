@@ -27,6 +27,7 @@ import { InputError } from '@backstage/errors';
 import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { AdminConfigService } from '../services/AdminConfigService';
+import { AuditLogger } from '../services/AuditLogger';
 
 function isValidLifecycleStage(stage: unknown): stage is AgentLifecycleStage {
   return (
@@ -50,6 +51,7 @@ export function registerAgentRoutes(
 ): void {
   const { router, logger, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
+  const audit = new AuditLogger(logger);
 
   /**
    * Load the ChatAgentConfig[] array from the chatAgents DB key.
@@ -323,6 +325,14 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { from: currentStage, to: nextStage, direction: 'promote', version: existing?.version ?? 1 },
+        });
         logger.info(
           `Agent "${agentId}" promoted to ${nextStage} (v${existing?.version ?? 1}) by ${userRef}`,
         );
@@ -401,6 +411,14 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { from: currentStage, to: nextStage, direction: 'demote' },
+        });
         logger.info(`Agent "${agentId}" demoted to ${nextStage} by ${userRef}`);
         res.json({ success: true, agentId, lifecycleStage: nextStage });
       },
@@ -444,6 +462,14 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { to: 'production', direction: 'publish' },
+        });
         logger.info(`Agent "${agentId}" published by ${userRef}`);
         res.json({ success: true, agentId, published: true });
       },
@@ -485,6 +511,14 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { to: 'staging', direction: 'unpublish' },
+        });
         logger.info(`Agent "${agentId}" unpublished by ${userRef}`);
         res.json({ success: true, agentId, published: false });
       },

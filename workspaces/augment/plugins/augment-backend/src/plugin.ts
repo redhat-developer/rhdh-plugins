@@ -215,10 +215,11 @@ export const augmentPlugin = createBackendPlugin({
           );
         }
 
-        const retentionDays = config.getOptionalNumber(
-          'augment.sessions.retentionDays',
-        );
-        if (sessions && retentionDays && retentionDays > 0) {
+        const DEFAULT_RETENTION_DAYS = 90;
+        const retentionDays =
+          config.getOptionalNumber('augment.sessions.retentionDays') ??
+          DEFAULT_RETENTION_DAYS;
+        if (sessions && retentionDays > 0) {
           await scheduler.scheduleTask({
             id: 'augment-session-retention',
             frequency: { hours: 24 },

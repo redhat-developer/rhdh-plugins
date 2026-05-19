@@ -175,6 +175,7 @@ export function registerAdminConfigRoutes(
           actor: userRef,
           target: validKey,
           outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
           meta: { providerId },
         });
 
@@ -332,6 +333,7 @@ export function registerAdminConfigRoutes(
           actor: userRef,
           target: validKey,
           outcome: deleted ? 'success' : 'failure',
+          sourceIp: AuditLogger.extractIp(req),
           meta: { providerId },
         });
 

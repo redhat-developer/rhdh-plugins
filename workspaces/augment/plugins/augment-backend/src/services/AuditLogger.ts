@@ -15,6 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { Request } from 'express';
 
 export type AuditAction =
   | 'config.update'
@@ -22,6 +23,7 @@ export type AuditAction =
   | 'session.create'
   | 'session.delete'
   | 'tool.approval'
+  | 'tool.lifecycle'
   | 'agent.lifecycle'
   | 'document.upload'
   | 'document.delete'
@@ -32,6 +34,7 @@ export interface AuditEvent {
   actor: string;
   target?: string;
   outcome: 'success' | 'failure';
+  sourceIp?: string;
   meta?: Record<string, unknown>;
 }
 
@@ -43,10 +46,21 @@ export class AuditLogger {
   }
 
   log(event: AuditEvent): void {
-    const record = {
-      ...event,
+    const { action, actor, target, outcome, sourceIp, meta } = event;
+    this.logger.info('audit', {
+      action,
+      actor,
+      target,
+      outcome,
+      sourceIp,
+      ...meta,
       timestamp: new Date().toISOString(),
-    };
-    this.logger.info(JSON.stringify(record));
+    });
+  }
+
+  static extractIp(req: Request): string {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
+    return req.socket?.remoteAddress ?? 'unknown';
   }
 }

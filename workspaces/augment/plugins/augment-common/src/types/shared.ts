@@ -564,7 +564,7 @@ export function normalizeLifecycleStage(
   if (Object.hasOwn(LEGACY_STAGE_MAP, trimmed))
     return LEGACY_STAGE_MAP[trimmed];
   if ((LIFECYCLE_STAGE_ORDER as readonly string[]).includes(trimmed)) {
-    return stage as AgentLifecycleStage;
+    return trimmed as AgentLifecycleStage;
   }
   return 'draft';
 }

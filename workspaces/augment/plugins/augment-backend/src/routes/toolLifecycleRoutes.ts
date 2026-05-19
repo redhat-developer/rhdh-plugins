@@ -26,6 +26,7 @@ import { InputError } from '@backstage/errors';
 import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { AdminConfigService } from '../services/AdminConfigService';
+import { AuditLogger } from '../services/AuditLogger';
 
 function isValidLifecycleStage(stage: unknown): stage is AgentLifecycleStage {
   return (
@@ -54,6 +55,7 @@ export function registerToolLifecycleRoutes(
 ): void {
   const { router, logger, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
+  const audit = new AuditLogger(logger);
 
   async function loadChatToolConfigs(): Promise<ChatToolConfig[]> {
     const raw = await adminConfig.get('chatTools');
@@ -200,6 +202,14 @@ export function registerToolLifecycleRoutes(
         }
 
         await saveChatToolConfigs(configs, userRef);
+        audit.log({
+          action: 'tool.lifecycle',
+          actor: userRef,
+          target: toolId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { from: currentStage, to: nextStage, direction: 'promote', version: existing?.version ?? 1 },
+        });
         logger.info(
           `Tool "${toolId}" promoted to ${nextStage} (v${existing?.version ?? 1}) by ${userRef}`,
         );
@@ -275,6 +285,14 @@ export function registerToolLifecycleRoutes(
         }
 
         await saveChatToolConfigs(configs, userRef);
+        audit.log({
+          action: 'tool.lifecycle',
+          actor: userRef,
+          target: toolId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { from: currentStage, to: nextStage, direction: 'demote' },
+        });
         logger.info(`Tool "${toolId}" demoted to ${nextStage} by ${userRef}`);
         res.json({ success: true, toolId, lifecycleStage: nextStage });
       },
@@ -317,6 +335,14 @@ export function registerToolLifecycleRoutes(
         }
 
         await saveChatToolConfigs(configs, userRef);
+        audit.log({
+          action: 'tool.lifecycle',
+          actor: userRef,
+          target: toolId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { to: 'production', direction: 'publish' },
+        });
         logger.info(`Tool "${toolId}" published by ${userRef}`);
         res.json({ success: true, toolId, published: true });
       },
@@ -357,6 +383,14 @@ export function registerToolLifecycleRoutes(
         }
 
         await saveChatToolConfigs(configs, userRef);
+        audit.log({
+          action: 'tool.lifecycle',
+          actor: userRef,
+          target: toolId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { to: 'staging', direction: 'unpublish' },
+        });
         logger.info(`Tool "${toolId}" unpublished by ${userRef}`);
         res.json({ success: true, toolId, published: false });
       },
