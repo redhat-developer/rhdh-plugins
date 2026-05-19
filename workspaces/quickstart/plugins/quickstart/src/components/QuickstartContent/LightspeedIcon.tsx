@@ -15,14 +15,16 @@
  */
 
 import { useTheme } from '@mui/material/styles';
-import LightThemeLightspeedIcon from '../../images/lightspeed-icon-black.svg';
-import DarkThemeLightspeedIcon from '../../images/lightspeed-icon-white.svg';
+import {
+  darkThemeLightspeedIconUrl,
+  lightThemeLightspeedIconUrl,
+} from './lightspeedIconUrls';
 
 export const LightspeedIcon = () => {
   const theme = useTheme();
   return theme.palette.mode === 'dark' ? (
     <img
-      src={DarkThemeLightspeedIcon}
+      src={darkThemeLightspeedIconUrl}
       alt=""
       height={24}
       width={24}
@@ -30,7 +32,7 @@ export const LightspeedIcon = () => {
     />
   ) : (
     <img
-      src={LightThemeLightspeedIcon}
+      src={lightThemeLightspeedIconUrl}
       alt=""
       height={24}
       width={24}
