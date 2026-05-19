@@ -36,7 +36,7 @@ export const LightspeedDrawerStateExposer: (
 ) => null;
 
 // @public
-export const LightspeedFAB: () => JSX_2.Element;
+export const LightspeedFAB: () => JSX_2.Element | null;
 
 // @public
 export const LightspeedIcon: () => JSX_2.Element;

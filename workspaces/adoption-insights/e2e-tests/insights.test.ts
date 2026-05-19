@@ -125,7 +125,7 @@ test('Active users panel shows 1 visitor', async ({}, testInfo) => {
   await expect(panel).toMatchAriaSnapshot(`
     - heading "${translations.activeUsers.title}" [level=5]
     - button "${translations.common.exportCSV}"
-    - paragraph: ${averageText}
+    - paragraph: "${averageText}"
     - paragraph: ${translations.activeUsers.legend.returningUsers}
     - paragraph: ${translations.activeUsers.legend.newUsers}
     `);

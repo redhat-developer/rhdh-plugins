@@ -413,6 +413,7 @@ const useStyles = makeStyles(theme => ({
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
   toastAlert: {
     maxWidth: '350px',
@@ -1927,10 +1928,15 @@ export const LightspeedChat = ({
               minHeight: theme.spacing(6),
               paddingLeft: theme.spacing(2),
               paddingRight: theme.spacing(2),
+              '& .MuiTabs-flexContainer': {
+                gap: theme.spacing(2),
+              },
               '& [role="tab"]': {
                 fontWeight: 700,
                 textTransform: 'none',
                 opacity: 1,
+                padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+                borderRadius: theme.spacing(0.5),
                 '&:not([aria-selected="true"])': {
                   color: `${theme.palette.text.primary} !important`,
                 },

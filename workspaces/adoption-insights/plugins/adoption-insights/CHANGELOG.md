@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.8.2
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.2
+
 ## 0.8.1
 
 ### Patch Changes

@@ -1,5 +1,26 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.5
+
+### Patch Changes
+
+- 52ac724: fix(lightspeed): prevent JSS class name prefix from leaking into host application styles
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.5
+
+## 2.8.4
+
+### Patch Changes
+
+- 556c5a1: fix(lightspeed): fix toast notifications being obscured by Global Header
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.4
+
+## 2.8.3
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.3
+
 ## 2.8.2
 
 ### Patch Changes

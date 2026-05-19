@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.13.2
+
+### Patch Changes
+
+- Updated dependencies [faf1cbd]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.1.2
+
 ## 1.13.1
 
 ### Patch Changes

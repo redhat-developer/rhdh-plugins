@@ -25,255 +25,252 @@ import { bulkImportTranslationRef } from './ref';
 const bulkImportTranslationIt = createTranslationMessages({
   ref: bulkImportTranslationRef,
   messages: {
-    'page.title': 'Importazione in blocco',
-    'page.subtitle': 'Importa entità in Red Hat Developer Hub',
-    'page.addRepositoriesTitle': 'Aggiungere repository',
-    'page.importEntitiesTitle': 'Importare entità',
-    'page.addRepositoriesSubtitle':
-      'Aggiungere repository a Red Hat Developer Hub in 4 passaggi',
-    'page.importEntitiesSubtitle': 'Importa in Red Hat Developer Hub',
-    'page.typeLink': 'Importazione in blocco',
-    'sidebar.bulkImport': 'Importazione in blocco',
-    'permissions.title': 'Autorizzazione richiesta',
-    'permissions.addRepositoriesMessage':
-      "Per aggiungere repository, contattare l'amministratore per ottenere l'autorizzazione 'bulk.import'.",
-    'permissions.viewRepositoriesMessage':
-      "Per visualizzare i repository aggiunti, contattare l'amministratore per ottenere l'autorizzazione 'bulk.import'.",
-    'repositories.addedRepositories': 'Repository aggiunti',
-    'repositories.importedEntities': 'Entità importate',
-    'repositories.addedRepositoriesCount': 'Repository aggiunti ({{count}})',
-    'repositories.importedEntitiesCount': 'Entità importate ({{count}})',
-    'repositories.noRecordsFound': 'Nessun record trovato',
-    'repositories.noProjectsFound':
-      "Nessun progetto disponibile per l'importazione.",
-    'repositories.logInToViewProjects': 'Accedi per visualizzare i progetti.',
-    'repositories.logInToViewRepositories':
-      'Accedi per visualizzare i repository.',
-    'repositories.refresh': 'Aggiorna',
-    'repositories.import': 'Importa',
-    'repositories.removing': 'Rimozione in corso...',
-    'repositories.deleteRepository': 'Elimina repository',
-    'repositories.removeRepositoryQuestion':
-      'Eliminare {{repoName}} {{repositoryText}}?',
-    'repositories.repositoryText': 'repository',
-    'repositories.removeRepositoryWarningScaffolder':
-      'La rimozione di un repository rimuove anche tutte le informazioni sulle attività di scaffolding associate.',
-    'repositories.removeRepositoryWarningOrchestrator':
-      "Elimina repository e informazioni sul flusso di lavoro dell'orchestratore associate.",
-    'repositories.removeRepositoryWarning':
-      'La rimozione di un repository cancella tutte le informazioni associate dalla pagina Catalogo.',
-    'repositories.removeRepositoryWarningGitlab':
-      'La rimozione elimina tutte le informazioni associate dalla pagina Catalogo.',
-    'repositories.cannotRemoveRepositoryUrl':
-      "Impossibile rimuovere il repository perché l'URL del repository è mancante.",
-    'repositories.unableToRemoveRepository':
-      'Impossibile rimuovere il repository. {{error}}',
-    'repositories.removeTooltipDisabled':
-      'Questo repository è stato aggiunto al file app-config. Per rimuoverlo modificare direttamente il file',
-    'repositories.removeTooltipRepositoryScaffolder':
-      "Elimina il repository e le informazioni sull'attività di scaffolding associata",
-    'repositories.removeTooltipRepositoryOrchestrator':
-      "Elimina repository e informazioni sul flusso di lavoro dell'orchestratore associate",
-    'repositories.errorOccuredWhileFetching':
-      'Si è verificato un errore durante il recupero della richiesta pull',
-    'repositories.failedToCreatePullRequest':
-      'Impossibile creare la richiesta pull',
-    'repositories.errorOccured': 'Si è verificato un errore',
-    'repositories.editCatalogInfoTooltip':
-      'Modifica la richiesta pull catalog-info.yaml',
-    'repositories.viewCatalogInfoTooltip':
-      'Visualizza il file catalog-info.yaml',
-    'repositories.pr': 'Richiesta pull',
-    'status.alreadyImported': 'Già importata',
-    'status.added': 'Aggiunta',
-    'status.waitingForApproval': 'In attesa di approvazione',
-    'status.imported': 'Importata',
-    'status.readyToImport': "Pronto per l'importazione",
-    'status.waitingForPullRequestToStart':
-      'In attesa che inizi la richiesta pull',
-    'status.missingConfigurations': 'Configurazioni mancanti',
-    'status.failedCreatingPR': 'Impossibile creare la PR',
-    'status.pullRequestRejected': 'Richiesta pull rifiutata',
-    'errors.prErrorPermissions':
-      "Impossibile creare una nuova richiesta pull a causa di autorizzazioni insufficienti. Contattare l'amministratore.",
-    'errors.catalogInfoExists':
-      "Poiché catalog-info.yaml esiste già nel repository, non verrà creata alcuna nuova richiesta pull. Tuttavia, l'entità sarà comunque registrata nella pagina del catalogo.",
-    'errors.catalogEntityConflict':
-      'Impossibile creare una nuova richiesta pull a causa di un conflitto tra entità del catalogo.',
-    'errors.repoEmpty':
-      'Impossibile creare una nuova richiesta pull perché il repository è vuoto. Inviare un commit iniziale al repository.',
-    'errors.codeOwnersNotFound':
-      'Il file CODEOWNERS non è presente nel repository. Aggiungere un file CODEOWNERS per creare una nuova richiesta pull.',
-    'errors.errorOccurred': 'Si è verificato un errore',
-    'errors.failedToCreatePullRequest': 'Impossibile creare la richiesta pull',
-    'errors.noIntegrationsConfigured':
-      "Nessuna integrazione GitHub o GitLab è configurata. Aggiungere almeno un'integrazione per utilizzare la funzionalità di importazione in blocco.",
-    'errors.addIntegrationsToConfig':
-      'Per risolvere questo problema, assicurarsi che le integrazioni siano aggiunte al file di configurazione di Backstage (app-config.yaml).',
-    'validation.componentNameInvalid':
-      '"{{value}}" non è valido; è prevista una stringa composta da sequenze di [a-zA-Z0-9] separate da uno qualsiasi tra i simboli [-_.], per un massimo di 63 caratteri in totale. Per saperne di più sul formato del file catalogo, visitare: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
-    'validation.componentNameRequired': 'Il nome del componente è obbligatorio',
-    'validation.entityOwnerRequired':
-      "Il proprietario dell'entità è obbligatorio",
-    'validation.titleRequired': 'Il titolo {{approvalTool}} è obbligatorio',
-    'validation.descriptionRequired':
-      'La descrizione {{approvalTool}} è obbligatoria',
-    'validation.keyValuePairFormat':
-      'Ogni voce deve avere una chiave e un valore separati da due punti.',
-    'table.headers.name': 'Nome',
-    'table.headers.url': 'URL',
-    'table.headers.repoUrl': 'URL del repository',
-    'table.headers.organization': 'Organizzazione',
-    'table.headers.organizationGroup': 'Organizzazione/gruppo',
-    'table.headers.group': 'Gruppo',
-    'table.headers.status': 'Stato',
-    'table.headers.taskStatus': 'Stato attività',
-    'table.headers.lastUpdated': 'Ultimo aggiornamento',
-    'table.headers.actions': 'Azioni',
-    'table.headers.catalogInfoYaml': 'catalogo-info.yaml',
-    'table.pagination.rows5': '5 righe',
-    'table.pagination.rows10': '10 righe',
-    'table.pagination.rows20': '20 righe',
-    'table.pagination.rows50': '50 righe',
-    'table.pagination.rows100': '100 righe',
-    'steps.chooseApprovalTool':
-      'Scegliere lo strumento di approvazione (GitHub/GitLab) per la creazione di richieste pull',
-    'steps.chooseRepositories': 'Scegliere i repository da aggiungere',
-    'steps.chooseItems': 'Scegliere quali elementi importare',
-    'steps.generateCatalogInfo':
-      'Generare un file catalog-info.yaml per ogni repository',
-    'steps.generateCatalogInfoItems':
-      'Generare un file catalog-info.yaml per ogni elemento selezionato',
-    'steps.editPullRequest':
-      'Modificare i dettagli della richiesta pull se necessario',
-    'steps.trackStatus': 'Tenere traccia dello stato di approvazione',
-    'addRepositories.approvalTool.title': 'Strumento di approvazione',
-    'addRepositories.approvalTool.description':
-      'Scegliere lo strumento di approvazione per la creazione di richiesta pull',
-    'addRepositories.approvalTool.tooltip':
-      "L'importazione richiede l'approvazione. Dopo l'approvazione della richiesta di pull/merge, i repository/progetti vengono importati nella pagina Catalogo.",
-    'addRepositories.approvalTool.github': 'GitHub',
-    'addRepositories.approvalTool.gitlab': 'GitLab',
-    'addRepositories.repositoryType.title': 'Tipo di repository',
-    'addRepositories.repositoryType.repository': 'Repository',
-    'addRepositories.repositoryType.organization': 'Organizzazione',
-    'addRepositories.repositoryType.project': 'Progetto',
-    'addRepositories.repositoryType.group': 'Gruppo',
-    'addRepositories.searchPlaceholder': 'Ricerca',
-    'addRepositories.clearSearch': 'cancella ricerca',
-    'addRepositories.noRepositoriesFound': 'Nessun repository trovato',
+    'addRepositories.addSelected': 'Aggiungi selezionati',
     'addRepositories.allRepositoriesAdded':
       'Tutti i repository sono stati aggiunti',
-    'addRepositories.noSelection': 'Nessuno',
-    'addRepositories.selectRepositories': 'Selezionare repository',
-    'addRepositories.selectedRepositories': 'repository',
-    'addRepositories.selectedProjects': 'progetti',
-    'addRepositories.selectedLabel': 'Selezionato',
-    'addRepositories.selectedCount': '{{count}} selezionati',
-    'addRepositories.addSelected': 'Aggiungi selezionati',
-    'addRepositories.generateCatalogInfo': 'Genera catalog-info.yaml',
+    'addRepositories.approvalTool.description':
+      'Scegli lo strumento di controllo della sorgente per la creazione della pull request',
+    'addRepositories.approvalTool.github': 'GitHub',
+    'addRepositories.approvalTool.gitlab': 'GitLab',
+    'addRepositories.approvalTool.title':
+      'Strumento di controllo della sorgente',
+    'addRepositories.approvalTool.tooltip':
+      "L'importazione richiede un'autorizzazione. Una volta approvata la richiesta pull, i repository verranno importati nella pagina del Catalogo.",
+    'addRepositories.clearSearch': 'cancella ricerca',
     'addRepositories.editPullRequest': 'Modifica richiesta pull',
+    'addRepositories.generateCatalogInfo': 'Genera catalog-info.yaml',
+    'addRepositories.noRepositoriesFound': 'Nessun repository trovato',
+    'addRepositories.noSelection': 'Nessuno',
     'addRepositories.preview': 'Anteprima',
+    'addRepositories.repositoryType.group': 'Gruppo',
+    'addRepositories.repositoryType.organization': 'Organizzazione',
+    'addRepositories.repositoryType.project': 'Progetto',
+    'addRepositories.repositoryType.repository': 'Repository',
+    'addRepositories.repositoryType.title': 'Tipo di repository',
+    'addRepositories.searchPlaceholder': 'Ricerca',
+    'addRepositories.selectRepositories': 'Seleziona repository',
+    'addRepositories.selectedCount': '{{count}} selezionati',
+    'addRepositories.selectedLabel': 'Selezionato',
+    'addRepositories.selectedProjects': 'progetti',
+    'addRepositories.selectedRepositories': 'repository',
     'catalogInfo.status.generating': 'Generazione',
     'common.add': 'Aggiungi',
-    'common.cancel': 'Cancella',
+    'common.cancel': 'Annulla',
     'common.close': 'Chiudi',
     'common.delete': 'Elimina',
+    'common.documentation': 'Documentazione',
     'common.edit': 'Modifica',
-    'common.filter': 'Filtra',
+    'common.filter': 'Filtro',
     'common.import': 'Importa',
     'common.remove': 'Rimuovi',
     'common.save': 'Salva',
-    'common.documentation': 'Documentazione',
     'common.select': 'Seleziona',
     'common.update': 'Aggiorna',
     'common.view': 'Visualizza',
+    'errors.addIntegrationsToConfig':
+      'Per risolvere questo problema, assicurati che le integrazioni siano aggiunte al file di configurazione di Backstage (app-config.yaml).',
+    'errors.catalogEntityConflict':
+      "Impossibile creare una nuova RP a causa di un conflitto con un'entità del catalogo.",
+    'errors.catalogInfoExists':
+      "Poiché catalog-info.yaml esiste già nel repository, non verrà creata una nuova RP. Tuttavia, l'entità sarà comunque registrata nella pagina del catalogo.",
+    'errors.codeOwnersNotFound':
+      'Il file CODEOWNERS non è presente nel repository. Aggiungi un file CODEOWNERS per creare una nuova RP.',
+    'errors.errorOccurred': 'Si è verificato un errore',
+    'errors.failedToCreatePullRequest': 'Impossibile creare la richiesta pull',
+    'errors.noIntegrationsConfigured':
+      "Non è configurata alcuna integrazione con GitHub o GitLab. Aggiungere almeno un'integrazione per utilizzare la funzione di importazione in blocco.",
+    'errors.prErrorPermissions':
+      'Impossibile creare una nuova RP a causa di autorizzazioni insufficienti. Contatta il tuo amministratore.',
+    'errors.repoEmpty':
+      'Impossibile creare una nuova RP poiché il repository è vuoto. Esegui il push del commit iniziale nel repository.',
+    'forms.footer.createPullRequest': 'Crea richiesta pull',
+    'forms.footer.createPullRequests': 'Crea richiesta pull',
+    'forms.footer.createServiceNowTicket': 'Crea ticket ServiceNow',
+    'forms.footer.createServiceNowTickets': 'Crea ticket ServiceNow',
+    'forms.footer.importTooltip':
+      'È necessario generare i file Catalog-info.yaml per poterli importare.',
+    'forms.footer.pullRequestTooltip':
+      'I file Catalog-info.yaml devono essere generati prima di creare una richiesta pull',
+    'forms.footer.selectRepositoryTooltip':
+      'Seleziona un repository da importare.',
+    'forms.footer.serviceNowTooltip':
+      'I file Catalog-info.yaml devono essere generati prima di creare un ticket ServiceNow',
+    'importActions.errorFetchingData': "Errore nell'estrazione dei dati",
+    'importActions.loading': 'Caricamento...',
+    'importActions.noActions':
+      'Nessuna azione di importazione trovata per questo repository.',
+    'page.addRepositoriesSubtitle':
+      'Aggiungi repository in Red Hat Developer Hub in 4 step',
+    'page.addRepositoriesTitle': 'Aggiungi repository',
+    'page.importEntitiesSubtitle': 'Importa in Red Hat Developer Hub',
+    'page.importEntitiesTitle': 'Importa entità',
+    'page.subtitle': 'Importa entità in Red Hat Developer Hub',
+    'page.title': 'Importazione in blocco',
+    'page.typeLink': 'Importazione in blocco',
+    'permissions.addRepositoriesMessage':
+      "Per aggiungere repository, contatta il tuo amministratore per ottenere l'autorizzazione `bulk.import`.",
+    'permissions.title': 'Autorizzazione obbligatoria',
+    'permissions.viewRepositoriesMessage':
+      "Per visualizzare i repository aggiunti, contatta il tuo amministratore per ottenere l'autorizzazione `bulk.import`.",
+    'previewFile.closeDrawer': 'Chiudi il cassetto',
+    'previewFile.failedToCreatePR': 'Impossibile creare la RP',
+    'previewFile.failedToFetchPR':
+      'Impossibile estrarre la richiesta pull. Un nuovo YAML è stato generato di seguito.',
+    'previewFile.invalidEntityYaml':
+      "L'entità YAML nella tua richiesta pull non è valida (file vuoto oppure mancano apiVersion, kind o metadata.name). Un nuovo YAML è stato generato di seguito.",
+    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
+    'previewFile.prCreationUnsuccessful':
+      'La creazione della pull request non è andata a buon fine per alcuni repository. Fai clic su "Modifica" per visualizzare il motivo.',
+    'previewFile.preview': 'Anteprima',
+    'previewFile.previewFile': 'Anteprima file',
+    'previewFile.previewFiles': 'Anteprima file',
+    'previewFile.pullRequest.annotations': 'Annotazioni',
+    'previewFile.pullRequest.bodyLabel': 'Corpo {{tool}}',
+    'previewFile.pullRequest.bodyPlaceholder':
+      'Un testo descrittivo con supporto Markdown',
+    'previewFile.pullRequest.codeOwnersWarning':
+      "AVVISO: l'operazione potrebbe non riuscire se non viene trovato alcun file CODEOWNERS nella posizione di destinazione.",
+    'previewFile.pullRequest.componentNameLabel': 'Nome del componente creato',
+    'previewFile.pullRequest.componentNamePlaceholder': 'Nome componente',
+    'previewFile.pullRequest.details': 'Dettagli {{tool}}',
+    'previewFile.pullRequest.entityConfiguration': 'Configurazione entità',
+    'previewFile.pullRequest.entityOwnerHelper':
+      "Seleziona un proprietario dall'elenco oppure inserisci un riferimento a un Gruppo o a un Utente",
+    'previewFile.pullRequest.entityOwnerLabel': 'Proprietario entità',
+    'previewFile.pullRequest.entityOwnerPlaceholder': 'gruppi e utenti',
+    'previewFile.pullRequest.labels': 'Etichette',
+    'previewFile.pullRequest.loadingText': 'Caricamento gruppi e utenti',
+    'previewFile.pullRequest.mergeRequest': 'Merge request',
+    'previewFile.pullRequest.previewEntities': 'Anteprima entità',
+    'previewFile.pullRequest.serviceNowTicket': 'Ticket ServiceNow',
+    'previewFile.pullRequest.spec': 'Specifiche',
+    'previewFile.pullRequest.title': 'richiesta pull',
+    'previewFile.pullRequest.titleLabel': 'Titolo {{tool}}',
+    'previewFile.pullRequest.titlePlaceholder':
+      'Aggiungi i file descrittori delle entità del catalogo Backstage',
+    'previewFile.pullRequest.useCodeOwnersFile':
+      'Utilizzare il file *CODEOWNERS* come Proprietario entità',
+    'previewFile.pullRequestPendingApproval':
+      'La [{{pullRequestText}}]({{pullRequestUrl}}) è in attesa di approvazione',
+    'previewFile.pullRequestText': 'richiesta pull',
+    'previewFile.useSemicolonSeparator':
+      'Utilizzare il punto e virgola per separare {{label}}',
+    'previewFile.viewRepository': 'Visualizza repository',
+    'repositories.addedRepositories': 'Repository aggiunti',
+    'repositories.addedRepositoriesCount': 'Repository aggiunti ({{count}})',
+    'repositories.cannotRemoveRepositoryUrl':
+      "Impossibile rimuovere il repository poiché manca l'URL del repository.",
+    'repositories.deleteRepository': 'Elimina repository',
+    'repositories.editCatalogInfoTooltip':
+      'Modifica la richiesta pull di catalog-info.yaml',
+    'repositories.errorOccured': 'Si è verificato un errore',
+    'repositories.errorOccuredWhileFetching':
+      "Si è verificato un errore durante l'estrazione della richiesta pull",
+    'repositories.failedToCreatePullRequest':
+      'Impossibile creare la richiesta pull',
+    'repositories.import': 'Importa',
+    'repositories.importedEntities': 'Entità importate',
+    'repositories.importedEntitiesCount': 'Entità importate ({{count}})',
+    'repositories.noProjectsFound':
+      "Nessun progetto disponibile per l'importazione.",
+    'repositories.noRecordsFound':
+      "Nessun repository disponibile per l'importazione.",
+    'repositories.pr': 'RP',
+    'repositories.refresh': 'Aggiorna',
+    'repositories.removeRepositoryQuestion':
+      'Rimuovere {{repoName}} {{repositoryText}}?',
+    'repositories.removeRepositoryWarning':
+      'La rimozione di un repository comporta la cancellazione di tutte le informazioni associate dalla pagina del Catalogo.',
+    'repositories.removeRepositoryWarningGitlab':
+      'Rimuovendolo, tutte le informazioni associate verranno cancellate dalla pagina del Catalogo.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      "Elimina il repository e le informazioni relative al flusso di lavoro dell'orchestratore.",
+    'repositories.removeRepositoryWarningScaffolder':
+      'La rimozione di un repository comporterà anche la rimozione di tutte le informazioni relative alle attività di scaffolding.',
+    'repositories.removeTooltipDisabled':
+      "Questo repository è stato aggiunto al file di configurazione dell'app. Per rimuoverlo, modifica direttamente il file",
+    'repositories.removeTooltipRepositoryOrchestrator':
+      "Elimina il repository e le informazioni relative al flusso di lavoro dell'orchestratore",
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Elimina il repository e le informazioni relative alle attività di scaffolding',
+    'repositories.removing': 'Rimozione...',
+    'repositories.repositoryText': 'repository',
+    'repositories.unableToRemoveRepository':
+      'Impossibile rimuovere il repository. {{error}}',
+    'repositories.viewCatalogInfoTooltip':
+      'Visualizza il file catalog-info.yaml',
+    'sidebar.bulkImport': 'Importazione in blocco',
+    'status.added': 'Aggiunta',
+    'status.alreadyImported': 'Già importata',
+    'status.failedCreatingPR': 'Impossibile creare la RP',
+    'status.imported': 'Importata',
+    'status.missingConfigurations': 'Configurazioni mancanti',
+    'status.pullRequestRejected': 'richiesta pull rifiutata',
+    'status.readyToImport': "Pronta per l'importazione",
+    'status.waitingForApproval': 'In attesa di approvazione',
+    'status.waitingForPullRequestToStart':
+      'In attesa che la richiesta pull inizi',
+    'steps.chooseApprovalTool':
+      'Scegli uno strumento di controllo della sorgente per la creazione delle richiesta pull',
+    'steps.chooseItems': 'Scegli gli elementi che desideri importare',
+    'steps.chooseRepositories': 'Scegli gli elementi che desideri importare',
+    'steps.editPullRequest': 'Visualizza i dettagli della pull/merge request',
+    'steps.generateCatalogInfo':
+      'Genera un file catalog-info.yaml per ogni elemento selezionato',
+    'steps.generateCatalogInfoItems':
+      'Genera un file catalog-info.yaml per ogni elemento selezionato',
+    'steps.trackStatus': 'Monitora lo stato di approvazione',
+    'table.headers.actions': 'Azioni',
+    'table.headers.catalogInfoYaml': 'catalog-info.yaml',
+    'table.headers.group': 'Gruppo',
+    'table.headers.lastUpdated': 'Ultimo aggiornamento',
+    'table.headers.name': 'Nome',
+    'table.headers.organization': 'Organizzazione',
+    'table.headers.organizationGroup': 'Organizzazione/gruppo',
+    'table.headers.repoUrl': 'URL repository',
+    'table.headers.status': 'Stato',
+    'table.headers.taskStatus': "Stato dell'attività",
+    'table.headers.url': 'URL',
+    'table.pagination.rows10': '10 righe',
+    'table.pagination.rows100': '100 righe',
+    'table.pagination.rows20': '20 righe',
+    'table.pagination.rows5': '5 righe',
+    'table.pagination.rows50': '50 righe',
+    'tasks.taskCancelled': 'Annullato',
+    'tasks.taskCompleted': 'Completato',
+    'tasks.taskFailed': 'Non riuscito',
+    'tasks.taskId': 'ID attività',
+    'tasks.taskLink': 'Link attività',
+    'tasks.taskOpen': 'Apri',
+    'tasks.taskProcessing': 'Elaborazione',
+    'tasks.taskSkipped': 'Saltato',
+    'tasks.tasksFor': 'Attività per {{importJobStatusId}}',
+    'tasks.viewTask': 'Visualizza attività',
     'time.daysAgo': '{{count}} giorno/i fa',
     'time.hoursAgo': '{{count}} ora/e fa',
     'time.minutesAgo': '{{count}} minuto/i fa',
-    'time.secondsAgo': '{{count}} secondi fa',
-    'previewFile.previewFile': 'Anteprima del file',
-    'previewFile.previewFiles': 'Anteprima dei file',
-    'previewFile.failedToCreatePR': 'Impossibile creare la richiesta pull',
-    'previewFile.prCreationUnsuccessful':
-      'La creazione delle richieste pull per alcuni repository non è riuscita. Cliccare su `Modifica` per vedere il motivo.',
-    'previewFile.failedToFetchPR':
-      'Impossibile recuperare la richiesta pull. Di seguito è stato generato un nuovo YAML.',
-    'previewFile.invalidEntityYaml':
-      "L'entità YAML nella richiesta pull non è valida (file vuoto o apiVersion, kind o metadata.name mancanti). Di seguito è stato generato un nuovo YAML.",
-    'previewFile.pullRequestPendingApproval':
-      '[{{pullRequestText}}]({{pullRequestUrl}}) è in attesa di approvazione',
-    'previewFile.pullRequestText': 'richiesta pull',
-    'previewFile.viewRepository': 'Visualizza repository',
-    'previewFile.closeDrawer': 'Chiudi il riquadro',
-    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
-    'previewFile.useSemicolonSeparator':
-      'Utilizzare il punto e virgola per separare {{label}}',
-    'previewFile.preview': 'Anteprima',
-    'previewFile.pullRequest.title': 'Richiesta pull',
-    'previewFile.pullRequest.mergeRequest': 'Richiesta merge',
-    'previewFile.pullRequest.serviceNowTicket': 'Ticket ServiceNow',
-    'previewFile.pullRequest.details': 'Dettagli {{tool}}',
-    'previewFile.pullRequest.titleLabel': 'Titolo {{tool}}',
-    'previewFile.pullRequest.bodyLabel': 'Corpo {{tool}}',
-    'previewFile.pullRequest.titlePlaceholder':
-      'Aggiungere i file descrittori di entità del catalogo Backstage',
-    'previewFile.pullRequest.bodyPlaceholder':
-      'Un testo descrittivo con supporto Markdown',
-    'previewFile.pullRequest.entityConfiguration': "Configurazione dell'entità",
-    'previewFile.pullRequest.componentNameLabel': 'Nome del componente creato',
-    'previewFile.pullRequest.componentNamePlaceholder': 'Nome del componente',
-    'previewFile.pullRequest.entityOwnerLabel': "Proprietario dell'entità",
-    'previewFile.pullRequest.entityOwnerPlaceholder': 'gruppi e utenti',
-    'previewFile.pullRequest.entityOwnerHelper':
-      "Selezionare un proprietario dall'elenco o inserire un riferimento a un gruppo o a un utente",
-    'previewFile.pullRequest.loadingText': 'Caricamento di gruppi e utenti',
-    'previewFile.pullRequest.previewEntities': 'Anteprima entità',
-    'previewFile.pullRequest.annotations': 'Annotazioni',
-    'previewFile.pullRequest.labels': 'Etichette',
-    'previewFile.pullRequest.spec': 'Specifiche',
-    'previewFile.pullRequest.useCodeOwnersFile':
-      "Utilizzare il file *CODEOWNERS* come Proprietario dell'entità",
-    'previewFile.pullRequest.codeOwnersWarning':
-      'ATTENZIONE: questa operazione potrebbe non riuscire se la posizione di destinazione non contiene alcun file CODEOWNERS.',
-    'forms.footer.createServiceNowTicket': 'Crea un ticket ServiceNow',
-    'forms.footer.createServiceNowTickets': 'Crea ticket ServiceNow',
-    'forms.footer.createPullRequest': 'Crea richiesta pull',
-    'forms.footer.createPullRequests': 'Crea richieste pull',
-    'forms.footer.selectRepositoryTooltip':
-      'Selezionare un repository da importare.',
-    'forms.footer.serviceNowTooltip':
-      'È necessario generare i file catalog-info.yaml prima di creare un ticket ServiceNow',
-    'forms.footer.importTooltip':
-      "Per l'importazione è necessario generare i file Catalog-info.yaml.",
-    'forms.footer.pullRequestTooltip':
-      'È necessario generare i file catalog-info.yaml prima di creare una richiesta pull',
-    'tasks.tasksFor': 'Attività per {{importJobStatusId}}',
-    'tasks.taskId': 'ID attività',
-    'tasks.taskLink': 'Collegamento attività',
-    'tasks.viewTask': 'Visualizza attività',
-    'tasks.taskCancelled': 'Attività annullata',
-    'tasks.taskCompleted': 'Attività completata',
-    'tasks.taskFailed': 'Attività non riuscita',
-    'tasks.taskOpen': 'Attività aperta',
-    'tasks.taskProcessing': 'Elaborazione delle attività',
-    'tasks.taskSkipped': 'Attività ignorata',
-    'workflows.workflowsFor': 'Flussi di lavoro per {{importJobStatusId}}',
-    'workflows.workflowId': 'ID flusso di lavoro',
-    'workflows.workflowLink': 'Collegamento flusso di lavoro',
+    'time.secondsAgo': '{{count}} secondo/i fa',
+    'validation.componentNameInvalid':
+      '"{{value}}" non è valido; è prevista una stringa composta da sequenze di [a-zA-Z0-9] separate da uno qualsiasi di [-_.], per un massimo di 63 caratteri in totale. Scopri di più sul formato dei file del catalogo visitando la pagina https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
+    'validation.componentNameRequired': 'Il nome del componente è obbligatorio',
+    'validation.descriptionRequired':
+      'La descrizione di {{approvalTool}} è obbligatoria',
+    'validation.entityOwnerRequired':
+      "Il proprietario dell'entità è obbligatorio",
+    'validation.keyValuePairFormat':
+      'Ogni voce deve avere una chiave e un valore separati da due punti.',
+    'validation.titleRequired': 'Il titolo di {{approvalTool}} è obbligatorio',
     'workflows.viewWorkflow': 'Visualizza flusso di lavoro',
-    'workflows.workflowPending': 'In attesa',
+    'workflows.workflowAborted': 'Interrotto',
     'workflows.workflowActive': 'Attivo',
     'workflows.workflowCompleted': 'Completato',
-    'workflows.workflowAborted': 'Interrotto',
     'workflows.workflowError': 'Errore',
+    'workflows.workflowFetchError': 'Errore estrazione flusso di lavoro',
+    'workflows.workflowId': 'ID flusso di lavoro',
+    'workflows.workflowLink': 'Link flusso di lavoro',
+    'workflows.workflowPending': 'In sospeso',
     'workflows.workflowSuspended': 'Sospeso',
-    'workflows.workflowFetchError':
-      'Errore durante il recupero del flusso di lavoro',
-    'importActions.loading': 'Caricamento...',
-    'importActions.errorFetchingData': 'Errore durante il recupero dei dati',
-    'importActions.noActions':
-      'Nessuna azione di importazione trovata per questo repository.',
+    'workflows.workflowsFor': 'Flussi di lavoro per {{importJobStatusId}}',
   },
 });
 

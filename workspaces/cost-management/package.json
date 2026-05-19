@@ -66,7 +66,7 @@
     "react": "^18",
     "react-dom": "^18",
     "@protobufjs/inquire": "1.1.0",
-    "linkifyjs": "4.3.2",
+    "linkifyjs": "4.3.3",
     "request/form-data": "2.5.5",
     "@types/request/form-data": "2.5.5",
     "jsonpath-plus": "10.3.0",
@@ -88,7 +88,7 @@
     "prismjs": "1.30.0",
     "@backstage-community/plugin-rbac-backend/@backstage/plugin-permission-backend": "0.6.0",
     "fast-xml-parser": "5.7.3",
-    "casbin/minimatch": "7.4.8"
+    "casbin/minimatch": "7.4.9"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
