@@ -26475,10 +26475,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkifyjs@npm:4.3.2":
-  version: 4.3.2
-  resolution: "linkifyjs@npm:4.3.2"
-  checksum: 10c0/1a85e6b368304a4417567fe5e38651681e3e82465590836942d1b4f3c834cc35532898eb1e2479f6337d9144b297d418eb708b6be8ed0b3dc3954a3588e07971
+"linkifyjs@npm:4.3.3":
+  version: 4.3.3
+  resolution: "linkifyjs@npm:4.3.3"
+  checksum: 10c0/0eac293927f1465d13625c8c67c83c50d7fda9137c255a4a2ff5970ea4e9ba57de4846b170326e54b9e4e82be24f3705572bc50773737be9b13af5f1e4577798
   languageName: node
   linkType: hard
 
@@ -28064,12 +28064,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:7.4.8":
-  version: 7.4.8
-  resolution: "minimatch@npm:7.4.8"
+"minimatch@npm:7.4.9":
+  version: 7.4.9
+  resolution: "minimatch@npm:7.4.9"
   dependencies:
     brace-expansion: "npm:^2.0.2"
-  checksum: 10c0/f588e42d7f949934becf404569f6f6e58f4e2887df811ed198501fa67c1c09b9e8922d6f81b1aff0d11f9b216d8258c399536c69048c40880bf72ba434b0117e
+  checksum: 10c0/8d5406a9697edb9b7ea02697d58cabcb3d3a9a4a02caa1cf57b9ab5ae22c78b2945600661a78f91d1545f77521f97f3cb5f8cb066e58356a121b50e4e60ccdbe
   languageName: node
   linkType: hard
 
