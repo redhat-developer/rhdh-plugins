@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useId } from 'react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Stepper from '@mui/material/Stepper';
-import Typography from '@mui/material/Typography';
+import { useEffect, useMemo } from 'react';
 import BuildIcon from '@mui/icons-material/Build';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -39,6 +26,7 @@ import { AgentWizardBasicsStep } from './AgentWizardBasicsStep';
 import { AgentWizardDeployStep } from './AgentWizardDeployStep';
 import { AgentWizardRuntimeStep } from './AgentWizardRuntimeStep';
 import { AgentWizardBuildStep } from './AgentWizardBuildStep';
+import { WizardShell } from './WizardShell';
 
 export type { CreateAgentWizardProps } from './agentWizardTypes';
 
@@ -69,7 +57,6 @@ export function CreateAgentWizard({
   onStepControl,
   onDeployMethodControl,
 }: CreateAgentWizardProps) {
-  const titleId = useId();
   const form = useAgentWizardForm(
     open,
     namespaceProp,
@@ -109,222 +96,114 @@ export function CreateAgentWizard({
     return base;
   }, [isBuildStep]);
 
-  const { handleCloseBuild, submitting } = form;
-  const handleDialogClose = useCallback(
-    (_: object, reason: 'backdropClick' | 'escapeKeyDown') => {
-      if (submitting) return;
-      if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
-        if (buildActive) {
-          handleCloseBuild();
-        } else {
-          onClose();
-        }
-      }
-    },
-    [onClose, submitting, buildActive, handleCloseBuild],
-  );
-
-  const submitLabel = isSourceDeploy ? 'Start Build' : 'Create';
-  const submittingLabel = isSourceDeploy ? 'Starting…' : 'Creating…';
-
   return (
-    <>
-      <Dialog
-        open={open}
-        onClose={handleDialogClose}
-        maxWidth="md"
-        fullWidth
-        aria-labelledby={titleId}
-      >
-        <DialogTitle id={titleId}>Create Agent</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          <Stepper activeStep={form.activeStep} sx={{ mb: 3, mt: 1 }}>
-            {allSteps.map(label => (
-              <Step key={label}>
-                <StepLabel
-                  StepIconProps={{
-                    icon: STEP_ICONS[label] ?? undefined,
-                  }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+    <WizardShell
+      open={open}
+      title="Create Agent"
+      steps={allSteps}
+      activeStep={form.activeStep}
+      formStepCount={FORM_STEPS.length}
+      stepIcons={STEP_ICONS}
+      stepDescriptions={STEP_DESCRIPTIONS}
+      isBuildStep={isBuildStep}
+      buildActive={buildActive}
+      submitting={form.submitting}
+      submitError={form.submitError}
+      onSubmitErrorClose={() => form.setSubmitError(null)}
+      submitLabel={isSourceDeploy ? 'Start Build' : 'Create'}
+      submittingLabel={isSourceDeploy ? 'Starting…' : 'Creating…'}
+      successOpen={form.successOpen}
+      successMessage="Agent created successfully."
+      onSuccessClose={() => form.setSuccessOpen(false)}
+      onClose={onClose}
+      onCloseBuild={form.handleCloseBuild}
+      onBack={form.handleBack}
+      onNext={form.handleNext}
+      onSubmit={form.handleSubmit}
+    >
+      {form.activeStep === 0 && (
+        <AgentWizardBasicsStep
+          name={form.name}
+          setName={form.setName}
+          namespace={form.namespace}
+          setNamespace={form.setNamespace}
+          protocol={form.protocol}
+          setProtocol={form.setProtocol}
+          framework={form.framework}
+          setFramework={form.setFramework}
+          nameError={form.nameError}
+          availableNamespaces={form.availableNamespaces}
+        />
+      )}
 
-          {!isBuildStep && STEP_DESCRIPTIONS[allSteps[form.activeStep]] && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 2, mt: -1 }}
-            >
-              {STEP_DESCRIPTIONS[allSteps[form.activeStep]]}
-            </Typography>
-          )}
+      {form.activeStep === 1 && (
+        <AgentWizardDeployStep
+          deploymentMethod={form.deploymentMethod}
+          setDeploymentMethod={form.setDeploymentMethod}
+          containerImage={form.containerImage}
+          setContainerImage={form.setContainerImage}
+          imagePullSecret={form.imagePullSecret}
+          setImagePullSecret={form.setImagePullSecret}
+          gitUrl={form.gitUrl}
+          setGitUrl={form.setGitUrl}
+          gitBranch={form.gitBranch}
+          setGitBranch={form.setGitBranch}
+          gitPath={form.gitPath}
+          setGitPath={form.setGitPath}
+          registryUrl={form.registryUrl}
+          setRegistryUrl={form.setRegistryUrl}
+          registrySecret={form.registrySecret}
+          setRegistrySecret={form.setRegistrySecret}
+          imageTag={form.imageTag}
+          setImageTag={form.setImageTag}
+          startCommand={form.startCommand}
+          setStartCommand={form.setStartCommand}
+          buildStrategy={form.buildStrategy}
+          setBuildStrategy={form.setBuildStrategy}
+          buildStrategies={form.buildStrategies}
+          buildStrategyError={form.buildStrategyError}
+          dockerfile={form.dockerfile}
+          setDockerfile={form.setDockerfile}
+          buildTimeout={form.buildTimeout}
+          setBuildTimeout={form.setBuildTimeout}
+          buildArgRows={form.buildArgRows}
+          addBuildArgRow={form.addBuildArgRow}
+          updateBuildArgRow={form.updateBuildArgRow}
+          removeBuildArgRow={form.removeBuildArgRow}
+        />
+      )}
 
-          {form.submitError && !isBuildStep && (
-            <Alert
-              severity="error"
-              sx={{ mb: 2 }}
-              onClose={() => form.setSubmitError(null)}
-            >
-              {form.submitError}
-            </Alert>
-          )}
+      {form.activeStep === 2 && (
+        <AgentWizardRuntimeStep
+          workloadType={form.workloadType}
+          setWorkloadType={form.setWorkloadType}
+          envRows={form.envRows}
+          addEnvRow={form.addEnvRow}
+          updateEnvRow={form.updateEnvRow}
+          removeEnvRow={form.removeEnvRow}
+          duplicateEnvNames={form.duplicateEnvNames}
+          portRows={form.portRows}
+          addPortRow={form.addPortRow}
+          updatePortRow={form.updatePortRow}
+          removePortRow={form.removePortRow}
+          handlePortProtocol={form.handlePortProtocol}
+          portErrors={form.portErrors}
+          createHttpRoute={form.createHttpRoute}
+          setCreateHttpRoute={form.setCreateHttpRoute}
+          authBridgeEnabled={form.authBridgeEnabled}
+          setAuthBridgeEnabled={form.setAuthBridgeEnabled}
+          spireEnabled={form.spireEnabled}
+          setSpireEnabled={form.setSpireEnabled}
+        />
+      )}
 
-          {form.activeStep === 0 && (
-            <AgentWizardBasicsStep
-              name={form.name}
-              setName={form.setName}
-              namespace={form.namespace}
-              setNamespace={form.setNamespace}
-              protocol={form.protocol}
-              setProtocol={form.setProtocol}
-              framework={form.framework}
-              setFramework={form.setFramework}
-              nameError={form.nameError}
-              availableNamespaces={form.availableNamespaces}
-            />
-          )}
-
-          {form.activeStep === 1 && (
-            <AgentWizardDeployStep
-              deploymentMethod={form.deploymentMethod}
-              setDeploymentMethod={form.setDeploymentMethod}
-              containerImage={form.containerImage}
-              setContainerImage={form.setContainerImage}
-              imagePullSecret={form.imagePullSecret}
-              setImagePullSecret={form.setImagePullSecret}
-              gitUrl={form.gitUrl}
-              setGitUrl={form.setGitUrl}
-              gitBranch={form.gitBranch}
-              setGitBranch={form.setGitBranch}
-              gitPath={form.gitPath}
-              setGitPath={form.setGitPath}
-              registryUrl={form.registryUrl}
-              setRegistryUrl={form.setRegistryUrl}
-              registrySecret={form.registrySecret}
-              setRegistrySecret={form.setRegistrySecret}
-              imageTag={form.imageTag}
-              setImageTag={form.setImageTag}
-              startCommand={form.startCommand}
-              setStartCommand={form.setStartCommand}
-              buildStrategy={form.buildStrategy}
-              setBuildStrategy={form.setBuildStrategy}
-              buildStrategies={form.buildStrategies}
-              buildStrategyError={form.buildStrategyError}
-              dockerfile={form.dockerfile}
-              setDockerfile={form.setDockerfile}
-              buildTimeout={form.buildTimeout}
-              setBuildTimeout={form.setBuildTimeout}
-              buildArgRows={form.buildArgRows}
-              addBuildArgRow={form.addBuildArgRow}
-              updateBuildArgRow={form.updateBuildArgRow}
-              removeBuildArgRow={form.removeBuildArgRow}
-            />
-          )}
-
-          {form.activeStep === 2 && (
-            <AgentWizardRuntimeStep
-              workloadType={form.workloadType}
-              setWorkloadType={form.setWorkloadType}
-              envRows={form.envRows}
-              addEnvRow={form.addEnvRow}
-              updateEnvRow={form.updateEnvRow}
-              removeEnvRow={form.removeEnvRow}
-              duplicateEnvNames={form.duplicateEnvNames}
-              portRows={form.portRows}
-              addPortRow={form.addPortRow}
-              updatePortRow={form.updatePortRow}
-              removePortRow={form.removePortRow}
-              handlePortProtocol={form.handlePortProtocol}
-              portErrors={form.portErrors}
-              createHttpRoute={form.createHttpRoute}
-              setCreateHttpRoute={form.setCreateHttpRoute}
-              authBridgeEnabled={form.authBridgeEnabled}
-              setAuthBridgeEnabled={form.setAuthBridgeEnabled}
-              spireEnabled={form.spireEnabled}
-              setSpireEnabled={form.setSpireEnabled}
-            />
-          )}
-
-          {isBuildStep && (
-            <AgentWizardBuildStep
-              progress={form.buildProgress}
-              onRetry={form.handleRetryBuild}
-              onClose={form.handleCloseBuild}
-            />
-          )}
-        </DialogContent>
-
-        {!isBuildStep && (
-          <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
-            <Button
-              onClick={onClose}
-              disabled={form.submitting}
-              startIcon={
-                <Typography component="span" sx={{ fontSize: '1.1em' }}>
-                  &larr;
-                </Typography>
-              }
-              sx={{ textTransform: 'none' }}
-            >
-              {form.activeStep === 0 ? 'Back' : 'Cancel'}
-            </Button>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {form.activeStep > 0 && (
-                <Button
-                  onClick={form.handleBack}
-                  disabled={form.submitting}
-                  sx={{ textTransform: 'none' }}
-                >
-                  Back
-                </Button>
-              )}
-              {form.activeStep < FORM_STEPS.length - 1 ? (
-                <Button
-                  variant="contained"
-                  onClick={form.handleNext}
-                  disabled={form.submitting}
-                  sx={{ textTransform: 'none' }}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  onClick={form.handleSubmit}
-                  disabled={form.submitting}
-                  startIcon={
-                    form.submitting ? (
-                      <CircularProgress size={18} color="inherit" />
-                    ) : undefined
-                  }
-                  sx={{ textTransform: 'none' }}
-                >
-                  {form.submitting ? submittingLabel : submitLabel}
-                </Button>
-              )}
-            </Box>
-          </DialogActions>
-        )}
-      </Dialog>
-
-      <Snackbar
-        open={form.successOpen}
-        autoHideDuration={4000}
-        onClose={() => form.setSuccessOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => form.setSuccessOpen(false)}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          Agent created successfully.
-        </Alert>
-      </Snackbar>
-    </>
+      {isBuildStep && (
+        <AgentWizardBuildStep
+          progress={form.buildProgress}
+          onRetry={form.handleRetryBuild}
+          onClose={form.handleCloseBuild}
+        />
+      )}
+    </WizardShell>
   );
 }
