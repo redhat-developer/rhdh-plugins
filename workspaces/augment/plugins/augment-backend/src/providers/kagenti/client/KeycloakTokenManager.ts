@@ -26,7 +26,7 @@ const TOKEN_REQUEST_TIMEOUT_MS = 15_000;
 export interface KeycloakTokenManagerOptions {
   tokenEndpoint: string;
   clientId: string;
-  clientSecret: string;
+  clientSecret: string | (() => string);
   logger: LoggerService;
   skipTlsVerify?: boolean;
   tokenExpiryBufferSeconds?: number;
@@ -35,7 +35,7 @@ export interface KeycloakTokenManagerOptions {
 export class KeycloakTokenManager {
   private readonly tokenEndpoint: string;
   private readonly clientId: string;
-  private readonly clientSecret: string;
+  private readonly secretAccessor: () => string;
   private readonly logger: LoggerService;
   private readonly skipTlsVerify: boolean;
   private readonly tokenExpiryBufferSeconds: number;
@@ -48,7 +48,10 @@ export class KeycloakTokenManager {
   constructor(options: KeycloakTokenManagerOptions) {
     this.tokenEndpoint = options.tokenEndpoint;
     this.clientId = options.clientId;
-    this.clientSecret = options.clientSecret;
+    this.secretAccessor =
+      typeof options.clientSecret === 'function'
+        ? options.clientSecret
+        : () => options.clientSecret as string;
     this.logger = options.logger;
     this.skipTlsVerify = options.skipTlsVerify ?? false;
     this.tokenExpiryBufferSeconds =
@@ -97,7 +100,7 @@ export class KeycloakTokenManager {
     const body = new URLSearchParams({
       grant_type: 'client_credentials',
       client_id: this.clientId,
-      client_secret: this.clientSecret,
+      client_secret: this.secretAccessor(),
     }).toString();
 
     const url = new URL(this.tokenEndpoint);

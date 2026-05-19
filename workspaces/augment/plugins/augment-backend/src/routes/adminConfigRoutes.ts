@@ -25,6 +25,9 @@ import { validateAdminConfigValue } from '../services/utils/configValidation';
 import { loadBrandingOverrides } from '../providers/llamastack/BrandingConfigLoader';
 import { createWithRoute } from './routeWrapper';
 import type { AdminRouteDeps } from './adminRouteTypes';
+import { AuditLogger } from '../services/AuditLogger';
+
+const REDACTED_KEYS = new Set(['devSpacesToken']);
 
 export function registerAdminConfigRoutes(
   router: import('express').Router,
@@ -40,6 +43,7 @@ export function registerAdminConfigRoutes(
   } = deps;
 
   const withRoute = createWithRoute(logger, sendRouteError);
+  const audit = new AuditLogger(logger);
 
   router.get(
     '/admin/config',
@@ -105,10 +109,12 @@ export function registerAdminConfigRoutes(
           });
           return;
         }
+        const redacted = REDACTED_KEYS.has(validKey);
         res.json({
           success: true,
-          entry,
+          entry: redacted ? { ...entry, configValue: '**REDACTED**' } : entry,
           source: 'database',
+          ...(redacted && { redacted: true }),
           timestamp: new Date().toISOString(),
         });
       },
@@ -163,6 +169,14 @@ export function registerAdminConfigRoutes(
         } else {
           await adminConfig.set(validKey, value, userRef);
         }
+
+        audit.log({
+          action: 'config.update',
+          actor: userRef,
+          target: validKey,
+          outcome: 'success',
+          meta: { providerId },
+        });
 
         onConfigChanged?.();
 
@@ -302,6 +316,7 @@ export function registerAdminConfigRoutes(
         const providerId =
           (req.query.provider as string | undefined) ?? deps.provider.id;
 
+        const userRef = await getUserRef(req);
         let deleted: boolean;
         if (isProviderScopedKey(validKey)) {
           deleted = await adminConfig.deleteScopedValue(
@@ -311,6 +326,14 @@ export function registerAdminConfigRoutes(
         } else {
           deleted = await adminConfig.delete(validKey);
         }
+
+        audit.log({
+          action: 'config.delete',
+          actor: userRef,
+          target: validKey,
+          outcome: deleted ? 'success' : 'failure',
+          meta: { providerId },
+        });
 
         onConfigChanged?.();
 
@@ -362,6 +385,7 @@ export function registerAdminConfigRoutes(
           token: _t,
           skipTlsVerify: _s,
           functions: _f,
+          devSpacesToken: _dst,
           ...safeConfig
         } = effectiveConfig;
 

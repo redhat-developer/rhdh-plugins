@@ -16,6 +16,7 @@
 import { MAX_SESSION_LIST_LIMIT, MAX_SESSION_TITLE_LENGTH } from '../constants';
 import { createWithRoute, notFound } from './routeWrapper';
 import { type RouteContext, validateSessionId } from './types';
+import { AuditLogger } from '../services/AuditLogger';
 
 function safeJsonParse(value: string): unknown {
   try {
@@ -42,6 +43,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
   } = ctx;
 
   const withRoute = createWithRoute(logger, sendRouteError);
+  const audit = new AuditLogger(logger);
 
   router.get(
     '/sessions',
@@ -101,6 +103,12 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           model,
           providerId,
         );
+        audit.log({
+          action: 'session.create',
+          actor: userRef,
+          target: session.id,
+          outcome: 'success',
+        });
         res.json({ session });
       },
     ),
@@ -166,6 +174,12 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           req.params.sessionId,
           userRef,
         );
+        audit.log({
+          action: 'session.delete',
+          actor: userRef,
+          target: req.params.sessionId,
+          outcome: deleted ? 'success' : 'failure',
+        });
         res.json({ success: deleted });
       },
     ),
@@ -221,7 +235,12 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           notFound(res, 'Session');
           return;
         }
-        const messages = await sessions!.getMessages(req.params.sessionId);
+        const messages = await sessions!.getMessages(
+          req.params.sessionId,
+          undefined,
+          undefined,
+          userRef,
+        );
         const messagesByRole = {
           user: messages.filter(m => m.role === 'user').length,
           assistant: messages.filter(m => m.role === 'assistant').length,
@@ -333,6 +352,7 @@ export function registerSessionRoutes(ctx: RouteContext): void {
           req.params.sessionId,
           msgLimit,
           msgOffset,
+          userRef,
         );
 
         if (localMessages.length > 0) {

@@ -64,6 +64,7 @@ function setupSseStream(
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   res.flushHeaders();
 
   const clientDisconnectedRef = { current: false };

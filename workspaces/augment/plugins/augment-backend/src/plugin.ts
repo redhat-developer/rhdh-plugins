@@ -215,6 +215,29 @@ export const augmentPlugin = createBackendPlugin({
           );
         }
 
+        const retentionDays = config.getOptionalNumber(
+          'augment.sessions.retentionDays',
+        );
+        if (sessions && retentionDays && retentionDays > 0) {
+          await scheduler.scheduleTask({
+            id: 'augment-session-retention',
+            frequency: { hours: 24 },
+            timeout: { minutes: 10 },
+            initialDelay: { minutes: 5 },
+            fn: async () => {
+              const purged = await sessions.purgeExpiredSessions(retentionDays);
+              if (purged > 0) {
+                logger.info(
+                  `Session retention: purged ${purged} session(s) older than ${retentionDays} days`,
+                );
+              }
+            },
+          });
+          logger.info(
+            `Session retention enabled: sessions older than ${retentionDays} day(s) will be purged daily`,
+          );
+        }
+
         // Register HTTP routes
         httpRouter.use(
           await createRouter({

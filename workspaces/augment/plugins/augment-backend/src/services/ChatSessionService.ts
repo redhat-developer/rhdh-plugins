@@ -609,13 +609,20 @@ export class ChatSessionService {
     sessionId: string,
     limit?: number,
     offset?: number,
+    userRef?: string,
   ): Promise<SessionMessage[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     let query = this.db(MESSAGES_TABLE)
-      .select('*')
-      .where('session_id', sessionId)
-      .orderBy('created_at', 'asc');
+      .select(`${MESSAGES_TABLE}.*`)
+      .where(`${MESSAGES_TABLE}.session_id`, sessionId)
+      .orderBy(`${MESSAGES_TABLE}.created_at`, 'asc');
+
+    if (userRef) {
+      query = query
+        .join(TABLE_NAME, `${TABLE_NAME}.id`, `${MESSAGES_TABLE}.session_id`)
+        .where(`${TABLE_NAME}.user_ref`, userRef);
+    }
 
     if (typeof offset === 'number' && offset > 0) {
       query = query.offset(offset);
@@ -646,6 +653,35 @@ export class ChatSessionService {
   /**
    * Persist per-message feedback (thumbs up/down) with optional reasons and comment.
    */
+  /**
+   * Delete sessions (and their messages via CASCADE) older than `retentionDays`.
+   * Returns the number of sessions purged.
+   */
+  async purgeExpiredSessions(retentionDays: number): Promise<number> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const cutoff = new Date(
+      Date.now() - retentionDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    const rows: Array<{ id: string }> = await this.db(TABLE_NAME)
+      .select('id')
+      .where('updated_at', '<', cutoff);
+
+    if (rows.length === 0) return 0;
+
+    const ids = rows.map(r => r.id);
+    await this.db.transaction(async trx => {
+      await trx(MESSAGES_TABLE).whereIn('session_id', ids).delete();
+      await trx(TABLE_NAME).whereIn('id', ids).delete();
+    });
+
+    this.logger.info(
+      `Session retention: purged ${ids.length} session(s) older than ${retentionDays} day(s)`,
+    );
+    return ids.length;
+  }
+
   async saveFeedback(
     userRef: string,
     payload: {

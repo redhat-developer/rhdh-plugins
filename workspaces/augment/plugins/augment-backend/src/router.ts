@@ -104,6 +104,28 @@ export async function createRouter({
   const router = Router();
   router.use(express.json({ limit: '1mb' }));
 
+  router.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '0');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+  });
+
+  const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+  router.use((req, _res, next) => {
+    if (!MUTATING_METHODS.has(req.method)) {
+      next();
+      return;
+    }
+    if (!req.headers['x-backstage-request']) {
+      logger.debug(
+        `CSRF check: ${req.method} ${req.path} missing X-Backstage-Request header`,
+      );
+    }
+    next();
+  });
+
   // =============================================================================
   // Shared Helpers
   // =============================================================================

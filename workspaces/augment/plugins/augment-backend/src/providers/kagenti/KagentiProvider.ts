@@ -19,6 +19,7 @@ import type {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
+import pLimit from 'p-limit';
 import type {
   NormalizedStreamEvent,
   ChatAgent,
@@ -706,8 +707,9 @@ export class KagentiProvider implements AgenticProvider {
 
     const allItems: KagentiAgentSummary[] = [];
 
+    const limit = pLimit(5);
     const nsResults = await Promise.allSettled(
-      namespaces.map(ns => apiClient.listAgents(ns)),
+      namespaces.map(ns => limit(() => apiClient.listAgents(ns))),
     );
     for (let i = 0; i < nsResults.length; i++) {
       const r = nsResults[i];
