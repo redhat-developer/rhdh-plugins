@@ -253,7 +253,11 @@ export function CreateToolWizard({
             <Button
               onClick={onClose}
               disabled={form.submitting}
-              startIcon={<span style={{ fontSize: '1.1em' }}>&larr;</span>}
+              startIcon={
+                <Typography component="span" sx={{ fontSize: '1.1em' }}>
+                  &larr;
+                </Typography>
+              }
               sx={{ textTransform: 'none' }}
             >
               {form.activeStep === 0 ? 'Back' : 'Cancel'}

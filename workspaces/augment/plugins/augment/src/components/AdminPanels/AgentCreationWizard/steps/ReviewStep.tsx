@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -32,13 +32,7 @@ interface ReviewStepProps {
   formData: AgentWizardFormData;
 }
 
-function ReviewRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function ReviewRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <TableRow>
       <TableCell

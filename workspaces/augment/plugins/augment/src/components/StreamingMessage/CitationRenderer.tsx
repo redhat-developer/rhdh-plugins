@@ -115,7 +115,7 @@ export const CitationRenderer: React.FC<CitationRendererProps> = ({
                     >
                       {idx + 1}
                     </Box>
-                    <span>{label}</span>
+                    <Typography component="span">{label}</Typography>
                     {citation.url && (
                       <OpenInNewIcon sx={{ fontSize: 10, ml: 0.25 }} />
                     )}

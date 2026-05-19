@@ -825,7 +825,7 @@ export function PreviewChatPanel({
           }}
         >
           <Tooltip title="Attach file (coming soon)">
-            <span>
+            <Box component="span">
               <IconButton
                 size="small"
                 disabled
@@ -833,7 +833,7 @@ export function PreviewChatPanel({
               >
                 <AttachFileIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </span>
+            </Box>
           </Tooltip>
           <TextField
             variant="standard"

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
@@ -47,7 +47,7 @@ const ROLE_CHIP_CONFIG: Record<
   standalone: { label: 'Standalone', color: 'default' },
 };
 
-export const AgentListItem = React.memo(function AgentListItem({
+export const AgentListItem = memo(function AgentListItem({
   agentKey,
   agent,
   isSelected,

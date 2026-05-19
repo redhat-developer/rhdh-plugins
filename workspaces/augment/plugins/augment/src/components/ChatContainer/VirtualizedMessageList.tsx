@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import type { Message } from '../../types';
 import { ChatMessage } from '../ChatMessage';

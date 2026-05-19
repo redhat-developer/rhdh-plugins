@@ -343,10 +343,13 @@ export function SchemaInvokeForm({
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {prop.name}
                         {prop.required && (
-                          <span style={{ color: theme.palette.error.main }}>
+                          <Typography
+                            component="span"
+                            sx={{ color: theme.palette.error.main }}
+                          >
                             {' '}
                             *
-                          </span>
+                          </Typography>
                         )}
                       </Typography>
                       {prop.description && (

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -54,7 +54,7 @@ const EMPTY_SX = {
 
 const noop = () => {};
 
-export const LivePreview: React.FC<LivePreviewProps> = ({ open, groups }) => {
+export const LivePreview: FC<LivePreviewProps> = ({ open, groups }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const validGroups = groups.filter(g => g.cards.length > 0);
