@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { ReactNode, createElement } from 'react';
 // eslint-disable-next-line @backstage/no-undeclared-imports
 import { TestApiProvider } from '@backstage/test-utils';
 import { augmentApiRef, type AugmentApi } from '../api';
@@ -52,8 +52,8 @@ export function createMockApi(
  * Creates a React wrapper component that provides a mocked AugmentApi.
  */
 export function createApiWrapper(api: Partial<AugmentApi>) {
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(TestApiProvider, {
+  return ({ children }: { children: ReactNode }) =>
+    createElement(TestApiProvider, {
       apis: [[augmentApiRef, api as AugmentApi]] as [
         typeof augmentApiRef,
         AugmentApi,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -42,7 +42,7 @@ interface SingleAgentStepperProps {
   editor: AgentEditorState;
 }
 
-export const SingleAgentStepper = React.memo(function SingleAgentStepper({
+export const SingleAgentStepper = memo(function SingleAgentStepper({
   editor,
 }: SingleAgentStepperProps) {
   const theme = useTheme();
@@ -295,7 +295,7 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
                     : ''
                 }
               >
-                <span>
+                <Box component="span">
                   <Button
                     variant="contained"
                     size="small"
@@ -305,7 +305,7 @@ export const SingleAgentStepper = React.memo(function SingleAgentStepper({
                   >
                     Continue
                   </Button>
-                </span>
+                </Box>
               </Tooltip>
             </Box>
           )}

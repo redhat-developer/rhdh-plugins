@@ -316,13 +316,13 @@ export function EditorCanvas({
           }}
         >
           <Tooltip title="Fit view">
-            <span>
+            <Box component="span">
               <CanvasControl
                 icon={<FitScreenIcon />}
                 label="Fit view"
                 action="fitView"
               />
-            </span>
+            </Box>
           </Tooltip>
           <Tooltip title="Select tool">
             <IconButton size="small" aria-label="Select" sx={{ p: 0.5 }}>
@@ -330,7 +330,7 @@ export function EditorCanvas({
             </IconButton>
           </Tooltip>
           <Tooltip title="Undo (Ctrl+Z)">
-            <span>
+            <Box component="span">
               <IconButton
                 size="small"
                 aria-label="Undo"
@@ -340,10 +340,10 @@ export function EditorCanvas({
               >
                 <UndoIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </span>
+            </Box>
           </Tooltip>
           <Tooltip title="Redo (Ctrl+Shift+Z)">
-            <span>
+            <Box component="span">
               <IconButton
                 size="small"
                 aria-label="Redo"
@@ -353,7 +353,7 @@ export function EditorCanvas({
               >
                 <RedoIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </span>
+            </Box>
           </Tooltip>
         </Box>
       )}

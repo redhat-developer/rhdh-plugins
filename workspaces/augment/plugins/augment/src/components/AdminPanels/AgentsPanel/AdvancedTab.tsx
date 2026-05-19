@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -38,7 +38,7 @@ interface AdvancedTabProps {
   ) => void;
 }
 
-export const AdvancedTab = React.memo(function AdvancedTab({
+export const AdvancedTab = memo(function AdvancedTab({
   agent,
   agentKey,
   onUpdateAgent,

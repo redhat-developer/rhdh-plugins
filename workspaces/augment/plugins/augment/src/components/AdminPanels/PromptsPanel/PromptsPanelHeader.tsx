@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -49,7 +49,7 @@ const ACTIONS_SX = {
   flexShrink: 0,
 } as const;
 
-export const PromptsPanelHeader: React.FC<PromptsPanelHeaderProps> = ({
+export const PromptsPanelHeader: FC<PromptsPanelHeaderProps> = ({
   source,
   dirty,
   saving,

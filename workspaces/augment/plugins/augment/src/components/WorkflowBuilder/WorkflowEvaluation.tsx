@@ -624,7 +624,7 @@ export function WorkflowEvaluation({
               {running ? 'Running...' : 'Run Evaluation'}
             </Button>
             <Tooltip title="Save current test cases as a reusable LlamaStack benchmark">
-              <span>
+              <Box component="span">
                 <Button
                   size="small"
                   variant="outlined"
@@ -638,7 +638,7 @@ export function WorkflowEvaluation({
                 >
                   Save as Benchmark
                 </Button>
-              </span>
+              </Box>
             </Tooltip>
             <TextField
               size="small"

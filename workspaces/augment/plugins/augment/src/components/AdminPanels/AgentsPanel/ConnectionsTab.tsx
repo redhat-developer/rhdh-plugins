@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -41,7 +41,7 @@ interface ConnectionsTabProps {
   onSelectAgent: (key: string) => void;
 }
 
-export const ConnectionsTab = React.memo(function ConnectionsTab({
+export const ConnectionsTab = memo(function ConnectionsTab({
   agents,
   agentKeys,
   selectedAgentKey,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -49,7 +49,7 @@ interface AgentEditorToolbarProps {
   onSave: () => void;
 }
 
-export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
+export const AgentEditorToolbar = memo(function AgentEditorToolbar({
   agents,
   agentKeys,
   defaultAgentKey,
@@ -145,7 +145,7 @@ export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
             : ''
         }
       >
-        <span>
+        <Box component="span">
           <Button
             variant="contained"
             size="small"
@@ -167,7 +167,7 @@ export const AgentEditorToolbar = React.memo(function AgentEditorToolbar({
           >
             {saveSuccess ? 'Saved' : 'Save'}
           </Button>
-        </span>
+        </Box>
       </Tooltip>
     </Box>
   );

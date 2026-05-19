@@ -1767,7 +1767,7 @@ const AgentRow: FC<AgentRowProps> = ({
             config.featured ? 'Remove from featured' : 'Feature on welcome'
           }
         >
-          <span>
+          <Box component="span">
             <IconButton
               size="small"
               disabled={stage !== 'production'}
@@ -1785,7 +1785,7 @@ const AgentRow: FC<AgentRowProps> = ({
                 <StarBorderIcon sx={{ fontSize: 16 }} />
               )}
             </IconButton>
-          </span>
+          </Box>
         </Tooltip>
 
         {/* Expand */}

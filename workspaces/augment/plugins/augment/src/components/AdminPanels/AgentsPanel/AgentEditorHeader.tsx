@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -35,7 +35,7 @@ interface AgentEditorHeaderProps {
   onTogglePreview: () => void;
 }
 
-export const AgentEditorHeader = React.memo(function AgentEditorHeader({
+export const AgentEditorHeader = memo(function AgentEditorHeader({
   isSingleAgentMode,
   autoCreate,
   agentName,
