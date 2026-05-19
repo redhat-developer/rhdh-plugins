@@ -20,6 +20,7 @@ import { styled } from '@mui/material/styles';
 
 import type { PieData as PieDataProps } from '../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedStatus } from '../../utils';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -106,15 +107,7 @@ const CustomLegend = (props: CustomLegendProps) => {
               variant="body2"
               sx={{ fontSize: '0.875rem', fontWeight: 400 }}
             >
-              {(() => {
-                const translated = t(`thresholds.${category.name}` as any, {});
-                const label =
-                  typeof translated === 'string' &&
-                  translated.startsWith('thresholds.')
-                    ? category.name
-                    : translated;
-                return label.charAt(0).toUpperCase() + label.slice(1);
-              })()}
+              {getTranslatedStatus(category.name, t)}
             </Typography>
           </StyledLegendItem>
         );

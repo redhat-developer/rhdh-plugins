@@ -25,6 +25,7 @@ import { styled, useTheme } from '@mui/material/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
+  getTranslatedStatus,
   getThresholdRuleColor,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
@@ -93,13 +94,7 @@ const CustomLegend = (props: CustomLegendProps) => {
                 variant="body2"
                 sx={{ fontSize: '0.875rem', fontWeight: 400 }}
               >
-                {(() => {
-                  const translated = t(`thresholds.${ruleKey}` as any, {});
-                  // If translation returns the ruleKey itself, fallback to capitalized ruleKey
-                  return translated === `thresholds.${ruleKey}`
-                    ? ruleKey.charAt(0).toUpperCase() + ruleKey.slice(1)
-                    : translated;
-                })()}
+                {getTranslatedStatus(ruleKey, t)}
                 {ruleExpression &&
                   !/^==(?:true|false)$/.test(ruleExpression) &&
                   ` ${ruleExpression}`}

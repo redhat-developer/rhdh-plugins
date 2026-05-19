@@ -21,6 +21,7 @@ import Typography from '@mui/material/Typography';
 
 import { TooltipContent, formatAggregationScoreDetail } from './TooltipContent';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { getTranslatedStatus } from '../../../utils';
 
 export const DonutChartTooltipContent = ({
   weightedSum,
@@ -32,16 +33,6 @@ export const DonutChartTooltipContent = ({
   statusValues?: AggregatedMetricValue[];
 }) => {
   const { t } = useTranslation();
-
-  const getStatus = (status: string) => {
-    const translatedStatus = t(`thresholds.${status}` as any, {});
-
-    if (translatedStatus === `thresholds.${status}` && status) {
-      return status.charAt(0).toUpperCase() + status.slice(1);
-    }
-
-    return translatedStatus;
-  };
 
   return (
     <Stack spacing={0.5} sx={{ minWidth: 220 }}>
@@ -72,7 +63,7 @@ export const DonutChartTooltipContent = ({
               >
                 {t('metric.averageCenterTooltipBreakdownRow', {
                   count: row.count,
-                  status: getStatus(row.name),
+                  status: getTranslatedStatus(row.name, t),
                   score: formatAggregationScoreDetail(row.score ?? 0),
                 } as any)}
               </Typography>

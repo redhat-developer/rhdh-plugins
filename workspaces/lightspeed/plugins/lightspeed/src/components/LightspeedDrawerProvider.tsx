@@ -16,16 +16,11 @@
 
 import { PropsWithChildren } from 'react';
 
-import { StylesProvider as StylesProviderV4 } from '@material-ui/core/styles';
-import { makeStyles, StylesProvider } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
-import {
-  generateClassName,
-  generateClassNameV4,
-} from '../utils/generateClassName';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
@@ -44,7 +39,10 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const LightspeedDrawerProviderInner = ({ children }: PropsWithChildren) => {
+/**
+ * @public
+ */
+export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const classes = useStyles();
   const { contextValue, shouldRenderOverlayModal, closeChatbot } =
     useLightspeedProviderState();
@@ -68,14 +66,3 @@ const LightspeedDrawerProviderInner = ({ children }: PropsWithChildren) => {
     </LightspeedDrawerContext.Provider>
   );
 };
-
-/**
- * @public
- */
-export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => (
-  <StylesProvider generateClassName={generateClassName}>
-    <StylesProviderV4 generateClassName={generateClassNameV4}>
-      <LightspeedDrawerProviderInner>{children}</LightspeedDrawerProviderInner>
-    </StylesProviderV4>
-  </StylesProvider>
-);

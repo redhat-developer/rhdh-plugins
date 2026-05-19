@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-common
 
+## 0.1.2
+
+### Patch Changes
+
+- faf1cbd: Make default widgets response optional when no widgets are configured, so that no widget is shown when no conditional widget can be shown.
+
 ## 0.1.1
 
 ### Patch Changes
