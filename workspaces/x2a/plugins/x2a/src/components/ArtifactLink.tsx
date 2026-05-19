@@ -50,18 +50,18 @@ export const ArtifactLink = ({
     return t('module.phases.none');
   }
 
-  const url =
-    artifact.type === ArtifactKind.ANSIBLE_PROJECT.toString()
-      ? artifact.value
-      : buildArtifactUrl(
-          artifact.value,
-          targetRepoUrl,
-          targetRepoBranch,
-          hostMap,
-        );
+  const kind = ArtifactKind.from(artifact.type);
+  const url = kind.isAnsibleProject()
+    ? artifact.value
+    : buildArtifactUrl(
+        artifact.value,
+        targetRepoUrl,
+        targetRepoBranch,
+        hostMap,
+      );
   return (
     <ExternalLink to={url} className={classes.artifact}>
-      {humanizeArtifactType(t, artifact.type)}
+      {humanizeArtifactType(t, kind)}
     </ExternalLink>
   );
 };

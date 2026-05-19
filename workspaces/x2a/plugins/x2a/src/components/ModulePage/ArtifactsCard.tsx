@@ -39,13 +39,13 @@ export const ArtifactsCard = ({
 }) => {
   const { t } = useTranslation();
   const moduleMigrationPlanArtifact = module?.analyze?.artifacts?.find(
-    artifact => artifact.type === ArtifactKind.MODULE_MIGRATION_PLAN.toString(),
+    artifact => ArtifactKind.from(artifact.type).isModuleMigrationPlan(),
   );
-  const migratedSourcesArtifact = module?.migrate?.artifacts?.find(
-    artifact => artifact.type === ArtifactKind.MIGRATED_SOURCES.toString(),
+  const migratedSourcesArtifact = module?.migrate?.artifacts?.find(artifact =>
+    ArtifactKind.from(artifact.type).isMigratedSources(),
   );
-  const ansibleProjectArtifact = module?.publish?.artifacts?.find(
-    artifact => artifact.type === ArtifactKind.ANSIBLE_PROJECT.toString(),
+  const ansibleProjectArtifact = module?.publish?.artifacts?.find(artifact =>
+    ArtifactKind.from(artifact.type).isAnsibleProject(),
   );
 
   return (
