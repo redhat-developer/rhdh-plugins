@@ -1928,10 +1928,15 @@ export const LightspeedChat = ({
               minHeight: theme.spacing(6),
               paddingLeft: theme.spacing(2),
               paddingRight: theme.spacing(2),
+              '& .MuiTabs-flexContainer': {
+                gap: theme.spacing(2),
+              },
               '& [role="tab"]': {
                 fontWeight: 700,
                 textTransform: 'none',
                 opacity: 1,
+                padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+                borderRadius: theme.spacing(0.5),
                 '&:not([aria-selected="true"])': {
                   color: `${theme.palette.text.primary} !important`,
                 },
