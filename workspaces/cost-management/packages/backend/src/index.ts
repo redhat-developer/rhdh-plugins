@@ -42,6 +42,8 @@ backend.add(
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // permission plugin
+backend.add(import('@backstage/plugin-permission-backend'));
+// rbac provides the policy implementation for the permission plugin
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // search plugin
