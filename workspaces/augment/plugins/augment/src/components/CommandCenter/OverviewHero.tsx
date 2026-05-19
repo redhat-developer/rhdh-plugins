@@ -40,7 +40,7 @@ export function OverviewHero({
   const isDark = theme.palette.mode === 'dark';
 
   const ratio = total > 0 ? ready / total : 1;
-  let statusColor = STATUS_COLORS.critical;
+  let statusColor: string = STATUS_COLORS.critical;
   if (ratio >= 1) statusColor = STATUS_COLORS.healthy;
   else if (ratio >= 0.7) statusColor = STATUS_COLORS.warning;
   let statusLabel = 'Critical';
