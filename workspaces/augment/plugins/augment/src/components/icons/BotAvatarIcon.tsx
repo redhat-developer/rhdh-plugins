@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, memo, type FC } from 'react';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { sanitizeBrandingUrl } from '../../theme/branding';
 
@@ -27,7 +27,7 @@ interface BotAvatarIconProps {
  * Renders a custom bot avatar image when configured via branding,
  * falling back to the default AutoAwesomeOutlined (sparkle) icon.
  */
-export const BotAvatarIcon: React.FC<BotAvatarIconProps> = React.memo(
+export const BotAvatarIcon: FC<BotAvatarIconProps> = memo(
   function BotAvatarIcon({ botAvatarUrl, fontSize = 18 }) {
     const [imgError, setImgError] = useState(false);
     const prevUrlRef = useRef(botAvatarUrl);

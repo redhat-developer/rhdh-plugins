@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -39,7 +39,7 @@ interface TopologyGraphProps {
   onSelectAgent: (key: string) => void;
 }
 
-export const TopologyGraph = React.memo(function TopologyGraph({
+export const TopologyGraph = memo(function TopologyGraph({
   agents,
   edges,
   agentRoles,

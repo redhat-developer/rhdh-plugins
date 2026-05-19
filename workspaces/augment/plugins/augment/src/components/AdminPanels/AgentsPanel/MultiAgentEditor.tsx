@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -44,7 +44,7 @@ interface MultiAgentEditorProps {
   editor: AgentEditorState;
 }
 
-export const MultiAgentEditor = React.memo(function MultiAgentEditor({
+export const MultiAgentEditor = memo(function MultiAgentEditor({
   editor,
 }: MultiAgentEditorProps) {
   const theme = useTheme();

@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useRef, useState, useEffect, useCallback } from 'react';
+import {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  memo,
+  Fragment,
+  type RefObject,
+} from 'react';
 import Box from '@mui/material/Box';
 import type { Message } from '../../types';
 import { ChatMessage } from '../ChatMessage';
@@ -32,7 +40,7 @@ interface VirtualizedMessageListProps {
   /** Index of the message highlighted by keyboard navigation (-1 = none). */
   selectedMessageIndex?: number;
   /** Scroll container ref for IntersectionObserver root. */
-  scrollRoot?: React.RefObject<HTMLElement | null>;
+  scrollRoot?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -44,185 +52,115 @@ interface VirtualizedMessageListProps {
  * The last OVERSCAN messages are always rendered to keep the active
  * conversation area responsive.
  */
-export const VirtualizedMessageList = React.memo(
-  function VirtualizedMessageList({
-    messages,
-    onRegenerate,
-    onEditMessage,
-    onFeedback,
-    onInspect,
-    selectedMessageIndex = -1,
-    scrollRoot,
-  }: VirtualizedMessageListProps) {
-    const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
-    const heightMapRef = useRef<Map<string, number>>(new Map());
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const nodeMapRef = useRef<Map<string, HTMLDivElement>>(new Map());
+export const VirtualizedMessageList = memo(function VirtualizedMessageList({
+  messages,
+  onRegenerate,
+  onEditMessage,
+  onFeedback,
+  onInspect,
+  selectedMessageIndex = -1,
+  scrollRoot,
+}: VirtualizedMessageListProps) {
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
+  const heightMapRef = useRef<Map<string, number>>(new Map());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const nodeMapRef = useRef<Map<string, HTMLDivElement>>(new Map());
 
-    const sessionKey = messages[0]?.id;
-    useEffect(() => {
-      setVisibleIds(new Set());
-      heightMapRef.current.clear();
-    }, [sessionKey]);
+  const sessionKey = messages[0]?.id;
+  useEffect(() => {
+    setVisibleIds(new Set());
+    heightMapRef.current.clear();
+  }, [sessionKey]);
 
-    const lastAssistantIndex = messages.reduce(
-      (acc, m, i) => (!m.isUser ? i : acc),
-      -1,
-    );
+  const lastAssistantIndex = messages.reduce(
+    (acc, m, i) => (!m.isUser ? i : acc),
+    -1,
+  );
 
-    const alwaysVisibleStart = Math.max(0, messages.length - OVERSCAN);
+  const alwaysVisibleStart = Math.max(0, messages.length - OVERSCAN);
 
-    const observeNode = useCallback(
-      (id: string, node: HTMLDivElement | null) => {
-        if (node) {
-          nodeMapRef.current.set(id, node);
-          observerRef.current?.observe(node);
-        } else {
-          const prev = nodeMapRef.current.get(id);
-          if (prev) observerRef.current?.unobserve(prev);
-          nodeMapRef.current.delete(id);
-        }
-      },
-      [],
-    );
+  const observeNode = useCallback((id: string, node: HTMLDivElement | null) => {
+    if (node) {
+      nodeMapRef.current.set(id, node);
+      observerRef.current?.observe(node);
+    } else {
+      const prev = nodeMapRef.current.get(id);
+      if (prev) observerRef.current?.unobserve(prev);
+      nodeMapRef.current.delete(id);
+    }
+  }, []);
 
-    useEffect(() => {
-      observerRef.current = new IntersectionObserver(
-        entries => {
-          setVisibleIds(prev => {
-            const next = new Set(prev);
-            let changed = false;
-            for (const entry of entries) {
-              const id = (entry.target as HTMLElement).dataset.msgId;
-              if (!id) continue;
-              if (entry.isIntersecting) {
-                if (!next.has(id)) {
-                  next.add(id);
-                  changed = true;
-                }
-                heightMapRef.current.set(
-                  id,
-                  entry.target.getBoundingClientRect().height,
-                );
-              } else {
-                if (next.has(id)) {
-                  next.delete(id);
-                  changed = true;
-                }
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        setVisibleIds(prev => {
+          const next = new Set(prev);
+          let changed = false;
+          for (const entry of entries) {
+            const id = (entry.target as HTMLElement).dataset.msgId;
+            if (!id) continue;
+            if (entry.isIntersecting) {
+              if (!next.has(id)) {
+                next.add(id);
+                changed = true;
+              }
+              heightMapRef.current.set(
+                id,
+                entry.target.getBoundingClientRect().height,
+              );
+            } else {
+              if (next.has(id)) {
+                next.delete(id);
+                changed = true;
               }
             }
-            return changed ? next : prev;
-          });
-        },
-        {
-          root: scrollRoot?.current ?? null,
-          rootMargin: '200px 0px',
-        },
-      );
+          }
+          return changed ? next : prev;
+        });
+      },
+      {
+        root: scrollRoot?.current ?? null,
+        rootMargin: '200px 0px',
+      },
+    );
 
-      return () => {
-        observerRef.current?.disconnect();
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scrollRoot?.current]);
-
-    function getPreviousAssistantAgent(index: number): string | undefined {
-      for (let i = index - 1; i >= 0; i--) {
-        if (!messages[i].isUser) return messages[i].agentName;
-      }
-      return undefined;
-    }
-
-    const highlightSx = {
-      outline: '2px solid',
-      outlineColor: 'primary.main',
-      outlineOffset: 2,
-      borderRadius: 1,
-      transition: 'outline-color 0.15s',
+    return () => {
+      observerRef.current?.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollRoot?.current]);
 
-    if (messages.length <= 30) {
-      return (
-        <>
-          {messages.map((message, index) => {
-            const isLastAssistant =
-              !message.isUser && index === lastAssistantIndex;
-            const showHandoff =
-              !message.isUser &&
-              !!message.agentName &&
-              message.agentName !== getPreviousAssistantAgent(index);
-            const isSelected = index === selectedMessageIndex;
-            return (
-              <React.Fragment key={message.id}>
-                {showHandoff && (
-                  <HandoffDivider agentName={message.agentName!} />
-                )}
-                <Box
-                  data-msg-index={index}
-                  sx={isSelected ? highlightSx : undefined}
-                >
-                  <ChatMessage
-                    message={message}
-                    isLastAssistantMessage={isLastAssistant}
-                    onRegenerate={isLastAssistant ? onRegenerate : undefined}
-                    onEditMessage={message.isUser ? onEditMessage : undefined}
-                    onFeedback={message.isUser ? undefined : onFeedback}
-                    onInspect={onInspect}
-                  />
-                </Box>
-              </React.Fragment>
-            );
-          })}
-        </>
-      );
+  function getPreviousAssistantAgent(index: number): string | undefined {
+    for (let i = index - 1; i >= 0; i--) {
+      if (!messages[i].isUser) return messages[i].agentName;
     }
+    return undefined;
+  }
 
+  const highlightSx = {
+    outline: '2px solid',
+    outlineColor: 'primary.main',
+    outlineOffset: 2,
+    borderRadius: 1,
+    transition: 'outline-color 0.15s',
+  };
+
+  if (messages.length <= 30) {
     return (
       <>
         {messages.map((message, index) => {
-          const isAlwaysVisible = index >= alwaysVisibleStart;
-          const isVisible = isAlwaysVisible || visibleIds.has(message.id);
           const isLastAssistant =
             !message.isUser && index === lastAssistantIndex;
-
-          if (!isVisible) {
-            const h =
-              heightMapRef.current.get(message.id) ?? PLACEHOLDER_HEIGHT;
-            const showPlaceholderHandoff =
-              !message.isUser &&
-              !!message.agentName &&
-              message.agentName !== getPreviousAssistantAgent(index);
-            return (
-              <React.Fragment key={message.id}>
-                {showPlaceholderHandoff && (
-                  <HandoffDivider agentName={message.agentName!} />
-                )}
-                <Box
-                  data-msg-id={message.id}
-                  ref={(node: HTMLDivElement | null) =>
-                    observeNode(message.id, node)
-                  }
-                  sx={{ height: h, flexShrink: 0 }}
-                />
-              </React.Fragment>
-            );
-          }
-
           const showHandoff =
             !message.isUser &&
             !!message.agentName &&
             message.agentName !== getPreviousAssistantAgent(index);
-
           const isSelected = index === selectedMessageIndex;
           return (
-            <React.Fragment key={message.id}>
+            <Fragment key={message.id}>
               {showHandoff && <HandoffDivider agentName={message.agentName!} />}
               <Box
-                data-msg-id={message.id}
                 data-msg-index={index}
-                ref={(node: HTMLDivElement | null) =>
-                  observeNode(message.id, node)
-                }
                 sx={isSelected ? highlightSx : undefined}
               >
                 <ChatMessage
@@ -234,10 +172,71 @@ export const VirtualizedMessageList = React.memo(
                   onInspect={onInspect}
                 />
               </Box>
-            </React.Fragment>
+            </Fragment>
           );
         })}
       </>
     );
-  },
-);
+  }
+
+  return (
+    <>
+      {messages.map((message, index) => {
+        const isAlwaysVisible = index >= alwaysVisibleStart;
+        const isVisible = isAlwaysVisible || visibleIds.has(message.id);
+        const isLastAssistant = !message.isUser && index === lastAssistantIndex;
+
+        if (!isVisible) {
+          const h = heightMapRef.current.get(message.id) ?? PLACEHOLDER_HEIGHT;
+          const showPlaceholderHandoff =
+            !message.isUser &&
+            !!message.agentName &&
+            message.agentName !== getPreviousAssistantAgent(index);
+          return (
+            <Fragment key={message.id}>
+              {showPlaceholderHandoff && (
+                <HandoffDivider agentName={message.agentName!} />
+              )}
+              <Box
+                data-msg-id={message.id}
+                ref={(node: HTMLDivElement | null) =>
+                  observeNode(message.id, node)
+                }
+                sx={{ height: h, flexShrink: 0 }}
+              />
+            </Fragment>
+          );
+        }
+
+        const showHandoff =
+          !message.isUser &&
+          !!message.agentName &&
+          message.agentName !== getPreviousAssistantAgent(index);
+
+        const isSelected = index === selectedMessageIndex;
+        return (
+          <Fragment key={message.id}>
+            {showHandoff && <HandoffDivider agentName={message.agentName!} />}
+            <Box
+              data-msg-id={message.id}
+              data-msg-index={index}
+              ref={(node: HTMLDivElement | null) =>
+                observeNode(message.id, node)
+              }
+              sx={isSelected ? highlightSx : undefined}
+            >
+              <ChatMessage
+                message={message}
+                isLastAssistantMessage={isLastAssistant}
+                onRegenerate={isLastAssistant ? onRegenerate : undefined}
+                onEditMessage={message.isUser ? onEditMessage : undefined}
+                onFeedback={message.isUser ? undefined : onFeedback}
+                onInspect={onInspect}
+              />
+            </Box>
+          </Fragment>
+        );
+      })}
+    </>
+  );
+});
