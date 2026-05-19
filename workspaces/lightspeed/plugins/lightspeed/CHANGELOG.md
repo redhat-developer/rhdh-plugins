@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.9.0
+
+### Minor Changes
+
+- 824efa9: documents cannot be uploaded when a document processing is in progress
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
 ## 2.8.5
 
 ### Patch Changes
