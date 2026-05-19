@@ -1,3 +1,19 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -144,7 +160,7 @@ export function PreviewChatPanel({
   const handleCopyMessage = useCallback(
     async (idx: number) => {
       try {
-        await navigator.clipboard.writeText(messages[idx].content);
+        await window.navigator.clipboard.writeText(messages[idx].content);
         setCopiedIdx(idx);
         setTimeout(() => setCopiedIdx(null), 1500);
       } catch {
@@ -194,9 +210,13 @@ export function PreviewChatPanel({
       let sseBuffer = '';
       let accumulatedText = '';
 
-      while (true) {
+      let readerDone = false;
+      while (!readerDone) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          readerDone = true;
+          continue;
+        }
 
         const chunk = decoder.decode(value, { stream: true });
         const { events, remaining } = parseSSELines(chunk, sseBuffer);
@@ -264,6 +284,8 @@ export function PreviewChatPanel({
               case 'workflow.completed':
                 setStreamStatus({ phase: 'done' });
                 break;
+              default:
+                break;
             }
           } catch {
             // Skip unparseable events
@@ -291,7 +313,7 @@ export function PreviewChatPanel({
       setStreamingText('');
       abortRef.current = null;
     }
-  }, [input, loading, workflowId, configApi, streamingText]);
+  }, [input, loading, workflowId, configApi, authFetch, streamingText]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -345,6 +367,8 @@ export function PreviewChatPanel({
             sx={{ fontSize: 14, color: theme.palette.success.main }}
           />
         );
+        break;
+      default:
         break;
     }
 
@@ -564,6 +588,28 @@ export function PreviewChatPanel({
                 minute: '2-digit',
               });
 
+              let bubbleBg: string;
+              if (msg.role === 'user') {
+                bubbleBg = isDark
+                  ? alpha(theme.palette.primary.main, 0.15)
+                  : alpha(theme.palette.primary.main, 0.08);
+              } else {
+                bubbleBg = isDark
+                  ? alpha(theme.palette.common.white, 0.05)
+                  : alpha(theme.palette.common.black, 0.03);
+              }
+
+              let bubbleBorder: string;
+              if (msg.role === 'user') {
+                bubbleBorder = isDark
+                  ? alpha(theme.palette.primary.main, 0.3)
+                  : alpha(theme.palette.primary.main, 0.2);
+              } else {
+                bubbleBorder = isDark
+                  ? alpha(theme.palette.common.white, 0.1)
+                  : alpha(theme.palette.common.black, 0.08);
+              }
+
               return (
                 <Box
                   key={i}
@@ -636,23 +682,9 @@ export function PreviewChatPanel({
                         msg.role === 'user'
                           ? '12px 12px 2px 12px'
                           : '12px 12px 12px 2px',
-                      bgcolor:
-                        msg.role === 'user'
-                          ? isDark
-                            ? alpha(theme.palette.primary.main, 0.15)
-                            : alpha(theme.palette.primary.main, 0.08)
-                          : isDark
-                            ? alpha(theme.palette.common.white, 0.05)
-                            : alpha(theme.palette.common.black, 0.03),
+                      bgcolor: bubbleBg,
                       border: '1px solid',
-                      borderColor:
-                        msg.role === 'user'
-                          ? isDark
-                            ? alpha(theme.palette.primary.main, 0.3)
-                            : alpha(theme.palette.primary.main, 0.2)
-                          : isDark
-                            ? alpha(theme.palette.common.white, 0.1)
-                            : alpha(theme.palette.common.black, 0.08),
+                      borderColor: bubbleBorder,
                     }}
                   >
                     {msg.role === 'assistant' ? (

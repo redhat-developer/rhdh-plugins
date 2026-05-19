@@ -237,6 +237,7 @@ export function executeLogicNode(
   try {
     const keys = Object.keys(state);
     const values = Object.values(state);
+    // eslint-disable-next-line no-new-func
     const fn = new Function(...keys, `return Boolean(${condition})`);
     result = fn(...values);
   } catch {
@@ -273,6 +274,7 @@ export function executeTransformNode(
   try {
     const keys = Object.keys(state);
     const values = Object.values(state);
+    // eslint-disable-next-line no-new-func
     const fn = new Function(...keys, `return (${expression})`);
     result = fn(...values);
   } catch {
@@ -310,6 +312,7 @@ export function executeSetStateNode(
     try {
       const keys = Object.keys(state);
       const values = Object.values(state);
+      // eslint-disable-next-line no-new-func
       const fn = new Function(...keys, `return (${expr})`);
       state[key] = fn(...values);
     } catch {

@@ -91,6 +91,11 @@ export class LlamaStackModel implements Model {
         resolveNext?.();
       });
 
+    const waitForNext = () =>
+      new Promise<void>(resolve => {
+        resolveNext = resolve;
+      });
+
     while (!done || events.length > 0) {
       if (events.length > 0) {
         const eventData = events.shift()!;
@@ -99,9 +104,7 @@ export class LlamaStackModel implements Model {
           yield parsed;
         }
       } else {
-        await new Promise<void>(resolve => {
-          resolveNext = resolve;
-        });
+        await waitForNext();
         resolveNext = null;
       }
     }

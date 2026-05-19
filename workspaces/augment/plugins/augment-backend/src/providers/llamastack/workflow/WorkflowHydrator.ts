@@ -305,7 +305,7 @@ export class WorkflowHydrator {
             if (edge.condition) {
               routes[edge.condition] = edge.target;
             } else {
-              routes['__default__'] = edge.target;
+              routes.__default__ = edge.target;
             }
           }
           steps.push({
@@ -453,6 +453,8 @@ export class WorkflowHydrator {
           case 'file_search':
           case 'web_search':
           case 'code_interpreter':
+            break;
+          default:
             break;
         }
       } else if (toolNode.type === 'file_search') {

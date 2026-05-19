@@ -94,7 +94,7 @@ export function WorkflowPreview({
         trace: data.trace || [],
       };
     },
-    [backendUrl, workflowId],
+    [backendUrl, workflowId, authFetch],
   );
 
   const handleSend = useCallback(async () => {

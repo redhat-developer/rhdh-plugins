@@ -67,36 +67,30 @@ describe('provider registry', () => {
   it('GoogleADK descriptor has chat, conversations, mcpTools true and others false', () => {
     const d = getProviderDescriptor('googleadk');
     expect(d).toBeDefined();
-    if (d) {
-      expect(d.capabilities.chat).toBe(true);
-      expect(d.capabilities.conversations).toBe(true);
-      expect(d.capabilities.mcpTools).toBe(true);
-      expect(d.capabilities.rag).toBe(false);
-      expect(d.capabilities.safety).toBe(false);
-      expect(d.capabilities.evaluation).toBe(false);
-    }
+    expect(d!.capabilities.chat).toBe(true);
+    expect(d!.capabilities.conversations).toBe(true);
+    expect(d!.capabilities.mcpTools).toBe(true);
+    expect(d!.capabilities.rag).toBe(false);
+    expect(d!.capabilities.safety).toBe(false);
+    expect(d!.capabilities.evaluation).toBe(false);
   });
 
   it('Kagenti has configFields with baseUrl', () => {
     const d = getProviderDescriptor('kagenti');
     expect(d).toBeDefined();
-    if (d) {
-      const keys = d.configFields.map(f => f.key);
-      expect(keys).toContain('baseUrl');
-    }
+    const keys = d!.configFields.map(f => f.key);
+    expect(keys).toContain('baseUrl');
   });
 
   it('Kagenti exposes all platform capabilities', () => {
     const d = getProviderDescriptor('kagenti');
     expect(d).toBeDefined();
-    if (d) {
-      expect(d.capabilities.chat).toBe(true);
-      expect(d.capabilities.rag).toBe(true);
-      expect(d.capabilities.safety).toBe(true);
-      expect(d.capabilities.evaluation).toBe(true);
-      expect(d.capabilities.conversations).toBe(true);
-      expect(d.capabilities.mcpTools).toBe(true);
-      expect(d.capabilities.tools).toBe(true);
-    }
+    expect(d!.capabilities.chat).toBe(true);
+    expect(d!.capabilities.rag).toBe(true);
+    expect(d!.capabilities.safety).toBe(true);
+    expect(d!.capabilities.evaluation).toBe(true);
+    expect(d!.capabilities.conversations).toBe(true);
+    expect(d!.capabilities.mcpTools).toBe(true);
+    expect(d!.capabilities.tools).toBe(true);
   });
 });
