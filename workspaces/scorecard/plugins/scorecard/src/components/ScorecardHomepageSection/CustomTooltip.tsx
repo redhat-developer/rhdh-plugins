@@ -23,6 +23,7 @@ import Typography from '@mui/material/Typography';
 
 import type { PieData } from '../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedStatus } from '../../utils';
 
 export type CustomTooltipPayload = {
   name?: string;
@@ -77,10 +78,10 @@ export const CustomTooltip = ({
       contentElement = <Box sx={{ m: 0 }}>{customContent as ReactNode}</Box>;
     }
   } else if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {
-    const translatedState = t(`thresholds.${payload?.[0]?.name}` as any, {});
+    const translatedStatus = getTranslatedStatus(payload?.[0]?.name, t);
     contentElement = (
       <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-        {t('thresholds.noEntities', { category: translatedState } as any)}
+        {t('thresholds.noEntities', { category: translatedStatus } as any)}
       </Typography>
     );
   } else {
