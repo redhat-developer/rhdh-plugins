@@ -110,7 +110,7 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(artifact.content);
+      await window.navigator.clipboard.writeText(artifact.content);
       setCopied(true);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);

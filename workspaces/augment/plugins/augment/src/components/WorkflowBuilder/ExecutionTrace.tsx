@@ -142,7 +142,7 @@ export function ExecutionTrace({
                   size="small"
                   sx={{ height: 18, fontSize: '0.65rem' }}
                 />
-                {record.durationMs != null && (
+                {record.durationMs !== null && (
                   <Typography variant="caption" color="text.secondary">
                     {record.durationMs}ms
                   </Typography>
@@ -165,7 +165,7 @@ export function ExecutionTrace({
                   Error: {record.error}
                 </Typography>
               )}
-              {record.output != null && (
+              {record.output !== null && (
                 <Typography
                   variant="caption"
                   sx={{

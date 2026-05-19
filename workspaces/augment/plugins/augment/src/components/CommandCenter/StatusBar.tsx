@@ -40,14 +40,12 @@ export function StatusBar({
   const isDark = theme.palette.mode === 'dark';
 
   const ratio = total > 0 ? ready / total : 1;
-  const statusColor =
-    ratio >= 0.9
-      ? STATUS_COLORS.healthy
-      : ratio >= 0.5
-        ? STATUS_COLORS.warning
-        : STATUS_COLORS.critical;
-  const statusLabel =
-    ratio >= 0.9 ? 'Operational' : ratio >= 0.5 ? 'Degraded' : 'Critical';
+  let statusColor = STATUS_COLORS.critical;
+  if (ratio >= 0.9) statusColor = STATUS_COLORS.healthy;
+  else if (ratio >= 0.5) statusColor = STATUS_COLORS.warning;
+  let statusLabel = 'Critical';
+  if (ratio >= 0.9) statusLabel = 'Operational';
+  else if (ratio >= 0.5) statusLabel = 'Degraded';
 
   return (
     <Box

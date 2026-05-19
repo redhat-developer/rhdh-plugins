@@ -70,40 +70,47 @@ export const AgentEditorHeader = memo(function AgentEditorHeader({
           justifyContent: 'center',
         }}
       >
-        {isSingleAgentMode ? (
-          <SmartToyOutlinedIcon
-            sx={{ fontSize: 18, color: theme.palette.primary.main }}
-          />
-        ) : autoCreate ? (
-          <GroupsOutlinedIcon
-            sx={{ fontSize: 18, color: theme.palette.primary.main }}
-          />
-        ) : (
-          <EditOutlinedIcon
-            sx={{ fontSize: 18, color: theme.palette.primary.main }}
-          />
-        )}
+        {(() => {
+          if (isSingleAgentMode)
+            return (
+              <SmartToyOutlinedIcon
+                sx={{ fontSize: 18, color: theme.palette.primary.main }}
+              />
+            );
+          if (autoCreate)
+            return (
+              <GroupsOutlinedIcon
+                sx={{ fontSize: 18, color: theme.palette.primary.main }}
+              />
+            );
+          return (
+            <EditOutlinedIcon
+              sx={{ fontSize: 18, color: theme.palette.primary.main }}
+            />
+          );
+        })()}
       </Box>
       <Box sx={{ flex: 1 }}>
         <Typography
           sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3 }}
         >
-          {isSingleAgentMode
-            ? 'Create Agent'
-            : autoCreate
-              ? 'Agent Team Editor'
-              : agentName
-                ? `Editing ${agentName}`
-                : 'Agent Configuration'}
+          {(() => {
+            if (isSingleAgentMode) return 'Create Agent';
+            if (autoCreate) return 'Agent Team Editor';
+            if (agentName) return `Editing ${agentName}`;
+            return 'Agent Configuration';
+          })()}
         </Typography>
         <Typography
           sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary }}
         >
-          {isSingleAgentMode
-            ? "Define your agent's capabilities and instructions"
-            : autoCreate
-              ? `${agentCount} agent${agentCount !== 1 ? 's' : ''} in team`
-              : 'Configure agent behavior and tools'}
+          {(() => {
+            if (isSingleAgentMode)
+              return "Define your agent's capabilities and instructions";
+            if (autoCreate)
+              return `${agentCount} agent${agentCount !== 1 ? 's' : ''} in team`;
+            return 'Configure agent behavior and tools';
+          })()}
         </Typography>
       </Box>
       {!isSingleAgentMode && (

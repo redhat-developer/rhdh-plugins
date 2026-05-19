@@ -741,26 +741,23 @@ export const AgentsPanel = ({
                     >
                       <Chip
                         size="small"
-                        icon={
-                          selectedAgentRole === 'router' ? (
-                            <HubIcon sx={{ fontSize: 14 }} />
-                          ) : selectedAgentRole === 'specialist' ? (
-                            <BuildIcon sx={{ fontSize: 14 }} />
-                          ) : (
-                            <RocketLaunchIcon sx={{ fontSize: 14 }} />
-                          )
-                        }
+                        icon={(() => {
+                          if (selectedAgentRole === 'router')
+                            return <HubIcon sx={{ fontSize: 14 }} />;
+                          if (selectedAgentRole === 'specialist')
+                            return <BuildIcon sx={{ fontSize: 14 }} />;
+                          return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
+                        })()}
                         label={
                           selectedAgentRole.charAt(0).toUpperCase() +
                           selectedAgentRole.slice(1)
                         }
-                        color={
-                          selectedAgentRole === 'router'
-                            ? 'primary'
-                            : selectedAgentRole === 'specialist'
-                              ? 'default'
-                              : 'success'
-                        }
+                        color={(() => {
+                          if (selectedAgentRole === 'router') return 'primary';
+                          if (selectedAgentRole === 'specialist')
+                            return 'default';
+                          return 'success';
+                        })()}
                         variant="outlined"
                         sx={{ fontWeight: 600, fontSize: '0.75rem' }}
                       />

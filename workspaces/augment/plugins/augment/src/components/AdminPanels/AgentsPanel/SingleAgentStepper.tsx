@@ -76,12 +76,9 @@ export const SingleAgentStepper = memo(function SingleAgentStepper({
 
   if (!selectedAgentKey || !selectedAgent) return null;
 
-  const canContinue =
-    stepperStep === 0
-      ? !!selectedAgent.name.trim()
-      : stepperStep === 1
-        ? !!selectedAgent.instructions.trim()
-        : true;
+  let canContinue = true;
+  if (stepperStep === 0) canContinue = !!selectedAgent.name.trim();
+  else if (stepperStep === 1) canContinue = !!selectedAgent.instructions.trim();
 
   const renderStepContent = () => {
     switch (stepperStep) {
@@ -109,7 +106,6 @@ export const SingleAgentStepper = memo(function SingleAgentStepper({
               label="Agent Name"
               placeholder="e.g. Code Review Assistant"
               fullWidth
-              autoFocus
               size="small"
               error={selectedAgent.name.trim() === '' && isDirty}
               helperText={
@@ -287,13 +283,14 @@ export const SingleAgentStepper = memo(function SingleAgentStepper({
                 </Button>
               )}
               <Tooltip
-                title={
-                  !canContinue
-                    ? stepperStep === 0
-                      ? 'Enter an agent name to continue'
-                      : 'Add instructions to continue'
-                    : ''
-                }
+                title={(() => {
+                  if (!canContinue) {
+                    if (stepperStep === 0)
+                      return 'Enter an agent name to continue';
+                    return 'Add instructions to continue';
+                  }
+                  return '';
+                })()}
               >
                 <Box component="span">
                   <Button

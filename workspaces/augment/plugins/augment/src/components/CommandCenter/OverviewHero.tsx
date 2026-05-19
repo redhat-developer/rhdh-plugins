@@ -40,14 +40,12 @@ export function OverviewHero({
   const isDark = theme.palette.mode === 'dark';
 
   const ratio = total > 0 ? ready / total : 1;
-  const statusColor =
-    ratio >= 1
-      ? STATUS_COLORS.healthy
-      : ratio >= 0.7
-        ? STATUS_COLORS.warning
-        : STATUS_COLORS.critical;
-  const statusLabel =
-    ratio >= 1 ? 'Healthy' : ratio >= 0.7 ? 'Degraded' : 'Critical';
+  let statusColor = STATUS_COLORS.critical;
+  if (ratio >= 1) statusColor = STATUS_COLORS.healthy;
+  else if (ratio >= 0.7) statusColor = STATUS_COLORS.warning;
+  let statusLabel = 'Critical';
+  if (ratio >= 1) statusLabel = 'Healthy';
+  else if (ratio >= 0.7) statusLabel = 'Degraded';
 
   const ringSize = 100;
   const strokeWidth = 8;

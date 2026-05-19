@@ -77,22 +77,23 @@ export function CreateAgentWizard({
     onCreated,
     initialDeploymentMethod,
   );
+  const { setDeploymentMethod, setActiveStep } = form;
 
   useEffect(() => {
     if (open && onDeployMethodControl) {
       onDeployMethodControl((method: string) => {
         if (method === 'image' || method === 'source') {
-          form.setDeploymentMethod(method);
+          setDeploymentMethod(method);
         }
       });
     }
-  }, [open, onDeployMethodControl, form.setDeploymentMethod]);
+  }, [open, onDeployMethodControl, setDeploymentMethod]);
 
   useEffect(() => {
     if (open && onStepControl) {
-      onStepControl(form.setActiveStep);
+      onStepControl(setActiveStep);
     }
-  }, [open, onStepControl, form.setActiveStep]);
+  }, [open, onStepControl, setActiveStep]);
 
   const isSourceDeploy = form.deploymentMethod === 'source';
   const isBuildStep = form.activeStep === FORM_STEPS.length;

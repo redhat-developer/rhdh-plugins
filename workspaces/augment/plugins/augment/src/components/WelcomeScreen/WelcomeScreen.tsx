@@ -484,367 +484,379 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
         {/* Agent Grid */}
         <Box sx={getGridScrollAreaSx(theme)}>
-          {agentsLoading ? (
-            <Box sx={getAgentGridSx(theme)}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton
-                  key={i}
-                  variant="rectangular"
-                  height={140}
-                  sx={{ borderRadius: 3 }}
-                  animation="wave"
-                />
-              ))}
-            </Box>
-          ) : agentsError ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 8,
-                gap: 2,
-                px: 3,
-              }}
-            >
-              <Alert
-                severity="warning"
-                sx={{ maxWidth: 480, width: '100%' }}
-                action={
-                  <Button
-                    color="inherit"
-                    size="small"
-                    startIcon={<RefreshIcon />}
-                    onClick={retryFetchAgents}
-                  >
-                    Retry
-                  </Button>
-                }
-              >
-                {agentsError}
-              </Alert>
-            </Box>
-          ) : filteredAgents.length === 0 ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 8,
-                gap: 2,
-              }}
-            >
-              {visibleAgents.length === 0 ? (
-                <>
-                  <Box
-                    sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: alpha(
-                        theme.palette.primary.main,
-                        isDark ? 0.1 : 0.06,
-                      ),
-                    }}
-                  >
-                    <HubOutlinedIcon
-                      sx={{
-                        fontSize: 40,
-                        color: theme.palette.primary.main,
-                        opacity: 0.6,
-                      }}
+          {(() => {
+            if (agentsLoading)
+              return (
+                <Box sx={getAgentGridSx(theme)}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      variant="rectangular"
+                      height={140}
+                      sx={{ borderRadius: 3 }}
+                      animation="wave"
                     />
-                  </Box>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    No agents available
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      textAlign: 'center',
-                      maxWidth: 360,
-                    }}
+                  ))}
+                </Box>
+              );
+            if (agentsError)
+              return (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 8,
+                    gap: 2,
+                    px: 3,
+                  }}
+                >
+                  <Alert
+                    severity="warning"
+                    sx={{ maxWidth: 480, width: '100%' }}
+                    action={
+                      <Button
+                        color="inherit"
+                        size="small"
+                        startIcon={<RefreshIcon />}
+                        onClick={retryFetchAgents}
+                      >
+                        Retry
+                      </Button>
+                    }
                   >
-                    Deploy agents via the Command Center to get started. They
-                    will appear here automatically.
-                  </Typography>
-                </>
-              ) : (
-                <>
-                  <SearchIcon
-                    sx={{
-                      fontSize: 40,
-                      color: alpha(theme.palette.text.disabled, 0.4),
-                    }}
-                  />
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    No matching agents
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      maxWidth: 300,
-                      textAlign: 'center',
-                    }}
-                  >
-                    No agents match &ldquo;{agentSearch}&rdquo;. Try a different
-                    search term.
-                  </Typography>
-                </>
-              )}
-            </Box>
-          ) : (
-            <Box sx={getAgentGridSx(theme)}>
-              {filteredAgents.map((agent: AgentWithCard, idx: number) => {
-                const displayName =
-                  chatAgentConfigs.find(
-                    c => c.agentId === `${agent.namespace}/${agent.name}`,
-                  )?.displayName ||
-                  agent.agentCard?.name ||
-                  agent.name;
-                const config = chatAgentConfigs.find(
-                  c => c.agentId === `${agent.namespace}/${agent.name}`,
-                );
-                const description =
-                  config?.description ||
-                  agent.agentCard?.description ||
-                  agent.description;
-                const avatarColor =
-                  config?.accentColor || getAgentAvatarColor(displayName);
-                const avatarUrl = config?.avatarUrl;
-                const ready = isAgentReady(agent.status);
-
-                return (
-                  <Fade
-                    in
-                    timeout={80 + idx * 30}
-                    key={`${agent.namespace}/${agent.name}`}
-                  >
-                    <Card
-                      variant="outlined"
-                      sx={{
-                        borderRadius: 3,
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        opacity: ready ? 1 : 0.55,
-                        borderColor: alpha(
-                          theme.palette.divider,
-                          isDark ? 0.15 : 0.18,
-                        ),
-                        bgcolor: alpha(
-                          theme.palette.background.paper,
-                          isDark ? 0.6 : 0.9,
-                        ),
-                        boxShadow: isDark
-                          ? `0 1px 4px ${alpha('#000', 0.2)}`
-                          : `0 1px 4px ${alpha('#000', 0.06)}`,
-                        '&:hover': {
-                          borderColor: alpha(avatarColor, 0.4),
-                          boxShadow: isDark
-                            ? `0 8px 24px ${alpha(avatarColor, 0.15)}`
-                            : `0 8px 24px ${alpha(avatarColor, 0.1)}`,
-                          transform: ready ? 'translateY(-2px)' : undefined,
-                        },
-                      }}
-                    >
-                      <CardActionArea
-                        onClick={() => handleInlineAgentSelect(agent)}
+                    {agentsError}
+                  </Alert>
+                </Box>
+              );
+            if (filteredAgents.length === 0)
+              return (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 8,
+                    gap: 2,
+                  }}
+                >
+                  {visibleAgents.length === 0 ? (
+                    <>
+                      <Box
                         sx={{
-                          flex: 1,
+                          width: 72,
+                          height: 72,
+                          borderRadius: '50%',
                           display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'stretch',
-                          borderRadius: 3,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: alpha(
+                            theme.palette.primary.main,
+                            isDark ? 0.1 : 0.06,
+                          ),
                         }}
                       >
-                        <CardContent
+                        <HubOutlinedIcon
                           sx={{
-                            p: 2,
-                            '&:last-child': { pb: 2 },
+                            fontSize: 40,
+                            color: theme.palette.primary.main,
+                            opacity: 0.6,
+                          }}
+                        />
+                      </Box>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        No agents available
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          textAlign: 'center',
+                          maxWidth: 360,
+                        }}
+                      >
+                        Deploy agents via the Command Center to get started.
+                        They will appear here automatically.
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <SearchIcon
+                        sx={{
+                          fontSize: 40,
+                          color: alpha(theme.palette.text.disabled, 0.4),
+                        }}
+                      />
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        No matching agents
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          maxWidth: 300,
+                          textAlign: 'center',
+                        }}
+                      >
+                        No agents match &ldquo;{agentSearch}&rdquo;. Try a
+                        different search term.
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              );
+            return (
+              <Box sx={getAgentGridSx(theme)}>
+                {filteredAgents.map((agent: AgentWithCard, idx: number) => {
+                  const displayName =
+                    chatAgentConfigs.find(
+                      c => c.agentId === `${agent.namespace}/${agent.name}`,
+                    )?.displayName ||
+                    agent.agentCard?.name ||
+                    agent.name;
+                  const config = chatAgentConfigs.find(
+                    c => c.agentId === `${agent.namespace}/${agent.name}`,
+                  );
+                  const description =
+                    config?.description ||
+                    agent.agentCard?.description ||
+                    agent.description;
+                  const avatarColor =
+                    config?.accentColor || getAgentAvatarColor(displayName);
+                  const avatarUrl = config?.avatarUrl;
+                  const ready = isAgentReady(agent.status);
+
+                  return (
+                    <Fade
+                      in
+                      timeout={80 + idx * 30}
+                      key={`${agent.namespace}/${agent.name}`}
+                    >
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          borderRadius: 3,
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          opacity: ready ? 1 : 0.55,
+                          borderColor: alpha(
+                            theme.palette.divider,
+                            isDark ? 0.15 : 0.18,
+                          ),
+                          bgcolor: alpha(
+                            theme.palette.background.paper,
+                            isDark ? 0.6 : 0.9,
+                          ),
+                          boxShadow: isDark
+                            ? `0 1px 4px ${alpha('#000', 0.2)}`
+                            : `0 1px 4px ${alpha('#000', 0.06)}`,
+                          '&:hover': {
+                            borderColor: alpha(avatarColor, 0.4),
+                            boxShadow: isDark
+                              ? `0 8px 24px ${alpha(avatarColor, 0.15)}`
+                              : `0 8px 24px ${alpha(avatarColor, 0.1)}`,
+                            transform: ready ? 'translateY(-2px)' : undefined,
+                          },
+                        }}
+                      >
+                        <CardActionArea
+                          onClick={() => handleInlineAgentSelect(agent)}
+                          sx={{
                             flex: 1,
                             display: 'flex',
                             flexDirection: 'column',
+                            alignItems: 'stretch',
+                            borderRadius: 3,
                           }}
                         >
-                          <Box
+                          <CardContent
                             sx={{
+                              p: 2,
+                              '&:last-child': { pb: 2 },
+                              flex: 1,
                               display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.25,
-                              mb: 1,
+                              flexDirection: 'column',
                             }}
                           >
-                            {avatarUrl ? (
-                              <Box
-                                component="img"
-                                src={avatarUrl}
-                                alt={displayName}
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius: 2,
-                                  objectFit: 'cover',
-                                  flexShrink: 0,
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius: 2,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontWeight: 700,
-                                  fontSize: '1rem',
-                                  bgcolor: alpha(
-                                    avatarColor,
-                                    isDark ? 0.2 : 0.12,
-                                  ),
-                                  color: avatarColor,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {displayName.charAt(0).toUpperCase()}
-                              </Box>
-                            )}
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 0.75,
-                                }}
-                              >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.25,
+                                mb: 1,
+                              }}
+                            >
+                              {avatarUrl ? (
                                 <Box
+                                  component="img"
+                                  src={avatarUrl}
+                                  alt={displayName}
                                   sx={{
-                                    width: 7,
-                                    height: 7,
-                                    borderRadius: '50%',
-                                    bgcolor: ready
-                                      ? theme.palette.success.main
-                                      : theme.palette.warning.main,
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 2,
+                                    objectFit: 'cover',
                                     flexShrink: 0,
                                   }}
                                 />
-                                <Typography
-                                  variant="subtitle2"
-                                  noWrap
+                              ) : (
+                                <Box
                                   sx={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     fontWeight: 700,
-                                    fontSize: typeScale.body.fontSize,
-                                    lineHeight: 1.3,
+                                    fontSize: '1rem',
+                                    bgcolor: alpha(
+                                      avatarColor,
+                                      isDark ? 0.2 : 0.12,
+                                    ),
+                                    color: avatarColor,
+                                    flexShrink: 0,
                                   }}
                                 >
-                                  {displayName}
+                                  {displayName.charAt(0).toUpperCase()}
+                                </Box>
+                              )}
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.75,
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      width: 7,
+                                      height: 7,
+                                      borderRadius: '50%',
+                                      bgcolor: ready
+                                        ? theme.palette.success.main
+                                        : theme.palette.warning.main,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  <Typography
+                                    variant="subtitle2"
+                                    noWrap
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: typeScale.body.fontSize,
+                                      lineHeight: 1.3,
+                                    }}
+                                  >
+                                    {displayName}
+                                  </Typography>
+                                </Box>
+                                <Typography
+                                  variant="caption"
+                                  noWrap
+                                  sx={{
+                                    color: theme.palette.text.disabled,
+                                    fontSize: typeScale.micro.fontSize,
+                                    display: 'block',
+                                  }}
+                                >
+                                  {agent.namespace}
                                 </Typography>
                               </Box>
-                              <Typography
-                                variant="caption"
-                                noWrap
-                                sx={{
-                                  color: theme.palette.text.disabled,
-                                  fontSize: typeScale.micro.fontSize,
-                                  display: 'block',
-                                }}
-                              >
-                                {agent.namespace}
-                              </Typography>
                             </Box>
-                          </Box>
 
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              fontSize: typeScale.caption.fontSize,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              lineHeight: 1.45,
-                              flex: 1,
-                              mb: 1,
-                            }}
-                          >
-                            {description
-                              ? sanitizeDescription(description, 120)
-                              : '\u00A0'}
-                          </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: typeScale.caption.fontSize,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                lineHeight: 1.45,
+                                flex: 1,
+                                mb: 1,
+                              }}
+                            >
+                              {description
+                                ? sanitizeDescription(description, 120)
+                                : '\u00A0'}
+                            </Typography>
 
-                          {/* Chips row */}
-                          <Box
-                            sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
-                          >
-                            {agent.labels?.framework && (
-                              <Chip
-                                label={agent.labels.framework}
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  height: 20,
-                                  fontSize: typeScale.micro.fontSize,
-                                  borderRadius: 1.5,
-                                  borderColor: alpha(
-                                    theme.palette.divider,
-                                    0.3,
-                                  ),
-                                  color: theme.palette.text.secondary,
-                                }}
-                              />
-                            )}
-                            {agent.labels?.protocol && (
-                              <Chip
-                                label="A2A"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  height: 20,
-                                  fontSize: typeScale.micro.fontSize,
-                                  borderRadius: 1.5,
-                                  borderColor: alpha(
-                                    theme.palette.divider,
-                                    0.3,
-                                  ),
-                                  color: theme.palette.text.secondary,
-                                }}
-                              />
-                            )}
-                            {agent.agentCard?.streaming && (
-                              <Chip
-                                label="Streaming"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  height: 20,
-                                  fontSize: typeScale.micro.fontSize,
-                                  borderRadius: 1.5,
-                                  borderColor: alpha(
-                                    theme.palette.divider,
-                                    0.3,
-                                  ),
-                                  color: theme.palette.text.secondary,
-                                }}
-                              />
-                            )}
-                          </Box>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  </Fade>
-                );
-              })}
-            </Box>
-          )}
+                            {/* Chips row */}
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: 0.5,
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              {agent.labels?.framework && (
+                                <Chip
+                                  label={agent.labels.framework}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: typeScale.micro.fontSize,
+                                    borderRadius: 1.5,
+                                    borderColor: alpha(
+                                      theme.palette.divider,
+                                      0.3,
+                                    ),
+                                    color: theme.palette.text.secondary,
+                                  }}
+                                />
+                              )}
+                              {agent.labels?.protocol && (
+                                <Chip
+                                  label="A2A"
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: typeScale.micro.fontSize,
+                                    borderRadius: 1.5,
+                                    borderColor: alpha(
+                                      theme.palette.divider,
+                                      0.3,
+                                    ),
+                                    color: theme.palette.text.secondary,
+                                  }}
+                                />
+                              )}
+                              {agent.agentCard?.streaming && (
+                                <Chip
+                                  label="Streaming"
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: typeScale.micro.fontSize,
+                                    borderRadius: 1.5,
+                                    borderColor: alpha(
+                                      theme.palette.divider,
+                                      0.3,
+                                    ),
+                                    color: theme.palette.text.secondary,
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
+                    </Fade>
+                  );
+                })}
+              </Box>
+            );
+          })()}
         </Box>
       </Box>
     );

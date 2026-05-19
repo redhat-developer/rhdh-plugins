@@ -118,13 +118,11 @@ export const TopologyGraph = memo(function TopologyGraph({
                 <Chip
                   label={role}
                   size="small"
-                  color={
-                    role === 'router'
-                      ? 'primary'
-                      : role === 'specialist'
-                        ? 'secondary'
-                        : 'default'
-                  }
+                  color={(() => {
+                    if (role === 'router') return 'primary';
+                    if (role === 'specialist') return 'secondary';
+                    return 'default';
+                  })()}
                   sx={{
                     height: 16,
                     fontSize: '0.55rem',

@@ -105,9 +105,10 @@ export function NamespacePicker({
         onChange={e => onChange(String(e.target.value))}
         displayEmpty
         MenuProps={SELECT_MENU_PROPS}
-        renderValue={sel =>
-          sel ? String(sel) : required ? 'Select a namespace' : 'All namespaces'
-        }
+        renderValue={sel => {
+          if (sel) return String(sel);
+          return required ? 'Select a namespace' : 'All namespaces';
+        }}
       >
         {!required && (
           <MenuItem value="">

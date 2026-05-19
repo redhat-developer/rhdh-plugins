@@ -149,15 +149,12 @@ export const AgentEditorToolbar = memo(function AgentEditorToolbar({
           <Button
             variant="contained"
             size="small"
-            startIcon={
-              saving ? (
-                <CircularProgress size={14} />
-              ) : saveSuccess ? (
-                <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
-              ) : (
-                <SaveIcon sx={{ fontSize: 16 }} />
-              )
-            }
+            startIcon={(() => {
+              if (saving) return <CircularProgress size={14} />;
+              if (saveSuccess)
+                return <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />;
+              return <SaveIcon sx={{ fontSize: 16 }} />;
+            })()}
             onClick={onSave}
             disabled={
               saving || validationErrors.length > 0 || agentKeys.length === 0
