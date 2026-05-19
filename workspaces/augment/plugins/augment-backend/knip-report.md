@@ -2,8 +2,8 @@
 
 ## Unused devDependencies (2)
 
-| Name                   | Location                                  | Severity |
-| :--------------------- | :---------------------------------------- | :------- |
+| Name                   | Location          | Severity |
+| :--------------------- | :---------------- | :------- |
 | @types/express-session | package.json:73:6 | error    |
 | express-session        | package.json:75:6 | error    |
 
