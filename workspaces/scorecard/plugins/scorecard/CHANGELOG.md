@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.7.7
+
+### Patch Changes
+
+- 8414dbe: Fixes severity threshold category translation for custom thresholds
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.7
+
 ## 2.7.6
 
 ### Patch Changes
