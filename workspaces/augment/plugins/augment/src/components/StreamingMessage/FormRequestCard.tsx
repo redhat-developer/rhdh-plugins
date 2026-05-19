@@ -137,14 +137,9 @@ function renderField(
           value={value !== undefined ? value : ''}
           onChange={e => {
             const num = Number(e.target.value);
-            onChange(
-              field.name,
-              e.target.value
-                ? Number.isNaN(num)
-                  ? undefined
-                  : num
-                : undefined,
-            );
+            let parsed: number | undefined;
+            if (e.target.value && !Number.isNaN(num)) parsed = num;
+            onChange(field.name, parsed);
           }}
           required={field.required}
           size="small"

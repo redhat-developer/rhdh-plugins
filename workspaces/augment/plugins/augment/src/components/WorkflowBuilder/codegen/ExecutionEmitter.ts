@@ -1,3 +1,18 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import type {
   WorkflowNode,
   WorkflowEdge,
@@ -106,7 +121,7 @@ function emitAgentCode(
   const d = node.data as Record<string, unknown>;
   const agentName = (d.name as string) || node.id;
   const resultVar = `${toCamelCase(agentName)}Result`;
-  const hasOutput = d.outputSchema != null;
+  const hasOutput = d.outputSchema !== null;
 
   lines.push(`${indent}const ${resultVar}Temp = await runner.run(`);
   lines.push(`${indent}  ${varName},`);
@@ -179,11 +194,11 @@ function emitClassifyCode(
         lines.push(
           `${indent}${prefix} (${resultVar}.classification === "${edge.condition}") {`,
         );
-        visit(edge.target, indent + '  ');
+        visit(edge.target, `${indent}  `);
       });
       if (fallbackEdge) {
         lines.push(`${indent}} else {`);
-        visit(fallbackEdge.target, indent + '  ');
+        visit(fallbackEdge.target, `${indent}  `);
       }
       lines.push(`${indent}}`);
     } else {
@@ -208,15 +223,15 @@ function emitLogicCode(
     lines.push(`${indent}let _loopCount = 0;`);
     lines.push(`${indent}while (${condition} && _loopCount < ${maxIter}) {`);
     lines.push(`${indent}  _loopCount++;`);
-    for (const edge of outEdges) visit(edge.target, indent + '  ');
+    for (const edge of outEdges) visit(edge.target, `${indent}  `);
     lines.push(`${indent}}`);
   } else if (outEdges.length >= 2) {
     const trueEdge = outEdges.find(e => e.label === 'true') || outEdges[0];
     const falseEdge = outEdges.find(e => e.label === 'false') || outEdges[1];
     lines.push(`${indent}if (${condition}) {`);
-    visit(trueEdge.target, indent + '  ');
+    visit(trueEdge.target, `${indent}  `);
     lines.push(`${indent}} else {`);
-    if (falseEdge) visit(falseEdge.target, indent + '  ');
+    if (falseEdge) visit(falseEdge.target, `${indent}  `);
     lines.push(`${indent}}`);
   } else {
     for (const edge of outEdges) visit(edge.target, indent);

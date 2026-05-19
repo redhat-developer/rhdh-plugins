@@ -75,7 +75,7 @@ export function TableSkeleton({ rows = 5, columns = 4 }: TableSkeletonProps) {
                 : undefined,
           }}
         >
-          {Array.from({ length: columns }).map((_, colIdx) => (
+          {Array.from({ length: columns }).map((_col, colIdx) => (
             <Skeleton
               key={colIdx}
               variant="text"

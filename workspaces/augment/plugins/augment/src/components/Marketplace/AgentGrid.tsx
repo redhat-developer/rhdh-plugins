@@ -43,6 +43,7 @@ export function AgentGrid({
 }: AgentGridProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const [page, setPage] = useState(0);
 
   if (loading) {
     return (
@@ -103,7 +104,6 @@ export function AgentGrid({
     );
   }
 
-  const [page, setPage] = useState(0);
   const totalPages = Math.ceil(agents.length / PAGE_SIZE);
   const pageAgents = agents.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 

@@ -111,11 +111,10 @@ export function ToolMcpSection({
           }
           sx={{ textTransform: 'none', minWidth: 0 }}
         >
-          {mcpDiscovering
-            ? 'Discovering...'
-            : hasTools
-              ? 'Refresh'
-              : 'Discover'}
+          {(() => {
+            if (mcpDiscovering) return 'Discovering...';
+            return hasTools ? 'Refresh' : 'Discover';
+          })()}
         </Button>
       </Box>
 

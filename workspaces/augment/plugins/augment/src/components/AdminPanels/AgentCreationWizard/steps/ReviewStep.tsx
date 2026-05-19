@@ -95,13 +95,11 @@ export function ReviewStep({ formData }: ReviewStepProps) {
                 <Chip
                   label={formData.role}
                   size="small"
-                  color={
-                    formData.role === 'router'
-                      ? 'primary'
-                      : formData.role === 'specialist'
-                        ? 'secondary'
-                        : 'default'
-                  }
+                  color={(() => {
+                    if (formData.role === 'router') return 'primary';
+                    if (formData.role === 'specialist') return 'secondary';
+                    return 'default';
+                  })()}
                 />
               }
             />

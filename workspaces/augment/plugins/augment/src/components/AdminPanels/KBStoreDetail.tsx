@@ -316,14 +316,11 @@ function QuickSearch({ vectorStoreId }: QuickSearchProps) {
                     <Chip
                       label={`${(chunk.score * 100).toFixed(1)}%`}
                       size="small"
-                      // eslint-disable-next-line no-nested-ternary
-                      color={
-                        chunk.score > 0.7
-                          ? 'success'
-                          : chunk.score > 0.4
-                            ? 'warning'
-                            : 'default'
-                      }
+                      color={(() => {
+                        if (chunk.score > 0.7) return 'success';
+                        if (chunk.score > 0.4) return 'warning';
+                        return 'default';
+                      })()}
                       sx={{ height: 18, fontSize: '0.625rem' }}
                     />
                   )}

@@ -26,7 +26,9 @@ function scrollbarThumbGradient(
   isDark: boolean,
   intensity: 'normal' | 'hover' = 'normal',
 ) {
-  const o = intensity === 'hover' ? (isDark ? 0.7 : 0.6) : isDark ? 0.5 : 0.45;
+  let o: number;
+  if (intensity === 'hover') o = isDark ? 0.7 : 0.6;
+  else o = isDark ? 0.5 : 0.45;
   return isDark
     ? `linear-gradient(180deg, rgba(99,102,241,${o}) 0%, rgba(168,85,247,${o - 0.1}) 30%, rgba(236,72,153,${o - 0.1}) 60%, rgba(6,182,212,${o}) 100%)`
     : `linear-gradient(180deg, rgba(79,70,229,${o}) 0%, rgba(139,92,246,${o - 0.05}) 30%, rgba(219,39,119,${o - 0.1}) 60%, rgba(14,165,233,${o}) 100%)`;
@@ -50,7 +52,9 @@ function scrollbarBorder(
   isDark: boolean,
   intensity: 'normal' | 'hover' = 'normal',
 ) {
-  const o = intensity === 'hover' ? (isDark ? 0.35 : 0.4) : isDark ? 0.2 : 0.3;
+  let o: number;
+  if (intensity === 'hover') o = isDark ? 0.35 : 0.4;
+  else o = isDark ? 0.2 : 0.3;
   return `1px solid rgba(255,255,255,${o})`;
 }
 import {

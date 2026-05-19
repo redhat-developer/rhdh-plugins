@@ -29,6 +29,7 @@ import {
   DEFAULT_BRANDING,
   type BrandingConfig,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 // ---------------------------------------------------------------------------

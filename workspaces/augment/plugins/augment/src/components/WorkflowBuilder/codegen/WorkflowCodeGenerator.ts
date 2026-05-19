@@ -35,7 +35,7 @@ export function generateWorkflowCode(
   const agentNodes = getAgentNodes(workflow.nodes);
   const classifyNodes = workflow.nodes.filter(n => n.type === 'classify');
   const hasOutputSchema = agentNodes.some(
-    n => (n.data as Record<string, unknown>).outputSchema != null,
+    n => (n.data as Record<string, unknown>).outputSchema !== null,
   );
   const hasUserInteraction = workflow.nodes.some(
     n => n.type === 'user_interaction',
