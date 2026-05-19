@@ -219,29 +219,37 @@ export class SessionService {
       }
     }
 
-    // Delete all underlying files from Files API to prevent orphans
+    // Delete all vector store files (same pattern as documentService.deleteDocument)
     try {
       const filesResponse =
         await this.client.vectorStores.files.list(sessionId);
-      const fileIds = filesResponse.data?.map((f: any) => f.file_id) || [];
+      const files = filesResponse.data || [];
+
+      this.logger.info(
+        `Deleting ${files.length} vector store files for session ${sessionId}`,
+      );
 
       await Promise.all(
-        fileIds.map(async (fileId: string) => {
+        files.map(async (file: any) => {
           try {
-            await this.client.files.delete(fileId);
-            this.logger.info(`Deleted file ${fileId} from Files API`);
+            await this.client.vectorStores.files.delete(sessionId, file.id);
+            this.logger.info(
+              `Deleted vector store file ${file.id} (${file.attributes?.title || 'untitled'})`,
+            );
           } catch (error) {
-            this.logger.warn(`Failed to delete file ${fileId}: ${error}`);
+            this.logger.warn(
+              `Failed to delete vector store file ${file.id}: ${error}`,
+            );
           }
         }),
       );
     } catch (error) {
       this.logger.warn(
-        `Failed to clean up files for session ${sessionId}: ${error}`,
+        `Failed to clean up vector store files for session ${sessionId}: ${error}`,
       );
     }
 
-    // Delete the vector store (cascade deletes vector store files)
+    // Delete the vector store itself
     await this.client.vectorStores.delete(sessionId);
     this.logger.info(`Session ${sessionId} deleted`);
   }
