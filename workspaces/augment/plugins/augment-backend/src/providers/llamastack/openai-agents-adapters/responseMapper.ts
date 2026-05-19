@@ -31,13 +31,19 @@ export function toChatResponse(result: RunResult<any, any>): ChatResponse {
 
   const usage = extractUsage(result);
 
+  let content: string;
+  if (result.finalOutput) {
+    content =
+      typeof result.finalOutput === 'string'
+        ? result.finalOutput
+        : JSON.stringify(result.finalOutput);
+  } else {
+    content = textOutput;
+  }
+
   return {
     role: 'assistant',
-    content: result.finalOutput
-      ? typeof result.finalOutput === 'string'
-        ? result.finalOutput
-        : JSON.stringify(result.finalOutput)
-      : textOutput,
+    content,
     agentName: result.lastAgent?.name,
     toolCalls:
       toolCallsArr && toolCallsArr.length > 0 ? toolCallsArr : undefined,

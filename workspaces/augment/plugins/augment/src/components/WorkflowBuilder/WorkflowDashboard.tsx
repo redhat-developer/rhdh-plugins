@@ -722,7 +722,6 @@ export function WorkflowDashboard({
         <DialogTitle>Rename workflow</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
             fullWidth
             size="small"
             value={renameName}

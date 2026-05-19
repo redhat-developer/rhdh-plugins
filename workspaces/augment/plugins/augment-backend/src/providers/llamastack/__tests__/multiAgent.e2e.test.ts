@@ -1046,6 +1046,7 @@ describe('Multi-Agent E2E (mock server)', () => {
   // -----------------------------------------------------------------------
 
   describe('prepareFirstTurn integration', () => {
+    // eslint-disable-next-line jest/no-disabled-tests
     it.skip('includes conversation context from multi-message requests', async () => {
       const logger = createTestLogger();
       const config = createTestConfig({
@@ -1073,6 +1074,7 @@ describe('Multi-Agent E2E (mock server)', () => {
       expect(apiCalls[0].body.instructions).toContain('Kubernetes');
     });
 
+    // eslint-disable-next-line jest/no-disabled-tests
     it.skip('does not include conversation context when previousResponseId is present', async () => {
       const logger = createTestLogger();
       const config = createTestConfig({
@@ -1186,6 +1188,7 @@ describe('Multi-Agent E2E (mock server)', () => {
   // -----------------------------------------------------------------------
 
   describe('streaming maxTurns exceeded (B1)', () => {
+    // eslint-disable-next-line jest/no-disabled-tests
     it.skip('emits stream.error with max_turns_exceeded code', async () => {
       const logger = createTestLogger();
       const config = createTestConfig({

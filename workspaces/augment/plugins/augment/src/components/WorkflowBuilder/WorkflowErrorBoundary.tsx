@@ -32,21 +32,17 @@ interface State {
 }
 
 export class WorkflowErrorBoundary extends Component<Props, State> {
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(
-      '[WorkflowBuilder] Error caught by boundary:',
-      error,
-      errorInfo,
-    );
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    /* noop */
   }
 
   handleReset = () => {
