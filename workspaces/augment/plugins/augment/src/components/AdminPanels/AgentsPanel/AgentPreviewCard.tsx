@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, memo, type ReactElement } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -31,13 +31,13 @@ interface AgentPreviewCardProps {
   agent: AgentFormData;
 }
 
-export const AgentPreviewCard = React.memo(function AgentPreviewCard({
+export const AgentPreviewCard = memo(function AgentPreviewCard({
   agent,
 }: AgentPreviewCardProps) {
   const theme = useTheme();
 
   const caps = useMemo(() => {
-    const items: Array<{ icon: React.ReactElement; label: string }> = [];
+    const items: Array<{ icon: ReactElement; label: string }> = [];
     if (agent.enableRAG)
       items.push({
         icon: <MenuBookIcon sx={{ fontSize: 14 }} />,

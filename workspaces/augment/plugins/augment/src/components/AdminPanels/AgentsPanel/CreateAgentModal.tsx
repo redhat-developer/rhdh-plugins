@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -39,7 +39,7 @@ interface CreateAgentModalProps {
   onCreate: (name: string, id: string) => void;
 }
 
-export const CreateAgentModal = React.memo(function CreateAgentModal({
+export const CreateAgentModal = memo(function CreateAgentModal({
   open,
   agents,
   isFirstAgent,

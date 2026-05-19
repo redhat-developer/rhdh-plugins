@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, type HTMLAttributes } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -115,7 +115,7 @@ function OutputValidationWarning({ error }: { error: string }) {
 const REMARK_PLUGINS = [remarkGfm, remarkMath];
 const REHYPE_PLUGINS = [rehypeKatex];
 
-const ScrollableTable = (props: React.HTMLAttributes<HTMLTableElement>) => (
+const ScrollableTable = (props: HTMLAttributes<HTMLTableElement>) => (
   <div className="table-scroll-wrapper">
     <table {...props} />
   </div>
@@ -136,7 +136,7 @@ interface ChatMessageProps {
   isLastAssistantMessage?: boolean;
 }
 
-export const ChatMessage = React.memo(function ChatMessage({
+export const ChatMessage = memo(function ChatMessage({
   message,
   onRegenerate,
   onEditMessage,

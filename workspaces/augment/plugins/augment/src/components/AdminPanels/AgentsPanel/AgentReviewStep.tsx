@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -38,7 +38,7 @@ interface AgentReviewStepProps {
   onBack?: () => void;
 }
 
-export const AgentReviewStep = React.memo(function AgentReviewStep({
+export const AgentReviewStep = memo(function AgentReviewStep({
   agent,
   agentKey,
   validationErrors,

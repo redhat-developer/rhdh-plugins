@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -57,7 +57,7 @@ interface CapabilitiesTabProps {
   onRefreshModels: () => void;
 }
 
-export const CapabilitiesTab = React.memo(function CapabilitiesTab({
+export const CapabilitiesTab = memo(function CapabilitiesTab({
   agent,
   agentKey,
   modelOptions,

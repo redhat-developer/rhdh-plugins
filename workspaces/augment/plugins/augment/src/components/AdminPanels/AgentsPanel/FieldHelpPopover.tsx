@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo, type MouseEvent } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -77,7 +77,7 @@ interface FieldHelpButtonProps {
   field: string;
 }
 
-export const FieldHelpButton = React.memo(function FieldHelpButton({
+export const FieldHelpButton = memo(function FieldHelpButton({
   field,
 }: FieldHelpButtonProps) {
   const theme = useTheme();
@@ -85,7 +85,7 @@ export const FieldHelpButton = React.memo(function FieldHelpButton({
   const info = FIELD_HELP[field];
 
   const handleOpen = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget),
+    (e: MouseEvent<HTMLElement>) => setAnchor(e.currentTarget),
     [],
   );
   const handleClose = useCallback(() => setAnchor(null), []);
