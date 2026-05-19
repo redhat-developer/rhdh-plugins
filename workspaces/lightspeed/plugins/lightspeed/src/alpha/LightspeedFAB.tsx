@@ -14,61 +14,44 @@
  * limitations under the License.
  */
 
-import { StylesProvider as StylesProviderV4 } from '@material-ui/core/styles';
 import Close from '@mui/icons-material/Close';
+import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles, StylesProvider } from '@mui/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { LightspeedFABIcon } from '../components/LightspeedIcon';
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
-import {
-  generateClassName,
-  generateClassNameV4,
-} from '../utils/generateClassName';
 
-const useStyles = makeStyles(theme => ({
-  fab: {
-    opacity: '1 !important',
-    backgroundColor: `${theme?.palette?.primary?.main ?? '#1976d2'} !important`,
-    color: `${theme?.palette?.primary?.contrastText ?? '#fff'} !important`,
-    boxShadow: `${
-      theme?.shadows?.[6] ??
-      '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)'
-    } !important`,
-  },
-  'fab-button': {
-    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    alignItems: 'end',
-    zIndex: 200,
-    display: 'flex',
-    position: 'fixed',
-
-    // When ApplicationDrawer is docked, match main content inset
-    'body.docked-drawer-open &': {
-      transition: 'margin-right 0.3s ease',
-      marginRight: DOCKED_CONTENT_OFFSET,
-    },
-  },
-}));
-
-const LightspeedFABInner = () => {
+/**
+ * @alpha
+ * Lightspeed Floating action button to open/close the lightspeed chatbot
+ */
+export const LightspeedFAB = () => {
   const { t } = useTranslation();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
-  const fabButton = useStyles();
 
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;
   }
 
   return (
-    <div
-      className={fabButton['fab-button']}
+    <Box
+      sx={theme => ({
+        bottom: `calc(${theme.spacing(2)} + 1.5em)`,
+        right: `calc(${theme.spacing(2)} + 1.5em)`,
+        alignItems: 'end',
+        zIndex: 200,
+        display: 'flex',
+        position: 'fixed',
+        'body.docked-drawer-open &': {
+          transition: 'margin-right 0.3s ease',
+          marginRight: DOCKED_CONTENT_OFFSET,
+        },
+      })}
       id="lightspeed-fab"
       data-testid="lightspeed-fab"
     >
@@ -84,24 +67,20 @@ const LightspeedFABInner = () => {
           aria-label={
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
-          className={fabButton.fab}
-          sx={{ borderRadius: '100% !important' }}
+          sx={theme => ({
+            borderRadius: '100% !important',
+            opacity: '1 !important',
+            backgroundColor: `${theme.palette?.primary?.main ?? '#1976d2'} !important`,
+            color: `${theme.palette?.primary?.contrastText ?? '#fff'} !important`,
+            boxShadow: `${
+              theme.shadows?.[6] ??
+              '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)'
+            } !important`,
+          })}
         >
           {isChatbotActive ? <Close fontSize="small" /> : <LightspeedFABIcon />}
         </Fab>
       </Tooltip>
-    </div>
+    </Box>
   );
 };
-
-/**
- * @alpha
- * Lightspeed Floating action button to open/close the lightspeed chatbot
- */
-export const LightspeedFAB = () => (
-  <StylesProvider generateClassName={generateClassName}>
-    <StylesProviderV4 generateClassName={generateClassNameV4}>
-      <LightspeedFABInner />
-    </StylesProviderV4>
-  </StylesProvider>
-);
