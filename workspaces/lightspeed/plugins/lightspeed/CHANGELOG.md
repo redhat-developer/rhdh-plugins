@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.5
+
+### Patch Changes
+
+- 52ac724: fix(lightspeed): prevent JSS class name prefix from leaking into host application styles
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.5
+
 ## 2.8.4
 
 ### Patch Changes
