@@ -38,12 +38,14 @@ function makeStatusUpdate(
     contextId?: string;
     text?: string;
     metadata?: Record<string, unknown>;
+    rootMetadata?: Record<string, unknown>;
   },
 ) {
   return JSON.stringify({
     statusUpdate: {
       taskId: opts?.taskId ?? 'task-1',
       contextId: opts?.contextId ?? 'ctx-1',
+      ...(opts?.rootMetadata && { metadata: opts.rootMetadata }),
       status: {
         state,
         ...(opts?.text || opts?.metadata
@@ -769,7 +771,7 @@ describe('agent handoff events', () => {
     const first = n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', {
         text: 'Hello from Agent A',
-        metadata: { agent_name: 'AgentA' },
+        rootMetadata: { agent_name: 'AgentA' },
       }),
     );
     const handoffInFirst = first.find(e => e.type === 'stream.agent.handoff');
@@ -779,7 +781,7 @@ describe('agent handoff events', () => {
     const second = n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', {
         text: 'Hello from Agent B',
-        metadata: { agent_name: 'AgentB' },
+        rootMetadata: { agent_name: 'AgentB' },
       }),
     );
     const handoffInSecond = second.find(e => e.type === 'stream.agent.handoff');
@@ -795,13 +797,13 @@ describe('agent handoff events', () => {
     n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', {
         text: 'first',
-        metadata: { agent_name: 'AgentA' },
+        rootMetadata: { agent_name: 'AgentA' },
       }),
     );
     const second = n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', {
         text: 'second',
-        metadata: { agent_name: 'AgentA' },
+        rootMetadata: { agent_name: 'AgentA' },
       }),
     );
     expect(second.find(e => e.type === 'stream.agent.handoff')).toBeUndefined();
@@ -812,7 +814,7 @@ describe('agent handoff events', () => {
     n.normalize(
       makeStatusUpdate('TASK_STATE_WORKING', {
         text: 'start',
-        metadata: { agent_name: 'Root' },
+        rootMetadata: { agent_name: 'Root' },
       }),
     );
     const second = n.normalize(

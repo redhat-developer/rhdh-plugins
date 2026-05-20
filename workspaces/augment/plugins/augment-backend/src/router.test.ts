@@ -286,7 +286,10 @@ describe('createRouter', () => {
         desc: 'missing message content',
       },
     ])('returns 400 for $desc', async ({ body }) => {
-      const response = await request(app).post('/chat').send(body);
+      const response = await request(app)
+        .post('/chat')
+        .set('X-Backstage-Request', 'augment')
+        .send(body);
 
       expect(response.status).toBe(400);
     });
@@ -301,6 +304,7 @@ describe('createRouter', () => {
 
       const response = await request(app)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({ messages: [{ role: 'user', content: 'Hello' }] });
 
       expect(response.status).toEqual(200);
@@ -317,6 +321,7 @@ describe('createRouter', () => {
 
       await request(app)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({
           messages: [{ role: 'user', content: 'Test' }],
           enableRAG: false,
@@ -336,6 +341,7 @@ describe('createRouter', () => {
 
       await request(app)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({
           messages: [{ role: 'user', content: 'Continue' }],
           previousResponseId: 'resp_prev_123',
@@ -361,7 +367,10 @@ describe('createRouter', () => {
         mockProvider.rag! as unknown as { syncDocuments: jest.Mock }
       ).syncDocuments = mockSyncDocuments;
 
-      const response = await request(app).post('/sync').send({});
+      const response = await request(app)
+        .post('/sync')
+        .set('X-Backstage-Request', 'augment')
+        .send({});
 
       expect(response.status).toEqual(200);
       expect(response.body).toHaveProperty('success', true);
@@ -509,6 +518,7 @@ describe('createRouter', () => {
 
       const response = await request(appPerm)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({ messages: [{ role: 'user', content: 'Hello' }] });
 
       expect(response.status).toEqual(403);
@@ -548,6 +558,7 @@ describe('createRouter', () => {
 
       const response = await request(appPerm)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({ messages: [{ role: 'user', content: 'Hello' }] });
 
       expect(response.status).toEqual(403);
@@ -573,6 +584,7 @@ describe('createRouter', () => {
 
       const response = await request(appAuth)
         .post('/chat')
+        .set('X-Backstage-Request', 'augment')
         .send({ messages: [{ role: 'user', content: 'Hello' }] });
 
       expect(response.status).toEqual(401);
@@ -626,6 +638,7 @@ describe('createRouter', () => {
         createSession: jest.Mock;
         getSession: jest.Mock;
         deleteSession: jest.Mock;
+        getMessages: jest.Mock;
       }>,
     ): ChatSessionService => {
       const mock = {
@@ -640,6 +653,7 @@ describe('createRouter', () => {
         }),
         getSession: jest.fn().mockResolvedValue(null),
         deleteSession: jest.fn().mockResolvedValue(false),
+        getMessages: jest.fn().mockResolvedValue([]),
       };
       return { ...mock, ...overrides } as unknown as ChatSessionService;
     };
@@ -710,6 +724,7 @@ describe('createRouter', () => {
 
       const response = await request(appSessions)
         .post('/sessions')
+        .set('X-Backstage-Request', 'augment')
         .send({ title: 'Test' });
 
       expect(response.status).toEqual(200);
@@ -717,6 +732,8 @@ describe('createRouter', () => {
       expect(mockCreateSession).toHaveBeenCalledWith(
         'user:default/testuser',
         'Test',
+        expect.anything(),
+        expect.anything(),
       );
     });
 
@@ -796,7 +813,9 @@ describe('createRouter', () => {
       const appSessions = express();
       appSessions.use(router);
 
-      const response = await request(appSessions).delete('/sessions/123');
+      const response = await request(appSessions)
+        .delete('/sessions/123')
+        .set('X-Backstage-Request', 'augment');
 
       expect(response.status).toEqual(200);
       expect(response.body).toHaveProperty('success', true);
@@ -820,9 +839,9 @@ describe('createRouter', () => {
       const appSessions = express();
       appSessions.use(router);
 
-      const response = await request(appSessions).delete(
-        '/sessions/unknown-123',
-      );
+      const response = await request(appSessions)
+        .delete('/sessions/unknown-123')
+        .set('X-Backstage-Request', 'augment');
 
       expect(response.status).toEqual(404);
       expect(response.body).toHaveProperty('error', 'Session not found');
@@ -897,7 +916,9 @@ describe('createRouter', () => {
       const appSessions = express();
       appSessions.use(router);
 
-      const response = await request(appSessions).delete('/sessions/123');
+      const response = await request(appSessions)
+        .delete('/sessions/123')
+        .set('X-Backstage-Request', 'augment');
 
       expect(response.status).toEqual(200);
       expect(response.body).toHaveProperty('success', true);

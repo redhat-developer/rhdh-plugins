@@ -93,7 +93,7 @@ describe('CreateAgentWizard — rendering', () => {
   it('shows step 0 fields by default', () => {
     renderWizard();
     expect(getNameInput()).toBeInTheDocument();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(screen.getAllByText('Back').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Next')).toBeInTheDocument();
   });
 
@@ -102,9 +102,9 @@ describe('CreateAgentWizard — rendering', () => {
     expect(screen.queryByText('Create Agent')).not.toBeInTheDocument();
   });
 
-  it('shows cancel button', () => {
+  it('shows back/close button on step 0', () => {
     renderWizard();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(screen.getAllByText('Back').length).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -152,11 +152,12 @@ describe('CreateAgentWizard — step 0 basics', () => {
     });
   });
 
-  it('Cancel button calls onClose', async () => {
+  it('Back button on step 0 calls onClose', async () => {
     const user = userEvent.setup();
     const { onClose } = renderWizard();
 
-    await user.click(screen.getByText('Cancel'));
+    const backButtons = screen.getAllByText('Back');
+    await user.click(backButtons[0]);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

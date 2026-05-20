@@ -328,7 +328,7 @@ describe('kagentiRoutes', () => {
     const { app, mockApiClient } = createMockRouteContext();
     const res = await request(app).get('/kagenti/tools');
     expect(res.status).toBe(200);
-    expect(res.body.tools).toEqual([]);
+    expect(res.body.items).toEqual([]);
     expect(mockApiClient.listNamespaces).toHaveBeenCalled();
     expect(mockApiClient.listTools).toHaveBeenCalledWith('team1');
   });

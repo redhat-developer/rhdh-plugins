@@ -53,14 +53,16 @@ export function sanitizeToolsForServer(
   return tools.map(tool => {
     if (tool.type !== 'function') return tool;
 
-    const { strict, type: _discriminator, ...rest } = tool;
-    if (strict !== undefined && !capabilities.strictField) {
-      logger.debug(
-        `[ToolsBuilder] Stripped 'strict' field from function tool "${rest.name}" (server does not support it)`,
-      );
+    if (!capabilities.strictField) {
+      const { strict, ...rest } = tool;
+      if (strict !== undefined) {
+        logger.debug(
+          `[ToolsBuilder] Stripped 'strict' field from function tool "${rest.name}" (server does not support it)`,
+        );
+      }
+      return rest as ResponsesApiTool;
     }
-    const sanitized = capabilities.strictField ? { strict, ...rest } : rest;
-    return sanitized as ResponsesApiTool;
+    return tool;
   });
 }
 

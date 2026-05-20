@@ -60,8 +60,16 @@ function createDetailMockApi(overrides = {}) {
     }),
     getKagentiAgentRouteStatus: jest.fn().mockResolvedValue({}),
     triggerKagentiBuild: jest.fn().mockResolvedValue({}),
+    listAgents: jest.fn().mockResolvedValue([]),
     ...overrides,
   };
+}
+
+function setupUseApiMock(api: ReturnType<typeof createDetailMockApi>) {
+  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
+    if (ref === augmentApiRef) return api;
+    throw new Error(`Unexpected API ref in test: ${String(ref)}`);
+  });
 }
 
 function renderDetail(props = {}, apiOverrides = {}) {
@@ -69,12 +77,7 @@ function renderDetail(props = {}, apiOverrides = {}) {
   const onChatWithAgent = jest.fn();
   const agent = makeKagentiAgentSummary({ name: 'my-agent', status: 'ready' });
   const api = createDetailMockApi(apiOverrides);
-  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-    if (ref === augmentApiRef) {
-      return api;
-    }
-    return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-  });
+  setupUseApiMock(api);
   const view = render(
     <ThemeProvider theme={theme}>
       <KagentiAgentDetailView
@@ -260,12 +263,7 @@ describe('KagentiAgentDetailView', () => {
         status: {},
       }),
     });
-    mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-      if (ref === augmentApiRef) {
-        return api;
-      }
-      return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-    });
+    setupUseApiMock(api);
     const agent = makeKagentiAgentSummary({ name: 'solo' });
     render(
       <ThemeProvider theme={theme}>
@@ -314,12 +312,7 @@ describe('KagentiAgentDetailView', () => {
       labels: { protocol: 'http', framework: 'Python' },
     });
     const api = createDetailMockApi();
-    mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-      if (ref === augmentApiRef) {
-        return api;
-      }
-      return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-    });
+    setupUseApiMock(api);
     render(
       <ThemeProvider theme={theme}>
         <KagentiAgentDetailView
@@ -336,12 +329,7 @@ describe('KagentiAgentDetailView', () => {
   it('uses error chip color for failed status in header', async () => {
     const agent = makeKagentiAgentSummary({ name: 'bad', status: 'failed' });
     const api = createDetailMockApi();
-    mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-      if (ref === augmentApiRef) {
-        return api;
-      }
-      return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-    });
+    setupUseApiMock(api);
     render(
       <ThemeProvider theme={theme}>
         <KagentiAgentDetailView

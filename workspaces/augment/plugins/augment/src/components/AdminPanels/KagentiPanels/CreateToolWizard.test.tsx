@@ -86,9 +86,11 @@ describe('CreateToolWizard — rendering', () => {
     expect(screen.getByText('Runtime')).toBeInTheDocument();
   });
 
-  it('shows Cancel and Next buttons on step 0', () => {
+  it('shows Back and Next buttons on step 0', () => {
     renderWizard();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('button', { name: /Back/i }).length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
   });
 

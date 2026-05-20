@@ -264,6 +264,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/promptGroups')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: [{ id: 'lane-1', title: 'Lane 1', cards: [] }] });
 
       expect(res.status).toBe(200);
@@ -277,6 +278,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/invalid')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'test' });
 
       expect(res.status).toBe(400);
@@ -286,7 +288,10 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).put('/admin/config/promptGroups').send({});
+      const res = await request(app)
+        .put('/admin/config/promptGroups')
+        .set('X-Backstage-Request', 'augment')
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -309,6 +314,7 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/systemPrompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'Be helpful' });
 
       const res = await request(app).get('/admin/config/systemPrompt');
@@ -334,9 +340,12 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: { appName: 'MyApp' } });
 
-      const res = await request(app).delete('/admin/config/branding');
+      const res = await request(app)
+        .delete('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.deleted).toBe(true);
 
@@ -348,7 +357,9 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).delete('/admin/config/branding');
+      const res = await request(app)
+        .delete('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.deleted).toBe(false);
     });
@@ -365,6 +376,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/documents')
+        .set('X-Backstage-Request', 'augment')
         .attach('file', Buffer.from('test content'), 'doc.txt');
 
       expect(res.status).toBe(200);
@@ -379,6 +391,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/documents')
+        .set('X-Backstage-Request', 'augment')
         .attach('file', Buffer.from('data'), 'script.exe');
 
       expect(res.status).toBe(400);
@@ -388,7 +401,10 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).post('/admin/documents').send({});
+      const res = await request(app)
+        .post('/admin/documents')
+        .set('X-Backstage-Request', 'augment')
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -418,27 +434,38 @@ describe('Admin routes', () => {
         makeRequest: (a: express.Express) =>
           request(a)
             .post('/admin/documents')
+            .set('X-Backstage-Request', 'augment')
             .attach('file', Buffer.from('test'), 'doc.txt'),
       },
       {
         desc: 'delete not supported',
         makeRequest: (a: express.Express) =>
-          request(a).delete('/admin/documents/file-1'),
+          request(a)
+            .delete('/admin/documents/file-1')
+            .set('X-Backstage-Request', 'augment'),
       },
       {
         desc: 'search not supported',
         makeRequest: (a: express.Express) =>
-          request(a).post('/admin/rag-test').send({ query: 'test' }),
+          request(a)
+            .post('/admin/rag-test')
+            .set('X-Backstage-Request', 'augment')
+            .send({ query: 'test' }),
       },
       {
         desc: 'generate not supported',
         makeRequest: (a: express.Express) =>
-          request(a).post('/admin/rag-generate').send({ query: 'test' }),
+          request(a)
+            .post('/admin/rag-generate')
+            .set('X-Backstage-Request', 'augment')
+            .send({ query: 'test' }),
       },
       {
         desc: 'creation not supported',
         makeRequest: (a: express.Express) =>
-          request(a).post('/admin/vector-store/create'),
+          request(a)
+            .post('/admin/vector-store/create')
+            .set('X-Backstage-Request', 'augment'),
       },
       {
         desc: 'status not supported',
@@ -462,7 +489,9 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).delete('/admin/documents/file-1');
+      const res = await request(app)
+        .delete('/admin/documents/file-1')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.documentId).toBe('file-1');
@@ -480,6 +509,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-test')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'hello world' });
 
       expect(res.status).toBe(200);
@@ -495,6 +525,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-test')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: '' });
 
       expect(res.status).toBe(400);
@@ -504,7 +535,10 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).post('/admin/rag-test').send({});
+      const res = await request(app)
+        .post('/admin/rag-test')
+        .set('X-Backstage-Request', 'augment')
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -515,6 +549,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-test')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'x'.repeat(2001) });
 
       expect(res.status).toBe(400);
@@ -526,6 +561,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-test')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'test', maxResults: 0 });
 
       expect(res.status).toBe(400);
@@ -543,6 +579,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'What is testing?' });
 
       expect(res.status).toBe(200);
@@ -560,6 +597,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: '' });
 
       expect(res.status).toBe(400);
@@ -569,7 +607,10 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).post('/admin/rag-generate').send({});
+      const res = await request(app)
+        .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -580,6 +621,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'x'.repeat(2001) });
 
       expect(res.status).toBe(400);
@@ -591,6 +633,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'test', maxResults: 0 });
 
       expect(res.status).toBe(400);
@@ -625,6 +668,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/rag-generate')
+        .set('X-Backstage-Request', 'augment')
         .send({ query: 'test' });
 
       expect(res.status).toBe(501);
@@ -684,6 +728,7 @@ describe('Admin routes', () => {
       // Save a DB override so the route reports source: 'merged'
       await request(app)
         .put('/admin/config/vectorStoreConfig')
+        .set('X-Backstage-Request', 'augment')
         .send({
           value: {
             vectorStoreName: 'custom-db',
@@ -763,7 +808,9 @@ describe('Admin routes', () => {
       const { create } = createApp(db);
       const app = await create();
 
-      const res = await request(app).post('/admin/vector-store/create');
+      const res = await request(app)
+        .post('/admin/vector-store/create')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.vectorStoreId).toBe('vs_new');
@@ -810,6 +857,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/documents')
+        .set('X-Backstage-Request', 'augment')
         .attach('file', Buffer.from('# Hello'), 'readme.md');
 
       expect(res.status).toBe(409);
@@ -833,6 +881,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/documents?replace=true')
+        .set('X-Backstage-Request', 'augment')
         .attach('file', Buffer.from('# Updated'), 'readme.md');
 
       expect(res.status).toBe(200);
@@ -851,6 +900,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/documents')
+        .set('X-Backstage-Request', 'augment')
         .attach('file', Buffer.from('hello'), 'newfile.txt');
 
       expect(res.status).toBe(200);
@@ -947,6 +997,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/vector-stores/connect')
+        .set('X-Backstage-Request', 'augment')
         .send({ vectorStoreId: 'vs_new_store' });
 
       expect(res.status).toBe(200);
@@ -962,6 +1013,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/vector-stores/connect')
+        .set('X-Backstage-Request', 'augment')
         .send({ vectorStoreId: 'vs_nonexistent' });
 
       expect(res.status).toBe(404);
@@ -974,6 +1026,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/vector-stores/connect')
+        .set('X-Backstage-Request', 'augment')
         .send({});
 
       expect(res.status).toBe(400);
@@ -994,6 +1047,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/vector-stores/connect')
+        .set('X-Backstage-Request', 'augment')
         .send({ vectorStoreId: 'vs_test' });
 
       expect(res.status).toBe(409);
@@ -1007,7 +1061,9 @@ describe('Admin routes', () => {
       const { create, provider } = createApp(db);
       const app = await create();
 
-      const res = await request(app).delete('/admin/vector-stores/vs_test');
+      const res = await request(app)
+        .delete('/admin/vector-stores/vs_test')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.removed).toBe('vs_test');
@@ -1020,9 +1076,9 @@ describe('Admin routes', () => {
       const { create, provider } = createApp(db);
       const app = await create();
 
-      const res = await request(app).delete(
-        '/admin/vector-stores/vs_test?permanent=true',
-      );
+      const res = await request(app)
+        .delete('/admin/vector-stores/vs_test?permanent=true')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.removed).toBe('vs_test');
@@ -1038,9 +1094,9 @@ describe('Admin routes', () => {
       );
       const app = await create();
 
-      const res = await request(app).delete(
-        '/admin/vector-stores/vs_test?permanent=true',
-      );
+      const res = await request(app)
+        .delete('/admin/vector-stores/vs_test?permanent=true')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.removed).toBe('vs_test');
@@ -1054,7 +1110,9 @@ describe('Admin routes', () => {
       });
       const app = await create();
 
-      const res = await request(app).delete('/admin/vector-stores/vs_test');
+      const res = await request(app)
+        .delete('/admin/vector-stores/vs_test')
+        .set('X-Backstage-Request', 'augment');
       expect(res.status).toBe(501);
       expect(res.body.error).toMatch(/RAG not available/);
     });
@@ -1164,7 +1222,7 @@ describe('Admin routes', () => {
       expect(res.body.models[1].id).toBe('qwen3:14b-q8_0');
     });
 
-    it('returns 500 when provider throws', async () => {
+    it('returns 200 with empty models when provider throws', async () => {
       const { create } = createApp(db, {
         providerPatch: {
           listModels: jest
@@ -1175,8 +1233,9 @@ describe('Admin routes', () => {
       const app = await create();
 
       const res = await request(app).get('/admin/models');
-      expect(res.status).toBe(500);
-      expect(res.body.success).toBe(false);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.models).toEqual([]);
     });
   });
 
@@ -1191,6 +1250,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/generate-system-prompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ description: '' });
 
       expect(res.status).toBe(400);
@@ -1203,6 +1263,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/generate-system-prompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ description: 'x'.repeat(2001) });
 
       expect(res.status).toBe(400);
@@ -1215,6 +1276,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/generate-system-prompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ description: 'Help with Kubernetes' });
 
       expect(res.status).toBe(501);
@@ -1233,6 +1295,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/generate-system-prompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ description: 'Help with Kubernetes deployments' });
 
       expect(res.status).toBe(200);
@@ -1253,6 +1316,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/generate-system-prompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ description: 'Help me' });
 
       expect(res.status).toBe(500);
@@ -1271,6 +1335,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/baseUrl')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'not-a-url' });
 
       expect(res.status).toBe(400);
@@ -1283,6 +1348,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/baseUrl')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'https://llama.example.com' });
 
       expect(res.status).toBe(200);
@@ -1295,6 +1361,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/model')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: '  ' });
 
       expect(res.status).toBe(400);
@@ -1306,6 +1373,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/enableWebSearch')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'yes' });
 
       expect(res.status).toBe(400);
@@ -1317,6 +1385,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/toolChoice')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'invalid' });
 
       expect(res.status).toBe(400);
@@ -1328,6 +1397,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/toolChoice')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'auto' });
 
       expect(res.status).toBe(200);
@@ -1352,6 +1422,7 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: { appName: 'Custom App', primaryColor: '#ff0000' } });
 
       const res = await request(app).get('/branding');
@@ -1368,8 +1439,11 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: { appName: 'Custom App' } });
-      await request(app).delete('/admin/config/branding');
+      await request(app)
+        .delete('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment');
 
       const res = await request(app).get('/branding');
       expect(res.status).toBe(200);
@@ -1389,6 +1463,7 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/systemPrompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'Updated prompt' });
 
       expect(invalidateFn).toHaveBeenCalledTimes(1);
@@ -1405,10 +1480,13 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: { appName: 'X' } });
       invalidateFn.mockClear();
 
-      await request(app).delete('/admin/config/branding');
+      await request(app)
+        .delete('/admin/config/branding')
+        .set('X-Backstage-Request', 'augment');
 
       expect(invalidateFn).toHaveBeenCalledTimes(1);
     });
@@ -1425,6 +1503,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/mcpServers')
+        .set('X-Backstage-Request', 'augment')
         .send({
           value: [
             {
@@ -1446,6 +1525,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/mcpServers')
+        .set('X-Backstage-Request', 'augment')
         .send({
           value: [
             { id: 'bad', name: 'Bad MCP', url: 'not-a-url', type: 'sse' },
@@ -1461,6 +1541,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .put('/admin/config/mcpServers')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: [{ url: 'https://mcp.test' }] });
 
       expect(res.status).toBe(400);
@@ -1481,6 +1562,7 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/mcpServers')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: servers });
 
       const res = await request(app).get('/admin/config/mcpServers');
@@ -1518,6 +1600,7 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/promptGroups')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: lanes });
 
       const res = await request(app).get('/prompt-groups');
@@ -1540,12 +1623,15 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/promptGroups')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: lanes });
 
       let res = await request(app).get('/prompt-groups');
       expect(res.body.source).toBe('database');
 
-      await request(app).delete('/admin/config/promptGroups');
+      await request(app)
+        .delete('/admin/config/promptGroups')
+        .set('X-Backstage-Request', 'augment');
 
       res = await request(app).get('/prompt-groups');
       expect(res.body.source).toBe('yaml');
@@ -1559,6 +1645,7 @@ describe('Admin routes', () => {
 
       const putRes = await request(app)
         .put('/admin/config/safetyOnError')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'block' });
       expect(putRes.status).toBe(200);
 
@@ -1573,6 +1660,7 @@ describe('Admin routes', () => {
 
       const putRes = await request(app)
         .put('/admin/config/evaluationOnError')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'fail' });
       expect(putRes.status).toBe(200);
 
@@ -1587,6 +1675,7 @@ describe('Admin routes', () => {
 
       const putRes = await request(app)
         .put('/admin/config/disabledMcpServerIds')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: ['server-1', 'server-2'] });
       expect(putRes.status).toBe(200);
 
@@ -1603,18 +1692,23 @@ describe('Admin routes', () => {
 
       await request(app)
         .put('/admin/config/model')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'test-model-v2' });
       await request(app)
         .put('/admin/config/systemPrompt')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 'Be concise.' });
       await request(app)
         .put('/admin/config/safetyEnabled')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: true });
       await request(app)
         .put('/admin/config/evaluationEnabled')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: true });
       await request(app)
         .put('/admin/config/minScoreThreshold')
+        .set('X-Backstage-Request', 'augment')
         .send({ value: 0.75 });
 
       const modelRes = await request(app).get('/admin/config/model');
@@ -1687,6 +1781,7 @@ describe('Admin routes', () => {
 
       const res = await request(app)
         .post('/admin/mcp/test-connection')
+        .set('X-Backstage-Request', 'augment')
         .send(body);
 
       expect(res.status).toBe(400);

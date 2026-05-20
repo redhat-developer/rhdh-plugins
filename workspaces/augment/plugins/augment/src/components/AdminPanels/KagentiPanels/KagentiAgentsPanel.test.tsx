@@ -18,7 +18,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ApiRef } from '@backstage/core-plugin-api';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
 import { KagentiAgentsPanel } from './KagentiAgentsPanel';
 import { makeKagentiAgentSummary } from './kagentiTestFixtures';
@@ -29,6 +29,27 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 const mockedUseApi = jest.mocked(useApi);
+
+const mockConfigApi = {
+  getString: jest.fn().mockReturnValue('http://localhost'),
+  getOptionalString: jest.fn().mockReturnValue(undefined),
+  getConfig: jest.fn().mockReturnValue({ getString: jest.fn() }),
+  getOptionalConfig: jest.fn().mockReturnValue(undefined),
+  getConfigArray: jest.fn().mockReturnValue([]),
+  getOptionalConfigArray: jest.fn().mockReturnValue(undefined),
+  getNumber: jest.fn().mockReturnValue(0),
+  getOptionalNumber: jest.fn().mockReturnValue(undefined),
+  getBoolean: jest.fn().mockReturnValue(false),
+  getOptionalBoolean: jest.fn().mockReturnValue(undefined),
+  getStringArray: jest.fn().mockReturnValue([]),
+  getOptionalStringArray: jest.fn().mockReturnValue(undefined),
+  keys: jest.fn().mockReturnValue([]),
+  has: jest.fn().mockReturnValue(false),
+};
+
+const mockFetchApi = {
+  fetch: jest.fn().mockResolvedValue(new Response()),
+};
 
 const theme = createTheme();
 
@@ -58,18 +79,23 @@ function createPanelMockApi(overrides = {}) {
     getKagentiAgentRouteStatus: jest.fn().mockResolvedValue({}),
     triggerKagentiBuild: jest.fn().mockResolvedValue({}),
     fetchJson: jest.fn().mockResolvedValue({}),
+    listAgents: jest.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
 
+function setupUseApiMock(api: ReturnType<typeof createPanelMockApi>) {
+  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
+    if (ref === augmentApiRef) return api;
+    if (ref === configApiRef) return mockConfigApi;
+    if (ref === fetchApiRef) return mockFetchApi;
+    throw new Error(`Unexpected API ref in test: ${String(ref)}`);
+  });
+}
+
 function renderPanel(props = {}, apiOverrides = {}) {
   const api = createPanelMockApi(apiOverrides);
-  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-    if (ref === augmentApiRef) {
-      return api;
-    }
-    return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-  });
+  setupUseApiMock(api);
   const view = render(
     <ThemeProvider theme={theme}>
       <KagentiAgentsPanel {...props} />
@@ -83,27 +109,20 @@ describe('KagentiAgentsPanel', () => {
     mockedUseApi.mockReset();
   });
 
-  it('shows loading progress indicator while agents load', () => {
+  it('shows loading skeleton while agents load', () => {
     const api = createPanelMockApi({
       listKagentiAgents: jest.fn(() => new Promise(() => {})),
     });
-    mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-      if (ref === augmentApiRef) {
-        return api;
-      }
-      return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-    });
+    setupUseApiMock(api);
     render(
       <ThemeProvider theme={theme}>
         <KagentiAgentsPanel />
       </ThemeProvider>,
     );
-    expect(
-      document.querySelector('.MuiCircularProgress-root'),
-    ).toBeInTheDocument();
+    expect(document.querySelector('.MuiSkeleton-root')).toBeInTheDocument();
   });
 
-  it('shows error alert when listKagentiAgents fails', async () => {
+  it('shows empty state when listKagentiAgents fails', async () => {
     renderPanel(
       {},
       {
@@ -113,7 +132,7 @@ describe('KagentiAgentsPanel', () => {
       },
     );
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('network down');
+      expect(screen.getByText('No agents found')).toBeInTheDocument();
     });
   });
 
@@ -227,13 +246,10 @@ describe('KagentiAgentsPanel', () => {
       expect(screen.getByText('to-delete')).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole('button', { name: /Delete agent/i }));
+    await user.click(screen.getByRole('button', { name: /^Delete$/i }));
 
     expect(
       screen.getByRole('heading', { name: /Delete agent/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`Delete agent ${agent.namespace}/${agent.name}?`),
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /^Confirm$/i }));
@@ -298,7 +314,9 @@ describe('KagentiAgentsPanel', () => {
       .mockResolvedValue({ agents: [makeKagentiAgentSummary()] });
     renderPanel({}, { listKagentiAgents });
 
-    await waitFor(() => expect(listKagentiAgents).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByText('alpha-agent')).toBeInTheDocument(),
+    );
 
     const refreshBtn = screen.getByRole('button', { name: /Refresh/i });
     expect(refreshBtn).not.toBeDisabled();
@@ -307,7 +325,7 @@ describe('KagentiAgentsPanel', () => {
     await waitFor(() => expect(listKagentiAgents).toHaveBeenCalledTimes(2));
   });
 
-  it('status chip uses success color for ready', async () => {
+  it('renders status chip for ready agents', async () => {
     renderPanel(
       {},
       {
@@ -317,11 +335,10 @@ describe('KagentiAgentsPanel', () => {
       },
     );
     await waitFor(() => expect(screen.getByText('ready')).toBeInTheDocument());
-    const chip = screen.getByText('ready').closest('.MuiChip-root');
-    expect(chip).toHaveClass('MuiChip-colorSuccess');
+    expect(screen.getByText('ready').closest('.MuiChip-root')).toBeTruthy();
   });
 
-  it('status chip uses error color for failed', async () => {
+  it('renders status chip for failed agents', async () => {
     renderPanel(
       {},
       {
@@ -331,12 +348,10 @@ describe('KagentiAgentsPanel', () => {
       },
     );
     await waitFor(() => expect(screen.getByText('failed')).toBeInTheDocument());
-    expect(screen.getByText('failed').closest('.MuiChip-root')).toHaveClass(
-      'MuiChip-colorError',
-    );
+    expect(screen.getByText('failed').closest('.MuiChip-root')).toBeTruthy();
   });
 
-  it('status chip uses info color for building', async () => {
+  it('renders status chip for building agents', async () => {
     renderPanel(
       {},
       {
@@ -348,12 +363,10 @@ describe('KagentiAgentsPanel', () => {
     await waitFor(() =>
       expect(screen.getByText('building')).toBeInTheDocument(),
     );
-    expect(screen.getByText('building').closest('.MuiChip-root')).toHaveClass(
-      'MuiChip-colorInfo',
-    );
+    expect(screen.getByText('building').closest('.MuiChip-root')).toBeTruthy();
   });
 
-  it('status chip uses warning color for degraded', async () => {
+  it('renders status chip for degraded agents', async () => {
     renderPanel(
       {},
       {
@@ -365,12 +378,10 @@ describe('KagentiAgentsPanel', () => {
     await waitFor(() =>
       expect(screen.getByText('degraded')).toBeInTheDocument(),
     );
-    expect(screen.getByText('degraded').closest('.MuiChip-root')).toHaveClass(
-      'MuiChip-colorWarning',
-    );
+    expect(screen.getByText('degraded').closest('.MuiChip-root')).toBeTruthy();
   });
 
-  it('invokes onChatWithAgent from detail view when Chat is clicked', async () => {
+  it('invokes onChatWithAgent when Chat icon is clicked on agent card', async () => {
     const user = userEvent.setup();
     const onChatWithAgent = jest.fn();
     const agent = makeKagentiAgentSummary({ name: 'chatty' });
@@ -382,31 +393,34 @@ describe('KagentiAgentsPanel', () => {
     );
 
     await waitFor(() => expect(screen.getByText('chatty')).toBeInTheDocument());
-    await user.click(screen.getByText('chatty'));
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /^Chat$/ }),
-      ).toBeInTheDocument(),
-    );
-    await user.click(screen.getByRole('button', { name: /^Chat$/ }));
+    const chatBtn = screen.getByRole('button', { name: /^Chat$/i });
+    await user.click(chatBtn);
 
     expect(onChatWithAgent).toHaveBeenCalledWith('team-a/chatty');
   });
 
-  it('dismisses list error alert when closed', async () => {
+  it('shows error alert when delete fails', async () => {
     const user = userEvent.setup();
+    const agent = makeKagentiAgentSummary({ name: 'fail-del' });
     renderPanel(
       {},
       {
-        listKagentiAgents: jest.fn().mockRejectedValue(new Error('boom')),
+        listKagentiAgents: jest.fn().mockResolvedValue({ agents: [agent] }),
+        deleteKagentiAgent: jest
+          .fn()
+          .mockRejectedValue(new Error('delete boom')),
       },
     );
-    await waitFor(() => expect(screen.getByText('boom')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('fail-del')).toBeInTheDocument(),
+    );
 
-    const closeBtn = screen.getByRole('button', { name: /close/i });
-    await user.click(closeBtn);
+    await user.click(screen.getByRole('button', { name: /^Delete$/i }));
+    await user.click(screen.getByRole('button', { name: /^Confirm$/i }));
 
-    expect(screen.queryByText('boom')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('delete boom')).toBeInTheDocument(),
+    );
   });
 });

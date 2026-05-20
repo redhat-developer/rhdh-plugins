@@ -34,6 +34,27 @@ import type {
 import { ResponsesApiCoordinator } from '../ResponsesApiCoordinator';
 import type { ChatRequest, ChatResponse } from '../../../types';
 
+// Pre-register dynamically imported modules so Jest can resolve them
+// without --experimental-vm-modules.
+jest.mock('../workflow/WorkflowHydrator', () =>
+  jest.requireActual('../workflow/WorkflowHydrator'),
+);
+jest.mock('../openai-agents-adapters/LlamaStackProvider', () =>
+  jest.requireActual('../openai-agents-adapters/LlamaStackProvider'),
+);
+jest.mock('../openai-agents-adapters/responseMapper', () =>
+  jest.requireActual('../openai-agents-adapters/responseMapper'),
+);
+jest.mock('../openai-agents-adapters/streamMapper', () =>
+  jest.requireActual('../openai-agents-adapters/streamMapper'),
+);
+jest.mock('../../responses-api/chat/chatUtils', () =>
+  jest.requireActual('../../responses-api/chat/chatUtils'),
+);
+jest.mock('../../../services/WorkflowMigration', () =>
+  jest.requireActual('../../../services/WorkflowMigration'),
+);
+
 // ---------------------------------------------------------------------------
 //  Mock LlamaStack Server
 // ---------------------------------------------------------------------------

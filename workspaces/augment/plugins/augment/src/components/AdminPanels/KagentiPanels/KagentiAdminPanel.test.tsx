@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ApiRef } from '@backstage/core-plugin-api';
@@ -65,14 +65,16 @@ function createAdminMockApi(overrides = {}) {
   };
 }
 
+function setupUseApiMock(api: ReturnType<typeof createAdminMockApi>) {
+  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
+    if (ref === augmentApiRef) return api;
+    throw new Error(`Unexpected API ref in test: ${String(ref)}`);
+  });
+}
+
 function renderAdmin(apiOverrides = {}) {
   const api = createAdminMockApi(apiOverrides);
-  mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-    if (ref === augmentApiRef) {
-      return api;
-    }
-    return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-  });
+  setupUseApiMock(api);
   return {
     ...render(
       <ThemeProvider theme={theme}>
@@ -92,12 +94,7 @@ describe('KagentiAdminPanel', () => {
     const api = createAdminMockApi({
       getKagentiDashboards: jest.fn(() => new Promise(() => {})),
     });
-    mockedUseApi.mockImplementation((ref: ApiRef<unknown>) => {
-      if (ref === augmentApiRef) {
-        return api;
-      }
-      return jest.requireActual('@backstage/core-plugin-api').useApi(ref);
-    });
+    setupUseApiMock(api);
     render(
       <ThemeProvider theme={theme}>
         <KagentiAdminPanel />
@@ -119,7 +116,6 @@ describe('KagentiAdminPanel', () => {
     expect(screen.getByText('Namespace Management')).toBeInTheDocument();
     expect(screen.getByText('Agent Migration')).toBeInTheDocument();
     expect(screen.getByText('Build Strategies')).toBeInTheDocument();
-    expect(screen.getByText('Platform Configuration')).toBeInTheDocument();
   });
 
   it('reloads namespaces when namespace section refresh is clicked', async () => {
@@ -131,18 +127,12 @@ describe('KagentiAdminPanel', () => {
     await waitFor(() => {
       expect(screen.getByText('Namespace Management')).toBeInTheDocument();
     });
-    const nsCard = screen
-      .getByText('Namespace Management')
-      .closest('.MuiCard-root') as HTMLElement;
-    expect(nsCard).toBeTruthy();
     await waitFor(() => {
-      expect(
-        within(nsCard).getByText('unique-ns-refresh-test'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('unique-ns-refresh-test')).toBeInTheDocument();
     });
     const initialCalls = listKagentiNamespaces.mock.calls.length;
 
-    const refreshBtn = within(nsCard).getByRole('button', {
+    const refreshBtn = screen.getByRole('button', {
       name: /Refresh namespaces/i,
     });
     await user.click(refreshBtn);

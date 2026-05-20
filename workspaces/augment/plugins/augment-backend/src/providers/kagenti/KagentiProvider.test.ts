@@ -414,7 +414,8 @@ describe('KagentiProvider -- getEffectiveConfig', () => {
     await p.initialize();
 
     const ec = await p.getEffectiveConfig!();
-    expect(ec.baseUrl).toBe('https://kagenti.example.com');
+    expect(ec.baseUrl).toBe('https://llamastack.example.com');
+    expect(ec.kagentiBaseUrl).toBe('https://kagenti.example.com');
     expect(ec.model).toBe('meta-llama/Llama-3.3-8B-Instruct');
     expect(ec.toolChoice).toBe('auto');
   });

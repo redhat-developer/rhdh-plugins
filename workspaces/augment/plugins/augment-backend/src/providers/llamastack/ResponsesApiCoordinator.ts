@@ -361,6 +361,8 @@ export class ResponsesApiCoordinator {
    * it with the OpenAI Agents SDK, and runs.
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
+    this.ensureInitialized();
+
     const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
     const { LlamaStackProvider } =
       await import('./openai-agents-adapters/LlamaStackProvider');
@@ -415,6 +417,8 @@ export class ResponsesApiCoordinator {
     onEvent: (event: string) => void,
     signal?: AbortSignal,
   ): Promise<void> {
+    this.ensureInitialized();
+
     const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
     const { LlamaStackProvider } =
       await import('./openai-agents-adapters/LlamaStackProvider');
