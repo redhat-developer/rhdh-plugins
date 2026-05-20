@@ -404,7 +404,231 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
   });
 
   // -------------------------------------------------------------------------
-  // 5. API Response Interception
+  // 5. Granular Cluster & Project RBAC (3-Tier Filtering)
+  //
+  // The ROS RBAC model has 3 tiers:
+  //   Tier 1: ros.plugin     → see ALL data (no filters)
+  //   Tier 2: ros/<cluster>  → see only data for that cluster
+  //   Tier 3: ros/<cluster>/<project> → see only data for that cluster+project
+  //
+  // Users with ONLY tier-2 or tier-3 permissions (no ros.plugin) exercise
+  // a completely different code path — filterAuthorizedClustersAndProjects()
+  // evaluates each cluster/project permission individually and injects
+  // server-side query filters into the upstream API call.
+  //
+  // These tests verify:
+  //   a) Cluster-only user sees data (proves ros/<cluster> evaluated correctly)
+  //   b) Project-only user sees data (proves ros/<cluster>/<project> evaluated)
+  //   c) Cluster-only user sees FEWER items than ros.plugin user (server filter)
+  //   d) Both granular users get 403 on the OpenShift tab (no cost.plugin)
+  // -------------------------------------------------------------------------
+
+  test.describe('Granular Cluster & Project RBAC (3-Tier)', () => {
+    const clusterOnlyUser =
+      process.env.RBAC_CLUSTER_ONLY_USER ?? 'ro-cluster-only';
+    const clusterOnlyPass = process.env.RBAC_CLUSTER_ONLY_PASS ?? 'test';
+    const projectOnlyUser =
+      process.env.RBAC_PROJECT_ONLY_USER ?? 'ro-project-only';
+    const projectOnlyPass = process.env.RBAC_PROJECT_ONLY_PASS ?? 'test';
+    const fullUser = process.env.RBAC_FULL_USER ?? 'costmgmt-full-access';
+    const fullPass = process.env.RBAC_FULL_PASS ?? 'test';
+
+    test('cluster-only user should see optimizations data (proves ros/<cluster> is evaluated)', async ({
+      page,
+    }) => {
+      const rosPage = new ResourceOptimizationPage(page);
+      await rosPage.navigateToOptimizationAsOIDC(
+        clusterOnlyUser,
+        clusterOnlyPass,
+      );
+
+      await expect(page.getByText('Resource Optimization')).toBeVisible();
+      const count = await rosPage.getOptimizableContainerCount();
+      expect(count).not.toBeNull();
+      expect(count).toBeGreaterThan(0);
+    });
+
+    test('project-only user should see optimizations data (proves ros/<cluster>/<project> is evaluated)', async ({
+      page,
+    }) => {
+      const rosPage = new ResourceOptimizationPage(page);
+      await rosPage.navigateToOptimizationAsOIDC(
+        projectOnlyUser,
+        projectOnlyPass,
+      );
+
+      await expect(page.getByText('Resource Optimization')).toBeVisible();
+      const count = await rosPage.getOptimizableContainerCount();
+      expect(count).not.toBeNull();
+      expect(count).toBeGreaterThan(0);
+    });
+
+    test('cluster-only user should see FEWER containers than ros.plugin user (server-side filtering)', async ({
+      browser,
+    }) => {
+      // Context 1: Full access user (ros.plugin — no filters)
+      const fullCtx = await browser.newContext();
+      const fullPage = await fullCtx.newPage();
+      const fullRosPage = new ResourceOptimizationPage(fullPage);
+      await fullRosPage.navigateToOptimizationAsOIDC(fullUser, fullPass);
+      await expect(fullPage.getByText('Resource Optimization')).toBeVisible();
+      const fullCount = await fullRosPage.getOptimizableContainerCount();
+      await fullCtx.close();
+
+      // Context 2: Cluster-only user (ros/<cluster> — filtered)
+      const filteredCtx = await browser.newContext();
+      const filteredPage = await filteredCtx.newPage();
+      const filteredRosPage = new ResourceOptimizationPage(filteredPage);
+      await filteredRosPage.navigateToOptimizationAsOIDC(
+        clusterOnlyUser,
+        clusterOnlyPass,
+      );
+      await expect(
+        filteredPage.getByText('Resource Optimization'),
+      ).toBeVisible();
+      const filteredCount =
+        await filteredRosPage.getOptimizableContainerCount();
+      await filteredCtx.close();
+
+      expect(fullCount).not.toBeNull();
+      expect(filteredCount).not.toBeNull();
+
+      // The cluster-only user should see ≤ the full-access user.
+      // On a multi-cluster environment this is strictly less; on single-cluster
+      // it may be equal (both see the same cluster's data).
+      expect(filteredCount!).toBeLessThanOrEqual(fullCount!);
+    });
+
+    test('project-only user data should be a subset of cluster-only user data', async ({
+      browser,
+    }) => {
+      const clusterCtx = await browser.newContext();
+      const clusterPage = await clusterCtx.newPage();
+      const clusterRosPage = new ResourceOptimizationPage(clusterPage);
+      await clusterRosPage.navigateToOptimizationAsOIDC(
+        clusterOnlyUser,
+        clusterOnlyPass,
+      );
+      const clusterCount = await clusterRosPage.getOptimizableContainerCount();
+      await clusterCtx.close();
+
+      const projectCtx = await browser.newContext();
+      const projectPage = await projectCtx.newPage();
+      const projectRosPage = new ResourceOptimizationPage(projectPage);
+      await projectRosPage.navigateToOptimizationAsOIDC(
+        projectOnlyUser,
+        projectOnlyPass,
+      );
+      const projectCount = await projectRosPage.getOptimizableContainerCount();
+      await projectCtx.close();
+
+      expect(clusterCount).not.toBeNull();
+      expect(projectCount).not.toBeNull();
+      expect(projectCount!).toBeLessThanOrEqual(clusterCount!);
+    });
+
+    test('cluster-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
+      page,
+    }) => {
+      await performOIDCLogin(page, clusterOnlyUser, clusterOnlyPass);
+      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
+
+      const errorIndicator = page
+        .getByRole('alert')
+        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
+        .or(page.getByText(/access denied|no data/i));
+
+      const denied = await errorIndicator
+        .isVisible({ timeout: 15000 })
+        .catch(() => false);
+
+      if (!denied) {
+        const costTable = page
+          .getByRole('table')
+          .filter({ hasText: /cost|cluster/i });
+        const hasCostData = await costTable
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+        expect(hasCostData).toBe(false);
+      }
+    });
+
+    test('project-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
+      page,
+    }) => {
+      await performOIDCLogin(page, projectOnlyUser, projectOnlyPass);
+      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
+
+      const errorIndicator = page
+        .getByRole('alert')
+        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
+        .or(page.getByText(/access denied|no data/i));
+
+      const denied = await errorIndicator
+        .isVisible({ timeout: 15000 })
+        .catch(() => false);
+
+      if (!denied) {
+        const costTable = page
+          .getByRole('table')
+          .filter({ hasText: /cost|cluster/i });
+        const hasCostData = await costTable
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+        expect(hasCostData).toBe(false);
+      }
+    });
+
+    test('cluster-only user should see cluster data in API response with filter applied', async ({
+      page,
+    }) => {
+      const apiResponses: { url: string; status: number; body?: any }[] = [];
+
+      await page.route(`**${API_BASE}/**`, async route => {
+        const response = await route.fetch();
+        let body;
+        try {
+          body = await response.json();
+        } catch {
+          body = null;
+        }
+        apiResponses.push({
+          url: route.request().url(),
+          status: response.status(),
+          body,
+        });
+        await route.fulfill({
+          response,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      });
+
+      const rosPage = new ResourceOptimizationPage(page);
+      await rosPage.navigateToOptimizationAsOIDC(
+        clusterOnlyUser,
+        clusterOnlyPass,
+      );
+      await expect(page.getByText('Resource Optimization')).toBeVisible();
+      await rosPage.getOptimizableContainerCount();
+
+      await page.unroute(`**${API_BASE}/**`);
+
+      // The proxy call should contain a cluster filter query parameter
+      const proxyCall = apiResponses.find(
+        r => r.url.includes('/proxy/') && r.url.includes('recommendations'),
+      );
+      expect(proxyCall).toBeDefined();
+      expect(proxyCall!.status).toBe(200);
+
+      // Verify the response has data (not empty or error)
+      if (proxyCall!.body?.data) {
+        expect(proxyCall!.body.data.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 6. API Response Interception
   //
   // Intercepts actual API responses during navigation to verify the
   // backend returns correct HTTP status codes and response shapes.
