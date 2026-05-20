@@ -19,7 +19,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 // CRITICAL: Export messages separately for testing
 export const bulkImportMessages = {
   page: {
-    title: 'Bulk import',
+    title: 'Bulk import New',
     subtitle: 'Import entities to Red Hat Developer Hub',
     addRepositoriesTitle: 'Add repositories',
     importEntitiesTitle: 'Import entities',
