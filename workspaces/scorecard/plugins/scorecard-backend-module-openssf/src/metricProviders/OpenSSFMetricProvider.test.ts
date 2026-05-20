@@ -218,35 +218,41 @@ describe('OpenSSFMetricProvider', () => {
       );
     });
 
-    it('throws when the check score is out of range (< 0 or > 10)', async () => {
-      (globalThis.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          date: '2024-01-15',
-          repo: { name: 'x', commit: 'x' },
-          scorecard: { version: '4.0.0', commit: 'y' },
-          score: 7,
-          checks: [
-            {
-              name: 'Maintained',
-              score: 11,
-              reason: null,
-              details: null,
-              documentation: { short: '', url: '' },
-            },
-          ],
-        }),
-      });
+    it.each([
+      [11, "OpenSSF check 'Maintained' has invalid score 11"],
+      [-1, "OpenSSF check 'Maintained' has invalid score -1"],
+    ])(
+      'throws when github.com scorecard returns check score %i outside 0-10',
+      async (invalidScore, expectedMessage) => {
+        (globalThis.fetch as jest.Mock).mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            date: '2024-01-15',
+            repo: { name: 'github.com/owner/repo', commit: 'x' },
+            scorecard: { version: '4.0.0', commit: 'y' },
+            score: 7,
+            checks: [
+              {
+                name: 'Maintained',
+                score: invalidScore,
+                reason: null,
+                details: null,
+                documentation: { short: '', url: '' },
+              },
+            ],
+          }),
+        });
 
-      const provider = new OpenSSFMetricProvider(
-        maintainedConfig,
-        OPENSSF_THRESHOLDS,
-      );
+        const provider = new OpenSSFMetricProvider(
+          maintainedConfig,
+          OPENSSF_THRESHOLDS,
+        );
 
-      await expect(provider.calculateMetric(entity)).rejects.toThrow(
-        "OpenSSF check 'Maintained' has invalid score 11",
-      );
-    });
+        await expect(provider.calculateMetric(entity)).rejects.toThrow(
+          expectedMessage,
+        );
+      },
+    );
   });
 
   describe('createOpenSSFMetricProvider', () => {
