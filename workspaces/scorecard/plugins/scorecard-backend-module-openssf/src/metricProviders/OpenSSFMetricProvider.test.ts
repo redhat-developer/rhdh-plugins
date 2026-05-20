@@ -218,12 +218,9 @@ describe('OpenSSFMetricProvider', () => {
       );
     });
 
-    it.each([
-      [11, "OpenSSF check 'Maintained' has invalid score 11"],
-      [-1, "OpenSSF check 'Maintained' has invalid score -1"],
-    ])(
+    it.each([[11], [-1]])(
       'throws when github.com scorecard returns check score %i outside 0-10',
-      async (invalidScore, expectedMessage) => {
+      async invalidScore => {
         (globalThis.fetch as jest.Mock).mockResolvedValue({
           ok: true,
           json: jest.fn().mockResolvedValue({
@@ -249,7 +246,7 @@ describe('OpenSSFMetricProvider', () => {
         );
 
         await expect(provider.calculateMetric(entity)).rejects.toThrow(
-          expectedMessage,
+          `OpenSSF check 'Maintained' has invalid score ${invalidScore}`,
         );
       },
     );
