@@ -52,7 +52,7 @@ createDevApp()
         <BulkImportPage />
       </TestApiProvider>
     ),
-    title: 'Bulk import',
+    title: 'Bulk import For Legacy',
     path: '/bulk-import',
     icon: BulkImportIcon,
   })

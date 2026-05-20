@@ -197,7 +197,7 @@ export const lightspeedMessages = {
   'menu.newConversation': 'New Chat',
 
   // Chat-specific UI elements
-  'chatbox.header.title': 'Developer Lightspeed',
+  'chatbox.header.title': 'Developer Lightspeed For Legacy',
   'chatbox.search.placeholder': 'Search',
   'chatbox.provider.other': 'Other',
   'chatbox.emptyState.noPinnedChats': 'No pinned chats',
