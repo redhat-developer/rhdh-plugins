@@ -70,6 +70,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'projectModulesCard.noModules': 'Nessun modulo trovato finora...',
     'projectModulesCard.toReview': 'rivedere',
     'projectModulesCard.published': 'pubblicato',
+    'projectModulesCard.spinner':
+      'Fase di scoperta in esecuzione e aggiornamento dell’elenco moduli dal piano di migrazione…',
     'projectPage.title': 'Progetto',
     'projectPage.actionsTooltip':
       'Clicca per aprire il menu per le azioni del progetto',
@@ -113,6 +115,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.summary.running': 'In esecuzione',
     'module.summary.error': 'Errore',
     'module.summary.cancelled': 'Annullato',
+    'module.summary.removed': 'Rimosso',
     'module.summary.toReview_one': '{{count}} modulo con artefatti da rivedere',
     'module.summary.toReview_other':
       '{{count}} moduli con artefatti da rivedere',
@@ -137,6 +140,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.success': 'Successo',
     'module.statuses.error': 'Errore',
     'module.statuses.cancelled': 'Annullato',
+    'module.statuses.removed': 'Rimosso',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
     'artifact.types.ansible_project': 'Progetto AAP',
@@ -271,6 +275,20 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
     'retriggerInit.errorStart':
       "Errore nell'avvio dell'inizializzazione del progetto",
+    'resyncMigrationPlan.action': 'Risincronizza il piano di migrazione',
+    'resyncMigrationPlan.confirm.title':
+      'Risincronizzare il piano di migrazione per "{{name}}"?',
+    'resyncMigrationPlan.confirm.message':
+      'Questa operazione rileggerà il piano di migrazione dal repository di destinazione e aggiornerà la lista dei moduli di conseguenza. I nuovi moduli verranno aggiunti e quelli non più presenti nel piano verranno contrassegnati come rimossi. Se apporti modifiche al documento, ad esempio rimuovendo un modulo, assicurati che il documento resti coerente.',
+    'resyncMigrationPlan.confirm.warning':
+      'I moduli contrassegnati come rimossi manterranno la cronologia dei job ma non saranno più idonei per nuove esecuzioni di fase. Questa azione non può essere annullata per i moduli rimossi a meno che non vengano nuovamente aggiunti al piano di migrazione.',
+    'resyncMigrationPlan.confirm.confirmButton': 'Risincronizza',
+    'resyncMigrationPlan.running':
+      'Risincronizzazione della lista moduli dal piano di migrazione…',
+    'resyncMigrationPlan.error':
+      'Errore nella risincronizzazione del piano di migrazione per il progetto "{{name}}"',
+    'resyncMigrationPlan.errorStart':
+      "Errore nell'avvio della risincronizzazione del piano di migrazione",
     'scaffolder.rulesAcceptance.loadingRules': 'Caricamento regole...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Nessuna regola configurata.',

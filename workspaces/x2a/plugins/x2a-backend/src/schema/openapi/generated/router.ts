@@ -527,6 +527,10 @@ export const spec = {
                   "userPrompt": {
                     "type": "string",
                     "description": "Optional user prompt for customizing the migration"
+                  },
+                  "refresh": {
+                    "type": "boolean",
+                    "description": "When true, runs init in refresh mode to resync the module list from an existing migration plan"
                   }
                 },
                 "required": [
@@ -594,59 +598,6 @@ export const spec = {
                   "items": {
                     "$ref": "#/components/schemas/Module"
                   }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Project not found"
-          }
-        }
-      },
-      "post": {
-        "summary": "Creates a new module for a project",
-        "description": "**TEMPORARY ENDPOINT FOR TESTING ONLY**\n\nThis endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.\n\nAccording to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase).\nThe proper implementation will be added when the init phase integration is complete.\n\nTODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)\n",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "projectId",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Module name"
-                  },
-                  "sourcePath": {
-                    "type": "string",
-                    "description": "Path to the module in the source repository"
-                  }
-                },
-                "required": [
-                  "name",
-                  "sourcePath"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Module created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Module"
                 }
               }
             }
@@ -1176,6 +1127,11 @@ export const spec = {
           "errorDetails": {
             "type": "string",
             "description": "Detailed error information if the module failed to execute"
+          },
+          "removedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the module was soft-deleted during a migration plan resync. Null/missing for active modules."
           }
         },
         "required": [
@@ -1197,13 +1153,14 @@ export const spec = {
       },
       "ModuleStatus": {
         "type": "string",
-        "description": "Module status is the status of the last job of its most-advanced phase.\nIf the most-advanced phase's job was cancelled, the module status is cancelled.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that have no jobs yet. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
+        "description": "Module status is the status of the last job of its most-advanced phase.\nIf the most-advanced phase's job was cancelled, the module status is cancelled.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that have no jobs yet. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\nThe removed state indicates the module was soft-deleted during a migration plan resync.\n",
         "enum": [
           "pending",
           "running",
           "success",
           "error",
-          "cancelled"
+          "cancelled",
+          "removed"
         ]
       },
       "ProjectStatusState": {
@@ -1248,6 +1205,10 @@ export const spec = {
           "cancelled": {
             "type": "integer",
             "description": "Number of modules in cancelled state (last job was cancelled by the user)"
+          },
+          "removed": {
+            "type": "integer",
+            "description": "Number of soft-deleted modules (excluded from other counts)"
           }
         },
         "required": [
@@ -1257,7 +1218,8 @@ export const spec = {
           "pending",
           "running",
           "error",
-          "cancelled"
+          "cancelled",
+          "removed"
         ]
       },
       "ProjectStatus": {

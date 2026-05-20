@@ -57,6 +57,23 @@ import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
 import { calculateProjectStatus } from './projectStatus';
 
+function enrichModuleWithJobStatus(
+  module: Module,
+  lastJobs: {
+    analyze?: Job;
+    migrate?: Job;
+    publish?: Job;
+  },
+): Module {
+  const { status, errorDetails } = calculateModuleStatus(lastJobs);
+  return {
+    ...module,
+    ...lastJobs,
+    status: module.removedAt ? 'removed' : status,
+    errorDetails: module.removedAt ? undefined : errorDetails,
+  };
+}
+
 export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;
   readonly #projectOps: ProjectOperations;
@@ -90,7 +107,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     const lastInitJob = initJob[0];
 
     project.status = calculateProjectStatus(
-      await this.listModules({ projectId }),
+      await this.listModules({ projectId, includeRemoved: true }),
       lastInitJob,
     );
 
@@ -289,6 +306,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     name: string;
     sourcePath: string;
     projectId: string;
+    technology?: Module['technology'];
   }): Promise<Module> {
     return this.#moduleOps.createModule(module);
   }
@@ -329,20 +347,27 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
       module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
 
-      const { status, errorDetails } = calculateModuleStatus({
+      return enrichModuleWithJobStatus(module, {
         analyze: module.analyze,
         migrate: module.migrate,
         publish: module.publish,
       });
-      module.status = status;
-      module.errorDetails = errorDetails;
     }
 
     return module;
   }
 
-  async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
-    const modules = await this.#moduleOps.listModules({ projectId });
+  async listModules({
+    projectId,
+    includeRemoved,
+  }: {
+    projectId: string;
+    includeRemoved?: boolean;
+  }): Promise<Module[]> {
+    const modules = await this.#moduleOps.listModules({
+      projectId,
+      includeRemoved,
+    });
     // TODO: This can be optimized by using a single query to list all jobs for all modules.
     const lastAnalyzeJobsOfModules = await Promise.all(
       modules.map(module =>
@@ -386,18 +411,34 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
         lastPublishJobsOfModules[idxModule][0],
       );
       const lastJobs = { analyze, migrate: migrateJob, publish };
-      return {
-        ...module,
-        ...lastJobs,
-        ...calculateModuleStatus(lastJobs),
-      };
+      return enrichModuleWithJobStatus(module, lastJobs);
     });
 
     return response;
   }
 
+  async updateModule({
+    id,
+    sourcePath,
+    technology,
+  }: {
+    id: string;
+    sourcePath?: string;
+    technology?: Module['technology'];
+  }): Promise<number> {
+    return this.#moduleOps.updateModule({ id, sourcePath, technology });
+  }
+
   async deleteModule({ id }: { id: string }): Promise<number> {
     return this.#moduleOps.deleteModule({ id });
+  }
+
+  async softDeleteModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.softDeleteModule({ id });
+  }
+
+  async restoreModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.restoreModule({ id });
   }
 
   // Jobs

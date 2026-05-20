@@ -39,7 +39,7 @@ function job(status: Job['status'], options?: { errorDetails?: string }): Job {
 /** Minimal module for project status tests; only status and publish are used by calculateProjectStatus. */
 function module(
   status: ModuleStatus,
-  options?: { publishStatus?: Job['status'] },
+  options?: { publishStatus?: Job['status']; removedAt?: Date },
 ): Module {
   const m: Module = {
     id: 'mod-id',
@@ -51,7 +51,14 @@ function module(
   if (options?.publishStatus !== undefined) {
     m.publish = job(options.publishStatus);
   }
+  if (options?.removedAt !== undefined) {
+    m.removedAt = options.removedAt;
+  }
   return m;
+}
+
+function removedModule(status: ModuleStatus): Module {
+  return module(status, { removedAt: new Date() });
 }
 
 function initJob(status: Job['status']): Job {
@@ -80,6 +87,7 @@ describe('calculateProjectStatus', () => {
         running: 0,
         error: 0,
         cancelled: 0,
+        removed: 0,
       });
     });
 
@@ -418,6 +426,7 @@ describe('calculateProjectStatus', () => {
         running: 0,
         error: 0,
         cancelled: 0,
+        removed: 0,
       });
     });
 
@@ -429,6 +438,60 @@ describe('calculateProjectStatus', () => {
       expect(result.modulesSummary.cancelled).toBe(2);
       expect(result.modulesSummary.pending).toBe(1);
       expect(result.modulesSummary.total).toBe(3);
+    });
+  });
+
+  describe('removed modules', () => {
+    it('excludes removed modules from total and status counts', () => {
+      const result = calculateProjectStatus(
+        [module('pending'), removedModule('success'), removedModule('error')],
+        initJob('success'),
+      );
+      expect(result.modulesSummary.total).toBe(1);
+      expect(result.modulesSummary.pending).toBe(1);
+      expect(result.modulesSummary.removed).toBe(2);
+      expect(result.modulesSummary.error).toBe(0);
+    });
+
+    it('reports removed count when all modules are removed', () => {
+      const result = calculateProjectStatus(
+        [removedModule('success'), removedModule('pending')],
+        initJob('success'),
+      );
+      expect(result.state).toBe('initialized');
+      expect(result.modulesSummary.total).toBe(0);
+      expect(result.modulesSummary.removed).toBe(2);
+    });
+
+    it('returns created state when only removed modules exist and no init job', () => {
+      const result = calculateProjectStatus(
+        [removedModule('success')],
+        undefined,
+      );
+      expect(result.state).toBe('created');
+      expect(result.modulesSummary.total).toBe(0);
+      expect(result.modulesSummary.removed).toBe(1);
+    });
+
+    it('does not let removed error modules affect project state', () => {
+      const result = calculateProjectStatus(
+        [
+          module('success', { publishStatus: 'success' }),
+          removedModule('error'),
+        ],
+        initJob('success'),
+      );
+      expect(result.state).toBe('completed');
+      expect(result.modulesSummary.error).toBe(0);
+      expect(result.modulesSummary.removed).toBe(1);
+    });
+
+    it('returns removed: 0 when no modules are removed', () => {
+      const result = calculateProjectStatus(
+        [module('pending'), module('running')],
+        initJob('success'),
+      );
+      expect(result.modulesSummary.removed).toBe(0);
     });
   });
 });

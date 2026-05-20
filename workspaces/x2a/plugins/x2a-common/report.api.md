@@ -102,7 +102,6 @@ export class DefaultApiClient {
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
-    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     rulesGet(request: RulesGet, options?: RequestOptions): Promise<TypedResponse<RulesGet200Response>>;
@@ -231,6 +230,7 @@ export interface Module {
     projectId: string;
     // (undocumented)
     publish?: Job;
+    removedAt?: Date;
     sourcePath: string;
     // (undocumented)
     status?: ModuleStatus;
@@ -247,13 +247,14 @@ export interface ModulesStatusSummary {
     error: number;
     finished: number;
     pending: number;
+    removed: number;
     running: number;
     total: number;
     waiting: number;
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled' | 'removed';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -485,20 +486,6 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
 }
 
 // @public (undocumented)
-export type ProjectsProjectIdModulesPost = {
-    path: {
-        projectId: string;
-    };
-    body: ProjectsProjectIdModulesPostRequest;
-};
-
-// @public (undocumented)
-export interface ProjectsProjectIdModulesPostRequest {
-    name: string;
-    sourcePath: string;
-}
-
-// @public (undocumented)
 export type ProjectsProjectIdPatch = {
     path: {
         projectId: string;
@@ -534,6 +521,7 @@ export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
 export interface ProjectsProjectIdRunPostRequest {
     // (undocumented)
     aapCredentials?: AAPCredentials;
+    refresh?: boolean;
     // (undocumented)
     sourceRepoAuth: GitRepoAuth;
     // (undocumented)

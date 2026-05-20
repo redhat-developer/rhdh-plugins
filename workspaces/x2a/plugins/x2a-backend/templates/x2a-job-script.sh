@@ -297,8 +297,24 @@ case "${PHASE}" in
     # Run the init command
     # Usage: app.py init [OPTIONS] USER_REQUIREMENTS
     #   --source-dir DIRECTORY  Source directory to analyze
+    #   --refresh               Skip plan generation, only regenerate metadata
     USER_REQ="${USER_PROMPT:-Analyze the source configuration and create a migration plan}"
-    run_x2a uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
+    INIT_ARGS=(--source-dir "${SOURCE_BASE}")
+    if [ "${INIT_REFRESH:-}" = "true" ]; then
+      INIT_ARGS+=(--refresh)
+      echo "Running in REFRESH mode (resync module list from existing plan)"
+
+      # Copy existing migration plan from target repo so the x2a tool can find
+      # it in source-dir and skip plan regeneration.
+      if [ -f "${PROJECT_PATH}/migration-plan.md" ]; then
+        echo "Copying existing migration-plan.md from target to source for refresh..."
+        cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+      else
+        echo "ERROR: REFRESH mode requires migration-plan.md in ${PROJECT_PATH}/ but the file was not found" >&2
+        exit 1
+      fi
+    fi
+    run_x2a uv run app.py init "${INIT_ARGS[@]}" "${USER_REQ}"
 
     # Copy output to target location
     # Note: x2a tool writes files to the source directory (--source-dir)

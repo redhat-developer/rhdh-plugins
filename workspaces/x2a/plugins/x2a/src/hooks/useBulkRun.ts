@@ -251,5 +251,35 @@ export const useBulkRun = () => {
     [fetchAllProjects, processProject],
   );
 
-  return { runAllForProject, runAllGlobal, retriggerInit };
+  const resyncMigrationPlan = useCallback(
+    async (project: Project): Promise<string> => {
+      const { sourceToken, targetToken } = await getProjectAuthTokens(project);
+
+      const response = await clientService.projectsProjectIdRunPost({
+        path: { projectId: project.id },
+        body: {
+          sourceRepoAuth: { token: sourceToken },
+          targetRepoAuth: { token: targetToken },
+          refresh: true,
+        },
+      });
+
+      if (!isHttpSuccessResponse(response)) {
+        const message = await extractResponseError(
+          response,
+          t('resyncMigrationPlan.errorStart' as any, {}),
+        );
+        throw new Error(message);
+      }
+
+      const responseData = await response.json();
+      if (!responseData.jobId) {
+        throw new Error('No jobId returned for migration plan resync');
+      }
+      return responseData.jobId;
+    },
+    [clientService, getProjectAuthTokens, t],
+  );
+
+  return { runAllForProject, runAllGlobal, retriggerInit, resyncMigrationPlan };
 };

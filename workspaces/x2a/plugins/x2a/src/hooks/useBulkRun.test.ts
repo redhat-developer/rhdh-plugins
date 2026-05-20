@@ -101,6 +101,7 @@ const withModulesStatus: Pick<Project, 'status'> = {
       running: 0,
       error: 0,
       cancelled: 0,
+      removed: 0,
     },
   },
 };
@@ -752,6 +753,7 @@ describe('useBulkRun', () => {
             running: 0,
             error: 0,
             cancelled: 0,
+            removed: 0,
           },
         },
       });
@@ -794,6 +796,7 @@ describe('useBulkRun', () => {
             running: 0,
             error: 0,
             cancelled: 0,
+            removed: 0,
           },
         },
       });

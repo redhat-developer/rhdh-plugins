@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 import {
-  Module,
+  JobStatus,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { getNextPhase } from './getNextPhase';
-import { hasPhasePrerequisites } from './hasPhasePrerequisites';
+/**
+ * A project is eligible for migration plan resync when:
+ * - A migration plan already exists (init phase succeeded at least once)
+ * - No init job is currently running
+ *
+ * This is distinct from `isEligibleForRetriggerInit` which covers the case
+ * where the first init failed and needs to be re-run from scratch.
+ */
+export const isEligibleForResync = (project: Project): boolean => {
+  const hasMigrationPlan = !!project.migrationPlan;
+  const initJobStatus = project.initJob?.status;
+  const initRunning =
+    !!initJobStatus && JobStatus.from(initJobStatus).isActive();
 
-export const canRunNextPhase = (module: Module, project: Project): boolean => {
-  if (module.removedAt) {
-    return false;
-  }
-
-  const nextPhase = getNextPhase(module);
-
-  if (!nextPhase) {
-    return false;
-  }
-
-  return hasPhasePrerequisites(module, nextPhase, project);
+  return hasMigrationPlan && !initRunning;
 };

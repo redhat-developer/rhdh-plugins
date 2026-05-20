@@ -365,6 +365,14 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...(params.refresh
+                    ? [
+                        {
+                          name: 'INIT_REFRESH',
+                          value: 'true',
+                        },
+                      ]
+                    : []),
                   ...(hasRules
                     ? [
                         {

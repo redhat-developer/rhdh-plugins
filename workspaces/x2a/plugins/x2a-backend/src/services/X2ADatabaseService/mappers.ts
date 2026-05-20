@@ -62,6 +62,9 @@ export function mapRowToModule(row: Record<string, unknown>): Module {
     sourcePath: row.source_path as string,
     technology: (row.technology as SourceTechnology) || undefined,
     projectId: row.project_id as string,
+    removedAt: row.removed_at
+      ? new Date(row.removed_at as string | Date)
+      : undefined,
   };
 }
 
