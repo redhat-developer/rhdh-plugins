@@ -184,22 +184,58 @@ export class SessionService {
    * @throws NotAllowedError if user does not own the session
    */
   async deleteSession(sessionId: string, userId: string): Promise<void> {
-    // Verify ownership before deletion
-    await this.readSession(sessionId, userId);
+    // Verify ownership before deletion and get session details
+    const session = await this.readSession(sessionId, userId);
+    const conversationId = session.metadata?.conversation_id;
 
-    // Delete all underlying files from Files API to prevent orphans
+    // Delete associated conversation if it exists
+    if (conversationId) {
+      try {
+        // Access the baseURL from the VectorStoresOperator client
+        const baseURL = (this.client as any).baseURL;
+        const response = await fetch(
+          `${baseURL}/v2/conversations/${encodeURIComponent(conversationId)}?user_id=${encodeURIComponent(userId)}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        if (!response.ok) {
+          this.logger.warn(
+            `Failed to delete conversation ${conversationId}: HTTP ${response.status}`,
+          );
+        } else {
+          this.logger.info(
+            `Deleted conversation ${conversationId} for session ${sessionId}`,
+          );
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to delete conversation ${conversationId}: ${error}`,
+        );
+      }
+    }
+
+    // Delete all vector store files
     try {
       const filesResponse =
         await this.client.vectorStores.files.list(sessionId);
-      const fileIds = filesResponse.data?.map((f: any) => f.file_id) || [];
+      const files = filesResponse.data || [];
 
       await Promise.all(
-        fileIds.map(async (fileId: string) => {
+        files.map(async (file: any) => {
           try {
-            await this.client.files.delete(fileId);
-            this.logger.info(`Deleted file ${fileId} from Files API`);
+            await this.client.vectorStores.files.delete(sessionId, file.id);
+            this.logger.info(
+              `Deleted vector store file ${file.id} (${file.attributes?.title || 'untitled'})`,
+            );
           } catch (error) {
-            this.logger.warn(`Failed to delete file ${fileId}: ${error}`);
+            this.logger.warn(
+              `Failed to delete vector store file ${file.id}: ${error}`,
+            );
           }
         }),
       );
@@ -209,7 +245,7 @@ export class SessionService {
       );
     }
 
-    // Delete the vector store (cascade deletes vector store files)
+    // Delete the vector store
     await this.client.vectorStores.delete(sessionId);
     this.logger.info(`Session ${sessionId} deleted`);
   }
