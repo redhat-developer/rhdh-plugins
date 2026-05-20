@@ -374,7 +374,9 @@ describe('ChatSessionService (with database)', () => {
     it('purges sessions older than retention period', async () => {
       const s1 = await service.createSession('user:default/old', 'Old chat');
 
-      const past = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString();
+      const past = new Date(
+        Date.now() - 100 * 24 * 60 * 60 * 1000,
+      ).toISOString();
       await db('augment_sessions')
         .where('id', s1.id)
         .update({ updated_at: past });

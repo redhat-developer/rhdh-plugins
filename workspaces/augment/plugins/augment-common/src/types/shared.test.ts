@@ -136,9 +136,9 @@ describe('getAvailableTransitions', () => {
 
 describe('deriveRoleFromTopology', () => {
   it('returns standalone for agent with no connections', () => {
-    expect(
-      deriveRoleFromTopology('agent-a', { 'agent-a': {} }),
-    ).toBe('standalone');
+    expect(deriveRoleFromTopology('agent-a', { 'agent-a': {} })).toBe(
+      'standalone',
+    );
   });
 
   it('returns router for agent with outgoing handoffs', () => {

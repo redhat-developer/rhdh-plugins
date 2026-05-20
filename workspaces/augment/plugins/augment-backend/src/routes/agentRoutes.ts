@@ -331,7 +331,12 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { from: currentStage, to: nextStage, direction: 'promote', version: existing?.version ?? 1 },
+          meta: {
+            from: currentStage,
+            to: nextStage,
+            direction: 'promote',
+            version: existing?.version ?? 1,
+          },
         });
         logger.info(
           `Agent "${agentId}" promoted to ${nextStage} (v${existing?.version ?? 1}) by ${userRef}`,
