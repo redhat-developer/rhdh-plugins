@@ -34,6 +34,39 @@ import { secureProxy } from '../routes/secureProxy';
 import { applyRecommendation } from '../routes/applyRecommendation';
 import { getTokenFromApi } from '../util/tokenUtil';
 
+/** @internal Visible for testing */
+export function extractStrings<T>(
+  result: PromiseSettledResult<{ data?: T[] }>,
+  accessor: (item: T) => string | undefined,
+): Set<string> {
+  const values = new Set<string>();
+  if (result.status !== 'fulfilled' || !result.value?.data) {
+    return values;
+  }
+  for (const item of result.value.data) {
+    const v = accessor(item);
+    if (v) values.add(v);
+  }
+  return values;
+}
+
+/** @internal Visible for testing */
+export function buildClusterProjectPermissions(
+  clusters: Set<string>,
+  projects: Set<string>,
+  clusterFn: (cluster: string) => BasicPermission,
+  projectFn: (cluster: string, project: string) => BasicPermission,
+): BasicPermission[] {
+  const perms: BasicPermission[] = [];
+  for (const cluster of clusters) {
+    perms.push(clusterFn(cluster));
+    for (const project of projects) {
+      perms.push(projectFn(cluster, project));
+    }
+  }
+  return perms;
+}
+
 /**
  * Fetches cluster and project data from the upstream APIs and builds
  * permission objects for every ros/{cluster}, ros/{cluster}/{project},
@@ -47,7 +80,6 @@ async function fetchDynamicPermissions(
   options: RouterOptions,
 ): Promise<BasicPermission[]> {
   const { logger } = options;
-  const permissions: BasicPermission[] = [];
 
   try {
     const token = await getTokenFromApi(options);
@@ -67,59 +99,46 @@ async function fetchDynamicPermissions(
         .then(r => r.json()),
     ]);
 
-    const rosClusterNames = new Set<string>();
-    const rosProjects = new Set<string>();
+    const rosClusterNames = extractStrings(rosData, r => r.clusterAlias);
+    const rosProjectNames = extractStrings(rosData, r => r.project);
+    const costClusterNames = extractStrings(
+      costClusters,
+      (c: { cluster_alias: string }) => c.cluster_alias,
+    );
+    const costProjectNames = extractStrings(
+      costProjects,
+      (p: { value: string }) => p.value,
+    );
 
-    if (rosData.status === 'fulfilled' && rosData.value?.data) {
-      for (const rec of rosData.value.data) {
-        if (rec.clusterAlias) rosClusterNames.add(rec.clusterAlias);
-        if (rec.project) rosProjects.add(rec.project);
-      }
-    }
-
-    for (const cluster of rosClusterNames) {
-      permissions.push(rosClusterSpecificPermission(cluster));
-      for (const project of rosProjects) {
-        permissions.push(rosClusterProjectPermission(cluster, project));
-      }
-    }
-
-    const costClusterNames = new Set<string>();
-    const costProjectNames = new Set<string>();
-
-    if (costClusters.status === 'fulfilled' && costClusters.value?.data) {
-      for (const c of costClusters.value.data as {
-        cluster_alias: string;
-      }[]) {
-        if (c.cluster_alias) costClusterNames.add(c.cluster_alias);
-      }
-    }
-    if (costProjects.status === 'fulfilled' && costProjects.value?.data) {
-      for (const p of costProjects.value.data as { value: string }[]) {
-        if (p.value) costProjectNames.add(p.value);
-      }
-    }
-
-    for (const cluster of costClusterNames) {
-      permissions.push(costClusterSpecificPermission(cluster));
-      for (const project of costProjectNames) {
-        permissions.push(costClusterProjectPermission(cluster, project));
-      }
-    }
+    const permissions = [
+      ...buildClusterProjectPermissions(
+        rosClusterNames,
+        rosProjectNames,
+        rosClusterSpecificPermission,
+        rosClusterProjectPermission,
+      ),
+      ...buildClusterProjectPermissions(
+        costClusterNames,
+        costProjectNames,
+        costClusterSpecificPermission,
+        costClusterProjectPermission,
+      ),
+    ];
 
     logger.info(
       `Registered ${permissions.length} dynamic RBAC permissions ` +
         `(${rosClusterNames.size} ROS clusters, ${costClusterNames.size} cost clusters)`,
     );
+
+    return permissions;
   } catch (error) {
     logger.warn(
       'Could not fetch cluster/project data for dynamic permission registration. ' +
         'Cluster-specific RBAC permissions will not be evaluated until the next refresh.',
       error instanceof Error ? { error: error.message } : {},
     );
+    return [];
   }
-
-  return permissions;
 }
 
 /** @public */
