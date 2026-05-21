@@ -17,6 +17,7 @@
 import type {
   NormalizedStreamEvent,
   SyncResult,
+  ChatAgent,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type {
   ChatRequest,
@@ -43,6 +44,7 @@ export type {
   MCPServerStatus,
   SecurityMode,
   RAGSource,
+  ChatAgent,
 };
 export type { EvaluationResult } from '../types';
 
@@ -89,6 +91,14 @@ export type {
   StreamToolApprovalEvent,
   StreamRagResultsEvent,
   StreamAgentHandoffEvent,
+  StreamFormRequestEvent,
+  StreamFormField,
+  StreamFormDescriptor,
+  StreamAuthRequiredEvent,
+  StreamSecretDemand,
+  StreamArtifactEvent,
+  StreamCitationEvent,
+  StreamCitationReference,
   StreamCompletedEvent,
   StreamErrorEvent,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -185,6 +195,10 @@ export interface RAGCapability {
   deleteVectorStore?(
     vectorStoreId: string,
   ): Promise<{ success: boolean; filesDeleted: number }>;
+  updateVectorStore?(
+    vectorStoreId: string,
+    updates: Record<string, unknown>,
+  ): Promise<VectorStoreInfo>;
   generateAnswer?(
     query: string,
     maxResults?: number,
@@ -325,6 +339,13 @@ export interface AgenticProvider {
   ): Promise<string>;
 
   /**
+   * List agents available for chat in a provider-agnostic format.
+   * Used by the agent catalog/gallery to display agents regardless of
+   * whether they come from Kagenti, Llama Stack config, or another source.
+   */
+  listAgents?(): Promise<ChatAgent[]>;
+
+  /**
    * List available models from the inference server.
    * Used by the admin panel to populate model selection dropdowns.
    */
@@ -336,7 +357,10 @@ export interface AgenticProvider {
    * Test connectivity to the inference server and optionally verify that a
    * specific model is available and can generate output.
    */
-  testModel?(model?: string): Promise<{
+  testModel?(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -356,6 +380,67 @@ export interface AgenticProvider {
 
   /** Response evaluation / scoring */
   evaluation?: EvaluationCapability;
+
+  // ---- Lifecycle & context methods (capability-gated) ----
+
+  /**
+   * Register provider-specific routes on the router.
+   * Called during route setup when the provider has `providerRoutes` capability.
+   */
+  registerRoutes?(router: import('express').Router, deps: unknown): void;
+
+  /**
+   * Set the current user context for downstream API calls.
+   * Used by providers that thread user identity through to external APIs.
+   */
+  setUserContext?(userRef: string): void;
+
+  /**
+   * Return the provider's session context ID for a Backstage session.
+   * Used for context hydration from DB across restarts.
+   */
+  getSessionContextId?(backstageSessionId: string): Promise<string | undefined>;
+
+  /**
+   * Hydrate provider session context from persisted data.
+   * Restores conversation continuity across server restarts.
+   */
+  hydrateSessionContext?(
+    backstageSessionId: string,
+    contextId: string,
+    model?: string,
+  ): Promise<void>;
+
+  /**
+   * Submit a tool approval/rejection directly to the provider.
+   * Used by providers that manage their own approval flow.
+   */
+  submitApproval?(approval: {
+    responseId: string;
+    callId: string;
+    approved: boolean;
+    toolName?: string;
+    toolArguments?: string;
+    reason?: string;
+  }): Promise<{
+    content?: string;
+    responseId?: string;
+    toolExecuted?: boolean;
+    toolOutput?: string;
+    pendingApproval?: {
+      approvalRequestId: string;
+      toolName: string;
+      serverLabel?: string;
+      arguments?: string;
+    };
+    handoff?: unknown;
+  }>;
+
+  /**
+   * Get an authentication token function for external service integration.
+   * Used by providers that manage OAuth tokens (e.g. for DevSpaces).
+   */
+  getAuthToken?(): Promise<string>;
 }
 
 // =============================================================================
@@ -377,6 +462,12 @@ export interface AgenticProviderStatus {
     chat: boolean;
     rag: { available: boolean; reason?: string };
     mcpTools: { available: boolean; reason?: string };
+    /** Whether this provider supports listing agents for the catalog */
+    agentCatalog?: boolean;
+    /** Whether the user must select an agent before chatting */
+    agentSelection?: boolean;
+    /** Whether agents have rich metadata (cards, skills) */
+    agentCards?: boolean;
   };
 }
 

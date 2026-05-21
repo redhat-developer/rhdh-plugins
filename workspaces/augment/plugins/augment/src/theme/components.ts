@@ -14,49 +14,90 @@
  * limitations under the License.
  */
 
+/**
+ * Shared styled components for the Augment plugin.
+ *
+ * These are thin, token-backed wrappers around MUI primitives.
+ * Import via the theme barrel: `import { ... } from '../../theme'`.
+ */
+
 import { styled, alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import {
   borderRadius,
-  createThemeShadows,
-  transitions,
+  typeScale,
+  typography,
   spacing,
+  transitions,
+  createThemeShadows,
+  scrollbarStyles,
 } from './tokens';
 
 /**
- * Gradient Button - Primary action button with solid brand color
+ * Primary action button with consistent styling across the plugin.
+ * - No text transform (sentence case)
+ * - Token-based border radius, shadows, transitions
  */
-export const GradientButton = styled(Button)(({ theme }) => {
+export const AugmentButton = styled(Button)(({ theme }) => {
   const themeShadows = createThemeShadows(alpha, theme.palette.mode === 'dark');
   return {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    fontWeight: 600,
+    fontWeight: typography.fontWeight.semibold,
     textTransform: 'none',
     borderRadius: theme.spacing(borderRadius.sm),
     boxShadow: themeShadows.sm,
     transition: transitions.normal,
-
     '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
       boxShadow: themeShadows.md,
     },
-
-    '&:active': {
-      backgroundColor: theme.palette.primary.main,
-    },
-
     '&:disabled': {
-      background: theme.palette.action.disabledBackground,
-      color: theme.palette.action.disabled,
       boxShadow: 'none',
     },
   };
 });
 
 /**
- * User Message Bubble - subtle background, doesn't overpower assistant text
+ * Card-like surface with consistent border, radius, padding.
+ * Use instead of ad-hoc `Card variant="outlined"` or styled `Box`.
+ */
+export const SurfaceCard = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  border: `1px solid ${alpha(
+    theme.palette.mode === 'dark'
+      ? theme.palette.common.white
+      : theme.palette.common.black,
+    theme.palette.mode === 'dark' ? 0.12 : 0.08,
+  )}`,
+  borderRadius: theme.spacing(borderRadius.sm),
+  padding: theme.spacing(spacing.md),
+}));
+
+/**
+ * Section header with title + optional action slot layout.
+ */
+export const SectionHeader = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 12,
+});
+
+/**
+ * Status dot indicator (online/offline/warning).
+ * Renders at a consistent 6px size from `controlSize.dot`.
+ */
+export const StatusDot = styled(Box, {
+  shouldForwardProp: prop => prop !== 'color',
+})<{ color?: string }>(({ color }) => ({
+  width: 6,
+  height: 6,
+  borderRadius: '50%',
+  backgroundColor: color ?? 'currentColor',
+  flexShrink: 0,
+}));
+
+/**
+ * User message bubble — subtle background for chat.
  */
 export const UserBubble = styled(Box)(({ theme }) => ({
   backgroundColor: alpha(
@@ -65,22 +106,13 @@ export const UserBubble = styled(Box)(({ theme }) => ({
   ),
   color: theme.palette.text.primary,
   borderRadius: theme.spacing(borderRadius.md),
-  padding: theme.spacing(spacing.md, spacing.lg),
+  padding: theme.spacing(spacing.sm, spacing.md),
   maxWidth: '80%',
   alignSelf: 'flex-end',
 }));
 
 /**
- * Assistant Message Bubble - clean, borderless, full-width
- */
-export const AssistantBubble = styled(Box)(({ theme }) => ({
-  backgroundColor: 'transparent',
-  padding: theme.spacing(spacing.sm, 0),
-  maxWidth: '100%',
-}));
-
-/**
- * Status Badge - Semantic status indicator
+ * Status badge — pill-shaped semantic status indicator.
  */
 export const StatusBadge = styled(Box, {
   shouldForwardProp: prop => prop !== 'status',
@@ -110,68 +142,25 @@ export const StatusBadge = styled(Box, {
       color: theme.palette.text.secondary,
     },
   };
-
   const { bg, color } = colorMap[status];
-
   return {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: theme.spacing(spacing.xs),
-    padding: theme.spacing(spacing.xs, spacing.sm),
-    borderRadius: '9999px',
+    gap: theme.spacing(spacing.xxs),
+    padding: theme.spacing(spacing.xxs, spacing.xs),
+    borderRadius: borderRadius.pill,
     backgroundColor: bg,
-    color: color,
-    fontSize: '0.75rem',
-    fontWeight: 500,
+    color,
+    fontSize: typeScale.caption.fontSize,
+    fontWeight: typography.fontWeight.medium,
     letterSpacing: '0.02em',
   };
 });
 
 /**
- * Scroll Container - Premium scrollbar styling (WebKit + Firefox)
+ * Scroll container with canonical plugin scrollbar styling.
  */
-export const ScrollContainer = styled(Box)(({ theme }) => {
-  const trackColor = alpha(theme.palette.text.primary, 0.02);
-  const thumbColor = alpha(theme.palette.text.secondary, 0.35);
-  const thumbHover = alpha(theme.palette.text.secondary, 0.55);
-
-  return {
-    overflowY: 'auto',
-    scrollbarWidth: 'thin',
-    scrollbarColor: `${thumbColor} ${trackColor}`,
-
-    '&::-webkit-scrollbar': {
-      width: 10,
-      height: 10,
-    },
-
-    '&::-webkit-scrollbar-track': {
-      backgroundColor: trackColor,
-      borderRadius: 10,
-    },
-
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: thumbColor,
-      borderRadius: 10,
-      border: '2px solid transparent',
-      backgroundClip: 'content-box',
-      transition: transitions.normal,
-    },
-
-    '&::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: thumbHover,
-    },
-  };
-});
-
-/**
- * Sidebar Panel - Right/Left sidebar container
- */
-export const SidebarPanel = styled(Box)(({ theme }) => ({
-  height: '100%',
-  backgroundColor: theme.palette.background.default,
-  borderLeft: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-  display: 'flex',
-  flexDirection: 'column',
-  transition: transitions.normal,
+export const ScrollContainer = styled(Box)(({ theme }) => ({
+  overflowY: 'auto',
+  ...scrollbarStyles(theme),
 }));

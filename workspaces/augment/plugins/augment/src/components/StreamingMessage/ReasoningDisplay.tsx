@@ -21,9 +21,9 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
 import { alpha, type Theme } from '@mui/material/styles';
 import type { BrandingConfig } from '../../types';
+import { getPreviewSnippet } from '../../utils';
 
 export interface ReasoningDisplayProps {
   reasoning: string;
@@ -45,23 +45,21 @@ export function ReasoningDisplay({
 }: ReasoningDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const durationText =
-    reasoningDuration !== undefined
-      ? `Thought for ${reasoningDuration} second${
-          reasoningDuration !== 1 ? 's' : ''
-        }`
-      : 'Thinking...';
+  const durationBadge =
+    reasoningDuration !== undefined ? `${reasoningDuration}s` : undefined;
+
+  let chipLabel = 'Thought';
+  if (isStreaming) {
+    chipLabel = 'Thinking\u2026';
+  } else if (durationBadge) {
+    chipLabel = `Thought for ${durationBadge}`;
+  }
+
+  const preview = !isExpanded ? getPreviewSnippet(reasoning) : '';
 
   return (
-    <Box
-      sx={{
-        mb: 2,
-        borderRadius: 1,
-        border: `1px solid ${theme.palette.divider}`,
-        overflow: 'hidden',
-        backgroundColor: alpha(theme.palette.text.primary, 0.02),
-      }}
-    >
+    <Box sx={{ mb: 1.5 }}>
+      {/* Compact chip header with preview */}
       <Box
         role="button"
         tabIndex={0}
@@ -75,24 +73,26 @@ export function ReasoningDisplay({
           }
         }}
         sx={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
-          gap: 1,
-          px: 1.5,
-          py: 1,
+          gap: 0.5,
+          px: 1,
+          py: 0.25,
+          borderRadius: 2,
           cursor: 'pointer',
+          backgroundColor: alpha(theme.palette.text.primary, 0.04),
+          transition: 'background-color 0.15s',
+          maxWidth: '100%',
           '&:hover': {
-            backgroundColor: alpha(
-              theme.palette.text.primary,
-              theme.palette.mode === 'dark' ? 0.05 : 0.03,
-            ),
+            backgroundColor: alpha(theme.palette.text.primary, 0.08),
           },
         }}
       >
         <PsychologyIcon
           sx={{
-            fontSize: 18,
+            fontSize: 14,
             color: branding.secondaryColor,
+            flexShrink: 0,
             animation: isStreaming ? 'pulse 1.5s ease-in-out infinite' : 'none',
             '@keyframes pulse': {
               '0%, 100%': { opacity: 1 },
@@ -105,27 +105,64 @@ export function ReasoningDisplay({
           sx={{
             color: 'text.secondary',
             fontWeight: 500,
-            flex: 1,
+            fontSize: '0.7rem',
+            flexShrink: 0,
           }}
         >
-          {durationText}
+          {chipLabel}
         </Typography>
-        <IconButton size="small" sx={{ p: 0.25 }}>
-          {isExpanded ? (
-            <ExpandLessIcon sx={{ fontSize: 18 }} />
-          ) : (
-            <ExpandMoreIcon sx={{ fontSize: 18 }} />
-          )}
-        </IconButton>
+        {!isExpanded && preview && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.disabled',
+              fontStyle: 'italic',
+              fontSize: '0.65rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+            }}
+          >
+            — {preview}
+          </Typography>
+        )}
+        {isStreaming && !isExpanded && (
+          <Box
+            component="span"
+            sx={{
+              display: 'inline-block',
+              width: 5,
+              height: 12,
+              ml: 0.25,
+              flexShrink: 0,
+              backgroundColor: branding.secondaryColor,
+              animation: 'augmentBlink 1s step-end infinite',
+              '@keyframes augmentBlink': {
+                '50%': { opacity: 0 },
+              },
+            }}
+          />
+        )}
+        {isExpanded ? (
+          <ExpandLessIcon
+            sx={{ fontSize: 14, color: 'text.disabled', flexShrink: 0 }}
+          />
+        ) : (
+          <ExpandMoreIcon
+            sx={{ fontSize: 14, color: 'text.disabled', flexShrink: 0 }}
+          />
+        )}
       </Box>
 
-      {/* Collapsible content */}
+      {/* Collapsible reasoning text */}
       <Collapse in={isExpanded}>
         <Box
           sx={{
-            px: 1.5,
-            py: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
+            mt: 0.5,
+            ml: 0.5,
+            pl: 1.5,
+            borderLeft: `2px solid ${alpha(branding.secondaryColor || theme.palette.primary.main, 0.3)}`,
             maxHeight: 200,
             overflow: 'auto',
           }}
@@ -150,8 +187,8 @@ export function ReasoningDisplay({
                   height: 14,
                   ml: 0.5,
                   backgroundColor: branding.secondaryColor,
-                  animation: 'blink 1s step-end infinite',
-                  '@keyframes blink': {
+                  animation: 'augmentBlink 1s step-end infinite',
+                  '@keyframes augmentBlink': {
                     '50%': { opacity: 0 },
                   },
                 }}

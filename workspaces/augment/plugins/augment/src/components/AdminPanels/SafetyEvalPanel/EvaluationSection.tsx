@@ -211,7 +211,7 @@ export const EvaluationSection = ({
             />
 
             <Box>
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="text.secondary">
                 Minimum Score Threshold: {threshold.toFixed(2)}
               </Typography>
               <Slider
@@ -226,7 +226,7 @@ export const EvaluationSection = ({
                 getAriaValueText={v => `${v.toFixed(2)}`}
                 sx={{ mt: 0.5 }}
               />
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="text.secondary">
                 Responses scoring below this threshold will be flagged as low
                 quality.
               </Typography>

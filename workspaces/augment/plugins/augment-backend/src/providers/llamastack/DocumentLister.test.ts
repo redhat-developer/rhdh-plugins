@@ -309,15 +309,15 @@ describe('DocumentLister', () => {
       expect(result[0].fileName).toBe('assistants.txt');
     });
 
-    it('returns empty array when both endpoints fail', async () => {
+    it('throws when both endpoints fail', async () => {
       const deps = createDeps();
       deps.client.request
         .mockRejectedValueOnce(new Error('Vector store failed'))
         .mockRejectedValueOnce(new Error('Files API failed'));
 
-      const result = await listDocuments(deps);
-
-      expect(result).toEqual([]);
+      await expect(listDocuments(deps)).rejects.toThrow(
+        'Could not load documents: Vector store failed',
+      );
       expect(deps.logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('Could not list documents'),
       );

@@ -459,8 +459,9 @@ export class DocumentSyncService {
       })),
     );
 
+    const uploadedNames = new Set(uploadResult.uploaded.map(u => u.fileName));
     for (const doc of docsToAdd) {
-      if (doc.contentHash) {
+      if (doc.contentHash && uploadedNames.has(doc.fileName)) {
         const cacheKey = doc.sourceId || doc.fileName;
         this.evictCacheIfNeeded();
         this.contentHashCache.set(cacheKey, doc.contentHash);

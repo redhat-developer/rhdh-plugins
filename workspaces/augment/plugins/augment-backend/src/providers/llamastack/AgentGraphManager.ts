@@ -155,14 +155,17 @@ export class AgentGraphManager {
         this.logger.error(`[AgentGraphManager] ${errorMsg}`);
         this.lastResolutionError = errorMsg;
         return this.buildAndCache(
-          this.buildSingleAgentFallback(config.systemPrompt, isZdr ? 1 : 3),
+          this.buildSingleAgentFallback(
+            config.systemPrompt,
+            isZdr ? 1 : (maxAgentTurns ?? 10),
+          ),
           targetGen,
         );
       }
     }
 
     this.lastResolutionError = null;
-    const maxTurns = isZdr ? 1 : 3;
+    const maxTurns = isZdr ? 1 : (maxAgentTurns ?? 10);
     this.logger.info(
       `[AgentGraphManager] No agents configured — auto-synthesized default agent (maxTurns=${maxTurns}, zdr=${isZdr})`,
     );

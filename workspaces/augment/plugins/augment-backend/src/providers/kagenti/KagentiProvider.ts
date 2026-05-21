@@ -1,0 +1,1151 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type {
+  LoggerService,
+  RootConfigService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
+import { InputError } from '@backstage/errors';
+import pLimit from 'p-limit';
+import type {
+  NormalizedStreamEvent,
+  ChatAgent,
+  KagentiAgentSummary,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  isProviderScopedKey,
+  type AdminConfigKey,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  AgenticProvider,
+  AgenticProviderStatus,
+  ConversationCapability,
+  ChatRequest as AugmentChatRequest,
+} from '../types';
+import type { ChatResponse as AugmentChatResponse } from '../../types';
+import type { FeatureFlagsResponse } from './client/types';
+import { loadKagentiConfig } from './config/KagentiConfigLoader';
+import type { KagentiConfig } from './config/KagentiConfigLoader';
+import { KeycloakTokenManager } from './client/KeycloakTokenManager';
+import { KagentiApiClient } from './client/KagentiApiClient';
+import { KagentiSandboxClient } from './client/KagentiSandboxClient';
+import { KagentiAdminClient } from './client/KagentiAdminClient';
+import { KagentiStreamNormalizer } from './stream/KagentiStreamNormalizer';
+import { KagentiAgentCardCache } from './KagentiAgentCardCache';
+import type { AgentCardCacheEntry } from './KagentiAgentCardCache';
+import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
+import type { ApprovalRequest, ApprovalResult } from './kagentiApprovalHandler';
+import { buildKagentiConversationCapability } from './kagentiConversationCapability';
+import { buildMetaPrompt } from '../../services';
+import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { getVisibleNamespaces } from './kagentiNamespaceUtils';
+
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
+/**
+ * No-op CacheService fallback when no real cache is injected.
+ * Falls back to in-memory Map for backward compatibility during tests.
+ *
+ * TODO: remove as part of cache service transition — callers should always
+ * receive a real CacheService from the plugin environment.
+ */
+function createNoopCache(): CacheService {
+  const store = new Map<string, { value: unknown; expiresAt: number }>();
+  return {
+    async get<T>(key: string): Promise<T | undefined> {
+      const entry = store.get(key);
+      if (!entry) return undefined;
+      if (Date.now() > entry.expiresAt) {
+        store.delete(key);
+        return undefined;
+      }
+      return entry.value as T;
+    },
+    async set(
+      key: string,
+      value: unknown,
+      options?: { ttl?: number },
+    ): Promise<void> {
+      const ttl = options?.ttl ?? 24 * 60 * 60 * 1000;
+      store.set(key, { value, expiresAt: Date.now() + ttl });
+    },
+    async delete(key: string): Promise<void> {
+      store.delete(key);
+    },
+    withOptions(_options: { defaultTtl?: number }): CacheService {
+      return createNoopCache();
+    },
+  };
+}
+
+export interface KagentiProviderOptions {
+  logger: LoggerService;
+  config: RootConfigService;
+  adminConfig?: import('../../services/AdminConfigService').AdminConfigService;
+  cache?: CacheService;
+}
+
+export class KagentiProvider implements AgenticProvider {
+  readonly id = 'kagenti';
+  readonly displayName = 'Kagenti';
+
+  private readonly logger: LoggerService;
+  private readonly rootConfig: RootConfigService;
+  private readonly adminConfig?: import('../../services/AdminConfigService').AdminConfigService;
+  private kagentiConfig: KagentiConfig | undefined;
+  private tokenManager: KeycloakTokenManager | undefined;
+  private apiClient: KagentiApiClient | undefined;
+  private activeBaseUrl: string | undefined;
+  private sandboxClient: KagentiSandboxClient | undefined;
+  private adminClient: KagentiAdminClient | undefined;
+  private featureFlags: FeatureFlagsResponse = {
+    sandbox: false,
+    integrations: false,
+    triggers: false,
+  };
+
+  private static readonly MODELS_CACHE_TTL_MS = 60_000;
+  private static readonly SESSION_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+  // TODO(RHDHPLAN-404): transition cardCache to catalog lookup once RHDHPLAN-404 arrives
+  private readonly cardCache: KagentiAgentCardCache;
+  // TODO: remove sessionAgentCache, kagentiSessionCache, modelsCache as part of cache service transition
+  private readonly sessionAgentCache: CacheService;
+  private readonly kagentiSessionCache: CacheService;
+  private readonly modelsCache: CacheService;
+
+  readonly conversations: ConversationCapability;
+  readonly rag = undefined;
+  readonly safety = undefined;
+  readonly evaluation = undefined;
+
+  constructor(options: KagentiProviderOptions) {
+    this.logger = options.logger.child({ label: 'kagenti-provider' });
+    this.rootConfig = options.config;
+    this.adminConfig = options.adminConfig;
+
+    const baseCache = options.cache;
+    this.sessionAgentCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+    this.kagentiSessionCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+    this.modelsCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.MODELS_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+
+    const cardCacheService = baseCache
+      ? baseCache.withOptions({ defaultTtl: 5 * 60 * 1000 })
+      : createNoopCache();
+    this.cardCache = new KagentiAgentCardCache(this.logger, cardCacheService);
+    this.conversations = buildKagentiConversationCapability(
+      () => this.requireInitialized().apiClient,
+      this.logger,
+    );
+  }
+
+  private requireInitialized(): {
+    config: KagentiConfig;
+    tokenManager: KeycloakTokenManager;
+    apiClient: KagentiApiClient;
+  } {
+    if (!this.kagentiConfig || !this.tokenManager || !this.apiClient) {
+      throw new Error('KagentiProvider.initialize() must be called before use');
+    }
+    return {
+      config: this.kagentiConfig,
+      tokenManager: this.tokenManager,
+      apiClient: this.apiClient,
+    };
+  }
+
+  private async resolveKagentiBaseUrl(): Promise<string> {
+    if (this.adminConfig) {
+      try {
+        const dbUrl = await this.adminConfig.getScopedValue(
+          'kagentiBaseUrl',
+          'kagenti',
+        );
+        if (typeof dbUrl === 'string' && dbUrl) {
+          return dbUrl;
+        }
+      } catch {
+        // DB lookup failed — fall back to YAML
+      }
+    }
+    return this.kagentiConfig?.baseUrl ?? '';
+  }
+
+  private async ensureClientUrl(): Promise<void> {
+    const resolved = await this.resolveKagentiBaseUrl();
+    if (!resolved || resolved === this.activeBaseUrl) return;
+
+    const { tokenManager } = this.requireInitialized();
+    this.logger.info(
+      `Kagenti baseUrl changed from ${this.activeBaseUrl} to ${resolved}, rebuilding client`,
+    );
+    this.activeBaseUrl = resolved;
+    this.apiClient = new KagentiApiClient({
+      baseUrl: resolved,
+      tokenManager,
+      skipTlsVerify: this.kagentiConfig!.skipTlsVerify,
+      logger: this.logger,
+      requestTimeoutMs: this.kagentiConfig!.requestTimeoutMs,
+      streamTimeoutMs: this.kagentiConfig!.streamTimeoutMs,
+      maxRetries: this.kagentiConfig!.maxRetries,
+      retryBaseDelayMs: this.kagentiConfig!.retryBaseDelayMs,
+    });
+    this.adminClient = new KagentiAdminClient(this.apiClient);
+    if (this.featureFlags.sandbox) {
+      this.sandboxClient = new KagentiSandboxClient(this.apiClient);
+    }
+  }
+
+  async initialize(): Promise<void> {
+    this.kagentiConfig = loadKagentiConfig(this.rootConfig);
+    this.logger.info(
+      `Initializing Kagenti provider: ${this.kagentiConfig.baseUrl}`,
+    );
+
+    if (
+      this.kagentiConfig.showAllNamespaces &&
+      !this.kagentiConfig.namespaces?.length
+    ) {
+      this.logger.warn(
+        'showAllNamespaces is enabled with no namespace allowlist — all Kagenti namespaces are accessible. ' +
+          'Consider setting augment.kagenti.namespaces for production.',
+      );
+    }
+
+    this.tokenManager = new KeycloakTokenManager({
+      tokenEndpoint: this.kagentiConfig.auth.tokenEndpoint,
+      clientId: this.kagentiConfig.auth.clientId,
+      clientSecret: this.kagentiConfig.auth.clientSecret,
+      logger: this.logger,
+      skipTlsVerify: this.kagentiConfig.skipTlsVerify,
+      tokenExpiryBufferSeconds: this.kagentiConfig.tokenExpiryBufferSeconds,
+    });
+
+    this.activeBaseUrl = this.kagentiConfig.baseUrl;
+    this.apiClient = new KagentiApiClient({
+      baseUrl: this.activeBaseUrl,
+      tokenManager: this.tokenManager,
+      skipTlsVerify: this.kagentiConfig.skipTlsVerify,
+      logger: this.logger,
+      requestTimeoutMs: this.kagentiConfig.requestTimeoutMs,
+      streamTimeoutMs: this.kagentiConfig.streamTimeoutMs,
+      maxRetries: this.kagentiConfig.maxRetries,
+      retryBaseDelayMs: this.kagentiConfig.retryBaseDelayMs,
+    });
+
+    try {
+      await this.tokenManager.getToken();
+      this.logger.info(
+        `Keycloak token acquired successfully from ${this.kagentiConfig.auth.tokenEndpoint}`,
+      );
+    } catch (tokenErr) {
+      const msg =
+        tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+      this.logger.error(
+        `Failed to acquire Keycloak token from ${this.kagentiConfig.auth.tokenEndpoint}: ${msg}. ` +
+          `Verify augment.kagenti.auth.tokenEndpoint, clientId, and clientSecret are correct.`,
+      );
+    }
+
+    let health: { status: string };
+    try {
+      health = await this.apiClient.health();
+    } catch (healthErr) {
+      const msg =
+        healthErr instanceof Error ? healthErr.message : String(healthErr);
+      this.logger.error(
+        `Cannot reach Kagenti API at ${this.activeBaseUrl}: ${msg}. ` +
+          `If running inside the cluster, consider using the internal service URL ` +
+          `(e.g. http://kagenti-api.kagenti-system.svc.cluster.local:8000) ` +
+          `instead of the external route.`,
+      );
+      health = { status: 'unreachable' };
+    }
+    this.logger.info(`Kagenti health: ${health.status}`);
+
+    try {
+      this.featureFlags = await this.apiClient.getFeatureFlags();
+    } catch (err) {
+      this.logger.warn(
+        `Could not fetch Kagenti feature flags, assuming all disabled: ${err}`,
+      );
+    }
+
+    const overrides = this.kagentiConfig.featureOverrides;
+    if (overrides.sandbox !== undefined) {
+      this.featureFlags.sandbox = overrides.sandbox;
+    }
+    if (overrides.integrations !== undefined) {
+      this.featureFlags.integrations = overrides.integrations;
+    }
+    if (overrides.triggers !== undefined) {
+      this.featureFlags.triggers = overrides.triggers;
+    }
+    this.logger.info(
+      `Kagenti features: sandbox=${this.featureFlags.sandbox}, integrations=${this.featureFlags.integrations}, triggers=${this.featureFlags.triggers}${
+        overrides.sandbox !== undefined ||
+        overrides.integrations !== undefined ||
+        overrides.triggers !== undefined
+          ? ' (with local overrides applied)'
+          : ''
+      }`,
+    );
+
+    // Admin client is used for team/key management and other admin operations
+    this.adminClient = new KagentiAdminClient(this.apiClient);
+
+    if (this.featureFlags.sandbox) {
+      this.sandboxClient = new KagentiSandboxClient(this.apiClient);
+      this.logger.info('Sandbox client initialized');
+    }
+  }
+
+  async postInitialize(): Promise<void> {
+    const { config, apiClient } = this.requireInitialized();
+    try {
+      const agents = await apiClient.listAgents(config.namespace);
+      this.logger.info(
+        `Discovered ${agents.items.length} Kagenti agents in namespace "${config.namespace}"`,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to warm agent cache: ${err}`);
+    }
+  }
+
+  async getStatus(): Promise<AgenticProviderStatus> {
+    const { config, apiClient } = this.requireInitialized();
+    let connected = false;
+    let error: string | undefined;
+
+    try {
+      const health = await apiClient.health();
+      const ready = await apiClient.ready();
+      connected = health.status === 'healthy' && ready.status === 'ready';
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+    }
+
+    const defaultAgent = config.agentName ?? `${config.namespace}/default`;
+
+    const securityMode =
+      (this.rootConfig.getOptionalString('augment.security.mode') as
+        | 'none'
+        | 'plugin-only'
+        | 'full'
+        | undefined) ?? 'plugin-only';
+
+    return {
+      provider: {
+        id: 'kagenti',
+        model: defaultAgent,
+        baseUrl: config.baseUrl,
+        connected,
+        error,
+      },
+      vectorStore: { id: 'none', connected: false },
+      mcpServers: [],
+      securityMode,
+      timestamp: new Date().toISOString(),
+      ready: connected,
+      configurationErrors: error ? [error] : [],
+      capabilities: {
+        chat: true,
+        rag: { available: false, reason: 'Kagenti does not provide RAG' },
+        mcpTools: {
+          available: true,
+          reason: 'Kagenti manages MCP tools natively',
+        },
+        agentCatalog: true,
+        agentSelection: true,
+        agentCards: true,
+      },
+    };
+  }
+
+  async getEffectiveConfig(): Promise<Record<string, unknown>> {
+    await this.ensureClientUrl();
+    const { config } = this.requireInitialized();
+    const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
+    let model = ls?.getOptionalString('model') ?? '';
+    if (model === 'unused') model = '';
+
+    if (!model) {
+      try {
+        const available = await this.listModels();
+        const inference = available.find(
+          m =>
+            m.id.includes('inference') &&
+            !m.id.includes('embed') &&
+            !m.id.includes('MiniLM'),
+        );
+        model = inference?.id ?? available[0]?.id ?? '';
+      } catch (err) {
+        this.logger.warn(
+          `Failed to auto-detect model via listModels: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    const llamaStackBaseUrl = ls?.getOptionalString('baseUrl');
+    const result: Record<string, unknown> = {
+      model,
+      baseUrl: llamaStackBaseUrl || config.baseUrl,
+      kagentiBaseUrl: this.activeBaseUrl || config.baseUrl,
+      systemPrompt:
+        this.rootConfig.getOptionalString('augment.systemPrompt') ?? '',
+      toolChoice: ls?.getOptionalString('toolChoice') ?? 'auto',
+      enableWebSearch: ls?.getOptionalBoolean('enableWebSearch') ?? false,
+      enableCodeInterpreter:
+        ls?.getOptionalBoolean('enableCodeInterpreter') ?? false,
+      safetyEnabled: ls?.getOptionalBoolean('safetyEnabled') ?? false,
+      inputShields: ls?.getOptionalStringArray('inputShields') ?? [],
+      outputShields: ls?.getOptionalStringArray('outputShields') ?? [],
+      evaluationEnabled: ls?.getOptionalBoolean('evaluationEnabled') ?? false,
+      scoringFunctions: ls?.getOptionalStringArray('scoringFunctions') ?? [],
+    };
+
+    if (this.adminConfig) {
+      const dbKeys: AdminConfigKey[] = [
+        'model',
+        'baseUrl',
+        'kagentiBaseUrl',
+        'systemPrompt',
+        'toolChoice',
+        'enableWebSearch',
+        'enableCodeInterpreter',
+        'mcpServers',
+        'disabledMcpServerIds',
+        'safetyEnabled',
+        'inputShields',
+        'outputShields',
+        'evaluationEnabled',
+        'scoringFunctions',
+        'agents',
+        'defaultAgent',
+        'maxAgentTurns',
+      ];
+      const values = await Promise.all(
+        dbKeys.map(k =>
+          isProviderScopedKey(k)
+            ? this.adminConfig!.getScopedValue(k, 'kagenti')
+            : this.adminConfig!.get(k),
+        ),
+      );
+      for (let i = 0; i < dbKeys.length; i++) {
+        if (values[i] !== undefined) {
+          result[dbKeys[i]] = values[i];
+        }
+      }
+    }
+
+    return result;
+  }
+
+  async chat(request: AugmentChatRequest): Promise<AugmentChatResponse> {
+    await this.ensureClientUrl();
+    const { apiClient } = this.requireInitialized();
+    const { namespace, name } = this.resolveAgent(request);
+    const userMessage = this.extractLastUserMessage(request);
+
+    const backstageSessionId = request.sessionId;
+    const storedSessionId = backstageSessionId
+      ? await this.kagentiSessionCache.get<string>(backstageSessionId)
+      : undefined;
+
+    const a2aMetadata = await this.buildA2AMetadata(namespace, name);
+    const mergedMetadata = {
+      ...a2aMetadata,
+      ...(storedSessionId ? { contextId: storedSessionId } : {}),
+    };
+
+    const response = await apiClient.chatSend(
+      namespace,
+      name,
+      userMessage,
+      storedSessionId,
+      Object.keys(mergedMetadata).length > 0 ? mergedMetadata : undefined,
+    );
+
+    if (backstageSessionId && response.session_id) {
+      await this.kagentiSessionCache.set(
+        backstageSessionId,
+        response.session_id,
+      );
+      await this.sessionAgentCache.set(
+        response.session_id,
+        `${namespace}/${name}`,
+      );
+    }
+
+    return {
+      role: 'assistant',
+      content: response.content,
+      responseId: response.session_id,
+    };
+  }
+
+  async chatStream(
+    request: AugmentChatRequest,
+    onEvent: (event: NormalizedStreamEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.ensureClientUrl();
+    const { config, apiClient } = this.requireInitialized();
+    const { namespace, name } = this.resolveAgent(request);
+    const userMessage = this.extractLastUserMessage(request);
+    const normalizer = new KagentiStreamNormalizer(
+      config.verboseStreamLogging ? this.logger : undefined,
+    );
+
+    const backstageSessionId = request.sessionId;
+    const agentId = `${namespace}/${name}`;
+
+    const storedContextId = backstageSessionId
+      ? await this.kagentiSessionCache.get<string>(backstageSessionId)
+      : undefined;
+
+    const a2aMetadata = await this.buildA2AMetadata(namespace, name);
+    const mergedMetadata = {
+      ...a2aMetadata,
+      ...(storedContextId ? { contextId: storedContextId } : {}),
+    };
+
+    let contentEventCount = 0;
+
+    try {
+      await apiClient.chatStream(
+        namespace,
+        name,
+        userMessage,
+        storedContextId,
+        (line: string) => {
+          if (config.verboseStreamLogging) {
+            this.logger.info(
+              `KagentiSSE raw (${agentId}): ${line.substring(0, 1000)}`,
+            );
+          }
+          const events = normalizer.normalize(line);
+          for (const event of events) {
+            if (config.verboseStreamLogging) {
+              this.logger.debug(`KagentiSSE normalized: ${event.type}`);
+            }
+
+            if (normalizer.hasJsonRpcStreamingError) {
+              continue;
+            }
+
+            if (event.type === 'stream.started' && backstageSessionId) {
+              const ctxId = (event as { responseId?: string }).responseId;
+              if (ctxId) {
+                void this.kagentiSessionCache.set(backstageSessionId, ctxId);
+                void this.sessionAgentCache.set(ctxId, agentId);
+              }
+            }
+            if (
+              event.type === 'stream.text.delta' ||
+              event.type === 'stream.artifact'
+            ) {
+              contentEventCount++;
+            }
+            onEvent(event);
+          }
+        },
+        signal,
+        Object.keys(mergedMetadata).length > 0 ? mergedMetadata : undefined,
+      );
+    } catch (err) {
+      if (signal?.aborted) {
+        this.logger.debug('Kagenti chat stream aborted by client');
+        return;
+      }
+      const errMsg = err instanceof Error ? err.message : String(err);
+      this.logger.error(
+        `Kagenti chatStream failed for agent ${agentId}: ${errMsg}`,
+      );
+
+      if (
+        /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|ECONNRESET|EAI_AGAIN/i.test(errMsg)
+      ) {
+        throw new Error(
+          `Cannot connect to Kagenti at ${this.activeBaseUrl}. ` +
+            `Verify augment.kagenti.baseUrl is reachable from this pod. Error: ${errMsg}`,
+        );
+      }
+
+      if (/status 401/i.test(errMsg)) {
+        throw new Error(
+          `Kagenti rejected the request (401 Unauthorized). ` +
+            `Verify the Keycloak client "${this.kagentiConfig?.auth.clientId}" has ` +
+            `the kagenti-operator role and the client secret is correct. Error: ${errMsg}`,
+        );
+      }
+
+      if (/status 422/i.test(errMsg)) {
+        throw new Error(
+          `Kagenti rejected the request format (422). ` +
+            `The agent "${agentId}" may not accept the request body. Error: ${errMsg}`,
+        );
+      }
+
+      throw err;
+    }
+
+    if (contentEventCount === 0 && !signal?.aborted) {
+      const reason = normalizer.hasJsonRpcStreamingError
+        ? 'JSONRPC -32603'
+        : 'zero events received';
+      this.logger.info(
+        `Agent ${agentId} stream produced no content (${reason}), falling back to non-streaming`,
+      );
+      const response = await this.chat(request);
+
+      onEvent({
+        type: 'stream.started',
+        responseId: response.responseId ?? `kagenti-fallback-${Date.now()}`,
+      });
+      if (response.content) {
+        onEvent({ type: 'stream.text.delta', delta: response.content });
+        onEvent({ type: 'stream.text.done', text: response.content });
+      }
+      onEvent({
+        type: 'stream.completed',
+        ...(response.usage && { usage: response.usage }),
+      });
+    }
+  }
+
+  async listModels(): Promise<
+    Array<{ id: string; owned_by?: string; model_type?: string }>
+  > {
+    const MODELS_CACHE_KEY = 'kagenti:models';
+    const cached =
+      await this.modelsCache.get<
+        Array<{ id: string; owned_by?: string; model_type?: string }>
+      >(MODELS_CACHE_KEY);
+    if (cached) {
+      return cached;
+    }
+
+    const llamaStackUrl = this.rootConfig.getOptionalString(
+      'augment.llamaStack.baseUrl',
+    );
+    if (!llamaStackUrl) {
+      this.logger.debug(
+        'No augment.llamaStack.baseUrl configured; model list unavailable',
+      );
+      return [];
+    }
+
+    try {
+      const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) {
+        this.logger.warn(
+          `LlamaStack /v1/models returned ${res.status}: ${res.statusText}`,
+        );
+        return [];
+      }
+      const json = (await res.json()) as {
+        data?: Array<{
+          id: string;
+          owned_by?: string;
+          model_type?: string;
+          custom_metadata?: Record<string, unknown>;
+        }>;
+      };
+      const models = (json.data ?? [])
+        .filter(
+          (m): m is typeof m & { id: string } =>
+            typeof m.id === 'string' && m.id.length > 0,
+        )
+        .map(m => {
+          const modelType =
+            m.model_type ??
+            (m.custom_metadata?.model_type as string | undefined);
+          return {
+            id: m.id,
+            ...(m.owned_by ? { owned_by: m.owned_by } : {}),
+            ...(modelType ? { model_type: modelType } : {}),
+          };
+        });
+
+      await this.modelsCache.set(MODELS_CACHE_KEY, models);
+      return models;
+    } catch (err) {
+      this.logger.warn(
+        `Failed to fetch models from LlamaStack at ${llamaStackUrl}: ${err instanceof Error ? err.message : err}`,
+      );
+      return [];
+    }
+  }
+
+  async listAgents(): Promise<ChatAgent[]> {
+    await this.ensureClientUrl();
+    const { config, apiClient } = this.requireInitialized();
+    const namespaces = await getVisibleNamespaces(
+      apiClient,
+      config,
+      this.logger,
+    );
+
+    const allItems: KagentiAgentSummary[] = [];
+
+    const limit = pLimit(5);
+    const nsResults = await Promise.allSettled(
+      namespaces.map(ns => limit(() => apiClient.listAgents(ns))),
+    );
+    for (let i = 0; i < nsResults.length; i++) {
+      const r = nsResults[i];
+      if (r.status === 'fulfilled') {
+        for (const agent of r.value.items ?? []) {
+          allItems.push(agent);
+        }
+      } else {
+        this.logger.warn(
+          `Failed to list agents in namespace ${namespaces[i]}: ${r.reason instanceof Error ? r.reason.message : r.reason}`,
+        );
+      }
+    }
+
+    const agents: ChatAgent[] = allItems.map(agent => ({
+      id: `${agent.namespace}/${agent.name}`,
+      name: agent.name,
+      description: agent.description,
+      status: agent.status,
+      isDefault: false,
+      providerType: 'kagenti',
+      createdAt: agent.createdAt,
+      framework: agent.labels?.framework,
+      protocols: (() => {
+        const proto = agent.labels?.protocol;
+        if (!proto) return undefined;
+        return Array.isArray(proto) ? proto : [proto];
+      })(),
+      source: 'kagenti',
+      namespace: agent.namespace,
+    }));
+
+    return agents;
+  }
+
+  async generateSystemPrompt(
+    description: string,
+    modelOverride?: string,
+    capabilities?: PromptCapabilities,
+  ): Promise<string> {
+    const llamaStackUrl = this.rootConfig.getOptionalString(
+      'augment.llamaStack.baseUrl',
+    );
+    if (!llamaStackUrl) {
+      throw new Error(
+        'augment.llamaStack.baseUrl is not configured; prompt generation unavailable',
+      );
+    }
+
+    const effectiveConfig = await this.getEffectiveConfig();
+    const model =
+      modelOverride || (effectiveConfig.model as string) || 'default';
+
+    const { instructions, input } = buildMetaPrompt(
+      description,
+      {
+        model,
+        baseUrl: llamaStackUrl,
+        systemPrompt: (effectiveConfig.systemPrompt as string) || '',
+        vectorStoreIds: [],
+        vectorStoreName: 'default-vector-store',
+        embeddingModel: 'all-MiniLM-L6-v2',
+        embeddingDimension: 384,
+        chunkingStrategy: 'auto' as const,
+        maxChunkSizeTokens: 800,
+        chunkOverlapTokens: 50,
+        enableWebSearch: (effectiveConfig.enableWebSearch as boolean) || false,
+        enableCodeInterpreter:
+          (effectiveConfig.enableCodeInterpreter as boolean) || false,
+        skipTlsVerify: false,
+        zdrMode: false,
+        verboseStreamLogging: false,
+      },
+      capabilities,
+    );
+
+    const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/responses`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        input,
+        instructions,
+        model,
+        store: false,
+      }),
+      signal: AbortSignal.timeout(60_000),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(
+        `Inference server returned ${res.status}: ${body.slice(0, 200)}`,
+      );
+    }
+
+    const response = (await res.json()) as {
+      output: Array<{
+        type: string;
+        content?: Array<{ type: string; text?: string }>;
+      }>;
+    };
+
+    for (const item of response.output) {
+      if (item.type === 'message' && item.content) {
+        for (const block of item.content) {
+          if (block.type === 'output_text' && block.text) {
+            return block.text.trim();
+          }
+        }
+      }
+    }
+
+    throw new Error('LLM returned no text in the response');
+  }
+
+  async testModel(
+    model?: string,
+    overrideBaseUrl?: string,
+  ): Promise<{
+    connected: boolean;
+    modelFound: boolean;
+    canGenerate: boolean;
+    error?: string;
+  }> {
+    const llamaStackUrl =
+      overrideBaseUrl ||
+      this.rootConfig.getOptionalString('augment.llamaStack.baseUrl');
+
+    if (llamaStackUrl && model) {
+      try {
+        const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
+        const skipTls = this.rootConfig.getOptionalBoolean(
+          'augment.llamaStack.skipTlsVerify',
+        );
+        const fetchOpts: RequestInit & { dispatcher?: unknown } = {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(10_000),
+        };
+        if (skipTls) {
+          const https = await import('https');
+          (fetchOpts as Record<string, unknown>).agent = new https.Agent({
+            rejectUnauthorized: false,
+          });
+        }
+        const res = await fetch(url, fetchOpts);
+        if (!res.ok) {
+          return {
+            connected: false,
+            modelFound: false,
+            canGenerate: false,
+            error: `LlamaStack returned ${res.status}: ${res.statusText}`,
+          };
+        }
+        const json = (await res.json()) as {
+          data?: Array<{ id: string }>;
+        };
+        const found = json.data?.some(m => m.id === model) ?? false;
+        return {
+          connected: true,
+          modelFound: found,
+          canGenerate: found,
+          error: found ? undefined : `Model "${model}" not found on LlamaStack`,
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return {
+          connected: false,
+          modelFound: false,
+          canGenerate: false,
+          error: `LlamaStack connection failed: ${msg}`,
+        };
+      }
+    }
+
+    const { config, apiClient } = this.requireInitialized();
+    try {
+      const { namespace, name } = model
+        ? this.parseAgentId(model)
+        : {
+            namespace: config.namespace,
+            name: config.agentName ?? 'default',
+          };
+
+      await apiClient.getAgentCard(namespace, name);
+      return { connected: true, modelFound: true, canGenerate: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isConnectionError =
+        /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|timeout/i.test(msg);
+      return {
+        connected: !isConnectionError,
+        modelFound: false,
+        canGenerate: false,
+        error: msg,
+      };
+    }
+  }
+
+  async shutdown(): Promise<void> {
+    this.tokenManager?.clearCache();
+    this.apiClient?.destroy();
+    this.cardCache.clear();
+    this.logger.info('Kagenti provider shut down');
+  }
+
+  // -- Agent Card Cache -------------------------------------------------------
+
+  async getAgentCardCached(
+    namespace: string,
+    name: string,
+    options?: { retries?: number },
+  ): Promise<AgentCardCacheEntry> {
+    const { config, apiClient } = this.requireInitialized();
+    return this.cardCache.getAgentCardCached(
+      apiClient,
+      config,
+      namespace,
+      name,
+      options,
+    );
+  }
+
+  // -- Accessors for routes ---------------------------------------------------
+
+  getApiClient(): KagentiApiClient {
+    return this.requireInitialized().apiClient;
+  }
+
+  getSandboxClient(): KagentiSandboxClient | undefined {
+    return this.sandboxClient;
+  }
+
+  getAdminClient(): KagentiAdminClient | undefined {
+    return this.adminClient;
+  }
+
+  getFeatureFlags(): FeatureFlagsResponse {
+    return this.featureFlags;
+  }
+
+  /**
+   * Set per-request user context so all subsequent Kagenti API calls
+   * include the Backstage user identity as an X-Backstage-User header.
+   */
+  setUserContext(userRef: string): void {
+    if (this.apiClient) {
+      this.apiClient.setRequestContext({ userRef });
+    }
+  }
+
+  getConfig(): KagentiConfig {
+    return this.requireInitialized().config;
+  }
+
+  getTokenManager(): KeycloakTokenManager {
+    return this.requireInitialized().tokenManager;
+  }
+
+  async getAuthToken(): Promise<string> {
+    return this.requireInitialized().tokenManager.getToken();
+  }
+
+  /**
+   * Pre-populate the session cache so chatStream can resume a
+   * Kagenti conversation that was persisted in the DB across restarts.
+   */
+  async hydrateSessionContext(
+    backstageSessionId: string,
+    contextId: string,
+    agentId?: string,
+  ): Promise<void> {
+    await this.kagentiSessionCache.set(backstageSessionId, contextId);
+    if (agentId) {
+      await this.sessionAgentCache.set(contextId, agentId);
+    }
+  }
+
+  /** Return the Kagenti context ID associated with a Backstage session. */
+  async getSessionContextId(
+    backstageSessionId: string,
+  ): Promise<string | undefined> {
+    return this.kagentiSessionCache.get<string>(backstageSessionId);
+  }
+
+  /**
+   * Submit a tool-approval response back to Kagenti via the A2A protocol.
+   * The contextId (from the original approval request's responseId) identifies
+   * the paused conversation. We resume it by sending a follow-up message with
+   * the approval metadata attached.
+   *
+   * For secrets and OAuth responses, uses the proper ADK extension metadata
+   * format (secret_fulfillments / oauth redirect_uri) keyed by extension URI.
+   */
+  async submitApproval(approval: ApprovalRequest): Promise<ApprovalResult> {
+    const { config, apiClient } = this.requireInitialized();
+    const contextId = approval.responseId;
+
+    const agentId = await this.sessionAgentCache.get<string>(contextId);
+    const { namespace, name } = agentId
+      ? this.parseAgentId(agentId)
+      : this.resolveAgent({ messages: [] });
+
+    return submitApprovalImpl(
+      apiClient,
+      namespace,
+      name,
+      approval,
+      config.extensionBaseUrl,
+    );
+  }
+
+  /**
+   * Validate that a namespace is in the configured allow-list.
+   * Throws InputError if the namespace is not permitted.
+   */
+  validateNamespace(namespace: string): void {
+    const { config } = this.requireInitialized();
+
+    if (config.namespaces?.length) {
+      const allowSet = new Set(config.namespaces);
+      if (!allowSet.has(namespace)) {
+        throw new InputError(
+          `Namespace "${namespace}" is not in the configured allow-list`,
+        );
+      }
+      return;
+    }
+
+    if (!config.showAllNamespaces && namespace !== config.namespace) {
+      throw new InputError(
+        `Namespace "${namespace}" is not accessible (default: "${config.namespace}")`,
+      );
+    }
+  }
+
+  // -- Private helpers --------------------------------------------------------
+
+  private resolveAgent(request: AugmentChatRequest): {
+    namespace: string;
+    name: string;
+  } {
+    const { config } = this.requireInitialized();
+    const model =
+      'model' in request ? (request.model as string | undefined) : undefined;
+    if (model && model.includes('/')) {
+      const parsed = this.parseAgentId(model);
+      this.validateNamespace(parsed.namespace);
+      return parsed;
+    }
+    return {
+      namespace: config.namespace,
+      name: config.agentName ?? model ?? 'default',
+    };
+  }
+
+  private parseAgentId(agentId: string): {
+    namespace: string;
+    name: string;
+  } {
+    const { config } = this.requireInitialized();
+    const slashIdx = agentId.indexOf('/');
+    if (slashIdx > 0) {
+      return {
+        namespace: agentId.substring(0, slashIdx),
+        name: agentId.substring(slashIdx + 1),
+      };
+    }
+    return { namespace: config.namespace, name: agentId };
+  }
+
+  private extractLastUserMessage(request: AugmentChatRequest): string {
+    if (request.messages) {
+      for (let i = request.messages.length - 1; i >= 0; i--) {
+        if (request.messages[i].role === 'user') {
+          return request.messages[i].content || '';
+        }
+      }
+    }
+    return '';
+  }
+
+  /**
+   * Build A2A metadata from the agent card's demand resolution.
+   * Returns undefined if the agent has no extension demands.
+   */
+  private async buildA2AMetadata(
+    namespace: string,
+    name: string,
+  ): Promise<
+    | {
+        metadata?: Record<string, unknown>;
+        parts?: Array<Record<string, unknown>>;
+        contextId?: string;
+      }
+    | undefined
+  > {
+    try {
+      const entry = await this.getAgentCardCached(namespace, name);
+      const hasDemands = Object.values(entry.demands).some(d => d !== null);
+
+      if (!hasDemands) {
+        return undefined;
+      }
+
+      const metadata = await entry.resolveMetadata({});
+      if (!metadata || Object.keys(metadata).length === 0) {
+        return undefined;
+      }
+
+      return { metadata };
+    } catch (err) {
+      this.logger.debug(
+        `Could not build A2A metadata for ${namespace}/${name}: ${err}`,
+      );
+      return undefined;
+    }
+  }
+}

@@ -49,7 +49,11 @@ import { ResponsesApiCoordinator } from './ResponsesApiCoordinator';
 import { SafetyService } from './SafetyService';
 import { EvaluationService } from './EvaluationService';
 import { normalizeLlamaStackEvent } from './StreamEventNormalizer';
-import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import {
+  type PromptCapabilities,
+  type ChatAgent,
+  deriveRoleFromTopology,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { buildMetaPrompt } from './promptGeneration';
 import {
   buildConversationsCapability,
@@ -103,6 +107,11 @@ export class ResponsesApiProvider implements AgenticProvider {
   // ===========================================================================
   // Lifecycle
   // ===========================================================================
+
+  async shutdown(): Promise<void> {
+    this.logger.info('Shutting down Responses API provider');
+    await this.orchestrator.shutdown();
+  }
 
   async initialize(): Promise<void> {
     this.logger.info('Initializing Responses API provider');
@@ -172,7 +181,10 @@ export class ResponsesApiProvider implements AgenticProvider {
     return models;
   }
 
-  async testModel(modelOverride?: string): Promise<{
+  async testModel(
+    modelOverride?: string,
+    _baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -369,6 +381,48 @@ export class ResponsesApiProvider implements AgenticProvider {
     return this.orchestrator.getStatus();
   }
 
+  async listAgents(): Promise<ChatAgent[]> {
+    const snapshot = await this.orchestrator
+      .getAgentGraphManager()
+      ?.getSnapshot();
+    if (!snapshot?.agents?.size) {
+      return [];
+    }
+
+    // Build topology map from the snapshot for deriveRoleFromTopology
+    const topologyMap: Record<
+      string,
+      { handoffs?: string[]; asTools?: string[] }
+    > = {};
+    for (const [key, resolved] of snapshot.agents) {
+      topologyMap[key] = {
+        handoffs: resolved.config.handoffs,
+        asTools: resolved.config.asTools,
+      };
+    }
+
+    const agents: ChatAgent[] = [];
+    for (const [key, resolved] of snapshot.agents) {
+      const role = deriveRoleFromTopology(key, topologyMap);
+      if (role === 'specialist') continue;
+
+      agents.push({
+        id: key,
+        name: resolved.config.name ?? key,
+        description: resolved.config.instructions
+          ? resolved.config.instructions.slice(0, 200)
+          : undefined,
+        status: 'config',
+        isDefault: key === snapshot.defaultAgentKey,
+        providerType: 'llamastack',
+        framework: 'llamastack',
+        source: 'orchestration',
+        agentRole: role,
+      });
+    }
+    return agents;
+  }
+
   // ===========================================================================
   // Chat
   // ===========================================================================
@@ -397,7 +451,12 @@ export class ResponsesApiProvider implements AgenticProvider {
 
         if (parsed?.type === 'stream.agent.handoff') {
           currentAgentName = parsed.toAgent as string;
-          onEvent(parsed as unknown as NormalizedStreamEvent);
+          onEvent({
+            type: 'stream.agent.handoff',
+            fromAgent: parsed.fromAgent as string | undefined,
+            toAgent: currentAgentName,
+            reason: parsed.reason as string | undefined,
+          } as NormalizedStreamEvent);
           return;
         }
 
@@ -414,23 +473,22 @@ export class ResponsesApiProvider implements AgenticProvider {
           typeof parsed.type === 'string' &&
           parsed.type.startsWith('stream.')
         ) {
-          const event = parsed as unknown as NormalizedStreamEvent;
+          const event = parsed as { type: string } & Record<string, unknown>;
           if (event.type === 'stream.started' && event.responseId) {
-            streamResponseId = event.responseId;
+            streamResponseId = event.responseId as string;
           }
           if (event.type === 'stream.completed' && currentAgentName) {
             event.agentName = currentAgentName;
           }
           if (event.type === 'stream.tool.approval') {
-            const approvalEvent = event as unknown as Record<string, unknown>;
-            if (!approvalEvent.responseId && streamResponseId) {
-              approvalEvent.responseId = streamResponseId;
+            if (!event.responseId && streamResponseId) {
+              event.responseId = streamResponseId;
             }
             this.logger.info(
-              `[HITL] Emitting stream.tool.approval: callId=${approvalEvent.callId}, name=${approvalEvent.name}, serverLabel=${approvalEvent.serverLabel}, responseId=${approvalEvent.responseId}`,
+              `[HITL] Emitting stream.tool.approval: callId=${event.callId}, name=${event.name}, serverLabel=${event.serverLabel}, responseId=${event.responseId}`,
             );
           }
-          onEvent(event);
+          onEvent(event as NormalizedStreamEvent);
           return;
         }
 

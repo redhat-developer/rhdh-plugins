@@ -40,35 +40,12 @@ describe('BrandingPanel', () => {
     });
   });
 
-  it('renders sub-tabs', async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getByText('Appearance')).toBeInTheDocument();
-      expect(screen.getByText('Prompt Groups')).toBeInTheDocument();
-    });
-  });
-
-  it('shows Appearance section by default with branding fields', async () => {
+  it('shows branding fields', async () => {
     renderPanel();
     await waitFor(() => {
       expect(screen.getByLabelText('App Name')).toBeInTheDocument();
-      expect(screen.getByLabelText('Tagline')).toBeInTheDocument();
       expect(screen.getByLabelText('Primary Color')).toBeInTheDocument();
       expect(screen.getByLabelText('Secondary Color')).toBeInTheDocument();
-    });
-  });
-
-  it('switches to Prompt Groups tab', async () => {
-    renderPanel();
-
-    await waitFor(() => {
-      expect(screen.getByText('Prompt Groups')).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText('Prompt Groups'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Prompts & Actions')).toBeInTheDocument();
     });
   });
 
@@ -90,7 +67,7 @@ describe('BrandingPanel', () => {
     });
   });
 
-  it('pre-populates Appearance fields from effective config', async () => {
+  it('pre-populates Appearance fields from branding config', async () => {
     const api = createAdminMockApi();
     renderPanel(api);
 
@@ -100,8 +77,5 @@ describe('BrandingPanel', () => {
       ) as HTMLInputElement;
       expect(appNameInput.value).toBe('AI Chat');
     });
-
-    const taglineInput = screen.getByLabelText('Tagline') as HTMLInputElement;
-    expect(taglineInput.value).toBe('Your AI Assistant');
   });
 });

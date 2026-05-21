@@ -18,9 +18,35 @@ import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY_MODE = 'augment:view-mode';
 const STORAGE_KEY_BANNER = 'augment:admin-banner-seen';
+const STORAGE_KEY_PANEL = 'augment:admin-panel';
 
 export type ViewMode = 'chat' | 'admin';
-export type AdminPanel = 'platform' | 'agents' | 'branding';
+export type AdminPanel =
+  // Command Center (Ops)
+  | 'ops-home'
+  | 'ops-review-queue'
+  | 'ops-registry'
+  | 'ops-platform'
+  | 'ops-observability'
+  | 'ops-tool-review'
+  | 'ops-branding'
+  | 'ops-admin'
+  | 'ops-docs'
+  // Legacy (kept for backward compatibility during migration)
+  | 'platform'
+  | 'agents'
+  | 'branding'
+  | 'kagenti-home'
+  | 'kagenti-agents'
+  | 'kagenti-tools'
+  | 'kagenti-builds'
+  | 'kagenti-sandbox'
+  | 'kagenti-platform'
+  | 'kagenti-dashboards'
+  | 'kagenti-admin'
+  | 'kagenti-branding'
+  | 'kagenti-registry'
+  | 'kagenti-docs';
 
 export interface UseAdminViewOptions {
   isAdmin: boolean;
@@ -33,7 +59,7 @@ export interface UseAdminViewReturn {
   setAdminPanel: (panel: AdminPanel) => void;
   showAdminBanner: boolean;
   setShowAdminBanner: (show: boolean) => void;
-  switchToAdmin: () => void;
+  switchToAdmin: (isFullProvider?: boolean, targetPanel?: AdminPanel) => void;
   switchToChat: () => void;
   dismissAdminBanner: () => void;
 }
@@ -46,12 +72,42 @@ export function useAdminView({
   isAdmin,
 }: UseAdminViewOptions): UseAdminViewReturn {
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
-  const [adminPanel, setAdminPanel] = useState<AdminPanel>('platform');
+  const [adminPanel, setAdminPanelRaw] = useState<AdminPanel>(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY_PANEL);
+      if (saved) {
+        // Redirect stale panel values that have been removed
+        const STALE_REDIRECTS: Record<string, AdminPanel> = {
+          'kagenti-orchestration': 'kagenti-agents',
+        };
+        if (saved in STALE_REDIRECTS) return STALE_REDIRECTS[saved];
+        return saved as AdminPanel;
+      }
+    } catch {
+      /* sessionStorage unavailable */
+    }
+    return 'ops-home';
+  });
+  const setAdminPanel = useCallback((panel: AdminPanel) => {
+    setAdminPanelRaw(panel);
+    try {
+      sessionStorage.setItem(STORAGE_KEY_PANEL, panel);
+    } catch {
+      /* noop */
+    }
+  }, []);
   const [showAdminBanner, setShowAdminBanner] = useState(false);
 
-  // localStorage persistence for admin mode
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      setViewMode('chat');
+      try {
+        localStorage.removeItem(STORAGE_KEY_MODE);
+      } catch {
+        /* localStorage unavailable */
+      }
+      return;
+    }
     try {
       const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
       if (savedMode === 'admin') setViewMode('admin');
@@ -62,16 +118,21 @@ export function useAdminView({
     }
   }, [isAdmin]);
 
-  const switchToAdmin = useCallback(() => {
-    setViewMode('admin');
-    setShowAdminBanner(false);
-    try {
-      localStorage.setItem(STORAGE_KEY_MODE, 'admin');
-      localStorage.setItem(STORAGE_KEY_BANNER, '1');
-    } catch {
-      // localStorage unavailable
-    }
-  }, []);
+  const switchToAdmin = useCallback(
+    (isFullProvider?: boolean, targetPanel?: AdminPanel) => {
+      setViewMode('admin');
+      const panel = targetPanel ?? (isFullProvider ? 'ops-home' : 'platform');
+      setAdminPanel(panel);
+      setShowAdminBanner(false);
+      try {
+        localStorage.setItem(STORAGE_KEY_MODE, 'admin');
+        localStorage.setItem(STORAGE_KEY_BANNER, '1');
+      } catch {
+        // localStorage unavailable
+      }
+    },
+    [setAdminPanel],
+  );
 
   const switchToChat = useCallback(() => {
     setViewMode('chat');

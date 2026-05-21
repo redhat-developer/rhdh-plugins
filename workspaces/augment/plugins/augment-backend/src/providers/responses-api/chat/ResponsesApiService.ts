@@ -268,10 +268,24 @@ export class ResponsesApiService {
       ? ZDR_INCLUDE_FIELDS
       : DEFAULT_INCLUDE_FIELDS;
 
+    const sanitizedTools =
+      tools.length > 0
+        ? tools.map(tool => {
+            if (tool.type !== 'function') return tool;
+            return {
+              type: 'function' as const,
+              name: tool.name,
+              description: tool.description,
+              parameters: tool.parameters,
+              ...(tool.strict !== undefined ? { strict: tool.strict } : {}),
+            };
+          })
+        : undefined;
+
     const request: Record<string, unknown> = {
       input,
       model: config.model,
-      tools: tools.length > 0 ? tools : undefined,
+      tools: sanitizedTools,
       store: storeValue,
       include: includeFields,
     };
@@ -294,9 +308,7 @@ export class ResponsesApiService {
     if (config.toolChoice) {
       request.tool_choice = config.toolChoice;
     }
-    if (config.parallelToolCalls !== undefined) {
-      request.parallel_tool_calls = config.parallelToolCalls;
-    }
+    request.parallel_tool_calls = config.parallelToolCalls ?? false;
 
     if (config.textFormat) {
       request.text = { format: config.textFormat };
@@ -573,7 +585,11 @@ export class ResponsesApiService {
       body.conversation = options.conversationId;
     }
     if (options.tools && options.tools.length > 0) {
-      body.tools = options.tools;
+      body.tools = options.tools.map(tool => {
+        if (tool.type !== 'function') return tool;
+        const { type: _discriminator, ...rest } = tool;
+        return rest;
+      });
     }
     if (options.guardrails && options.guardrails.length > 0) {
       body.guardrails = options.guardrails;

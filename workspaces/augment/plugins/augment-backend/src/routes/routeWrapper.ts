@@ -44,7 +44,7 @@ export function createWithRoute(
   ): (req: express.Request, res: express.Response) => Promise<void> {
     return async (req, res) => {
       const label = typeof logLabel === 'function' ? logLabel(req) : logLabel;
-      logger.info(label);
+      logger.debug(label);
       try {
         await handler(req, res);
       } catch (error) {

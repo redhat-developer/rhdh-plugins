@@ -24,17 +24,12 @@ import { ResponseError } from '@backstage/errors';
 import { initializeDebug } from '../utils';
 import {
   ChatMessage,
-  ChatResponse,
   DocumentInfo,
   AugmentStatus,
   Workflow,
   QuickAction,
   PromptGroup,
   StreamingEventCallback,
-  ConversationSummary,
-  ConversationDetails,
-  ConversationInputItem,
-  ProcessedMessage,
   SessionMessagesResponse,
   ChatSessionSummary,
   BrandingConfig,
@@ -51,12 +46,16 @@ import {
   SafetyStatusResponse,
   EvaluationStatusResponse,
 } from '../types';
-import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ProviderDescriptor,
+  ChatAgent,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import * as chatEndpoints from './chatEndpoints';
 import * as conversationEndpoints from './conversationEndpoints';
 import * as adminEndpoints from './adminEndpoints';
 import * as documentEndpoints from './documentEndpoints';
 import * as sessionEndpoints from './sessionEndpoints';
+import * as kagentiEndpoints from './kagentiEndpoints';
 
 /**
  * API interface for Augment
@@ -64,28 +63,83 @@ import * as sessionEndpoints from './sessionEndpoints';
  */
 export interface AugmentApi {
   /**
-   * Send a chat message
-   * Vector stores are automatically searched based on backend config
-   * Supports conversation branching via previousResponseId
-   */
-  chat(
-    messages: ChatMessage[],
-    enableRAG?: boolean,
-    signal?: AbortSignal,
-    previousResponseId?: string,
-    conversationId?: string,
-  ): Promise<ChatResponse>;
-
-  /**
-   * List all documents in the knowledge base (read-only)
-   * Documents are automatically synced from configured sources on backend startup
-   */
-  listDocuments(): Promise<DocumentInfo[]>;
-
-  /**
    * Get the status of the Augment service
    */
   getStatus(): Promise<AugmentStatus>;
+
+  /**
+   * List agents available for chat in a provider-agnostic format.
+   * @param options.published - When true, only return published agents
+   */
+  listAgents(options?: { published?: boolean }): Promise<ChatAgent[]>;
+
+  /**
+   * Publish an agent to the end-user catalog.
+   */
+  publishAgent(agentId: string): Promise<void>;
+
+  /**
+   * Unpublish an agent from the end-user catalog.
+   */
+  unpublishAgent(agentId: string): Promise<void>;
+
+  /**
+   * Promote an agent to the next lifecycle stage (draft → registered → deployed).
+   */
+  promoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }>;
+
+  /**
+   * Demote an agent to a previous lifecycle stage (deployed → registered → draft).
+   */
+  demoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }>;
+
+  /**
+   * Bulk publish or unpublish agents.
+   */
+  bulkPublishAgents(agentIds: string[], published: boolean): Promise<void>;
+
+  /**
+   * Update agent display configuration (name, description, starters, etc.)
+   */
+  updateAgentConfig(
+    agentId: string,
+    config: Partial<
+      import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig
+    >,
+  ): Promise<void>;
+
+  /**
+   * List tools with lifecycle overlay in a provider-agnostic format.
+   */
+  listToolsWithLifecycle(options?: { published?: boolean }): Promise<
+    (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+      published?: boolean;
+      lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+      version?: number;
+    })[]
+  >;
+
+  /**
+   * Promote a tool to the next lifecycle stage (draft → registered → deployed).
+   */
+  promoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }>;
+
+  /**
+   * Demote a tool to a previous lifecycle stage (deployed → registered → draft).
+   */
+  demoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }>;
 
   /**
    * Get branding configuration for enterprise customization
@@ -101,6 +155,13 @@ export interface AugmentApi {
    * Get configured quick actions (single-click prompts)
    */
   getQuickActions(): Promise<QuickAction[]>;
+
+  /**
+   * Get configured guided experience tours (from YAML or defaults)
+   */
+  getTours(): Promise<
+    import('../components/AdminPanels/shared/defaultTours').TourDefinition[]
+  >;
 
   /**
    * Get configured prompt groups (grouped prompt cards for the welcome screen)
@@ -124,72 +185,13 @@ export interface AugmentApi {
     signal?: AbortSignal,
     previousResponseId?: string,
     conversationId?: string,
+    model?: string,
   ): Promise<void>;
-
-  // ===========================================================================
-  // Conversation History (Responses API - Server-side persistence)
-  // ===========================================================================
-
-  /**
-   * List stored conversations from the provider.
-   * 100% in sync with Responses API - no hardcoding
-   */
-  listConversations(
-    limit?: number,
-    order?: 'asc' | 'desc',
-    after?: string,
-  ): Promise<{
-    conversations: ConversationSummary[];
-    hasMore: boolean;
-    lastId?: string;
-  }>;
-
-  /**
-   * Get a specific conversation by response ID
-   */
-  getConversation(responseId: string): Promise<ConversationDetails | null>;
-
-  /**
-   * Get input items (full conversation context) for a response
-   */
-  getConversationInputs(responseId: string): Promise<{
-    items: ConversationInputItem[];
-    hasMore: boolean;
-  }>;
-
-  /**
-   * Delete a conversation from the provider.
-   * If conversationId is provided, the conversation container is also deleted.
-   */
-  deleteConversation(
-    responseId: string,
-    conversationId?: string,
-  ): Promise<boolean>;
 
   /**
    * Create a new conversation container
    */
   createConversation(): Promise<{ conversationId: string }>;
-
-  /**
-   * Get all items for a conversation (full ordered history)
-   */
-  getConversationItems(
-    conversationId: string,
-  ): Promise<{ items: ConversationInputItem[] }>;
-
-  /**
-   * Get processed messages for a conversation, ready for rendering.
-   * Backend groups tool calls and RAG sources with their assistant messages.
-   */
-  getConversationMessages(conversationId: string): Promise<ProcessedMessage[]>;
-
-  /**
-   * Walk the response chain to get full history (legacy fallback)
-   */
-  walkResponseChain(
-    responseId: string,
-  ): Promise<{ messages: Array<{ role: 'user' | 'assistant'; text: string }> }>;
 
   // ===========================================================================
   // Human-in-the-Loop (HITL) Tool Approval
@@ -244,20 +246,43 @@ export interface AugmentApi {
   // Chat Sessions (local DB — mirrors ai-virtual-agent pattern)
   // ===========================================================================
 
-  /** List chat sessions from local DB, optionally paginated */
-  listSessions(limit?: number, offset?: number): Promise<ChatSessionSummary[]>;
+  /** List chat sessions from local DB, optionally paginated and filtered by provider */
+  listSessions(
+    limit?: number,
+    offset?: number,
+    providerId?: string,
+  ): Promise<ChatSessionSummary[]>;
 
-  /** Create a new chat session */
-  createSession(title?: string): Promise<ChatSessionSummary>;
+  /** Create a new chat session, tagged with the active provider */
+  createSession(
+    title?: string,
+    model?: string,
+    providerId?: string,
+  ): Promise<ChatSessionSummary>;
 
   /** Delete a chat session */
   deleteSession(sessionId: string): Promise<boolean>;
+
+  /** Fetch session state for debug inspector */
+  getSessionState(sessionId: string): Promise<Record<string, unknown>>;
+
+  /** Submit per-message feedback (thumbs up/down with optional reasons) */
+  submitMessageFeedback(payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  }): Promise<boolean>;
 
   /** Get processed messages for a session (server-side grouping) */
   getSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
 
   /** List all sessions across all users (admin only) */
-  listAllSessions(): Promise<ChatSessionSummary[]>;
+  listAllSessions(
+    limit?: number,
+    offset?: number,
+  ): Promise<ChatSessionSummary[]>;
 
   /** Get messages for any session without ownership check (admin only) */
   getAdminSessionMessages(sessionId: string): Promise<SessionMessagesResponse>;
@@ -272,6 +297,7 @@ export interface AugmentApi {
     sessionId: string,
     enableRAG?: boolean,
     signal?: AbortSignal,
+    model?: string,
   ): Promise<void>;
 
   // ===========================================================================
@@ -376,7 +402,10 @@ export interface AugmentApi {
   getEvaluationStatus(): Promise<EvaluationStatusResponse>;
 
   /** Test model connectivity, availability, and generation capability */
-  testModelConnection(model?: string): Promise<{
+  testModelConnection(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -435,6 +464,168 @@ export interface AugmentApi {
     filesDeleted: number;
     activeVectorStoreIds: string[];
   }>;
+
+  // ===========================================================================
+  // Kagenti API
+  // ===========================================================================
+
+  listKagentiAgents(
+    namespace?: string,
+    options?: { includeCards?: boolean },
+  ): Promise<{
+    agents: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentSummary & {
+      agentCard?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentCard;
+    })[];
+  }>;
+  getKagentiAgent(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentDetail & {
+      agentCard?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiAgentCard;
+    }
+  >;
+  getKagentiAgentRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiRouteStatus
+  >;
+  createKagentiAgent(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentResponse
+  >;
+  deleteKagentiAgent(namespace: string, name: string): Promise<void>;
+  listKagentiMigratableAgents(): Promise<{
+    agents: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigratableAgent[];
+  }>;
+  migrateKagentiAgent(
+    namespace: string,
+    name: string,
+    deleteOld?: boolean,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigrateAgentResponse
+  >;
+  migrateAllKagentiAgents(options?: {
+    namespace?: string;
+    dryRun?: boolean;
+    deleteOld?: boolean;
+  }): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMigrateAllResponse
+  >;
+  listKagentiTools(namespace?: string): Promise<{
+    tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[];
+  }>;
+  getKagentiTool(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolDetail
+  >;
+  createKagentiTool(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolResponse
+  >;
+  deleteKagentiTool(namespace: string, name: string): Promise<void>;
+  getKagentiFeatureFlags(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFeatureFlags
+  >;
+  getKagentiDashboards(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiDashboardConfig
+  >;
+  listKagentiNamespaces(
+    enabledOnly?: boolean,
+  ): Promise<{ namespaces: string[]; defaultNamespace?: string }>;
+  triggerKagentiBuild(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiTriggerBuildRunResponse
+  >;
+  getKagentiBuildInfo(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo
+  >;
+  finalizeKagentiAgentBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeAgentBuildRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentResponse
+  >;
+  listKagentiBuildStrategies(): Promise<{
+    strategies: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildStrategy[];
+  }>;
+  listKagentiShipwrightBuilds(options?: {
+    namespace?: string;
+    allNamespaces?: boolean;
+  }): Promise<{
+    builds: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildListItem[];
+  }>;
+  connectKagentiTool(
+    namespace: string,
+    name: string,
+  ): Promise<{
+    tools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMcpToolSchema[];
+  }>;
+  invokeKagentiTool(
+    namespace: string,
+    name: string,
+    toolName: string,
+    args?: Record<string, unknown>,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiMcpInvokeResponse
+  >;
+  getToolRouteStatus(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiRouteStatus
+  >;
+  getToolBuildInfo(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiBuildInfo
+  >;
+  triggerToolBuild(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiTriggerBuildRunResponse
+  >;
+  finalizeToolBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeToolBuildRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolResponse
+  >;
+  createDevSpacesWorkspace(
+    request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceResponse
+  >;
+  checkDevSpacesHealth(): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesHealthResponse
+  >;
+  listDevSpacesWorkspaces(
+    namespace: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesListWorkspacesResponse
+  >;
+  getDevSpacesWorkspace(
+    namespace: string,
+    name: string,
+  ): Promise<
+    import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesWorkspace
+  >;
+  stopDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
+  deleteDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
 }
 
 /**
@@ -478,7 +669,13 @@ export class AugmentApiClient implements AugmentApi {
       ? await this.fetchApi.fetch(url, init)
       : await this.fetchApi.fetch(url);
     if (!response.ok) throw await ResponseError.fromResponse(response);
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      throw new Error(
+        `Invalid JSON response from ${path} (status ${response.status})`,
+      );
+    }
   }
 
   /** Like fetchJson but returns `fallback` instead of throwing on non-2xx. */
@@ -542,29 +739,112 @@ export class AugmentApiClient implements AugmentApi {
     };
   }
 
-  async chat(
-    messages: ChatMessage[],
-    enableRAG = true,
-    signal?: AbortSignal,
-    previousResponseId?: string,
-    conversationId?: string,
-  ): Promise<ChatResponse> {
-    return chatEndpoints.chat(
-      this.chatDeps,
-      messages,
-      enableRAG,
-      signal,
-      previousResponseId,
-      conversationId,
-    );
-  }
-
-  async listDocuments(): Promise<DocumentInfo[]> {
-    return documentEndpoints.listDocuments(this.documentDeps);
-  }
-
   async getStatus(): Promise<AugmentStatus> {
     return this.fetchJson('/status');
+  }
+
+  async listAgents(options?: { published?: boolean }): Promise<ChatAgent[]> {
+    const qs = options?.published ? '?published=true' : '';
+    const data = await this.fetchJson<{ agents: ChatAgent[] }>(`/agents${qs}`);
+    return data.agents ?? [];
+  }
+
+  async publishAgent(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/publish`, {
+      method: 'PUT',
+    });
+  }
+
+  async unpublishAgent(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/unpublish`, {
+      method: 'PUT',
+    });
+  }
+
+  async promoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }> {
+    return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/promote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async demoteAgent(
+    agentId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }> {
+    return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/demote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async bulkPublishAgents(
+    agentIds: string[],
+    published: boolean,
+  ): Promise<void> {
+    await this.fetchJson('/agents/bulk-publish', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentIds, published }),
+    });
+  }
+
+  async updateAgentConfig(
+    agentId: string,
+    config: Partial<
+      import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig
+    >,
+  ): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+  }
+
+  async listToolsWithLifecycle(options?: { published?: boolean }): Promise<
+    (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+      published?: boolean;
+      lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+      version?: number;
+    })[]
+  > {
+    const qs = options?.published ? '?published=true' : '';
+    const data = await this.fetchJson<{
+      tools: (import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary & {
+        published?: boolean;
+        lifecycleStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage;
+        version?: number;
+      })[];
+    }>(`/tools${qs}`);
+    return data.tools ?? [];
+  }
+
+  async promoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string; version: number }> {
+    return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/promote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
+  }
+
+  async demoteToolLifecycle(
+    toolId: string,
+    targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+  ): Promise<{ lifecycleStage: string }> {
+    return this.fetchJson(`/tools/${encodeURIComponent(toolId)}/demote`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetStage }),
+    });
   }
 
   async getBranding(): Promise<BrandingConfig> {
@@ -582,6 +862,15 @@ export class AugmentApiClient implements AugmentApi {
     return adminEndpoints.getQuickActions(this.adminDeps);
   }
 
+  async getTours(): Promise<
+    import('../components/AdminPanels/shared/defaultTours').TourDefinition[]
+  > {
+    const data = await this.fetchJson<{
+      tours: import('../components/AdminPanels/shared/defaultTours').TourDefinition[];
+    }>('/tours');
+    return data.tours ?? [];
+  }
+
   async getPromptGroups(): Promise<PromptGroup[]> {
     return adminEndpoints.getPromptGroups(this.adminDeps);
   }
@@ -593,6 +882,7 @@ export class AugmentApiClient implements AugmentApi {
     signal?: AbortSignal,
     previousResponseId?: string,
     conversationId?: string,
+    model?: string,
   ): Promise<void> {
     return chatEndpoints.chatStream(
       this.chatDeps,
@@ -602,85 +892,12 @@ export class AugmentApiClient implements AugmentApi {
       signal,
       previousResponseId,
       conversationId,
-    );
-  }
-
-  async listConversations(
-    limit: number = 10,
-    order: 'asc' | 'desc' = 'desc',
-    after?: string,
-  ): Promise<{
-    conversations: ConversationSummary[];
-    hasMore: boolean;
-    lastId?: string;
-  }> {
-    return conversationEndpoints.listConversations(
-      this.conversationDeps,
-      limit,
-      order,
-      after,
-    );
-  }
-
-  async getConversation(
-    responseId: string,
-  ): Promise<ConversationDetails | null> {
-    return conversationEndpoints.getConversation(
-      this.conversationDeps,
-      responseId,
-    );
-  }
-
-  async getConversationInputs(responseId: string): Promise<{
-    items: ConversationInputItem[];
-    hasMore: boolean;
-  }> {
-    return conversationEndpoints.getConversationInputs(
-      this.conversationDeps,
-      responseId,
-    );
-  }
-
-  async deleteConversation(
-    responseId: string,
-    conversationId?: string,
-  ): Promise<boolean> {
-    return conversationEndpoints.deleteConversation(
-      this.conversationDeps,
-      responseId,
-      conversationId,
+      model,
     );
   }
 
   async createConversation(): Promise<{ conversationId: string }> {
     return conversationEndpoints.createConversation(this.conversationDeps);
-  }
-
-  async getConversationItems(
-    conversationId: string,
-  ): Promise<{ items: ConversationInputItem[] }> {
-    return conversationEndpoints.getConversationItems(
-      this.conversationDeps,
-      conversationId,
-    );
-  }
-
-  async getConversationMessages(
-    conversationId: string,
-  ): Promise<ProcessedMessage[]> {
-    return conversationEndpoints.getConversationMessages(
-      this.conversationDeps,
-      conversationId,
-    );
-  }
-
-  async walkResponseChain(responseId: string): Promise<{
-    messages: Array<{ role: 'user' | 'assistant'; text: string }>;
-  }> {
-    return conversationEndpoints.walkResponseChain(
-      this.conversationDeps,
-      responseId,
-    );
   }
 
   async submitToolApproval(
@@ -729,16 +946,45 @@ export class AugmentApiClient implements AugmentApi {
   async listSessions(
     limit?: number,
     offset?: number,
+    providerId?: string,
   ): Promise<ChatSessionSummary[]> {
-    return sessionEndpoints.listSessions(this.sessionDeps, limit, offset);
+    return sessionEndpoints.listSessions(
+      this.sessionDeps,
+      limit,
+      offset,
+      providerId,
+    );
   }
 
-  async createSession(title?: string): Promise<ChatSessionSummary> {
-    return sessionEndpoints.createSession(this.sessionDeps, title);
+  async createSession(
+    title?: string,
+    model?: string,
+    providerId?: string,
+  ): Promise<ChatSessionSummary> {
+    return sessionEndpoints.createSession(
+      this.sessionDeps,
+      title,
+      model,
+      providerId,
+    );
   }
 
   async deleteSession(sessionId: string): Promise<boolean> {
     return sessionEndpoints.deleteSession(this.sessionDeps, sessionId);
+  }
+
+  async getSessionState(sessionId: string): Promise<Record<string, unknown>> {
+    return sessionEndpoints.getSessionState(this.sessionDeps, sessionId);
+  }
+
+  async submitMessageFeedback(payload: {
+    messageId: string;
+    sessionId?: string;
+    direction: 'positive' | 'negative';
+    reasons?: string[];
+    comment?: string;
+  }): Promise<boolean> {
+    return sessionEndpoints.submitMessageFeedback(this.sessionDeps, payload);
   }
 
   async getSessionMessages(
@@ -747,8 +993,11 @@ export class AugmentApiClient implements AugmentApi {
     return sessionEndpoints.getSessionMessages(this.sessionDeps, sessionId);
   }
 
-  async listAllSessions(): Promise<ChatSessionSummary[]> {
-    return sessionEndpoints.listAllSessions(this.sessionDeps);
+  async listAllSessions(
+    limit?: number,
+    offset?: number,
+  ): Promise<ChatSessionSummary[]> {
+    return sessionEndpoints.listAllSessions(this.sessionDeps, limit, offset);
   }
 
   async getAdminSessionMessages(
@@ -766,6 +1015,7 @@ export class AugmentApiClient implements AugmentApi {
     sessionId: string,
     enableRAG = true,
     signal?: AbortSignal,
+    model?: string,
   ): Promise<void> {
     return chatEndpoints.chatStreamWithSession(
       this.chatDeps,
@@ -774,6 +1024,7 @@ export class AugmentApiClient implements AugmentApi {
       sessionId,
       enableRAG,
       signal,
+      model,
     );
   }
 
@@ -921,13 +1172,16 @@ export class AugmentApiClient implements AugmentApi {
     return adminEndpoints.getEvaluationStatus(this.adminDeps);
   }
 
-  async testModelConnection(model?: string): Promise<{
+  async testModelConnection(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
     error?: string;
   }> {
-    return adminEndpoints.testModelConnection(this.adminDeps, model);
+    return adminEndpoints.testModelConnection(this.adminDeps, model, baseUrl);
   }
 
   async testMcpConnection(
@@ -997,6 +1251,196 @@ export class AugmentApiClient implements AugmentApi {
       this.documentDeps,
       vectorStoreId,
       permanent,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Kagenti API
+  // ---------------------------------------------------------------------------
+
+  private get kagentiDeps(): kagentiEndpoints.KagentiApiDeps {
+    return { fetchJson: this.fetchJson.bind(this) };
+  }
+
+  async listKagentiAgents(
+    namespace?: string,
+    options?: { includeCards?: boolean },
+  ) {
+    return kagentiEndpoints.listAgents(this.kagentiDeps, namespace, options);
+  }
+  async getKagentiAgent(namespace: string, name: string) {
+    return kagentiEndpoints.getAgent(this.kagentiDeps, namespace, name);
+  }
+  async getKagentiAgentRouteStatus(namespace: string, name: string) {
+    return kagentiEndpoints.getAgentRouteStatus(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async createKagentiAgent(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateAgentRequest,
+  ) {
+    return kagentiEndpoints.createAgent(this.kagentiDeps, body);
+  }
+  async deleteKagentiAgent(namespace: string, name: string) {
+    return kagentiEndpoints.deleteAgent(this.kagentiDeps, namespace, name);
+  }
+  async listKagentiMigratableAgents() {
+    return kagentiEndpoints.listMigratableAgents(this.kagentiDeps);
+  }
+  async migrateKagentiAgent(
+    namespace: string,
+    name: string,
+    deleteOld?: boolean,
+  ) {
+    return kagentiEndpoints.migrateAgent(
+      this.kagentiDeps,
+      namespace,
+      name,
+      deleteOld,
+    );
+  }
+  async migrateAllKagentiAgents(options?: {
+    namespace?: string;
+    dryRun?: boolean;
+    deleteOld?: boolean;
+  }) {
+    return kagentiEndpoints.migrateAllAgents(this.kagentiDeps, options);
+  }
+  async listKagentiTools(namespace?: string) {
+    return kagentiEndpoints.listTools(this.kagentiDeps, namespace);
+  }
+  async getKagentiTool(namespace: string, name: string) {
+    return kagentiEndpoints.getTool(this.kagentiDeps, namespace, name);
+  }
+  async createKagentiTool(
+    body: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiCreateToolRequest,
+  ) {
+    return kagentiEndpoints.createTool(this.kagentiDeps, body);
+  }
+  async deleteKagentiTool(namespace: string, name: string) {
+    return kagentiEndpoints.deleteTool(this.kagentiDeps, namespace, name);
+  }
+  async getKagentiFeatureFlags() {
+    return kagentiEndpoints.getFeatureFlags(this.kagentiDeps);
+  }
+  async getKagentiDashboards() {
+    return kagentiEndpoints.getDashboards(this.kagentiDeps);
+  }
+  async listKagentiNamespaces(enabledOnly?: boolean) {
+    return kagentiEndpoints.listNamespaces(this.kagentiDeps, enabledOnly);
+  }
+  async triggerKagentiBuild(namespace: string, name: string) {
+    return kagentiEndpoints.triggerAgentBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async getKagentiBuildInfo(namespace: string, name: string) {
+    return kagentiEndpoints.getAgentBuildInfo(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async finalizeKagentiAgentBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeAgentBuildRequest,
+  ) {
+    return kagentiEndpoints.finalizeAgentBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+      body,
+    );
+  }
+  async listKagentiBuildStrategies() {
+    return kagentiEndpoints.listBuildStrategies(this.kagentiDeps);
+  }
+  async listKagentiShipwrightBuilds(options?: {
+    namespace?: string;
+    allNamespaces?: boolean;
+  }) {
+    return kagentiEndpoints.listShipwrightBuilds(this.kagentiDeps, options);
+  }
+  async connectKagentiTool(namespace: string, name: string) {
+    return kagentiEndpoints.connectTool(this.kagentiDeps, namespace, name);
+  }
+  async invokeKagentiTool(
+    namespace: string,
+    name: string,
+    toolName: string,
+    args?: Record<string, unknown>,
+  ) {
+    return kagentiEndpoints.invokeTool(
+      this.kagentiDeps,
+      namespace,
+      name,
+      toolName,
+      args,
+    );
+  }
+  async getToolRouteStatus(namespace: string, name: string) {
+    return kagentiEndpoints.getToolRouteStatus(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async getToolBuildInfo(namespace: string, name: string) {
+    return kagentiEndpoints.getToolBuildInfo(this.kagentiDeps, namespace, name);
+  }
+  async triggerToolBuild(namespace: string, name: string) {
+    return kagentiEndpoints.triggerToolBuild(this.kagentiDeps, namespace, name);
+  }
+  async finalizeToolBuild(
+    namespace: string,
+    name: string,
+    body?: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiFinalizeToolBuildRequest,
+  ) {
+    return kagentiEndpoints.finalizeToolBuild(
+      this.kagentiDeps,
+      namespace,
+      name,
+      body,
+    );
+  }
+  async createDevSpacesWorkspace(
+    request: import('@red-hat-developer-hub/backstage-plugin-augment-common').DevSpacesCreateWorkspaceRequest,
+  ) {
+    return kagentiEndpoints.createDevSpacesWorkspace(this.kagentiDeps, request);
+  }
+  async checkDevSpacesHealth() {
+    return kagentiEndpoints.checkDevSpacesHealth(this.kagentiDeps);
+  }
+  async listDevSpacesWorkspaces(namespace: string) {
+    return kagentiEndpoints.listDevSpacesWorkspaces(
+      this.kagentiDeps,
+      namespace,
+    );
+  }
+  async getDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.getDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async stopDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.stopDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
+    );
+  }
+  async deleteDevSpacesWorkspace(namespace: string, name: string) {
+    return kagentiEndpoints.deleteDevSpacesWorkspace(
+      this.kagentiDeps,
+      namespace,
+      name,
     );
   }
 }

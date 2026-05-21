@@ -236,6 +236,12 @@ export interface AugmentStatus {
     chat: boolean;
     rag: { available: boolean; reason?: string };
     mcpTools: { available: boolean; reason?: string };
+    /** Whether this provider supports listing agents for the catalog */
+    agentCatalog?: boolean;
+    /** Whether the user must select an agent before chatting */
+    agentSelection?: boolean;
+    /** Whether agents have rich metadata (cards, skills) */
+    agentCards?: boolean;
   };
   /** Summary of configured agents (multi-agent only) */
   agents?: Array<{ key: string; name: string; isDefault: boolean }>;
@@ -255,6 +261,18 @@ export interface VectorStoreInfo {
   status: string;
   fileCount: number;
   createdAt: number;
+  embeddingModel?: string;
+  embeddingDimension?: number;
+  providerType?: string;
+  usageBytes?: number;
+  lastActiveAt?: number;
+  fileCounts?: {
+    completed: number;
+    inProgress: number;
+    failed: number;
+    cancelled: number;
+    total: number;
+  };
 }
 
 /**
@@ -342,10 +360,76 @@ export interface PromptCard {
   prompt: string;
   /** Icon name */
   icon?: string;
+  /** Agent to auto-select when this card is clicked (e.g. "namespace/agentName") */
+  agentId?: string;
   /** Whether this feature is coming soon (disabled, non-clickable) */
   comingSoon?: boolean;
   /** Custom coming soon label (defaults to "Coming Soon") */
   comingSoonLabel?: string;
+}
+
+/**
+ * Per-agent chat experience configuration set by admins.
+ * Controls which agents are visible to end users and how they appear.
+ * @public
+ */
+export interface ChatAgentConfig {
+  /** Agent identifier: "namespace/name" */
+  agentId: string;
+  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'production') */
+  published: boolean;
+  /** Whether this agent appears in end-user chat (only applies when published) */
+  visible: boolean;
+  /** Whether this agent is featured prominently on the welcome screen */
+  featured: boolean;
+  /** Lifecycle stage: draft → review → staging → production → retired */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version — incremented each time the agent is promoted forward */
+  version?: number;
+  /** ISO timestamp of last promotion */
+  promotedAt?: string;
+  /** User ref of who last promoted this agent */
+  promotedBy?: string;
+  /** Display order (lower first) */
+  order?: number;
+  /** Override display name */
+  displayName?: string;
+  /** Override description */
+  description?: string;
+  /** Custom avatar image URL */
+  avatarUrl?: string;
+  /** Per-agent accent color (hex) */
+  accentColor?: string;
+  /** Greeting message shown as first bot message on new conversation */
+  greeting?: string;
+  /** Suggested prompts shown on the agent card and below the input */
+  conversationStarters?: string[];
+}
+
+/**
+ * Per-tool lifecycle configuration set by admins.
+ * Controls which tools are published to end users, mirroring the agent lifecycle.
+ * @public
+ */
+export interface ChatToolConfig {
+  /** Tool identifier: "namespace/name" */
+  toolId: string;
+  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'production') */
+  published: boolean;
+  /** Whether this tool appears in end-user listings (only applies when published) */
+  visible: boolean;
+  /** Lifecycle stage: draft → review → staging → production → retired */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version — incremented each time the tool is promoted forward */
+  version?: number;
+  /** ISO timestamp of last promotion */
+  promotedAt?: string;
+  /** User ref of who last promoted this tool */
+  promotedBy?: string;
+  /** User ref of who created this tool */
+  createdBy?: string;
+  /** ISO timestamp of creation */
+  createdAt?: string;
 }
 
 /**
@@ -367,6 +451,224 @@ export interface PromptGroup {
   order?: number;
   /** Cards within this prompt group */
   cards: PromptCard[];
+}
+
+// =============================================================================
+// Unified Agent Catalog Types
+// =============================================================================
+
+/**
+ * Lifecycle stage of an agent in the promotion pipeline.
+ *
+ *   draft → review → staging → production → retired
+ *
+ * - **draft**: Under development. Visible only to creator/admin.
+ * - **review**: Submitted for admin review. Appears in the Review Queue.
+ * - **staging**: Approved, available for internal testing. Not visible to end users.
+ * - **production**: Live in the end-user marketplace/catalog.
+ * - **retired**: Removed from production, preserved for audit/history.
+ * @public
+ */
+export type AgentLifecycleStage =
+  | 'draft'
+  | 'review'
+  | 'staging'
+  | 'production'
+  | 'retired';
+
+/** Human-readable action name for a lifecycle transition. @public */
+export type AgentLifecycleAction =
+  | 'submit'
+  | 'approve'
+  | 'reject'
+  | 'promote'
+  | 'rollback'
+  | 'retire'
+  | 'reactivate';
+
+/** A single allowed lifecycle transition. @public */
+export interface AgentLifecycleTransition {
+  from: AgentLifecycleStage;
+  to: AgentLifecycleStage;
+  action: AgentLifecycleAction;
+  label: string;
+}
+
+/** Ordered list of lifecycle stages for pipeline display. @public */
+export const LIFECYCLE_STAGE_ORDER: readonly AgentLifecycleStage[] = [
+  'draft',
+  'review',
+  'staging',
+  'production',
+  'retired',
+] as const;
+
+/** All valid lifecycle transitions with human-readable labels. @public */
+export const LIFECYCLE_TRANSITIONS: readonly AgentLifecycleTransition[] = [
+  { from: 'draft', to: 'review', action: 'submit', label: 'Submit for Review' },
+  { from: 'review', to: 'staging', action: 'approve', label: 'Approve' },
+  { from: 'review', to: 'draft', action: 'reject', label: 'Reject' },
+  {
+    from: 'staging',
+    to: 'production',
+    action: 'promote',
+    label: 'Promote to Production',
+  },
+  {
+    from: 'staging',
+    to: 'draft',
+    action: 'rollback',
+    label: 'Rollback to Draft',
+  },
+  {
+    from: 'production',
+    to: 'staging',
+    action: 'rollback',
+    label: 'Rollback to Staging',
+  },
+  { from: 'production', to: 'retired', action: 'retire', label: 'Retire' },
+  { from: 'retired', to: 'draft', action: 'reactivate', label: 'Reactivate' },
+] as const;
+
+/**
+ * Maps old 3-stage names to new 5-stage names for backward compatibility.
+ * @public
+ */
+export const LEGACY_STAGE_MAP: Record<string, AgentLifecycleStage> = {
+  registered: 'review',
+  deployed: 'production',
+};
+
+/** Returns the valid forward transitions from a given stage. @public */
+export function getAvailableTransitions(
+  stage: AgentLifecycleStage,
+): AgentLifecycleTransition[] {
+  return LIFECYCLE_TRANSITIONS.filter(t => t.from === stage);
+}
+
+/** Checks whether a transition from one stage to another is valid. @public */
+export function isValidTransition(
+  from: AgentLifecycleStage,
+  to: AgentLifecycleStage,
+): boolean {
+  return LIFECYCLE_TRANSITIONS.some(t => t.from === from && t.to === to);
+}
+
+/** Normalizes a legacy stage name to the current stage name. @public */
+export function normalizeLifecycleStage(
+  stage: string | undefined,
+): AgentLifecycleStage {
+  if (!stage) return 'draft';
+  const trimmed = stage.trim().toLocaleLowerCase('en-US');
+  if (!trimmed) return 'draft';
+  if (Object.hasOwn(LEGACY_STAGE_MAP, trimmed))
+    return LEGACY_STAGE_MAP[trimmed];
+  if ((LIFECYCLE_STAGE_ORDER as readonly string[]).includes(trimmed)) {
+    return trimmed as AgentLifecycleStage;
+  }
+  return 'draft';
+}
+
+/**
+ * Provider-agnostic representation of a chat agent.
+ * Used by the agent catalog/gallery to display agents from any provider
+ * (Kagenti, Llama Stack config-driven, or custom).
+ * @public
+ */
+export interface ChatAgent {
+  /** Unique agent identifier (e.g. "namespace/name" for Kagenti, agent key for Llama Stack) */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Human-readable description */
+  description?: string;
+  /** Runtime status (e.g. "Ready", "Pending", "config") */
+  status: string;
+  /** Whether this is the default/entry agent */
+  isDefault?: boolean;
+  /** Provider that owns this agent */
+  providerType: string;
+  /** Conversation starters / example prompts */
+  starters?: string[];
+  /** Avatar image URL */
+  avatarUrl?: string;
+  /** Agent creation timestamp */
+  createdAt?: string;
+  /** Agent framework label (e.g. "a2a", "llamastack") */
+  framework?: string;
+  /** Protocol labels (e.g. "A2A", "MCP") */
+  protocols?: string[];
+  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'production') */
+  published?: boolean;
+  /** Origin of this agent: 'kagenti' | 'orchestration' | 'external' */
+  source?: string;
+  /** Namespace the agent belongs to (for Kagenti agents) */
+  namespace?: string;
+  /** Current lifecycle stage in the promotion pipeline */
+  lifecycleStage?: AgentLifecycleStage;
+  /** Promotion version (increments each time the agent is promoted) */
+  version?: number;
+  /** When this agent was last promoted */
+  promotedAt?: string;
+  /** Who promoted this agent */
+  promotedBy?: string;
+  /** Role of this agent in the orchestration topology */
+  agentRole?: AgentRole;
+}
+
+/**
+ * Possible roles an agent can have in the orchestration topology.
+ * Always auto-derived from connections, never manually set.
+ * @public
+ */
+export type AgentRole = 'router' | 'specialist' | 'standalone';
+
+/**
+ * Minimal agent shape required for topology-based role derivation.
+ * Both frontend form data and backend config objects satisfy this.
+ * @public
+ */
+export interface AgentTopologyNode {
+  handoffs?: string[];
+  asTools?: string[];
+}
+
+/**
+ * Derives an agent's role from the multi-agent topology.
+ * This is the single source of truth for role derivation across
+ * both frontend and backend.
+ *
+ * Rules:
+ * - Has outgoing handoffs or asTools -> 'router'
+ * - Is a target of another agent's handoffs or asTools -> 'specialist'
+ * - Neither -> 'standalone'
+ *
+ * @public
+ */
+export function deriveRoleFromTopology(
+  agentKey: string,
+  allAgents: Record<string, AgentTopologyNode | null | undefined>,
+): AgentRole {
+  const agent = allAgents[agentKey];
+  if (!agent) return 'standalone';
+
+  const hasOutgoing =
+    (agent.handoffs && agent.handoffs.length > 0) ||
+    (agent.asTools && agent.asTools.length > 0);
+
+  if (hasOutgoing) return 'router';
+
+  const isTarget = Object.entries(allAgents).some(
+    ([k, a]) =>
+      k !== agentKey &&
+      a !== null &&
+      a !== undefined &&
+      ((a.handoffs ?? []).includes(agentKey) ||
+        (a.asTools ?? []).includes(agentKey)),
+  );
+
+  if (isTarget) return 'specialist';
+  return 'standalone';
 }
 
 // =============================================================================

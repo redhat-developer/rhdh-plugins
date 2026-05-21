@@ -6,6 +6,8 @@
 import type { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AugmentStatus } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import type { CacheService } from '@backstage/backend-plugin-api';
+import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ChatMessage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -29,6 +31,7 @@ import { QuickAction } from '@red-hat-developer-hub/backstage-plugin-augment-com
 import { RAGSource } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
+import { Router } from 'express';
 import { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { SyncResult } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ToolCallInfo } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -95,11 +98,19 @@ export interface AgenticProvider {
     model?: string,
     capabilities?: PromptCapabilities,
   ): Promise<string>;
+  getAuthToken?(): Promise<string>;
   getEffectiveConfig?(): Promise<Record<string, unknown>>;
+  getSessionContextId?(backstageSessionId: string): Promise<string | undefined>;
   getStatus(): Promise<AgenticProviderStatus>;
+  hydrateSessionContext?(
+    backstageSessionId: string,
+    contextId: string,
+    model?: string,
+  ): Promise<void>;
   readonly id: string;
   initialize(): Promise<void>;
   invalidateRuntimeConfig?(): void;
+  listAgents?(): Promise<ChatAgent[]>;
   listModels?(): Promise<
     Array<{
       id: string;
@@ -110,9 +121,34 @@ export interface AgenticProvider {
   postInitialize(): Promise<void>;
   rag?: RAGCapability;
   refreshDynamicConfig?(): Promise<void>;
+  registerRoutes?(router: Router, deps: unknown): void;
   safety?: SafetyCapability;
+  setUserContext?(userRef: string): void;
   shutdown?(): Promise<void>;
-  testModel?(model?: string): Promise<{
+  submitApproval?(approval: {
+    responseId: string;
+    callId: string;
+    approved: boolean;
+    toolName?: string;
+    toolArguments?: string;
+    reason?: string;
+  }): Promise<{
+    content?: string;
+    responseId?: string;
+    toolExecuted?: boolean;
+    toolOutput?: string;
+    pendingApproval?: {
+      approvalRequestId: string;
+      toolName: string;
+      serverLabel?: string;
+      arguments?: string;
+    };
+    handoff?: unknown;
+  }>;
+  testModel?(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -146,6 +182,9 @@ export interface AgenticProviderStatus {
       available: boolean;
       reason?: string;
     };
+    agentCatalog?: boolean;
+    agentSelection?: boolean;
+    agentCards?: boolean;
   };
   // (undocumented)
   configurationErrors: string[];
@@ -230,6 +269,7 @@ export interface ChatRequest {
   enableRAG?: boolean;
   // (undocumented)
   messages: ChatMessage[];
+  model?: string;
   previousResponseId?: string;
   sessionId?: string;
 }
@@ -366,6 +406,8 @@ export { ConversationSummary };
 export interface CreateProviderOptions {
   // (undocumented)
   adminConfig?: AdminConfigService;
+  // (undocumented)
+  cache?: CacheService;
   // (undocumented)
   config: RootConfigService;
   // (undocumented)
@@ -602,7 +644,7 @@ export interface ProcessedMessage {
   ragSources?: ProcessedRagSource[];
   reasoning?: string;
   // (undocumented)
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   // (undocumented)
   text: string;
   // (undocumented)
@@ -745,6 +787,11 @@ export interface RAGCapability {
   }>;
   // (undocumented)
   syncDocuments(): Promise<SyncResult>;
+  // (undocumented)
+  updateVectorStore?(
+    vectorStoreId: string,
+    updates: Record<string, unknown>,
+  ): Promise<VectorStoreInfo>;
   // (undocumented)
   uploadDocument?(
     fileName: string,

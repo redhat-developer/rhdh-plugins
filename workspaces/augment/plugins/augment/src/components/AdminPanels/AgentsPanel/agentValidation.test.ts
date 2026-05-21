@@ -221,7 +221,10 @@ describe('agentValidation', () => {
     });
 
     it('reports invalid default agent', () => {
-      const agents = { triage: agent({ name: 'Triage' }) };
+      const agents = {
+        triage: agent({ name: 'Triage', handoffs: ['support'] }),
+        support: agent({ name: 'Support' }),
+      };
       const result = validateAgents(agents, 'billing');
       expect(result.errors).toContain('Default agent "billing" not found');
     });

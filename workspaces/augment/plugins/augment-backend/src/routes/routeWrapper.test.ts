@@ -68,7 +68,7 @@ describe('routeWrapper', () => {
 
       await wrapped(req, res);
 
-      expect(logger.info).toHaveBeenCalledWith('MyLabel');
+      expect(logger.debug).toHaveBeenCalledWith('MyLabel');
     });
 
     it('supports function logLabel that derives label from request', async () => {
@@ -94,7 +94,7 @@ describe('routeWrapper', () => {
 
       await wrapped(req, res);
 
-      expect(logger.info).toHaveBeenCalledWith('Dynamic-123');
+      expect(logger.debug).toHaveBeenCalledWith('Dynamic-123');
       expect(sendRouteError).toHaveBeenCalledWith(
         expect.anything(),
         expect.any(Error),

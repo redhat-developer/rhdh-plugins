@@ -92,7 +92,9 @@ export const ModelConnectionSection = ({
   useEffect(() => {
     if (!initialized.model && !modelConfig.loading) {
       const dbValue = modelConfig.entry?.configValue as string | undefined;
-      setModel(dbValue ?? effectiveModel);
+      const isStale =
+        dbValue === 'unused' || dbValue === 'unknown' || dbValue === '';
+      setModel(isStale ? effectiveModel : (dbValue ?? effectiveModel));
       setInitialized(prev => ({ ...prev, model: true }));
     }
   }, [
@@ -128,7 +130,11 @@ export const ModelConnectionSection = ({
     setTesting(true);
     setTestResult(null);
     try {
-      const result = await api.testModelConnection(model.trim() || undefined);
+      const trimmedUrl = baseUrl.trim() || undefined;
+      const result = await api.testModelConnection(
+        model.trim() || undefined,
+        trimmedUrl,
+      );
       setTestResult(result);
     } catch (err) {
       setTestResult({
@@ -140,7 +146,7 @@ export const ModelConnectionSection = ({
     } finally {
       setTesting(false);
     }
-  }, [api, model]);
+  }, [api, model, baseUrl]);
 
   const handleSave = useCallback(async () => {
     const allWarnings: string[] = [];
@@ -199,10 +205,10 @@ export const ModelConnectionSection = ({
       >
         <Box
           sx={{
-            display: 'flex',
-            gap: 2,
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            gap: 2.5,
+            pt: 1,
           }}
         >
           <ModelSelector
@@ -220,11 +226,10 @@ export const ModelConnectionSection = ({
             onChange={e => setBaseUrl(e.target.value)}
             placeholder="e.g. http://localhost:8321"
             helperText={`${providerName} server endpoint`}
-            sx={{ flex: 1, minWidth: 280 }}
             error={!!baseUrl && !URL_RE.test(baseUrl)}
           />
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2 }}>
           <Button
             variant="outlined"
             size="small"

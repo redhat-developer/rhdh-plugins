@@ -52,7 +52,7 @@ export function registerAdminDocumentRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
 ): void {
-  const { provider, logger, sendRouteError } = deps;
+  const { logger, sendRouteError } = deps;
 
   const withRoute = createWithRoute(logger, sendRouteError);
 
@@ -62,6 +62,7 @@ export function registerAdminDocumentRoutes(
       'POST /admin/documents',
       'Failed to upload document',
       async (req, res) => {
+        const provider = deps.provider;
         if (!provider.rag?.uploadDocument) {
           res.status(501).json({
             success: false,
@@ -162,6 +163,7 @@ export function registerAdminDocumentRoutes(
       req => `DELETE /admin/documents/${req.params.id}`,
       'Failed to delete document',
       async (req, res) => {
+        const provider = deps.provider;
         if (!provider.rag?.deleteDocument) {
           res.status(501).json({
             success: false,

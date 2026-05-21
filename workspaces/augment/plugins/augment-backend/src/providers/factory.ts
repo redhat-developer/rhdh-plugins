@@ -28,12 +28,14 @@ import type {
   LoggerService,
   RootConfigService,
   DatabaseService,
+  CacheService,
 } from '@backstage/backend-plugin-api';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { AdminConfigService } from '../services/AdminConfigService';
 import type { AgenticProvider } from './types';
 import type { AgenticProviderFactory } from '../extensions';
 import { ResponsesApiProvider } from './llamastack';
+import { KagentiProvider } from './kagenti';
 
 export type { ProviderType };
 
@@ -46,6 +48,7 @@ export interface CreateProviderOptions {
   config: RootConfigService;
   database?: DatabaseService;
   adminConfig?: AdminConfigService;
+  cache?: CacheService;
 }
 
 /**
@@ -87,7 +90,7 @@ export function createProvider(
   options: CreateProviderOptions,
   overrideType?: ProviderType,
 ): AgenticProvider {
-  const { logger, config, database, adminConfig } = options;
+  const { logger, config, database, adminConfig, cache } = options;
 
   const providerType: ProviderType =
     overrideType ??
@@ -104,6 +107,14 @@ export function createProvider(
         adminConfig,
       });
 
+    case 'kagenti':
+      return new KagentiProvider({
+        logger,
+        config,
+        adminConfig,
+        cache,
+      });
+
     case 'googleadk':
       throw new Error(
         'Google ADK provider is not yet implemented. ' +
@@ -118,7 +129,7 @@ export function createProvider(
       throw new Error(
         `Unknown agentic provider: "${providerType}". ` +
           `Check augment.provider in app-config.yaml. ` +
-          `Available providers: llamastack, googleadk${
+          `Available providers: llamastack, kagenti, googleadk${
             dynamicFactories.size > 0
               ? `, ${[...dynamicFactories.keys()].join(', ')}`
               : ''

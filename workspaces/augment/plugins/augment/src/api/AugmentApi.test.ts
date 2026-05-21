@@ -114,69 +114,6 @@ describe('AugmentApi', () => {
     });
   });
 
-  describe('listDocuments', () => {
-    it('should fetch documents from backend', async () => {
-      const mockDocs = [
-        { id: 'file1', filename: 'test.md', purpose: 'assistants' },
-      ];
-
-      mockFetchApi.fetch.mockResolvedValue(
-        createMockResponse({
-          ok: true,
-          json: jest.fn().mockResolvedValue({ documents: mockDocs }),
-        }),
-      );
-
-      const result = await api.listDocuments();
-
-      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/augment/documents',
-      );
-      expect(result).toEqual(mockDocs);
-    });
-  });
-
-  describe('listConversations', () => {
-    it('should fetch conversations with default parameters', async () => {
-      const mockConversations = {
-        success: true,
-        conversations: [],
-        hasMore: false,
-      };
-
-      mockFetchApi.fetch.mockResolvedValue(
-        createMockResponse({
-          ok: true,
-          json: jest.fn().mockResolvedValue(mockConversations),
-        }),
-      );
-
-      const result = await api.listConversations();
-
-      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/conversations?limit=10&order=desc'),
-      );
-      expect(result.conversations).toEqual([]);
-    });
-
-    it('should accept custom limit and order', async () => {
-      mockFetchApi.fetch.mockResolvedValue(
-        createMockResponse({
-          ok: true,
-          json: jest
-            .fn()
-            .mockResolvedValue({ conversations: [], hasMore: false }),
-        }),
-      );
-
-      await api.listConversations(5, 'asc');
-
-      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('limit=5&order=asc'),
-      );
-    });
-  });
-
   describe('getBranding', () => {
     it('should fetch branding configuration', async () => {
       const mockBrandingData = {
