@@ -22,6 +22,8 @@
  */
 
 import { test, expect, request } from '@playwright/test';
+import { X2AnsiblePage } from './pages/X2AnsiblePage';
+import { performLogin } from './fixtures/auth';
 
 const SOURCE_REPO =
   process.env.X2A_SOURCE_REPO || 'https://github.com/chef/chef-examples.git';
@@ -281,5 +283,202 @@ test.describe('X2Ansible - FLPATH-4211 Edit Project @live', () => {
     console.log(
       `Verified dirName unchanged (${fetched.dirName}) after name update`,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// UI Tests: Edit Project Dialog
+// ---------------------------------------------------------------------------
+
+test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
+  const baseURL = process.env.PLAYWRIGHT_URL || 'http://localhost:3000';
+  let projectId = '';
+  let projectName = '';
+
+  test.afterAll(async () => {
+    if (projectId) {
+      await deleteProject(baseURL, projectId).catch(() => {});
+    }
+  });
+
+  test('Setup: create a project via API for UI tests', async () => {
+    const project = await createProject(baseURL, 'ui');
+    projectId = project.id;
+    projectName = project.name;
+    // eslint-disable-next-line no-console
+    console.log(`Created project for UI tests: ${projectName} (${projectId})`);
+  });
+
+  test('should display edit button on project details page', async ({
+    page,
+  }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await expect(editButton).toBeVisible({ timeout: 15000 });
+    // eslint-disable-next-line no-console
+    console.log('Edit button visible on project details page');
+  });
+
+  test('should open edit dialog and show current values', async ({ page }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    await expect(dialog.getByText('Edit project')).toBeVisible();
+
+    const nameField = dialog.locator('input').first();
+    await expect(nameField).toHaveValue(projectName);
+
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Update' })).toBeVisible();
+
+    // eslint-disable-next-line no-console
+    console.log('Edit dialog opened with correct current values');
+  });
+
+  test('should update project name via UI dialog', async ({ page }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const newName = `x2a-ui-renamed-${Date.now()}`;
+    const nameField = dialog.locator('input').first();
+    await nameField.clear();
+    await nameField.fill(newName);
+
+    const updateButton = dialog.getByRole('button', { name: 'Update' });
+    await updateButton.click();
+
+    await expect(dialog).not.toBeVisible({ timeout: 10000 });
+
+    await expect(page.getByText(newName)).toBeVisible({ timeout: 10000 });
+    projectName = newName;
+
+    const fetched = await getProject(baseURL, projectId);
+    expect(fetched.name).toBe(newName);
+    // eslint-disable-next-line no-console
+    console.log(`UI: project name updated to ${newName}`);
+  });
+
+  test('should update description via UI dialog', async ({ page }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const newDesc = 'UI-updated description for FLPATH-4211';
+    const descField = dialog.locator('textarea').first();
+    await descField.clear();
+    await descField.fill(newDesc);
+
+    const updateButton = dialog.getByRole('button', { name: 'Update' });
+    await updateButton.click();
+
+    await expect(dialog).not.toBeVisible({ timeout: 10000 });
+
+    await expect(page.getByText(newDesc)).toBeVisible({ timeout: 10000 });
+
+    const fetched = await getProject(baseURL, projectId);
+    expect(fetched.description).toBe(newDesc);
+    // eslint-disable-next-line no-console
+    console.log(`UI: description updated`);
+  });
+
+  test('should cancel edit dialog without saving changes', async ({ page }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const nameField = dialog.locator('input').first();
+    await nameField.clear();
+    await nameField.fill('this-should-not-be-saved');
+
+    const cancelButton = dialog.getByRole('button', { name: 'Cancel' });
+    await cancelButton.click();
+
+    await expect(dialog).not.toBeVisible({ timeout: 10000 });
+
+    const fetched = await getProject(baseURL, projectId);
+    expect(fetched.name).toBe(projectName);
+    // eslint-disable-next-line no-console
+    console.log('UI: cancel discarded changes correctly');
+  });
+
+  test('should disable Update button when no changes made', async ({
+    page,
+  }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const updateButton = dialog.getByRole('button', { name: 'Update' });
+    await expect(updateButton).toBeDisabled();
+
+    // eslint-disable-next-line no-console
+    console.log('UI: Update button correctly disabled when no changes');
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+  });
+
+  test('should disable Update button when name is empty', async ({ page }) => {
+    await performLogin(page);
+    await page.goto(`/x2a/projects/${projectId}`);
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    const editButton = page.getByRole('button', { name: /edit/i });
+    await editButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const nameField = dialog.locator('input').first();
+    await nameField.clear();
+
+    const updateButton = dialog.getByRole('button', { name: 'Update' });
+    await expect(updateButton).toBeDisabled();
+
+    // eslint-disable-next-line no-console
+    console.log('UI: Update button correctly disabled when name is empty');
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
   });
 });
