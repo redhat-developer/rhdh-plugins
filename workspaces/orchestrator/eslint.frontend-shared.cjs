@@ -34,7 +34,7 @@ const materialUiMigrationEslintConfig = {
 };
 
 /**
- * ESLint config for frontend packages in this workspace (MUI v4 migration guards).
+ * Shared ESLint config for frontend packages in the orchestrator workspace.
  */
 module.exports = packageDir =>
   require('@backstage/cli/config/eslint-factory')(

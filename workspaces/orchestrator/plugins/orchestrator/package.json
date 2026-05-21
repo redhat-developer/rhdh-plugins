@@ -7,7 +7,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.tsx",
-    "./eslint.frontend-shared.cjs": "./eslint.frontend-shared.cjs",
     "./package.json": "./package.json"
   },
   "typesVersions": {

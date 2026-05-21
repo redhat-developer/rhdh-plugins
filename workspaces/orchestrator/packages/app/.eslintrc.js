@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-module.exports = require('@red-hat-developer-hub/backstage-plugin-orchestrator/eslint.frontend-shared.cjs')(
-  __dirname,
-);
+// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
+module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);

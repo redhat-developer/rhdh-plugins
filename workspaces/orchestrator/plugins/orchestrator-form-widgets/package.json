@@ -98,7 +98,6 @@
     "@backstage/dev-utils": "^1.1.21",
     "@backstage/test-utils": "^1.7.16",
     "@janus-idp/cli": "3.7.0",
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
