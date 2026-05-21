@@ -490,6 +490,7 @@ export function registerAgentRoutes(
 
   // ---------------------------------------------------------------------------
   // PUT /agents/:agentId/publish -- shortcut: promote to production
+  // Logs audit warning when bypassing lifecycle stages.
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/publish',
@@ -503,6 +504,9 @@ export function registerAgentRoutes(
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
         const now = new Date().toISOString();
+        const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
+
+        const bypassed = !isValidTransition(currentStage, 'production');
 
         if (existing) {
           existing.lifecycleStage = 'production';
@@ -531,10 +535,26 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'production', direction: 'publish' },
+          meta: {
+            from: currentStage,
+            to: 'production',
+            direction: 'publish',
+            lifecycleBypassed: bypassed,
+          },
         });
-        logger.info(`Agent "${agentId}" published by ${userRef}`);
-        res.json({ success: true, agentId, published: true });
+        if (bypassed) {
+          logger.warn(
+            `Admin bypass: "${agentId}" published from "${currentStage}" (skipped lifecycle) by ${userRef}`,
+          );
+        } else {
+          logger.info(`Agent "${agentId}" published by ${userRef}`);
+        }
+        res.json({
+          success: true,
+          agentId,
+          published: true,
+          lifecycleBypassed: bypassed,
+        });
       },
     ),
   );
@@ -590,6 +610,7 @@ export function registerAgentRoutes(
 
   // ---------------------------------------------------------------------------
   // PUT /agents/bulk-publish -- bulk publish/unpublish
+  // Logs audit warning per agent when lifecycle is bypassed.
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/bulk-publish',
@@ -617,8 +638,18 @@ export function registerAgentRoutes(
           ? 'production'
           : 'staging';
 
+        const bypassed: string[] = [];
+
         for (const agentId of agentIds) {
           const existing = configMap.get(agentId);
+          const currentStage = normalizeLifecycleStage(
+            existing?.lifecycleStage,
+          );
+
+          if (!isValidTransition(currentStage, targetStage)) {
+            bypassed.push(agentId);
+          }
+
           if (existing) {
             existing.lifecycleStage = targetStage;
             existing.published = published;
@@ -648,10 +679,34 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+
+        if (bypassed.length > 0) {
+          audit.log({
+            action: 'agent.lifecycle',
+            actor: userRef,
+            target: bypassed.join(', '),
+            outcome: 'success',
+            sourceIp: AuditLogger.extractIp(req),
+            meta: {
+              direction: 'bulk-publish',
+              lifecycleBypassed: true,
+              bypassedCount: bypassed.length,
+            },
+          });
+          logger.warn(
+            `Admin bypass: bulk-publish of ${bypassed.length}/${agentIds.length} agents skipped lifecycle by ${userRef}`,
+          );
+        }
+
         logger.info(
           `Bulk ${published ? 'publish' : 'unpublish'} of ${agentIds.length} agents by ${userRef}`,
         );
-        res.json({ success: true, count: agentIds.length, published });
+        res.json({
+          success: true,
+          count: agentIds.length,
+          published,
+          lifecycleBypassed: bypassed.length > 0 ? bypassed : undefined,
+        });
       },
     ),
   );
@@ -691,7 +746,11 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // DELETE /agents/:agentId -- remove agent lifecycle config entry
+  // DELETE /agents/:agentId -- enterprise-grade cascading delete
+  // Detects the agent's source and cleans up all stores:
+  //   - chatAgents lifecycle config entry
+  //   - orchestration admin config ('agents' key) for responses-api agents
+  // Kagenti K8s resource cleanup requires the dedicated admin endpoint.
   // Non-admins can only delete their own draft agents.
   // Admins can delete any agent's config.
   // ---------------------------------------------------------------------------
@@ -703,26 +762,31 @@ export function registerAgentRoutes(
       async (req, res) => {
         const agentId = decodeURIComponent(req.params.agentId);
         const userRef = await ctx.getUserRef(req);
-        const isAdmin = await ctx.checkIsAdmin(req);
+        const admin = await ctx.checkIsAdmin(req);
+
+        const { agents: allAgents } = await buildUnifiedAgentList();
+        const agentRecord = allAgents.find(a => a.id === agentId);
+        const source = agentRecord?.source ?? 'unknown';
+
         const configs = await loadChatAgentConfigs();
         const idx = configs.findIndex(c => c.agentId === agentId);
 
-        if (idx === -1) {
-          res.status(404).json({ error: 'Agent config not found' });
+        if (idx === -1 && !agentRecord) {
+          res.status(404).json({ error: 'Agent not found' });
           return;
         }
 
-        const existing = configs[idx];
-        const stage = normalizeLifecycleStage(existing.lifecycleStage);
+        const existing = idx !== -1 ? configs[idx] : undefined;
+        const stage = normalizeLifecycleStage(existing?.lifecycleStage);
 
-        if (!isAdmin) {
+        if (!admin) {
           if (stage !== 'draft') {
             res.status(403).json({
               error: 'Non-admin users can only delete agents in draft stage.',
             });
             return;
           }
-          if (existing.createdBy && existing.createdBy !== userRef) {
+          if (existing?.createdBy && existing.createdBy !== userRef) {
             res.status(403).json({
               error: 'You can only delete agents you created.',
             });
@@ -730,8 +794,47 @@ export function registerAgentRoutes(
           }
         }
 
-        configs.splice(idx, 1);
-        await saveChatAgentConfigs(configs, userRef);
+        const cleanupResults: Record<string, string> = {};
+
+        if (idx !== -1) {
+          configs.splice(idx, 1);
+          await saveChatAgentConfigs(configs, userRef);
+          cleanupResults.chatAgents = 'success';
+        } else {
+          cleanupResults.chatAgents = 'skipped';
+        }
+
+        if (source === 'orchestration') {
+          try {
+            const raw = await adminConfig.get('agents');
+            if (raw && typeof raw === 'object') {
+              const agentMap = { ...(raw as Record<string, unknown>) };
+              if (Object.hasOwn(agentMap, agentId)) {
+                delete agentMap[agentId];
+                await adminConfig.set('agents', agentMap, userRef);
+                cleanupResults.orchestration = 'success';
+              } else {
+                cleanupResults.orchestration = 'skipped';
+              }
+            } else {
+              cleanupResults.orchestration = 'skipped';
+            }
+          } catch (err) {
+            cleanupResults.orchestration = `failed: ${err instanceof Error ? err.message : 'unknown'}`;
+            logger.warn(
+              `Orchestration cleanup failed for "${agentId}": ${cleanupResults.orchestration}`,
+            );
+          }
+        } else {
+          cleanupResults.orchestration = 'skipped';
+        }
+
+        if (source === 'kagenti') {
+          cleanupResults.kagenti =
+            'requires DELETE /kagenti/agents/:ns/:name (admin endpoint)';
+        } else {
+          cleanupResults.kagenti = 'skipped';
+        }
 
         audit.log({
           action: 'agent.delete',
@@ -739,12 +842,17 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { lifecycleStage: stage, isAdmin },
+          meta: {
+            lifecycleStage: stage,
+            isAdmin: admin,
+            source,
+            cleanupResults,
+          },
         });
         logger.info(
-          `Agent config "${agentId}" deleted (stage: ${stage}) by ${userRef}`,
+          `Agent "${agentId}" deleted (source: ${source}, stage: ${stage}) by ${userRef}`,
         );
-        res.json({ success: true, agentId });
+        res.json({ success: true, agentId, source, cleanupResults });
       },
     ),
   );

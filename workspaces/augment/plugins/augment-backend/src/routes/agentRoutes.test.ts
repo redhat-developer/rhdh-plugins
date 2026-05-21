@@ -701,11 +701,10 @@ describe('agentRoutes', () => {
       const res = await request(app).put('/agents/mybot/publish');
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.published).toBe(true);
+      expect(res.body.lifecycleBypassed).toBe(true);
     });
 
-    it('publishes agent that is already in staging', async () => {
+    it('does not report bypass when publishing from staging', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -725,8 +724,7 @@ describe('agentRoutes', () => {
       const res = await request(app).put('/agents/mybot/publish');
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.published).toBe(true);
+      expect(res.body.lifecycleBypassed).toBe(false);
     });
 
     it('rejects non-admin access', async () => {
@@ -874,8 +872,7 @@ describe('agentRoutes', () => {
         .send({ agentIds: ['mybot'], published: true });
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.count).toBe(1);
+      expect(res.body.lifecycleBypassed).toContain('mybot');
     });
 
     it('rejects invalid payload', async () => {
@@ -923,9 +920,40 @@ describe('agentRoutes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
+      expect(res.body.cleanupResults.chatAgents).toBe('success');
 
       const configs = store.chatAgents as Array<{ agentId: string }>;
       expect(configs.find(c => c.agentId === 'mybot')).toBeUndefined();
+    });
+
+    it('cascading delete cleans up orchestration config for orchestration agents', async () => {
+      const { app, store } = setup({
+        isAdmin: true,
+        initialConfig: {
+          agents: {
+            orchbot: { name: 'Orch Bot', instructions: 'Route queries' },
+            otherbot: { name: 'Other', instructions: 'Keep me' },
+          },
+          chatAgents: [
+            {
+              agentId: 'orchbot',
+              lifecycleStage: 'draft',
+              published: false,
+              visible: false,
+              featured: false,
+            },
+          ],
+        },
+      });
+
+      const res = await request(app).delete('/agents/orchbot');
+
+      expect(res.status).toBe(200);
+      expect(res.body.cleanupResults.orchestration).toBe('success');
+
+      const agentMap = store.agents as Record<string, unknown>;
+      expect(agentMap.orchbot).toBeUndefined();
+      expect(agentMap.otherbot).toBeDefined();
     });
 
     it('non-admin can delete their own draft agent', async () => {
@@ -1041,7 +1069,9 @@ describe('agentRoutes', () => {
       );
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.body.cleanupResults.kagenti).toContain(
+        'requires DELETE /kagenti/agents',
+      );
     });
   });
 
