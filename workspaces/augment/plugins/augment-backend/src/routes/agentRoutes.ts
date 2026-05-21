@@ -599,6 +599,51 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
+  // DELETE /agents/:agentId -- remove agent from chatAgents config
+  // Only draft agents can be deleted; other stages must be retired first.
+  // ---------------------------------------------------------------------------
+  router.delete(
+    '/agents/:agentId',
+    withRoute(
+      'DELETE /agents/:agentId',
+      'Failed to delete agent',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const configs = await loadChatAgentConfigs();
+        const existing = configs.find(c => c.agentId === agentId);
+
+        const stage = normalizeLifecycleStage(existing?.lifecycleStage);
+        if (stage !== 'draft') {
+          const isAdmin = await ctx.checkIsAdmin(req);
+          if (!isAdmin) {
+            res.status(403).json({
+              error:
+                'Only admins can delete non-draft agents. ' +
+                'Non-admin users may only delete agents in "draft" stage.',
+            });
+            return;
+          }
+        }
+
+        const updated = configs.filter(c => c.agentId !== agentId);
+        await saveChatAgentConfigs(updated, userRef);
+
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { from: stage, direction: 'delete' },
+        });
+        logger.info(`Agent "${agentId}" config deleted by ${userRef}`);
+        res.json({ success: true, agentId, deleted: true });
+      },
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
   // PUT /agents/:agentId/config -- update agent display config
   // ---------------------------------------------------------------------------
   router.put(

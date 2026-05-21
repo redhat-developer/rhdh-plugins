@@ -29,10 +29,16 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import { useTheme, alpha } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   getLifecycleTransition,
   getLifecycleStep,
@@ -71,6 +77,7 @@ export interface AgentLifecycleDetailProps {
   agent: KagentiAgentSummary;
   onBack: () => void;
   onChatWithAgent?: (agentId: string) => void;
+  onDeleted?: () => void;
 }
 
 /**
@@ -81,11 +88,14 @@ export function AgentLifecycleDetail({
   agent,
   onBack,
   onChatWithAgent,
+  onDeleted,
 }: AgentLifecycleDetailProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const [activeTab, setActiveTab] = useState<LifecycleTab>('overview');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const {
     agentCard,
@@ -155,6 +165,25 @@ export function AgentLifecycleDetail({
       setPublishLoading(false);
     }
   }, [api, agentId, nextTransition]);
+
+  const handleDelete = useCallback(async () => {
+    setDeleteLoading(true);
+    try {
+      await api.deleteKagentiAgent(agent.namespace, agent.name);
+      await api.deleteAgentConfig(agentId).catch(() => {});
+      setPublishToast('Agent deleted');
+      onDeleted?.();
+    } catch (err) {
+      setPublishToast(
+        `Delete failed: ${err instanceof Error ? err.message : 'Unknown'}`,
+      );
+    } finally {
+      setDeleteLoading(false);
+      setDeleteDialogOpen(false);
+    }
+  }, [api, agent.namespace, agent.name, agentId, onDeleted]);
+
+  const canDelete = lifecycleStage === 'draft';
 
   const currentStep = getLifecycleStep(lifecycleStage);
   const glass = glassSurface(theme, 6);
@@ -357,6 +386,27 @@ export function AgentLifecycleDetail({
                 Test
               </Button>
             )}
+            {canDelete && (
+              <Tooltip title="Delete this draft agent">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  startIcon={
+                    deleteLoading ? (
+                      <CircularProgress size={14} />
+                    ) : (
+                      <DeleteIcon />
+                    )
+                  }
+                  disabled={deleteLoading}
+                  onClick={() => setDeleteDialogOpen(true)}
+                  sx={{ textTransform: 'none', borderRadius: borderRadius.sm }}
+                >
+                  Delete
+                </Button>
+              </Tooltip>
+            )}
           </Box>
         </Box>
 
@@ -456,6 +506,31 @@ export function AgentLifecycleDetail({
       {activeTab === 'card' && (
         <AgentCardTab agentCard={agentCard} loading={loading} />
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Agent</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Delete agent <strong>{displayName}</strong> ({agent.namespace}/
+            {agent.name})? This will remove the Kagenti deployment and its
+            lifecycle config entry. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!publishToast}
