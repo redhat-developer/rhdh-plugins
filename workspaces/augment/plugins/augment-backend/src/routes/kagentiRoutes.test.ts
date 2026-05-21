@@ -32,7 +32,7 @@ function createMockRouteContext() {
       integrations: false,
       triggers: false,
     }),
-    getDashboards: jest.fn().mockResolvedValue({ traces: 'http://traces' }),
+    getDashboards: jest.fn().mockResolvedValue({ traces: 'https://traces' }),
     listNamespaces: jest.fn().mockResolvedValue({ namespaces: ['team1'] }),
     listAgents: jest.fn().mockResolvedValue({
       items: [
@@ -369,7 +369,7 @@ describe('kagentiRoutes', () => {
     const { app } = createMockRouteContext();
     const res = await request(app).get('/kagenti/config/dashboards');
     expect(res.status).toBe(200);
-    expect(res.body.traces).toBe('http://traces');
+    expect(res.body.traces).toBe('https://traces');
   });
 
   it('POST /kagenti/agents/:ns/:name/migrate uses config default for delete_old', async () => {

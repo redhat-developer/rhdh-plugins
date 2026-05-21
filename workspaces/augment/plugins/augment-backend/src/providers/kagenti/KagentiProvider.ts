@@ -54,6 +54,12 @@ import { buildMetaPrompt } from '../../services/promptGeneration';
 import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { getVisibleNamespaces } from './kagentiNamespaceUtils';
 
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 /**
  * No-op CacheService fallback when no real cache is injected.
  * Falls back to in-memory Map for backward compatibility during tests.
@@ -655,7 +661,7 @@ export class KagentiProvider implements AgenticProvider {
     }
 
     try {
-      const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/models`;
+      const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
       const res = await fetch(url, {
         method: 'GET',
         headers: { Accept: 'application/json' },
@@ -791,7 +797,7 @@ export class KagentiProvider implements AgenticProvider {
       capabilities,
     );
 
-    const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/responses`;
+    const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/responses`;
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -849,7 +855,7 @@ export class KagentiProvider implements AgenticProvider {
 
     if (llamaStackUrl && model) {
       try {
-        const url = `${llamaStackUrl.replace(/\/+$/, '')}/v1/models`;
+        const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
         const skipTls = this.rootConfig.getOptionalBoolean(
           'augment.llamaStack.skipTlsVerify',
         );

@@ -61,7 +61,7 @@ export function AgentResourceTab({
             <Skeleton
               key={i}
               variant="text"
-              width={`${60 + Math.random() * 30}%`}
+              width={`${60 + ((i * 17) % 31)}%`}
             />
           ))}
         </Box>

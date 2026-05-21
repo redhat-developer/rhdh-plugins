@@ -63,6 +63,12 @@ import type {
 } from './types';
 import { API_PREFIX, encodePathSegment as e } from './utils';
 
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
 
 export interface KagentiApiClientOptions {
@@ -93,7 +99,7 @@ export class KagentiApiClient {
   private _requestContext: KagentiRequestContext = {};
 
   constructor(options: KagentiApiClientOptions) {
-    this.baseUrl = options.baseUrl.replace(/\/+$/, '');
+    this.baseUrl = stripTrailingSlashes(options.baseUrl);
     this.tokenManager = options.tokenManager;
     this.logger = options.logger;
     this.isHttps = this.baseUrl.startsWith('https');

@@ -117,6 +117,56 @@ export function isAgentReady(status: string): boolean {
   return ['Ready', 'Running', 'Active'].includes(status);
 }
 
+function stripMarkdownLinks(text: string): string {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '[') {
+      const closeBracket = text.indexOf(']', i + 1);
+      if (
+        closeBracket !== -1 &&
+        closeBracket + 1 < text.length &&
+        text[closeBracket + 1] === '('
+      ) {
+        const closeParen = text.indexOf(')', closeBracket + 2);
+        if (closeParen !== -1) {
+          result += text.slice(i + 1, closeBracket);
+          i = closeParen + 1;
+          continue;
+        }
+      }
+    }
+    result += text[i];
+    i++;
+  }
+  return result;
+}
+
+function stripBulletPoints(text: string): string {
+  return text
+    .split('\n')
+    .map(line => {
+      let j = 0;
+      while (j < line.length && (line[j] === ' ' || line[j] === '\t')) j++;
+      if (
+        j < line.length &&
+        (line[j] === '-' || line[j] === '*' || line[j] === '+')
+      ) {
+        const after = j + 1;
+        if (
+          after < line.length &&
+          (line[after] === ' ' || line[after] === '\t')
+        ) {
+          let k = after;
+          while (k < line.length && (line[k] === ' ' || line[k] === '\t')) k++;
+          return line.slice(k);
+        }
+      }
+      return line;
+    })
+    .join('\n');
+}
+
 /**
  * Strips markdown formatting and technical headings from agent descriptions,
  * returning a clean 1-2 sentence summary suitable for card display.
@@ -135,7 +185,7 @@ export function sanitizeDescription(raw: string, maxLength = 160): string {
   text = text.replace(/_{1,3}([^_]+)_{1,3}/g, '$1');
 
   // Remove markdown links [text](url) -> text
-  text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  text = stripMarkdownLinks(text);
 
   // Remove inline code backticks
   text = text.replace(/`([^`]+)`/g, '$1');
@@ -144,7 +194,7 @@ export function sanitizeDescription(raw: string, maxLength = 160): string {
   text = text.replace(/^#{1,6}\s+/gm, '');
 
   // Remove bullet points
-  text = text.replace(/^[\s]*[-*+]\s+/gm, '');
+  text = stripBulletPoints(text);
 
   // Remove "Input Parameters", "Key Features", etc. labels
   text = text.replace(

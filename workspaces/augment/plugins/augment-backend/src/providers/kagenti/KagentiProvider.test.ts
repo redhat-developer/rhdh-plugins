@@ -51,7 +51,7 @@ jest.mock('./client/KagentiApiClient', () => ({
       name: 'weather-bot',
       description: 'Weather agent',
       version: '1.0',
-      url: 'http://weather-bot:8000',
+      url: 'https://weather-bot:8000',
       streaming: true,
       skills: [],
     }),

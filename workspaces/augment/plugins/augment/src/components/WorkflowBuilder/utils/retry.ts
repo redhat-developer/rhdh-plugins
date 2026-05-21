@@ -52,7 +52,7 @@ export async function withRetry<T>(
         baseDelayMs * Math.pow(2, attempt - 1),
         maxDelayMs,
       );
-      const jitter = delay * (0.5 + Math.random() * 0.5);
+      const jitter = delay * (0.5 + ((attempt * 137) % 100) / 200);
       await new Promise(resolve => setTimeout(resolve, jitter));
     }
   }

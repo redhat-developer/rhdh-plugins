@@ -14,19 +14,45 @@
  * limitations under the License.
  */
 
+function stripMarkdownLinks(text: string): string {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '[') {
+      const closeBracket = text.indexOf(']', i + 1);
+      if (
+        closeBracket !== -1 &&
+        closeBracket + 1 < text.length &&
+        text[closeBracket + 1] === '('
+      ) {
+        const closeParen = text.indexOf(')', closeBracket + 2);
+        if (closeParen !== -1) {
+          result += text.slice(i + 1, closeBracket);
+          i = closeParen + 1;
+          continue;
+        }
+      }
+    }
+    result += text[i];
+    i++;
+  }
+  return result;
+}
+
 /**
  * Strips common markdown syntax from text for plain-text display.
  * Handles headers, bold, italic, inline code, links, and list markers.
  */
 export function stripMarkdown(text: string): string {
-  return text
+  let s = text
     .replace(/#{1,6}\s+/g, '')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
     .replace(/_([^_]+)_/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/`([^`]+)`/g, '$1');
+  s = stripMarkdownLinks(s);
+  return s
     .replace(/^[-*+]\s+/gm, '\u2022 ')
     .replace(/^\d+\.\s+/gm, '')
     .replace(/\n{3,}/g, '\n\n')

@@ -17,6 +17,12 @@
 import type { RootConfigService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 export interface KagentiDashboardOverrides {
   readonly mcpInspector?: string;
   readonly mcpProxy?: string;
@@ -148,10 +154,10 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
     kagenti.getOptionalNumber('retryBaseDelayMs') ?? 1000;
   const tokenExpiryBufferSeconds =
     kagenti.getOptionalNumber('tokenExpiryBufferSeconds') ?? 60;
-  const extensionBaseUrl = (
+  const extensionBaseUrl = stripTrailingSlashes(
     kagenti.getOptionalString('extensionBaseUrl') ??
-    'https://a2a-extensions.adk.kagenti.dev'
-  ).replace(/\/+$/, '');
+      'https://a2a-extensions.adk.kagenti.dev',
+  );
 
   if (requestTimeoutMs <= 0) {
     throw new InputError('augment.kagenti.requestTimeoutMs must be positive');
@@ -196,7 +202,7 @@ export function loadKagentiConfig(config: RootConfigService): KagentiConfig {
   }
 
   return {
-    baseUrl: baseUrl.replace(/\/+$/, ''),
+    baseUrl: stripTrailingSlashes(baseUrl),
     namespace: kagenti.getOptionalString('namespace') ?? 'default',
     namespaces: namespacesRaw ?? undefined,
     showAllNamespaces: kagenti.getOptionalBoolean('showAllNamespaces') ?? true,

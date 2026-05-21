@@ -70,7 +70,7 @@ describe('KagentiApiClient', () => {
             name: 'bot',
             description: 'A bot',
             version: '1.0',
-            url: 'http://bot:8000',
+            url: 'https://bot:8000',
             capabilities: { streaming: true, pushNotifications: false },
             skills: [],
           }),

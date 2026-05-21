@@ -168,8 +168,8 @@ export function WorkflowEditor({
         id,
         type: actualType as WorkflowNode['type'],
         position: {
-          x: 300 + Math.random() * 100,
-          y: 150 + Math.random() * 100,
+          x: 300 + ((workflow.nodes.length * 37) % 100),
+          y: 150 + ((workflow.nodes.length * 53) % 100),
         },
         data: defaultData as WorkflowNode['data'],
       };

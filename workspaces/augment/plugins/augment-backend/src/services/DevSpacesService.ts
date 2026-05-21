@@ -26,6 +26,20 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { AdminConfigService } from './AdminConfigService';
 
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
+function trimDashes(s: string): string {
+  let start = 0;
+  while (start < s.length && s[start] === '-') start++;
+  let end = s.length;
+  while (end > start && s[end - 1] === '-') end--;
+  return s.slice(start, end);
+}
+
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
@@ -374,18 +388,13 @@ export class DevSpacesService {
   }
 
   private repoNameFromUrl(gitUrl: string): string {
-    const last = gitUrl.replace(/\/+$/, '').split('/').pop() ?? 'workspace';
+    const last = stripTrailingSlashes(gitUrl).split('/').pop() ?? 'workspace';
     return last.replace(/\.git$/i, '');
   }
 
   private sanitizeName(raw: string): string {
-    return (
-      raw
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, MAX_K8S_NAME_LENGTH) || 'workspace'
-    );
+    const sanitized = raw.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    return trimDashes(sanitized).slice(0, MAX_K8S_NAME_LENGTH) || 'workspace';
   }
 
   // ── Config & auth ──────────────────────────────────────────────────────
@@ -394,7 +403,9 @@ export class DevSpacesService {
     const raw = (await this.adminConfig.get('devSpacesApiUrl')) as
       | string
       | undefined;
-    return raw && typeof raw === 'string' ? raw.replace(/\/+$/, '') : undefined;
+    return raw && typeof raw === 'string'
+      ? stripTrailingSlashes(raw)
+      : undefined;
   }
 
   private async requireApiUrl(): Promise<string> {

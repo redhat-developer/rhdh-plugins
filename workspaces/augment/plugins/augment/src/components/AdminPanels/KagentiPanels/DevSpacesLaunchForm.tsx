@@ -49,12 +49,26 @@ import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
 import { NamespacePicker } from './NamespacePicker';
 
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s[end - 1] === '/') end--;
+  return end === s.length ? s : s.slice(0, end);
+}
+
 function normalizeGitRepoUrl(url: string): string {
-  const trimmed = url.trim().replace(/\/+$/, '');
-  const match = trimmed.match(
-    /^(https?:\/\/(?:github\.com|gitlab\.com)\/[^/]+\/[^/]+)\/(?:blob|tree)\/.+/i,
-  );
-  if (match) return match[1];
+  const trimmed = stripTrailingSlashes(url.trim());
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'github.com' || host === 'gitlab.com') {
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (parts.length >= 4 && (parts[2] === 'blob' || parts[2] === 'tree')) {
+        return `${parsed.protocol}//${parsed.host}/${parts[0]}/${parts[1]}`;
+      }
+    }
+  } catch {
+    /* not a valid URL, return as-is */
+  }
   return trimmed;
 }
 

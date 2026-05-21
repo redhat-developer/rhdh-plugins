@@ -60,19 +60,99 @@ interface ScoringFnResult {
   aggregated_results?: Record<string, number>;
 }
 
-function parseScoreFromFeedback(feedback: string): number | null {
-  const patterns = [
-    /\*?\*?Score:\s*(\d+)\/(\d+)/i,
-    /(\d+)\s*\/\s*(\d+)/,
-    /score[:\s]+(\d+(?:\.\d+)?)/i,
-  ];
-  for (const pattern of patterns) {
-    const match = feedback.match(pattern);
-    if (match) {
-      if (match[2]) return Number(match[1]) / Number(match[2]);
-      return Number(match[1]);
+function findFraction(text: string): [number, number] | null {
+  const len = text.length;
+  let i = 0;
+  while (i < len) {
+    if (text[i] >= '0' && text[i] <= '9') {
+      let numEnd = i;
+      while (numEnd < len && text[numEnd] >= '0' && text[numEnd] <= '9')
+        numEnd++;
+      let j = numEnd;
+      while (j < len && (text[j] === ' ' || text[j] === '\t')) j++;
+      if (j < len && text[j] === '/') {
+        j++;
+        while (j < len && (text[j] === ' ' || text[j] === '\t')) j++;
+        if (j < len && text[j] >= '0' && text[j] <= '9') {
+          let denomEnd = j;
+          while (
+            denomEnd < len &&
+            text[denomEnd] >= '0' &&
+            text[denomEnd] <= '9'
+          )
+            denomEnd++;
+          return [
+            Number(text.slice(i, numEnd)),
+            Number(text.slice(j, denomEnd)),
+          ];
+        }
+      }
+      i = numEnd;
+    } else {
+      i++;
     }
   }
+  return null;
+}
+
+function findScoreLabel(text: string): number {
+  const lower = text.toLowerCase();
+  let pos = lower.indexOf('score');
+  while (pos !== -1) {
+    let j = pos + 5;
+    while (
+      j < text.length &&
+      (text[j] === '*' ||
+        text[j] === ':' ||
+        text[j] === ' ' ||
+        text[j] === '\t')
+    )
+      j++;
+    if (j < text.length && text[j] >= '0' && text[j] <= '9') return j;
+    pos = lower.indexOf('score', pos + 1);
+  }
+  return -1;
+}
+
+function parseNumber(text: string, start: number): [number, number] {
+  let end = start;
+  while (end < text.length && text[end] >= '0' && text[end] <= '9') end++;
+  if (end < text.length && text[end] === '.') {
+    const dotPos = end;
+    end++;
+    while (end < text.length && text[end] >= '0' && text[end] <= '9') end++;
+    if (end === dotPos + 1) end = dotPos;
+  }
+  return [Number(text.slice(start, end)), end];
+}
+
+function parseScoreFromFeedback(feedback: string): number | null {
+  const numStart = findScoreLabel(feedback);
+  if (numStart >= 0) {
+    const [num, numEnd] = parseNumber(feedback, numStart);
+    let j = numEnd;
+    while (j < feedback.length && (feedback[j] === ' ' || feedback[j] === '\t'))
+      j++;
+    if (j < feedback.length && feedback[j] === '/') {
+      j++;
+      while (
+        j < feedback.length &&
+        (feedback[j] === ' ' || feedback[j] === '\t')
+      )
+        j++;
+      if (j < feedback.length && feedback[j] >= '0' && feedback[j] <= '9') {
+        const [denom] = parseNumber(feedback, j);
+        if (denom > 0) return num / denom;
+      }
+    }
+    return num;
+  }
+
+  const fraction = findFraction(feedback);
+  if (fraction && fraction[1] > 0) {
+    return fraction[0] / fraction[1];
+  }
+
   return null;
 }
 
