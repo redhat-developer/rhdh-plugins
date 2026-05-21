@@ -20,7 +20,7 @@ import {
   Job,
   JobStatusEnum,
   Artifact,
-  ArtifactType,
+  ArtifactKind,
   MigrationPhase,
   SourceTechnology,
   Telemetry,
@@ -106,8 +106,7 @@ function parseTelemetry(raw: string | undefined): Telemetry | undefined {
 export function mapRowToArtifact(row: Record<string, unknown>): Artifact {
   return {
     id: row.id as string,
-    // Following retype is fragile if DB writes do not respect the enum
-    type: row.type as ArtifactType,
+    type: ArtifactKind.from(row.type as string).value,
     value: row.value as string,
   };
 }
