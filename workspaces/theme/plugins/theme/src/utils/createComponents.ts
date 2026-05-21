@@ -702,10 +702,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&:hover, &:focus-visible': {
             backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
           },
-        },
-        selected: {
-          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-          color: `${navigationSelectedColor} !important`,
+          '&.Mui-selected': {
+            backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+            color: `${navigationSelectedColor} !important`,
+          },
         },
       },
     };
