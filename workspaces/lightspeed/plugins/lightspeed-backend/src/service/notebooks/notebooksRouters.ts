@@ -37,6 +37,10 @@ import {
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
 } from '../constant';
+import {
+  createIdentityMiddleware,
+  getIdentity,
+} from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
 import { isValidFileType, parseFileContent } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
@@ -94,19 +98,13 @@ export async function createNotebooksRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  const getUserId = async (req: any): Promise<string> => {
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    return user.userEntityRef;
-  };
-
   const requireNotebooksPermission = async (
     req: any,
     res: any,
     next: any,
   ): Promise<void> => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials } = getIdentity(req);
       await authorizer.authorizeUser(
         lightspeedNotebooksUsePermission,
         credentials,
@@ -120,9 +118,9 @@ export async function createNotebooksRouter(
   const requireSessionOwnership =
     () => async (req: any, res: any, next: any) => {
       try {
+        const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        const userId = await getUserId(req);
-        await sessionService.readSession(sessionId, userId);
+        await sessionService.readSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(
@@ -138,8 +136,8 @@ export async function createNotebooksRouter(
     (handler: (req: any, res: any, userId: string) => Promise<void>) =>
     async (req: any, res: any, next: any) => {
       try {
-        const userId = await getUserId(req);
-        await handler(req, res, userId);
+        const { userEntityRef } = getIdentity(req);
+        await handler(req, res, userEntityRef);
       } catch (error) {
         next(error);
       }
@@ -262,6 +260,10 @@ export async function createNotebooksRouter(
   };
 
   notebooksRouter.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  notebooksRouter.use(
+    '/v1',
+    createIdentityMiddleware(httpAuth, userInfo, logger),
+  );
   notebooksRouter.use('/v1', requireNotebooksPermission);
 
   notebooksRouter.post(

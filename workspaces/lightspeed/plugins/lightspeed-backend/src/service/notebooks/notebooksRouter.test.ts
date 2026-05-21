@@ -33,6 +33,7 @@ const mockUserId = 'user:default/guest';
 describe('Notebooks Router', () => {
   const server = setupServer(...lightspeedCoreHandlers);
   let app: express.Application;
+  let httpAuth: ReturnType<typeof mockServices.httpAuth>;
 
   beforeAll(() => {
     // Only intercept Llama Stack requests, bypass local Express app requests
@@ -76,7 +77,7 @@ describe('Notebooks Router', () => {
       },
     });
 
-    const httpAuth = mockServices.httpAuth();
+    httpAuth = mockServices.httpAuth();
     const userInfo = mockServices.userInfo.mock({
       getUserInfo: async () => ({
         userEntityRef: mockUserId,
@@ -359,7 +360,7 @@ describe('Notebooks Router', () => {
         },
       });
 
-      const httpAuth = mockServices.httpAuth();
+      const deniedHttpAuth = mockServices.httpAuth();
       const userInfo = mockServices.userInfo.mock({
         getUserInfo: async () => ({
           userEntityRef: mockUserId,
@@ -373,7 +374,7 @@ describe('Notebooks Router', () => {
       const router = await createNotebooksRouter({
         logger,
         config,
-        httpAuth,
+        httpAuth: deniedHttpAuth,
         userInfo,
         permissions,
       });
@@ -449,6 +450,23 @@ describe('Notebooks Router', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('query is required');
+    });
+  });
+
+  describe('Identity Deduplication', () => {
+    it('should resolve identity only once for chained middleware route', async () => {
+      const credentialsSpy = jest.spyOn(httpAuth, 'credentials');
+
+      const createRes = await request(app)
+        .post('/notebooks/v1/sessions')
+        .send({ name: 'Dedup Test' });
+      const sessionId = createRes.body.session.session_id;
+
+      credentialsSpy.mockClear();
+
+      await request(app).get(`/notebooks/v1/sessions/${sessionId}/documents`);
+
+      expect(credentialsSpy).toHaveBeenCalledTimes(1);
     });
   });
 });
