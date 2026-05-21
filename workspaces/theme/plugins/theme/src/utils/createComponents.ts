@@ -174,17 +174,18 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   // MUI AppBar
-  if (options.appBar !== 'mui') {
-    components.MuiAppBar = {
-      styleOverrides: {
-        root: {
+  components.MuiAppBar = {
+    styleOverrides: {
+      root: {
+        boxShadow: 'none',
+        ...(options.appBar !== 'mui' && {
           backgroundColor: general.appBarBackgroundColor,
           backgroundImage: general.appBarBackgroundImage,
           outline: 'none',
-        },
+        }),
       },
-    };
-  }
+    },
+  };
 
   // MUI buttons
   // Don't disableRipple for MuiButtonBase as it will affect all the buttons
