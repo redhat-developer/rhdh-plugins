@@ -100,6 +100,12 @@ export interface AugmentApi {
   ): Promise<{ lifecycleStage: string }>;
 
   /**
+   * Delete an agent's lifecycle config entry. For Kagenti agents, also call
+   * deleteKagentiAgent to remove the K8s deployment.
+   */
+  deleteAgentConfig(agentId: string): Promise<void>;
+
+  /**
    * Bulk publish or unpublish agents.
    */
   bulkPublishAgents(agentIds: string[], published: boolean): Promise<void>;
@@ -747,6 +753,12 @@ export class AugmentApiClient implements AugmentApi {
     const qs = options?.published ? '?published=true' : '';
     const data = await this.fetchJson<{ agents: ChatAgent[] }>(`/agents${qs}`);
     return data.agents ?? [];
+  }
+
+  async deleteAgentConfig(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}`, {
+      method: 'DELETE',
+    });
   }
 
   async publishAgent(agentId: string): Promise<void> {

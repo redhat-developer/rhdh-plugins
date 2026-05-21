@@ -305,6 +305,8 @@ export function KagentiAgentsPanel({
     setError(null);
     try {
       await api.deleteKagentiAgent(deleteTarget.namespace, deleteTarget.name);
+      const agentId = `${deleteTarget.namespace}/${deleteTarget.name}`;
+      await api.deleteAgentConfig(agentId).catch(() => {});
       setDeleteTarget(null);
       loadAgents();
     } catch (e) {
