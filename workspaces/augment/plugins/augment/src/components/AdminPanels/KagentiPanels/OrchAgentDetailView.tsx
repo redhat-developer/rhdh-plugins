@@ -35,7 +35,6 @@ import { useApi } from '@backstage/core-plugin-api';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { normalizeLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
-import { useAdminConfig } from '../../../hooks';
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
 import { agentFromConfig } from '../AgentsPanel/agentValidation';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -88,7 +87,6 @@ export function OrchAgentDetailView({
   const theme = useTheme();
   const api = useApi(augmentApiRef);
 
-  const { entry: agentsEntry, save: saveAgents } = useAdminConfig('agents');
   const { config: effectiveConfig } = useEffectiveConfig();
 
   const [lifecycleStage, setLifecycleStage] = useState<string>(
@@ -180,17 +178,7 @@ export function OrchAgentDetailView({
   const handleDelete = useCallback(async () => {
     setError(null);
     try {
-      if (
-        !agentsEntry?.configValue ||
-        typeof agentsEntry.configValue !== 'object'
-      ) {
-        throw new Error('Unable to load current agent configuration');
-      }
-      const existing = {
-        ...(agentsEntry.configValue as Record<string, unknown>),
-      };
-      delete existing[agent.id];
-      await saveAgents(existing);
+      await api.deleteAgentConfig(agent.id);
       setToast({ message: 'Agent deleted', severity: 'success' });
       onBack();
     } catch (err) {
@@ -198,7 +186,7 @@ export function OrchAgentDetailView({
     } finally {
       setDeleteOpen(false);
     }
-  }, [agentsEntry, agent.id, saveAgents, onBack]);
+  }, [api, agent.id, onBack]);
 
   const roleLabel = agent.agentRole
     ? agent.agentRole.charAt(0).toUpperCase() + agent.agentRole.slice(1)
