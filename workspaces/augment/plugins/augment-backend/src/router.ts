@@ -411,7 +411,7 @@ export async function createRouter({
 
   // Provider-specific routes (only when provider has providerRoutes capability)
   if (providerDescriptor?.capabilities.providerRoutes) {
-    registerKagentiRoutes(ctx);
+    registerKagentiRoutes(ctx, adminConfig);
     registerKagentiSandboxRoutes(ctx);
     registerKagentiAdminRoutes(ctx);
     logger.info('Provider-specific routes registered');

@@ -20,6 +20,7 @@ import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { KagentiProvider } from '../providers/kagenti';
 import type { KagentiApiClient } from '../providers/kagenti';
+import type { AdminConfigService } from '../services/AdminConfigService';
 import { registerKagentiAgentRoutes } from './kagentiAgentRoutes';
 import { registerKagentiToolRoutes } from './kagentiToolRoutes';
 import { registerKagentiConfigRoutes } from './kagentiConfigRoutes';
@@ -32,6 +33,8 @@ export interface KagentiRouteRegistrarContext {
   logger: LoggerService;
   kagenti: KagentiProvider;
   api: KagentiApiClient;
+  adminConfig?: AdminConfigService;
+  getUserRef: (req: express.Request) => Promise<string>;
   withRoute: ReturnType<typeof createWithRoute>;
   validateNamespaceParam: express.RequestHandler;
   requireAdminAccess: express.RequestHandler;
@@ -43,7 +46,10 @@ export interface KagentiRouteRegistrarContext {
  *
  * These routes are always registered when the active provider is 'kagenti'.
  */
-export function registerKagentiRoutes(ctx: RouteContext): void {
+export function registerKagentiRoutes(
+  ctx: RouteContext,
+  adminConfig?: AdminConfigService,
+): void {
   const {
     router,
     logger,
@@ -105,6 +111,8 @@ export function registerKagentiRoutes(ctx: RouteContext): void {
     logger,
     kagenti,
     api,
+    adminConfig,
+    getUserRef,
     withRoute,
     validateNamespaceParam,
     requireAdminAccess,
