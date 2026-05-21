@@ -237,10 +237,18 @@ export function registerAgentRoutes(
       const { agents, sources } = await buildUnifiedAgentList();
       const publishedFilter = req.query.published;
 
-      const filtered =
+      let filtered =
         publishedFilter === 'true'
           ? agents.filter(a => a.published === true)
           : agents;
+
+      const isAdmin = await ctx.checkIsAdmin(req);
+      if (!isAdmin) {
+        const userRef = await ctx.getUserRef(req);
+        filtered = filtered.filter(
+          a => a.published === true || a.createdBy === userRef,
+        );
+      }
 
       res.json({ agents: filtered, sources });
     }),
