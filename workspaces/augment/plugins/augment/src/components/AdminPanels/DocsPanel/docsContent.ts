@@ -200,35 +200,52 @@ Launch a cloud IDE with your agent repo pre-configured.
     category: 'Agents',
     content: `# Agent Registry & Lifecycle
 
-The Agent Registry is the central staging area where administrators manage the full agent lifecycle — from initial discovery through enterprise registration to production deployment. Every agent, regardless of source (Kagenti, orchestration, or external), appears in the registry.
+The Agent Registry is the central staging area where administrators manage the full agent lifecycle — from initial creation through governance review to production deployment. Every agent, regardless of source (Kagenti, orchestration, or external), appears in the registry.
 
 ## Agent Lifecycle
 
-Agents follow a three-stage promotion pipeline:
+Agents follow a five-stage promotion pipeline:
 
 ### 1. Draft
-Agents start as **Draft** when first discovered. Draft agents are visible only to administrators in the registry. They have not been reviewed or vetted.
+Agents start as **Draft** when first created or discovered. Draft agents are visible only to their creator and administrators. They have not been submitted for review. Draft agents can be deleted by their creator.
 
-### 2. Registered
-When an admin promotes a draft agent, it becomes **Registered** — a vetted enterprise asset. Registered agents have been reviewed but are not yet available to end users. This stage is for quality assurance and governance review.
+### 2. Review
+When the creator submits an agent for review, it enters the **Review** stage. Review agents are visible to administrators who can evaluate the agent's configuration, instructions, and capabilities before deciding whether to approve it.
 
-### 3. Deployed
-When a registered agent is promoted to **Deployed**, it goes live in the end-user catalog. Users can discover and chat with deployed agents. Each deployment increments the agent's version number.
+### 3. Staging
+Approved agents move to **Staging** — a pre-production environment for internal testing. Staging agents can be tested by administrators but are not visible to end users. This stage is for quality assurance and final validation.
+
+### 4. Production
+When a staging agent is promoted to **Production**, it goes live in the end-user catalog. Users can discover and chat with production agents. Each promotion increments the agent's version number.
+
+### 5. Retired
+When a production agent is no longer needed, it can be retired. **Retired** agents are removed from the end-user catalog but preserved in the registry for audit and history purposes. Retired agents can be reactivated back to production if needed.
 
 ## Core Concepts
 
 ### Promotion Pipeline
-The registry header shows a visual pipeline of all three lifecycle stages with counts. Click any stage to filter the list. Promoting an agent requires confirmation — no accidental deployments.
+The registry header shows a visual pipeline of all five lifecycle stages with counts. Click any stage to filter the list. Promoting an agent requires confirmation — no accidental deployments.
+
+### Valid Transitions
+Agents can only move forward or backward one stage at a time:
+- Draft → Review (submit for review)
+- Review → Staging (approve)
+- Staging → Production (publish)
+- Production → Retired (retire)
+- Review → Draft (reject / send back)
+- Staging → Review (withdraw from staging)
+- Production → Staging (unpublish)
+- Retired → Production (reactivate)
 
 ### Versioning
 Each promotion increments the agent's version number. The registry tracks who promoted the agent and when, providing an audit trail.
 
 ### Featured Agents
-Deployed agents can be marked as **featured** to appear prominently on the chat welcome screen. Up to 4 agents can be featured simultaneously.
+Production agents can be marked as **featured** to appear prominently on the chat welcome screen. Up to 4 agents can be featured simultaneously.
 
 ### Dev & Ops Views
 Expanding an agent row shows two information sections:
-- **Development** — source, framework, protocols, namespace, creation date
+- **Development** — source, framework, protocols, namespace, creation date, creator
 - **Operations** — runtime status, lifecycle stage, version, promotion history
 
 ## Agent Sources
@@ -236,19 +253,23 @@ Expanding an agent row shows two information sections:
 | Source | Description | Status |
 |--------|-------------|--------|
 | **Kagenti** | Container workloads deployed on OpenShift | Runtime status (Ready, Pending, Error) |
-| **Orchestration** | Multi-agent configurations from the Configure panel | Config-based (always "config") |
+| **Orchestration** | Multi-agent workflow configurations | Config-based (always "config") |
 
 ## Using the Registry
 
 ### Promoting an Agent
 1. Navigate to **Agent Registry** under Agent Ops in the sidebar
 2. Find the agent in the list (use search or filters)
-3. Click **Register** to promote from Draft → Registered
-4. Click **Deploy** to promote from Registered → Deployed
-5. Confirm the promotion in the dialog
+3. Click **Submit for Review** to promote from Draft → Review
+4. Click **Approve** to promote from Review → Staging
+5. Click **Publish** to promote from Staging → Production
+6. Confirm the promotion in the dialog
 
 ### Withdrawing an Agent
-Click the back arrow on any agent to withdraw it to the previous lifecycle stage. Withdrawing a deployed agent removes it from the end-user catalog immediately.
+Click the back arrow on any agent to withdraw it to the previous lifecycle stage. Withdrawing a production agent removes it from the end-user catalog immediately and moves it back to staging.
+
+### Deleting a Draft Agent
+Draft agents can be deleted by their creator or by an administrator. This permanently removes the agent from the registry.
 
 ### Configuring Display
 Expand any agent row to customize how it appears to end users:
@@ -261,11 +282,11 @@ Expand any agent row to customize how it appears to end users:
 
 ### Bulk Operations
 1. Select multiple agents using checkboxes
-2. Use **Deploy All** or **Withdraw All** in the toolbar
-3. All selected agents are updated simultaneously
+2. Use **Publish All** or **Unpublish All** in the toolbar
+3. All selected agents are updated simultaneously (agents that don't meet the required lifecycle stage are skipped)
 
 ### Quick Promote from Agent Detail
-When viewing an agent's detail page in the Agents panel, use the **Deploy to Catalog** / **Withdraw** button in the header.
+When viewing an agent's detail page in the Agents panel, use the **Publish** / **Unpublish** button in the header.
 `,
   },
 
