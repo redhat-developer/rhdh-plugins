@@ -93,10 +93,12 @@ export interface AugmentApi {
 
   /**
    * Demote an agent to a previous lifecycle stage (deployed → registered → draft).
+   * @param reason - optional rejection reason (used when demoting review→draft)
    */
   demoteAgent(
     agentId: string,
     targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+    reason?: string,
   ): Promise<{ lifecycleStage: string }>;
 
   /**
@@ -775,11 +777,12 @@ export class AugmentApiClient implements AugmentApi {
   async demoteAgent(
     agentId: string,
     targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+    reason?: string,
   ): Promise<{ lifecycleStage: string }> {
     return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/demote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ targetStage }),
+      body: JSON.stringify({ targetStage, reason }),
     });
   }
 

@@ -257,6 +257,7 @@ export interface ChatAgent {
   agentRole?: AgentRole;
   avatarUrl?: string;
   createdAt?: string;
+  createdBy?: string;
   description?: string;
   framework?: string;
   id: string;
@@ -269,6 +270,9 @@ export interface ChatAgent {
   protocols?: string[];
   providerType: string;
   published?: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
   source?: string;
   starters?: string[];
   status: string;
@@ -281,6 +285,7 @@ export interface ChatAgentConfig {
   agentId: string;
   avatarUrl?: string;
   conversationStarters?: string[];
+  createdBy?: string;
   description?: string;
   displayName?: string;
   featured: boolean;
@@ -290,6 +295,9 @@ export interface ChatAgentConfig {
   promotedAt?: string;
   promotedBy?: string;
   published: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
   version?: number;
   visible: boolean;
 }

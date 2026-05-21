@@ -177,6 +177,10 @@ export function registerAgentRoutes(
         version: cfg?.version ?? 0,
         promotedAt: cfg?.promotedAt,
         promotedBy: cfg?.promotedBy,
+        createdBy: cfg?.createdBy,
+        rejectionReason: cfg?.rejectionReason,
+        rejectedBy: cfg?.rejectedBy,
+        rejectedAt: cfg?.rejectedAt,
       };
     }
 
@@ -311,6 +315,11 @@ export function registerAgentRoutes(
           existing.version = (existing.version ?? 0) + 1;
           existing.promotedAt = now;
           existing.promotedBy = userRef;
+          if (isSubmitForReview) {
+            existing.rejectionReason = undefined;
+            existing.rejectedBy = undefined;
+            existing.rejectedAt = undefined;
+          }
         } else {
           configs.push({
             agentId,
@@ -363,7 +372,10 @@ export function registerAgentRoutes(
       'Failed to demote agent',
       async (req, res) => {
         const agentId = decodeURIComponent(req.params.agentId);
-        const { targetStage } = req.body as { targetStage?: string };
+        const { targetStage, reason } = req.body as {
+          targetStage?: string;
+          reason?: string;
+        };
         const resolved = targetStage
           ? normalizeLifecycleStage(targetStage)
           : undefined;
@@ -393,6 +405,7 @@ export function registerAgentRoutes(
 
         const now = new Date().toISOString();
         const isProd = isProductionStage(nextStage);
+        const isRejection = currentStage === 'review' && nextStage === 'draft';
 
         if (existing) {
           existing.lifecycleStage = nextStage;
@@ -403,6 +416,11 @@ export function registerAgentRoutes(
           }
           existing.promotedAt = now;
           existing.promotedBy = userRef;
+          if (isRejection) {
+            existing.rejectionReason = reason || undefined;
+            existing.rejectedBy = userRef;
+            existing.rejectedAt = now;
+          }
         } else {
           configs.push({
             agentId,
@@ -422,7 +440,12 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { from: currentStage, to: nextStage, direction: 'demote' },
+          meta: {
+            from: currentStage,
+            to: nextStage,
+            direction: 'demote',
+            ...(isRejection && reason ? { rejectionReason: reason } : {}),
+          },
         });
         logger.info(`Agent "${agentId}" demoted to ${nextStage} by ${userRef}`);
         res.json({ success: true, agentId, lifecycleStage: nextStage });
