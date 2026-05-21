@@ -284,30 +284,31 @@ export class WorkflowConfigService {
 
     for (const node of agentNodes) {
       const data = node.data as Record<string, unknown>;
-      const agentId = `wf_${workflowId}_${node.id}`;
+      const agentId = `wf/${workflowId}/${node.id}`;
       workflowAgentIds.add(agentId);
 
-      const lifecycleStage =
-        workflow.status === 'published' ? 'production' : 'draft';
+      const isPublished = workflow.status === 'published';
+      const lifecycleStage = isPublished ? 'production' : 'draft';
 
-      const chatAgent = {
-        id: agentId,
-        name: (data.name as string) || node.id,
-        description: (data.handoffDescription as string) || '',
-        model: (data.model as string) || workflow.settings.defaultModel,
+      const chatAgentEntry: Record<string, unknown> = {
+        agentId,
+        published: isPublished,
+        visible: isPublished,
+        featured: false,
         lifecycleStage,
-        workflowId: workflow.id,
-        workflowVersion: workflow.version,
-        workflowNodeId: node.id,
+        version: workflow.version ?? 0,
+        displayName: (data.name as string) || node.id,
+        description: (data.handoffDescription as string) || '',
+        createdBy: user,
       };
 
       const idx = existingAgents.findIndex(
-        a => (a as Record<string, unknown>).id === agentId,
+        a => (a as Record<string, unknown>).agentId === agentId,
       );
       if (idx >= 0) {
-        existingAgents[idx] = chatAgent;
+        existingAgents[idx] = { ...existingAgents[idx], ...chatAgentEntry };
       } else {
-        existingAgents.push(chatAgent);
+        existingAgents.push(chatAgentEntry);
       }
     }
 
