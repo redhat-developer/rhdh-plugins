@@ -50,6 +50,8 @@ interface MarketplacePageProps {
   onOpenCommandCenter?: () => void;
   onOpenGuidedTour?: () => void;
   refreshKey?: number;
+  /** When this key changes, automatically switch to the My Agents tab */
+  switchToMyAgentsKey?: number;
 }
 
 /**
@@ -66,6 +68,7 @@ export function MarketplacePage({
   onOpenCommandCenter,
   onOpenGuidedTour,
   refreshKey,
+  switchToMyAgentsKey,
 }: MarketplacePageProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -119,6 +122,12 @@ export function MarketplacePage({
       cancelled = true;
     };
   }, [api, refreshKey]);
+
+  useEffect(() => {
+    if (switchToMyAgentsKey && switchToMyAgentsKey > 0) {
+      setActiveTab('my-agents');
+    }
+  }, [switchToMyAgentsKey]);
 
   const frameworks = useMemo(() => {
     const set = new Set<string>();

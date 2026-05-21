@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, useEffect, type Ref } from 'react';
+import { useState, useCallback, useEffect, useRef, type Ref } from 'react';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Alert from '@mui/material/Alert';
@@ -97,6 +97,8 @@ export function ChatView({
   const [currentAgent, setCurrentAgent] = useState<string | undefined>();
   const [showMarketplace, setShowMarketplace] = useState(true);
   const [marketplaceRefreshKey, setMarketplaceRefreshKey] = useState(0);
+  const [switchToMyAgents, setSwitchToMyAgents] = useState(0);
+  const justCreatedRef = useRef(false);
 
   // Agent creation state (all dialogs live in the front door)
   const [intentDialogOpen, setIntentDialogOpen] = useState(false);
@@ -201,6 +203,10 @@ export function ChatView({
   const handleWizardBack = useCallback(() => {
     setWizardOpen(false);
     setWizardDeployMethod(undefined);
+    if (justCreatedRef.current) {
+      justCreatedRef.current = false;
+      return;
+    }
     setIntentDialogOpen(true);
   }, []);
 
@@ -236,12 +242,14 @@ export function ChatView({
   }, []);
 
   const handleAgentCreated = useCallback(() => {
+    justCreatedRef.current = true;
     setWizardOpen(false);
     setWizardDeployMethod(undefined);
     setCreateSuccess(
       'Agent created successfully! It will appear in your agents list.',
     );
     setMarketplaceRefreshKey(k => k + 1);
+    setSwitchToMyAgents(k => k + 1);
   }, []);
 
   // --- Tool Creation Flow ---
@@ -322,6 +330,7 @@ export function ChatView({
               onOpenCommandCenter={handleSwitchToAdmin}
               onOpenGuidedTour={handleOpenGuidedTour}
               refreshKey={marketplaceRefreshKey}
+              switchToMyAgentsKey={switchToMyAgents}
             />
           </Box>
         )}
