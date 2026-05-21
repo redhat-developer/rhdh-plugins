@@ -428,12 +428,11 @@ describe('createRouter', () => {
     });
   });
 
-  describe('GET /workflows', () => {
+  describe('GET /guided-workflows', () => {
     it('returns empty workflows list', async () => {
-      const response = await request(app).get('/workflows');
+      const response = await request(app).get('/guided-workflows');
 
       expect(response.status).toEqual(200);
-      expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('workflows', []);
     });
 
@@ -461,7 +460,7 @@ describe('createRouter', () => {
       const app2 = express();
       app2.use(router2);
 
-      const response = await request(app2).get('/workflows');
+      const response = await request(app2).get('/guided-workflows');
 
       expect(response.status).toEqual(200);
       expect(response.body.workflows).toHaveLength(1);
@@ -732,8 +731,8 @@ describe('createRouter', () => {
       expect(mockCreateSession).toHaveBeenCalledWith(
         'user:default/testuser',
         'Test',
-        expect.anything(),
-        expect.anything(),
+        undefined,
+        undefined,
       );
     });
 

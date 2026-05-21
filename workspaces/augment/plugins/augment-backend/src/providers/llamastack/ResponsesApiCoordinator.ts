@@ -28,6 +28,12 @@ import {
 
 import { ConfigLoader } from './ConfigLoader';
 import { ClientManager } from './ClientManager';
+import { WorkflowHydrator } from './workflow/WorkflowHydrator';
+import { LlamaStackProvider } from './openai-agents-adapters/LlamaStackProvider';
+import { toChatResponse } from './openai-agents-adapters/responseMapper';
+import { mapRunStreamEventToFrontend } from './openai-agents-adapters/streamMapper';
+import { requireLastUserMessage } from '../responses-api/chat/chatUtils';
+import { migrateAgentConfigsToWorkflow } from '../../services/WorkflowMigration';
 import { ConfigResolutionService } from './ConfigResolutionService';
 import { ResponsesApiService } from './ResponsesApiService';
 import { ChatDepsBuilder } from './ChatDepsBuilder';
@@ -363,16 +369,6 @@ export class ResponsesApiCoordinator {
   async chat(request: ChatRequest): Promise<ChatResponse> {
     this.ensureInitialized();
 
-    const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
-    const { LlamaStackProvider } =
-      await import('./openai-agents-adapters/LlamaStackProvider');
-    const { toChatResponse } =
-      await import('./openai-agents-adapters/responseMapper');
-    const { requireLastUserMessage } =
-      await import('../responses-api/chat/chatUtils');
-    const { migrateAgentConfigsToWorkflow } =
-      await import('../../services/WorkflowMigration');
-
     const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const deps = await this.chatDepsBuilder.buildChatDeps();
     const orchestrator = this.getOrchestrator();
@@ -418,16 +414,6 @@ export class ResponsesApiCoordinator {
     signal?: AbortSignal,
   ): Promise<void> {
     this.ensureInitialized();
-
-    const { WorkflowHydrator } = await import('./workflow/WorkflowHydrator');
-    const { LlamaStackProvider } =
-      await import('./openai-agents-adapters/LlamaStackProvider');
-    const { mapRunStreamEventToFrontend } =
-      await import('./openai-agents-adapters/streamMapper');
-    const { requireLastUserMessage } =
-      await import('../responses-api/chat/chatUtils');
-    const { migrateAgentConfigsToWorkflow } =
-      await import('../../services/WorkflowMigration');
 
     const snapshot = await this.requireAgentGraphManager().getSnapshot();
     const deps = await this.chatDepsBuilder.buildChatDeps();
