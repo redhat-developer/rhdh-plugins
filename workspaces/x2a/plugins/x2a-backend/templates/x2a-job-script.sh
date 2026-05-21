@@ -468,9 +468,9 @@ case "${PHASE}" in
     # Copy migration-dependencies from target repo back to source dir.
     # The analyze phase created this directory and committed it to the target repo.
     # The migrate phase runs in a separate pod, so we need to restore it.
-    if [ -d "${PROJECT_PATH}/migration-dependencies" ]; then
+    if [ -d "${OUTPUT_DIR}/migration-dependencies" ]; then
       echo "Copying migration-dependencies from target to source directory..."
-      cp -rv "${PROJECT_PATH}/migration-dependencies" "${SOURCE_BASE}/"
+      cp -rv "${OUTPUT_DIR}/migration-dependencies" "${SOURCE_BASE}/"
     fi
 
     # Check if x2a tool is available (required)
