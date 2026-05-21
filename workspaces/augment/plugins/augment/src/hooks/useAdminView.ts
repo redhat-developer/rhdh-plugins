@@ -59,7 +59,7 @@ export interface UseAdminViewReturn {
   setAdminPanel: (panel: AdminPanel) => void;
   showAdminBanner: boolean;
   setShowAdminBanner: (show: boolean) => void;
-  switchToAdmin: (providerId?: string, targetPanel?: AdminPanel) => void;
+  switchToAdmin: (isFullProvider?: boolean, targetPanel?: AdminPanel) => void;
   switchToChat: () => void;
   dismissAdminBanner: () => void;
 }
@@ -119,10 +119,9 @@ export function useAdminView({
   }, [isAdmin]);
 
   const switchToAdmin = useCallback(
-    (providerId?: string, targetPanel?: AdminPanel) => {
+    (isFullProvider?: boolean, targetPanel?: AdminPanel) => {
       setViewMode('admin');
-      const panel =
-        targetPanel ?? (providerId === 'kagenti' ? 'ops-home' : 'platform');
+      const panel = targetPanel ?? (isFullProvider ? 'ops-home' : 'platform');
       setAdminPanel(panel);
       setShowAdminBanner(false);
       try {

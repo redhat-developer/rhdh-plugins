@@ -31,6 +31,8 @@ export interface AgentCardCacheEntry {
   fetchedAt: number;
 }
 
+// TODO: this entire class will get reworked once upstream and/or downstream
+// RHDH features around modeling agents drops
 export class KagentiAgentCardCache {
   private readonly logger: LoggerService;
   private readonly cacheService: CacheService;

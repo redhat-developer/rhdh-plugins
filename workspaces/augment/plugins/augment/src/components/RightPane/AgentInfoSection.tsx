@@ -60,9 +60,8 @@ export const AgentInfoSection = ({
   const { t } = useTranslation();
   const { status, loading } = useStatus();
   const api = useApi(augmentApiRef);
-  const isKagenti = status?.providerId === 'kagenti';
-  const hasAgentCards = status?.capabilities?.agentCards ?? isKagenti;
-  const hasAgentCatalog = status?.capabilities?.agentCatalog ?? isKagenti;
+  const hasAgentCards = status?.capabilities?.agentCards === true;
+  const hasAgentCatalog = status?.capabilities?.agentCatalog === true;
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | undefined>();
   const [agentStatus, setAgentStatus] = useState<string | undefined>();

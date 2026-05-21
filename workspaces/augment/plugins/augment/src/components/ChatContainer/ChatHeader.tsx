@@ -63,8 +63,7 @@ export const ChatHeader: FC<ChatHeaderProps> = memo(function ChatHeader({
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const { status } = useStatus();
-  const hasAgentCards =
-    status?.capabilities?.agentCards ?? status?.providerId === 'kagenti';
+  const hasAgentCards = status?.capabilities?.agentCards === true;
   const { isDev, toggleMode } = useChatViewMode();
 
   const [agentCard, setAgentCard] = useState<KagentiAgentCard | null>(null);

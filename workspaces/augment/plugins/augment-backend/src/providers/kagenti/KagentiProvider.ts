@@ -50,7 +50,7 @@ import type { AgentCardCacheEntry } from './KagentiAgentCardCache';
 import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
 import type { ApprovalRequest, ApprovalResult } from './kagentiApprovalHandler';
 import { buildKagentiConversationCapability } from './kagentiConversationCapability';
-import { buildMetaPrompt } from '../../services/promptGeneration';
+import { buildMetaPrompt } from '../../services';
 import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { getVisibleNamespaces } from './kagentiNamespaceUtils';
 
@@ -63,6 +63,9 @@ function stripTrailingSlashes(s: string): string {
 /**
  * No-op CacheService fallback when no real cache is injected.
  * Falls back to in-memory Map for backward compatibility during tests.
+ *
+ * TODO: remove as part of cache service transition — callers should always
+ * receive a real CacheService from the plugin environment.
  */
 function createNoopCache(): CacheService {
   const store = new Map<string, { value: unknown; expiresAt: number }>();
@@ -121,7 +124,9 @@ export class KagentiProvider implements AgenticProvider {
 
   private static readonly MODELS_CACHE_TTL_MS = 60_000;
   private static readonly SESSION_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+  // TODO(RHDHPLAN-404): transition cardCache to catalog lookup once RHDHPLAN-404 arrives
   private readonly cardCache: KagentiAgentCardCache;
+  // TODO: remove sessionAgentCache, kagentiSessionCache, modelsCache as part of cache service transition
   private readonly sessionAgentCache: CacheService;
   private readonly kagentiSessionCache: CacheService;
   private readonly modelsCache: CacheService;
@@ -982,6 +987,10 @@ export class KagentiProvider implements AgenticProvider {
 
   getTokenManager(): KeycloakTokenManager {
     return this.requireInitialized().tokenManager;
+  }
+
+  async getAuthToken(): Promise<string> {
+    return this.requireInitialized().tokenManager.getToken();
   }
 
   /**

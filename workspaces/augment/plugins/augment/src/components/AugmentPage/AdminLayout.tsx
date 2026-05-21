@@ -79,7 +79,7 @@ export function AdminLayout({
   adminTourActionsRef,
 }: AdminLayoutProps) {
   const {
-    liveStatus,
+    isFullProvider,
     adminPanel,
     setAdminPanel,
     switchToChat,
@@ -87,8 +87,6 @@ export function AdminLayout({
     handleNamespaceChange,
     chatContainerRef,
   } = useAppState();
-
-  const isFullProvider = liveStatus?.providerId === 'kagenti';
 
   const [sidebarHidden, setSidebarHidden] = useState(false);
   const [pendingCreateAgent, setPendingCreateAgent] = useState(false);

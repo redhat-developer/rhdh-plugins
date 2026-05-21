@@ -380,6 +380,67 @@ export interface AgenticProvider {
 
   /** Response evaluation / scoring */
   evaluation?: EvaluationCapability;
+
+  // ---- Lifecycle & context methods (capability-gated) ----
+
+  /**
+   * Register provider-specific routes on the router.
+   * Called during route setup when the provider has `providerRoutes` capability.
+   */
+  registerRoutes?(router: import('express').Router, deps: unknown): void;
+
+  /**
+   * Set the current user context for downstream API calls.
+   * Used by providers that thread user identity through to external APIs.
+   */
+  setUserContext?(userRef: string): void;
+
+  /**
+   * Return the provider's session context ID for a Backstage session.
+   * Used for context hydration from DB across restarts.
+   */
+  getSessionContextId?(backstageSessionId: string): Promise<string | undefined>;
+
+  /**
+   * Hydrate provider session context from persisted data.
+   * Restores conversation continuity across server restarts.
+   */
+  hydrateSessionContext?(
+    backstageSessionId: string,
+    contextId: string,
+    model?: string,
+  ): Promise<void>;
+
+  /**
+   * Submit a tool approval/rejection directly to the provider.
+   * Used by providers that manage their own approval flow.
+   */
+  submitApproval?(approval: {
+    responseId: string;
+    callId: string;
+    approved: boolean;
+    toolName?: string;
+    toolArguments?: string;
+    reason?: string;
+  }): Promise<{
+    content?: string;
+    responseId?: string;
+    toolExecuted?: boolean;
+    toolOutput?: string;
+    pendingApproval?: {
+      approvalRequestId: string;
+      toolName: string;
+      serverLabel?: string;
+      arguments?: string;
+    };
+    handoff?: unknown;
+  }>;
+
+  /**
+   * Get an authentication token function for external service integration.
+   * Used by providers that manage OAuth tokens (e.g. for DevSpaces).
+   */
+  getAuthToken?(): Promise<string>;
 }
 
 // =============================================================================

@@ -128,10 +128,9 @@ export const ChatContainer = forwardRef<ChatContainerRef, ChatContainerProps>(
     >(null);
     const { workflows, quickActions, promptGroups } = useWelcomeData();
     const { status } = useStatus();
-    const isKagenti = status?.providerId === 'kagenti';
-    const hasAgentCatalog = status?.capabilities?.agentCatalog ?? isKagenti;
+    const hasAgentCatalog = status?.capabilities?.agentCatalog === true;
     const requiresAgentSelection =
-      status?.capabilities?.agentSelection ?? isKagenti;
+      status?.capabilities?.agentSelection === true;
     const providerId = status?.providerId;
     const { configs: chatAgentConfigs } = useChatAgentConfig();
     const chatInputRef = useRef<HTMLTextAreaElement | null>(null);

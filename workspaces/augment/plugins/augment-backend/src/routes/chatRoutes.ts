@@ -20,11 +20,11 @@ import type {
 import { InputError } from '@backstage/errors';
 import type { Response } from 'express';
 import type { NormalizedStreamEvent, AgenticProvider } from '../providers';
+import { getProviderDescriptor } from '../providers';
 import type { ChatMessage } from '../types';
 import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
 import { SseHeartbeat } from './sseRouteHelpers';
-import type { KagentiProvider } from '../providers/kagenti/KagentiProvider';
 import { sanitizeErrorMessage } from '../services/utils/errorSanitizer';
 import type { FlushableResponse, RouteContext } from './types';
 
@@ -325,7 +325,8 @@ async function resolveConversationId(
     return { resolvedConversationId: session.conversationId, userRef };
   }
 
-  if (!provider.conversations || provider.id === 'kagenti') {
+  const desc = getProviderDescriptor(provider.id);
+  if (!provider.conversations || desc?.capabilities.contextHydration) {
     return { resolvedConversationId, userRef };
   }
 
@@ -471,16 +472,20 @@ export function registerChatRoutes(ctx: RouteContext): void {
           ),
         ]);
 
-        // Hydrate Kagenti context from DB for non-streaming path
-        if (provider.id === 'kagenti' && sessionId && sessions) {
-          const kagenti = provider as unknown as KagentiProvider;
-          const existingCtx = await kagenti.getSessionContextId(sessionId);
+        // Hydrate provider context from DB for non-streaming path
+        const chatDescriptor = getProviderDescriptor(provider.id);
+        if (
+          chatDescriptor?.capabilities.contextHydration &&
+          sessionId &&
+          sessions
+        ) {
+          const existingCtx = await provider.getSessionContextId!(sessionId);
           if (!existingCtx) {
             const ctxFromDb =
               resolvedConversationId ||
               (await sessions.getSession(sessionId, userRef))?.conversationId;
             if (ctxFromDb) {
-              await kagenti.hydrateSessionContext(
+              await provider.hydrateSessionContext!(
                 sessionId,
                 ctxFromDb,
                 parsed.model,
@@ -491,8 +496,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
         const userContent = getLastUserContent(messages);
 
-        if (provider.id === 'kagenti') {
-          (provider as unknown as KagentiProvider).setUserContext(userRef);
+        if (provider.setUserContext) {
+          provider.setUserContext(userRef);
         }
 
         if (provider.safety?.isEnabled()) {
@@ -552,17 +557,19 @@ export function registerChatRoutes(ctx: RouteContext): void {
           }
         }
 
-        // Persist Kagenti context ID for non-streaming path
-        if (provider.id === 'kagenti' && sessionId && sessions) {
-          const ctxId = await (
-            provider as unknown as KagentiProvider
-          ).getSessionContextId(sessionId);
+        // Persist provider context ID for non-streaming path
+        if (
+          chatDescriptor?.capabilities.contextHydration &&
+          sessionId &&
+          sessions
+        ) {
+          const ctxId = await provider.getSessionContextId!(sessionId);
           if (ctxId) {
             await sessions
               .setConversationIdIfNull(sessionId, userRef, ctxId)
               .catch(err =>
                 logger.warn(
-                  `Failed to link Kagenti context for session ${sessionId}: ${err}`,
+                  `Failed to link provider context for session ${sessionId}: ${err}`,
                 ),
               );
           }
@@ -649,17 +656,21 @@ export function registerChatRoutes(ctx: RouteContext): void {
         ),
       ]);
 
-      // Hydrate Kagenti session cache from DB so conversation continues
+      // Hydrate provider session cache from DB so conversation continues
       // across server restarts.
-      if (provider.id === 'kagenti' && sessionId && sessions) {
-        const kagenti = provider as unknown as KagentiProvider;
-        const existingCtx = await kagenti.getSessionContextId(sessionId);
+      const streamDescriptor = getProviderDescriptor(provider.id);
+      if (
+        streamDescriptor?.capabilities.contextHydration &&
+        sessionId &&
+        sessions
+      ) {
+        const existingCtx = await provider.getSessionContextId!(sessionId);
         if (!existingCtx) {
           const ctxFromDb =
             resolvedConversationId ||
             (await sessions.getSession(sessionId, userRef))?.conversationId;
           if (ctxFromDb) {
-            await kagenti.hydrateSessionContext(
+            await provider.hydrateSessionContext!(
               sessionId,
               ctxFromDb,
               parsedRequest.model,
@@ -668,8 +679,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
         }
       }
 
-      if (provider.id === 'kagenti') {
-        (provider as unknown as KagentiProvider).setUserContext(userRef);
+      if (provider.setUserContext) {
+        provider.setUserContext(userRef);
       }
 
       if (provider.safety?.isEnabled()) {
@@ -790,10 +801,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
             titleAndTouch.push(sessions.touch(sessionId, userRef));
 
-            if (provider.id === 'kagenti') {
-              const ctxId = await (
-                provider as unknown as KagentiProvider
-              ).getSessionContextId(sessionId);
+            if (streamDescriptor?.capabilities.contextHydration) {
+              const ctxId = await provider.getSessionContextId!(sessionId);
               if (ctxId) {
                 titleAndTouch.push(
                   sessions
@@ -801,7 +810,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
                     .then(linked => {
                       if (linked) {
                         logger.info(
-                          `Linked session ${sessionId} to Kagenti context ${ctxId}`,
+                          `Linked session ${sessionId} to provider context ${ctxId}`,
                         );
                       }
                     }),
@@ -887,9 +896,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
           } for responseId=${responseId}, callId=${callId}, tool=${toolName}`,
         );
 
-        if (provider.id === 'kagenti') {
-          const kagentiProvider = provider as unknown as KagentiProvider;
-          const result = await kagentiProvider.submitApproval({
+        if (provider.submitApproval) {
+          const result = await provider.submitApproval({
             responseId,
             callId,
             approved: approved === true,

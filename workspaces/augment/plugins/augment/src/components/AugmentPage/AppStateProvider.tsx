@@ -85,6 +85,7 @@ export interface AppState {
   // Status
   liveStatus: ReturnType<typeof useStatus>['status'];
   refreshStatus: () => void;
+  isFullProvider: boolean;
 
   // Branding
   branding: ReturnType<typeof useBranding>['branding'];
@@ -157,11 +158,13 @@ export function AppStateProvider({ children }: Props) {
     return 'super-admin';
   }, [isAdmin]);
 
+  const isFullProvider = liveStatus?.capabilities?.agentCatalog === true;
+
   const switchToAdmin = useCallback(
     (targetPanel?: AdminPanel) => {
-      adminView.switchToAdmin(liveStatus?.providerId, targetPanel);
+      adminView.switchToAdmin(isFullProvider, targetPanel);
     },
-    [adminView, liveStatus?.providerId],
+    [adminView, isFullProvider],
   );
 
   const value: AppState = useMemo(
@@ -200,6 +203,7 @@ export function AppStateProvider({ children }: Props) {
       handleNamespaceChange,
       liveStatus,
       refreshStatus,
+      isFullProvider,
       branding,
     }),
     [
@@ -217,6 +221,7 @@ export function AppStateProvider({ children }: Props) {
       kagentiNamespace,
       handleNamespaceChange,
       refreshStatus,
+      isFullProvider,
       branding,
     ],
   );

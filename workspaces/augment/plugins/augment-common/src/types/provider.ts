@@ -51,6 +51,16 @@ export interface ProviderCapabilities {
   readonly conversations: boolean;
   readonly mcpTools: boolean;
   readonly tools: boolean;
+  /** Provider manages tool lifecycle (build, deploy, route) */
+  readonly toolLifecycle: boolean;
+  /** Provider manages agent lifecycle (build, deploy, migrate) */
+  readonly agentLifecycle: boolean;
+  /** Provider supports DevSpaces integration */
+  readonly devSpaces: boolean;
+  /** Provider needs context hydrated from DB on non-streaming paths */
+  readonly contextHydration: boolean;
+  /** Provider registers its own sub-routes (e.g. kagenti-specific endpoints) */
+  readonly providerRoutes: boolean;
 }
 
 /**

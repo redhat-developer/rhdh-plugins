@@ -33,6 +33,31 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
   ProviderDescriptor
 >([
   [
+    'llamastack',
+    {
+      id: 'llamastack',
+      displayName: 'Llama Stack',
+      description:
+        'Meta Llama Stack -- open source LLM inference and agent runtime',
+      implemented: true,
+      capabilities: {
+        chat: true,
+        rag: true,
+        safety: true,
+        evaluation: true,
+        conversations: true,
+        mcpTools: true,
+        tools: true,
+        toolLifecycle: false,
+        agentLifecycle: false,
+        devSpaces: false,
+        contextHydration: false,
+        providerRoutes: false,
+      },
+      configFields: [],
+    },
+  ],
+  [
     'googleadk',
     {
       id: 'googleadk',
@@ -48,6 +73,11 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
         conversations: true,
         mcpTools: true,
         tools: false,
+        toolLifecycle: false,
+        agentLifecycle: false,
+        devSpaces: false,
+        contextHydration: false,
+        providerRoutes: false,
       },
       configFields: [],
     },
@@ -68,6 +98,11 @@ const BUILT_IN_PROVIDERS: ReadonlyMap<string, ProviderDescriptor> = new Map<
         conversations: true,
         mcpTools: true,
         tools: true,
+        toolLifecycle: true,
+        agentLifecycle: true,
+        devSpaces: true,
+        contextHydration: true,
+        providerRoutes: true,
       },
       configFields: [
         {

@@ -25,6 +25,7 @@ import type { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augme
 import express from 'express';
 import Router from 'express-promise-router';
 import type { ProviderManager } from './providers';
+import { getProviderDescriptor } from './providers';
 import type { ChatSessionService } from './services/ChatSessionService';
 import type { RouteContext } from './routes';
 import {
@@ -165,9 +166,10 @@ export async function createRouter({
   }
 
   function missingConversations(res: express.Response): boolean {
+    const descriptor = getProviderDescriptor(providerManager.provider.id);
     if (
       !providerManager.provider.conversations ||
-      providerManager.provider.id === 'kagenti'
+      descriptor?.capabilities.contextHydration
     ) {
       res.status(501).json({
         success: false,
@@ -253,8 +255,9 @@ export async function createRouter({
   // Route Registration
   // =============================================================================
 
+  const providerDescriptor = getProviderDescriptor(providerManager.provider.id);
   let orchestrationProvider: ResponsesApiProvider | undefined;
-  if (providerManager.provider.id === 'kagenti') {
+  if (providerDescriptor?.capabilities.agentLifecycle) {
     try {
       orchestrationProvider = new ResponsesApiProvider({
         logger: logger.child({ provider: 'orchestration-fallback' }),
@@ -361,10 +364,10 @@ export async function createRouter({
 
   // Tool lifecycle routes -- unified tool listing with lifecycle overlay
   {
-    const kagentiProvider =
-      providerManager.provider.id === 'kagenti'
-        ? (providerManager.provider as import('./providers/kagenti').KagentiProvider)
-        : undefined;
+    const hasToolLifecycle = providerDescriptor?.capabilities.toolLifecycle;
+    const kagentiProvider = hasToolLifecycle
+      ? (providerManager.provider as import('./providers/kagenti').KagentiProvider)
+      : undefined;
 
     registerToolLifecycleRoutes(ctx, adminConfig, {
       async listProviderTools() {
@@ -406,24 +409,18 @@ export async function createRouter({
   // Admin routes (requireAdminAccess is applied inside registerAdminRoutes)
   registerAdminRoutes(ctx, adminConfig, onConfigChanged, providerManager);
 
-  // Kagenti-specific routes (only when provider is kagenti)
-  if (providerManager.provider.id === 'kagenti') {
+  // Provider-specific routes (only when provider has providerRoutes capability)
+  if (providerDescriptor?.capabilities.providerRoutes) {
     registerKagentiRoutes(ctx);
     registerKagentiSandboxRoutes(ctx);
     registerKagentiAdminRoutes(ctx);
-    logger.info('Kagenti provider routes registered');
+    logger.info('Provider-specific routes registered');
   }
 
-  // Dev Spaces routes — use Kagenti's Keycloak token when available
-  const kagentiTokenFn =
-    providerManager.provider.id === 'kagenti'
-      ? () =>
-          (
-            providerManager.provider as import('./providers/kagenti').KagentiProvider
-          )
-            .getTokenManager()
-            .getToken()
-      : undefined;
+  // Dev Spaces routes — use provider's auth token when available
+  const kagentiTokenFn = providerDescriptor?.capabilities.devSpaces
+    ? () => providerManager.provider.getAuthToken!()
+    : undefined;
 
   registerDevSpacesRoutes({
     router,
