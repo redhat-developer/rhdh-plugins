@@ -46,6 +46,8 @@ export const HomePage = ({
   let content: React.ReactNode;
   if (loading) {
     content = <Progress />;
+  } else if (defaultWidgets && defaultWidgets.length === 0 && !customizable) {
+    content = <EmptyState title={t('homePage.empty')} missing="content" />;
   } else if (defaultWidgets && defaultWidgets.length > 0) {
     if (customizable) {
       content = (

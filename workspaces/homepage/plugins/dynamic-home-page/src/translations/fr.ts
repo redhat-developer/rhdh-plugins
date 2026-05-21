@@ -27,8 +27,7 @@ const homepageTranslationFr = createTranslationMessages({
     'header.welcome': 'Content de vous revoir!',
     'header.welcomePersonalized': 'Bienvenue {{name}} !',
     'header.local': 'Locale',
-    'homePage.empty':
-      "Aucune carte de page d'accueil (points de montage) configurée ou trouvée.",
+    'homePage.empty': "Aucune carte de page d'accueil configurée ou trouvée.",
     'search.placeholder': 'Recherche',
     'quickAccess.title': 'Accès rapide',
     'quickAccess.fetchError': 'Impossible de récupérer les données.',

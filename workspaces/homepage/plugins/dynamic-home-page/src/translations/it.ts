@@ -27,8 +27,7 @@ const homepageTranslationIt = createTranslationMessages({
     'header.welcome': 'Bentornato/a!',
     'header.welcomePersonalized': 'Bentornato/a, {{name}}!',
     'header.local': 'Locale',
-    'homePage.empty':
-      'Nessuna scheda home page (punto di montaggio) configurata o trovata.',
+    'homePage.empty': 'Nessuna scheda home page configurata o trovata.',
     'search.placeholder': 'Ricerca',
     'quickAccess.title': 'Accesso rapido',
     'quickAccess.fetchError': 'Impossibile recuperare i dati.',
