@@ -182,6 +182,7 @@ export interface AugmentApi {
   demoteAgent(
     agentId: string,
     targetStage?: AgentLifecycleStage,
+    reason?: string,
   ): Promise<{
     lifecycleStage: string;
   }>;

@@ -390,6 +390,16 @@ export interface ChatAgentConfig {
   promotedAt?: string;
   /** User ref of who last promoted this agent */
   promotedBy?: string;
+  /** User ref of who originally created/registered this agent in the lifecycle */
+  createdBy?: string;
+  /** ISO timestamp of when the agent was first registered in the lifecycle */
+  createdAt?: string;
+  /** Reason the agent was rejected (set on review → draft demotion, cleared on re-promote) */
+  rejectionReason?: string;
+  /** User ref of who rejected the agent */
+  rejectedBy?: string;
+  /** ISO timestamp of when the agent was rejected */
+  rejectedAt?: string;
   /** Display order (lower first) */
   order?: number;
   /** Override display name */
@@ -404,8 +414,6 @@ export interface ChatAgentConfig {
   greeting?: string;
   /** Suggested prompts shown on the agent card and below the input */
   conversationStarters?: string[];
-  /** User ref of who originally created this agent config entry */
-  createdBy?: string;
 }
 
 /**
@@ -614,10 +622,16 @@ export interface ChatAgent {
   promotedAt?: string;
   /** Who promoted this agent */
   promotedBy?: string;
+  /** User ref of who originally created/registered this agent in the lifecycle */
+  createdBy?: string;
+  /** Reason the agent was rejected (set on review → draft demotion, cleared on re-promote) */
+  rejectionReason?: string;
+  /** User ref of who rejected the agent */
+  rejectedBy?: string;
+  /** ISO timestamp of when the agent was rejected */
+  rejectedAt?: string;
   /** Role of this agent in the orchestration topology */
   agentRole?: AgentRole;
-  /** User ref of who originally created this agent */
-  createdBy?: string;
 }
 
 /**
