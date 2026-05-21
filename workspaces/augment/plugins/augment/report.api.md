@@ -165,6 +165,7 @@ export interface AugmentApi {
   deleteAdminConfig(key: AdminConfigKey): Promise<{
     deleted: boolean;
   }>;
+  deleteAgentConfig(agentId: string): Promise<void>;
   // (undocumented)
   deleteDevSpacesWorkspace(namespace: string, name: string): Promise<void>;
   deleteDocument(
