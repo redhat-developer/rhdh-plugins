@@ -25,7 +25,7 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined';
 import { useTheme, alpha } from '@mui/material/styles';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApi, identityApiRef } from '@backstage/core-plugin-api';
 import type {
   ChatAgent,
   KagentiToolSummary,
@@ -70,6 +70,15 @@ export function MarketplacePage({
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
+  const identityApi = useApi(identityApiRef);
+  const [userRef, setUserRef] = useState<string | undefined>();
+
+  useEffect(() => {
+    identityApi
+      .getBackstageIdentity()
+      .then(identity => setUserRef(identity.userEntityRef))
+      .catch(() => {});
+  }, [identityApi]);
 
   const [agents, setAgents] = useState<ChatAgent[]>([]);
   const [tools, setTools] = useState<
@@ -148,8 +157,10 @@ export function MarketplacePage({
     });
   }, [agents, search, selectedFramework]);
 
-  // My Agents: show ALL agents with their lifecycle stage visible
-  const myAgents = useMemo(() => agents, [agents]);
+  const myAgents = useMemo(
+    () => (userRef ? agents.filter(a => a.createdBy === userRef) : agents),
+    [agents, userRef],
+  );
 
   // Tools catalog: only deployed/published tools
   const exploreTools = useMemo(

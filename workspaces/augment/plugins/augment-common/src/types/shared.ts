@@ -616,6 +616,8 @@ export interface ChatAgent {
   promotedBy?: string;
   /** Role of this agent in the orchestration topology */
   agentRole?: AgentRole;
+  /** User ref of who originally created this agent */
+  createdBy?: string;
 }
 
 /**

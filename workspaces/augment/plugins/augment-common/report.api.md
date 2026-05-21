@@ -257,6 +257,7 @@ export interface ChatAgent {
   agentRole?: AgentRole;
   avatarUrl?: string;
   createdAt?: string;
+  createdBy?: string;
   description?: string;
   framework?: string;
   id: string;

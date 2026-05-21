@@ -177,6 +177,7 @@ export function registerAgentRoutes(
         version: cfg?.version ?? 0,
         promotedAt: cfg?.promotedAt,
         promotedBy: cfg?.promotedBy,
+        createdBy: cfg?.createdBy,
       };
     }
 
