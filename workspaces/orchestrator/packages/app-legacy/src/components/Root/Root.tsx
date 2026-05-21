@@ -43,8 +43,10 @@ import Box from '@mui/material/Box';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { Administration } from '@backstage-community/plugin-rbac';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();

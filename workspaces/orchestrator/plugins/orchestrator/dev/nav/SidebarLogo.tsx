@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-import { Link, sidebarConfig } from '@backstage/core-components';
+import {
+  Link,
+  sidebarConfig,
+  useSidebarOpenState,
+} from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export const SidebarLogo = () => {
+  const { isOpen } = useSidebarOpenState();
+
   return (
     <Box
       sx={{
@@ -40,9 +50,7 @@ export const SidebarLogo = () => {
           marginLeft: 24,
         }}
       >
-        <Typography variant="h6" component="span">
-          Backstage
-        </Typography>
+        {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
     </Box>
   );

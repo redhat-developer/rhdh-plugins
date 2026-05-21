@@ -19,9 +19,10 @@ import {
   useSidebarOpenState,
 } from '@backstage/core-components';
 import Box from '@mui/material/Box';
-
-import { LogoFull } from './LogoFull';
-import { LogoIcon } from './LogoIcon';
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();
