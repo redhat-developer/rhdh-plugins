@@ -78,6 +78,7 @@ export interface AgentLifecycleDetailProps {
   onBack: () => void;
   onChatWithAgent?: (agentId: string) => void;
   onDeleted?: () => void;
+  isAdmin?: boolean;
 }
 
 /**
@@ -89,6 +90,7 @@ export function AgentLifecycleDetail({
   onBack,
   onChatWithAgent,
   onDeleted,
+  isAdmin = false,
 }: AgentLifecycleDetailProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -119,6 +121,8 @@ export function AgentLifecycleDetail({
   const [lifecycleStage, setLifecycleStage] = useState<string>('draft');
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishToast, setPublishToast] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | undefined>();
+  const [rejectedBy, setRejectedBy] = useState<string | undefined>();
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +132,8 @@ export function AgentLifecycleDetail({
         if (cancelled) return;
         const match = agents.find(a => a.id === agentId);
         setLifecycleStage(normalizeLifecycleStage(match?.lifecycleStage));
+        setRejectionReason(match?.rejectionReason);
+        setRejectedBy(match?.rejectedBy);
       })
       .catch(() => setLifecycleStage('draft'));
     return () => {
@@ -309,71 +315,118 @@ export function AgentLifecycleDetail({
               flexShrink: 0,
             }}
           >
-            {lifecycleStage !== 'retired' && (
-              <Tooltip title={nextTransition.label}>
-                <Button
-                  size="small"
-                  variant={nextTransition.variant}
-                  color={nextTransition.color}
-                  startIcon={
-                    publishLoading ? (
-                      <CircularProgress size={14} />
-                    ) : (
-                      nextTransition.icon
-                    )
-                  }
-                  disabled={publishLoading}
-                  onClick={handleLifecycleAction}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    borderRadius: borderRadius.sm,
-                  }}
-                >
-                  {nextTransition.label}
-                </Button>
-              </Tooltip>
-            )}
-            {lifecycleStage === 'retired' && (
-              <Tooltip title="Reactivate this agent to draft status">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="inherit"
-                  startIcon={
-                    publishLoading ? (
-                      <CircularProgress size={14} />
-                    ) : (
-                      <PublishIcon />
-                    )
-                  }
-                  disabled={publishLoading}
-                  onClick={handleLifecycleAction}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    borderRadius: borderRadius.sm,
-                  }}
-                >
-                  Reactivate
-                </Button>
-              </Tooltip>
-            )}
-            {hasBuild && (
-              <Tooltip title="Trigger a new container image build">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PlayArrowIcon />}
-                  disabled={buildTriggering}
-                  onClick={() => void handleTriggerBuild()}
-                  sx={{ textTransform: 'none', borderRadius: borderRadius.sm }}
-                >
-                  {buildTriggering ? 'Building...' : 'Rebuild'}
-                </Button>
-              </Tooltip>
+            {isAdmin ? (
+              <>
+                {lifecycleStage !== 'retired' && (
+                  <Tooltip title={nextTransition.label}>
+                    <Button
+                      size="small"
+                      variant={nextTransition.variant}
+                      color={nextTransition.color}
+                      startIcon={
+                        publishLoading ? (
+                          <CircularProgress size={14} />
+                        ) : (
+                          nextTransition.icon
+                        )
+                      }
+                      disabled={publishLoading}
+                      onClick={handleLifecycleAction}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        borderRadius: borderRadius.sm,
+                      }}
+                    >
+                      {nextTransition.label}
+                    </Button>
+                  </Tooltip>
+                )}
+                {lifecycleStage === 'retired' && (
+                  <Tooltip title="Reactivate this agent to draft status">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="inherit"
+                      startIcon={
+                        publishLoading ? (
+                          <CircularProgress size={14} />
+                        ) : (
+                          <PublishIcon />
+                        )
+                      }
+                      disabled={publishLoading}
+                      onClick={handleLifecycleAction}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        borderRadius: borderRadius.sm,
+                      }}
+                    >
+                      Reactivate
+                    </Button>
+                  </Tooltip>
+                )}
+                {hasBuild && (
+                  <Tooltip title="Trigger a new container image build">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<PlayArrowIcon />}
+                      disabled={buildTriggering}
+                      onClick={() => void handleTriggerBuild()}
+                      sx={{
+                        textTransform: 'none',
+                        borderRadius: borderRadius.sm,
+                      }}
+                    >
+                      {buildTriggering ? 'Building...' : 'Rebuild'}
+                    </Button>
+                  </Tooltip>
+                )}
+              </>
+            ) : (
+              <>
+                {lifecycleStage === 'draft' && (
+                  <Tooltip title="Submit this agent for admin review">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      startIcon={
+                        publishLoading ? (
+                          <CircularProgress size={14} />
+                        ) : (
+                          <PublishIcon />
+                        )
+                      }
+                      disabled={publishLoading}
+                      onClick={handleLifecycleAction}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        borderRadius: borderRadius.sm,
+                      }}
+                    >
+                      Submit for Review
+                    </Button>
+                  </Tooltip>
+                )}
+                {lifecycleStage !== 'draft' && (
+                  <Chip
+                    label={lifecycleStage}
+                    size="small"
+                    color="default"
+                    sx={{
+                      textTransform: 'capitalize',
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+              </>
             )}
             {onChatWithAgent && (
               <Button
@@ -433,6 +486,15 @@ export function AgentLifecycleDetail({
           </Stepper>
         </Box>
       </Box>
+
+      {lifecycleStage === 'draft' && rejectionReason && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            Rejected{rejectedBy ? ` by ${rejectedBy}` : ''}
+          </Typography>
+          <Typography variant="body2">{rejectionReason}</Typography>
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
