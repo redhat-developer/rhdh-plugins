@@ -1,10 +1,11 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused dependencies (2)
 
 | Name      | Location          | Severity |
 | :-------- | :---------------- | :------- |
-| react-use | package.json:71:6 | error    |
+| react-use | package.json:72:6 | error    |
+| motion    | package.json:68:6 | error    |
 
 ## Unlisted dependencies (2)
 
