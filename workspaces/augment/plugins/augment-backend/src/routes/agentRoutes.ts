@@ -178,6 +178,9 @@ export function registerAgentRoutes(
         promotedAt: cfg?.promotedAt,
         promotedBy: cfg?.promotedBy,
         createdBy: cfg?.createdBy,
+        rejectionReason: cfg?.rejectionReason,
+        rejectedBy: cfg?.rejectedBy,
+        rejectedAt: cfg?.rejectedAt,
       };
     }
 
@@ -230,23 +233,24 @@ export function registerAgentRoutes(
 
   // ---------------------------------------------------------------------------
   // GET /agents -- unified agent listing
+  // Non-admins see: published agents + their own agents + legacy unowned agents.
+  // Admins see everything.
   // ---------------------------------------------------------------------------
   router.get(
     '/agents',
     withRoute('GET /agents', 'Failed to list agents', async (req, res) => {
       const { agents, sources } = await buildUnifiedAgentList();
       const publishedFilter = req.query.published;
-
-      let filtered =
-        publishedFilter === 'true'
-          ? agents.filter(a => a.published === true)
-          : agents;
-
       const isAdmin = await ctx.checkIsAdmin(req);
-      if (!isAdmin) {
+
+      let filtered = agents;
+
+      if (publishedFilter === 'true') {
+        filtered = filtered.filter(a => a.published === true);
+      } else if (!isAdmin) {
         const userRef = await ctx.getUserRef(req);
         filtered = filtered.filter(
-          a => a.published === true || a.createdBy === userRef,
+          a => a.published === true || a.createdBy === userRef || !a.createdBy,
         );
       }
 
@@ -259,6 +263,8 @@ export function registerAgentRoutes(
   // Enforces valid transitions defined in LIFECYCLE_TRANSITIONS.
   // draft → review is open to any authenticated user (submit for approval).
   // All other transitions require admin access.
+  // Non-admins cannot promote phantom drafts (agents with no config entry).
+  // Non-admins can only promote agents they own (createdBy === userRef).
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/promote',
@@ -277,6 +283,7 @@ export function registerAgentRoutes(
           );
         }
         const userRef = await ctx.getUserRef(req);
+        const isAdmin = await ctx.checkIsAdmin(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
 
@@ -298,16 +305,29 @@ export function registerAgentRoutes(
 
         const isSubmitForReview =
           currentStage === 'draft' && nextStage === 'review';
-        if (!isSubmitForReview) {
-          const isAdmin = await ctx.checkIsAdmin(req);
-          if (!isAdmin) {
-            res.status(403).json({
-              error:
-                'Only admins can perform this lifecycle transition. ' +
-                'Non-admin users may only submit draft agents for review.',
-            });
-            return;
-          }
+        if (!isSubmitForReview && !isAdmin) {
+          res.status(403).json({
+            error:
+              'Only admins can perform this lifecycle transition. ' +
+              'Non-admin users may only submit draft agents for review.',
+          });
+          return;
+        }
+
+        if (!isAdmin && !existing) {
+          res.status(404).json({
+            error:
+              'Agent not found in lifecycle config. ' +
+              'Only agents you have created can be submitted for review.',
+          });
+          return;
+        }
+
+        if (!isAdmin && existing?.createdBy && existing.createdBy !== userRef) {
+          res.status(403).json({
+            error: 'You can only promote agents you created.',
+          });
+          return;
         }
 
         const now = new Date().toISOString();
@@ -320,6 +340,11 @@ export function registerAgentRoutes(
           existing.version = (existing.version ?? 0) + 1;
           existing.promotedAt = now;
           existing.promotedBy = userRef;
+          if (existing.rejectionReason) {
+            existing.rejectionReason = undefined;
+            existing.rejectedBy = undefined;
+            existing.rejectedAt = undefined;
+          }
         } else {
           configs.push({
             agentId,
@@ -330,6 +355,8 @@ export function registerAgentRoutes(
             version: 1,
             promotedAt: now,
             promotedBy: userRef,
+            createdBy: userRef,
+            createdAt: now,
           });
         }
 
@@ -363,6 +390,7 @@ export function registerAgentRoutes(
   // ---------------------------------------------------------------------------
   // PUT /agents/:agentId/demote -- transition agent backward
   // Enforces valid transitions defined in LIFECYCLE_TRANSITIONS.
+  // Accepts optional `reason` for review → draft (rejection).
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/demote',
@@ -372,7 +400,10 @@ export function registerAgentRoutes(
       'Failed to demote agent',
       async (req, res) => {
         const agentId = decodeURIComponent(req.params.agentId);
-        const { targetStage } = req.body as { targetStage?: string };
+        const { targetStage, reason } = req.body as {
+          targetStage?: string;
+          reason?: string;
+        };
         const resolved = targetStage
           ? normalizeLifecycleStage(targetStage)
           : undefined;
@@ -402,6 +433,7 @@ export function registerAgentRoutes(
 
         const now = new Date().toISOString();
         const isProd = isProductionStage(nextStage);
+        const isRejection = currentStage === 'review' && nextStage === 'draft';
 
         if (existing) {
           existing.lifecycleStage = nextStage;
@@ -412,6 +444,11 @@ export function registerAgentRoutes(
           }
           existing.promotedAt = now;
           existing.promotedBy = userRef;
+          if (isRejection) {
+            existing.rejectionReason = reason || undefined;
+            existing.rejectedBy = userRef;
+            existing.rejectedAt = now;
+          }
         } else {
           configs.push({
             agentId,
@@ -421,6 +458,13 @@ export function registerAgentRoutes(
             featured: false,
             promotedAt: now,
             promotedBy: userRef,
+            ...(isRejection
+              ? {
+                  rejectionReason: reason || undefined,
+                  rejectedBy: userRef,
+                  rejectedAt: now,
+                }
+              : {}),
           });
         }
 
@@ -431,7 +475,12 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { from: currentStage, to: nextStage, direction: 'demote' },
+          meta: {
+            from: currentStage,
+            to: nextStage,
+            direction: 'demote',
+            ...(isRejection && reason ? { rejectionReason: reason } : {}),
+          },
         });
         logger.info(`Agent "${agentId}" demoted to ${nextStage} by ${userRef}`);
         res.json({ success: true, agentId, lifecycleStage: nextStage });
@@ -608,51 +657,6 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // DELETE /agents/:agentId -- remove agent from chatAgents config
-  // Only draft agents can be deleted; other stages must be retired first.
-  // ---------------------------------------------------------------------------
-  router.delete(
-    '/agents/:agentId',
-    withRoute(
-      'DELETE /agents/:agentId',
-      'Failed to delete agent',
-      async (req, res) => {
-        const agentId = decodeURIComponent(req.params.agentId);
-        const userRef = await ctx.getUserRef(req);
-        const configs = await loadChatAgentConfigs();
-        const existing = configs.find(c => c.agentId === agentId);
-
-        const stage = normalizeLifecycleStage(existing?.lifecycleStage);
-        if (stage !== 'draft') {
-          const isAdmin = await ctx.checkIsAdmin(req);
-          if (!isAdmin) {
-            res.status(403).json({
-              error:
-                'Only admins can delete non-draft agents. ' +
-                'Non-admin users may only delete agents in "draft" stage.',
-            });
-            return;
-          }
-        }
-
-        const updated = configs.filter(c => c.agentId !== agentId);
-        await saveChatAgentConfigs(updated, userRef);
-
-        audit.log({
-          action: 'agent.lifecycle',
-          actor: userRef,
-          target: agentId,
-          outcome: 'success',
-          sourceIp: AuditLogger.extractIp(req),
-          meta: { from: stage, direction: 'delete' },
-        });
-        logger.info(`Agent "${agentId}" config deleted by ${userRef}`);
-        res.json({ success: true, agentId, deleted: true });
-      },
-    ),
-  );
-
-  // ---------------------------------------------------------------------------
   // PUT /agents/:agentId/config -- update agent display config
   // ---------------------------------------------------------------------------
   router.put(
@@ -681,6 +685,65 @@ export function registerAgentRoutes(
         }
 
         await saveChatAgentConfigs(configs, userRef);
+        res.json({ success: true, agentId });
+      },
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // DELETE /agents/:agentId -- remove agent lifecycle config entry
+  // Non-admins can only delete their own draft agents.
+  // Admins can delete any agent's config.
+  // ---------------------------------------------------------------------------
+  router.delete(
+    '/agents/:agentId',
+    withRoute(
+      'DELETE /agents/:agentId',
+      'Failed to delete agent config',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const isAdmin = await ctx.checkIsAdmin(req);
+        const configs = await loadChatAgentConfigs();
+        const idx = configs.findIndex(c => c.agentId === agentId);
+
+        if (idx === -1) {
+          res.status(404).json({ error: 'Agent config not found' });
+          return;
+        }
+
+        const existing = configs[idx];
+        const stage = normalizeLifecycleStage(existing.lifecycleStage);
+
+        if (!isAdmin) {
+          if (stage !== 'draft') {
+            res.status(403).json({
+              error: 'Non-admin users can only delete agents in draft stage.',
+            });
+            return;
+          }
+          if (existing.createdBy && existing.createdBy !== userRef) {
+            res.status(403).json({
+              error: 'You can only delete agents you created.',
+            });
+            return;
+          }
+        }
+
+        configs.splice(idx, 1);
+        await saveChatAgentConfigs(configs, userRef);
+
+        audit.log({
+          action: 'agent.delete',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { lifecycleStage: stage, isAdmin },
+        });
+        logger.info(
+          `Agent config "${agentId}" deleted (stage: ${stage}) by ${userRef}`,
+        );
         res.json({ success: true, agentId });
       },
     ),

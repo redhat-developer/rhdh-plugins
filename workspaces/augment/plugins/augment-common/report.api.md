@@ -270,6 +270,9 @@ export interface ChatAgent {
   protocols?: string[];
   providerType: string;
   published?: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
   source?: string;
   starters?: string[];
   status: string;
@@ -282,6 +285,7 @@ export interface ChatAgentConfig {
   agentId: string;
   avatarUrl?: string;
   conversationStarters?: string[];
+  createdAt?: string;
   createdBy?: string;
   description?: string;
   displayName?: string;
@@ -292,6 +296,9 @@ export interface ChatAgentConfig {
   promotedAt?: string;
   promotedBy?: string;
   published: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
   version?: number;
   visible: boolean;
 }
