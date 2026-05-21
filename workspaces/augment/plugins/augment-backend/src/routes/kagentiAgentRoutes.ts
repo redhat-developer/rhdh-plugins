@@ -15,6 +15,7 @@
  */
 
 import { InputError } from '@backstage/errors';
+import type { ChatAgentConfig } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { validatePublicUrl } from './validatePublicUrl';
 import type { KagentiRouteRegistrarContext } from './kagentiRoutes';
 import { getVisibleNamespaces } from '../providers/kagenti/kagentiNamespaceUtils';
@@ -206,6 +207,39 @@ export function registerKagentiAgentRoutes(
           throw new InputError('namespace is required and must be a string');
         }
         const result = await api.createAgent(req.body);
+
+        if (result.success && ctx.adminConfig) {
+          const agentId = `${req.body.namespace}/${req.body.name}`;
+          try {
+            const userRef = await ctx.getUserRef(req).catch(() => 'anonymous');
+            const raw = await ctx.adminConfig.get('chatAgents');
+            const configs: ChatAgentConfig[] = Array.isArray(raw)
+              ? (raw as ChatAgentConfig[])
+              : [];
+            if (!configs.some(c => c.agentId === agentId)) {
+              configs.push({
+                agentId,
+                lifecycleStage: 'draft',
+                published: false,
+                visible: false,
+                featured: false,
+                version: 0,
+                promotedAt: new Date().toISOString(),
+                promotedBy: userRef,
+                createdBy: userRef,
+              });
+              await ctx.adminConfig.set('chatAgents', configs, userRef);
+              logger.info(
+                `Auto-created chatAgents entry for ${agentId} (draft) by ${userRef}`,
+              );
+            }
+          } catch (syncErr) {
+            logger.warn(
+              `Failed to auto-create chatAgents entry for ${agentId}: ${syncErr instanceof Error ? syncErr.message : syncErr}`,
+            );
+          }
+        }
+
         res.json(result);
       },
     ),
@@ -222,6 +256,29 @@ export function registerKagentiAgentRoutes(
       async (req, res) => {
         const { namespace, name } = req.params;
         const result = await api.deleteAgent(namespace, name);
+
+        if (ctx.adminConfig) {
+          const agentId = `${namespace}/${name}`;
+          try {
+            const userRef = await ctx.getUserRef(req).catch(() => 'anonymous');
+            const raw = await ctx.adminConfig.get('chatAgents');
+            const configs: ChatAgentConfig[] = Array.isArray(raw)
+              ? (raw as ChatAgentConfig[])
+              : [];
+            const updated = configs.filter(c => c.agentId !== agentId);
+            if (updated.length !== configs.length) {
+              await ctx.adminConfig.set('chatAgents', updated, userRef);
+              logger.info(
+                `Cleaned up chatAgents entry for deleted agent ${agentId}`,
+              );
+            }
+          } catch (syncErr) {
+            logger.warn(
+              `Failed to clean up chatAgents for ${agentId}: ${syncErr instanceof Error ? syncErr.message : syncErr}`,
+            );
+          }
+        }
+
         res.json(result);
       },
     ),

@@ -404,6 +404,8 @@ export interface ChatAgentConfig {
   greeting?: string;
   /** Suggested prompts shown on the agent card and below the input */
   conversationStarters?: string[];
+  /** User ref of who originally created this agent config entry */
+  createdBy?: string;
 }
 
 /**
