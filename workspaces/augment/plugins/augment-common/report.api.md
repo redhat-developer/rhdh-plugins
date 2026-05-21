@@ -281,6 +281,7 @@ export interface ChatAgentConfig {
   agentId: string;
   avatarUrl?: string;
   conversationStarters?: string[];
+  createdBy?: string;
   description?: string;
   displayName?: string;
   featured: boolean;
