@@ -129,7 +129,7 @@ copy_changed_files() {
 
   echo "=== Copying changed files to ${dest_dir}/ ==="
 
-  cd "${source_dir}"
+  pushd "${source_dir}" > /dev/null
 
   # Collect new (untracked) and modified files into a single list
   local changed_files=()
@@ -145,6 +145,7 @@ copy_changed_files() {
 
   if [[ ${#changed_files[@]} -eq 0 ]]; then
     echo "  No changed files detected"
+    popd > /dev/null
     return 0
   fi
 
@@ -169,6 +170,8 @@ copy_changed_files() {
   done
 
   echo "  Copied ${copied} file(s)"
+
+  popd > /dev/null
 }
 
 # Authenticated git wrappers using credential helper.
