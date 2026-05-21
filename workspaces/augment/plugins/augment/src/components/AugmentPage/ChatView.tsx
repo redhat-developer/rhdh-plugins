@@ -449,6 +449,7 @@ export function ChatView({
               agent={detailAgent}
               onBack={handleCloseDetail}
               onChatWithAgent={handleChatWithAgent}
+              isAdmin={isAdmin}
             />
           </Box>
         )}

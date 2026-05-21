@@ -349,6 +349,7 @@ export function KagentiAgentsPanel({
     return (
       <AgentLifecycleDetail
         agent={selectedAgent}
+        isAdmin
         onBack={() => {
           setSelectedAgent(null);
           loadAgents();
