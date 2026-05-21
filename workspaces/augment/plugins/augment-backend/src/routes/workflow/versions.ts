@@ -76,13 +76,13 @@ export function registerVersionRoutes(
         const user = await getUserRef(req);
         const { changelog } = req.body as { changelog?: string };
         try {
-          res.json(
-            await workflowService.publishWorkflow(
-              req.params.id,
-              user,
-              changelog,
-            ),
+          const version = await workflowService.publishWorkflow(
+            req.params.id,
+            user,
+            changelog,
           );
+          await workflowService.syncWorkflowToChatAgents(req.params.id, user);
+          res.json(version);
         } catch (err) {
           if (err instanceof NotFoundError) {
             notFound(res, 'Workflow');
