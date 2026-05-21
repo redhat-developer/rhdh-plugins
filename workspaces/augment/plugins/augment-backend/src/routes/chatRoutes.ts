@@ -414,7 +414,8 @@ async function resolveProvider(
   model: string | undefined,
   cache?: CacheService,
 ): Promise<AgenticProvider> {
-  if (primary.id !== 'kagenti' || !orchestration || !model) {
+  const desc = getProviderDescriptor(primary.id);
+  if (!desc?.capabilities.agentLifecycle || !orchestration || !model) {
     return primary;
   }
   const knownAgents = await refreshKagentiCache(primary, cache);

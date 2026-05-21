@@ -26,6 +26,16 @@ import { Parser } from 'expr-eval';
 
 const exprParser = new Parser();
 
+function normalizeJsExpression(expr: string): string {
+  return expr
+    .replace(/!==/g, '!=')
+    .replace(/===/g, '==')
+    .replace(/&&/g, ' and ')
+    .replace(/\|\|/g, ' or ')
+    .replace(/(?<!=)!(?!=)/g, ' not ')
+    .trim();
+}
+
 export async function executeAgentNode(
   node: WorkflowNode,
   userInput: string,
@@ -238,7 +248,7 @@ export function executeLogicNode(
 
   let result: boolean;
   try {
-    const parsed = exprParser.parse(condition);
+    const parsed = exprParser.parse(normalizeJsExpression(condition));
     result = Boolean(parsed.evaluate(state as Record<string, number | string>));
   } catch {
     result = false;
@@ -272,7 +282,7 @@ export function executeTransformNode(
 
   let result: unknown;
   try {
-    const parsed = exprParser.parse(expression);
+    const parsed = exprParser.parse(normalizeJsExpression(expression));
     result = parsed.evaluate(state as Record<string, number | string>);
   } catch {
     result = expression;
@@ -307,7 +317,7 @@ export function executeSetStateNode(
 
   for (const [key, expr] of Object.entries(assignments)) {
     try {
-      const parsed = exprParser.parse(expr);
+      const parsed = exprParser.parse(normalizeJsExpression(expr));
       state[key] = parsed.evaluate(state as Record<string, number | string>);
     } catch {
       state[key] = expr;

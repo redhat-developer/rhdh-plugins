@@ -158,7 +158,7 @@ export function AppStateProvider({ children }: Props) {
     return 'super-admin';
   }, [isAdmin]);
 
-  const isFullProvider = liveStatus?.capabilities?.agentCatalog === true;
+  const isFullProvider = liveStatus?.capabilities?.agentCards === true;
 
   const switchToAdmin = useCallback(
     (targetPanel?: AdminPanel) => {
