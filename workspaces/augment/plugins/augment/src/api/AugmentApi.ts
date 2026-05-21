@@ -74,12 +74,20 @@ export interface AugmentApi {
   listAgents(options?: { published?: boolean }): Promise<ChatAgent[]>;
 
   /**
-   * Publish an agent to the end-user catalog.
+   * Register a runtime agent in the governance overlay (draft stage).
+   */
+  registerAgentForGovernance(agentId: string): Promise<{
+    agentId: string;
+    lifecycleStage: string;
+  }>;
+
+  /**
+   * Publish an agent to the end-user catalog (staging → production only).
    */
   publishAgent(agentId: string): Promise<void>;
 
   /**
-   * Unpublish an agent from the end-user catalog.
+   * Unpublish an agent from the end-user catalog (production → staging only).
    */
   unpublishAgent(agentId: string): Promise<void>;
 
@@ -760,6 +768,15 @@ export class AugmentApiClient implements AugmentApi {
   async deleteAgentConfig(agentId: string): Promise<void> {
     await this.fetchJson(`/agents/${encodeURIComponent(agentId)}`, {
       method: 'DELETE',
+    });
+  }
+
+  async registerAgentForGovernance(agentId: string): Promise<{
+    agentId: string;
+    lifecycleStage: string;
+  }> {
+    return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/register`, {
+      method: 'PUT',
     });
   }
 

@@ -174,6 +174,7 @@ export function registerAgentRoutes(
         ...agent,
         published: isProductionStage(stage),
         lifecycleStage: stage,
+        governanceRegistered: cfg !== undefined,
         version: cfg?.version ?? 0,
         promotedAt: cfg?.promotedAt,
         promotedBy: cfg?.promotedBy,
@@ -256,6 +257,67 @@ export function registerAgentRoutes(
 
       res.json({ agents: filtered, sources });
     }),
+  );
+
+  // ---------------------------------------------------------------------------
+  // PUT /agents/:agentId/register -- add runtime agent to governance (draft)
+  // ---------------------------------------------------------------------------
+  router.put(
+    '/agents/:agentId/register',
+    ctx.requireAdminAccess,
+    withRoute(
+      'PUT /agents/:agentId/register',
+      'Failed to register agent for governance',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const { agents } = await buildUnifiedAgentList();
+        if (!agents.some(a => a.id === agentId)) {
+          res.status(404).json({
+            error: `Agent "${agentId}" not found in the unified catalog.`,
+          });
+          return;
+        }
+
+        const configs = await loadChatAgentConfigs();
+        if (configs.some(c => c.agentId === agentId)) {
+          res.status(409).json({
+            error: `Agent "${agentId}" is already registered for governance.`,
+          });
+          return;
+        }
+
+        const now = new Date().toISOString();
+        configs.push({
+          agentId,
+          lifecycleStage: 'draft',
+          published: false,
+          visible: false,
+          featured: false,
+          version: 0,
+          createdBy: userRef,
+          createdAt: now,
+        });
+        await saveChatAgentConfigs(configs, userRef);
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { to: 'draft', direction: 'register' },
+        });
+        logger.info(
+          `Agent "${agentId}" registered for governance by ${userRef}`,
+        );
+        res.status(201).json({
+          success: true,
+          agentId,
+          lifecycleStage: 'draft',
+          governanceRegistered: true,
+        });
+      },
+    ),
   );
 
   // ---------------------------------------------------------------------------
@@ -489,8 +551,7 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/publish -- shortcut: promote to production
-  // Logs audit warning when bypassing lifecycle stages.
+  // PUT /agents/:agentId/publish -- promote to production (valid transition only)
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/publish',
@@ -503,30 +564,32 @@ export function registerAgentRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
-        const now = new Date().toISOString();
         const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
 
-        const bypassed = !isValidTransition(currentStage, 'production');
-
-        if (existing) {
-          existing.lifecycleStage = 'production';
-          existing.published = true;
-          existing.visible = true;
-          existing.version = (existing.version ?? 0) + 1;
-          existing.promotedAt = now;
-          existing.promotedBy = userRef;
-        } else {
-          configs.push({
-            agentId,
-            lifecycleStage: 'production',
-            published: true,
-            visible: true,
-            featured: false,
-            version: 1,
-            promotedAt: now,
-            promotedBy: userRef,
+        if (!existing) {
+          res.status(404).json({
+            error:
+              'Agent is not registered for governance. Register the agent before publishing.',
           });
+          return;
         }
+
+        if (!isValidTransition(currentStage, 'production')) {
+          res.status(400).json({
+            error: `Cannot publish from "${currentStage}". Promote through staging first, or use the lifecycle controls.`,
+            currentStage,
+            targetStage: 'production',
+          });
+          return;
+        }
+
+        const now = new Date().toISOString();
+        existing.lifecycleStage = 'production';
+        existing.published = true;
+        existing.visible = true;
+        existing.version = (existing.version ?? 0) + 1;
+        existing.promotedAt = now;
+        existing.promotedBy = userRef;
 
         await saveChatAgentConfigs(configs, userRef);
         audit.log({
@@ -539,28 +602,21 @@ export function registerAgentRoutes(
             from: currentStage,
             to: 'production',
             direction: 'publish',
-            lifecycleBypassed: bypassed,
           },
         });
-        if (bypassed) {
-          logger.warn(
-            `Admin bypass: "${agentId}" published from "${currentStage}" (skipped lifecycle) by ${userRef}`,
-          );
-        } else {
-          logger.info(`Agent "${agentId}" published by ${userRef}`);
-        }
+        logger.info(`Agent "${agentId}" published by ${userRef}`);
         res.json({
           success: true,
           agentId,
           published: true,
-          lifecycleBypassed: bypassed,
+          lifecycleStage: 'production',
         });
       },
     ),
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/unpublish -- unpublish: move from production to staging
+  // PUT /agents/:agentId/unpublish -- rollback production to staging
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/unpublish',
@@ -573,25 +629,32 @@ export function registerAgentRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
-        const now = new Date().toISOString();
+        const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
 
-        if (existing) {
-          existing.lifecycleStage = 'staging';
-          existing.published = false;
-          existing.visible = false;
-          existing.promotedAt = now;
-          existing.promotedBy = userRef;
-        } else {
-          configs.push({
-            agentId,
-            lifecycleStage: 'staging',
-            published: false,
-            visible: false,
-            featured: false,
-            promotedAt: now,
-            promotedBy: userRef,
+        if (!existing) {
+          res.status(404).json({
+            error:
+              'Agent is not registered for governance. Nothing to unpublish.',
           });
+          return;
         }
+
+        if (!isValidTransition(currentStage, 'staging')) {
+          res.status(400).json({
+            error: `Cannot unpublish from "${currentStage}". Only production agents can be rolled back to staging.`,
+            currentStage,
+            targetStage: 'staging',
+          });
+          return;
+        }
+
+        const now = new Date().toISOString();
+        existing.lifecycleStage = 'staging';
+        existing.published = false;
+        existing.visible = false;
+        existing.featured = false;
+        existing.promotedAt = now;
+        existing.promotedBy = userRef;
 
         await saveChatAgentConfigs(configs, userRef);
         audit.log({
@@ -600,17 +663,25 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'staging', direction: 'unpublish' },
+          meta: {
+            from: currentStage,
+            to: 'staging',
+            direction: 'unpublish',
+          },
         });
         logger.info(`Agent "${agentId}" unpublished by ${userRef}`);
-        res.json({ success: true, agentId, published: false });
+        res.json({
+          success: true,
+          agentId,
+          published: false,
+          lifecycleStage: 'staging',
+        });
       },
     ),
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/bulk-publish -- bulk publish/unpublish
-  // Logs audit warning per agent when lifecycle is bypassed.
+  // PUT /agents/bulk-publish -- bulk publish/unpublish (valid transitions only)
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/bulk-publish',
@@ -638,66 +709,69 @@ export function registerAgentRoutes(
           ? 'production'
           : 'staging';
 
-        const bypassed: string[] = [];
+        const invalid: Array<{
+          agentId: string;
+          reason: string;
+          currentStage?: AgentLifecycleStage;
+        }> = [];
 
         for (const agentId of agentIds) {
           const existing = configMap.get(agentId);
-          const currentStage = normalizeLifecycleStage(
-            existing?.lifecycleStage,
-          );
-
-          if (!isValidTransition(currentStage, targetStage)) {
-            bypassed.push(agentId);
-          }
-
-          if (existing) {
-            existing.lifecycleStage = targetStage;
-            existing.published = published;
-            if (published) {
-              existing.visible = true;
-              existing.version = (existing.version ?? 0) + 1;
-            } else {
-              existing.visible = false;
-              existing.featured = false;
-            }
-            existing.promotedAt = now;
-            existing.promotedBy = userRef;
-          } else {
-            const newCfg: ChatAgentConfig = {
+          if (!existing) {
+            invalid.push({
               agentId,
-              lifecycleStage: targetStage,
-              published,
-              visible: published,
-              featured: false,
-              version: published ? 1 : 0,
-              promotedAt: now,
-              promotedBy: userRef,
-            };
-            configs.push(newCfg);
-            configMap.set(agentId, newCfg);
+              reason: 'not_registered_for_governance',
+            });
+            continue;
           }
+          const currentStage = normalizeLifecycleStage(existing.lifecycleStage);
+          if (!isValidTransition(currentStage, targetStage)) {
+            invalid.push({
+              agentId,
+              reason: 'invalid_lifecycle_transition',
+              currentStage,
+            });
+          }
+        }
+
+        if (invalid.length > 0) {
+          res.status(400).json({
+            error:
+              'One or more agents cannot be updated. All agents must be registered and in a valid stage.',
+            invalid,
+            targetStage,
+          });
+          return;
+        }
+
+        for (const agentId of agentIds) {
+          const existing = configMap.get(agentId)!;
+          existing.lifecycleStage = targetStage;
+          existing.published = published;
+          if (published) {
+            existing.visible = true;
+            existing.version = (existing.version ?? 0) + 1;
+          } else {
+            existing.visible = false;
+            existing.featured = false;
+          }
+          existing.promotedAt = now;
+          existing.promotedBy = userRef;
         }
 
         await saveChatAgentConfigs(configs, userRef);
-
-        if (bypassed.length > 0) {
-          audit.log({
-            action: 'agent.lifecycle',
-            actor: userRef,
-            target: bypassed.join(', '),
-            outcome: 'success',
-            sourceIp: AuditLogger.extractIp(req),
-            meta: {
-              direction: 'bulk-publish',
-              lifecycleBypassed: true,
-              bypassedCount: bypassed.length,
-            },
-          });
-          logger.warn(
-            `Admin bypass: bulk-publish of ${bypassed.length}/${agentIds.length} agents skipped lifecycle by ${userRef}`,
-          );
-        }
-
+        audit.log({
+          action: 'agent.lifecycle',
+          actor: userRef,
+          target: agentIds.join(', '),
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: {
+            direction: 'bulk-publish',
+            to: targetStage,
+            count: agentIds.length,
+          },
+        });
         logger.info(
           `Bulk ${published ? 'publish' : 'unpublish'} of ${agentIds.length} agents by ${userRef}`,
         );
@@ -705,7 +779,7 @@ export function registerAgentRoutes(
           success: true,
           count: agentIds.length,
           published,
-          lifecycleBypassed: bypassed.length > 0 ? bypassed : undefined,
+          lifecycleStage: targetStage,
         });
       },
     ),

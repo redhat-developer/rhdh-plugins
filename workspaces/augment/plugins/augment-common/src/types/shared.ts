@@ -400,6 +400,8 @@ export interface ChatAgentConfig {
   rejectedBy?: string;
   /** ISO timestamp of when the agent was rejected */
   rejectedAt?: string;
+  /** SonataFlow process instance id while awaiting admin approval */
+  approvalWorkflowInstanceId?: string;
   /** Display order (lower first) */
   order?: number;
   /** Override display name */
@@ -632,6 +634,11 @@ export interface ChatAgent {
   rejectedAt?: string;
   /** Role of this agent in the orchestration topology */
   agentRole?: AgentRole;
+  /**
+   * True when a chatAgents lifecycle entry exists for this agent.
+   * False for runtime-only agents (Kagenti/orchestration) not yet in governance.
+   */
+  governanceRegistered?: boolean;
 }
 
 /**

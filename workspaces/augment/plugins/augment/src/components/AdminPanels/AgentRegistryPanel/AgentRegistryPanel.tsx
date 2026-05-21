@@ -96,11 +96,13 @@ const MAX_STARTERS = 6;
 const PAGE_SIZE = 20;
 
 type SourceFilter = 'all' | 'kagenti' | 'orchestration';
-type StageFilter = 'all' | AgentLifecycleStage;
+type StageFilter = 'all' | 'unregistered' | AgentLifecycleStage;
 
 interface RegistryRow {
   agent: ChatAgent;
   config: ChatAgentConfig;
+  /** True when a chatAgents entry exists (agent is in governance). */
+  governanceRegistered: boolean;
   dirty: boolean;
 }
 
@@ -269,6 +271,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState<string | null>(null);
+  const [registering, setRegistering] = useState<string | null>(null);
   const [promoteDialog, setPromoteDialog] = useState<{
     agentId: string;
     action: 'promote' | 'demote';
@@ -374,11 +377,19 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
     const configMap = new Map(configs.map(c => [c.agentId, c]));
     const newRows: RegistryRow[] = agents.map(agent => {
       const existing = configMap.get(agent.id);
-      const stage = normalizeLifecycleStage(
-        existing?.lifecycleStage ?? agent.lifecycleStage,
-      );
+      const governanceRegistered =
+        agent.governanceRegistered ?? existing !== undefined;
+      const stage = governanceRegistered
+        ? normalizeLifecycleStage(
+            existing?.lifecycleStage ?? agent.lifecycleStage,
+          )
+        : 'draft';
       return {
-        agent: { ...agent, lifecycleStage: stage },
+        agent: {
+          ...agent,
+          lifecycleStage: stage,
+          governanceRegistered,
+        },
         config: existing
           ? { ...existing, lifecycleStage: stage }
           : {
@@ -386,8 +397,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
               published: false,
               visible: false,
               featured: false,
-              lifecycleStage: stage,
+              lifecycleStage: 'draft',
             },
+        governanceRegistered,
         dirty: false,
       };
     });
@@ -425,7 +437,10 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         const src = r.agent.source || 'kagenti';
         if (sourceFilter !== src) return false;
       }
-      if (stageFilter !== 'all') {
+      if (stageFilter === 'unregistered') {
+        if (r.governanceRegistered) return false;
+      } else if (stageFilter !== 'all') {
+        if (!r.governanceRegistered) return false;
         const stage = r.config.lifecycleStage ?? 'draft';
         if (stageFilter !== stage) return false;
       }
@@ -433,21 +448,43 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
     });
   }, [rows, search, sourceFilter, stageFilter]);
 
+  const handleRegisterForGovernance = useCallback(
+    async (agentId: string) => {
+      setRegistering(agentId);
+      try {
+        const result = await api.registerAgentForGovernance(agentId);
+        await refreshConfigs();
+        await fetchAgents();
+        setToast(`Registered ${result.agentId} for governance (draft)`);
+      } catch (err) {
+        setToast(
+          `Registration failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
+      } finally {
+        setRegistering(null);
+      }
+    },
+    [api, refreshConfigs, fetchAgents],
+  );
+
   const stats = useMemo(() => {
+    const unregistered = rows.filter(r => !r.governanceRegistered).length;
     const draft = rows.filter(
-      r => (r.config.lifecycleStage ?? 'draft') === 'draft',
+      r =>
+        r.governanceRegistered &&
+        (r.config.lifecycleStage ?? 'draft') === 'draft',
     ).length;
     const review = rows.filter(
-      r => r.config.lifecycleStage === 'review',
+      r => r.governanceRegistered && r.config.lifecycleStage === 'review',
     ).length;
     const staging = rows.filter(
-      r => r.config.lifecycleStage === 'staging',
+      r => r.governanceRegistered && r.config.lifecycleStage === 'staging',
     ).length;
     const production = rows.filter(
-      r => r.config.lifecycleStage === 'production',
+      r => r.governanceRegistered && r.config.lifecycleStage === 'production',
     ).length;
     const retired = rows.filter(
-      r => r.config.lifecycleStage === 'retired',
+      r => r.governanceRegistered && r.config.lifecycleStage === 'retired',
     ).length;
     const kagenti = rows.filter(
       r => (r.agent.source || 'kagenti') === 'kagenti',
@@ -458,6 +495,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
     const featured = rows.filter(r => r.config.featured).length;
     return {
       total: rows.length,
+      unregistered,
       draft,
       review,
       staging,
@@ -540,8 +578,19 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
   const handleBulkPublish = useCallback(
     async (publish: boolean) => {
-      const ids = Array.from(selectedIds);
-      if (ids.length === 0) return;
+      const ids = Array.from(selectedIds).filter(id => {
+        const row = rows.find(r => r.agent.id === id);
+        return row?.governanceRegistered;
+      });
+      const skipped = selectedIds.size - ids.length;
+      if (ids.length === 0) {
+        setToast(
+          skipped > 0
+            ? 'Selected agents must be registered for governance first'
+            : 'No agents selected',
+        );
+        return;
+      }
       setPromoting('bulk');
       try {
         await api.bulkPublishAgents(ids, publish);
@@ -555,8 +604,10 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         await refreshConfigs();
         await fetchAgents();
         setSelectedIds(new Set());
+        const suffix =
+          skipped > 0 ? ` (${skipped} skipped — not registered)` : '';
         setToast(
-          `${ids.length} agents ${publish ? 'promoted to production' : 'rolled back to staging'}`,
+          `${ids.length} agents ${publish ? 'promoted to production' : 'rolled back to staging'}${suffix}`,
         );
       } catch (err) {
         setToast(
@@ -566,7 +617,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         setPromoting(null);
       }
     },
-    [selectedIds, api, updateRowConfig, refreshConfigs, fetchAgents],
+    [selectedIds, rows, api, updateRowConfig, refreshConfigs, fetchAgents],
   );
 
   const handleToggleFeatured = useCallback(
@@ -761,6 +812,26 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
       {/* ── Lifecycle Pipeline (fixed) ── */}
       <Box sx={{ flexShrink: 0, px: 3, pb: 1.5 }}>
+        {stats.unregistered > 0 && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 1.5, borderRadius: 2, fontSize: '0.8rem' }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => setStageFilter('unregistered')}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
+                Show {stats.unregistered}
+              </Button>
+            }
+          >
+            {stats.unregistered} runtime agent
+            {stats.unregistered === 1 ? ' is' : 's are'} not registered for
+            governance. Register them before lifecycle promotion.
+          </Alert>
+        )}
         <LifecyclePipeline
           stats={stats}
           isDark={isDark}
@@ -933,6 +1004,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                   isExpanded={expandedId === row.agent.id}
                   isSelected={selectedIds.has(row.agent.id)}
                   isPromoting={promoting === row.agent.id}
+                  isRegistering={registering === row.agent.id}
                   featuredCount={stats.featured}
                   enrichment={enrichmentCacheRef.current.get(row.agent.id)}
                   enrichmentLoading={enrichmentLoading.has(row.agent.id)}
@@ -949,6 +1021,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                       fromStage: from,
                       toStage: to,
                     })
+                  }
+                  onRegisterForGovernance={() =>
+                    handleRegisterForGovernance(row.agent.id)
                   }
                   onToggleFeatured={handleToggleFeatured}
                   onUpdateConfig={updateRowConfig}
@@ -1051,6 +1126,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 interface LifecyclePipelineProps {
   stats: {
     total: number;
+    unregistered: number;
     draft: number;
     review: number;
     staging: number;
@@ -1072,6 +1148,17 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({
   const theme = useTheme();
 
   const stages = [
+    ...(stats.unregistered > 0
+      ? [
+          {
+            key: 'unregistered' as StageFilter,
+            label: 'Unregistered',
+            count: stats.unregistered,
+            icon: <CloudOffIcon sx={{ fontSize: 16 }} />,
+            color: isDark ? '#fb923c' : '#c2410c',
+          },
+        ]
+      : []),
     {
       key: 'draft' as StageFilter,
       label: 'Draft',
@@ -1418,6 +1505,7 @@ interface AgentRowProps {
   isExpanded: boolean;
   isSelected: boolean;
   isPromoting: boolean;
+  isRegistering: boolean;
   featuredCount: number;
   enrichment?: EnrichmentData;
   enrichmentLoading?: boolean;
@@ -1428,6 +1516,7 @@ interface AgentRowProps {
     from: AgentLifecycleStage,
     to: AgentLifecycleStage,
   ) => void;
+  onRegisterForGovernance: () => void;
   onToggleFeatured: (agentId: string, featured: boolean) => void;
   onUpdateConfig: (agentId: string, patch: Partial<ChatAgentConfig>) => void;
 }
@@ -1438,16 +1527,18 @@ const AgentRow: FC<AgentRowProps> = ({
   isExpanded,
   isSelected,
   isPromoting,
+  isRegistering,
   enrichment,
   enrichmentLoading,
   onToggleExpand,
   onToggleSelect,
   onRequestPromote,
+  onRegisterForGovernance,
   onToggleFeatured,
   onUpdateConfig,
 }) => {
   const theme = useTheme();
-  const { agent, config } = row;
+  const { agent, config, governanceRegistered } = row;
   const stage = normalizeLifecycleStage(config.lifecycleStage);
   const displayName = config.displayName || agent.name || agent.id;
   const avatarColor = config.accentColor || getAvatarColor(displayName);
@@ -1548,22 +1639,45 @@ const AgentRow: FC<AgentRowProps> = ({
             >
               {displayName}
             </Typography>
-            <Chip
-              size="small"
-              label={
-                LIFECYCLE_STAGES.find(s => s.key === stage)?.label ?? stage
-              }
-              icon={getStageIcon(stage)}
-              sx={{
-                height: 18,
-                fontSize: '0.6rem',
-                fontWeight: 600,
-                bgcolor: getStageBg(stage, isDark),
-                color: stageColor,
-                '& .MuiChip-icon': { color: stageColor, ml: '3px' },
-                '& .MuiChip-label': { px: '5px' },
-              }}
-            />
+            {!governanceRegistered ? (
+              <Chip
+                size="small"
+                label="Unregistered"
+                icon={<CloudOffIcon sx={{ fontSize: '10px !important' }} />}
+                sx={{
+                  height: 18,
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  bgcolor: alpha(
+                    isDark ? '#fb923c' : '#c2410c',
+                    isDark ? 0.2 : 0.1,
+                  ),
+                  color: isDark ? '#fdba74' : '#c2410c',
+                  '& .MuiChip-icon': {
+                    color: isDark ? '#fdba74' : '#c2410c',
+                    ml: '3px',
+                  },
+                  '& .MuiChip-label': { px: '5px' },
+                }}
+              />
+            ) : (
+              <Chip
+                size="small"
+                label={
+                  LIFECYCLE_STAGES.find(s => s.key === stage)?.label ?? stage
+                }
+                icon={getStageIcon(stage)}
+                sx={{
+                  height: 18,
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  bgcolor: getStageBg(stage, isDark),
+                  color: stageColor,
+                  '& .MuiChip-icon': { color: stageColor, ml: '3px' },
+                  '& .MuiChip-label': { px: '5px' },
+                }}
+              />
+            )}
             <Chip
               size="small"
               label={getSourceLabel(agent.source)}
@@ -1670,8 +1784,26 @@ const AgentRow: FC<AgentRowProps> = ({
             flexShrink: 0,
           }}
         >
-          {isPromoting ? (
+          {isPromoting || isRegistering ? (
             <CircularProgress size={18} />
+          ) : !governanceRegistered ? (
+            <Button
+              size="small"
+              variant="contained"
+              color="warning"
+              onClick={onRegisterForGovernance}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.675rem',
+                borderRadius: 1.25,
+                height: 26,
+                minWidth: 0,
+                px: 1.25,
+              }}
+            >
+              Register
+            </Button>
           ) : (
             <>
               {backwardTransitions.length > 0 && (

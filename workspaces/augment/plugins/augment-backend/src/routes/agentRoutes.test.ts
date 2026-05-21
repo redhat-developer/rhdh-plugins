@@ -16,10 +16,18 @@
 
 import express from 'express';
 import request from 'supertest';
+import type { Config } from '@backstage/config';
 import { registerAgentRoutes } from './agentRoutes';
 import { createMockLogger } from '../test-utils/mocks';
 import type { AdminConfigService } from '../services/AdminConfigService';
 import type { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+
+function createMockBackstageConfig(): Config {
+  return {
+    getOptionalConfig: jest.fn().mockReturnValue(undefined),
+    getOptionalString: jest.fn().mockReturnValue(undefined),
+  } as unknown as Config;
+}
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -63,7 +71,7 @@ function setup(opts: SetupOptions = {}) {
   const ctx = {
     router,
     logger,
-    config: {} as never,
+    config: createMockBackstageConfig(),
     provider: {
       id: 'llamastack',
       displayName: 'Llama Stack',
@@ -681,7 +689,7 @@ describe('agentRoutes', () => {
       expect(entry?.version).toBe(3);
     });
 
-    it('reports lifecycle bypass when publishing from non-staging stage', async () => {
+    it('rejects publish when lifecycle transition is invalid', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -700,11 +708,11 @@ describe('agentRoutes', () => {
 
       const res = await request(app).put('/agents/mybot/publish');
 
-      expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toBe(true);
+      expect(res.status).toBe(400);
+      expect(res.body.currentStage).toBe('draft');
     });
 
-    it('does not report bypass when publishing from staging', async () => {
+    it('publishes when agent is in staging', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -724,7 +732,7 @@ describe('agentRoutes', () => {
       const res = await request(app).put('/agents/mybot/publish');
 
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toBe(false);
+      expect(res.body.lifecycleStage).toBe('production');
     });
 
     it('rejects non-admin access', async () => {
@@ -733,8 +741,8 @@ describe('agentRoutes', () => {
       expect(res.status).toBe(403);
     });
 
-    it('creates new config entry for unknown agent', async () => {
-      const { app, store } = setup({
+    it('rejects publish for agent not registered for governance', async () => {
+      const { app } = setup({
         isAdmin: true,
         initialConfig: {
           agents: { newbot: { name: 'New Bot', instructions: 'Hello' } },
@@ -743,15 +751,55 @@ describe('agentRoutes', () => {
 
       const res = await request(app).put('/agents/newbot/publish');
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(404);
+    });
+  });
+
+  // =========================================================================
+  // PUT /agents/:agentId/register
+  // =========================================================================
+
+  describe('PUT /agents/:agentId/register', () => {
+    it('creates draft chatAgents entry for a catalog agent', async () => {
+      const { app, store } = setup({
+        isAdmin: true,
+        initialConfig: {
+          agents: { newbot: { name: 'New Bot', instructions: 'Hello' } },
+        },
+      });
+
+      const res = await request(app).put('/agents/newbot/register');
+
+      expect(res.status).toBe(201);
+      expect(res.body.lifecycleStage).toBe('draft');
       const configs = store.chatAgents as Array<{
         agentId: string;
         lifecycleStage: string;
-        version: number;
       }>;
-      const entry = configs.find(c => c.agentId === 'newbot');
-      expect(entry?.lifecycleStage).toBe('production');
-      expect(entry?.version).toBe(1);
+      expect(configs.find(c => c.agentId === 'newbot')?.lifecycleStage).toBe(
+        'draft',
+      );
+    });
+
+    it('returns 409 when agent is already registered', async () => {
+      const { app } = setup({
+        isAdmin: true,
+        initialConfig: {
+          agents: { mybot: { name: 'My Bot', instructions: 'Help' } },
+          chatAgents: [
+            {
+              agentId: 'mybot',
+              lifecycleStage: 'draft',
+              published: false,
+              visible: false,
+              featured: false,
+            },
+          ],
+        },
+      });
+
+      const res = await request(app).put('/agents/mybot/register');
+      expect(res.status).toBe(409);
     });
   });
 
@@ -850,7 +898,7 @@ describe('agentRoutes', () => {
       }
     });
 
-    it('reports bypassed agents when lifecycle is skipped', async () => {
+    it('rejects bulk publish when any agent has invalid transition', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -871,8 +919,10 @@ describe('agentRoutes', () => {
         .put('/agents/bulk-publish')
         .send({ agentIds: ['mybot'], published: true });
 
-      expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toContain('mybot');
+      expect(res.status).toBe(400);
+      expect(res.body.invalid).toEqual(
+        expect.arrayContaining([expect.objectContaining({ agentId: 'mybot' })]),
+      );
     });
 
     it('rejects invalid payload', async () => {
