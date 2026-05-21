@@ -20,6 +20,7 @@ import type {
   LoggerService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
+import { NotAllowedError } from '@backstage/errors';
 
 import type { Request, RequestHandler } from 'express';
 
@@ -48,6 +49,10 @@ export function createIdentityMiddleware(
       return next();
     } catch (error) {
       logger.error('Identity resolution failed for request');
+
+      if (error instanceof NotAllowedError) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
       return res.status(401).json({ error: 'Unauthorized' });
     }
   };
