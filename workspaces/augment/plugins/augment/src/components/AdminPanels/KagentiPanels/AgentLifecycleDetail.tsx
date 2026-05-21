@@ -109,6 +109,8 @@ export function AgentLifecycleDetail({
   const [lifecycleStage, setLifecycleStage] = useState<string>('draft');
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishToast, setPublishToast] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | undefined>();
+  const [rejectedBy, setRejectedBy] = useState<string | undefined>();
 
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +120,8 @@ export function AgentLifecycleDetail({
         if (cancelled) return;
         const match = agents.find(a => a.id === agentId);
         setLifecycleStage(normalizeLifecycleStage(match?.lifecycleStage));
+        setRejectionReason(match?.rejectionReason);
+        setRejectedBy(match?.rejectedBy);
       })
       .catch(() => setLifecycleStage('draft'));
     return () => {
@@ -387,6 +391,24 @@ export function AgentLifecycleDetail({
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+
+      {lifecycleStage === 'draft' && rejectionReason && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            Returned from review
+          </Typography>
+          <Typography variant="body2">{rejectionReason}</Typography>
+          {rejectedBy && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 0.5, display: 'block' }}
+            >
+              Rejected by {rejectedBy}
+            </Typography>
+          )}
         </Alert>
       )}
 

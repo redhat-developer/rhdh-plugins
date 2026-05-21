@@ -20,6 +20,11 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
@@ -45,6 +50,8 @@ export function ReviewQueue() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const loadAgents = useCallback(() => {
     setLoading(true);
@@ -94,21 +101,25 @@ export function ReviewQueue() {
     [api, loadAgents],
   );
 
-  const handleReject = useCallback(
-    async (agentId: string) => {
-      setActing(agentId);
-      try {
-        await api.demoteAgent(agentId, 'draft');
-        setToast(`Rejected: ${agentId} returned to draft`);
-        loadAgents();
-      } catch (err) {
-        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-      } finally {
-        setActing(null);
-      }
-    },
-    [api, loadAgents],
-  );
+  const openRejectDialog = useCallback((agentId: string) => {
+    setRejectTarget(agentId);
+    setRejectReason('');
+  }, []);
+
+  const handleReject = useCallback(async () => {
+    if (!rejectTarget) return;
+    setActing(rejectTarget);
+    try {
+      await api.demoteAgent(rejectTarget, 'draft', rejectReason || undefined);
+      setToast(`Rejected: ${rejectTarget} returned to draft`);
+      setRejectTarget(null);
+      loadAgents();
+    } catch (err) {
+      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+    } finally {
+      setActing(null);
+    }
+  }, [api, loadAgents, rejectTarget, rejectReason]);
 
   return (
     <Box
@@ -241,7 +252,7 @@ export function ReviewQueue() {
                   variant="outlined"
                   color="error"
                   disabled={acting === agent.id}
-                  onClick={() => handleReject(agent.id)}
+                  onClick={() => openRejectDialog(agent.id)}
                   sx={{
                     textTransform: 'none',
                     fontWeight: 600,
@@ -258,6 +269,40 @@ export function ReviewQueue() {
           ))}
         </Box>
       )}
+
+      <Dialog
+        open={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Reject Agent</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Provide a reason so the creator knows what to improve.
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            minRows={2}
+            maxRows={4}
+            label="Rejection reason (optional)"
+            value={rejectReason}
+            onChange={e => setRejectReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRejectTarget(null)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleReject}
+            disabled={acting === rejectTarget}
+          >
+            Reject
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!toast}
