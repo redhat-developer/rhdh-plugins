@@ -162,6 +162,7 @@ export interface AugmentApi {
   createVectorStore(
     config?: Record<string, unknown>,
   ): Promise<VectorStoreCreateResult>;
+  deleteAgentConfig(agentId: string): Promise<void>;
   deleteAdminConfig(key: AdminConfigKey): Promise<{
     deleted: boolean;
   }>;

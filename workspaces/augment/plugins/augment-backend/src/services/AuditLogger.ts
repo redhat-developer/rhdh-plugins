@@ -25,6 +25,7 @@ export type AuditAction =
   | 'tool.approval'
   | 'tool.lifecycle'
   | 'agent.lifecycle'
+  | 'agent.delete'
   | 'document.upload'
   | 'document.delete'
   | 'admin.login';

@@ -299,6 +299,18 @@ export function registerAgentRoutes(
             });
             return;
           }
+        } else {
+          const isAdmin = await ctx.checkIsAdmin(req);
+          if (
+            !isAdmin &&
+            existing?.createdBy &&
+            existing.createdBy !== userRef
+          ) {
+            res.status(403).json({
+              error: 'You can only submit your own agents for review.',
+            });
+            return;
+          }
         }
 
         const now = new Date().toISOString();
@@ -426,6 +438,55 @@ export function registerAgentRoutes(
         });
         logger.info(`Agent "${agentId}" demoted to ${nextStage} by ${userRef}`);
         res.json({ success: true, agentId, lifecycleStage: nextStage });
+      },
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // DELETE /agents/:agentId -- remove a draft agent's config entry
+  // Non-admin callers can only delete agents they created.
+  // ---------------------------------------------------------------------------
+  router.delete(
+    '/agents/:agentId',
+    withRoute(
+      'DELETE /agents/:agentId',
+      'Failed to delete agent',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const configs = await loadChatAgentConfigs();
+        const existing = configs.find(c => c.agentId === agentId);
+
+        if (!existing) {
+          throw new InputError(`Agent "${agentId}" not found in config.`);
+        }
+
+        const stage = normalizeLifecycleStage(existing.lifecycleStage);
+        if (stage !== 'draft') {
+          throw new InputError(
+            `Only draft agents can be deleted. Agent "${agentId}" is in stage "${stage}".`,
+          );
+        }
+
+        const isAdmin = await ctx.checkIsAdmin(req);
+        if (!isAdmin && existing.createdBy && existing.createdBy !== userRef) {
+          res.status(403).json({
+            error: 'You can only delete your own agents.',
+          });
+          return;
+        }
+
+        const updated = configs.filter(c => c.agentId !== agentId);
+        await saveChatAgentConfigs(updated, userRef);
+        audit.log({
+          action: 'agent.delete',
+          actor: userRef,
+          target: agentId,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+        });
+        logger.info(`Draft agent "${agentId}" deleted by ${userRef}`);
+        res.json({ success: true, agentId });
       },
     ),
   );

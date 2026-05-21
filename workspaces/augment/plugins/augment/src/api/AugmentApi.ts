@@ -115,6 +115,11 @@ export interface AugmentApi {
   ): Promise<void>;
 
   /**
+   * Delete a draft agent's configuration entry.
+   */
+  deleteAgentConfig(agentId: string): Promise<void>;
+
+  /**
    * List tools with lifecycle overlay in a provider-agnostic format.
    */
   listToolsWithLifecycle(options?: { published?: boolean }): Promise<
@@ -804,6 +809,12 @@ export class AugmentApiClient implements AugmentApi {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
+    });
+  }
+
+  async deleteAgentConfig(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}`, {
+      method: 'DELETE',
     });
   }
 
