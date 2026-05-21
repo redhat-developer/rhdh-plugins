@@ -52,7 +52,14 @@ class InitPhaseAction implements PhaseAction {
 
     let metadataModules: MetadataModule[];
     try {
-      metadataModules = JSON.parse(metadataArtifact.value);
+      const parsed = JSON.parse(metadataArtifact.value);
+      if (!Array.isArray(parsed)) {
+        context.logger.warn(
+          `project_metadata artifact is not an array, skipping module sync`,
+        );
+        return;
+      }
+      metadataModules = parsed;
     } catch (error) {
       context.logger.warn(
         `Failed to parse project_metadata artifact, skipping module sync: ${error instanceof Error ? error.message : String(error)}`,
@@ -77,16 +84,14 @@ class InitPhaseAction implements PhaseAction {
     return normalized;
   }
 
-  private async syncModules(
-    context: PhaseActionContext,
+  private classifyModuleChanges(
+    logger: LoggerService,
+    existingModules: Awaited<
+      ReturnType<PhaseActionContext['x2aDatabase']['listModules']>
+    >,
     metadataModules: MetadataModule[],
-  ): Promise<void> {
-    const { projectId, x2aDatabase, logger } = context;
-
-    const existingModules = await x2aDatabase.listModules({
-      projectId,
-      includeRemoved: true,
-    });
+    projectId: string,
+  ) {
     const existingByName = new Map(
       existingModules.map(m => [m.name.trim(), m]),
     );
@@ -137,6 +142,32 @@ class InitPhaseAction implements PhaseAction {
       }
     }
 
+    return { toRemove, toAdd, toRestore, toUpdate };
+  }
+
+  private async syncModules(
+    context: PhaseActionContext,
+    metadataModules: MetadataModule[],
+  ): Promise<void> {
+    const { projectId, x2aDatabase, logger } = context;
+
+    const existingModules = await x2aDatabase.listModules({
+      projectId,
+      includeRemoved: true,
+    });
+
+    logger.debug(
+      `syncModules for project ${projectId}: existingNames=[${existingModules.map(m => m.name).join(', ')}], metadataNames=[${metadataModules.map(m => m.name).join(', ')}]`,
+    );
+
+    const { toRemove, toAdd, toRestore, toUpdate } = this.classifyModuleChanges(
+      logger,
+      existingModules,
+      metadataModules,
+      projectId,
+    );
+
+    // Persist the changes
     await Promise.all([
       ...toRemove.map(m => {
         logger.info(
