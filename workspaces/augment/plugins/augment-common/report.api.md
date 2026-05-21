@@ -38,6 +38,9 @@ export type AdminConfigKey =
   | 'inputShields'
   | 'outputShields'
   | 'safetyOnError'
+
+Error: API Extractor completed with 0 errors and 1 warnings
+
   | 'evaluationEnabled'
   | 'scoringFunctions'
   | 'minScoreThreshold'
@@ -2541,3 +2544,5 @@ export interface WorkflowVersion {
   version: number;
 }
 
+// (No @packageDocumentation comment for this package)
+```
