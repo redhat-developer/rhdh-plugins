@@ -56,25 +56,30 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    Promise.all([
-      api.listAgents().catch(() => []),
-      api
-        .listKagentiTools(namespace)
-        .then(r => r.tools ?? [])
-        .catch(() => []),
-    ])
-      .then(([a, t]) => {
-        if (!cancelled) {
-          setAgents(a as ChatAgent[]);
-          setTools(t);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const load = () => {
+      setLoading(true);
+      Promise.all([
+        api.listAgents().catch(() => []),
+        api
+          .listKagentiTools(namespace)
+          .then(r => r.tools ?? [])
+          .catch(() => []),
+      ])
+        .then(([a, t]) => {
+          if (!cancelled) {
+            setAgents(a as ChatAgent[]);
+            setTools(t);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    };
+    load();
+    const interval = setInterval(load, 30_000);
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, [api, namespace]);
 

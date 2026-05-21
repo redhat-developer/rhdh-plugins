@@ -59,6 +59,8 @@ export function ReviewQueue() {
 
   useEffect(() => {
     loadAgents();
+    const interval = setInterval(loadAgents, 30_000);
+    return () => clearInterval(interval);
   }, [loadAgents]);
 
   const handleApprove = useCallback(
