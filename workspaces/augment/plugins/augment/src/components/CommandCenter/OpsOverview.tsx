@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -53,30 +53,34 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
   const [agents, setAgents] = useState<ChatAgent[]>([]);
   const [tools, setTools] = useState<KagentiToolSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const initialLoadDone = useRef(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
+  const loadData = useCallback(() => {
+    if (!initialLoadDone.current) {
+      setLoading(true);
+    }
     Promise.all([
-      api.listAgents().catch(() => []),
+      api.listAgents().catch(() => [] as ChatAgent[]),
       api
         .listKagentiTools(namespace)
         .then(r => r.tools ?? [])
-        .catch(() => []),
+        .catch(() => [] as KagentiToolSummary[]),
     ])
       .then(([a, t]) => {
-        if (!cancelled) {
-          setAgents(a as ChatAgent[]);
-          setTools(t);
-        }
+        setAgents(a);
+        setTools(t);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        initialLoadDone.current = true;
+        setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
   }, [api, namespace]);
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30_000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   const stats = useMemo(() => {
     const total = agents.length;

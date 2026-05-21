@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -54,19 +54,28 @@ export function ReviewQueue() {
   const [rejectAgentId, setRejectAgentId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
+  const initialLoadDone = useRef(false);
+
   const loadAgents = useCallback(() => {
-    setLoading(true);
+    if (!initialLoadDone.current) {
+      setLoading(true);
+    }
     api
       .listAgents()
       .then(result =>
         setAgents(result.filter(a => a.lifecycleStage === 'review')),
       )
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        initialLoadDone.current = true;
+        setLoading(false);
+      });
   }, [api]);
 
   useEffect(() => {
     loadAgents();
+    const interval = setInterval(loadAgents, 30_000);
+    return () => clearInterval(interval);
   }, [loadAgents]);
 
   const handleApprove = useCallback(
