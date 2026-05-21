@@ -431,7 +431,7 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/publish -- shortcut: promote to production
+  // PUT /agents/:agentId/publish -- promote to production (validates transition)
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/publish',
@@ -444,10 +444,18 @@ export function registerAgentRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
-        const now = new Date().toISOString();
+        const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
+        const targetStage: AgentLifecycleStage = 'production';
 
+        if (!isValidTransition(currentStage, targetStage)) {
+          throw new InputError(
+            `Cannot publish from "${currentStage}". Agent must be in "staging" stage first.`,
+          );
+        }
+
+        const now = new Date().toISOString();
         if (existing) {
-          existing.lifecycleStage = 'production';
+          existing.lifecycleStage = targetStage;
           existing.published = true;
           existing.visible = true;
           existing.version = (existing.version ?? 0) + 1;
@@ -456,7 +464,7 @@ export function registerAgentRoutes(
         } else {
           configs.push({
             agentId,
-            lifecycleStage: 'production',
+            lifecycleStage: targetStage,
             published: true,
             visible: true,
             featured: false,
@@ -473,7 +481,7 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'production', direction: 'publish' },
+          meta: { from: currentStage, to: 'production', direction: 'publish' },
         });
         logger.info(`Agent "${agentId}" published by ${userRef}`);
         res.json({ success: true, agentId, published: true });
@@ -482,7 +490,7 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/unpublish -- unpublish: move from production to staging
+  // PUT /agents/:agentId/unpublish -- move from production to staging (validates transition)
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/:agentId/unpublish',
@@ -495,10 +503,18 @@ export function registerAgentRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
-        const now = new Date().toISOString();
+        const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
+        const targetStage: AgentLifecycleStage = 'staging';
 
+        if (!isValidTransition(currentStage, targetStage)) {
+          throw new InputError(
+            `Cannot unpublish from "${currentStage}". Agent must be in "production" stage.`,
+          );
+        }
+
+        const now = new Date().toISOString();
         if (existing) {
-          existing.lifecycleStage = 'staging';
+          existing.lifecycleStage = targetStage;
           existing.published = false;
           existing.visible = false;
           existing.promotedAt = now;
@@ -506,7 +522,7 @@ export function registerAgentRoutes(
         } else {
           configs.push({
             agentId,
-            lifecycleStage: 'staging',
+            lifecycleStage: targetStage,
             published: false,
             visible: false,
             featured: false,
@@ -522,7 +538,11 @@ export function registerAgentRoutes(
           target: agentId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'staging', direction: 'unpublish' },
+          meta: {
+            from: currentStage,
+            to: 'staging',
+            direction: 'unpublish',
+          },
         });
         logger.info(`Agent "${agentId}" unpublished by ${userRef}`);
         res.json({ success: true, agentId, published: false });
@@ -531,7 +551,7 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/bulk-publish -- bulk publish/unpublish
+  // PUT /agents/bulk-publish -- bulk publish/unpublish (validates transitions)
   // ---------------------------------------------------------------------------
   router.put(
     '/agents/bulk-publish',
@@ -559,8 +579,20 @@ export function registerAgentRoutes(
           ? 'production'
           : 'staging';
 
+        const skipped: string[] = [];
+        let updated = 0;
+
         for (const agentId of agentIds) {
           const existing = configMap.get(agentId);
+          const currentStage = normalizeLifecycleStage(
+            existing?.lifecycleStage,
+          );
+
+          if (!isValidTransition(currentStage, targetStage)) {
+            skipped.push(agentId);
+            continue;
+          }
+
           if (existing) {
             existing.lifecycleStage = targetStage;
             existing.published = published;
@@ -587,13 +619,19 @@ export function registerAgentRoutes(
             configs.push(newCfg);
             configMap.set(agentId, newCfg);
           }
+          updated++;
         }
 
         await saveChatAgentConfigs(configs, userRef);
         logger.info(
-          `Bulk ${published ? 'publish' : 'unpublish'} of ${agentIds.length} agents by ${userRef}`,
+          `Bulk ${published ? 'publish' : 'unpublish'}: ${updated} updated, ${skipped.length} skipped by ${userRef}`,
         );
-        res.json({ success: true, count: agentIds.length, published });
+        res.json({
+          success: true,
+          count: updated,
+          skipped,
+          published,
+        });
       },
     ),
   );
