@@ -16,7 +16,7 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { ConversationCapability } from '../types';
-import type { ProcessedMessage } from '../responses-api/conversations/conversationTypes';
+import type { ProcessedMessage } from '../types';
 import type { KagentiApiClient } from './client/KagentiApiClient';
 
 /**

@@ -56,16 +56,16 @@ augment:
       - 'user:default/admin'
       - 'user:default/guest'
   llamaStack:
-    baseUrl: ${AUGMENT_LLAMA_STACK_URL:-https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com}
+    baseUrl: ${AUGMENT_LLAMA_STACK_URL:-http://localhost:8321}
     model: ${AUGMENT_MODEL:-gemini/models/gemini-2.5-flash}
-    skipTlsVerify: ${AUGMENT_SKIP_TLS:-true}
+    skipTlsVerify: ${AUGMENT_SKIP_TLS:-false}
   kagenti:
-    baseUrl: ${KAGENTI_BASE_URL:-https://kagenti-api-kagenti-system.apps.ocp.v7hjl.sandbox2288.opentlc.com}
+    baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
     namespace: ${KAGENTI_NAMESPACE:-team1}
     auth:
-      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-https://keycloak-keycloak.apps.ocp.v7hjl.sandbox2288.opentlc.com/realms/kagenti/protocol/openid-connect/token}
+      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-http://localhost:8180/realms/kagenti/protocol/openid-connect/token}
       clientId: ${KAGENTI_CLIENT_ID:-kagenti-api}
       clientSecret: ${KAGENTI_CLIENT_SECRET}
     showAllNamespaces: true
-    skipTlsVerify: true
+    skipTlsVerify: false
     verboseStreamLogging: true

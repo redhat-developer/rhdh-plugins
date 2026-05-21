@@ -20,8 +20,8 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { SyncResult } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { RAGCapability } from '../types';
-import { ResponsesApiClient } from '../responses-api/client/ResponsesApiClient';
-import { VectorStoreService } from '../responses-api/documents/VectorStoreService';
+import { ResponsesApiClient } from '../../services/ResponsesApiClient';
+import { VectorStoreService } from '../../services/VectorStoreService';
 import type { LlamaStackConfig } from '../../types';
 import {
   DEFAULT_EMBEDDING_MODEL,

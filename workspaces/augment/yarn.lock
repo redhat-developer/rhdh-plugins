@@ -11335,6 +11335,7 @@ __metadata:
     "@types/express-session": "npm:^1.18.2"
     "@types/multer": "npm:^2.0.0"
     "@types/supertest": "npm:^2.0.12"
+    expr-eval: "npm:^2.0.2"
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
     express-session: "npm:^1.18.2"
@@ -20634,6 +20635,13 @@ __metadata:
   version: 3.1.3
   resolution: "exponential-backoff@npm:3.1.3"
   checksum: 10c0/77e3ae682b7b1f4972f563c6dbcd2b0d54ac679e62d5d32f3e5085feba20483cf28bd505543f520e287a56d4d55a28d7874299941faf637e779a1aa5994d1267
+  languageName: node
+  linkType: hard
+
+"expr-eval@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "expr-eval@npm:2.0.2"
+  checksum: 10c0/642f112ff28ea34574c595c3ad73ccd8e638498879a4dd28620c4dabebab2e11987a851266ba81883dae85a5800e0c93b3d06f81718b71a215f831534646e4f2
   languageName: node
   linkType: hard
 

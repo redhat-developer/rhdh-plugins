@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { Response } from 'express';
 import type { NormalizedStreamEvent, AgenticProvider } from '../providers';
@@ -376,36 +379,44 @@ async function resolveConversationId(
  * fragile heuristics like slash-counting which break for model IDs
  * like "vllm-inference/gemma-4-31b-it".
  */
-let kagentiAgentIds: Set<string> | null = null;
-let kagentiCacheExpiry = 0;
+const KAGENTI_AGENTS_CACHE_KEY = 'kagenti:agent-ids';
 const KAGENTI_CACHE_TTL_MS = 30_000;
 
 async function refreshKagentiCache(
   primary: AgenticProvider,
+  cache?: CacheService,
 ): Promise<Set<string>> {
-  if (kagentiAgentIds && Date.now() < kagentiCacheExpiry) {
-    return kagentiAgentIds;
+  if (cache) {
+    const cached = await cache.get<string[]>(KAGENTI_AGENTS_CACHE_KEY);
+    if (cached) {
+      return new Set(cached);
+    }
   }
+  let agentIds: string[] = [];
   try {
     const agents = (await primary.listAgents?.()) ?? [];
-    kagentiAgentIds = new Set(agents.map(a => a.id));
-    kagentiCacheExpiry = Date.now() + KAGENTI_CACHE_TTL_MS;
+    agentIds = agents.map(a => a.id);
   } catch {
-    if (!kagentiAgentIds) kagentiAgentIds = new Set();
-    kagentiCacheExpiry = Date.now() + 5_000;
+    // On failure, return empty set; short TTL will force retry
   }
-  return kagentiAgentIds;
+  if (cache) {
+    await cache.set(KAGENTI_AGENTS_CACHE_KEY, agentIds, {
+      ttl: agentIds.length > 0 ? KAGENTI_CACHE_TTL_MS : 5_000,
+    });
+  }
+  return new Set(agentIds);
 }
 
 async function resolveProvider(
   primary: AgenticProvider,
   orchestration: AgenticProvider | undefined,
   model: string | undefined,
+  cache?: CacheService,
 ): Promise<AgenticProvider> {
   if (primary.id !== 'kagenti' || !orchestration || !model) {
     return primary;
   }
-  const knownAgents = await refreshKagentiCache(primary);
+  const knownAgents = await refreshKagentiCache(primary, cache);
   if (knownAgents.has(model)) {
     return primary;
   }
@@ -437,6 +448,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
           ctx.provider,
           ctx.orchestrationProvider,
           parsed.model,
+          ctx.cache,
         );
         const {
           messages,
@@ -462,13 +474,17 @@ export function registerChatRoutes(ctx: RouteContext): void {
         // Hydrate Kagenti context from DB for non-streaming path
         if (provider.id === 'kagenti' && sessionId && sessions) {
           const kagenti = provider as unknown as KagentiProvider;
-          const existingCtx = kagenti.getSessionContextId(sessionId);
+          const existingCtx = await kagenti.getSessionContextId(sessionId);
           if (!existingCtx) {
             const ctxFromDb =
               resolvedConversationId ||
               (await sessions.getSession(sessionId, userRef))?.conversationId;
             if (ctxFromDb) {
-              kagenti.hydrateSessionContext(sessionId, ctxFromDb, parsed.model);
+              await kagenti.hydrateSessionContext(
+                sessionId,
+                ctxFromDb,
+                parsed.model,
+              );
             }
           }
         }
@@ -538,7 +554,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
 
         // Persist Kagenti context ID for non-streaming path
         if (provider.id === 'kagenti' && sessionId && sessions) {
-          const ctxId = (
+          const ctxId = await (
             provider as unknown as KagentiProvider
           ).getSessionContextId(sessionId);
           if (ctxId) {
@@ -600,6 +616,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
       ctx.provider,
       ctx.orchestrationProvider,
       parsedRequest.model,
+      ctx.cache,
     );
     const {
       messages,
@@ -632,18 +649,17 @@ export function registerChatRoutes(ctx: RouteContext): void {
         ),
       ]);
 
-      // Hydrate Kagenti in-memory map from DB so conversation continues
-      // across server restarts. The DB may have a conversation_id from a
-      // previous stream even if the in-memory map was cleared.
+      // Hydrate Kagenti session cache from DB so conversation continues
+      // across server restarts.
       if (provider.id === 'kagenti' && sessionId && sessions) {
         const kagenti = provider as unknown as KagentiProvider;
-        const existingCtx = kagenti.getSessionContextId(sessionId);
+        const existingCtx = await kagenti.getSessionContextId(sessionId);
         if (!existingCtx) {
           const ctxFromDb =
             resolvedConversationId ||
             (await sessions.getSession(sessionId, userRef))?.conversationId;
           if (ctxFromDb) {
-            kagenti.hydrateSessionContext(
+            await kagenti.hydrateSessionContext(
               sessionId,
               ctxFromDb,
               parsedRequest.model,
@@ -775,7 +791,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
             titleAndTouch.push(sessions.touch(sessionId, userRef));
 
             if (provider.id === 'kagenti') {
-              const ctxId = (
+              const ctxId = await (
                 provider as unknown as KagentiProvider
               ).getSessionContextId(sessionId);
               if (ctxId) {

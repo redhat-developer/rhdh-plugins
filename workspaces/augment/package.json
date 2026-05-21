@@ -69,8 +69,5 @@
   "maintainers": [
     "@rrbanda"
   ],
-  "dependencies": {
-    "driver.js": "^1.4.0",
-    "motion": "^12.38.0"
-  }
+  "dependencies": {}
 }

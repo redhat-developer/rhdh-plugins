@@ -20,7 +20,7 @@ import type {
   WorkflowNode,
   WorkflowEdge,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import type { ResponsesApiClient } from '../../../responses-api/client/ResponsesApiClient';
+import type { ResponsesApiClient } from '../../../../services/ResponsesApiClient';
 import type {
   ExecutionTraceRecord,
   WorkflowExecutionResult,

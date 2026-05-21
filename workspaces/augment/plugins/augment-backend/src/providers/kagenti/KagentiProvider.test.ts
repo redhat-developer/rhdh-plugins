@@ -430,28 +430,26 @@ describe('KagentiProvider -- getEffectiveConfig', () => {
   });
 });
 
-describe('KagentiProvider -- LRU session map eviction', () => {
-  it('promotes accessed entries and evicts least-recently-used', async () => {
+describe('KagentiProvider -- session cache', () => {
+  it('stores and retrieves session context via CacheService', async () => {
     const p = createProvider();
     await p.initialize();
 
     // Hydrate three sessions
-    p.hydrateSessionContext('bs-1', 'ctx-1', 'ns/a1');
-    p.hydrateSessionContext('bs-2', 'ctx-2', 'ns/a2');
-    p.hydrateSessionContext('bs-3', 'ctx-3', 'ns/a3');
+    await p.hydrateSessionContext('bs-1', 'ctx-1', 'ns/a1');
+    await p.hydrateSessionContext('bs-2', 'ctx-2', 'ns/a2');
+    await p.hydrateSessionContext('bs-3', 'ctx-3', 'ns/a3');
 
-    // Access bs-1 to promote it
-    expect(p.getSessionContextId('bs-1')).toBe('ctx-1');
-
-    // All three should still be accessible
-    expect(p.getSessionContextId('bs-2')).toBe('ctx-2');
-    expect(p.getSessionContextId('bs-3')).toBe('ctx-3');
+    // All three should be accessible
+    expect(await p.getSessionContextId('bs-1')).toBe('ctx-1');
+    expect(await p.getSessionContextId('bs-2')).toBe('ctx-2');
+    expect(await p.getSessionContextId('bs-3')).toBe('ctx-3');
   });
 
   it('getSessionContextId returns undefined for unknown sessions', async () => {
     const p = createProvider();
     await p.initialize();
-    expect(p.getSessionContextId('nonexistent')).toBeUndefined();
+    expect(await p.getSessionContextId('nonexistent')).toBeUndefined();
   });
 });
 

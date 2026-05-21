@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 import type { AgentCardResponse } from './client/types';
 import type { KagentiApiClient } from './client/KagentiApiClient';
 import type { KagentiConfig } from './config/KagentiConfigLoader';
@@ -28,15 +31,13 @@ export interface AgentCardCacheEntry {
   fetchedAt: number;
 }
 
-const AGENT_CARD_CACHE_TTL_MS = 5 * 60 * 1000;
-const MAX_CACHE_ENTRIES = 500;
-
 export class KagentiAgentCardCache {
-  private readonly cache = new Map<string, AgentCardCacheEntry>();
   private readonly logger: LoggerService;
+  private readonly cacheService: CacheService;
 
-  constructor(logger: LoggerService) {
+  constructor(logger: LoggerService, cacheService: CacheService) {
     this.logger = logger;
+    this.cacheService = cacheService;
   }
 
   async getAgentCardCached(
@@ -46,11 +47,13 @@ export class KagentiAgentCardCache {
     name: string,
     options?: { retries?: number },
   ): Promise<AgentCardCacheEntry> {
-    const key = `${namespace}/${name}`;
-    const cached = this.cache.get(key);
+    const key = `agent-card:${namespace}/${name}`;
+    const cachedCard = (await this.cacheService.get(key)) as
+      | AgentCardResponse
+      | undefined;
 
-    if (cached && Date.now() - cached.fetchedAt < AGENT_CARD_CACHE_TTL_MS) {
-      return cached;
+    if (cachedCard) {
+      return this.buildEntry(cachedCard);
     }
 
     const card = await apiClient.getAgentCard(namespace, name, options);
@@ -58,12 +61,21 @@ export class KagentiAgentCardCache {
     if (config.validateResponses) {
       const result = agentCardSchema.safeParse(card);
       if (!result.success) {
-        const msg = `Agent card validation failed for ${key}: ${JSON.stringify(result.error.issues)}`;
+        const msg = `Agent card validation failed for ${namespace}/${name}: ${JSON.stringify(result.error.issues)}`;
         this.logger.warn(msg);
         throw new Error(msg);
       }
     }
 
+    await this.cacheService.set(key, JSON.parse(JSON.stringify(card)));
+    return this.buildEntry(card);
+  }
+
+  clear(): void {
+    // CacheService doesn't expose a bulk-clear; individual entries expire via TTL
+  }
+
+  private buildEntry(card: AgentCardResponse): AgentCardCacheEntry {
     let demands: AgentCardCacheEntry['demands'] = {
       llmDemands: null,
       embeddingDemands: null,
@@ -83,47 +95,11 @@ export class KagentiAgentCardCache {
         );
         demands = adkResult.demands;
         resolveMetadata = adkResult.resolveMetadata;
-        this.logger.debug(
-          `Agent card demands for ${key}: llm=${!!demands.llmDemands}, mcp=${!!demands.mcpDemands}, oauth=${!!demands.oauthDemands}, secrets=${!!demands.secretDemands}`,
-        );
       }
     } catch (err) {
-      this.logger.warn(`Failed to parse agent card demands for ${key}: ${err}`);
+      this.logger.warn(`Failed to parse agent card demands: ${err}`);
     }
 
-    const entry: AgentCardCacheEntry = {
-      card,
-      demands,
-      resolveMetadata,
-      fetchedAt: Date.now(),
-    };
-
-    if (this.cache.size >= MAX_CACHE_ENTRIES) {
-      this.evictOldest();
-    }
-    this.cache.set(key, entry);
-    return entry;
-  }
-
-  clear(): void {
-    this.cache.clear();
-  }
-
-  get size(): number {
-    return this.cache.size;
-  }
-
-  private evictOldest(): void {
-    let oldestKey: string | undefined;
-    let oldestTime = Infinity;
-    for (const [key, entry] of this.cache) {
-      if (entry.fetchedAt < oldestTime) {
-        oldestTime = entry.fetchedAt;
-        oldestKey = key;
-      }
-    }
-    if (oldestKey) {
-      this.cache.delete(oldestKey);
-    }
+    return { card, demands, resolveMetadata, fetchedAt: Date.now() };
   }
 }

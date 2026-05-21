@@ -1115,13 +1115,13 @@ export interface Config {
       auth: {
         /**
          * Keycloak token endpoint URL
-         * @visibility secret
+         * @visibility backend
          */
         tokenEndpoint: string;
 
         /**
          * OAuth2 client ID
-         * @visibility secret
+         * @visibility backend
          */
         clientId: string;
 

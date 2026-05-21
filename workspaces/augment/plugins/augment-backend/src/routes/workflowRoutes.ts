@@ -23,7 +23,7 @@ import { registerVersionRoutes } from './workflow/versions';
 import { registerTestSuiteRoutes } from './workflow/testSuites';
 import { registerExecutionRoutes } from './workflow/execution';
 import { registerEvaluationRoutes } from './evaluationRoutes';
-import { ResponsesApiClient } from '../providers/responses-api/client/ResponsesApiClient';
+import { ResponsesApiClient } from '../services/ResponsesApiClient';
 import { WorkflowExecutor } from '../providers/llamastack/workflow/WorkflowExecutor';
 import { resolveLlamaStackConfig } from './resolveWorkflowConfig';
 

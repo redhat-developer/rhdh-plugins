@@ -15,7 +15,7 @@
  */
 import type { ModelProvider, Model } from '@openai/agents-core';
 import type { ResponsesApiService } from '../../responses-api/chat/ResponsesApiService';
-import type { ResponsesApiClient } from '../../responses-api/client/ResponsesApiClient';
+import type { ResponsesApiClient } from '../../../services/ResponsesApiClient';
 import type { EffectiveConfig } from '../../../types';
 import { LlamaStackModel } from './LlamaStackModel';
 

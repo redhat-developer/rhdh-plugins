@@ -24,7 +24,7 @@ import {
 import { createWithRoute } from './routeWrapper';
 import type { AdminRouteDeps } from './adminRouteTypes';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import { DuplicateVectorStoreError } from '../providers/responses-api/documents/VectorStoreService';
+import { DuplicateVectorStoreError } from '../services/VectorStoreService';
 
 function readVectorStoreDefaults(
   ls: import('@backstage/config').Config | undefined,

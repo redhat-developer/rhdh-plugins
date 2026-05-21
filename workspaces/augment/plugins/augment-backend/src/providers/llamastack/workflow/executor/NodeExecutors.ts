@@ -19,9 +19,12 @@ import type {
   WorkflowNode,
   AgentNodeData,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import type { ResponsesApiClient } from '../../../responses-api/client/ResponsesApiClient';
+import type { ResponsesApiClient } from '../../../../services/ResponsesApiClient';
 import type { NodeExecutionResult, ResponsesApiResponse } from './types';
 import { extractTextFromResponse, buildInputForNode } from './ResponseParser';
+import { Parser } from 'expr-eval';
+
+const exprParser = new Parser();
 
 export async function executeAgentNode(
   node: WorkflowNode,
@@ -235,11 +238,8 @@ export function executeLogicNode(
 
   let result: boolean;
   try {
-    const keys = Object.keys(state);
-    const values = Object.values(state);
-    // eslint-disable-next-line no-new-func
-    const fn = new Function(...keys, `return Boolean(${condition})`);
-    result = fn(...values);
+    const parsed = exprParser.parse(condition);
+    result = Boolean(parsed.evaluate(state as Record<string, number | string>));
   } catch {
     result = false;
   }
@@ -272,11 +272,8 @@ export function executeTransformNode(
 
   let result: unknown;
   try {
-    const keys = Object.keys(state);
-    const values = Object.values(state);
-    // eslint-disable-next-line no-new-func
-    const fn = new Function(...keys, `return (${expression})`);
-    result = fn(...values);
+    const parsed = exprParser.parse(expression);
+    result = parsed.evaluate(state as Record<string, number | string>);
   } catch {
     result = expression;
   }
@@ -310,11 +307,8 @@ export function executeSetStateNode(
 
   for (const [key, expr] of Object.entries(assignments)) {
     try {
-      const keys = Object.keys(state);
-      const values = Object.values(state);
-      // eslint-disable-next-line no-new-func
-      const fn = new Function(...keys, `return (${expr})`);
-      state[key] = fn(...values);
+      const parsed = exprParser.parse(expr);
+      state[key] = parsed.evaluate(state as Record<string, number | string>);
     } catch {
       state[key] = expr;
     }

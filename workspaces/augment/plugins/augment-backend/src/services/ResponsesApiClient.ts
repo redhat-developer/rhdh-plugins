@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * Augment Frontend Plugin
- *
- * @packageDocumentation
- */
-
-export { augmentPlugin, AugmentPage, AugmentIcon } from './plugin';
-export { augmentApiRef } from './api';
-export type { AugmentApi } from './api';
-export * from './types';
 export {
-  augmentTranslationRef,
-  augmentTranslationsResource,
-} from './translations';
-
-// Re-export permission for consumers
-export { augmentAccessPermission } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+  ResponsesApiClient,
+  ResponsesApiError,
+  LlamaStackApiError,
+  type ResponsesApiRequestOptions,
+} from '../providers/responses-api/client/ResponsesApiClient';

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type express from 'express';
 import type { AgenticProvider } from '../providers';
@@ -97,4 +100,7 @@ export interface RouteContext {
     toolArguments?: string;
     reason?: string;
   };
+
+  /** Backstage CacheService for shared caching across routes. */
+  cache?: CacheService;
 }

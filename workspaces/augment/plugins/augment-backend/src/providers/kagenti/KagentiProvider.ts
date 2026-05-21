@@ -17,6 +17,7 @@
 import type {
   LoggerService,
   RootConfigService,
+  CacheService,
 } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import pLimit from 'p-limit';
@@ -49,14 +50,48 @@ import type { AgentCardCacheEntry } from './KagentiAgentCardCache';
 import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
 import type { ApprovalRequest, ApprovalResult } from './kagentiApprovalHandler';
 import { buildKagentiConversationCapability } from './kagentiConversationCapability';
-import { buildMetaPrompt } from '../responses-api/chat/promptGeneration';
+import { buildMetaPrompt } from '../../services/promptGeneration';
 import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { getVisibleNamespaces } from './kagentiNamespaceUtils';
+
+/**
+ * No-op CacheService fallback when no real cache is injected.
+ * Falls back to in-memory Map for backward compatibility during tests.
+ */
+function createNoopCache(): CacheService {
+  const store = new Map<string, { value: unknown; expiresAt: number }>();
+  return {
+    async get<T>(key: string): Promise<T | undefined> {
+      const entry = store.get(key);
+      if (!entry) return undefined;
+      if (Date.now() > entry.expiresAt) {
+        store.delete(key);
+        return undefined;
+      }
+      return entry.value as T;
+    },
+    async set(
+      key: string,
+      value: unknown,
+      options?: { ttl?: number },
+    ): Promise<void> {
+      const ttl = options?.ttl ?? 24 * 60 * 60 * 1000;
+      store.set(key, { value, expiresAt: Date.now() + ttl });
+    },
+    async delete(key: string): Promise<void> {
+      store.delete(key);
+    },
+    withOptions(_options: { defaultTtl?: number }): CacheService {
+      return createNoopCache();
+    },
+  };
+}
 
 export interface KagentiProviderOptions {
   logger: LoggerService;
   config: RootConfigService;
   adminConfig?: import('../../services/AdminConfigService').AdminConfigService;
+  cache?: CacheService;
 }
 
 export class KagentiProvider implements AgenticProvider {
@@ -78,56 +113,12 @@ export class KagentiProvider implements AgenticProvider {
     triggers: false,
   };
 
-  private static readonly MAX_SESSION_ENTRIES = 10_000;
   private static readonly MODELS_CACHE_TTL_MS = 60_000;
-  private _modelsCache: {
-    data: Array<{ id: string; owned_by?: string; model_type?: string }>;
-    expiresAt: number;
-  } | null = null;
+  private static readonly SESSION_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
   private readonly cardCache: KagentiAgentCardCache;
-  private readonly sessionAgentMap = new Map<string, string>();
-  private readonly kagentiSessionMap = new Map<string, string>();
-
-  /**
-   * Set a value in a bounded Map with LRU eviction.
-   * Re-inserting on set moves the key to the end of iteration order.
-   */
-  private boundedMapSet(
-    map: Map<string, string>,
-    key: string,
-    value: string,
-  ): void {
-    if (map.has(key)) {
-      map.delete(key);
-    } else if (map.size >= KagentiProvider.MAX_SESSION_ENTRIES) {
-      const evictCount = Math.ceil(KagentiProvider.MAX_SESSION_ENTRIES * 0.1);
-      const iter = map.keys();
-      for (let i = 0; i < evictCount; i++) {
-        const next = iter.next();
-        if (next.done) break;
-        map.delete(next.value);
-      }
-      this.logger.warn(
-        `Session map hit ${KagentiProvider.MAX_SESSION_ENTRIES} cap, evicted ${evictCount} least-recently-used entries`,
-      );
-    }
-    map.set(key, value);
-  }
-
-  /**
-   * Get a value from a bounded Map, promoting the key to most-recently-used.
-   */
-  private boundedMapGet(
-    map: Map<string, string>,
-    key: string,
-  ): string | undefined {
-    const value = map.get(key);
-    if (value !== undefined) {
-      map.delete(key);
-      map.set(key, value);
-    }
-    return value;
-  }
+  private readonly sessionAgentCache: CacheService;
+  private readonly kagentiSessionCache: CacheService;
+  private readonly modelsCache: CacheService;
 
   readonly conversations: ConversationCapability;
   readonly rag = undefined;
@@ -138,7 +129,28 @@ export class KagentiProvider implements AgenticProvider {
     this.logger = options.logger.child({ label: 'kagenti-provider' });
     this.rootConfig = options.config;
     this.adminConfig = options.adminConfig;
-    this.cardCache = new KagentiAgentCardCache(this.logger);
+
+    const baseCache = options.cache;
+    this.sessionAgentCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+    this.kagentiSessionCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+    this.modelsCache = baseCache
+      ? baseCache.withOptions({
+          defaultTtl: KagentiProvider.MODELS_CACHE_TTL_MS,
+        })
+      : createNoopCache();
+
+    const cardCacheService = baseCache
+      ? baseCache.withOptions({ defaultTtl: 5 * 60 * 1000 })
+      : createNoopCache();
+    this.cardCache = new KagentiAgentCardCache(this.logger, cardCacheService);
     this.conversations = buildKagentiConversationCapability(
       () => this.requireInitialized().apiClient,
       this.logger,
@@ -455,7 +467,7 @@ export class KagentiProvider implements AgenticProvider {
 
     const backstageSessionId = request.sessionId;
     const storedSessionId = backstageSessionId
-      ? this.boundedMapGet(this.kagentiSessionMap, backstageSessionId)
+      ? await this.kagentiSessionCache.get<string>(backstageSessionId)
       : undefined;
 
     const a2aMetadata = await this.buildA2AMetadata(namespace, name);
@@ -473,13 +485,11 @@ export class KagentiProvider implements AgenticProvider {
     );
 
     if (backstageSessionId && response.session_id) {
-      this.boundedMapSet(
-        this.kagentiSessionMap,
+      await this.kagentiSessionCache.set(
         backstageSessionId,
         response.session_id,
       );
-      this.boundedMapSet(
-        this.sessionAgentMap,
+      await this.sessionAgentCache.set(
         response.session_id,
         `${namespace}/${name}`,
       );
@@ -509,7 +519,7 @@ export class KagentiProvider implements AgenticProvider {
     const agentId = `${namespace}/${name}`;
 
     const storedContextId = backstageSessionId
-      ? this.boundedMapGet(this.kagentiSessionMap, backstageSessionId)
+      ? await this.kagentiSessionCache.get<string>(backstageSessionId)
       : undefined;
 
     const a2aMetadata = await this.buildA2AMetadata(namespace, name);
@@ -538,9 +548,6 @@ export class KagentiProvider implements AgenticProvider {
               this.logger.debug(`KagentiSSE normalized: ${event.type}`);
             }
 
-            // When the agent rejects streaming (-32603), suppress the
-            // error/started/completed events -- the fallback path will
-            // emit clean events with the actual response content.
             if (normalizer.hasJsonRpcStreamingError) {
               continue;
             }
@@ -548,12 +555,8 @@ export class KagentiProvider implements AgenticProvider {
             if (event.type === 'stream.started' && backstageSessionId) {
               const ctxId = (event as { responseId?: string }).responseId;
               if (ctxId) {
-                this.boundedMapSet(
-                  this.kagentiSessionMap,
-                  backstageSessionId,
-                  ctxId,
-                );
-                this.boundedMapSet(this.sessionAgentMap, ctxId, agentId);
+                void this.kagentiSessionCache.set(backstageSessionId, ctxId);
+                void this.sessionAgentCache.set(ctxId, agentId);
               }
             }
             if (
@@ -632,8 +635,13 @@ export class KagentiProvider implements AgenticProvider {
   async listModels(): Promise<
     Array<{ id: string; owned_by?: string; model_type?: string }>
   > {
-    if (this._modelsCache && Date.now() < this._modelsCache.expiresAt) {
-      return this._modelsCache.data;
+    const MODELS_CACHE_KEY = 'kagenti:models';
+    const cached =
+      await this.modelsCache.get<
+        Array<{ id: string; owned_by?: string; model_type?: string }>
+      >(MODELS_CACHE_KEY);
+    if (cached) {
+      return cached;
     }
 
     const llamaStackUrl = this.rootConfig.getOptionalString(
@@ -683,10 +691,7 @@ export class KagentiProvider implements AgenticProvider {
           };
         });
 
-      this._modelsCache = {
-        data: models,
-        expiresAt: Date.now() + KagentiProvider.MODELS_CACHE_TTL_MS,
-      };
+      await this.modelsCache.set(MODELS_CACHE_KEY, models);
       return models;
     } catch (err) {
       this.logger.warn(
@@ -917,8 +922,6 @@ export class KagentiProvider implements AgenticProvider {
     this.tokenManager?.clearCache();
     this.apiClient?.destroy();
     this.cardCache.clear();
-    this.kagentiSessionMap.clear();
-    this.sessionAgentMap.clear();
     this.logger.info('Kagenti provider shut down');
   }
 
@@ -976,23 +979,25 @@ export class KagentiProvider implements AgenticProvider {
   }
 
   /**
-   * Pre-populate the in-memory session map so chatStream can resume a
+   * Pre-populate the session cache so chatStream can resume a
    * Kagenti conversation that was persisted in the DB across restarts.
    */
-  hydrateSessionContext(
+  async hydrateSessionContext(
     backstageSessionId: string,
     contextId: string,
     agentId?: string,
-  ): void {
-    this.boundedMapSet(this.kagentiSessionMap, backstageSessionId, contextId);
+  ): Promise<void> {
+    await this.kagentiSessionCache.set(backstageSessionId, contextId);
     if (agentId) {
-      this.boundedMapSet(this.sessionAgentMap, contextId, agentId);
+      await this.sessionAgentCache.set(contextId, agentId);
     }
   }
 
   /** Return the Kagenti context ID associated with a Backstage session. */
-  getSessionContextId(backstageSessionId: string): string | undefined {
-    return this.boundedMapGet(this.kagentiSessionMap, backstageSessionId);
+  async getSessionContextId(
+    backstageSessionId: string,
+  ): Promise<string | undefined> {
+    return this.kagentiSessionCache.get<string>(backstageSessionId);
   }
 
   /**
@@ -1008,7 +1013,7 @@ export class KagentiProvider implements AgenticProvider {
     const { config, apiClient } = this.requireInitialized();
     const contextId = approval.responseId;
 
-    const agentId = this.boundedMapGet(this.sessionAgentMap, contextId);
+    const agentId = await this.sessionAgentCache.get<string>(contextId);
     const { namespace, name } = agentId
       ? this.parseAgentId(agentId)
       : this.resolveAgent({ messages: [] });

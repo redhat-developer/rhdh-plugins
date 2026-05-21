@@ -28,6 +28,7 @@ import type {
   LoggerService,
   RootConfigService,
   DatabaseService,
+  CacheService,
 } from '@backstage/backend-plugin-api';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { AdminConfigService } from '../services/AdminConfigService';
@@ -47,6 +48,7 @@ export interface CreateProviderOptions {
   config: RootConfigService;
   database?: DatabaseService;
   adminConfig?: AdminConfigService;
+  cache?: CacheService;
 }
 
 /**
@@ -88,7 +90,7 @@ export function createProvider(
   options: CreateProviderOptions,
   overrideType?: ProviderType,
 ): AgenticProvider {
-  const { logger, config, database, adminConfig } = options;
+  const { logger, config, database, adminConfig, cache } = options;
 
   const providerType: ProviderType =
     overrideType ??
@@ -110,6 +112,7 @@ export function createProvider(
         logger,
         config,
         adminConfig,
+        cache,
       });
 
     case 'googleadk':

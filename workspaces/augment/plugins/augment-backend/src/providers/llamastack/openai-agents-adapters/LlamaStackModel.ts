@@ -17,7 +17,7 @@ import { Usage } from '@openai/agents-core';
 import type { Model, ModelRequest, ModelResponse } from '@openai/agents-core';
 import type { StreamEvent } from '@openai/agents-core/types';
 import type { ResponsesApiService } from '../../responses-api/chat/ResponsesApiService';
-import type { ResponsesApiClient } from '../../responses-api/client/ResponsesApiClient';
+import type { ResponsesApiClient } from '../../../services/ResponsesApiClient';
 import type {
   EffectiveConfig,
   ResponsesApiInputItem,

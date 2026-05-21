@@ -18,6 +18,7 @@ import {
   HttpAuthService,
   PermissionsService,
   DatabaseService,
+  CacheService,
 } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -63,6 +64,7 @@ export interface RouterOptions {
   providerManager: ProviderManager;
   sessions?: ChatSessionService;
   adminConfig: AdminConfigService;
+  cache?: CacheService;
 }
 
 /**
@@ -100,6 +102,7 @@ export async function createRouter({
   providerManager,
   sessions,
   adminConfig,
+  cache,
 }: RouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json({ limit: '1mb' }));
@@ -288,6 +291,7 @@ export async function createRouter({
     requireAdminAccess,
     parseChatRequest,
     parseApprovalRequest,
+    cache,
   };
 
   const onConfigChanged = () => {

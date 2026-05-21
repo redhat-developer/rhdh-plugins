@@ -27,7 +27,7 @@ import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { WorkflowConfigService } from '../services/WorkflowConfigService';
 import type { AdminConfigService } from '../services/AdminConfigService';
-import { ResponsesApiClient } from '../providers/responses-api/client/ResponsesApiClient';
+import { ResponsesApiClient } from '../services/ResponsesApiClient';
 import { resolveLlamaStackConfig } from './resolveWorkflowConfig';
 
 export interface EvaluationDeps {

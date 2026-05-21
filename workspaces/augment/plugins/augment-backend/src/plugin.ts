@@ -96,6 +96,7 @@ export const augmentPlugin = createBackendPlugin({
         permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
         database: coreServices.database,
+        cache: coreServices.cache,
       },
       async init({
         logger,
@@ -106,6 +107,7 @@ export const augmentPlugin = createBackendPlugin({
         permissions,
         permissionsRegistry,
         database,
+        cache,
       }) {
         logger.info('Initializing Augment backend plugin');
 
@@ -135,7 +137,13 @@ export const augmentPlugin = createBackendPlugin({
         await adminConfig.initialize();
 
         // Create the provider factory options (shared across hot-swaps)
-        const providerOptions = { logger, config, database, adminConfig };
+        const providerOptions = {
+          logger,
+          config,
+          database,
+          adminConfig,
+          cache,
+        };
 
         // Factory function for creating providers by type
         const providerFactory = (type: ProviderType) =>
@@ -250,6 +258,7 @@ export const augmentPlugin = createBackendPlugin({
             providerManager,
             sessions,
             adminConfig,
+            cache,
           }),
         );
 
