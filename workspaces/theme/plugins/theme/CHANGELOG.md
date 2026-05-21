@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.6
+
+### Patch Changes
+
+- bb01e90: Removed the box shadow from the AppBar component
+
 ## 0.14.5
 
 ### Patch Changes
