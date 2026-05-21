@@ -39,6 +39,7 @@ import LibraryBooks from '@mui/icons-material/LibraryBooks';
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
+import Box from '@mui/material/Box';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { Administration } from '@backstage-community/plugin-rbac';
@@ -49,14 +50,14 @@ const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         width: sidebarConfig.drawerWidthClosed,
         height: 3 * sidebarConfig.logoHeight,
         display: 'flex',
         flexFlow: 'row nowrap',
         alignItems: 'center',
-        marginBottom: -14,
+        mb: '-14px',
       }}
     >
       <Link
@@ -70,7 +71,7 @@ const SidebarLogo = () => {
       >
         {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
-    </div>
+    </Box>
   );
 };
 

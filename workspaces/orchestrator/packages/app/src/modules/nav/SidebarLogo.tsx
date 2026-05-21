@@ -18,6 +18,8 @@ import {
   sidebarConfig,
   useSidebarOpenState,
 } from '@backstage/core-components';
+import Box from '@mui/material/Box';
+
 import { LogoFull } from './LogoFull';
 import { LogoIcon } from './LogoIcon';
 
@@ -25,14 +27,14 @@ export const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         width: sidebarConfig.drawerWidthClosed,
         height: 3 * sidebarConfig.logoHeight,
         display: 'flex',
         flexFlow: 'row nowrap',
         alignItems: 'center',
-        marginBottom: -14,
+        mb: '-14px',
       }}
     >
       <Link
@@ -46,6 +48,6 @@ export const SidebarLogo = () => {
       >
         {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
-    </div>
+    </Box>
   );
 };

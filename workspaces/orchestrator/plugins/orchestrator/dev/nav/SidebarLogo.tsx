@@ -16,18 +16,19 @@
 
 import { Link, sidebarConfig } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 export const SidebarLogo = () => {
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         width: sidebarConfig.drawerWidthClosed,
         height: 3 * sidebarConfig.logoHeight,
         display: 'flex',
         flexFlow: 'row nowrap',
         alignItems: 'center',
-        marginBottom: -14,
+        mb: '-14px',
       }}
     >
       <Link
@@ -43,6 +44,6 @@ export const SidebarLogo = () => {
           Backstage
         </Typography>
       </Link>
-    </div>
+    </Box>
   );
 };
