@@ -20,6 +20,11 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
@@ -45,6 +50,9 @@ export function ReviewQueue() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectAgentId, setRejectAgentId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const loadAgents = useCallback(() => {
     setLoading(true);
@@ -94,21 +102,28 @@ export function ReviewQueue() {
     [api, loadAgents],
   );
 
-  const handleReject = useCallback(
-    async (agentId: string) => {
-      setActing(agentId);
-      try {
-        await api.demoteAgent(agentId, 'draft');
-        setToast(`Rejected: ${agentId} returned to draft`);
-        loadAgents();
-      } catch (err) {
-        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
-      } finally {
-        setActing(null);
-      }
-    },
-    [api, loadAgents],
-  );
+  const handleOpenRejectDialog = useCallback((agentId: string) => {
+    setRejectAgentId(agentId);
+    setRejectReason('');
+    setRejectDialogOpen(true);
+  }, []);
+
+  const handleConfirmReject = useCallback(async () => {
+    if (!rejectAgentId) return;
+    setRejectDialogOpen(false);
+    setActing(rejectAgentId);
+    try {
+      await api.demoteAgent(rejectAgentId, 'draft', rejectReason || undefined);
+      setToast(`Rejected: ${rejectAgentId} returned to draft`);
+      loadAgents();
+    } catch (err) {
+      setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+    } finally {
+      setActing(null);
+      setRejectAgentId(null);
+      setRejectReason('');
+    }
+  }, [api, rejectAgentId, rejectReason, loadAgents]);
 
   return (
     <Box
@@ -241,7 +256,7 @@ export function ReviewQueue() {
                   variant="outlined"
                   color="error"
                   disabled={acting === agent.id}
-                  onClick={() => handleReject(agent.id)}
+                  onClick={() => handleOpenRejectDialog(agent.id)}
                   sx={{
                     textTransform: 'none',
                     fontWeight: 600,
@@ -258,6 +273,41 @@ export function ReviewQueue() {
           ))}
         </Box>
       )}
+
+      {/* Reject reason dialog */}
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={() => setRejectDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Reject Agent</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Provide a reason for rejecting this agent. The creator will see this
+            feedback when their agent is returned to draft.
+          </Typography>
+          <TextField
+            label="Rejection reason"
+            multiline
+            minRows={3}
+            fullWidth
+            value={rejectReason}
+            onChange={e => setRejectReason(e.target.value)}
+            placeholder="Describe what needs to be fixed or improved..."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmReject}
+          >
+            Reject
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!toast}
