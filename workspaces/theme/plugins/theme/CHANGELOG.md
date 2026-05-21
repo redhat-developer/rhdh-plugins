@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.7
+
+### Patch Changes
+
+- 4d80582: fix(RHDHBUGS-2291): use `&.Mui-selected` syntax for MuiBottomNavigationAction to resolve CSS specificity console warning
+
 ## 0.14.6
 
 ### Patch Changes
