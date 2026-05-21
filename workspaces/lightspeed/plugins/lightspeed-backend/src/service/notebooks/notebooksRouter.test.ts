@@ -334,6 +334,95 @@ describe('Notebooks Router', () => {
     });
   });
 
+  describe('Permission Denied (403)', () => {
+    let deniedApp: express.Application;
+
+    beforeEach(async () => {
+      const logger = mockServices.logger.mock();
+      const config = mockServices.rootConfig({
+        data: {
+          lightspeed: {
+            servicePort: 7007,
+            notebooks: {
+              enabled: true,
+              queryDefaults: {
+                model: 'test-model',
+                provider_id: 'test-provider',
+              },
+              sessionDefaults: {
+                provider_id: 'test-notebooks',
+                embedding_model: 'test-embedding-model',
+                embedding_dimension: 768,
+              },
+            },
+          },
+        },
+      });
+
+      const httpAuth = mockServices.httpAuth();
+      const userInfo = mockServices.userInfo.mock({
+        getUserInfo: async () => ({
+          userEntityRef: mockUserId,
+          ownershipEntityRefs: [mockUserId],
+        }),
+      });
+      const permissions = mockServices.permissions.mock({
+        authorize: async () => [{ result: AuthorizeResult.DENY }],
+      });
+
+      const router = await createNotebooksRouter({
+        logger,
+        config,
+        httpAuth,
+        userInfo,
+        permissions,
+      });
+
+      deniedApp = express();
+      deniedApp.use(router);
+    });
+
+    it('POST /v1/sessions returns 403', async () => {
+      const response = await request(deniedApp)
+        .post('/notebooks/v1/sessions')
+        .send({ name: 'Test Session' });
+
+      expect(response.status).toBe(403);
+    });
+
+    it('GET /v1/sessions returns 403', async () => {
+      const response = await request(deniedApp).get('/notebooks/v1/sessions');
+
+      expect(response.status).toBe(403);
+    });
+
+    it('GET /v1/sessions/:sessionId returns 403', async () => {
+      const response = await request(deniedApp).get(
+        '/notebooks/v1/sessions/some-session-id',
+      );
+
+      expect(response.status).toBe(403);
+    });
+
+    it('PUT /v1/sessions/:sessionId/documents returns 403', async () => {
+      const response = await request(deniedApp)
+        .put('/notebooks/v1/sessions/some-session-id/documents')
+        .field('title', 'Test')
+        .field('fileType', 'txt')
+        .attach('file', Buffer.from('Content'), 'test.txt');
+
+      expect(response.status).toBe(403);
+    });
+
+    it('POST /v1/sessions/:sessionId/query returns 403', async () => {
+      const response = await request(deniedApp)
+        .post('/notebooks/v1/sessions/some-session-id/query')
+        .send({ query: 'What is this about?' });
+
+      expect(response.status).toBe(403);
+    });
+  });
+
   describe('Query Endpoint', () => {
     let sessionId: string;
 

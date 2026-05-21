@@ -748,6 +748,86 @@ describe('lightspeed router tests', () => {
     });
   });
 
+  describe('GET /notebook-conversation-ids', () => {
+    it('returns conversation IDs for the authenticated user', async () => {
+      rcs.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
+          return HttpResponse.json({
+            data: [
+              {
+                id: 'vs-1',
+                name: 'session-1',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: 'conv-abc',
+                },
+              },
+              {
+                id: 'vs-2',
+                name: 'session-2',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: 'conv-def',
+                },
+              },
+              {
+                id: 'vs-3',
+                name: 'other-user-session',
+                metadata: {
+                  user_id: 'user:default/other',
+                  conversation_id: 'conv-other',
+                },
+              },
+              {
+                id: 'vs-4',
+                name: 'no-conv-id',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: null,
+                },
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/notebook-conversation-ids',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body.conversation_ids).toEqual(['conv-abc', 'conv-def']);
+    });
+
+    it('returns empty array when user has no notebook sessions', async () => {
+      rcs.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
+          return HttpResponse.json({
+            data: [
+              {
+                id: 'vs-1',
+                name: 'other-session',
+                metadata: {
+                  user_id: 'user:default/other',
+                  conversation_id: 'conv-other',
+                },
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/notebook-conversation-ids',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body.conversation_ids).toEqual([]);
+    });
+  });
+
   describe('proxy path allowlist', () => {
     it('should return 404 for non-allowlisted path /v1/admin', async () => {
       const backendServer = await startBackendServer();
