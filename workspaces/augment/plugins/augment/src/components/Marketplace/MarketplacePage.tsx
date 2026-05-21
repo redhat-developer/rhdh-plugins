@@ -125,7 +125,7 @@ export function MarketplacePage({
     agents.forEach(a => {
       if (a.framework) set.add(a.framework);
     });
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [agents]);
 
   const exploreAgents = useMemo(() => {

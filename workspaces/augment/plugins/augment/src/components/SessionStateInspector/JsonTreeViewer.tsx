@@ -182,9 +182,6 @@ const JsonNode: FC<{ data: unknown; depth: number }> = memo(function JsonNode({
   }
 
   const rows: ReactNode[] = entries.map(([key, val]) => {
-    const isPrimitive =
-      val === null || val === undefined || typeof val !== 'object';
-
     return (
       <Box key={key} sx={{ pl: `${INDENT}px` }}>
         {!isArray && (
@@ -204,11 +201,7 @@ const JsonNode: FC<{ data: unknown; depth: number }> = memo(function JsonNode({
             :
           </Box>
         )}
-        {isPrimitive ? (
-          <JsonValue value={val} depth={depth + 1} />
-        ) : (
-          <JsonValue value={val} depth={depth + 1} />
-        )}
+        <JsonValue value={val} depth={depth + 1} />
       </Box>
     );
   });

@@ -927,7 +927,7 @@ export const AgentCatalogDialog: FC<AgentCatalogDialogProps> = ({
     visibleAgents.forEach(a => {
       if (a.labels?.framework) set.add(a.labels.framework);
     });
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [visibleAgents]);
 
   // Filter + sort
