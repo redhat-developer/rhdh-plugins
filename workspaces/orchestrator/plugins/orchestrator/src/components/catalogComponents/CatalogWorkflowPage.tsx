@@ -19,7 +19,7 @@ import { useAsync } from 'react-use';
 import { Content } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 
 import { orchestratorApiRef } from '../../api';
 import { entityWorkflowRouteRef } from '../../routes';

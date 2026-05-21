@@ -21,12 +21,10 @@ import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-// Workaround since we use the newer @mui library but Backstage still uses deprecated @material-ui
-import { SvgIcon } from '@material-ui/core';
-import DeveloperModeOutlinedMui from '@mui/icons-material/DeveloperModeOutlined';
-import FormatListBulletedMui from '@mui/icons-material/FormatListBulleted';
+import DeveloperModeOutlined from '@mui/icons-material/DeveloperModeOutlined';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import PlayArrowMui from '@mui/icons-material/PlayArrow';
+import PlayArrow from '@mui/icons-material/PlayArrow';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
@@ -62,13 +60,6 @@ import { InputSchemaDialog } from './InputSchemaDialog';
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
 }
-
-// Workaround
-type SvgIconComponent = typeof SvgIcon;
-const PlayArrow = PlayArrowMui as unknown as SvgIconComponent;
-const FormatListBulleted = FormatListBulletedMui as unknown as SvgIconComponent;
-const DeveloperModeOutlined =
-  DeveloperModeOutlinedMui as unknown as SvgIconComponent;
 
 const usePermittedToUseBatch = (
   items: WorkflowOverviewDTO[],
@@ -225,7 +216,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const actions = useMemo(() => {
     const actionItems: TableProps<FormattedWorkflowOverview>['actions'] = [
       rowData => ({
-        icon: PlayArrow,
+        icon: () => <PlayArrow />,
         tooltip: t('table.actions.run'),
         disabled: !canExecuteWorkflow(rowData.id),
         onClick: () => handleExecute(rowData),
@@ -235,13 +226,13 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     if (!entityRef)
       actionItems.push(
         rowData => ({
-          icon: FormatListBulleted,
+          icon: () => <FormatListBulleted />,
           tooltip: t('table.actions.viewRuns'),
           disabled: !canViewWorkflow(rowData.id),
           onClick: () => handleViewVariables(rowData),
         }),
         rowData => ({
-          icon: DeveloperModeOutlined,
+          icon: () => <DeveloperModeOutlined />,
           tooltip: t('table.actions.viewInputSchema'),
           disabled: !canViewWorkflow(rowData.id),
           onClick: () => handleViewInputSchema(rowData),
