@@ -5,7 +5,7 @@
 | Name      | Location          | Severity |
 | :-------- | :---------------- | :------- |
 | react-use | package.json:72:6 | error    |
-| motion    | package.json:68:6 | error    |
+| motion    | package.json:69:6 | error    |
 
 ## Unlisted dependencies (2)
 
