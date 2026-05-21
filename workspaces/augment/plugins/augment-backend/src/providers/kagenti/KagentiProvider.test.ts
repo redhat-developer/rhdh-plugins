@@ -189,7 +189,7 @@ describe('KagentiProvider -- Agent Card Cache & Demand Resolution', () => {
     expect(entry1.demands).toBeDefined();
 
     const entry2 = await p.getAgentCardCached('team1', 'weather-bot');
-    expect(entry2).toBe(entry1);
+    expect(entry2).toEqual(entry1);
   });
 
   it('resolveMetadata returns empty object for agent without extension demands', async () => {

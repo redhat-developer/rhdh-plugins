@@ -27,8 +27,8 @@ describe('provider registry', () => {
     expect(PROVIDER_REGISTRY.has('kagenti')).toBe(true);
   });
 
-  it('PROVIDER_REGISTRY does not contain llamastack', () => {
-    expect(PROVIDER_REGISTRY.has('llamastack')).toBe(false);
+  it('PROVIDER_REGISTRY contains llamastack entry', () => {
+    expect(PROVIDER_REGISTRY.has('llamastack')).toBe(true);
   });
 
   it('getProviderDescriptor("kagenti") returns descriptor with implemented: true', () => {
@@ -51,9 +51,10 @@ describe('provider registry', () => {
 
   it('getAllProviderDescriptors returns all providers sorted by displayName', () => {
     const all = getAllProviderDescriptors();
-    expect(all).toHaveLength(2);
+    expect(all).toHaveLength(3);
     expect(all[0].displayName).toBe('Google ADK');
-    expect(all[1].displayName).toBe('Red Hat AI');
+    expect(all[1].displayName).toBe('Llama Stack');
+    expect(all[2].displayName).toBe('Red Hat AI');
   });
 
   it('isValidProviderType("kagenti") returns true', () => {
