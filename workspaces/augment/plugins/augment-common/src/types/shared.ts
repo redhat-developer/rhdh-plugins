@@ -404,6 +404,8 @@ export interface ChatAgentConfig {
   greeting?: string;
   /** Suggested prompts shown on the agent card and below the input */
   conversationStarters?: string[];
+  /** User ref of who originally created this agent config entry */
+  createdBy?: string;
 }
 
 /**
@@ -614,6 +616,8 @@ export interface ChatAgent {
   promotedBy?: string;
   /** Role of this agent in the orchestration topology */
   agentRole?: AgentRole;
+  /** User ref of who originally created this agent */
+  createdBy?: string;
 }
 
 /**
