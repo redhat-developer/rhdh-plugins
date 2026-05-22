@@ -423,7 +423,93 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
   //   d) Both granular users get 403 on the OpenShift tab (no cost.plugin)
   // -------------------------------------------------------------------------
 
-  test.describe('Granular Cluster & Project RBAC (3-Tier)', () => {
+  // -------------------------------------------------------------------------
+  // 5a. Granular RBAC: Cost-page denial
+  //
+  // These tests verify that cluster-only and project-only users are denied
+  // access to the OpenShift cost page (they lack cost.plugin). These work
+  // regardless of whether the RBAC policy cluster names match the real
+  // clusterAlias, because they test the ABSENCE of a permission.
+  // -------------------------------------------------------------------------
+  test.describe('Granular RBAC — Cost Page Denial', () => {
+    const clusterOnlyUser =
+      process.env.RBAC_CLUSTER_ONLY_USER ?? 'ro-cluster-only';
+    const clusterOnlyPass = process.env.RBAC_CLUSTER_ONLY_PASS ?? 'test';
+    const projectOnlyUser =
+      process.env.RBAC_PROJECT_ONLY_USER ?? 'ro-project-only';
+    const projectOnlyPass = process.env.RBAC_PROJECT_ONLY_PASS ?? 'test';
+
+    test('cluster-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
+      page,
+    }) => {
+      await performOIDCLogin(page, clusterOnlyUser, clusterOnlyPass);
+      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
+
+      const errorIndicator = page
+        .getByRole('alert')
+        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
+        .or(page.getByText(/access denied|no data/i));
+
+      const denied = await errorIndicator
+        .isVisible({ timeout: 15000 })
+        .catch(() => false);
+
+      if (!denied) {
+        const costTable = page
+          .getByRole('table')
+          .filter({ hasText: /cost|cluster/i });
+        const hasCostData = await costTable
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+        expect(hasCostData).toBe(false);
+      }
+    });
+
+    test('project-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
+      page,
+    }) => {
+      await performOIDCLogin(page, projectOnlyUser, projectOnlyPass);
+      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
+
+      const errorIndicator = page
+        .getByRole('alert')
+        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
+        .or(page.getByText(/access denied|no data/i));
+
+      const denied = await errorIndicator
+        .isVisible({ timeout: 15000 })
+        .catch(() => false);
+
+      if (!denied) {
+        const costTable = page
+          .getByRole('table')
+          .filter({ hasText: /cost|cluster/i });
+        const hasCostData = await costTable
+          .isVisible({ timeout: 5000 })
+          .catch(() => false);
+        expect(hasCostData).toBe(false);
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 5b. Granular RBAC: Data filtering (requires matching cluster alias)
+  //
+  // These tests verify server-side filtering for cluster-only and
+  // project-only users. They require the RBAC policy cluster/project
+  // names to match the real clusterAlias from the Cost Management API.
+  // Set RBAC_CLUSTER_ALIAS to the real value to enable these tests;
+  // when unset the deploy script uses placeholder names that won't
+  // match, so the tests are skipped.
+  // -------------------------------------------------------------------------
+  test.describe('Granular RBAC — Data Filtering (3-Tier)', () => {
+    const clusterAlias = process.env.RBAC_CLUSTER_ALIAS;
+
+    test.skip(
+      !clusterAlias,
+      'Skipped: RBAC_CLUSTER_ALIAS not set — RBAC policy uses placeholder cluster names that do not match this environment',
+    );
+
     const clusterOnlyUser =
       process.env.RBAC_CLUSTER_ONLY_USER ?? 'ro-cluster-only';
     const clusterOnlyPass = process.env.RBAC_CLUSTER_ONLY_PASS ?? 'test';
@@ -433,7 +519,7 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
     const fullUser = process.env.RBAC_FULL_USER ?? 'costmgmt-full-access';
     const fullPass = process.env.RBAC_FULL_PASS ?? 'test';
 
-    test('cluster-only user should see optimizations page (proves ros/<cluster> is evaluated)', async ({
+    test('cluster-only user should see optimizations data', async ({
       page,
     }) => {
       const rosPage = new ResourceOptimizationPage(page);
@@ -444,15 +530,11 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
 
       await expect(page.getByText('Resource Optimization')).toBeVisible();
       const count = await rosPage.getOptimizableContainerCount();
-      // count may be 0 when the RBAC policy's cluster name doesn't match the
-      // real clusterAlias on this environment — that's expected. The key
-      // assertion is that the page loaded (no 403) proving the permission
-      // was evaluated rather than rejected outright.
       expect(count).not.toBeNull();
       expect(count!).toBeGreaterThanOrEqual(0);
     });
 
-    test('project-only user should see optimizations page (proves ros/<cluster>/<project> is evaluated)', async ({
+    test('project-only user should see optimizations data', async ({
       page,
     }) => {
       const rosPage = new ResourceOptimizationPage(page);
@@ -467,7 +549,7 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
       expect(count!).toBeGreaterThanOrEqual(0);
     });
 
-    test('cluster-only user should see no more containers than ros.plugin user (server-side filtering)', async ({
+    test('cluster-only user should see no more containers than ros.plugin user', async ({
       browser,
     }) => {
       const fullCtx = await browser.newContext();
@@ -525,58 +607,6 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
       expect(projectCount!).toBeLessThanOrEqual(clusterCount!);
     });
 
-    test('cluster-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
-      page,
-    }) => {
-      await performOIDCLogin(page, clusterOnlyUser, clusterOnlyPass);
-      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
-
-      const errorIndicator = page
-        .getByRole('alert')
-        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
-        .or(page.getByText(/access denied|no data/i));
-
-      const denied = await errorIndicator
-        .isVisible({ timeout: 15000 })
-        .catch(() => false);
-
-      if (!denied) {
-        const costTable = page
-          .getByRole('table')
-          .filter({ hasText: /cost|cluster/i });
-        const hasCostData = await costTable
-          .isVisible({ timeout: 5000 })
-          .catch(() => false);
-        expect(hasCostData).toBe(false);
-      }
-    });
-
-    test('project-only user should be DENIED on OpenShift cost page (no cost.plugin)', async ({
-      page,
-    }) => {
-      await performOIDCLogin(page, projectOnlyUser, projectOnlyPass);
-      await page.goto(OPENSHIFT_ROUTE, { waitUntil: 'domcontentloaded' });
-
-      const errorIndicator = page
-        .getByRole('alert')
-        .filter({ hasText: /unauthorized|forbidden|error|denied/i })
-        .or(page.getByText(/access denied|no data/i));
-
-      const denied = await errorIndicator
-        .isVisible({ timeout: 15000 })
-        .catch(() => false);
-
-      if (!denied) {
-        const costTable = page
-          .getByRole('table')
-          .filter({ hasText: /cost|cluster/i });
-        const hasCostData = await costTable
-          .isVisible({ timeout: 5000 })
-          .catch(() => false);
-        expect(hasCostData).toBe(false);
-      }
-    });
-
     test('cluster-only user should see cluster data in API response with filter applied', async ({
       page,
     }) => {
@@ -611,7 +641,6 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
 
       await page.unroute(`**${API_BASE}/**`);
 
-      // The proxy call should succeed (200) proving the permission was evaluated
       const proxyCall = apiResponses.find(
         r => r.url.includes('/proxy/') && r.url.includes('recommendations'),
       );
