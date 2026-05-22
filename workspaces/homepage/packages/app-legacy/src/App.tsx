@@ -44,6 +44,7 @@ import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
 import { DebugHomepageAvailableWidgets } from './components/homepage/DebugHomepageAvailableWidgets';
 import { DebugHomepageDefaultWidgets } from './components/homepage/DebugHomepageDefaultWidgets';
+import { DebugHomepageSavedWidgets } from './components/homepage/DebugHomepageSavedWidgets';
 
 import {
   AlertDisplay,
@@ -456,6 +457,10 @@ const routes = (
     <Route
       path="/debug-default-widgets"
       element={<DebugHomepageDefaultWidgets />}
+    />
+    <Route
+      path="/debug-saved-widgets"
+      element={<DebugHomepageSavedWidgets />}
     />
   </FlatRoutes>
 );
