@@ -63,7 +63,7 @@ backend.add(
           },
           {
             label: 'Admin tools',
-            if: { permissions: ['homepage.admin.read'] },
+            if: { permissions: ['homepage.default-widgets.read'] },
             children: [
               {
                 id: 'user-management',
