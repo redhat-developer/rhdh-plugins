@@ -86,7 +86,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget('Access');
+    await homePageCustomization.addWidget('Quick Access Card');
     await expect(sharedPage.getByText('Quick Access')).toBeVisible();
   });
 
