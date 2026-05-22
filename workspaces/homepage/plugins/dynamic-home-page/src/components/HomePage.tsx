@@ -46,9 +46,7 @@ export const HomePage = ({
   let content: React.ReactNode;
   if (loading) {
     content = <Progress />;
-  } else if (defaultWidgets && defaultWidgets.length === 0 && !customizable) {
-    content = <EmptyState title={t('homePage.empty')} missing="content" />;
-  } else if (defaultWidgets && defaultWidgets.length > 0) {
+  } else if (defaultWidgets) {
     if (customizable) {
       content = (
         <DefaultWidgetsCustomizableGrid
@@ -56,6 +54,8 @@ export const HomePage = ({
           mountPoints={mountPoints}
         />
       );
+    } else if (defaultWidgets.length === 0) {
+      content = <EmptyState title={t('homePage.empty')} missing="content" />;
     } else {
       content = (
         <DefaultWidgetsReadOnlyGrid

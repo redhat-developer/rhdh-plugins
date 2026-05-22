@@ -230,9 +230,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:default/guest-user
-      ownershipEntityRefs: []
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -279,6 +277,14 @@ permission:
       - homepage
     admin:
       users:
-        - name: user:default/guest-user
-      superUsers:
-        - name: user:default/guest-user
+        - name: user:development/guest
+
+      # if you make the guest user super admin here you might see "unexpected" default widgets
+      # on the homepage, as some widgets are only visible to users with access to read default widgets,
+      # which the guest user has then by default.
+      # You can either remove the guest user from the admin users or configure the superUsers instead.
+      superUsers: []
+        # - name: user:development/guest
+    policyFileReload: true
+    policies-csv-file: ../../rbac-policy.csv
+    conditionalPoliciesFile: ../../conditional-policies.yaml

@@ -170,9 +170,9 @@ const createHeadline = ({
   priority,
 }: {
   id: string;
-  title: string;
-  align: string;
-  priority: number;
+  title?: string;
+  align?: string;
+  priority?: number;
 }): HomePageCardMountPoint => ({
   Component: Headline,
   config: {
@@ -243,6 +243,9 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     },
   },
   // Add extra mount points to verify same components can mount multiple times
+  createHeadline({
+    id: 'headline',
+  }),
   createHeadline({
     id: 'headline-left',
     title: 'Left title',
