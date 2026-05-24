@@ -36,8 +36,8 @@ function isValidLifecycleStage(stage: unknown): stage is AgentLifecycleStage {
   );
 }
 
-function isProductionStage(stage: AgentLifecycleStage): boolean {
-  return stage === 'production';
+function isPublishedStage(stage: AgentLifecycleStage): boolean {
+  return stage === 'published';
 }
 
 interface LifecycleTransitionOpts {
@@ -79,7 +79,7 @@ async function applyLifecycleTransition(
   }
 
   const now = new Date().toISOString();
-  const isProd = isProductionStage(targetStage);
+  const isProd = isPublishedStage(targetStage);
 
   if (existing) {
     existing.lifecycleStage = targetStage;
@@ -276,7 +276,7 @@ export function registerAgentRoutes(
       const stage = normalizeLifecycleStage(cfg?.lifecycleStage);
       return {
         ...agent,
-        published: isProductionStage(stage),
+        published: isPublishedStage(stage),
         lifecycleStage: stage,
         governanceRegistered: cfg !== undefined,
         version: cfg?.version ?? 0,
@@ -463,7 +463,7 @@ export function registerAgentRoutes(
           })();
 
         const isSubmitForReview =
-          currentStage === 'draft' && nextStage === 'review';
+          currentStage === 'draft' && nextStage === 'pending';
         if (!isSubmitForReview && !isAdmin) {
           res.status(403).json({
             error:
@@ -545,7 +545,7 @@ export function registerAgentRoutes(
             return LIFECYCLE_STAGE_ORDER[Math.max(idx - 1, 0)];
           })();
 
-        const isRejection = currentStage === 'review' && nextStage === 'draft';
+        const isRejection = currentStage === 'pending' && nextStage === 'draft';
         const result = await applyLifecycleTransition({
           configs,
           agentId,
@@ -591,7 +591,7 @@ export function registerAgentRoutes(
         const result = await applyLifecycleTransition({
           configs,
           agentId,
-          targetStage: 'production',
+          targetStage: 'published',
           userRef,
           direction: 'publish',
           saveFn: saveChatAgentConfigs,
@@ -633,7 +633,7 @@ export function registerAgentRoutes(
         const result = await applyLifecycleTransition({
           configs,
           agentId,
-          targetStage: 'staging',
+          targetStage: 'pending',
           userRef,
           direction: 'unpublish',
           saveFn: saveChatAgentConfigs,
@@ -677,8 +677,8 @@ export function registerAgentRoutes(
         const configMap = new Map(configs.map(c => [c.agentId, c]));
         const now = new Date().toISOString();
         const targetStage: AgentLifecycleStage = published
-          ? 'production'
-          : 'staging';
+          ? 'published'
+          : 'pending';
 
         const invalid: Array<{
           agentId: string;

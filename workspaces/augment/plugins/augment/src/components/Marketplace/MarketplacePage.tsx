@@ -151,7 +151,7 @@ export function MarketplacePage({
     const lc = search.toLowerCase();
     return agents.filter(a => {
       if (
-        a.lifecycleStage !== 'production' &&
+        a.lifecycleStage !== 'published' &&
         (a.lifecycleStage as string) !== 'deployed' &&
         a.published !== true
       )
@@ -174,7 +174,7 @@ export function MarketplacePage({
             a =>
               a.createdBy === userRef ||
               (a.governanceRegistered && a.framework === 'workflow-builder') ||
-              (!a.governanceRegistered && a.lifecycleStage !== 'production'),
+              (!a.governanceRegistered && a.lifecycleStage !== 'published'),
           )
         : agents,
     [agents, userRef],
@@ -185,7 +185,7 @@ export function MarketplacePage({
     () =>
       tools.filter(
         t =>
-          t.lifecycleStage === 'production' ||
+          t.lifecycleStage === 'published' ||
           t.lifecycleStage === 'deployed' ||
           t.published === true,
       ),

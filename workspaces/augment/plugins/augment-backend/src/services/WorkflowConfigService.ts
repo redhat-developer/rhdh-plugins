@@ -264,7 +264,7 @@ export class WorkflowConfigService {
    *
    * Lifecycle mapping:
    *   draft -> 'draft' (ChatAgentConfig lifecycle)
-   *   published -> 'production'
+   *   published -> 'published'
    *   archived -> 'draft' (hidden from gallery)
    */
   async syncWorkflowToChatAgents(
@@ -288,7 +288,7 @@ export class WorkflowConfigService {
       workflowAgentIds.add(agentId);
 
       const isPublished = workflow.status === 'published';
-      const lifecycleStage = isPublished ? 'production' : 'draft';
+      const lifecycleStage = isPublished ? 'published' : 'draft';
 
       const chatAgentEntry: Record<string, unknown> = {
         agentId,

@@ -376,14 +376,16 @@ export interface PromptCard {
 export interface ChatAgentConfig {
   /** Agent identifier: "namespace/name" */
   agentId: string;
-  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'production') */
+  /** Whether this agent is published to the end-user catalog (derived from lifecycleStage === 'published') */
   published: boolean;
   /** Whether this agent appears in end-user chat (only applies when published) */
   visible: boolean;
   /** Whether this agent is featured prominently on the welcome screen */
   featured: boolean;
-  /** Lifecycle stage: draft → review → staging → production → retired */
+  /** Lifecycle stage: draft → pending → published → archived */
   lifecycleStage?: AgentLifecycleStage;
+  /** Pending action when in 'pending' stage (e.g. publish or unpublish) */
+  pendingAction?: 'publish' | 'unpublish';
   /** Promotion version — incremented each time the agent is promoted forward */
   version?: number;
   /** ISO timestamp of last promotion */
@@ -426,11 +428,11 @@ export interface ChatAgentConfig {
 export interface ChatToolConfig {
   /** Tool identifier: "namespace/name" */
   toolId: string;
-  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'production') */
+  /** Whether this tool is published to the end-user catalog (derived from lifecycleStage === 'published') */
   published: boolean;
   /** Whether this tool appears in end-user listings (only applies when published) */
   visible: boolean;
-  /** Lifecycle stage: draft → review → staging → production → retired */
+  /** Lifecycle stage: draft → pending → published → archived */
   lifecycleStage?: AgentLifecycleStage;
   /** Promotion version — incremented each time the tool is promoted forward */
   version?: number;
@@ -477,26 +479,29 @@ export interface PromptGroup {
  * - **draft**: Under development. Visible only to creator/admin.
  * - **review**: Submitted for admin review. Appears in the Review Queue.
  * - **staging**: Approved, available for internal testing. Not visible to end users.
- * - **production**: Live in the end-user marketplace/catalog.
- * - **retired**: Removed from production, preserved for audit/history.
+ * - **published**: Live in the end-user marketplace/catalog.
+ * - **archived**: Removed from production, preserved for audit/history.
  * @public
  */
 export type AgentLifecycleStage =
   | 'draft'
-  | 'review'
-  | 'staging'
-  | 'production'
-  | 'retired';
+  | 'pending'
+  | 'published'
+  | 'archived';
 
 /** Human-readable action name for a lifecycle transition. @public */
 export type AgentLifecycleAction =
   | 'submit'
   | 'approve'
   | 'reject'
-  | 'promote'
-  | 'rollback'
-  | 'retire'
-  | 'reactivate';
+  | 'publish'
+  | 'unpublish'
+  | 'archive'
+  | 'reactivate'
+  | 'withdraw'
+  | 'request-unpublish'
+  | 'approve-unpublish'
+  | 'reject-unpublish';
 
 /** A single allowed lifecycle transition. @public */
 export interface AgentLifecycleTransition {
@@ -509,46 +514,43 @@ export interface AgentLifecycleTransition {
 /** Ordered list of lifecycle stages for pipeline display. @public */
 export const LIFECYCLE_STAGE_ORDER: readonly AgentLifecycleStage[] = [
   'draft',
-  'review',
-  'staging',
-  'production',
-  'retired',
+  'pending',
+  'published',
+  'archived',
 ] as const;
 
 /** All valid lifecycle transitions with human-readable labels. @public */
 export const LIFECYCLE_TRANSITIONS: readonly AgentLifecycleTransition[] = [
-  { from: 'draft', to: 'review', action: 'submit', label: 'Submit for Review' },
-  { from: 'review', to: 'staging', action: 'approve', label: 'Approve' },
-  { from: 'review', to: 'draft', action: 'reject', label: 'Reject' },
   {
-    from: 'staging',
-    to: 'production',
-    action: 'promote',
-    label: 'Promote to Production',
+    from: 'draft',
+    to: 'pending',
+    action: 'submit',
+    label: 'Submit for Review',
   },
   {
-    from: 'staging',
-    to: 'draft',
-    action: 'rollback',
-    label: 'Rollback to Draft',
+    from: 'pending',
+    to: 'published',
+    action: 'approve',
+    label: 'Approve & Publish',
   },
-  {
-    from: 'production',
-    to: 'staging',
-    action: 'rollback',
-    label: 'Rollback to Staging',
-  },
-  { from: 'production', to: 'retired', action: 'retire', label: 'Retire' },
-  { from: 'retired', to: 'draft', action: 'reactivate', label: 'Reactivate' },
+  { from: 'pending', to: 'draft', action: 'reject', label: 'Reject' },
+  { from: 'pending', to: 'draft', action: 'withdraw', label: 'Withdraw' },
+  { from: 'published', to: 'pending', action: 'unpublish', label: 'Unpublish' },
+  { from: 'published', to: 'archived', action: 'archive', label: 'Archive' },
+  { from: 'archived', to: 'draft', action: 'reactivate', label: 'Reactivate' },
 ] as const;
 
 /**
- * Maps old 3-stage names to new 5-stage names for backward compatibility.
+ * Maps old stage names to new ones for backward compatibility.
  * @public
  */
 export const LEGACY_STAGE_MAP: Record<string, AgentLifecycleStage> = {
-  registered: 'review',
-  deployed: 'production',
+  registered: 'pending',
+  deployed: 'published',
+  review: 'pending',
+  staging: 'pending',
+  production: 'published',
+  retired: 'archived',
 };
 
 /** Returns the valid forward transitions from a given stage. @public */
@@ -610,7 +612,7 @@ export interface ChatAgent {
   framework?: string;
   /** Protocol labels (e.g. "A2A", "MCP") */
   protocols?: string[];
-  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'production') */
+  /** Whether this agent is published to the end-user catalog (derived: lifecycleStage === 'published') */
   published?: boolean;
   /** Origin of this agent: 'kagenti' | 'orchestration' | 'external' */
   source?: string;
@@ -618,6 +620,8 @@ export interface ChatAgent {
   namespace?: string;
   /** Current lifecycle stage in the promotion pipeline */
   lifecycleStage?: AgentLifecycleStage;
+  /** Pending action when in 'pending' stage (e.g. publish or unpublish) */
+  pendingAction?: 'publish' | 'unpublish';
   /** Promotion version (increments each time the agent is promoted) */
   version?: number;
   /** When this agent was last promoted */

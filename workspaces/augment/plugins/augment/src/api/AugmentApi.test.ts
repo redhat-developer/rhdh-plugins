@@ -109,6 +109,9 @@ describe('AugmentApi', () => {
       expect(mockDiscoveryApi.getBaseUrl).toHaveBeenCalledWith('augment');
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/augment/status',
+        expect.objectContaining({
+          headers: expect.any(Headers),
+        }),
       );
       expect(result).toEqual(mockStatus);
     });
@@ -133,6 +136,9 @@ describe('AugmentApi', () => {
 
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/augment/branding',
+        expect.objectContaining({
+          headers: expect.any(Headers),
+        }),
       );
       expect(result).toEqual(mockBrandingData);
     });

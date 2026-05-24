@@ -88,11 +88,11 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
       a => a.status?.toLowerCase() === 'ready',
     ).length;
     const pendingReview = agents.filter(
-      a => a.lifecycleStage === 'review',
+      a => a.lifecycleStage === 'pending',
     ).length;
-    const inStaging = agents.filter(a => a.lifecycleStage === 'staging').length;
+    const inStaging = agents.filter(a => a.lifecycleStage === 'pending').length;
     const production = agents.filter(
-      a => a.lifecycleStage === 'production',
+      a => a.lifecycleStage === 'published',
     ).length;
     const readyTools = tools.filter(
       t => t.status?.toLowerCase() === 'ready',

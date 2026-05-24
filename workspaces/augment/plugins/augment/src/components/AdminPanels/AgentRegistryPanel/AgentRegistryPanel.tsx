@@ -128,21 +128,16 @@ const LIFECYCLE_STAGES: {
 }[] = [
   { key: 'draft', label: 'Draft', description: 'Under development' },
   {
-    key: 'review',
-    label: 'In Review',
+    key: 'pending',
+    label: 'Pending',
     description: 'Submitted for admin review',
   },
   {
-    key: 'staging',
-    label: 'Staging',
-    description: 'Approved, internal testing',
-  },
-  {
-    key: 'production',
-    label: 'Production',
+    key: 'published',
+    label: 'Published',
     description: 'Live in end-user catalog',
   },
-  { key: 'retired', label: 'Retired', description: 'Archived from production' },
+  { key: 'archived', label: 'Archived', description: 'Archived from catalog' },
 ];
 
 function getStatusColor(status: string): string {
@@ -156,13 +151,11 @@ function getStatusColor(status: string): string {
 
 function getStageColor(stage: AgentLifecycleStage, isDark: boolean): string {
   switch (stage) {
-    case 'production':
+    case 'published':
       return isDark ? '#86efac' : '#15803d';
-    case 'staging':
+    case 'pending':
       return isDark ? '#fbbf24' : '#b45309';
-    case 'review':
-      return isDark ? '#93c5fd' : '#1d4ed8';
-    case 'retired':
+    case 'archived':
       return isDark ? '#f87171' : '#b91c1c';
     default:
       return isDark ? '#94a3b8' : '#64748b';
@@ -171,13 +164,11 @@ function getStageColor(stage: AgentLifecycleStage, isDark: boolean): string {
 
 function getStageIcon(stage: AgentLifecycleStage) {
   switch (stage) {
-    case 'production':
+    case 'published':
       return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
-    case 'staging':
+    case 'pending':
       return <VerifiedIcon sx={{ fontSize: 14 }} />;
-    case 'review':
-      return <SearchIcon sx={{ fontSize: 14 }} />;
-    case 'retired':
+    case 'archived':
       return <HistoryIcon sx={{ fontSize: 14 }} />;
     default:
       return <EditNoteIcon sx={{ fontSize: 14 }} />;
@@ -186,13 +177,11 @@ function getStageIcon(stage: AgentLifecycleStage) {
 
 function getStageBg(stage: AgentLifecycleStage, isDark: boolean): string {
   switch (stage) {
-    case 'production':
+    case 'published':
       return isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)';
-    case 'staging':
+    case 'pending':
       return isDark ? 'rgba(251,191,36,0.12)' : 'rgba(251,191,36,0.08)';
-    case 'review':
-      return isDark ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.08)';
-    case 'retired':
+    case 'archived':
       return isDark ? 'rgba(248,113,113,0.12)' : 'rgba(248,113,113,0.08)';
     default:
       return isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.07)';
@@ -405,11 +394,10 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
     });
 
     const stageRank: Record<string, number> = {
-      production: 0,
-      staging: 1,
-      review: 2,
-      draft: 3,
-      retired: 4,
+      published: 0,
+      pending: 1,
+      draft: 2,
+      archived: 3,
     };
     newRows.sort((a, b) => {
       const sa = stageRank[a.config.lifecycleStage ?? 'draft'] ?? 5;
@@ -474,17 +462,14 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         r.governanceRegistered &&
         (r.config.lifecycleStage ?? 'draft') === 'draft',
     ).length;
-    const review = rows.filter(
-      r => r.governanceRegistered && r.config.lifecycleStage === 'review',
+    const pending = rows.filter(
+      r => r.governanceRegistered && r.config.lifecycleStage === 'pending',
     ).length;
-    const staging = rows.filter(
-      r => r.governanceRegistered && r.config.lifecycleStage === 'staging',
+    const published = rows.filter(
+      r => r.governanceRegistered && r.config.lifecycleStage === 'published',
     ).length;
-    const production = rows.filter(
-      r => r.governanceRegistered && r.config.lifecycleStage === 'production',
-    ).length;
-    const retired = rows.filter(
-      r => r.governanceRegistered && r.config.lifecycleStage === 'retired',
+    const archived = rows.filter(
+      r => r.governanceRegistered && r.config.lifecycleStage === 'archived',
     ).length;
     const kagenti = rows.filter(
       r => (r.agent.source || 'kagenti') === 'kagenti',
@@ -497,10 +482,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
       total: rows.length,
       unregistered,
       draft,
-      review,
-      staging,
-      production,
-      retired,
+      pending,
+      published,
+      archived,
       kagenti,
       orchestration,
       featured,
@@ -528,8 +512,8 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         const result = await api.promoteAgent(agentId, targetStage);
         updateRowConfig(agentId, {
           lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
-          published: result.lifecycleStage === 'production',
-          visible: result.lifecycleStage === 'production',
+          published: result.lifecycleStage === 'published',
+          visible: result.lifecycleStage === 'published',
           version: result.version,
           promotedAt: new Date().toISOString(),
         });
@@ -557,9 +541,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         const result = await api.demoteAgent(agentId, targetStage);
         updateRowConfig(agentId, {
           lifecycleStage: result.lifecycleStage as AgentLifecycleStage,
-          published: result.lifecycleStage === 'production',
-          visible: result.lifecycleStage === 'production',
-          featured: result.lifecycleStage === 'production' ? undefined : false,
+          published: result.lifecycleStage === 'published',
+          visible: result.lifecycleStage === 'published',
+          featured: result.lifecycleStage === 'published' ? undefined : false,
         });
         await refreshConfigs();
         await fetchAgents();
@@ -596,7 +580,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         await api.bulkPublishAgents(ids, publish);
         for (const id of ids) {
           updateRowConfig(id, {
-            lifecycleStage: publish ? 'production' : 'staging',
+            lifecycleStage: publish ? 'published' : 'pending',
             published: publish,
             visible: publish,
           });
@@ -607,7 +591,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         const suffix =
           skipped > 0 ? ` (${skipped} skipped — not registered)` : '';
         setToast(
-          `${ids.length} agents ${publish ? 'promoted to production' : 'rolled back to staging'}${suffix}`,
+          `${ids.length} agents ${publish ? 'promoted to published' : 'rolled back to pending'}${suffix}`,
         );
       } catch (err) {
         setToast(
@@ -1128,10 +1112,9 @@ interface LifecyclePipelineProps {
     total: number;
     unregistered: number;
     draft: number;
-    review: number;
-    staging: number;
-    production: number;
-    retired: number;
+    pending: number;
+    published: number;
+    archived: number;
     featured: number;
   };
   isDark: boolean;
@@ -1167,30 +1150,23 @@ const LifecyclePipeline: FC<LifecyclePipelineProps> = ({
       color: isDark ? '#94a3b8' : '#64748b',
     },
     {
-      key: 'review' as StageFilter,
-      label: 'Review',
-      count: stats.review,
-      icon: <SearchIcon sx={{ fontSize: 16 }} />,
-      color: isDark ? '#93c5fd' : '#2563eb',
-    },
-    {
-      key: 'staging' as StageFilter,
-      label: 'Staging',
-      count: stats.staging,
+      key: 'pending' as StageFilter,
+      label: 'Pending',
+      count: stats.pending,
       icon: <VerifiedIcon sx={{ fontSize: 16 }} />,
       color: isDark ? '#fbbf24' : '#b45309',
     },
     {
-      key: 'production' as StageFilter,
-      label: 'Production',
-      count: stats.production,
+      key: 'published' as StageFilter,
+      label: 'Published',
+      count: stats.published,
       icon: <RocketLaunchIcon sx={{ fontSize: 16 }} />,
       color: isDark ? '#86efac' : '#15803d',
     },
     {
-      key: 'retired' as StageFilter,
-      label: 'Retired',
-      count: stats.retired,
+      key: 'archived' as StageFilter,
+      label: 'Archived',
+      count: stats.archived,
       icon: <HistoryIcon sx={{ fontSize: 16 }} />,
       color: isDark ? '#f87171' : '#b91c1c',
     },
@@ -1429,34 +1405,28 @@ const PromoteConfirmDialog: FC<PromoteConfirmDialogProps> = ({
           variant="body2"
           sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}
         >
-          {dialog.toStage === 'review' && (
+          {dialog.toStage === 'pending' && isPromoteAction && (
             <>
               Submit <strong>{agentName}</strong> for admin review. It will
               appear in the Review Queue.
             </>
           )}
-          {dialog.toStage === 'staging' && isPromoteAction && (
+          {dialog.toStage === 'pending' && !isPromoteAction && (
             <>
-              Approve <strong>{agentName}</strong> and move to staging for
-              internal testing. Not visible to end users.
-            </>
-          )}
-          {dialog.toStage === 'staging' && !isPromoteAction && (
-            <>
-              Roll back <strong>{agentName}</strong> from production to staging.
+              Roll back <strong>{agentName}</strong> from published to pending.
               It will no longer be visible to end users.
             </>
           )}
-          {dialog.toStage === 'production' && (
+          {dialog.toStage === 'published' && (
             <>
-              Promote <strong>{agentName}</strong> to production. Users will be
+              Promote <strong>{agentName}</strong> to published. Users will be
               able to discover and chat with this agent.
             </>
           )}
-          {dialog.toStage === 'retired' && (
+          {dialog.toStage === 'archived' && (
             <>
-              Retire <strong>{agentName}</strong> from production. It will be
-              archived and no longer available to users.
+              Archive <strong>{agentName}</strong>. It will be archived and no
+              longer available to users.
             </>
           )}
           {dialog.toStage === 'draft' && (
@@ -1562,17 +1532,15 @@ const AgentRow: FC<AgentRowProps> = ({
       variant="outlined"
       sx={{
         borderRadius: 2,
-        opacity: stage === 'draft' || stage === 'retired' ? 0.75 : 1,
+        opacity: stage === 'draft' || stage === 'archived' ? 0.75 : 1,
         transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
         borderColor: isSelected
           ? theme.palette.primary.main
-          : stage === 'production'
+          : stage === 'published'
             ? alpha(theme.palette.success.main, 0.25)
-            : stage === 'staging'
+            : stage === 'pending'
               ? alpha(theme.palette.warning.main, 0.2)
-              : stage === 'review'
-                ? alpha(theme.palette.info.main, 0.15)
-                : theme.palette.divider,
+              : theme.palette.divider,
         borderLeft: `3px solid ${stageColor}`,
         '&:hover': {
           borderColor: isSelected
@@ -1833,12 +1801,12 @@ const AgentRow: FC<AgentRowProps> = ({
                   <Button
                     size="small"
                     variant={
-                      forwardTransitions[0].to === 'production'
+                      forwardTransitions[0].to === 'published'
                         ? 'contained'
                         : 'outlined'
                     }
                     color={
-                      forwardTransitions[0].to === 'production'
+                      forwardTransitions[0].to === 'published'
                         ? 'success'
                         : 'primary'
                     }
@@ -1860,7 +1828,7 @@ const AgentRow: FC<AgentRowProps> = ({
                       borderRadius: 1.25,
                       height: 26,
                       boxShadow:
-                        forwardTransitions[0].to === 'production'
+                        forwardTransitions[0].to === 'published'
                           ? `0 1px 4px ${alpha('#22c55e', 0.25)}`
                           : 'none',
                     }}
@@ -1869,7 +1837,7 @@ const AgentRow: FC<AgentRowProps> = ({
                   </Button>
                 </Tooltip>
               )}
-              {stage === 'production' && (
+              {stage === 'published' && (
                 <Chip
                   size="small"
                   icon={
@@ -1902,7 +1870,7 @@ const AgentRow: FC<AgentRowProps> = ({
           <Box component="span">
             <IconButton
               size="small"
-              disabled={stage !== 'production'}
+              disabled={stage !== 'published'}
               onClick={() => onToggleFeatured(agent.id, !config.featured)}
               sx={{
                 width: 26,
@@ -1957,7 +1925,7 @@ const AgentRow: FC<AgentRowProps> = ({
               const stageIdx = LIFECYCLE_STAGES.findIndex(
                 ls => ls.key === stage,
               );
-              const isPast = stageIdx > i && stage !== 'retired';
+              const isPast = stageIdx > i && stage !== 'archived';
               const sc = getStageColor(s.key, isDark);
               return (
                 <Box

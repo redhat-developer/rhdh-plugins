@@ -405,7 +405,7 @@ export function ChatView({
                           {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ targetStage: 'review' }),
+                            body: JSON.stringify({ targetStage: 'pending' }),
                           },
                         );
                         setCreateSuccess(

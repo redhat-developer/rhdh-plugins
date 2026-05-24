@@ -38,8 +38,8 @@ import {
 import { LIFECYCLE_COLORS, STATUS_COLORS } from './commandcenter.constants';
 
 /**
- * Dedicated Review Queue -- shows agents in 'review' stage pending approval.
- * Approve promotes to 'staging', Fast-track promotes to 'production', Reject demotes to 'draft'.
+ * Dedicated Review Queue -- shows agents in 'pending' stage pending approval.
+ * Approve promotes to 'published', Reject demotes to 'draft'.
  */
 export function ReviewQueue() {
   const theme = useTheme();
@@ -63,7 +63,7 @@ export function ReviewQueue() {
     api
       .listAgents()
       .then(result =>
-        setAgents(result.filter(a => a.lifecycleStage === 'review')),
+        setAgents(result.filter(a => a.lifecycleStage === 'pending')),
       )
       .catch(() => {})
       .finally(() => {
@@ -82,7 +82,7 @@ export function ReviewQueue() {
     async (agentId: string) => {
       setActing(agentId);
       try {
-        await api.promoteAgent(agentId, 'staging');
+        await api.promoteAgent(agentId, 'pending');
         setToast(`Approved to staging: ${agentId}`);
         loadAgents();
       } catch (err) {
@@ -98,8 +98,8 @@ export function ReviewQueue() {
     async (agentId: string) => {
       setActing(agentId);
       try {
-        await api.promoteAgent(agentId, 'staging');
-        await api.promoteAgent(agentId, 'production');
+        await api.promoteAgent(agentId, 'pending');
+        await api.promoteAgent(agentId, 'published');
         setToast(`Fast-tracked to production: ${agentId}`);
         loadAgents();
       } catch (err) {

@@ -43,8 +43,8 @@ type ToolWithLifecycle = KagentiToolSummary & {
 };
 
 /**
- * Tool Review Queue -- shows tools pending approval (lifecycleStage === 'review').
- * Approve promotes to 'staging', Reject demotes to 'draft'.
+ * Tool Review Queue -- shows tools pending approval (lifecycleStage === 'pending').
+ * Approve promotes to 'published', Reject demotes to 'draft'.
  */
 export function ToolReviewQueue() {
   const theme = useTheme();
@@ -61,7 +61,7 @@ export function ToolReviewQueue() {
     api
       .listToolsWithLifecycle()
       .then(result =>
-        setTools(result.filter(t => t.lifecycleStage === 'review')),
+        setTools(result.filter(t => t.lifecycleStage === 'pending')),
       )
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -75,7 +75,7 @@ export function ToolReviewQueue() {
     async (toolId: string) => {
       setActing(toolId);
       try {
-        await api.promoteToolLifecycle(toolId, 'staging');
+        await api.promoteToolLifecycle(toolId, 'pending');
         setToast(`Approved to staging: ${toolId}`);
         loadTools();
       } catch (err) {

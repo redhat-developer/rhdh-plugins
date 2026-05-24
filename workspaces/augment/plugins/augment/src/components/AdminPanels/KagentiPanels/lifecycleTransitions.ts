@@ -26,38 +26,30 @@ export interface LifecycleTransition {
 
 const LIFECYCLE_TRANSITION_MAP: Record<string, LifecycleTransition> = {
   draft: {
-    target: 'review',
+    target: 'pending',
     label: 'Submit for Review',
     action: 'promote',
     variant: 'contained',
     color: 'primary',
     iconType: 'promote',
   },
-  review: {
-    target: 'staging',
-    label: 'Approve to Staging',
-    action: 'promote',
-    variant: 'contained',
-    color: 'primary',
-    iconType: 'promote',
-  },
-  staging: {
-    target: 'production',
+  pending: {
+    target: 'published',
     label: 'Promote to Production',
     action: 'promote',
     variant: 'contained',
     color: 'success',
     iconType: 'promote',
   },
-  production: {
-    target: 'staging',
-    label: 'Rollback to Staging',
+  published: {
+    target: 'pending',
+    label: 'Rollback to Pending',
     action: 'demote',
     variant: 'outlined',
     color: 'inherit',
     iconType: 'demote',
   },
-  retired: {
+  archived: {
     target: 'draft',
     label: 'Reactivate',
     action: 'demote',
@@ -76,18 +68,15 @@ export function getLifecycleTransition(
 }
 
 export function getLifecycleStep(lifecycleStage?: string | null): number {
-  if (lifecycleStage === 'retired') return 4;
-  if (lifecycleStage === 'production' || lifecycleStage === 'deployed')
-    return 3;
-  if (lifecycleStage === 'staging') return 2;
-  if (lifecycleStage === 'review' || lifecycleStage === 'registered') return 1;
+  if (lifecycleStage === 'archived') return 3;
+  if (lifecycleStage === 'published' || lifecycleStage === 'deployed') return 2;
+  if (lifecycleStage === 'pending' || lifecycleStage === 'registered') return 1;
   return 0;
 }
 
 export const LIFECYCLE_STEP_LABELS = [
   'Draft',
-  'Review',
-  'Staging',
-  'Production',
-  'Retired',
+  'Pending',
+  'Published',
+  'Archived',
 ] as const;

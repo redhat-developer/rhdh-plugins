@@ -74,18 +74,21 @@ export type AgentLifecycleAction =
   | 'submit'
   | 'approve'
   | 'reject'
-  | 'promote'
-  | 'rollback'
-  | 'retire'
-  | 'reactivate';
+  | 'publish'
+  | 'unpublish'
+  | 'archive'
+  | 'reactivate'
+  | 'withdraw'
+  | 'request-unpublish'
+  | 'approve-unpublish'
+  | 'reject-unpublish';
 
 // @public
 export type AgentLifecycleStage =
   | 'draft'
-  | 'review'
-  | 'staging'
-  | 'production'
-  | 'retired';
+  | 'pending'
+  | 'published'
+  | 'archived';
 
 // @public
 export interface AgentLifecycleTransition {
@@ -266,6 +269,7 @@ export interface ChatAgent {
   lifecycleStage?: AgentLifecycleStage;
   name: string;
   namespace?: string;
+  pendingAction?: 'publish' | 'unpublish';
   promotedAt?: string;
   promotedBy?: string;
   protocols?: string[];
@@ -295,6 +299,7 @@ export interface ChatAgentConfig {
   greeting?: string;
   lifecycleStage?: AgentLifecycleStage;
   order?: number;
+  pendingAction?: 'publish' | 'unpublish';
   promotedAt?: string;
   promotedBy?: string;
   published: boolean;

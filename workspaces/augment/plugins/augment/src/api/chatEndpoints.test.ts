@@ -68,7 +68,10 @@ describe('chatEndpoints', () => {
         `${baseUrl}/chat/stream`,
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Backstage-Request': 'augment',
+          },
           body: JSON.stringify({
             messages,
             enableRAG: true,
@@ -222,7 +225,10 @@ describe('chatEndpoints', () => {
         '/chat/approve',
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Backstage-Request': 'augment',
+          },
           body: JSON.stringify({
             responseId: 'resp-1',
             callId: 'call-1',
