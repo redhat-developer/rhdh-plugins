@@ -260,6 +260,7 @@ export interface ChatAgent {
   createdBy?: string;
   description?: string;
   framework?: string;
+  governanceRegistered?: boolean;
   id: string;
   isDefault?: boolean;
   lifecycleStage?: AgentLifecycleStage;
@@ -283,6 +284,7 @@ export interface ChatAgent {
 export interface ChatAgentConfig {
   accentColor?: string;
   agentId: string;
+  approvalWorkflowInstanceId?: string;
   avatarUrl?: string;
   conversationStarters?: string[];
   createdAt?: string;
