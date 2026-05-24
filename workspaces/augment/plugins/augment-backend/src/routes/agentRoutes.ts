@@ -28,6 +28,7 @@ import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { AdminConfigService } from '../services/AdminConfigService';
 import { AuditLogger } from '../services/AuditLogger';
+import type { AgentApprovalWorkflowService } from '../services/AgentApprovalWorkflowService';
 
 function isValidLifecycleStage(stage: unknown): stage is AgentLifecycleStage {
   return (
@@ -152,6 +153,7 @@ async function applyLifecycleTransition(
 export function registerAgentRoutes(
   ctx: RouteContext,
   adminConfig: AdminConfigService,
+  approvalService?: AgentApprovalWorkflowService,
 ): void {
   const { router, logger, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
@@ -719,6 +721,99 @@ export function registerAgentRoutes(
           count: agentIds.length,
           published,
           lifecycleStage: targetStage,
+        });
+      },
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // PUT /agents/:agentId/request-unpublish and /withdraw
+  // request-unpublish: published → pending with pendingAction='unpublish'
+  // withdraw: pending → draft, clears pendingAction
+  // ---------------------------------------------------------------------------
+  router.put(
+    '/agents/:agentId/request-unpublish',
+    withRoute(
+      'PUT /agents/:agentId/request-unpublish',
+      'Failed to request unpublish',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const configs = await loadChatAgentConfigs();
+        const result = await applyLifecycleTransition({
+          configs,
+          agentId,
+          targetStage: 'pending',
+          userRef,
+          direction: 'request-unpublish',
+          saveFn: saveChatAgentConfigs,
+          audit,
+          logger,
+          req,
+        });
+        const existing = configs.find(c => c.agentId === agentId);
+        if (existing) existing.pendingAction = 'unpublish';
+        await saveChatAgentConfigs(configs, userRef);
+
+        let workflowInstanceId: string | undefined;
+        if (approvalService?.enabled) {
+          workflowInstanceId = await approvalService.startWorkflow({
+            agentId,
+            agentName: agentId,
+            requestedBy: userRef,
+            action: 'unpublish',
+            currentStage: 'published',
+            targetStage: 'pending',
+          });
+        }
+        res.json({
+          success: true,
+          agentId: result.agentId,
+          lifecycleStage: result.to,
+          pendingAction: 'unpublish',
+          workflowInstanceId,
+        });
+      },
+    ),
+  );
+
+  router.put(
+    '/agents/:agentId/withdraw',
+    withRoute(
+      'PUT /agents/:agentId/withdraw',
+      'Failed to withdraw agent',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        const userRef = await ctx.getUserRef(req);
+        const configs = await loadChatAgentConfigs();
+        const existing = configs.find(c => c.agentId === agentId);
+        if (existing?.createdBy && existing.createdBy !== userRef) {
+          const isAdmin = await ctx.checkIsAdmin(req);
+          if (!isAdmin) {
+            res
+              .status(403)
+              .json({ error: 'You can only withdraw agents you created.' });
+            return;
+          }
+        }
+        const result = await applyLifecycleTransition({
+          configs,
+          agentId,
+          targetStage: 'draft',
+          userRef,
+          direction: 'withdraw',
+          saveFn: saveChatAgentConfigs,
+          audit,
+          logger,
+          req,
+        });
+        const updated = configs.find(c => c.agentId === agentId);
+        if (updated) updated.pendingAction = undefined;
+        await saveChatAgentConfigs(configs, userRef);
+        res.json({
+          success: true,
+          agentId: result.agentId,
+          lifecycleStage: result.to,
         });
       },
     ),

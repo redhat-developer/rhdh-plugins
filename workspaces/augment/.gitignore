@@ -61,3 +61,6 @@ plugins/augment-backend/scripts/
 
 # Test scripts (not shipped)
 scripts/test-openai-reference.ts
+
+# Recovery/session docs (local only)
+docs/SESSION_WORK_LOG.md

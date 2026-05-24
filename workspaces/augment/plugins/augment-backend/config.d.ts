@@ -894,6 +894,32 @@ export interface Config {
     };
 
     /**
+     * Agent approval workflow configuration (SonataFlow integration).
+     * When enabled, lifecycle transitions go through an approval workflow.
+     * When disabled, transitions happen immediately (built-in mode).
+     * @visibility backend
+     */
+    agentApproval?: {
+      /**
+       * Enable SonataFlow approval workflow for agent lifecycle transitions
+       * @visibility backend
+       */
+      enabled?: boolean;
+
+      /**
+       * SonataFlow service URL (e.g. http://sonataflow.namespace.svc:8080)
+       * @visibility backend
+       */
+      serviceUrl?: string;
+
+      /**
+       * SonataFlow workflow ID to start for approval requests
+       * @visibility backend
+       */
+      workflowId?: string;
+    };
+
+    /**
      * Kagenti agent operations platform configuration.
      * Required when augment.provider is 'kagenti'.
      * @visibility backend

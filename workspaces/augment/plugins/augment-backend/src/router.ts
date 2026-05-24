@@ -48,6 +48,7 @@ import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
 import type { AdminConfigService } from './services/AdminConfigService';
 import { WorkflowConfigService } from './services/WorkflowConfigService';
+import { AgentApprovalWorkflowService } from './services/AgentApprovalWorkflowService';
 import { ResponsesApiProvider } from './providers/llamastack';
 import { createSecurityMiddleware } from './middleware/security';
 import { createRateLimiter } from './middleware/rateLimiter';
@@ -360,7 +361,8 @@ export async function createRouter({
 
   // Authenticated routes
   registerChatRoutes(ctx);
-  registerAgentRoutes(ctx, adminConfig);
+  const agentApprovalService = new AgentApprovalWorkflowService(config, logger);
+  registerAgentRoutes(ctx, adminConfig, agentApprovalService);
 
   // Tool lifecycle routes -- unified tool listing with lifecycle overlay
   {
