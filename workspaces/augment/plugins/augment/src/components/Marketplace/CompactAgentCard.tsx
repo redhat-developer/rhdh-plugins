@@ -30,9 +30,9 @@ import {
 import { cardSx, cardAccentSx, avatarSx } from './marketplace.styles';
 
 interface CompactAgentCardProps {
-  agent: ChatAgent;
-  onClick: () => void;
-  onDelete?: (agentId: string) => void;
+  readonly agent: ChatAgent;
+  readonly onClick: () => void;
+  readonly onDelete?: (agentId: string) => void;
 }
 
 /**

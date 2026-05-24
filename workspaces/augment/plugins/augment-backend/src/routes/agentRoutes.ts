@@ -568,32 +568,42 @@ export function registerAgentRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/publish -- promote to production (valid transition only)
+  // PUT /agents/:agentId/publish and /unpublish
   // ---------------------------------------------------------------------------
-  router.put(
-    '/agents/:agentId/publish',
-    ctx.requireAdminAccess,
-    withRoute(
-      'PUT /agents/:agentId/publish',
-      'Failed to publish agent',
-      async (req, res) => {
+  for (const { path, target, dir, notFoundMsg } of [
+    {
+      path: '/agents/:agentId/publish',
+      target: 'published' as AgentLifecycleStage,
+      dir: 'publish',
+      notFoundMsg:
+        'Agent is not registered for governance. Register the agent before publishing.',
+    },
+    {
+      path: '/agents/:agentId/unpublish',
+      target: 'pending' as AgentLifecycleStage,
+      dir: 'unpublish',
+      notFoundMsg:
+        'Agent is not registered for governance. Nothing to unpublish.',
+    },
+  ] as const) {
+    router.put(
+      path,
+      ctx.requireAdminAccess,
+      withRoute(`PUT ${path}`, `Failed to ${dir} agent`, async (req, res) => {
         const agentId = decodeURIComponent(req.params.agentId);
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
         if (!existing) {
-          res.status(404).json({
-            error:
-              'Agent is not registered for governance. Register the agent before publishing.',
-          });
+          res.status(404).json({ error: notFoundMsg });
           return;
         }
         const result = await applyLifecycleTransition({
           configs,
           agentId,
-          targetStage: 'published',
+          targetStage: target,
           userRef,
-          direction: 'publish',
+          direction: dir,
           saveFn: saveChatAgentConfigs,
           audit,
           logger,
@@ -602,54 +612,12 @@ export function registerAgentRoutes(
         res.json({
           success: true,
           agentId: result.agentId,
-          published: true,
+          published: target === 'published',
           lifecycleStage: result.to,
         });
-      },
-    ),
-  );
-
-  // ---------------------------------------------------------------------------
-  // PUT /agents/:agentId/unpublish -- rollback production to staging
-  // ---------------------------------------------------------------------------
-  router.put(
-    '/agents/:agentId/unpublish',
-    ctx.requireAdminAccess,
-    withRoute(
-      'PUT /agents/:agentId/unpublish',
-      'Failed to unpublish agent',
-      async (req, res) => {
-        const agentId = decodeURIComponent(req.params.agentId);
-        const userRef = await ctx.getUserRef(req);
-        const configs = await loadChatAgentConfigs();
-        const existing = configs.find(c => c.agentId === agentId);
-        if (!existing) {
-          res.status(404).json({
-            error:
-              'Agent is not registered for governance. Nothing to unpublish.',
-          });
-          return;
-        }
-        const result = await applyLifecycleTransition({
-          configs,
-          agentId,
-          targetStage: 'pending',
-          userRef,
-          direction: 'unpublish',
-          saveFn: saveChatAgentConfigs,
-          audit,
-          logger,
-          req,
-        });
-        res.json({
-          success: true,
-          agentId: result.agentId,
-          published: false,
-          lifecycleStage: result.to,
-        });
-      },
-    ),
-  );
+      }),
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // PUT /agents/bulk-publish -- bulk publish/unpublish (valid transitions only)

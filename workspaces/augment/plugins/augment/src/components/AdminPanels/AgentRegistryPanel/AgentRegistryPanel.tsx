@@ -154,7 +154,7 @@ function getStageColor(stage: AgentLifecycleStage, isDark: boolean): string {
     case 'published':
       return isDark ? '#86efac' : '#15803d';
     case 'pending':
-      return isDark ? '#fbbf24' : '#b45309';
+      return isDark ? '#93c5fd' : '#1d4ed8';
     case 'archived':
       return isDark ? '#f87171' : '#b91c1c';
     default:
@@ -167,7 +167,7 @@ function getStageIcon(stage: AgentLifecycleStage) {
     case 'published':
       return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
     case 'pending':
-      return <VerifiedIcon sx={{ fontSize: 14 }} />;
+      return <SearchIcon sx={{ fontSize: 14 }} />;
     case 'archived':
       return <HistoryIcon sx={{ fontSize: 14 }} />;
     default:
@@ -180,7 +180,7 @@ function getStageBg(stage: AgentLifecycleStage, isDark: boolean): string {
     case 'published':
       return isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)';
     case 'pending':
-      return isDark ? 'rgba(251,191,36,0.12)' : 'rgba(251,191,36,0.08)';
+      return isDark ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.08)';
     case 'archived':
       return isDark ? 'rgba(248,113,113,0.12)' : 'rgba(248,113,113,0.08)';
     default:
@@ -395,9 +395,13 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
     const stageRank: Record<string, number> = {
       published: 0,
+      production: 0,
       pending: 1,
+      review: 1,
+      staging: 1,
       draft: 2,
       archived: 3,
+      retired: 3,
     };
     newRows.sort((a, b) => {
       const sa = stageRank[a.config.lifecycleStage ?? 'draft'] ?? 5;
