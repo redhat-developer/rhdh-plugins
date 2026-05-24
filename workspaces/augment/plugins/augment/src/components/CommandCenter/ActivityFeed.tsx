@@ -57,12 +57,12 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
 
     const deployed = agents.filter(
       a =>
-        a.lifecycleStage === 'production' ||
+        a.lifecycleStage === 'published' ||
         (a.lifecycleStage as string) === 'deployed',
     );
     const inReview = agents.filter(
       a =>
-        a.lifecycleStage === 'review' ||
+        a.lifecycleStage === 'pending' ||
         (a.lifecycleStage as string) === 'registered',
     );
     const drafts = agents.filter(

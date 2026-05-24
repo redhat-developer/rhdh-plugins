@@ -57,13 +57,7 @@ import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
 
 type DetailTab = 'overview' | 'test';
 
-const LIFECYCLE_STAGES = [
-  'Draft',
-  'In Review',
-  'Staging',
-  'Production',
-  'Retired',
-];
+const LIFECYCLE_STAGES = ['Draft', 'Pending', 'Published', 'Archived'];
 
 export interface WorkflowAgentDetailProps {
   agentId: string;
@@ -352,7 +346,7 @@ export function WorkflowAgentDetail({
               flexShrink: 0,
             }}
           >
-            {lifecycleStage !== 'retired' && (
+            {lifecycleStage !== 'archived' && (
               <Tooltip title={nextTransition.label}>
                 <Button
                   size="small"
@@ -378,7 +372,7 @@ export function WorkflowAgentDetail({
                 </Button>
               </Tooltip>
             )}
-            {lifecycleStage === 'retired' && (
+            {lifecycleStage === 'archived' && (
               <Tooltip title="Reactivate this agent to draft status">
                 <Button
                   size="small"

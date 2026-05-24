@@ -32,21 +32,25 @@ describe('normalizeLifecycleStage', () => {
   });
 
   it('normalizes valid stages to lowercase', () => {
-    expect(normalizeLifecycleStage('Production')).toBe('production');
-    expect(normalizeLifecycleStage('REVIEW')).toBe('review');
-    expect(normalizeLifecycleStage('staging')).toBe('staging');
+    expect(normalizeLifecycleStage('Published')).toBe('published');
+    expect(normalizeLifecycleStage('PENDING')).toBe('pending');
+    expect(normalizeLifecycleStage('archived')).toBe('archived');
   });
 
   it('returns trimmed value for padded input (Finding C fix)', () => {
-    const result = normalizeLifecycleStage(' Production ');
-    expect(result).toBe('production');
+    const result = normalizeLifecycleStage(' Published ');
+    expect(result).toBe('published');
     expect(result).not.toContain(' ');
   });
 
   it('maps legacy stage names', () => {
-    expect(normalizeLifecycleStage('registered')).toBe('review');
-    expect(normalizeLifecycleStage('deployed')).toBe('production');
-    expect(normalizeLifecycleStage('Registered')).toBe('review');
+    expect(normalizeLifecycleStage('registered')).toBe('pending');
+    expect(normalizeLifecycleStage('deployed')).toBe('published');
+    expect(normalizeLifecycleStage('Registered')).toBe('pending');
+    expect(normalizeLifecycleStage('review')).toBe('pending');
+    expect(normalizeLifecycleStage('staging')).toBe('pending');
+    expect(normalizeLifecycleStage('production')).toBe('published');
+    expect(normalizeLifecycleStage('retired')).toBe('archived');
   });
 
   it('returns draft for unknown stage names', () => {
@@ -56,43 +60,35 @@ describe('normalizeLifecycleStage', () => {
 });
 
 describe('isValidTransition', () => {
-  it('allows draft -> review', () => {
-    expect(isValidTransition('draft', 'review')).toBe(true);
+  it('allows draft -> pending', () => {
+    expect(isValidTransition('draft', 'pending')).toBe(true);
   });
 
-  it('allows review -> staging', () => {
-    expect(isValidTransition('review', 'staging')).toBe(true);
+  it('allows pending -> published', () => {
+    expect(isValidTransition('pending', 'published')).toBe(true);
   });
 
-  it('allows staging -> production', () => {
-    expect(isValidTransition('staging', 'production')).toBe(true);
+  it('allows pending -> draft (reject)', () => {
+    expect(isValidTransition('pending', 'draft')).toBe(true);
   });
 
-  it('allows production -> retired', () => {
-    expect(isValidTransition('production', 'retired')).toBe(true);
+  it('allows published -> pending (unpublish)', () => {
+    expect(isValidTransition('published', 'pending')).toBe(true);
   });
 
-  it('allows rollback: review -> draft', () => {
-    expect(isValidTransition('review', 'draft')).toBe(true);
+  it('allows published -> archived', () => {
+    expect(isValidTransition('published', 'archived')).toBe(true);
   });
 
-  it('allows rollback: staging -> draft', () => {
-    expect(isValidTransition('staging', 'draft')).toBe(true);
-  });
-
-  it('allows rollback: production -> staging', () => {
-    expect(isValidTransition('production', 'staging')).toBe(true);
-  });
-
-  it('allows reactivate: retired -> draft', () => {
-    expect(isValidTransition('retired', 'draft')).toBe(true);
+  it('allows archived -> draft (reactivate)', () => {
+    expect(isValidTransition('archived', 'draft')).toBe(true);
   });
 
   it('rejects invalid transitions', () => {
-    expect(isValidTransition('draft', 'production')).toBe(false);
-    expect(isValidTransition('draft', 'staging')).toBe(false);
-    expect(isValidTransition('retired', 'production')).toBe(false);
-    expect(isValidTransition('production', 'draft')).toBe(false);
+    expect(isValidTransition('draft', 'published')).toBe(false);
+    expect(isValidTransition('draft', 'archived')).toBe(false);
+    expect(isValidTransition('archived', 'published')).toBe(false);
+    expect(isValidTransition('published', 'draft')).toBe(false);
   });
 });
 
@@ -103,32 +99,24 @@ describe('getAvailableTransitions', () => {
     expect(transitions[0].action).toBe('submit');
   });
 
-  it('returns approve and reject for review', () => {
-    const transitions = getAvailableTransitions('review');
-    expect(transitions).toHaveLength(2);
+  it('returns approve, reject, and withdraw for pending', () => {
+    const transitions = getAvailableTransitions('pending');
+    expect(transitions).toHaveLength(3);
     expect(transitions.map(t => t.action)).toEqual(
-      expect.arrayContaining(['approve', 'reject']),
+      expect.arrayContaining(['approve', 'reject', 'withdraw']),
     );
   });
 
-  it('returns promote and rollback for staging', () => {
-    const transitions = getAvailableTransitions('staging');
+  it('returns unpublish and archive for published', () => {
+    const transitions = getAvailableTransitions('published');
     expect(transitions).toHaveLength(2);
     expect(transitions.map(t => t.action)).toEqual(
-      expect.arrayContaining(['promote', 'rollback']),
+      expect.arrayContaining(['unpublish', 'archive']),
     );
   });
 
-  it('returns rollback and retire for production', () => {
-    const transitions = getAvailableTransitions('production');
-    expect(transitions).toHaveLength(2);
-    expect(transitions.map(t => t.action)).toEqual(
-      expect.arrayContaining(['rollback', 'retire']),
-    );
-  });
-
-  it('returns reactivate for retired', () => {
-    const transitions = getAvailableTransitions('retired');
+  it('returns reactivate for archived', () => {
+    const transitions = getAvailableTransitions('archived');
     expect(transitions).toHaveLength(1);
     expect(transitions[0].action).toBe('reactivate');
   });

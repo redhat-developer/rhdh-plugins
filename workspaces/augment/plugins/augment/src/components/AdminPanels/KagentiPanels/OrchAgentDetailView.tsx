@@ -63,15 +63,13 @@ function roleChipColor(role?: string) {
 
 function lifecycleColor(stage?: string) {
   switch (stage) {
-    case 'production':
+    case 'published':
     case 'deployed':
       return 'success' as const;
-    case 'staging':
-      return 'warning' as const;
-    case 'review':
+    case 'pending':
     case 'registered':
-      return 'info' as const;
-    case 'retired':
+      return 'warning' as const;
+    case 'archived':
       return 'error' as const;
     default:
       return 'default' as const;

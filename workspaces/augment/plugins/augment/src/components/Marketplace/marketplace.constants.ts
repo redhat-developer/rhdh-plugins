@@ -65,10 +65,13 @@ export const LIFECYCLE_STAGE_CONFIG: Record<
   { label: string; color: string }
 > = {
   draft: { label: 'Draft', color: '#6b7280' },
-  review: { label: 'In Review', color: '#3b82f6' },
-  staging: { label: 'Staging', color: '#f59e0b' },
-  production: { label: 'Production', color: '#10b981' },
-  retired: { label: 'Retired', color: '#ef4444' },
-  registered: { label: 'In Review', color: '#3b82f6' },
-  deployed: { label: 'Production', color: '#10b981' },
+  pending: { label: 'Pending', color: '#3b82f6' },
+  published: { label: 'Published', color: '#10b981' },
+  archived: { label: 'Archived', color: '#ef4444' },
+  review: { label: 'Pending', color: '#3b82f6' },
+  staging: { label: 'Pending', color: '#3b82f6' },
+  production: { label: 'Published', color: '#10b981' },
+  retired: { label: 'Archived', color: '#ef4444' },
+  registered: { label: 'Pending', color: '#3b82f6' },
+  deployed: { label: 'Published', color: '#10b981' },
 };

@@ -65,13 +65,7 @@ import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
 
 type LifecycleTab = 'overview' | 'design' | 'test' | 'build' | 'card';
 
-const LIFECYCLE_STAGES = [
-  'Draft',
-  'In Review',
-  'Staging',
-  'Production',
-  'Retired',
-];
+const LIFECYCLE_STAGES = ['Draft', 'Pending', 'Published', 'Archived'];
 
 export interface AgentLifecycleDetailProps {
   agent: KagentiAgentSummary;
@@ -317,7 +311,7 @@ export function AgentLifecycleDetail({
           >
             {isAdmin ? (
               <>
-                {lifecycleStage !== 'retired' && (
+                {lifecycleStage !== 'archived' && (
                   <Tooltip title={nextTransition.label}>
                     <Button
                       size="small"
@@ -343,7 +337,7 @@ export function AgentLifecycleDetail({
                     </Button>
                   </Tooltip>
                 )}
-                {lifecycleStage === 'retired' && (
+                {lifecycleStage === 'archived' && (
                   <Tooltip title="Reactivate this agent to draft status">
                     <Button
                       size="small"

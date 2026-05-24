@@ -35,8 +35,8 @@ function isValidLifecycleStage(stage: unknown): stage is AgentLifecycleStage {
   );
 }
 
-function isProductionStage(stage: AgentLifecycleStage): boolean {
-  return stage === 'production';
+function isPublishedStage(stage: AgentLifecycleStage): boolean {
+  return stage === 'published';
 }
 
 export interface ToolLifecycleOptions {
@@ -46,7 +46,7 @@ export interface ToolLifecycleOptions {
 /**
  * Registers tool lifecycle endpoints mirroring the agent lifecycle.
  * Merges tools from the provider (Kagenti) with lifecycle config from the DB,
- * enabling draft -> review -> staging -> production -> retired lifecycle for tools.
+ * enabling draft -> pending -> published -> archived lifecycle for tools.
  */
 export function registerToolLifecycleRoutes(
   ctx: RouteContext,
@@ -95,7 +95,7 @@ export function registerToolLifecycleRoutes(
       const stage = normalizeLifecycleStage(cfg?.lifecycleStage);
       return {
         ...tool,
-        published: isProductionStage(stage),
+        published: isPublishedStage(stage),
         lifecycleStage: stage,
         version: cfg?.version ?? 0,
         promotedAt: cfg?.promotedAt,
@@ -126,7 +126,7 @@ export function registerToolLifecycleRoutes(
 
   // ---------------------------------------------------------------------------
   // PUT /tools/:toolId/promote -- promote tool to the next lifecycle stage
-  // draft → review is open to any authenticated user.
+  // draft → pending is open to any authenticated user.
   // All other transitions require admin access.
   // ---------------------------------------------------------------------------
   router.put(
@@ -166,7 +166,7 @@ export function registerToolLifecycleRoutes(
         }
 
         const isSubmitForReview =
-          currentStage === 'draft' && nextStage === 'review';
+          currentStage === 'draft' && nextStage === 'pending';
         if (!isSubmitForReview) {
           const isAdmin = await ctx.checkIsAdmin(req);
           if (!isAdmin) {
@@ -180,7 +180,7 @@ export function registerToolLifecycleRoutes(
         }
 
         const now = new Date().toISOString();
-        const isProd = isProductionStage(nextStage);
+        const isProd = isPublishedStage(nextStage);
 
         if (existing) {
           existing.lifecycleStage = nextStage;
@@ -268,7 +268,7 @@ export function registerToolLifecycleRoutes(
         }
 
         const now = new Date().toISOString();
-        const isProd = isProductionStage(nextStage);
+        const isProd = isPublishedStage(nextStage);
 
         if (existing) {
           existing.lifecycleStage = nextStage;
@@ -305,7 +305,7 @@ export function registerToolLifecycleRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /tools/:toolId/publish -- shortcut: promote to production
+  // PUT /tools/:toolId/publish -- shortcut: promote to published
   // ---------------------------------------------------------------------------
   router.put(
     '/tools/:toolId/publish',
@@ -321,7 +321,7 @@ export function registerToolLifecycleRoutes(
         const now = new Date().toISOString();
 
         if (existing) {
-          existing.lifecycleStage = 'production';
+          existing.lifecycleStage = 'published';
           existing.published = true;
           existing.visible = true;
           existing.version = (existing.version ?? 0) + 1;
@@ -330,7 +330,7 @@ export function registerToolLifecycleRoutes(
         } else {
           configs.push({
             toolId,
-            lifecycleStage: 'production',
+            lifecycleStage: 'published',
             published: true,
             visible: true,
             version: 1,
@@ -346,7 +346,7 @@ export function registerToolLifecycleRoutes(
           target: toolId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'production', direction: 'publish' },
+          meta: { to: 'published', direction: 'publish' },
         });
         logger.info(`Tool "${toolId}" published by ${userRef}`);
         res.json({ success: true, toolId, published: true });
@@ -355,7 +355,7 @@ export function registerToolLifecycleRoutes(
   );
 
   // ---------------------------------------------------------------------------
-  // PUT /tools/:toolId/unpublish -- move from production to staging
+  // PUT /tools/:toolId/unpublish -- move from published to pending
   // ---------------------------------------------------------------------------
   router.put(
     '/tools/:toolId/unpublish',
@@ -371,7 +371,7 @@ export function registerToolLifecycleRoutes(
         const now = new Date().toISOString();
 
         if (existing) {
-          existing.lifecycleStage = 'staging';
+          existing.lifecycleStage = 'pending';
           existing.published = false;
           existing.visible = false;
           existing.promotedAt = now;
@@ -379,7 +379,7 @@ export function registerToolLifecycleRoutes(
         } else {
           configs.push({
             toolId,
-            lifecycleStage: 'staging',
+            lifecycleStage: 'pending',
             published: false,
             visible: false,
             promotedAt: now,
@@ -394,7 +394,7 @@ export function registerToolLifecycleRoutes(
           target: toolId,
           outcome: 'success',
           sourceIp: AuditLogger.extractIp(req),
-          meta: { to: 'staging', direction: 'unpublish' },
+          meta: { to: 'pending', direction: 'unpublish' },
         });
         logger.info(`Tool "${toolId}" unpublished by ${userRef}`);
         res.json({ success: true, toolId, published: false });

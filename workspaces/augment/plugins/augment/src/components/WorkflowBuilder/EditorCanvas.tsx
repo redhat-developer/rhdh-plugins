@@ -165,8 +165,14 @@ export function EditorCanvas({
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
 
-  const flowNodes = useMemo(() => toFlowNodes(initialNodes), [initialNodes]);
-  const flowEdges = useMemo(() => toFlowEdges(initialEdges), [initialEdges]);
+  const flowNodes = useMemo(
+    () => toFlowNodes(initialNodes ?? []),
+    [initialNodes],
+  );
+  const flowEdges = useMemo(
+    () => toFlowEdges(initialEdges ?? []),
+    [initialEdges],
+  );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);

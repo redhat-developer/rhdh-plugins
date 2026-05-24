@@ -182,7 +182,7 @@ export function registerAdminConfigRoutes(
         onConfigChanged?.();
 
         // Auto-register chatAgents entries for agents that can be published
-        // (router or standalone). New agents start as 'review' so they go
+        // (router or standalone). New agents start as 'pending' so they go
         // through the review queue. Specialists are hidden.
         if (validKey === 'agents' && value && typeof value === 'object') {
           try {
@@ -213,7 +213,7 @@ export function registerAdminConfigRoutes(
                 published: false,
                 visible: false,
                 featured: false,
-                lifecycleStage: 'review',
+                lifecycleStage: 'pending',
                 version: 1,
                 promotedAt: new Date().toISOString(),
                 promotedBy: userRef,

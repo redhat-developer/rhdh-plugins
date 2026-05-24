@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import {
@@ -29,15 +30,20 @@ import {
 import { cardSx, cardAccentSx, avatarSx } from './marketplace.styles';
 
 interface CompactAgentCardProps {
-  agent: ChatAgent;
-  onClick: () => void;
+  readonly agent: ChatAgent;
+  readonly onClick: () => void;
+  readonly onDelete?: (agentId: string) => void;
 }
 
 /**
  * Compact agent card (~88px) showing avatar, name, description, status, and chat action.
  * Designed for high-density 4-column grids where 16 agents are visible at once.
  */
-export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
+export function CompactAgentCard({
+  agent,
+  onClick,
+  onDelete,
+}: CompactAgentCardProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const avatarColor = getAvatarColor(agent.name);
@@ -136,25 +142,48 @@ export function CompactAgentCard({ agent, onClick }: CompactAgentCardProps) {
               )}
             </Box>
           </Box>
-          <Tooltip title="Start Chat" placement="left">
-            <IconButton
-              size="small"
-              onClick={e => {
-                e.stopPropagation();
-                onClick();
-              }}
-              sx={{
-                color: theme.palette.text.disabled,
-                transition: 'all 0.15s',
-                '&:hover': {
-                  color: theme.palette.primary.main,
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <ChatBubbleOutlineIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {onDelete && agent.lifecycleStage === 'draft' && (
+              <Tooltip title="Delete draft" placement="left">
+                <IconButton
+                  size="small"
+                  onClick={e => {
+                    e.stopPropagation();
+                    onDelete(agent.id);
+                  }}
+                  sx={{
+                    color: theme.palette.text.disabled,
+                    transition: 'all 0.15s',
+                    '&:hover': {
+                      color: theme.palette.error.main,
+                      bgcolor: alpha(theme.palette.error.main, 0.08),
+                    },
+                  }}
+                >
+                  <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Start Chat" placement="left">
+              <IconButton
+                size="small"
+                onClick={e => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                sx={{
+                  color: theme.palette.text.disabled,
+                  transition: 'all 0.15s',
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  },
+                }}
+              >
+                <ChatBubbleOutlineIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
 
         {/* Description -- 2 lines */}

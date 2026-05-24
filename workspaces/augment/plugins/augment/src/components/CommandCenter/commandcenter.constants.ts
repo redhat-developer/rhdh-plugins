@@ -37,6 +37,9 @@ export const STATUS_COLORS = {
 
 export const LIFECYCLE_COLORS = {
   draft: '#6b7280',
+  pending: '#3b82f6',
+  published: '#10b981',
+  archived: '#ef4444',
   review: '#3b82f6',
   staging: '#f59e0b',
   production: '#10b981',

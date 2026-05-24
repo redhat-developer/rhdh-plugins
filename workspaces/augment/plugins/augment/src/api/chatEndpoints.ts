@@ -143,7 +143,10 @@ async function streamSSEAttempt(
   try {
     response = await deps.fetchApi.fetch(`${baseUrl}/chat/stream`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Backstage-Request': 'augment',
+      },
       body: JSON.stringify(body),
       signal: timeoutController.signal,
     });

@@ -399,6 +399,10 @@ export interface AugmentApi {
     version: number;
   }>;
   publishAgent(agentId: string): Promise<void>;
+  registerAgentForGovernance(agentId: string): Promise<{
+    agentId: string;
+    lifecycleStage: string;
+  }>;
   removeVectorStore(
     vectorStoreId: string,
     permanent?: boolean,

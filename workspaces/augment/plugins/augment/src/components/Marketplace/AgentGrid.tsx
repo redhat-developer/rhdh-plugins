@@ -30,6 +30,7 @@ interface AgentGridProps {
   agents: ChatAgent[];
   loading: boolean;
   onAgentClick: (agentId: string) => void;
+  onDeleteAgent?: (agentId: string) => void;
   emptyMessage?: string;
   emptyAction?: { label: string; onClick: () => void };
 }
@@ -38,6 +39,7 @@ export function AgentGrid({
   agents,
   loading,
   onAgentClick,
+  onDeleteAgent,
   emptyMessage,
   emptyAction,
 }: AgentGridProps) {
@@ -115,6 +117,7 @@ export function AgentGrid({
             key={agent.id}
             agent={agent}
             onClick={() => onAgentClick(agent.id)}
+            onDelete={onDeleteAgent}
           />
         ))}
       </Box>

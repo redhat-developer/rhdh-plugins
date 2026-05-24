@@ -16,10 +16,18 @@
 
 import express from 'express';
 import request from 'supertest';
+import type { Config } from '@backstage/config';
 import { registerAgentRoutes } from './agentRoutes';
 import { createMockLogger } from '../test-utils/mocks';
 import type { AdminConfigService } from '../services/AdminConfigService';
 import type { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+
+function createMockBackstageConfig(): Config {
+  return {
+    getOptionalConfig: jest.fn().mockReturnValue(undefined),
+    getOptionalString: jest.fn().mockReturnValue(undefined),
+  } as unknown as Config;
+}
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -63,7 +71,7 @@ function setup(opts: SetupOptions = {}) {
   const ctx = {
     router,
     logger,
-    config: {} as never,
+    config: createMockBackstageConfig(),
     provider: {
       id: 'llamastack',
       displayName: 'Llama Stack',
@@ -154,7 +162,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'public',
-              lifecycleStage: 'production',
+              lifecycleStage: 'published',
               published: true,
               visible: true,
               featured: false,
@@ -198,7 +206,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'public',
-              lifecycleStage: 'production',
+              lifecycleStage: 'published',
               published: true,
               visible: true,
               featured: false,
@@ -230,7 +238,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'prod',
-              lifecycleStage: 'production',
+              lifecycleStage: 'published',
               published: true,
               visible: true,
               featured: false,
@@ -258,7 +266,7 @@ describe('agentRoutes', () => {
   // =========================================================================
 
   describe('PUT /agents/:agentId/promote', () => {
-    it('promotes draft to review for non-admin owner', async () => {
+    it('promotes draft to pending for non-admin owner', async () => {
       const { app } = setup({
         isAdmin: false,
         userRef: 'user:default/alice',
@@ -279,14 +287,14 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/mybot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.lifecycleStage).toBe('review');
+      expect(res.body.lifecycleStage).toBe('pending');
     });
 
-    it('rejects non-admin attempting review → staging', async () => {
+    it('rejects non-admin attempting pending → published', async () => {
       const { app } = setup({
         isAdmin: false,
         userRef: 'user:default/alice',
@@ -295,7 +303,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -307,7 +315,7 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/mybot/promote')
-        .send({ targetStage: 'staging' });
+        .send({ targetStage: 'published' });
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Only admins');
@@ -324,7 +332,7 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/ghost/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain('not found in lifecycle config');
@@ -351,13 +359,13 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/bobbot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('only promote agents you created');
     });
 
-    it('admin promotes review → staging', async () => {
+    it('admin promotes pending → published', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -365,7 +373,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -377,13 +385,13 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/mybot/promote')
-        .send({ targetStage: 'staging' });
+        .send({ targetStage: 'published' });
 
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('staging');
+      expect(res.body.lifecycleStage).toBe('published');
     });
 
-    it('admin promotes staging → production', async () => {
+    it('admin promotes draft → pending', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -391,7 +399,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'staging',
+              lifecycleStage: 'draft',
               published: false,
               visible: false,
               featured: false,
@@ -403,13 +411,13 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/mybot/promote')
-        .send({ targetStage: 'production' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('production');
+      expect(res.body.lifecycleStage).toBe('pending');
     });
 
-    it('rejects invalid transition draft → production', async () => {
+    it('rejects invalid transition draft → published', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -428,7 +436,7 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/mybot/promote')
-        .send({ targetStage: 'production' });
+        .send({ targetStage: 'published' });
 
       expect(res.status).toBe(400);
     });
@@ -468,10 +476,10 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/newbot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('review');
+      expect(res.body.lifecycleStage).toBe('pending');
 
       const configs = store.chatAgents as Array<{
         agentId: string;
@@ -510,7 +518,7 @@ describe('agentRoutes', () => {
 
       const res = await request(app)
         .put('/agents/rejected/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
 
       expect(res.status).toBe(200);
       const configs = store.chatAgents as Array<{
@@ -531,7 +539,7 @@ describe('agentRoutes', () => {
   // =========================================================================
 
   describe('PUT /agents/:agentId/demote', () => {
-    it('admin demotes review → draft', async () => {
+    it('admin demotes pending → draft', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -539,7 +547,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -556,7 +564,7 @@ describe('agentRoutes', () => {
       expect(res.body.lifecycleStage).toBe('draft');
     });
 
-    it('stores rejection reason when demoting review → draft', async () => {
+    it('stores rejection reason when demoting pending → draft', async () => {
       const { app, store } = setup({
         isAdmin: true,
         userRef: 'user:default/admin',
@@ -565,7 +573,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -599,7 +607,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -645,7 +653,7 @@ describe('agentRoutes', () => {
   // =========================================================================
 
   describe('PUT /agents/:agentId/publish', () => {
-    it('publishes an agent to production', async () => {
+    it('publishes an agent to published', async () => {
       const { app, store } = setup({
         isAdmin: true,
         initialConfig: {
@@ -653,7 +661,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'staging',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -676,12 +684,12 @@ describe('agentRoutes', () => {
         version: number;
       }>;
       const entry = configs.find(c => c.agentId === 'mybot');
-      expect(entry?.lifecycleStage).toBe('production');
+      expect(entry?.lifecycleStage).toBe('published');
       expect(entry?.published).toBe(true);
       expect(entry?.version).toBe(3);
     });
 
-    it('reports lifecycle bypass when publishing from non-staging stage', async () => {
+    it('rejects publish when lifecycle transition is invalid', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -700,11 +708,11 @@ describe('agentRoutes', () => {
 
       const res = await request(app).put('/agents/mybot/publish');
 
-      expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toBe(true);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
     });
 
-    it('does not report bypass when publishing from staging', async () => {
+    it('publishes when agent is in pending', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -712,7 +720,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'staging',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -724,7 +732,7 @@ describe('agentRoutes', () => {
       const res = await request(app).put('/agents/mybot/publish');
 
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toBe(false);
+      expect(res.body.lifecycleStage).toBe('published');
     });
 
     it('rejects non-admin access', async () => {
@@ -733,8 +741,8 @@ describe('agentRoutes', () => {
       expect(res.status).toBe(403);
     });
 
-    it('creates new config entry for unknown agent', async () => {
-      const { app, store } = setup({
+    it('rejects publish for agent not registered for governance', async () => {
+      const { app } = setup({
         isAdmin: true,
         initialConfig: {
           agents: { newbot: { name: 'New Bot', instructions: 'Hello' } },
@@ -743,15 +751,55 @@ describe('agentRoutes', () => {
 
       const res = await request(app).put('/agents/newbot/publish');
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(404);
+    });
+  });
+
+  // =========================================================================
+  // PUT /agents/:agentId/register
+  // =========================================================================
+
+  describe('PUT /agents/:agentId/register', () => {
+    it('creates draft chatAgents entry for a catalog agent', async () => {
+      const { app, store } = setup({
+        isAdmin: true,
+        initialConfig: {
+          agents: { newbot: { name: 'New Bot', instructions: 'Hello' } },
+        },
+      });
+
+      const res = await request(app).put('/agents/newbot/register');
+
+      expect(res.status).toBe(201);
+      expect(res.body.lifecycleStage).toBe('draft');
       const configs = store.chatAgents as Array<{
         agentId: string;
         lifecycleStage: string;
-        version: number;
       }>;
-      const entry = configs.find(c => c.agentId === 'newbot');
-      expect(entry?.lifecycleStage).toBe('production');
-      expect(entry?.version).toBe(1);
+      expect(configs.find(c => c.agentId === 'newbot')?.lifecycleStage).toBe(
+        'draft',
+      );
+    });
+
+    it('returns 409 when agent is already registered', async () => {
+      const { app } = setup({
+        isAdmin: true,
+        initialConfig: {
+          agents: { mybot: { name: 'My Bot', instructions: 'Help' } },
+          chatAgents: [
+            {
+              agentId: 'mybot',
+              lifecycleStage: 'draft',
+              published: false,
+              visible: false,
+              featured: false,
+            },
+          ],
+        },
+      });
+
+      const res = await request(app).put('/agents/mybot/register');
+      expect(res.status).toBe(409);
     });
   });
 
@@ -760,7 +808,7 @@ describe('agentRoutes', () => {
   // =========================================================================
 
   describe('PUT /agents/:agentId/unpublish', () => {
-    it('moves agent from production to staging', async () => {
+    it('moves agent from published to pending', async () => {
       const { app, store } = setup({
         isAdmin: true,
         initialConfig: {
@@ -768,7 +816,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'production',
+              lifecycleStage: 'published',
               published: true,
               visible: true,
               featured: false,
@@ -789,7 +837,7 @@ describe('agentRoutes', () => {
         visible: boolean;
       }>;
       const entry = configs.find(c => c.agentId === 'mybot');
-      expect(entry?.lifecycleStage).toBe('staging');
+      expect(entry?.lifecycleStage).toBe('pending');
       expect(entry?.published).toBe(false);
       expect(entry?.visible).toBe(false);
     });
@@ -817,14 +865,14 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'bot1',
-              lifecycleStage: 'staging',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
             },
             {
               agentId: 'bot2',
-              lifecycleStage: 'staging',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -850,7 +898,7 @@ describe('agentRoutes', () => {
       }
     });
 
-    it('reports bypassed agents when lifecycle is skipped', async () => {
+    it('rejects bulk publish when any agent has invalid transition', async () => {
       const { app } = setup({
         isAdmin: true,
         initialConfig: {
@@ -871,8 +919,10 @@ describe('agentRoutes', () => {
         .put('/agents/bulk-publish')
         .send({ agentIds: ['mybot'], published: true });
 
-      expect(res.status).toBe(200);
-      expect(res.body.lifecycleBypassed).toContain('mybot');
+      expect(res.status).toBe(400);
+      expect(res.body.invalid).toEqual(
+        expect.arrayContaining([expect.objectContaining({ agentId: 'mybot' })]),
+      );
     });
 
     it('rejects invalid payload', async () => {
@@ -1015,7 +1065,7 @@ describe('agentRoutes', () => {
           chatAgents: [
             {
               agentId: 'mybot',
-              lifecycleStage: 'review',
+              lifecycleStage: 'pending',
               published: false,
               visible: false,
               featured: false,
@@ -1142,7 +1192,7 @@ describe('agentRoutes', () => {
   // =========================================================================
 
   describe('end-to-end lifecycle', () => {
-    it('draft → review → staging → production → staging (unpublish)', async () => {
+    it('draft → pending → published → pending (unpublish)', async () => {
       const { app, store } = setup({
         isAdmin: true,
         userRef: 'user:default/admin',
@@ -1161,26 +1211,19 @@ describe('agentRoutes', () => {
         },
       });
 
-      // draft → review
+      // draft → pending
       let res = await request(app)
         .put('/agents/e2ebot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('review');
+      expect(res.body.lifecycleStage).toBe('pending');
 
-      // review → staging
+      // pending → published
       res = await request(app)
         .put('/agents/e2ebot/promote')
-        .send({ targetStage: 'staging' });
+        .send({ targetStage: 'published' });
       expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('staging');
-
-      // staging → production
-      res = await request(app)
-        .put('/agents/e2ebot/promote')
-        .send({ targetStage: 'production' });
-      expect(res.status).toBe(200);
-      expect(res.body.lifecycleStage).toBe('production');
+      expect(res.body.lifecycleStage).toBe('published');
 
       // verify it's published in listing
       res = await request(app).get('/agents?published=true');
@@ -1188,7 +1231,7 @@ describe('agentRoutes', () => {
         'e2ebot',
       );
 
-      // unpublish → staging
+      // unpublish → pending
       res = await request(app).put('/agents/e2ebot/unpublish');
       expect(res.status).toBe(200);
       expect(res.body.published).toBe(false);
@@ -1198,10 +1241,10 @@ describe('agentRoutes', () => {
         lifecycleStage: string;
       }>;
       const entry = configs.find(c => c.agentId === 'e2ebot');
-      expect(entry?.lifecycleStage).toBe('staging');
+      expect(entry?.lifecycleStage).toBe('pending');
     });
 
-    it('reject round-trip: draft → review → reject (with reason) → re-submit', async () => {
+    it('reject round-trip: draft → pending → reject (with reason) → re-submit', async () => {
       const { app, store } = setup({
         isAdmin: true,
         userRef: 'user:default/admin',
@@ -1222,13 +1265,13 @@ describe('agentRoutes', () => {
         },
       });
 
-      // draft → review
+      // draft → pending
       let res = await request(app)
         .put('/agents/rejectbot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
       expect(res.status).toBe(200);
 
-      // review → draft (rejection)
+      // pending → draft (rejection)
       res = await request(app)
         .put('/agents/rejectbot/demote')
         .send({ targetStage: 'draft', reason: 'Insufficient instructions' });
@@ -1242,10 +1285,10 @@ describe('agentRoutes', () => {
       let entry = configs.find(c => c.agentId === 'rejectbot');
       expect(entry?.rejectionReason).toBe('Insufficient instructions');
 
-      // re-promote draft → review (should clear rejection fields)
+      // re-promote draft → pending (should clear rejection fields)
       res = await request(app)
         .put('/agents/rejectbot/promote')
-        .send({ targetStage: 'review' });
+        .send({ targetStage: 'pending' });
       expect(res.status).toBe(200);
 
       configs = store.chatAgents as Array<{
