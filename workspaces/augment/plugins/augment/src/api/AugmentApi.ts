@@ -677,13 +677,18 @@ export class AugmentApiClient implements AugmentApi {
   // Internal fetch helpers — eliminate per-method boilerplate
   // ---------------------------------------------------------------------------
 
+  private addCsrfHeader(init?: RequestInit): RequestInit {
+    const headers = new Headers(init?.headers);
+    headers.set('X-Backstage-Request', 'augment');
+    return { ...init, headers };
+  }
+
   /** Fetch JSON from a path relative to the plugin base URL; throws on non-2xx. */
   private async fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     const baseUrl = await this.discoveryApi.getBaseUrl('augment');
     const url = `${baseUrl}${path}`;
-    const response = init
-      ? await this.fetchApi.fetch(url, init)
-      : await this.fetchApi.fetch(url);
+    const opts = this.addCsrfHeader(init);
+    const response = await this.fetchApi.fetch(url, opts);
     if (!response.ok) throw await ResponseError.fromResponse(response);
     try {
       return await response.json();
@@ -702,9 +707,8 @@ export class AugmentApiClient implements AugmentApi {
   ): Promise<T> {
     const baseUrl = await this.discoveryApi.getBaseUrl('augment');
     const url = `${baseUrl}${path}`;
-    const response = init
-      ? await this.fetchApi.fetch(url, init)
-      : await this.fetchApi.fetch(url);
+    const opts = this.addCsrfHeader(init);
+    const response = await this.fetchApi.fetch(url, opts);
     if (!response.ok) return fallback;
     return response.json();
   }

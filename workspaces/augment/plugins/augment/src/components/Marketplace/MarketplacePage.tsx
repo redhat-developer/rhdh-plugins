@@ -168,7 +168,15 @@ export function MarketplacePage({
   }, [agents, search, selectedFramework]);
 
   const myAgents = useMemo(
-    () => (userRef ? agents.filter(a => a.createdBy === userRef) : agents),
+    () =>
+      userRef
+        ? agents.filter(
+            a =>
+              a.createdBy === userRef ||
+              (a.governanceRegistered && a.framework === 'workflow-builder') ||
+              (!a.governanceRegistered && a.lifecycleStage !== 'production'),
+          )
+        : agents,
     [agents, userRef],
   );
 
@@ -192,6 +200,18 @@ export function MarketplacePage({
       onChatWithAgent?.(agentId);
     },
     [onChatWithAgent],
+  );
+
+  const handleDeleteAgent = useCallback(
+    async (agentId: string) => {
+      try {
+        await api.deleteAgentConfig(agentId);
+        setAgents(prev => prev.filter(a => a.id !== agentId));
+      } catch {
+        // Silently handle -- user will see agent remain
+      }
+    },
+    [api],
   );
 
   return (
@@ -417,6 +437,7 @@ export function MarketplacePage({
                     handleChat(id);
                   }
                 }}
+                onDeleteAgent={handleDeleteAgent}
                 emptyMessage="Agents you create will appear here."
                 emptyAction={
                   onCreateAgent

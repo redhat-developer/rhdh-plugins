@@ -44,15 +44,23 @@ interface ValidationIssue {
 function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
-  if (!workflow.name.trim()) {
+  if (!workflow) {
+    issues.push({ severity: 'error', message: 'No workflow to publish' });
+    return issues;
+  }
+
+  if (!workflow.name?.trim()) {
     issues.push({ severity: 'error', message: 'Workflow must have a name' });
   }
 
-  if (!workflow.nodes || workflow.nodes.length === 0) {
+  const nodes = workflow.nodes ?? [];
+  const edges = workflow.edges ?? [];
+
+  if (nodes.length === 0) {
     issues.push({ severity: 'error', message: 'Workflow has no nodes' });
   }
 
-  const hasStart = workflow.nodes.some(n => n.type === 'start');
+  const hasStart = nodes.some(n => n.type === 'start');
   if (!hasStart) {
     issues.push({
       severity: 'error',
@@ -60,7 +68,7 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
     });
   }
 
-  const hasAgent = workflow.nodes.some(n => n.type === 'agent');
+  const hasAgent = nodes.some(n => n.type === 'agent');
   if (!hasAgent) {
     issues.push({
       severity: 'error',
@@ -68,7 +76,7 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
     });
   }
 
-  const agentNodes = workflow.nodes.filter(n => n.type === 'agent');
+  const agentNodes = nodes.filter(n => n.type === 'agent');
   for (const node of agentNodes) {
     const data = node.data as Record<string, unknown>;
     if (!data.instructions) {
@@ -80,8 +88,8 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
   }
 
   if (hasStart) {
-    const startNode = workflow.nodes.find(n => n.type === 'start')!;
-    const startEdge = workflow.edges.find(e => e.source === startNode.id);
+    const startNode = nodes.find(n => n.type === 'start')!;
+    const startEdge = edges.find(e => e.source === startNode.id);
     if (!startEdge) {
       issues.push({
         severity: 'error',
@@ -127,10 +135,10 @@ export function PublishDialog({
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Typography variant="body2">
-              Current version: <strong>v{workflow.version}</strong>
+              Current version: <strong>v{workflow?.version ?? 0}</strong>
             </Typography>
             <Chip
-              label={`Next: v${workflow.version + 1}`}
+              label={`Next: v${(workflow?.version ?? 0) + 1}`}
               size="small"
               color="primary"
             />
