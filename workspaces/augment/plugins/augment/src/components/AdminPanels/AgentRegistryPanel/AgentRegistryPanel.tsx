@@ -51,7 +51,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -93,7 +92,6 @@ import { useChatAgentConfig } from '../../../hooks/useChatAgentConfig';
 import { getFrameworkLabel } from '../../Marketplace/marketplace.constants';
 
 const MAX_FEATURED = 4;
-const MAX_STARTERS = 6;
 const PAGE_SIZE = 20;
 
 type SourceFilter = 'all' | 'kagenti' | 'orchestration' | 'skills';
@@ -1623,7 +1621,6 @@ const AgentRow: FC<AgentRowProps> = ({
   onRequestPromote,
   onRegisterForGovernance,
   onToggleFeatured,
-  onUpdateConfig,
   onDeleteAgent,
   isDeleting,
 }) => {
@@ -2351,191 +2348,9 @@ const AgentRow: FC<AgentRowProps> = ({
               </Typography>
             </>
           )}
-
-          <Divider sx={{ my: 1.5 }} />
-
-          {/* Display Overrides */}
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.6875rem',
-              color: 'text.secondary',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              mb: 1,
-              display: 'block',
-            }}
-          >
-            Display Overrides
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 1.5,
-              mb: 1.5,
-            }}
-          >
-            <TextField
-              label="Display Name"
-              size="small"
-              value={config.displayName || ''}
-              onChange={e =>
-                onUpdateConfig(agent.id, {
-                  displayName: e.target.value || undefined,
-                })
-              }
-              placeholder={agent.name || ''}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Accent Color"
-              size="small"
-              value={config.accentColor || ''}
-              onChange={e =>
-                onUpdateConfig(agent.id, {
-                  accentColor: e.target.value || undefined,
-                })
-              }
-              placeholder="#1e40af"
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-          <TextField
-            label="Description Override"
-            size="small"
-            multiline
-            minRows={2}
-            fullWidth
-            value={config.description || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                description: e.target.value || undefined,
-              })
-            }
-            placeholder={agent.description || ''}
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-          <TextField
-            label="Avatar URL"
-            size="small"
-            fullWidth
-            value={config.avatarUrl || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                avatarUrl: e.target.value || undefined,
-              })
-            }
-            placeholder="https://example.com/avatar.png"
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-          <TextField
-            label="Greeting Message"
-            size="small"
-            multiline
-            minRows={2}
-            fullWidth
-            value={config.greeting || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                greeting: e.target.value || undefined,
-              })
-            }
-            placeholder="Hi! I'm here to help."
-            helperText="First bot message when a user starts a new conversation"
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-
-          {/* Conversation starters */}
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.75rem',
-                mb: 0.5,
-                display: 'block',
-                color: 'text.primary',
-              }}
-            >
-              Conversation Starters
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'text.disabled',
-                fontSize: '0.6875rem',
-                mb: 1,
-                display: 'block',
-              }}
-            >
-              Suggested prompts shown on the welcome screen for this agent
-            </Typography>
-            {(config.conversationStarters || []).map((starter, si) => (
-              <Box
-                key={si}
-                sx={{
-                  display: 'flex',
-                  gap: 0.5,
-                  mb: 0.75,
-                  alignItems: 'center',
-                }}
-              >
-                <Chip
-                  label={si + 1}
-                  size="small"
-                  sx={{ height: 20, fontSize: '0.65rem', minWidth: 24 }}
-                />
-                <TextField
-                  size="small"
-                  fullWidth
-                  value={starter}
-                  onChange={e => {
-                    const starters = [...(config.conversationStarters || [])];
-                    starters[si] = e.target.value;
-                    onUpdateConfig(agent.id, {
-                      conversationStarters: starters,
-                    });
-                  }}
-                  placeholder="Ask me about..."
-                  sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const starters = [...(config.conversationStarters || [])];
-                    starters.splice(si, 1);
-                    onUpdateConfig(agent.id, {
-                      conversationStarters: starters,
-                    });
-                  }}
-                  sx={{ color: 'text.disabled' }}
-                >
-                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              size="small"
-              startIcon={<AddIcon sx={{ fontSize: 14 }} />}
-              onClick={() => {
-                const starters = [...(config.conversationStarters || [])];
-                if (starters.length >= MAX_STARTERS) return;
-                starters.push('');
-                onUpdateConfig(agent.id, { conversationStarters: starters });
-              }}
-              disabled={
-                (config.conversationStarters || []).length >= MAX_STARTERS
-              }
-              sx={{ textTransform: 'none', fontSize: '0.75rem', mt: 0.5 }}
-            >
-              Add starter
-            </Button>
-          </Box>
+          {/* Display Overrides and Conversation Starters removed -- admins
+              configure these from the agent detail view, not the registry.
+              To restore, look at git history for this section. */}
         </Box>
       </Collapse>
     </Card>
