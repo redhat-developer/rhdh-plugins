@@ -63,6 +63,10 @@ export class OpenAIAgentsOrchestrator {
     this.toolCache.cachedDiscoveryGeneration = -1;
   }
 
+  async discoverBackendTools(deps: ChatDeps) {
+    return discoverBackendTools(deps, this.toolCache, this.logger);
+  }
+
   warmUpToolCache(deps: ChatDeps): void {
     ensureToolMetaCached(deps, this.toolCache, this.logger).catch(err => {
       this.logger.warn(

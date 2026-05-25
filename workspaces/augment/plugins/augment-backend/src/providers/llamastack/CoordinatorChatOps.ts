@@ -45,7 +45,7 @@ export async function coordinatorChat(
   const snapshot = await ctx.requireAgentGraphManager().getSnapshot();
   const deps = await ctx.chatDepsBuilder.buildChatDeps();
   const orchestrator = ctx.getOrchestrator();
-  const backendTools = await (orchestrator as any).discoverBackendTools(deps);
+  const backendTools = await orchestrator.discoverBackendTools(deps);
 
   const agentConfigs: Record<string, any> = {};
   for (const [key, resolved] of snapshot.agents) {
@@ -88,7 +88,7 @@ export async function coordinatorChatStream(
   const snapshot = await ctx.requireAgentGraphManager().getSnapshot();
   const deps = await ctx.chatDepsBuilder.buildChatDeps();
   const orchestrator = ctx.getOrchestrator();
-  const backendTools = await (orchestrator as any).discoverBackendTools(deps);
+  const backendTools = await orchestrator.discoverBackendTools(deps);
 
   const agentConfigs: Record<string, any> = {};
   for (const [key, resolved] of snapshot.agents) {

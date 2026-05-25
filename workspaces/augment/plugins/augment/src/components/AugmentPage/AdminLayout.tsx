@@ -25,7 +25,6 @@ import { NamespacePicker } from '../AdminPanels/KagentiPanels';
 import { AgentConfigPanel, BrandingPanel, AgentsPanel } from '../AdminPanels';
 import {
   KagentiAgentsPanel,
-  KagentiToolsPanel,
   KagentiAdminPanel,
   KagentiDashboardLinks,
   KagentiHomeDashboard,
@@ -62,7 +61,6 @@ const AGENTS_PANELS: AdminPanel[] = [
   'kagenti-builds',
 ];
 const PLATFORM_PANELS: AdminPanel[] = [
-  'kagenti-tools',
   'ops-tool-review',
   'ops-platform',
   'kagenti-connection',
@@ -318,11 +316,6 @@ export function AdminLayout({
               >
                 {[
                   {
-                    id: 'kagenti-tools' as AdminPanel,
-                    label: 'Tools',
-                    tour: 'subtab-tools',
-                  },
-                  {
                     id: 'ops-tool-review' as AdminPanel,
                     label: 'Tool Review',
                     tour: 'subtab-tool-review',
@@ -507,7 +500,7 @@ function AdminPanelContent({
   focusTarget,
   onFocusConsumed,
   agentTourRef,
-  toolTourRef,
+  toolTourRef: _toolTourRef,
 }: AdminPanelContentProps) {
   switch (panel) {
     // ── Agent Development (accessible when admin navigates here via Create Agent flow) ──
@@ -535,15 +528,6 @@ function AdminPanelContent({
             here to test your agents.
           </Alert>
         </Box>
-      );
-    case 'kagenti-tools':
-      return (
-        <KagentiToolsPanel
-          namespace={namespace || undefined}
-          initialToolName={focusTarget}
-          onFocusConsumed={onFocusConsumed}
-          tourControlRef={toolTourRef}
-        />
       );
     case 'kagenti-builds':
       return <KagentiBuildPipelinePanel namespace={namespace || undefined} />;
