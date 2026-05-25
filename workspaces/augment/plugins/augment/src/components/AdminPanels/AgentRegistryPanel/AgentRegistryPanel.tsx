@@ -474,6 +474,29 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
     [api, refreshConfigs, fetchAgents],
   );
 
+  const [deleteAgentId, setDeleteAgentId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDeleteAgent = useCallback(
+    async (agentId: string) => {
+      setDeleting(agentId);
+      setDeleteAgentId(null);
+      try {
+        await api.deleteAgentConfig(agentId);
+        await refreshConfigs();
+        await fetchAgents();
+        setToast(`Deleted: ${agentId}`);
+      } catch (err) {
+        setToast(
+          `Delete failed: ${err instanceof Error ? err.message : 'Unknown'}`,
+        );
+      } finally {
+        setDeleting(null);
+      }
+    },
+    [api, refreshConfigs, fetchAgents],
+  );
+
   const stats = useMemo(() => {
     const unregistered = rows.filter(r => !r.governanceRegistered).length;
     const draft = rows.filter(
@@ -830,9 +853,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
               </Button>
             }
           >
-            {stats.unregistered} runtime agent
-            {stats.unregistered === 1 ? ' is' : 's are'} not registered for
-            governance. Register them before lifecycle promotion.
+            {stats.unregistered} agent{stats.unregistered === 1 ? '' : 's'}{' '}
+            discovered from runtime. Register to manage{' '}
+            {stats.unregistered === 1 ? 'its' : 'their'} lifecycle.
           </Alert>
         )}
         <LifecyclePipeline
@@ -889,67 +912,92 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
           </Select>
         </FormControl>
 
-        {selectedIds.size > 0 && (
-          <Box
-            sx={{ display: 'flex', gap: 0.5, ml: 'auto', alignItems: 'center' }}
-          >
-            <Chip
-              size="small"
-              label={`${selectedIds.size} selected`}
-              sx={{ height: 22, fontSize: '0.675rem', fontWeight: 600 }}
-            />
-            <Tooltip
-              title={
-                approvalMode === 'workflow'
-                  ? 'Bulk actions disabled when approval workflow is active. Use Review Queue for individual approvals.'
-                  : ''
-              }
-            >
-              <span>
-                <Button
+        {selectedIds.size > 0 &&
+          (() => {
+            const selectedRows = [...selectedIds]
+              .map(id => rows.find(r => r.agent.id === id))
+              .filter(Boolean);
+            const allPending = selectedRows.every(
+              r => r!.config.lifecycleStage === 'pending',
+            );
+            const allPublished = selectedRows.every(
+              r => r!.config.lifecycleStage === 'published',
+            );
+            const publishDisabled =
+              promoting === 'bulk' ||
+              approvalMode === 'workflow' ||
+              !allPending;
+            const unpublishDisabled =
+              promoting === 'bulk' ||
+              approvalMode === 'workflow' ||
+              !allPublished;
+            const publishTip =
+              approvalMode === 'workflow'
+                ? 'Bulk actions disabled when approval workflow is active.'
+                : !allPending
+                  ? 'Select only Pending agents to publish.'
+                  : '';
+            const unpublishTip =
+              approvalMode === 'workflow'
+                ? 'Bulk actions disabled when approval workflow is active.'
+                : !allPublished
+                  ? 'Select only Published agents to unpublish.'
+                  : '';
+            return (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  ml: 'auto',
+                  alignItems: 'center',
+                }}
+              >
+                <Chip
                   size="small"
-                  variant="outlined"
-                  startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
-                  onClick={() => handleBulkPublish(true)}
-                  disabled={promoting === 'bulk' || approvalMode === 'workflow'}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.7rem',
-                    borderRadius: 1.5,
-                    height: 28,
-                  }}
-                >
-                  Publish Selected
-                </Button>
-              </span>
-            </Tooltip>
-            <Tooltip
-              title={
-                approvalMode === 'workflow'
-                  ? 'Bulk actions disabled when approval workflow is active.'
-                  : ''
-              }
-            >
-              <span>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
-                  onClick={() => handleBulkPublish(false)}
-                  disabled={promoting === 'bulk' || approvalMode === 'workflow'}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.7rem',
-                    borderRadius: 1.5,
-                    height: 28,
-                  }}
-                >
-                  Unpublish Selected
-                </Button>
-              </span>
-            </Tooltip>
-          </Box>
-        )}
+                  label={`${selectedIds.size} selected`}
+                  sx={{ height: 22, fontSize: '0.675rem', fontWeight: 600 }}
+                />
+                <Tooltip title={publishTip}>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
+                      onClick={() => handleBulkPublish(true)}
+                      disabled={publishDisabled}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.7rem',
+                        borderRadius: 1.5,
+                        height: 28,
+                      }}
+                    >
+                      Publish Selected
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip title={unpublishTip}>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
+                      onClick={() => handleBulkPublish(false)}
+                      disabled={unpublishDisabled}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.7rem',
+                        borderRadius: 1.5,
+                        height: 28,
+                      }}
+                    >
+                      Unpublish Selected
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Box>
+            );
+          })()}
       </Box>
 
       {/* ── Select All bar ── */}
@@ -1051,6 +1099,8 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                   }
                   onToggleFeatured={handleToggleFeatured}
                   onUpdateConfig={updateRowConfig}
+                  onDeleteAgent={id => setDeleteAgentId(id)}
+                  isDeleting={deleting === row.agent.id}
                 />
               ))}
           </Box>
@@ -1131,6 +1181,32 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         }
         isDark={isDark}
       />
+
+      {/* Delete confirm dialog */}
+      <Dialog
+        open={!!deleteAgentId}
+        onClose={() => setDeleteAgentId(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete Agent</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Permanently delete <strong>{deleteAgentId}</strong>? This action
+            cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteAgentId(null)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => deleteAgentId && handleDeleteAgent(deleteAgentId)}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!toast}
@@ -1529,6 +1605,8 @@ interface AgentRowProps {
   onRegisterForGovernance: () => void;
   onToggleFeatured: (agentId: string, featured: boolean) => void;
   onUpdateConfig: (agentId: string, patch: Partial<ChatAgentConfig>) => void;
+  onDeleteAgent?: (agentId: string) => void;
+  isDeleting?: boolean;
 }
 
 const AgentRow: FC<AgentRowProps> = ({
@@ -1546,6 +1624,8 @@ const AgentRow: FC<AgentRowProps> = ({
   onRegisterForGovernance,
   onToggleFeatured,
   onUpdateConfig,
+  onDeleteAgent,
+  isDeleting,
 }) => {
   const theme = useTheme();
   const { agent, config, governanceRegistered } = row;
@@ -1941,6 +2021,29 @@ const AgentRow: FC<AgentRowProps> = ({
             </IconButton>
           </Box>
         </Tooltip>
+
+        {/* Delete (draft only) */}
+        {stage === 'draft' && onDeleteAgent && (
+          <Tooltip title="Delete draft agent">
+            <IconButton
+              size="small"
+              disabled={isDeleting}
+              onClick={e => {
+                e.stopPropagation();
+                onDeleteAgent(agent.id);
+              }}
+              sx={{
+                width: 26,
+                height: 26,
+                color: 'error.main',
+                opacity: 0.6,
+                '&:hover': { opacity: 1 },
+              }}
+            >
+              <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
 
         {/* Expand */}
         <IconButton

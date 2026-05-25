@@ -13,3 +13,4 @@
 | :----------------------- | :---------------------------------------------------------------------- | :------- |
 | @backstage/catalog-model | src/components/AdminPanels/KagentiPanels/AgentTemplateBrowser.tsx:37:30 | error    |
 | @backstage/catalog-model | src/components/AdminPanels/KagentiPanels/useAgentTemplates.ts:20:30     | error    |
+
