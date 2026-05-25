@@ -171,9 +171,10 @@ export function MarketplacePage({
     () =>
       agents.filter(a => {
         if (a.createdBy === userRef) return true;
+        if (isAdmin && !a.published) return true;
         return false;
       }),
-    [agents, userRef],
+    [agents, userRef, isAdmin],
   );
 
   // Tools catalog: only deployed/published tools

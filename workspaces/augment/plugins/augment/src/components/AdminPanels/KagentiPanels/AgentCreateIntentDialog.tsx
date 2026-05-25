@@ -341,6 +341,8 @@ export function AgentCreateIntentDialog({
           skillCount: data.skillCount ?? skillsSelected.length,
         };
 
+        onCreated?.();
+
         if (!data.deployed) {
           setDeployResult(makeResult('ready', partial));
           return;
@@ -386,7 +388,7 @@ export function AgentCreateIntentDialog({
         setSkillsDeploying(false);
       }
     },
-    [discoveryApi, fetchApi, skillsRuntimeId, skillsSelected],
+    [discoveryApi, fetchApi, skillsRuntimeId, skillsSelected, onCreated],
   );
 
   const handleSubOptionClick = useCallback(
