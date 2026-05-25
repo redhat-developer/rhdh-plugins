@@ -300,6 +300,7 @@ export interface ChatAgentConfig {
   featured: boolean;
   greeting?: string;
   lifecycleStage?: AgentLifecycleStage;
+  namespace?: string;
   order?: number;
   pendingAction?: 'publish' | 'unpublish';
   promotedAt?: string;
