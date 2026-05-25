@@ -389,7 +389,8 @@ export interface AugmentApi {
     targetStage?: AgentLifecycleStage,
   ): Promise<{
     lifecycleStage: string;
-    version: number;
+    version?: number;
+    workflowDecisionSent?: boolean;
   }>;
   promoteToolLifecycle(
     toolId: string,
@@ -412,6 +413,7 @@ export interface AugmentApi {
     filesDeleted: number;
     activeVectorStoreIds: string[];
   }>;
+  requestUnpublish(agentId: string): Promise<void>;
   resetVectorStoreConfig(): Promise<{
     deleted: boolean;
   }>;
@@ -511,6 +513,7 @@ export interface AugmentApi {
     vectorStoreId?: string,
     replace?: boolean,
   ): Promise<UploadResult>;
+  withdrawAgent(agentId: string): Promise<void>;
 }
 
 // @public
