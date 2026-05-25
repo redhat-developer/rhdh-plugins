@@ -189,6 +189,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim Ausführen der Phase für das Modul',
     'modulePage.phases.cancelError':
       'Fehler beim Abbrechen der Phase für das Modul',
+    'modulePage.phases.attempts': 'Versuche',
+    'modulePage.phases.totalElapsed': 'Gesamtdauer',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',

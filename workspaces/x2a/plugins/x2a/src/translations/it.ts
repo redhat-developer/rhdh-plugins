@@ -192,6 +192,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
       "Errore nell'esecuzione della fase per il modulo",
     'modulePage.phases.cancelError':
       "Errore nell'annullamento della fase per il modulo",
+    'modulePage.phases.attempts': 'Tentativi',
+    'modulePage.phases.totalElapsed': 'Durata totale',
     'modulePage.phases.commitId': 'Ultimo ID commit',
     'modulePage.phases.viewLog': 'Visualizza log',
     'modulePage.phases.hideLog': 'Nascondi log',

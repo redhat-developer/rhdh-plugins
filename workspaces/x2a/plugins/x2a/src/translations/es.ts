@@ -190,6 +190,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.cancel': 'Cancelar',
     'modulePage.phases.runError': 'Error al ejecutar la fase para el módulo',
     'modulePage.phases.cancelError': 'Error al cancelar la fase para el módulo',
+    'modulePage.phases.attempts': 'Intentos',
+    'modulePage.phases.totalElapsed': 'Tiempo total',
     'modulePage.phases.commitId': 'Último ID de commit',
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',

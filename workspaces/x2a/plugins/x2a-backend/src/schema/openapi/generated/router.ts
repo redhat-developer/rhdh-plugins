@@ -1298,6 +1298,15 @@ export const spec = {
           "commitId": {
             "type": "string",
             "description": "Git commit SHA produced by this job"
+          },
+          "attemptCount": {
+            "type": "integer",
+            "description": "Number of restarts (attempts) for this projectId+moduleId+phase combination. Calculated value, not persisted in DB."
+          },
+          "firstAttemptAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the very first attempt for this phase was started."
           }
         }
       },
