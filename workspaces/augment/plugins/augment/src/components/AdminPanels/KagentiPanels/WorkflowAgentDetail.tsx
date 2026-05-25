@@ -551,8 +551,8 @@ export function WorkflowAgentDetail({
                 </Box>
               }
             >
-              This will permanently delete the agent and its cluster resources
-              (Deployment, Service, ConfigMap).
+              This will permanently delete this agent. This action cannot be
+              undone.
             </Alert>
           )}
         </Box>
