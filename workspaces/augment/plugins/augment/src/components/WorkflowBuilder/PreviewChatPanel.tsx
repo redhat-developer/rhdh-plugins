@@ -194,7 +194,10 @@ export function PreviewChatPanel({
         `${backendUrl}/api/augment/workflows/${workflowId}/run/stream`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Backstage-Request': 'augment',
+          },
           body: JSON.stringify({ input: text }),
           signal: controller.signal,
         },
