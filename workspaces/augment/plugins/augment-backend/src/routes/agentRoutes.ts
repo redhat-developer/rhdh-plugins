@@ -796,6 +796,11 @@ export function registerAgentRoutes(
             return;
           }
         }
+        if (existing?.approvalWorkflowInstanceId && approvalService?.enabled) {
+          await approvalService.cancelWorkflow(
+            existing.approvalWorkflowInstanceId,
+          );
+        }
         const result = await applyLifecycleTransition({
           configs,
           agentId,
@@ -808,7 +813,10 @@ export function registerAgentRoutes(
           req,
         });
         const updated = configs.find(c => c.agentId === agentId);
-        if (updated) updated.pendingAction = undefined;
+        if (updated) {
+          updated.pendingAction = undefined;
+          updated.approvalWorkflowInstanceId = undefined;
+        }
         await saveChatAgentConfigs(configs, userRef);
         res.json({
           success: true,
@@ -943,6 +951,12 @@ export function registerAgentRoutes(
         } else {
           cleanupResults.kagenti = 'skipped';
         }
+
+        // TODO [E8 - Skill Agent K8s Cleanup]: When the deleted agent has a
+        // chatEndpoint (skill agents), issue K8s resource deletion for the
+        // Deployment, Service, ConfigMap, and Secret via DevSpaces API
+        // credentials. Identify skill agents by the presence of chatEndpoint
+        // on the ChatAgentConfig entry (existing?.chatEndpoint).
 
         audit.log({
           action: 'agent.delete',

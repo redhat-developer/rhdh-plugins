@@ -55,6 +55,10 @@ augment:
     adminUsers:
       - 'user:default/admin'
       - 'user:default/guest'
+  agentApproval:
+    enabled: ${AGENT_APPROVAL_ENABLED:-false}
+    serviceUrl: ${SONATAFLOW_URL:-http://sonataflow.sonataflow-infra.svc:8080}
+    workflowId: agentApproval
   llamaStack:
     baseUrl: ${AUGMENT_LLAMA_STACK_URL:-http://localhost:8321}
     model: ${AUGMENT_MODEL:-gemini/models/gemini-2.5-flash}
