@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Locator, TestInfo } from '@playwright/test';
 import {
   mockJiraAggregationResponse,
   mockScorecardEntitiesDrillDown,
@@ -66,6 +66,10 @@ import {
   mockHomepageAggregationsPermissionDenied,
 } from './utils/mockHomepageAggregations';
 import {
+  addAggregatedScorecardWidgets,
+  addWidgets,
+} from './utils/homepageWidgetUtils';
+import {
   expectAverageCardCenterPercent,
   verifyAverageDonutCenterTooltip,
   verifyAverageCenterTooltipBreakdownRows,
@@ -77,28 +81,6 @@ import {
   AGGREGATED_CARDS_WIDGET_TITLES,
 } from './constants/homepageWidgetTitles';
 import { installWebpackDevOverlayGuards } from './utils/devOverlays';
-
-async function addWidgets(homePage: HomePage, widgetTitle: string) {
-  await homePage.navigateToHome();
-  await homePage.enterEditMode();
-  await homePage.clearAllCards();
-  await homePage.addCard(widgetTitle);
-  await homePage.saveChanges();
-}
-
-async function addAggregatedScorecardWidgets(homePage: HomePage) {
-  await homePage.navigateToHome();
-  await homePage.enterEditMode();
-  await homePage.clearAllCards();
-
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDeprecatedMetricId);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDefaultAggregation);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withGithubOpenPrs);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withJiraOpenIssuesKpi);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi);
-
-  await homePage.saveChanges();
-}
 
 test.describe('Scorecard Plugin Tests', () => {
   let page: Page;
@@ -127,11 +109,6 @@ test.describe('Scorecard Plugin Tests', () => {
 
   test.afterAll(async () => {
     await page?.context()?.close();
-  });
-
-  test.afterEach(async () => {
-    await page.unroute('**/api/scorecard/metrics/**');
-    await page.unroute('**/api/scorecard/aggregations/**');
   });
 
   test.describe('Entity Scorecards', () => {
@@ -1069,8 +1046,8 @@ test.describe('Scorecard Plugin Tests', () => {
       });
     });
 
-    test.describe('Average aggregation KPI (openPrsWeightedKpi)', () => {
-      test('Verify title and description from API metadata', async () => {
+    test.describe('Aggregation homepage widget - "average" type', () => {
+      test.beforeAll(async () => {
         await mockApiResponse(
           page,
           ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
@@ -1081,50 +1058,83 @@ test.describe('Scorecard Plugin Tests', () => {
           homePage,
           AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
         );
-        await page.reload();
 
-        const card = homePage.getCard(
-          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
-        );
-        await expect(card).toBeVisible();
-        await expect(card).toContainText(
-          openPrsWeightedKpiMetadataResponse.title,
-        );
-        await expect(card).toContainText(
-          openPrsWeightedKpiMetadataResponse.description,
-        );
+        await page.reload();
       });
 
-      test('Verify center score and average tooltips', async () => {
-        await mockApiResponse(
-          page,
-          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
-          openPrsWeightedAggregatedResponse,
-        );
+      test.afterAll(async () => {
+        await page.unroute('**/api/scorecard/aggregations/**');
+      });
 
-        await addWidgets(
-          homePage,
-          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
-        );
-        await page.reload();
+      test.describe('Validate "average" type card content', () => {
+        let card: Locator;
 
-        const card = homePage.getCard(
-          AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
-        );
-        await expectAverageCardCenterPercent(card, '51.5%');
-        await verifyAverageDonutCenterTooltip(
-          page,
-          card,
-          translations,
-          515,
-          1000,
-        );
-        await verifyAverageCenterTooltipBreakdownRows(
-          page,
-          card,
-          translations,
-          currentLocale,
-        );
+        test.beforeAll(async () => {
+          await homePage.navigateToHome();
+          card = homePage.getCard(
+            AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+          );
+        });
+
+        test('Verify provided title', async () => {
+          await expect(card).toBeVisible();
+          await expect(card).toContainText(
+            openPrsWeightedKpiMetadataResponse.title,
+          );
+        });
+
+        test('Verify provided description', async () => {
+          await expect(card).toBeVisible();
+          await expect(card).toContainText(
+            openPrsWeightedKpiMetadataResponse.description,
+          );
+        });
+
+        test('Verify last updated date', async () => {
+          const lastUpdatedFormatted = formatLastUpdatedDate(
+            openPrsWeightedAggregatedResponse.result.timestamp,
+            currentLocale,
+          );
+          await expect(card).toBeVisible();
+          await homePage.verifyLastUpdatedTooltip(card, lastUpdatedFormatted);
+        });
+
+        test('Verify center score percentage', async () => {
+          await expect(card).toBeVisible();
+          await expectAverageCardCenterPercent(card, '51.5%');
+        });
+
+        test('Verify center tooltip', async () => {
+          await expect(card).toBeVisible();
+          await verifyAverageDonutCenterTooltip(
+            page,
+            card,
+            translations,
+            openPrsWeightedAggregatedResponse.result.averageWeightedSum,
+            openPrsWeightedAggregatedResponse.result.averageMaxPossible,
+          );
+          await verifyAverageCenterTooltipBreakdownRows(
+            page,
+            card,
+            translations,
+            currentLocale,
+          );
+        });
+
+        test('Verify accessibility on weighted average card', async ({
+          browser: _browser,
+        }, testInfo) => {
+          await expect(card).toBeVisible();
+          await runAccessibilityTests(page, testInfo);
+        });
+
+        test('Verify open drill-down link', async () => {
+          await expect(card).toBeVisible();
+          await homePage.clickDrillDownLink();
+          await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+            aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
+          });
+        });
       });
 
       test('Verify empty aggregated response shows no data', async () => {
@@ -1143,80 +1153,6 @@ test.describe('Scorecard Plugin Tests', () => {
         await homePage.expectCardHasNoDataFound(
           AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
         );
-      });
-
-      test('Accessibility on weighted average card', async ({
-        browser: _browser,
-      }, testInfo) => {
-        await mockApiResponse(
-          page,
-          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
-          openPrsWeightedAggregatedResponse,
-        );
-
-        await homePage.navigateToHome();
-        await homePage.enterEditMode();
-        await homePage.clearAllCards();
-        await homePage.addCard(
-          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
-        );
-        await homePage.saveChanges();
-        await page.reload();
-
-        await runAccessibilityTests(page, testInfo);
-      });
-
-      test('GitHub weighted KPI: drill-down, average card, and table', async () => {
-        await mockApiResponse(
-          page,
-          ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
-          openPrsWeightedAggregatedResponse,
-        );
-        await mockScorecardEntitiesDrillDownWithSort(
-          page,
-          githubEntitiesDrillDownResponse,
-          'github.open_prs',
-        );
-
-        await homePage.navigateToHome();
-        await page.reload();
-        await homePage.enterEditMode();
-        await homePage.clearAllCards();
-        await homePage.addCard(
-          AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi,
-        );
-        await homePage.saveChanges();
-
-        const weightedEntityTotal = String(
-          openPrsWeightedAggregatedResponse.result.total,
-        );
-        await homePage.clickDrillDownLink({
-          healthy: weightedEntityTotal,
-          total: weightedEntityTotal,
-        });
-        await scorecardDrillDownPage.expectOnPage('github.open_prs', {
-          aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
-        });
-        await scorecardDrillDownPage.expectPageTitle(
-          'github.open_prs',
-          openPrsWeightedKpiMetadataResponse.title,
-        );
-
-        const drillCard = scorecardDrillDownPage.getDrillDownCard(
-          'github.open_prs',
-          {
-            aggregationId: AGGREGATED_CARDS_METRIC_IDS.withOpenPrsWeightedKpi,
-          },
-        );
-        await expectAverageCardCenterPercent(drillCard, '51.5%');
-        await scorecardDrillDownPage.expectTableHeadersVisible();
-        await scorecardDrillDownPage.expectEntityNamesVisible([
-          'all-scorecards-service',
-          'red-hat-developer-hub',
-          'github-scorecard-only-service',
-          'all-scorecards-service-different-owner',
-          'backend-api',
-        ]);
       });
     });
 
