@@ -25,16 +25,11 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import { useTheme, alpha } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
@@ -43,6 +38,12 @@ import {
   getLifecycleTransition,
   getLifecycleStep,
 } from './lifecycleTransitions';
+import {
+  LifecycleActionButtons,
+  useWithdrawHandler,
+  useLifecycleAction,
+} from './LifecycleActionButtons';
+import { LifecycleDetailShell } from './LifecycleDetailShell';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useApi } from '@backstage/core-plugin-api';
 import type { KagentiAgentSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -55,7 +56,6 @@ import { AgentResourceTab } from './AgentResourceTab';
 import { AgentCardTab } from './AgentCardTab';
 import { useKagentiAgentDetail } from './useKagentiAgentDetail';
 import {
-  glassSurface,
   borderRadius,
   typeScale,
   animations,
@@ -65,8 +65,6 @@ import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
 import { InlineAgentChat } from '../shared/InlineAgentChat';
 
 type LifecycleTab = 'overview' | 'design' | 'test' | 'build' | 'card';
-
-const LIFECYCLE_STAGES = ['Draft', 'Pending', 'Published', 'Archived'];
 
 export interface AgentLifecycleDetailProps {
   agent: KagentiAgentSummary;
@@ -87,8 +85,6 @@ export function AgentLifecycleDetail({
   onDeleted,
   isAdmin = false,
 }: AgentLifecycleDetailProps) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
   const api = useApi(augmentApiRef);
   const [activeTab, setActiveTab] = useState<LifecycleTab>('overview');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -144,28 +140,15 @@ export function AgentLifecycleDetail({
     };
   }, [lifecycleStage]);
 
-  const handleLifecycleAction = useCallback(async () => {
-    setPublishLoading(true);
-    try {
-      if (nextTransition.action === 'demote') {
-        const result = await api.demoteAgent(agentId, nextTransition.target);
-        setLifecycleStage(result.lifecycleStage);
-        setPublishToast(`Agent moved to ${result.lifecycleStage}`);
-      } else {
-        const result = await api.promoteAgent(agentId, nextTransition.target);
-        setLifecycleStage(result.lifecycleStage);
-        setPublishToast(
-          `Agent moved to ${result.lifecycleStage} (v${result.version})`,
-        );
-      }
-    } catch (err) {
-      setPublishToast(
-        `Failed: ${err instanceof Error ? err.message : 'Unknown'}`,
-      );
-    } finally {
-      setPublishLoading(false);
-    }
-  }, [api, agentId, nextTransition]);
+  const { handleAction: handleLifecycleAction } = useLifecycleAction({
+    api,
+    agentId,
+    action: nextTransition.action,
+    target: nextTransition.target,
+    setLoading: setPublishLoading,
+    setToast: setPublishToast,
+    onStageChange: setLifecycleStage,
+  });
 
   const handleDelete = useCallback(async () => {
     setDeleteLoading(true);
@@ -184,10 +167,17 @@ export function AgentLifecycleDetail({
     }
   }, [api, agent.namespace, agent.name, agentId, onDeleted]);
 
+  const { handleWithdraw } = useWithdrawHandler({
+    api,
+    agentId,
+    onSuccess: () => setLifecycleStage('draft'),
+    setToast: setPublishToast,
+    setLoading: setPublishLoading,
+  });
+
   const canDelete = lifecycleStage === 'draft';
 
   const currentStep = getLifecycleStep(lifecycleStage);
-  const glass = glassSurface(theme, 6);
 
   return (
     <Box
@@ -199,33 +189,7 @@ export function AgentLifecycleDetail({
         '@media (prefers-reduced-motion: reduce)': reducedMotion,
       }}
     >
-      {/* Breadcrumb back */}
-      <Button
-        size="small"
-        startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-        onClick={onBack}
-        sx={{
-          textTransform: 'none',
-          mb: 1.5,
-          color: theme.palette.primary.main,
-          fontWeight: 500,
-        }}
-      >
-        Agents
-      </Button>
-
-      {/* Agent Header Card */}
-      <Box
-        sx={{
-          ...glass,
-          borderRadius: borderRadius.lg,
-          p: 3,
-          mb: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-        }}
-      >
+      <LifecycleDetailShell onBack={onBack} currentStep={currentStep}>
         {/* Top: Name + Status + Actions */}
         <Box
           sx={{
@@ -310,118 +274,30 @@ export function AgentLifecycleDetail({
               flexShrink: 0,
             }}
           >
-            {isAdmin ? (
-              <>
-                {lifecycleStage !== 'archived' && (
-                  <Tooltip title={nextTransition.label}>
-                    <Button
-                      size="small"
-                      variant={nextTransition.variant}
-                      color={nextTransition.color}
-                      startIcon={
-                        publishLoading ? (
-                          <CircularProgress size={14} />
-                        ) : (
-                          nextTransition.icon
-                        )
-                      }
-                      disabled={publishLoading}
-                      onClick={handleLifecycleAction}
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
-                        borderRadius: borderRadius.sm,
-                      }}
-                    >
-                      {nextTransition.label}
-                    </Button>
-                  </Tooltip>
-                )}
-                {lifecycleStage === 'archived' && (
-                  <Tooltip title="Reactivate this agent to draft status">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="inherit"
-                      startIcon={
-                        publishLoading ? (
-                          <CircularProgress size={14} />
-                        ) : (
-                          <PublishIcon />
-                        )
-                      }
-                      disabled={publishLoading}
-                      onClick={handleLifecycleAction}
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
-                        borderRadius: borderRadius.sm,
-                      }}
-                    >
-                      Reactivate
-                    </Button>
-                  </Tooltip>
-                )}
-                {hasBuild && (
-                  <Tooltip title="Trigger a new container image build">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<PlayArrowIcon />}
-                      disabled={buildTriggering}
-                      onClick={() => void handleTriggerBuild()}
-                      sx={{
-                        textTransform: 'none',
-                        borderRadius: borderRadius.sm,
-                      }}
-                    >
-                      {buildTriggering ? 'Building...' : 'Rebuild'}
-                    </Button>
-                  </Tooltip>
-                )}
-              </>
-            ) : (
-              <>
-                {lifecycleStage === 'draft' && (
-                  <Tooltip title="Submit this agent for admin review">
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="primary"
-                      startIcon={
-                        publishLoading ? (
-                          <CircularProgress size={14} />
-                        ) : (
-                          <PublishIcon />
-                        )
-                      }
-                      disabled={publishLoading}
-                      onClick={handleLifecycleAction}
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
-                        borderRadius: borderRadius.sm,
-                      }}
-                    >
-                      Submit for Review
-                    </Button>
-                  </Tooltip>
-                )}
-                {lifecycleStage !== 'draft' && (
-                  <Chip
-                    label={lifecycleStage}
-                    size="small"
-                    color="default"
-                    sx={{
-                      textTransform: 'capitalize',
-                      fontWeight: 600,
-                    }}
-                  />
-                )}
-              </>
+            <LifecycleActionButtons
+              lifecycleStage={lifecycleStage}
+              isAdmin={isAdmin}
+              loading={publishLoading}
+              onSubmitForReview={handleLifecycleAction}
+              onWithdraw={handleWithdraw}
+              onReactivate={handleLifecycleAction}
+            />
+            {isAdmin && hasBuild && (
+              <Tooltip title="Trigger a new container image build">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<PlayArrowIcon />}
+                  disabled={buildTriggering}
+                  onClick={() => void handleTriggerBuild()}
+                  sx={{
+                    textTransform: 'none',
+                    borderRadius: borderRadius.sm,
+                  }}
+                >
+                  {buildTriggering ? 'Building...' : 'Rebuild'}
+                </Button>
+              </Tooltip>
             )}
             {onChatWithAgent && (
               <Button
@@ -457,30 +333,7 @@ export function AgentLifecycleDetail({
             )}
           </Box>
         </Box>
-
-        {/* Lifecycle Progress Stepper */}
-        <Box sx={{ mt: 1 }}>
-          <Stepper
-            activeStep={currentStep}
-            alternativeLabel
-            sx={{
-              '& .MuiStepLabel-label': {
-                fontSize: typeScale.caption.fontSize,
-                fontWeight: 500,
-              },
-              '& .MuiStepConnector-line': {
-                borderColor: alpha(theme.palette.divider, isDark ? 0.3 : 0.2),
-              },
-            }}
-          >
-            {LIFECYCLE_STAGES.map(label => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
-      </Box>
+      </LifecycleDetailShell>
 
       {lifecycleStage === 'draft' && rejectionReason && (
         <Alert severity="warning" sx={{ mb: 2 }}>

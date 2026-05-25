@@ -220,7 +220,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
                 sx={{
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '0.72rem',
+                  fontSize: '0.78rem',
                   borderRadius: 2,
                   borderColor: alpha(LIFECYCLE_COLORS.pending, 0.4),
                   color: LIFECYCLE_COLORS.pending,
@@ -240,7 +240,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
               sx={{
                 textTransform: 'none',
                 fontWeight: 600,
-                fontSize: '0.72rem',
+                fontSize: '0.78rem',
                 borderRadius: 2,
                 color: 'text.secondary',
                 borderColor: alpha(
@@ -262,7 +262,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
               sx={{
                 textTransform: 'none',
                 fontWeight: 600,
-                fontSize: '0.72rem',
+                fontSize: '0.78rem',
                 borderRadius: 2,
                 color: 'text.secondary',
                 borderColor: alpha(

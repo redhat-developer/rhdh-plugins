@@ -86,6 +86,14 @@ export function parseChatRequest(body: unknown): ChatRequest {
   if (sessionId !== undefined && typeof sessionId !== 'string') {
     throw new InputError('sessionId must be a string');
   }
+  if (
+    typeof sessionId === 'string' &&
+    (sessionId.length > 128 || !/^[a-zA-Z0-9_-]+$/.test(sessionId))
+  ) {
+    throw new InputError(
+      'sessionId must be 1-128 characters, alphanumeric with hyphens/underscores only',
+    );
+  }
   if (model !== undefined && typeof model !== 'string') {
     throw new InputError('model must be a string');
   }

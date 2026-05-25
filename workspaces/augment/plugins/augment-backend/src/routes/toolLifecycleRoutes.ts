@@ -178,6 +178,25 @@ export function registerToolLifecycleRoutes(
             return;
           }
         }
+        if (isSubmitForReview && !existing) {
+          res.status(404).json({
+            error:
+              'Tool not found in lifecycle config. ' +
+              'Only tools you have created can be submitted for review.',
+          });
+          return;
+        }
+        if (
+          isSubmitForReview &&
+          existing &&
+          (existing as { createdBy?: string }).createdBy &&
+          (existing as { createdBy?: string }).createdBy !== userRef
+        ) {
+          res.status(403).json({
+            error: 'You can only promote tools you created.',
+          });
+          return;
+        }
 
         const now = new Date().toISOString();
         const isProd = isPublishedStage(nextStage);
@@ -198,7 +217,8 @@ export function registerToolLifecycleRoutes(
             version: 1,
             promotedAt: now,
             promotedBy: userRef,
-          });
+            createdBy: userRef,
+          } as ChatToolConfig & { createdBy: string });
         }
 
         await saveChatToolConfigs(configs, userRef);
@@ -318,6 +338,14 @@ export function registerToolLifecycleRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatToolConfigs();
         const existing = configs.find(c => c.toolId === toolId);
+        const currentStage = normalizeLifecycleStage(existing?.lifecycleStage);
+
+        if (!isValidTransition(currentStage, 'published')) {
+          throw new InputError(
+            `Cannot publish tool from "${currentStage}". Tool must be in "pending" stage to be published.`,
+          );
+        }
+
         const now = new Date().toISOString();
 
         if (existing) {

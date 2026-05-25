@@ -182,7 +182,7 @@ export function CommandBar({
             onClick={onOpenGuidedTours}
             sx={{
               textTransform: 'none',
-              fontSize: '0.82rem',
+              fontSize: '0.875rem',
               fontWeight: 500,
               color: theme.palette.text.secondary,
               px: 1.5,
@@ -200,7 +200,7 @@ export function CommandBar({
           onClick={onBackToMarketplace}
           sx={{
             textTransform: 'none',
-            fontSize: '0.82rem',
+            fontSize: '0.875rem',
             fontWeight: 500,
             color: theme.palette.text.secondary,
             px: 1,

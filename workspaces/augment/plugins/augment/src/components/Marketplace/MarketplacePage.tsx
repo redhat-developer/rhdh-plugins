@@ -171,9 +171,6 @@ export function MarketplacePage({
     () =>
       agents.filter(a => {
         if (a.createdBy === userRef) return true;
-        if (a.governanceRegistered && a.lifecycleStage !== 'published')
-          return true;
-        if (!a.governanceRegistered) return true;
         return false;
       }),
     [agents, userRef],
@@ -191,8 +188,12 @@ export function MarketplacePage({
     [tools],
   );
 
-  // My Tools: show ALL tools with lifecycle badges
-  const myTools = useMemo(() => tools, [tools]);
+  // My Tools: show only tools created by the current user
+  const myTools = useMemo(
+    () =>
+      tools.filter(t => (t as { createdBy?: string }).createdBy === userRef),
+    [tools, userRef],
+  );
 
   const handleChat = useCallback(
     (agentId: string) => {
