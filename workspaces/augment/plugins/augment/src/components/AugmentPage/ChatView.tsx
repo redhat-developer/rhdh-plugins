@@ -373,7 +373,7 @@ export function ChatView({
                 onClick={handleCloseWorkflowBuilder}
                 sx={{ textTransform: 'none' }}
               >
-                Back to Marketplace
+                Back to My Agents
               </Button>
             </Box>
             <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
