@@ -1099,6 +1099,36 @@ export function registerAgentRoutes(
           cleanupResults.orchestration = 'skipped';
         }
 
+        // Workflow agent cleanup: delete workflow definition + versions
+        if (
+          agentId.startsWith('wf-') ||
+          agentRecord?.framework === 'workflow-builder'
+        ) {
+          try {
+            const workflows =
+              ((await adminConfig.get('workflows')) as Record<
+                string,
+                unknown
+              >) ?? {};
+            if (workflows[agentId]) {
+              delete workflows[agentId];
+              await adminConfig.set('workflows', workflows, userRef);
+              const versions =
+                ((await adminConfig.get('workflowVersions')) as Record<
+                  string,
+                  unknown
+                >) ?? {};
+              delete versions[agentId];
+              await adminConfig.set('workflowVersions', versions, userRef);
+              cleanupResults.workflow = 'success';
+            } else {
+              cleanupResults.workflow = 'skipped (not in workflows store)';
+            }
+          } catch (err) {
+            cleanupResults.workflow = `error: ${err instanceof Error ? err.message : 'unknown'}`;
+          }
+        }
+
         if (source === 'kagenti') {
           cleanupResults.kagenti =
             'requires DELETE /kagenti/agents/:ns/:name (admin endpoint)';

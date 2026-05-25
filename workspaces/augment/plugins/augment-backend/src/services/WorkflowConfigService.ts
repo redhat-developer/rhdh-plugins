@@ -113,6 +113,25 @@ export class WorkflowConfigService {
     delete versions[id];
     await this.saveVersionsRecord(versions, user);
 
+    // Clean up governance entries (workflow-level + per-node)
+    try {
+      const chatAgents =
+        ((await this.adminConfig.get('chatAgents')) as Array<
+          Record<string, unknown>
+        >) ?? [];
+      const filtered = chatAgents.filter(c => {
+        const cId = c.agentId as string;
+        return cId !== id && !cId.startsWith(`wf/${id}/`);
+      });
+      if (filtered.length !== chatAgents.length) {
+        await this.adminConfig.set('chatAgents', filtered, user);
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Failed to clean up chatAgents for workflow ${id}: ${err instanceof Error ? err.message : 'unknown'}`,
+      );
+    }
+
     this.logger.info(`Deleted workflow: ${id}`);
   }
 
