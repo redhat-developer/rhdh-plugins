@@ -69,3 +69,32 @@ augment:
     showAllNamespaces: true
     skipTlsVerify: false
     verboseStreamLogging: true
+  skillsMarketplace:
+    baseUrl: ${SKILLS_MARKETPLACE_URL:-https://backstage-developer-hub-rhdh.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com/api/skill-marketplace}
+    agentImage: ghcr.io/redhat-et/docsclaw:latest
+    advisorUrl: https://skill-advisor-smp-agents.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com
+    llmBaseUrl: ${LLM_BASE_URL:-https://llamastack-llamastack.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com/v1}
+    llmModel: ${LLM_MODEL:-gemini/models/gemini-2.5-pro}
+    runtimes:
+      - id: docsclaw
+        name: DocsClaw
+        description: ConfigMap-driven agentic runtime
+        image: ghcr.io/redhat-et/docsclaw:latest
+        language: Go
+        footprint: ~10 MiB per pod
+        features: [tool-use, a2a-protocol, skill-discovery, multi-provider]
+        status: available
+      - id: zeroclaw
+        name: ZeroClaw
+        description: Provider-agnostic agent runtime with 30+ channels
+        image: ghcr.io/pavelanni/zeroclaw:0.7.0-beta-minimal
+        language: Rust
+        footprint: ~5 MiB per pod
+        features: [multi-channel, a2a-protocol, rust-native]
+        status: available
+      - id: openfang
+        name: OpenFang
+        description: Agent operating system built in Rust
+        language: Rust
+        features: [agent-os, autonomous, rust-native]
+        status: coming-soon

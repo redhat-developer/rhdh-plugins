@@ -28,3 +28,4 @@ export { registerDevSpacesRoutes } from './devSpacesRoutes';
 export { registerAgentRoutes } from './agentRoutes';
 export { registerToolLifecycleRoutes } from './toolLifecycleRoutes';
 export { registerWorkflowRoutes } from './workflowRoutes';
+export { registerSkillsRoutes } from './skillsRoutes';

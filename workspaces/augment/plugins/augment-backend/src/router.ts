@@ -43,6 +43,7 @@ import {
   registerAgentRoutes,
   registerToolLifecycleRoutes,
   registerWorkflowRoutes,
+  registerSkillsRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
@@ -363,6 +364,7 @@ export async function createRouter({
   registerChatRoutes(ctx);
   const agentApprovalService = new AgentApprovalWorkflowService(config, logger);
   registerAgentRoutes(ctx, adminConfig, agentApprovalService);
+  registerSkillsRoutes(ctx);
 
   // Tool lifecycle routes -- unified tool listing with lifecycle overlay
   {

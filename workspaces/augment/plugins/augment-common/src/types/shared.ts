@@ -418,6 +418,8 @@ export interface ChatAgentConfig {
   greeting?: string;
   /** Suggested prompts shown on the agent card and below the input */
   conversationStarters?: string[];
+  /** Direct chat endpoint URL for skill agents (e.g. http://agent.ns.svc:8000) */
+  chatEndpoint?: string;
 }
 
 /**
@@ -643,6 +645,8 @@ export interface ChatAgent {
    * False for runtime-only agents (Kagenti/orchestration) not yet in governance.
    */
   governanceRegistered?: boolean;
+  /** Direct chat endpoint URL for skill agents (e.g. http://agent.ns.svc:8000) */
+  chatEndpoint?: string;
 }
 
 /**
