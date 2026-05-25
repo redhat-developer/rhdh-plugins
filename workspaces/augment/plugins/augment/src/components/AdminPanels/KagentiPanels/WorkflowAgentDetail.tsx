@@ -71,6 +71,19 @@ export interface WorkflowAgentDetailProps {
  * AgentLifecycleDetail but without Kagenti-specific tabs (Build,
  * Design, Agent Card) since those are for Kagenti-managed agents.
  */
+function getAgentTypeLabel(framework?: string): string {
+  if (framework === 'docsclaw') return 'Skill Agent (DocsClaw)';
+  if (framework === 'workflow-builder')
+    return 'Workflow Agent (No-Code Builder)';
+  return 'Responses API Agent';
+}
+
+function getAgentChipLabel(framework?: string): string {
+  if (framework === 'docsclaw') return 'Skill Agent';
+  if (framework === 'workflow-builder') return 'Workflow Agent';
+  return 'Responses API';
+}
+
 export function WorkflowAgentDetail({
   agentId,
   onBack,
@@ -316,13 +329,10 @@ export function WorkflowAgentDetail({
               }}
             >
               <Chip
-                label={
-                  agent.framework === 'workflow-builder'
-                    ? 'Workflow Agent'
-                    : 'Responses API'
-                }
+                label={getAgentChipLabel(agent.framework)}
                 size="small"
                 variant="outlined"
+                color={agent.framework === 'docsclaw' ? 'info' : 'default'}
                 sx={{ height: 22, fontSize: '0.7rem' }}
               />
               {agent.framework && (
@@ -521,9 +531,7 @@ export function WorkflowAgentDetail({
               Type
             </Typography>
             <Typography variant="body2">
-              {agent.framework === 'workflow-builder'
-                ? 'Workflow Agent (No-Code Builder)'
-                : 'Responses API Agent'}
+              {getAgentTypeLabel(agent.framework)}
             </Typography>
 
             <Typography
@@ -575,6 +583,24 @@ export function WorkflowAgentDetail({
             <Typography variant="body2">
               {agent.isDefault ? 'Yes' : 'No'}
             </Typography>
+
+            {agent.chatEndpoint && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Chat Endpoint
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                >
+                  {agent.chatEndpoint}
+                </Typography>
+              </>
+            )}
 
             {agent.agentRole && (
               <>
