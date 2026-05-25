@@ -204,8 +204,20 @@ export function PreviewChatPanel({
       );
 
       if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error(
+            'Workflow not saved yet. The workflow needs to be saved to the server before you can preview it. Try closing the preview, making an edit, then opening preview again.',
+          );
+        }
+        if (res.status === 403) {
+          throw new Error(
+            'Preview requires admin access. Check your permissions.',
+          );
+        }
         const errBody = await res.text().catch(() => '');
-        throw new Error(`Run failed: ${res.status} ${errBody}`);
+        throw new Error(
+          `Preview failed (${res.status}). ${errBody.slice(0, 100)}`,
+        );
       }
 
       const reader = res.body!.getReader();

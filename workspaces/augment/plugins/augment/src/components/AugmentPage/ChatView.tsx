@@ -383,6 +383,39 @@ export function ChatView({
                     workflow={activeWorkflow}
                     onBack={() => setActiveWorkflow(null)}
                     onPreview={() => {}}
+                    onEnsurePersisted={async wf => {
+                      try {
+                        const baseUrl =
+                          await discoveryApi.getBaseUrl('augment');
+                        const hdrs = {
+                          'Content-Type': 'application/json',
+                          'X-Backstage-Request': 'augment',
+                        };
+                        const putResp = await authFetch(
+                          `${baseUrl}/workflows/${wf.id}`,
+                          {
+                            method: 'PUT',
+                            headers: hdrs,
+                            body: JSON.stringify(wf),
+                          },
+                        );
+                        if (putResp.ok) return true;
+                        if (putResp.status === 404) {
+                          const postResp = await authFetch(
+                            `${baseUrl}/workflows`,
+                            {
+                              method: 'POST',
+                              headers: hdrs,
+                              body: JSON.stringify(wf),
+                            },
+                          );
+                          return postResp.ok;
+                        }
+                        return false;
+                      } catch {
+                        return false;
+                      }
+                    }}
                     onSave={async wf => {
                       setActiveWorkflow(wf);
                       try {

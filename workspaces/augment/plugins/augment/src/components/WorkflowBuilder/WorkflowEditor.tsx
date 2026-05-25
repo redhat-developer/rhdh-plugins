@@ -16,8 +16,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
 import Dialog from '@mui/material/Dialog';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
@@ -48,6 +50,7 @@ export interface WorkflowEditorProps {
   onBack?: () => void;
   onDelete?: () => void;
   readOnly?: boolean;
+  onEnsurePersisted?: (wf: WorkflowDefinition) => Promise<boolean>;
 }
 
 export function WorkflowEditor({
@@ -57,6 +60,7 @@ export function WorkflowEditor({
   onBack,
   onDelete,
   readOnly,
+  onEnsurePersisted,
 }: WorkflowEditorProps) {
   const api = useApi(augmentApiRef);
   const configApi = useApi(configApiRef);
@@ -73,6 +77,27 @@ export function WorkflowEditor({
     'saved',
   );
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const [persistError, setPersistError] = useState<string | null>(null);
+
+  const handleModeChange = useCallback(
+    async (newMode: EditorMode) => {
+      if (newMode === 'preview' && onEnsurePersisted) {
+        setPersistError(null);
+        setSaveStatus('saving');
+        const ok = await onEnsurePersisted(workflow);
+        setSaveStatus('saved');
+        if (!ok) {
+          setPersistError(
+            'Could not save workflow to server. Preview requires a saved workflow.',
+          );
+          return;
+        }
+      }
+      setPersistError(null);
+      setMode(newMode);
+    },
+    [workflow, onEnsurePersisted],
+  );
 
   // Undo/redo history
   const historyRef = useRef<WorkflowDefinition[]>([workflow]);
@@ -136,7 +161,7 @@ export function WorkflowEditor({
       }
       if (isMeta && e.key === 'p') {
         e.preventDefault();
-        setMode(m => (m === 'preview' ? 'edit' : 'preview'));
+        handleModeChange(mode === 'preview' ? 'edit' : 'preview');
       }
       if (e.key === 'Escape') {
         if (evalOpen) setEvalOpen(false);
@@ -150,6 +175,8 @@ export function WorkflowEditor({
   }, [
     handleUndo,
     handleRedo,
+    handleModeChange,
+    mode,
     evalOpen,
     codeOpen,
     settingsOpen,
@@ -307,7 +334,7 @@ export function WorkflowEditor({
         status={workflow.status}
         version={workflow.version}
         mode={mode}
-        onModeChange={setMode}
+        onModeChange={handleModeChange}
         onBack={onBack}
         onCodeExport={() => setCodeOpen(true)}
         onPublish={onPublish}
@@ -469,6 +496,22 @@ export function WorkflowEditor({
           }}
         />
       </Dialog>
+
+      <Snackbar
+        open={!!persistError}
+        autoHideDuration={6000}
+        onClose={() => setPersistError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setPersistError(null)}
+          severity="warning"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {persistError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

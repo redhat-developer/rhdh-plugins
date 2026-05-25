@@ -269,7 +269,7 @@ On success: onCreated() then handleClose()
 
 **Service:** ports 8000 (HTTP) + 8100 (health)
 
-**LLM Secret:** LLM*PROVIDER=openai, LLM_API_KEY=not-needed, LLM_BASE_URL, LLM_MODEL (DocsClaw uses LLM*_ not OPENAI\__)
+**LLM Secret:** LLM*PROVIDER=openai, LLM_API_KEY=not-needed, LLM_BASE_URL, LLM_MODEL (DocsClaw uses LLM*\_ not OPENAI\_\_)
 
 ### Governance Registration
 
