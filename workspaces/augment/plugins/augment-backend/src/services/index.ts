@@ -39,5 +39,9 @@ export {
   type PromptCapabilities,
 } from './promptGeneration';
 
+// Agent approval workflow
+export { AgentApprovalWorkflowService } from './AgentApprovalWorkflowService';
+export type { AgentApprovalConfig } from './AgentApprovalWorkflowService';
+
 // Utilities
 export { detectFileFormat } from './utils/file-utils';

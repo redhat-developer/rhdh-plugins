@@ -84,33 +84,47 @@ export class AdminConfigService {
 
 // @public
 export interface AgenticProvider {
+  // (undocumented)
   chat(request: ChatRequest): Promise<ChatResponse>;
+  // (undocumented)
   chatStream(
     request: ChatRequest,
     onEvent: (event: NormalizedStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void>;
+  // (undocumented)
   conversations?: ConversationCapability;
   readonly displayName: string;
+  // (undocumented)
   evaluation?: EvaluationCapability;
+  // (undocumented)
   generateSystemPrompt?(
     description: string,
     model?: string,
     capabilities?: PromptCapabilities,
   ): Promise<string>;
+  // (undocumented)
   getAuthToken?(): Promise<string>;
+  // (undocumented)
   getEffectiveConfig?(): Promise<Record<string, unknown>>;
+  // (undocumented)
   getSessionContextId?(backstageSessionId: string): Promise<string | undefined>;
+  // (undocumented)
   getStatus(): Promise<AgenticProviderStatus>;
+  // (undocumented)
   hydrateSessionContext?(
     backstageSessionId: string,
     contextId: string,
     model?: string,
   ): Promise<void>;
   readonly id: string;
+  // (undocumented)
   initialize(): Promise<void>;
+  // (undocumented)
   invalidateRuntimeConfig?(): void;
+  // (undocumented)
   listAgents?(): Promise<ChatAgent[]>;
+  // (undocumented)
   listModels?(): Promise<
     Array<{
       id: string;
@@ -118,13 +132,21 @@ export interface AgenticProvider {
       model_type?: string;
     }>
   >;
+  // (undocumented)
   postInitialize(): Promise<void>;
+  // (undocumented)
   rag?: RAGCapability;
+  // (undocumented)
   refreshDynamicConfig?(): Promise<void>;
+  // (undocumented)
   registerRoutes?(router: Router, deps: unknown): void;
+  // (undocumented)
   safety?: SafetyCapability;
+  // (undocumented)
   setUserContext?(userRef: string): void;
+  // (undocumented)
   shutdown?(): Promise<void>;
+  // (undocumented)
   submitApproval?(approval: {
     responseId: string;
     callId: string;
@@ -145,6 +167,7 @@ export interface AgenticProvider {
     };
     handoff?: unknown;
   }>;
+  // (undocumented)
   testModel?(
     model?: string,
     baseUrl?: string,

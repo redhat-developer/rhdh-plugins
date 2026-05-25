@@ -418,6 +418,10 @@ export interface ChatAgentConfig {
   greeting?: string;
   /** Suggested prompts shown on the agent card and below the input */
   conversationStarters?: string[];
+  /** Direct chat endpoint URL for skill agents (e.g. http://agent.ns.svc:8000) */
+  chatEndpoint?: string;
+  /** K8s namespace where the skill agent is deployed */
+  namespace?: string;
 }
 
 /**
@@ -531,11 +535,16 @@ export const LIFECYCLE_TRANSITIONS: readonly AgentLifecycleTransition[] = [
     from: 'pending',
     to: 'published',
     action: 'approve',
-    label: 'Approve & Publish',
+    label: 'Approve and Publish',
   },
   { from: 'pending', to: 'draft', action: 'reject', label: 'Reject' },
   { from: 'pending', to: 'draft', action: 'withdraw', label: 'Withdraw' },
-  { from: 'published', to: 'pending', action: 'unpublish', label: 'Unpublish' },
+  {
+    from: 'published',
+    to: 'pending',
+    action: 'request-unpublish',
+    label: 'Request Unpublish',
+  },
   { from: 'published', to: 'archived', action: 'archive', label: 'Archive' },
   { from: 'archived', to: 'draft', action: 'reactivate', label: 'Reactivate' },
 ] as const;
@@ -643,6 +652,8 @@ export interface ChatAgent {
    * False for runtime-only agents (Kagenti/orchestration) not yet in governance.
    */
   governanceRegistered?: boolean;
+  /** Direct chat endpoint URL for skill agents (e.g. http://agent.ns.svc:8000) */
+  chatEndpoint?: string;
 }
 
 /**

@@ -227,7 +227,9 @@ export function registerKagentiToolRoutes(
       async (req, res) => {
         const namespace = req.query.namespace as string | undefined;
         const allNamespaces = req.query.all_namespaces === 'true';
-        const result = await api.listToolBuilds(namespace, allNamespaces);
+        const result = await api.listToolBuilds(
+          allNamespaces ? undefined : namespace,
+        );
         res.json(result);
       },
     ),
@@ -241,7 +243,9 @@ export function registerKagentiToolRoutes(
       async (req, res) => {
         const namespace = req.query.namespace as string | undefined;
         const allNamespaces = req.query.allNamespaces === 'true';
-        const result = await api.listAllBuilds(namespace, allNamespaces);
+        const result = await api.listAllBuilds(
+          allNamespaces ? undefined : namespace,
+        );
         res.json({ builds: result.items ?? [] });
       },
     ),

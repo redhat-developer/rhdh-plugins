@@ -19,12 +19,12 @@ import type {
   RootConfigService,
   CacheService,
 } from '@backstage/backend-plugin-api';
-import { InputError } from '@backstage/errors';
 import pLimit from 'p-limit';
 import type {
   NormalizedStreamEvent,
   ChatAgent,
   KagentiAgentSummary,
+  PromptCapabilities,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import {
   isProviderScopedKey,
@@ -51,57 +51,19 @@ import { submitApproval as submitApprovalImpl } from './kagentiApprovalHandler';
 import type { ApprovalRequest, ApprovalResult } from './kagentiApprovalHandler';
 import { buildKagentiConversationCapability } from './kagentiConversationCapability';
 import { buildMetaPrompt } from '../../services';
-import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { getVisibleNamespaces } from './kagentiNamespaceUtils';
+import {
+  stripTrailingSlashes,
+  createNoopCache,
+  resolveAgent,
+  parseAgentId,
+  extractLastUserMessage,
+  buildA2AMetadata,
+  validateNamespace,
+} from './kagentiHelpers';
+import type { KagentiProviderOptions } from './kagentiHelpers';
 
-function stripTrailingSlashes(s: string): string {
-  let end = s.length;
-  while (end > 0 && s[end - 1] === '/') end--;
-  return end === s.length ? s : s.slice(0, end);
-}
-
-/**
- * No-op CacheService fallback when no real cache is injected.
- * Falls back to in-memory Map for backward compatibility during tests.
- *
- * TODO: remove as part of cache service transition — callers should always
- * receive a real CacheService from the plugin environment.
- */
-function createNoopCache(): CacheService {
-  const store = new Map<string, { value: unknown; expiresAt: number }>();
-  return {
-    async get<T>(key: string): Promise<T | undefined> {
-      const entry = store.get(key);
-      if (!entry) return undefined;
-      if (Date.now() > entry.expiresAt) {
-        store.delete(key);
-        return undefined;
-      }
-      return entry.value as T;
-    },
-    async set(
-      key: string,
-      value: unknown,
-      options?: { ttl?: number },
-    ): Promise<void> {
-      const ttl = options?.ttl ?? 24 * 60 * 60 * 1000;
-      store.set(key, { value, expiresAt: Date.now() + ttl });
-    },
-    async delete(key: string): Promise<void> {
-      store.delete(key);
-    },
-    withOptions(_options: { defaultTtl?: number }): CacheService {
-      return createNoopCache();
-    },
-  };
-}
-
-export interface KagentiProviderOptions {
-  logger: LoggerService;
-  config: RootConfigService;
-  adminConfig?: import('../../services/AdminConfigService').AdminConfigService;
-  cache?: CacheService;
-}
+export type { KagentiProviderOptions };
 
 export class KagentiProvider implements AgenticProvider {
   readonly id = 'kagenti';
@@ -121,16 +83,12 @@ export class KagentiProvider implements AgenticProvider {
     integrations: false,
     triggers: false,
   };
-
   private static readonly MODELS_CACHE_TTL_MS = 60_000;
-  private static readonly SESSION_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-  // TODO(RHDHPLAN-404): transition cardCache to catalog lookup once RHDHPLAN-404 arrives
+  private static readonly SESSION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
   private readonly cardCache: KagentiAgentCardCache;
-  // TODO: remove sessionAgentCache, kagentiSessionCache, modelsCache as part of cache service transition
   private readonly sessionAgentCache: CacheService;
   private readonly kagentiSessionCache: CacheService;
   private readonly modelsCache: CacheService;
-
   readonly conversations: ConversationCapability;
   readonly rag = undefined;
   readonly safety = undefined;
@@ -140,42 +98,29 @@ export class KagentiProvider implements AgenticProvider {
     this.logger = options.logger.child({ label: 'kagenti-provider' });
     this.rootConfig = options.config;
     this.adminConfig = options.adminConfig;
-
-    const baseCache = options.cache;
-    this.sessionAgentCache = baseCache
-      ? baseCache.withOptions({
-          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
-        })
+    const bc = options.cache;
+    this.sessionAgentCache = bc
+      ? bc.withOptions({ defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS })
       : createNoopCache();
-    this.kagentiSessionCache = baseCache
-      ? baseCache.withOptions({
-          defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS,
-        })
+    this.kagentiSessionCache = bc
+      ? bc.withOptions({ defaultTtl: KagentiProvider.SESSION_CACHE_TTL_MS })
       : createNoopCache();
-    this.modelsCache = baseCache
-      ? baseCache.withOptions({
-          defaultTtl: KagentiProvider.MODELS_CACHE_TTL_MS,
-        })
+    this.modelsCache = bc
+      ? bc.withOptions({ defaultTtl: KagentiProvider.MODELS_CACHE_TTL_MS })
       : createNoopCache();
-
-    const cardCacheService = baseCache
-      ? baseCache.withOptions({ defaultTtl: 5 * 60 * 1000 })
-      : createNoopCache();
-    this.cardCache = new KagentiAgentCardCache(this.logger, cardCacheService);
+    this.cardCache = new KagentiAgentCardCache(
+      this.logger,
+      bc ? bc.withOptions({ defaultTtl: 5 * 60 * 1000 }) : createNoopCache(),
+    );
     this.conversations = buildKagentiConversationCapability(
       () => this.requireInitialized().apiClient,
       this.logger,
     );
   }
 
-  private requireInitialized(): {
-    config: KagentiConfig;
-    tokenManager: KeycloakTokenManager;
-    apiClient: KagentiApiClient;
-  } {
-    if (!this.kagentiConfig || !this.tokenManager || !this.apiClient) {
+  private requireInitialized() {
+    if (!this.kagentiConfig || !this.tokenManager || !this.apiClient)
       throw new Error('KagentiProvider.initialize() must be called before use');
-    }
     return {
       config: this.kagentiConfig,
       tokenManager: this.tokenManager,
@@ -190,11 +135,9 @@ export class KagentiProvider implements AgenticProvider {
           'kagentiBaseUrl',
           'kagenti',
         );
-        if (typeof dbUrl === 'string' && dbUrl) {
-          return dbUrl;
-        }
+        if (typeof dbUrl === 'string' && dbUrl) return dbUrl;
       } catch {
-        // DB lookup failed — fall back to YAML
+        /* fall through */
       }
     }
     return this.kagentiConfig?.baseUrl ?? '';
@@ -203,10 +146,9 @@ export class KagentiProvider implements AgenticProvider {
   private async ensureClientUrl(): Promise<void> {
     const resolved = await this.resolveKagentiBaseUrl();
     if (!resolved || resolved === this.activeBaseUrl) return;
-
     const { tokenManager } = this.requireInitialized();
     this.logger.info(
-      `Kagenti baseUrl changed from ${this.activeBaseUrl} to ${resolved}, rebuilding client`,
+      `Kagenti baseUrl changed to ${resolved}, rebuilding client`,
     );
     this.activeBaseUrl = resolved;
     this.apiClient = new KagentiApiClient({
@@ -220,9 +162,8 @@ export class KagentiProvider implements AgenticProvider {
       retryBaseDelayMs: this.kagentiConfig!.retryBaseDelayMs,
     });
     this.adminClient = new KagentiAdminClient(this.apiClient);
-    if (this.featureFlags.sandbox) {
+    if (this.featureFlags.sandbox)
       this.sandboxClient = new KagentiSandboxClient(this.apiClient);
-    }
   }
 
   async initialize(): Promise<void> {
@@ -230,17 +171,13 @@ export class KagentiProvider implements AgenticProvider {
     this.logger.info(
       `Initializing Kagenti provider: ${this.kagentiConfig.baseUrl}`,
     );
-
     if (
       this.kagentiConfig.showAllNamespaces &&
       !this.kagentiConfig.namespaces?.length
-    ) {
+    )
       this.logger.warn(
-        'showAllNamespaces is enabled with no namespace allowlist — all Kagenti namespaces are accessible. ' +
-          'Consider setting augment.kagenti.namespaces for production.',
+        'showAllNamespaces is enabled with no namespace allowlist',
       );
-    }
-
     this.tokenManager = new KeycloakTokenManager({
       tokenEndpoint: this.kagentiConfig.auth.tokenEndpoint,
       clientId: this.kagentiConfig.auth.clientId,
@@ -249,7 +186,6 @@ export class KagentiProvider implements AgenticProvider {
       skipTlsVerify: this.kagentiConfig.skipTlsVerify,
       tokenExpiryBufferSeconds: this.kagentiConfig.tokenExpiryBufferSeconds,
     });
-
     this.activeBaseUrl = this.kagentiConfig.baseUrl;
     this.apiClient = new KagentiApiClient({
       baseUrl: this.activeBaseUrl,
@@ -261,68 +197,33 @@ export class KagentiProvider implements AgenticProvider {
       maxRetries: this.kagentiConfig.maxRetries,
       retryBaseDelayMs: this.kagentiConfig.retryBaseDelayMs,
     });
-
     try {
       await this.tokenManager.getToken();
-      this.logger.info(
-        `Keycloak token acquired successfully from ${this.kagentiConfig.auth.tokenEndpoint}`,
-      );
-    } catch (tokenErr) {
-      const msg =
-        tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+      this.logger.info('Keycloak token acquired successfully');
+    } catch (e) {
       this.logger.error(
-        `Failed to acquire Keycloak token from ${this.kagentiConfig.auth.tokenEndpoint}: ${msg}. ` +
-          `Verify augment.kagenti.auth.tokenEndpoint, clientId, and clientSecret are correct.`,
+        `Failed to acquire Keycloak token: ${e instanceof Error ? e.message : e}`,
       );
     }
-
-    let health: { status: string };
     try {
-      health = await this.apiClient.health();
-    } catch (healthErr) {
-      const msg =
-        healthErr instanceof Error ? healthErr.message : String(healthErr);
+      const h = await this.apiClient.health();
+      this.logger.info(`Kagenti health: ${h.status}`);
+    } catch (e) {
       this.logger.error(
-        `Cannot reach Kagenti API at ${this.activeBaseUrl}: ${msg}. ` +
-          `If running inside the cluster, consider using the internal service URL ` +
-          `(e.g. http://kagenti-api.kagenti-system.svc.cluster.local:8000) ` +
-          `instead of the external route.`,
+        `Cannot reach Kagenti at ${this.activeBaseUrl}: ${e instanceof Error ? e.message : e}`,
       );
-      health = { status: 'unreachable' };
     }
-    this.logger.info(`Kagenti health: ${health.status}`);
-
     try {
       this.featureFlags = await this.apiClient.getFeatureFlags();
-    } catch (err) {
-      this.logger.warn(
-        `Could not fetch Kagenti feature flags, assuming all disabled: ${err}`,
-      );
+    } catch (e) {
+      this.logger.warn(`Could not fetch Kagenti feature flags: ${e}`);
     }
-
-    const overrides = this.kagentiConfig.featureOverrides;
-    if (overrides.sandbox !== undefined) {
-      this.featureFlags.sandbox = overrides.sandbox;
-    }
-    if (overrides.integrations !== undefined) {
-      this.featureFlags.integrations = overrides.integrations;
-    }
-    if (overrides.triggers !== undefined) {
-      this.featureFlags.triggers = overrides.triggers;
-    }
-    this.logger.info(
-      `Kagenti features: sandbox=${this.featureFlags.sandbox}, integrations=${this.featureFlags.integrations}, triggers=${this.featureFlags.triggers}${
-        overrides.sandbox !== undefined ||
-        overrides.integrations !== undefined ||
-        overrides.triggers !== undefined
-          ? ' (with local overrides applied)'
-          : ''
-      }`,
-    );
-
-    // Admin client is used for team/key management and other admin operations
+    const ov = this.kagentiConfig.featureOverrides;
+    if (ov.sandbox !== undefined) this.featureFlags.sandbox = ov.sandbox;
+    if (ov.integrations !== undefined)
+      this.featureFlags.integrations = ov.integrations;
+    if (ov.triggers !== undefined) this.featureFlags.triggers = ov.triggers;
     this.adminClient = new KagentiAdminClient(this.apiClient);
-
     if (this.featureFlags.sandbox) {
       this.sandboxClient = new KagentiSandboxClient(this.apiClient);
       this.logger.info('Sandbox client initialized');
@@ -333,9 +234,7 @@ export class KagentiProvider implements AgenticProvider {
     const { config, apiClient } = this.requireInitialized();
     try {
       const agents = await apiClient.listAgents(config.namespace);
-      this.logger.info(
-        `Discovered ${agents.items.length} Kagenti agents in namespace "${config.namespace}"`,
-      );
+      this.logger.info(`Discovered ${agents.items.length} Kagenti agents`);
     } catch (err) {
       this.logger.warn(`Failed to warm agent cache: ${err}`);
     }
@@ -345,28 +244,23 @@ export class KagentiProvider implements AgenticProvider {
     const { config, apiClient } = this.requireInitialized();
     let connected = false;
     let error: string | undefined;
-
     try {
-      const health = await apiClient.health();
-      const ready = await apiClient.ready();
-      connected = health.status === 'healthy' && ready.status === 'ready';
+      const h = await apiClient.health();
+      const r = await apiClient.ready();
+      connected = h.status === 'healthy' && r.status === 'ready';
     } catch (err) {
       error = err instanceof Error ? err.message : String(err);
     }
-
-    const defaultAgent = config.agentName ?? `${config.namespace}/default`;
-
     const securityMode =
       (this.rootConfig.getOptionalString('augment.security.mode') as
         | 'none'
         | 'plugin-only'
         | 'full'
         | undefined) ?? 'plugin-only';
-
     return {
       provider: {
         id: 'kagenti',
-        model: defaultAgent,
+        model: config.agentName ?? `${config.namespace}/default`,
         baseUrl: config.baseUrl,
         connected,
         error,
@@ -397,28 +291,22 @@ export class KagentiProvider implements AgenticProvider {
     const ls = this.rootConfig.getOptionalConfig('augment.llamaStack');
     let model = ls?.getOptionalString('model') ?? '';
     if (model === 'unused') model = '';
-
     if (!model) {
       try {
         const available = await this.listModels();
-        const inference = available.find(
-          m =>
-            m.id.includes('inference') &&
-            !m.id.includes('embed') &&
-            !m.id.includes('MiniLM'),
-        );
-        model = inference?.id ?? available[0]?.id ?? '';
-      } catch (err) {
-        this.logger.warn(
-          `Failed to auto-detect model via listModels: ${err instanceof Error ? err.message : err}`,
-        );
+        model =
+          available.find(
+            m => m.id.includes('inference') && !m.id.includes('embed'),
+          )?.id ??
+          available[0]?.id ??
+          '';
+      } catch {
+        /* */
       }
     }
-
-    const llamaStackBaseUrl = ls?.getOptionalString('baseUrl');
     const result: Record<string, unknown> = {
       model,
-      baseUrl: llamaStackBaseUrl || config.baseUrl,
+      baseUrl: ls?.getOptionalString('baseUrl') || config.baseUrl,
       kagentiBaseUrl: this.activeBaseUrl || config.baseUrl,
       systemPrompt:
         this.rootConfig.getOptionalString('augment.systemPrompt') ?? '',
@@ -432,7 +320,6 @@ export class KagentiProvider implements AgenticProvider {
       evaluationEnabled: ls?.getOptionalBoolean('evaluationEnabled') ?? false,
       scoringFunctions: ls?.getOptionalStringArray('scoringFunctions') ?? [],
     };
-
     if (this.adminConfig) {
       const dbKeys: AdminConfigKey[] = [
         'model',
@@ -461,40 +348,38 @@ export class KagentiProvider implements AgenticProvider {
         ),
       );
       for (let i = 0; i < dbKeys.length; i++) {
-        if (values[i] !== undefined) {
-          result[dbKeys[i]] = values[i];
-        }
+        if (values[i] !== undefined) result[dbKeys[i]] = values[i];
       }
     }
-
     return result;
   }
 
   async chat(request: AugmentChatRequest): Promise<AugmentChatResponse> {
     await this.ensureClientUrl();
     const { apiClient } = this.requireInitialized();
-    const { namespace, name } = this.resolveAgent(request);
-    const userMessage = this.extractLastUserMessage(request);
-
+    const { namespace, name } = this.doResolveAgent(request);
+    const userMessage = extractLastUserMessage(request);
     const backstageSessionId = request.sessionId;
     const storedSessionId = backstageSessionId
       ? await this.kagentiSessionCache.get<string>(backstageSessionId)
       : undefined;
-
-    const a2aMetadata = await this.buildA2AMetadata(namespace, name);
-    const mergedMetadata = {
-      ...a2aMetadata,
+    const a2a = await buildA2AMetadata(
+      namespace,
+      name,
+      (ns, n) => this.getAgentCardCached(ns, n),
+      this.logger,
+    );
+    const merged = {
+      ...a2a,
       ...(storedSessionId ? { contextId: storedSessionId } : {}),
     };
-
     const response = await apiClient.chatSend(
       namespace,
       name,
       userMessage,
       storedSessionId,
-      Object.keys(mergedMetadata).length > 0 ? mergedMetadata : undefined,
+      Object.keys(merged).length > 0 ? merged : undefined,
     );
-
     if (backstageSessionId && response.session_id) {
       await this.kagentiSessionCache.set(
         backstageSessionId,
@@ -505,7 +390,6 @@ export class KagentiProvider implements AgenticProvider {
         `${namespace}/${name}`,
       );
     }
-
     return {
       role: 'assistant',
       content: response.content,
@@ -520,27 +404,27 @@ export class KagentiProvider implements AgenticProvider {
   ): Promise<void> {
     await this.ensureClientUrl();
     const { config, apiClient } = this.requireInitialized();
-    const { namespace, name } = this.resolveAgent(request);
-    const userMessage = this.extractLastUserMessage(request);
+    const { namespace, name } = this.doResolveAgent(request);
+    const userMessage = extractLastUserMessage(request);
     const normalizer = new KagentiStreamNormalizer(
       config.verboseStreamLogging ? this.logger : undefined,
     );
-
     const backstageSessionId = request.sessionId;
     const agentId = `${namespace}/${name}`;
-
     const storedContextId = backstageSessionId
       ? await this.kagentiSessionCache.get<string>(backstageSessionId)
       : undefined;
-
-    const a2aMetadata = await this.buildA2AMetadata(namespace, name);
-    const mergedMetadata = {
-      ...a2aMetadata,
+    const a2a = await buildA2AMetadata(
+      namespace,
+      name,
+      (ns, n) => this.getAgentCardCached(ns, n),
+      this.logger,
+    );
+    const merged = {
+      ...a2a,
       ...(storedContextId ? { contextId: storedContextId } : {}),
     };
-
     let contentEventCount = 0;
-
     try {
       await apiClient.chatStream(
         namespace,
@@ -548,21 +432,9 @@ export class KagentiProvider implements AgenticProvider {
         userMessage,
         storedContextId,
         (line: string) => {
-          if (config.verboseStreamLogging) {
-            this.logger.info(
-              `KagentiSSE raw (${agentId}): ${line.substring(0, 1000)}`,
-            );
-          }
           const events = normalizer.normalize(line);
           for (const event of events) {
-            if (config.verboseStreamLogging) {
-              this.logger.debug(`KagentiSSE normalized: ${event.type}`);
-            }
-
-            if (normalizer.hasJsonRpcStreamingError) {
-              continue;
-            }
-
+            if (normalizer.hasJsonRpcStreamingError) continue;
             if (event.type === 'stream.started' && backstageSessionId) {
               const ctxId = (event as { responseId?: string }).responseId;
               if (ctxId) {
@@ -573,61 +445,33 @@ export class KagentiProvider implements AgenticProvider {
             if (
               event.type === 'stream.text.delta' ||
               event.type === 'stream.artifact'
-            ) {
+            )
               contentEventCount++;
-            }
             onEvent(event);
           }
         },
         signal,
-        Object.keys(mergedMetadata).length > 0 ? mergedMetadata : undefined,
+        Object.keys(merged).length > 0 ? merged : undefined,
       );
     } catch (err) {
-      if (signal?.aborted) {
-        this.logger.debug('Kagenti chat stream aborted by client');
-        return;
-      }
+      if (signal?.aborted) return;
       const errMsg = err instanceof Error ? err.message : String(err);
-      this.logger.error(
-        `Kagenti chatStream failed for agent ${agentId}: ${errMsg}`,
-      );
-
-      if (
-        /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|ECONNRESET|EAI_AGAIN/i.test(errMsg)
-      ) {
+      this.logger.error(`Kagenti chatStream failed for ${agentId}: ${errMsg}`);
+      if (/ECONNREFUSED|ENOTFOUND|ETIMEDOUT/i.test(errMsg))
         throw new Error(
-          `Cannot connect to Kagenti at ${this.activeBaseUrl}. ` +
-            `Verify augment.kagenti.baseUrl is reachable from this pod. Error: ${errMsg}`,
+          `Cannot connect to Kagenti at ${this.activeBaseUrl}: ${errMsg}`,
         );
-      }
-
-      if (/status 401/i.test(errMsg)) {
+      if (/status 401/i.test(errMsg))
         throw new Error(
-          `Kagenti rejected the request (401 Unauthorized). ` +
-            `Verify the Keycloak client "${this.kagentiConfig?.auth.clientId}" has ` +
-            `the kagenti-operator role and the client secret is correct. Error: ${errMsg}`,
+          `Kagenti rejected the request (401 Unauthorized): ${errMsg}`,
         );
-      }
-
-      if (/status 422/i.test(errMsg)) {
-        throw new Error(
-          `Kagenti rejected the request format (422). ` +
-            `The agent "${agentId}" may not accept the request body. Error: ${errMsg}`,
-        );
-      }
-
       throw err;
     }
-
     if (contentEventCount === 0 && !signal?.aborted) {
-      const reason = normalizer.hasJsonRpcStreamingError
-        ? 'JSONRPC -32603'
-        : 'zero events received';
       this.logger.info(
-        `Agent ${agentId} stream produced no content (${reason}), falling back to non-streaming`,
+        `Agent ${agentId} stream produced no content, falling back to non-streaming`,
       );
       const response = await this.chat(request);
-
       onEvent({
         type: 'stream.started',
         responseId: response.responseId ?? `kagenti-fallback-${Date.now()}`,
@@ -636,48 +480,32 @@ export class KagentiProvider implements AgenticProvider {
         onEvent({ type: 'stream.text.delta', delta: response.content });
         onEvent({ type: 'stream.text.done', text: response.content });
       }
-      onEvent({
-        type: 'stream.completed',
-        ...(response.usage && { usage: response.usage }),
-      });
+      onEvent({ type: 'stream.completed' });
     }
   }
 
   async listModels(): Promise<
     Array<{ id: string; owned_by?: string; model_type?: string }>
   > {
-    const MODELS_CACHE_KEY = 'kagenti:models';
     const cached =
       await this.modelsCache.get<
         Array<{ id: string; owned_by?: string; model_type?: string }>
-      >(MODELS_CACHE_KEY);
-    if (cached) {
-      return cached;
-    }
-
+      >('kagenti:models');
+    if (cached) return cached;
     const llamaStackUrl = this.rootConfig.getOptionalString(
       'augment.llamaStack.baseUrl',
     );
-    if (!llamaStackUrl) {
-      this.logger.debug(
-        'No augment.llamaStack.baseUrl configured; model list unavailable',
-      );
-      return [];
-    }
-
+    if (!llamaStackUrl) return [];
     try {
-      const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!res.ok) {
-        this.logger.warn(
-          `LlamaStack /v1/models returned ${res.status}: ${res.statusText}`,
-        );
-        return [];
-      }
+      const res = await fetch(
+        `${stripTrailingSlashes(llamaStackUrl)}/v1/models`,
+        {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(10_000),
+        },
+      );
+      if (!res.ok) return [];
       const json = (await res.json()) as {
         data?: Array<{
           id: string;
@@ -687,27 +515,20 @@ export class KagentiProvider implements AgenticProvider {
         }>;
       };
       const models = (json.data ?? [])
-        .filter(
-          (m): m is typeof m & { id: string } =>
-            typeof m.id === 'string' && m.id.length > 0,
-        )
-        .map(m => {
-          const modelType =
-            m.model_type ??
-            (m.custom_metadata?.model_type as string | undefined);
-          return {
-            id: m.id,
-            ...(m.owned_by ? { owned_by: m.owned_by } : {}),
-            ...(modelType ? { model_type: modelType } : {}),
-          };
-        });
-
-      await this.modelsCache.set(MODELS_CACHE_KEY, models);
+        .filter(m => typeof m.id === 'string' && m.id.length > 0)
+        .map(m => ({
+          id: m.id,
+          ...(m.owned_by ? { owned_by: m.owned_by } : {}),
+          ...((m.model_type ?? m.custom_metadata?.model_type)
+            ? {
+                model_type: (m.model_type ??
+                  m.custom_metadata?.model_type) as string,
+              }
+            : {}),
+        }));
+      await this.modelsCache.set('kagenti:models', models);
       return models;
-    } catch (err) {
-      this.logger.warn(
-        `Failed to fetch models from LlamaStack at ${llamaStackUrl}: ${err instanceof Error ? err.message : err}`,
-      );
+    } catch {
       return [];
     }
   }
@@ -720,9 +541,7 @@ export class KagentiProvider implements AgenticProvider {
       config,
       this.logger,
     );
-
     const allItems: KagentiAgentSummary[] = [];
-
     const limit = pLimit(5);
     const nsResults = await Promise.allSettled(
       namespaces.map(ns => limit(() => apiClient.listAgents(ns))),
@@ -730,17 +549,34 @@ export class KagentiProvider implements AgenticProvider {
     for (let i = 0; i < nsResults.length; i++) {
       const r = nsResults[i];
       if (r.status === 'fulfilled') {
-        for (const agent of r.value.items ?? []) {
-          allItems.push(agent);
-        }
+        for (const agent of r.value.items ?? []) allItems.push(agent);
       } else {
         this.logger.warn(
           `Failed to list agents in namespace ${namespaces[i]}: ${r.reason instanceof Error ? r.reason.message : r.reason}`,
         );
       }
     }
-
-    const agents: ChatAgent[] = allItems.map(agent => ({
+    if (allItems.length === 0 && config.agents?.length) {
+      for (const ref of config.agents) {
+        const { namespace: ns, name: n } = ref.includes('/')
+          ? { namespace: ref.split('/')[0], name: ref.split('/')[1] }
+          : { namespace: config.namespace, name: ref };
+        try {
+          const card = await this.getAgentCardCached(ns, n);
+          allItems.push({
+            name: n,
+            namespace: ns,
+            description: card.card?.description,
+            status: 'ready',
+            createdAt: new Date().toISOString(),
+            labels: {},
+          });
+        } catch {
+          /* skip */
+        }
+      }
+    }
+    return allItems.map(agent => ({
       id: `${agent.namespace}/${agent.name}`,
       name: agent.name,
       description: agent.description,
@@ -750,15 +586,13 @@ export class KagentiProvider implements AgenticProvider {
       createdAt: agent.createdAt,
       framework: agent.labels?.framework,
       protocols: (() => {
-        const proto = agent.labels?.protocol;
-        if (!proto) return undefined;
-        return Array.isArray(proto) ? proto : [proto];
+        const p = agent.labels?.protocol;
+        if (!p) return undefined;
+        return Array.isArray(p) ? p : [p];
       })(),
       source: 'kagenti',
       namespace: agent.namespace,
     }));
-
-    return agents;
   }
 
   async generateSystemPrompt(
@@ -769,22 +603,16 @@ export class KagentiProvider implements AgenticProvider {
     const llamaStackUrl = this.rootConfig.getOptionalString(
       'augment.llamaStack.baseUrl',
     );
-    if (!llamaStackUrl) {
-      throw new Error(
-        'augment.llamaStack.baseUrl is not configured; prompt generation unavailable',
-      );
-    }
-
-    const effectiveConfig = await this.getEffectiveConfig();
-    const model =
-      modelOverride || (effectiveConfig.model as string) || 'default';
-
+    if (!llamaStackUrl)
+      throw new Error('augment.llamaStack.baseUrl is not configured');
+    const ec = await this.getEffectiveConfig();
+    const model = modelOverride || (ec.model as string) || 'default';
     const { instructions, input } = buildMetaPrompt(
       description,
       {
         model,
         baseUrl: llamaStackUrl,
-        systemPrompt: (effectiveConfig.systemPrompt as string) || '',
+        systemPrompt: (ec.systemPrompt as string) || '',
         vectorStoreIds: [],
         vectorStoreName: 'default-vector-store',
         embeddingModel: 'all-MiniLM-L6-v2',
@@ -792,56 +620,46 @@ export class KagentiProvider implements AgenticProvider {
         chunkingStrategy: 'auto' as const,
         maxChunkSizeTokens: 800,
         chunkOverlapTokens: 50,
-        enableWebSearch: (effectiveConfig.enableWebSearch as boolean) || false,
-        enableCodeInterpreter:
-          (effectiveConfig.enableCodeInterpreter as boolean) || false,
+        enableWebSearch: (ec.enableWebSearch as boolean) || false,
+        enableCodeInterpreter: (ec.enableCodeInterpreter as boolean) || false,
         skipTlsVerify: false,
         zdrMode: false,
         verboseStreamLogging: false,
       },
       capabilities,
     );
-
-    const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/responses`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await fetch(
+      `${stripTrailingSlashes(llamaStackUrl)}/v1/responses`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ input, instructions, model, store: false }),
+        signal: AbortSignal.timeout(60_000),
       },
-      body: JSON.stringify({
-        input,
-        instructions,
-        model,
-        store: false,
-      }),
-      signal: AbortSignal.timeout(60_000),
-    });
-
+    );
     if (!res.ok) {
       const body = await res.text().catch(() => '');
       throw new Error(
         `Inference server returned ${res.status}: ${body.slice(0, 200)}`,
       );
     }
-
     const response = (await res.json()) as {
       output: Array<{
         type: string;
         content?: Array<{ type: string; text?: string }>;
       }>;
     };
-
     for (const item of response.output) {
       if (item.type === 'message' && item.content) {
         for (const block of item.content) {
-          if (block.type === 'output_text' && block.text) {
+          if (block.type === 'output_text' && block.text)
             return block.text.trim();
-          }
         }
       }
     }
-
     throw new Error('LLM returned no text in the response');
   }
 
@@ -857,71 +675,51 @@ export class KagentiProvider implements AgenticProvider {
     const llamaStackUrl =
       overrideBaseUrl ||
       this.rootConfig.getOptionalString('augment.llamaStack.baseUrl');
-
     if (llamaStackUrl && model) {
       try {
-        const url = `${stripTrailingSlashes(llamaStackUrl)}/v1/models`;
-        const skipTls = this.rootConfig.getOptionalBoolean(
-          'augment.llamaStack.skipTlsVerify',
+        const res = await fetch(
+          `${stripTrailingSlashes(llamaStackUrl)}/v1/models`,
+          {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(10_000),
+          },
         );
-        const fetchOpts: RequestInit & { dispatcher?: unknown } = {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(10_000),
-        };
-        if (skipTls) {
-          const https = await import('https');
-          (fetchOpts as Record<string, unknown>).agent = new https.Agent({
-            rejectUnauthorized: false,
-          });
-        }
-        const res = await fetch(url, fetchOpts);
-        if (!res.ok) {
+        if (!res.ok)
           return {
             connected: false,
             modelFound: false,
             canGenerate: false,
-            error: `LlamaStack returned ${res.status}: ${res.statusText}`,
+            error: `LlamaStack returned ${res.status}`,
           };
-        }
-        const json = (await res.json()) as {
-          data?: Array<{ id: string }>;
-        };
+        const json = (await res.json()) as { data?: Array<{ id: string }> };
         const found = json.data?.some(m => m.id === model) ?? false;
         return {
           connected: true,
           modelFound: found,
           canGenerate: found,
-          error: found ? undefined : `Model "${model}" not found on LlamaStack`,
+          error: found ? undefined : `Model "${model}" not found`,
         };
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
         return {
           connected: false,
           modelFound: false,
           canGenerate: false,
-          error: `LlamaStack connection failed: ${msg}`,
+          error: `LlamaStack connection failed: ${err instanceof Error ? err.message : err}`,
         };
       }
     }
-
     const { config, apiClient } = this.requireInitialized();
     try {
       const { namespace, name } = model
-        ? this.parseAgentId(model)
-        : {
-            namespace: config.namespace,
-            name: config.agentName ?? 'default',
-          };
-
+        ? parseAgentId(model, config.namespace)
+        : { namespace: config.namespace, name: config.agentName ?? 'default' };
       await apiClient.getAgentCard(namespace, name);
       return { connected: true, modelFound: true, canGenerate: true };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const isConnectionError =
-        /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|timeout/i.test(msg);
       return {
-        connected: !isConnectionError,
+        connected: !/ECONNREFUSED|ENOTFOUND|ETIMEDOUT|timeout/i.test(msg),
         modelFound: false,
         canGenerate: false,
         error: msg,
@@ -935,104 +733,57 @@ export class KagentiProvider implements AgenticProvider {
     this.cardCache.clear();
     this.logger.info('Kagenti provider shut down');
   }
-
-  // -- Agent Card Cache -------------------------------------------------------
-
   async getAgentCardCached(
-    namespace: string,
+    ns: string,
     name: string,
-    options?: { retries?: number },
+    opts?: { retries?: number },
   ): Promise<AgentCardCacheEntry> {
     const { config, apiClient } = this.requireInitialized();
-    return this.cardCache.getAgentCardCached(
-      apiClient,
-      config,
-      namespace,
-      name,
-      options,
-    );
+    return this.cardCache.getAgentCardCached(apiClient, config, ns, name, opts);
   }
-
-  // -- Accessors for routes ---------------------------------------------------
-
   getApiClient(): KagentiApiClient {
     return this.requireInitialized().apiClient;
   }
-
   getSandboxClient(): KagentiSandboxClient | undefined {
     return this.sandboxClient;
   }
-
   getAdminClient(): KagentiAdminClient | undefined {
     return this.adminClient;
   }
-
   getFeatureFlags(): FeatureFlagsResponse {
     return this.featureFlags;
   }
-
-  /**
-   * Set per-request user context so all subsequent Kagenti API calls
-   * include the Backstage user identity as an X-Backstage-User header.
-   */
   setUserContext(userRef: string): void {
-    if (this.apiClient) {
-      this.apiClient.setRequestContext({ userRef });
-    }
+    this.apiClient?.setRequestContext({ userRef });
   }
-
   getConfig(): KagentiConfig {
     return this.requireInitialized().config;
   }
-
   getTokenManager(): KeycloakTokenManager {
     return this.requireInitialized().tokenManager;
   }
-
   async getAuthToken(): Promise<string> {
     return this.requireInitialized().tokenManager.getToken();
   }
-
-  /**
-   * Pre-populate the session cache so chatStream can resume a
-   * Kagenti conversation that was persisted in the DB across restarts.
-   */
   async hydrateSessionContext(
-    backstageSessionId: string,
-    contextId: string,
+    bsId: string,
+    ctxId: string,
     agentId?: string,
   ): Promise<void> {
-    await this.kagentiSessionCache.set(backstageSessionId, contextId);
-    if (agentId) {
-      await this.sessionAgentCache.set(contextId, agentId);
-    }
+    await this.kagentiSessionCache.set(bsId, ctxId);
+    if (agentId) await this.sessionAgentCache.set(ctxId, agentId);
   }
-
-  /** Return the Kagenti context ID associated with a Backstage session. */
-  async getSessionContextId(
-    backstageSessionId: string,
-  ): Promise<string | undefined> {
-    return this.kagentiSessionCache.get<string>(backstageSessionId);
+  async getSessionContextId(bsId: string): Promise<string | undefined> {
+    return this.kagentiSessionCache.get<string>(bsId);
   }
-
-  /**
-   * Submit a tool-approval response back to Kagenti via the A2A protocol.
-   * The contextId (from the original approval request's responseId) identifies
-   * the paused conversation. We resume it by sending a follow-up message with
-   * the approval metadata attached.
-   *
-   * For secrets and OAuth responses, uses the proper ADK extension metadata
-   * format (secret_fulfillments / oauth redirect_uri) keyed by extension URI.
-   */
   async submitApproval(approval: ApprovalRequest): Promise<ApprovalResult> {
     const { config, apiClient } = this.requireInitialized();
-    const contextId = approval.responseId;
-
-    const agentId = await this.sessionAgentCache.get<string>(contextId);
+    const agentId = await this.sessionAgentCache.get<string>(
+      approval.responseId,
+    );
     const { namespace, name } = agentId
-      ? this.parseAgentId(agentId)
-      : this.resolveAgent({ messages: [] });
-
+      ? parseAgentId(agentId, config.namespace)
+      : this.doResolveAgent({ messages: [] });
     return submitApprovalImpl(
       apiClient,
       namespace,
@@ -1041,111 +792,17 @@ export class KagentiProvider implements AgenticProvider {
       config.extensionBaseUrl,
     );
   }
-
-  /**
-   * Validate that a namespace is in the configured allow-list.
-   * Throws InputError if the namespace is not permitted.
-   */
   validateNamespace(namespace: string): void {
+    validateNamespace(namespace, this.requireInitialized().config);
+  }
+
+  private doResolveAgent(request: AugmentChatRequest) {
     const { config } = this.requireInitialized();
-
-    if (config.namespaces?.length) {
-      const allowSet = new Set(config.namespaces);
-      if (!allowSet.has(namespace)) {
-        throw new InputError(
-          `Namespace "${namespace}" is not in the configured allow-list`,
-        );
-      }
-      return;
-    }
-
-    if (!config.showAllNamespaces && namespace !== config.namespace) {
-      throw new InputError(
-        `Namespace "${namespace}" is not accessible (default: "${config.namespace}")`,
-      );
-    }
-  }
-
-  // -- Private helpers --------------------------------------------------------
-
-  private resolveAgent(request: AugmentChatRequest): {
-    namespace: string;
-    name: string;
-  } {
-    const { config } = this.requireInitialized();
-    const model =
-      'model' in request ? (request.model as string | undefined) : undefined;
-    if (model && model.includes('/')) {
-      const parsed = this.parseAgentId(model);
-      this.validateNamespace(parsed.namespace);
-      return parsed;
-    }
-    return {
-      namespace: config.namespace,
-      name: config.agentName ?? model ?? 'default',
-    };
-  }
-
-  private parseAgentId(agentId: string): {
-    namespace: string;
-    name: string;
-  } {
-    const { config } = this.requireInitialized();
-    const slashIdx = agentId.indexOf('/');
-    if (slashIdx > 0) {
-      return {
-        namespace: agentId.substring(0, slashIdx),
-        name: agentId.substring(slashIdx + 1),
-      };
-    }
-    return { namespace: config.namespace, name: agentId };
-  }
-
-  private extractLastUserMessage(request: AugmentChatRequest): string {
-    if (request.messages) {
-      for (let i = request.messages.length - 1; i >= 0; i--) {
-        if (request.messages[i].role === 'user') {
-          return request.messages[i].content || '';
-        }
-      }
-    }
-    return '';
-  }
-
-  /**
-   * Build A2A metadata from the agent card's demand resolution.
-   * Returns undefined if the agent has no extension demands.
-   */
-  private async buildA2AMetadata(
-    namespace: string,
-    name: string,
-  ): Promise<
-    | {
-        metadata?: Record<string, unknown>;
-        parts?: Array<Record<string, unknown>>;
-        contextId?: string;
-      }
-    | undefined
-  > {
-    try {
-      const entry = await this.getAgentCardCached(namespace, name);
-      const hasDemands = Object.values(entry.demands).some(d => d !== null);
-
-      if (!hasDemands) {
-        return undefined;
-      }
-
-      const metadata = await entry.resolveMetadata({});
-      if (!metadata || Object.keys(metadata).length === 0) {
-        return undefined;
-      }
-
-      return { metadata };
-    } catch (err) {
-      this.logger.debug(
-        `Could not build A2A metadata for ${namespace}/${name}: ${err}`,
-      );
-      return undefined;
-    }
+    return resolveAgent(
+      request,
+      config,
+      ns => this.validateNamespace(ns),
+      id => parseAgentId(id, config.namespace),
+    );
   }
 }

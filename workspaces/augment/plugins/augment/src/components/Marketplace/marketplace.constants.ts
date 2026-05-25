@@ -45,7 +45,16 @@ export const FRAMEWORK_COLORS: Record<string, string> = {
   GoogleADK: '#3b82f6',
   LangGraph: '#8b5cf6',
   llamastack: '#f59e0b',
+  docsclaw: '#009596',
   Other: '#6b7280',
+};
+
+const FRAMEWORK_LABELS: Record<string, string> = {
+  ADK: 'ADK',
+  GoogleADK: 'Google ADK',
+  LangGraph: 'LangGraph',
+  llamastack: 'Llama Stack',
+  docsclaw: 'DocsClaw',
 };
 
 export function getAvatarColor(name: string): string {
@@ -58,6 +67,11 @@ export function getAvatarColor(name: string): string {
 export function getFrameworkColor(framework?: string): string {
   if (!framework) return '#6b7280';
   return FRAMEWORK_COLORS[framework] ?? '#6b7280';
+}
+
+export function getFrameworkLabel(framework?: string): string {
+  if (!framework) return 'Unknown';
+  return FRAMEWORK_LABELS[framework] ?? framework;
 }
 
 export const LIFECYCLE_STAGE_CONFIG: Record<

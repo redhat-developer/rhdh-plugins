@@ -259,6 +259,7 @@ export type BuiltInProviderType = 'llamastack' | 'googleadk' | 'kagenti';
 export interface ChatAgent {
   agentRole?: AgentRole;
   avatarUrl?: string;
+  chatEndpoint?: string;
   createdAt?: string;
   createdBy?: string;
   description?: string;
@@ -290,6 +291,7 @@ export interface ChatAgentConfig {
   agentId: string;
   approvalWorkflowInstanceId?: string;
   avatarUrl?: string;
+  chatEndpoint?: string;
   conversationStarters?: string[];
   createdAt?: string;
   createdBy?: string;
@@ -298,6 +300,7 @@ export interface ChatAgentConfig {
   featured: boolean;
   greeting?: string;
   lifecycleStage?: AgentLifecycleStage;
+  namespace?: string;
   order?: number;
   pendingAction?: 'publish' | 'unpublish';
   promotedAt?: string;

@@ -78,12 +78,18 @@ export function ReviewQueue() {
     return () => clearInterval(interval);
   }, [loadAgents]);
 
-  const handleApprove = useCallback(
+  const handleApprovePublish = useCallback(
     async (agentId: string) => {
       setActing(agentId);
       try {
-        await api.promoteAgent(agentId, 'pending');
-        setToast(`Approved to staging: ${agentId}`);
+        const result = await api.promoteAgent(agentId, 'published');
+        if (result.workflowDecisionSent) {
+          setToast(
+            `Approval sent — workflow is processing. ${agentId} will be published automatically.`,
+          );
+        } else {
+          setToast(`Approved and published: ${agentId}`);
+        }
         loadAgents();
       } catch (err) {
         setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
@@ -94,13 +100,28 @@ export function ReviewQueue() {
     [api, loadAgents],
   );
 
-  const handleFastTrack = useCallback(
+  const handleApproveRemoval = useCallback(
     async (agentId: string) => {
       setActing(agentId);
       try {
-        await api.promoteAgent(agentId, 'pending');
+        await api.demoteAgent(agentId, 'draft');
+        setToast(`Removed from marketplace: ${agentId}`);
+        loadAgents();
+      } catch (err) {
+        setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
+      } finally {
+        setActing(null);
+      }
+    },
+    [api, loadAgents],
+  );
+
+  const handleKeepPublished = useCallback(
+    async (agentId: string) => {
+      setActing(agentId);
+      try {
         await api.promoteAgent(agentId, 'published');
-        setToast(`Fast-tracked to production: ${agentId}`);
+        setToast(`Kept published: ${agentId}`);
         loadAgents();
       } catch (err) {
         setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
@@ -141,8 +162,8 @@ export function ReviewQueue() {
       <Box>
         <Typography sx={pageTitleSx(theme)}>Review Queue</Typography>
         <Typography sx={pageSubtitleSx(theme)}>
-          Agents submitted for review. Approve to move to staging, or fast-track
-          to production.
+          Agents submitted for review. Approve to publish to the marketplace, or
+          reject to return to draft with feedback.
         </Typography>
       </Box>
 
@@ -188,8 +209,8 @@ export function ReviewQueue() {
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
-                  bgcolor: alpha(LIFECYCLE_COLORS.review, isDark ? 0.2 : 0.1),
-                  color: LIFECYCLE_COLORS.review,
+                  bgcolor: alpha(LIFECYCLE_COLORS.pending, isDark ? 0.2 : 0.1),
+                  color: LIFECYCLE_COLORS.pending,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -223,60 +244,79 @@ export function ReviewQueue() {
                 </Typography>
               </Box>
 
-              {/* Actions */}
+              {/* Actions -- adapt based on pendingAction */}
               <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="success"
-                  disabled={acting === agent.id}
-                  onClick={() => handleApprove(agent.id)}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: 1.5,
-                    boxShadow: 'none',
-                    '&:hover': {
-                      boxShadow: `0 0 12px ${alpha(STATUS_COLORS.healthy, 0.4)}`,
-                    },
-                  }}
-                >
-                  Approve to Staging
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="warning"
-                  disabled={acting === agent.id}
-                  onClick={() => handleFastTrack(agent.id)}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: 1.5,
-                    '&:hover': {
-                      boxShadow: `0 0 12px ${alpha(STATUS_COLORS.warning, 0.3)}`,
-                    },
-                  }}
-                >
-                  Fast-track to Production
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  disabled={acting === agent.id}
-                  onClick={() => handleOpenRejectDialog(agent.id)}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: 1.5,
-                    '&:hover': {
-                      boxShadow: `0 0 12px ${alpha(STATUS_COLORS.critical, 0.3)}`,
-                    },
-                  }}
-                >
-                  Reject
-                </Button>
+                {agent.pendingAction === 'unpublish' ? (
+                  <>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="warning"
+                      disabled={acting === agent.id}
+                      onClick={() => handleApproveRemoval(agent.id)}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderRadius: 1.5,
+                        boxShadow: 'none',
+                      }}
+                    >
+                      Approve Removal
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      disabled={acting === agent.id}
+                      onClick={() => handleKeepPublished(agent.id)}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderRadius: 1.5,
+                      }}
+                    >
+                      Keep Published
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      disabled={acting === agent.id}
+                      onClick={() => handleApprovePublish(agent.id)}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderRadius: 1.5,
+                        boxShadow: 'none',
+                        '&:hover': {
+                          boxShadow: `0 0 12px ${alpha(STATUS_COLORS.healthy, 0.4)}`,
+                        },
+                      }}
+                    >
+                      Approve and Publish
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      disabled={acting === agent.id}
+                      onClick={() => handleOpenRejectDialog(agent.id)}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderRadius: 1.5,
+                        '&:hover': {
+                          boxShadow: `0 0 12px ${alpha(STATUS_COLORS.critical, 0.3)}`,
+                        },
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
               </Box>
             </Box>
           ))}

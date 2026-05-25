@@ -24,8 +24,6 @@ import { useEffectiveConfig, useProviders } from '../../../hooks';
 import { ProviderSelector } from '../ProviderSelector';
 import { ProviderPlaceholder } from '../ProviderPlaceholder';
 import { ModelConnectionSection } from './ModelConnectionSection';
-import { KagentiConnectionSection } from './KagentiConnectionSection';
-import { ToolsSection } from './ToolsSection';
 import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
 import { EvaluationSection } from '../SafetyEvalPanel/EvaluationSection';
@@ -53,7 +51,6 @@ interface TabDef {
 
 const ALL_TABS: readonly TabDef[] = [
   { label: 'Model', value: 'connection' },
-  { label: 'Tools', value: 'tools', capability: 'tools' },
   { label: 'MCP Servers', value: 'mcp', capability: 'mcpTools' },
   { label: 'RAG', value: 'knowledge', capability: 'rag' },
   { label: 'Safety', value: 'safety', capability: 'safety' },
@@ -222,20 +219,7 @@ export const AgentConfigPanel = () => {
             onConfigSaved={refreshConfig}
             providerName={providerName}
           />
-          {activeProviderId === 'kagenti' && (
-            <KagentiConnectionSection
-              effectiveConfig={effectiveConfig}
-              onConfigSaved={refreshConfig}
-            />
-          )}
-        </Box>
-      )}
-      {activeTab === 'tools' && (
-        <Box sx={CONTENT_SX}>
-          <ToolsSection
-            effectiveConfig={effectiveConfig}
-            onConfigSaved={refreshConfig}
-          />
+          {/* Agent Ops (KagentiConnectionSection) moved to its own sub-tab */}
         </Box>
       )}
       {activeTab === 'mcp' && (

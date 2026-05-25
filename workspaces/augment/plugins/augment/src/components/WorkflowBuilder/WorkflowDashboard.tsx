@@ -190,7 +190,10 @@ export function WorkflowDashboard({
         `${backendUrl}/api/augment/workflows/${renameDialog.id}`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Backstage-Request': 'augment',
+          },
           body: JSON.stringify({ ...renameDialog, name: renameName.trim() }),
         },
       );
@@ -206,7 +209,10 @@ export function WorkflowDashboard({
     try {
       await authFetch(
         `${backendUrl}/api/augment/workflows/${deleteDialog.id}`,
-        { method: 'DELETE' },
+        {
+          method: 'DELETE',
+          headers: { 'X-Backstage-Request': 'augment' },
+        },
       );
       setDeleteDialog(null);
       loadWorkflows();
@@ -228,7 +234,10 @@ export function WorkflowDashboard({
     try {
       await authFetch(`${backendUrl}/api/augment/workflows`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Backstage-Request': 'augment',
+        },
         body: JSON.stringify(dup),
       });
       loadWorkflows();

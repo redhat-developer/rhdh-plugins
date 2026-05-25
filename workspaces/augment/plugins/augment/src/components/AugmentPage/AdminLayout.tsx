@@ -25,13 +25,13 @@ import { NamespacePicker } from '../AdminPanels/KagentiPanels';
 import { AgentConfigPanel, BrandingPanel, AgentsPanel } from '../AdminPanels';
 import {
   KagentiAgentsPanel,
-  KagentiToolsPanel,
   KagentiAdminPanel,
   KagentiDashboardLinks,
   KagentiHomeDashboard,
   KagentiBuildPipelinePanel,
   KagentiSandboxPanel,
 } from '../AdminPanels/KagentiPanels';
+import { KagentiConnectionSection } from '../AdminPanels/ModelToolsPanel/KagentiConnectionSection';
 import { DocsPanel } from '../AdminPanels/DocsPanel';
 import { AgentRegistryPanel } from '../AdminPanels/AgentRegistryPanel';
 import { OpsOverview } from '../CommandCenter';
@@ -61,9 +61,9 @@ const AGENTS_PANELS: AdminPanel[] = [
   'kagenti-builds',
 ];
 const PLATFORM_PANELS: AdminPanel[] = [
-  'kagenti-tools',
   'ops-tool-review',
   'ops-platform',
+  'kagenti-connection',
   'ops-observability',
 ];
 const SETTINGS_PANELS: AdminPanel[] = ['ops-branding', 'ops-admin', 'ops-docs'];
@@ -316,11 +316,6 @@ export function AdminLayout({
               >
                 {[
                   {
-                    id: 'kagenti-tools' as AdminPanel,
-                    label: 'Tools',
-                    tour: 'subtab-tools',
-                  },
-                  {
                     id: 'ops-tool-review' as AdminPanel,
                     label: 'Tool Review',
                     tour: 'subtab-tool-review',
@@ -329,6 +324,11 @@ export function AdminLayout({
                     id: 'ops-platform' as AdminPanel,
                     label: 'Config',
                     tour: 'subtab-config',
+                  },
+                  {
+                    id: 'kagenti-connection' as AdminPanel,
+                    label: 'Agent Ops',
+                    tour: 'subtab-agent-ops',
                   },
                   {
                     id: 'ops-observability' as AdminPanel,
@@ -500,7 +500,7 @@ function AdminPanelContent({
   focusTarget,
   onFocusConsumed,
   agentTourRef,
-  toolTourRef,
+  toolTourRef: _toolTourRef,
 }: AdminPanelContentProps) {
   switch (panel) {
     // ── Agent Development (accessible when admin navigates here via Create Agent flow) ──
@@ -528,15 +528,6 @@ function AdminPanelContent({
             here to test your agents.
           </Alert>
         </Box>
-      );
-    case 'kagenti-tools':
-      return (
-        <KagentiToolsPanel
-          namespace={namespace || undefined}
-          initialToolName={focusTarget}
-          onFocusConsumed={onFocusConsumed}
-          tourControlRef={toolTourRef}
-        />
       );
     case 'kagenti-builds':
       return <KagentiBuildPipelinePanel namespace={namespace || undefined} />;
@@ -569,6 +560,8 @@ function AdminPanelContent({
     case 'kagenti-platform':
     case 'platform':
       return <AgentConfigPanel />;
+    case 'kagenti-connection':
+      return <KagentiConnectionSection />;
     case 'ops-observability':
     case 'kagenti-dashboards':
       return <KagentiDashboardLinks namespace={namespace || undefined} />;

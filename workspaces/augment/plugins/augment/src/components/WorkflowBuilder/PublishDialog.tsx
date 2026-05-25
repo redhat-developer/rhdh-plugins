@@ -87,6 +87,15 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
     }
   }
 
+  const hasEnd = nodes.some(n => n.type === 'end');
+  if (!hasEnd) {
+    issues.push({
+      severity: 'warning',
+      message:
+        'Workflow has no End node — it will run until an agent completes',
+    });
+  }
+
   if (hasStart) {
     const startNode = nodes.find(n => n.type === 'start')!;
     const startEdge = edges.find(e => e.source === startNode.id);
@@ -96,6 +105,16 @@ function validateForPublish(workflow: WorkflowDefinition): ValidationIssue[] {
         message: 'Start node is not connected to any agent',
       });
     }
+  }
+
+  const connectedNodeIds = new Set(edges.flatMap(e => [e.source, e.target]));
+  const disconnected = agentNodes.filter(n => !connectedNodeIds.has(n.id));
+  for (const node of disconnected) {
+    const data = node.data as Record<string, unknown>;
+    issues.push({
+      severity: 'warning',
+      message: `Agent "${data.name || node.id}" is not connected to any other node`,
+    });
   }
 
   return issues;

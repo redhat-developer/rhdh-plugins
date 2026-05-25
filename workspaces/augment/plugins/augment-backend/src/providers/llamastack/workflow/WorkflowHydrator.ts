@@ -25,66 +25,25 @@ import type {
   WorkflowNode,
   WorkflowEdge,
   AgentNodeData,
-  ToolNodeData,
-  FileSearchNodeData,
-  McpNodeData,
   NodeExecutionRecord,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ModelProvider } from '@openai/agents-core';
+import { buildExecutionPlan } from './workflowExecutionPlan';
+import { resolveToolsForAgent } from './workflowToolResolver';
+
+export type {
+  WorkflowExecutionPlan,
+  ExecutionStep,
+} from './workflowExecutionPlan';
 
 export interface HydratedWorkflow {
   runner: Runner;
   entryAgent: Agent;
   agents: Map<string, Agent>;
   maxTurns: number;
-  executionPlan: WorkflowExecutionPlan;
+  executionPlan: import('./workflowExecutionPlan').WorkflowExecutionPlan;
 }
 
-/**
- * Execution plan for the workflow - describes the graph traversal
- * including classify routing, logic branching, and sequential execution.
- */
-export interface WorkflowExecutionPlan {
-  startNodeId: string;
-  steps: ExecutionStep[];
-}
-
-export type ExecutionStep =
-  | { type: 'agent'; nodeId: string; agentId: string }
-  | {
-      type: 'classify';
-      nodeId: string;
-      agentId: string;
-      routes: Record<string, string>;
-    }
-  | {
-      type: 'logic';
-      nodeId: string;
-      condition: string;
-      trueTarget: string;
-      falseTarget?: string;
-    }
-  | {
-      type: 'transform';
-      nodeId: string;
-      expression: string;
-      outputVariable: string;
-    }
-  | { type: 'set_state'; nodeId: string; assignments: Record<string, string> }
-  | { type: 'user_interaction'; nodeId: string; prompt: string }
-  | { type: 'end'; nodeId: string };
-
-/**
- * Converts a serialized WorkflowDefinition into live @openai/agents-core
- * Agent and Runner instances ready for execution.
- *
- * The hydration process:
- * 1. Identify the start node and trace edges to find the entry agent
- * 2. Create Agent instances for all agent and classify nodes
- * 3. Wire tool bindings, guardrail bindings, and handoff edges
- * 4. Build an execution plan that describes graph traversal order
- * 5. Return a configured Runner with the entry agent and execution plan
- */
 export class WorkflowHydrator {
   constructor(private readonly logger: LoggerService) {}
 
@@ -112,16 +71,16 @@ export class WorkflowHydrator {
     const agents = new Map<string, Agent>();
     const agentNodeDataMap = new Map<string, AgentNodeData>();
 
-    // Pass 1: create agents for agent nodes
     for (const node of agentNodes) {
       const data = node.data as AgentNodeData;
       agentNodeDataMap.set(node.id, data);
 
-      const nodeTools = this.resolveToolsForAgent(
+      const nodeTools = resolveToolsForAgent(
         node.id,
         edges,
         nodeMap,
         backendTools,
+        this.logger,
       );
 
       agents.set(
@@ -150,7 +109,6 @@ export class WorkflowHydrator {
       );
     }
 
-    // Pass 1b: create agents for classify nodes (agents with outputType)
     for (const node of classifyNodes) {
       const data = node.data as Record<string, unknown>;
       const classifications =
@@ -179,7 +137,6 @@ export class WorkflowHydrator {
       );
     }
 
-    // Pass 2: wire handoffs between agents based on edges
     for (const node of agentNodes) {
       const handoffEdges = edges.filter(
         e =>
@@ -212,11 +169,12 @@ export class WorkflowHydrator {
 
       if (handoffTargets.length > 0 || asToolTargets.length > 0) {
         const data = agentNodeDataMap.get(node.id)!;
-        const nodeTools = this.resolveToolsForAgent(
+        const nodeTools = resolveToolsForAgent(
           node.id,
           edges,
           nodeMap,
           backendTools,
+          this.logger,
         );
 
         agents.set(
@@ -247,10 +205,7 @@ export class WorkflowHydrator {
       }
     }
 
-    // Build execution plan
-    const executionPlan = this.buildExecutionPlan(nodes, edges);
-
-    // Find entry agent: first agent/classify connected from Start node
+    const executionPlan = buildExecutionPlan(nodes, edges);
     const entryAgent = this.resolveEntryAgent(nodes, edges, agents);
     const maxTurns = settings.maxTurns ?? 10;
     const runner = new Runner({ modelProvider });
@@ -262,124 +217,6 @@ export class WorkflowHydrator {
     );
 
     return { runner, entryAgent, agents, maxTurns, executionPlan };
-  }
-
-  private buildExecutionPlan(
-    nodes: WorkflowNode[],
-    edges: WorkflowEdge[],
-  ): WorkflowExecutionPlan {
-    const startNode = nodes.find(n => n.type === 'start');
-    if (!startNode) {
-      return { startNodeId: '', steps: [] };
-    }
-
-    const steps: ExecutionStep[] = [];
-    const visited = new Set<string>();
-
-    const traverse = (nodeId: string) => {
-      if (visited.has(nodeId)) return;
-      visited.add(nodeId);
-
-      const node = nodes.find(n => n.id === nodeId);
-      if (!node) return;
-
-      const outEdges = edges.filter(e => e.source === nodeId);
-
-      switch (node.type) {
-        case 'start':
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-
-        case 'agent':
-          steps.push({ type: 'agent', nodeId: node.id, agentId: node.id });
-          for (const edge of outEdges.filter(
-            e => e.type !== 'tool_binding' && e.type !== 'guardrail_binding',
-          )) {
-            traverse(edge.target);
-          }
-          break;
-
-        case 'classify': {
-          const routes: Record<string, string> = {};
-          for (const edge of outEdges) {
-            if (edge.condition) {
-              routes[edge.condition] = edge.target;
-            } else {
-              routes.__default__ = edge.target;
-            }
-          }
-          steps.push({
-            type: 'classify',
-            nodeId: node.id,
-            agentId: node.id,
-            routes,
-          });
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-        }
-
-        case 'logic': {
-          const d = node.data as Record<string, unknown>;
-          const condition = (d.condition as string) || 'true';
-          const trueTarget = outEdges[0]?.target || '';
-          const falseTarget = outEdges[1]?.target;
-          steps.push({
-            type: 'logic',
-            nodeId: node.id,
-            condition,
-            trueTarget,
-            falseTarget,
-          });
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-        }
-
-        case 'transform': {
-          const d = node.data as Record<string, unknown>;
-          steps.push({
-            type: 'transform',
-            nodeId: node.id,
-            expression: (d.expression as string) || '',
-            outputVariable: (d.outputVariable as string) || '_transformed',
-          });
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-        }
-
-        case 'set_state': {
-          const d = node.data as Record<string, unknown>;
-          steps.push({
-            type: 'set_state',
-            nodeId: node.id,
-            assignments: (d.assignments as Record<string, string>) || {},
-          });
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-        }
-
-        case 'user_interaction': {
-          const d = node.data as Record<string, unknown>;
-          steps.push({
-            type: 'user_interaction',
-            nodeId: node.id,
-            prompt: (d.prompt as string) || 'Please confirm.',
-          });
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-        }
-
-        case 'end':
-          steps.push({ type: 'end', nodeId: node.id });
-          break;
-
-        default:
-          for (const edge of outEdges) traverse(edge.target);
-          break;
-      }
-    };
-
-    traverse(startNode.id);
-    return { startNodeId: startNode.id, steps };
   }
 
   private resolveEntryAgent(
@@ -400,141 +237,6 @@ export class WorkflowHydrator {
       throw new Error('No agents found in workflow');
     }
     return first;
-  }
-
-  private resolveToolsForAgent(
-    agentNodeId: string,
-    edges: WorkflowEdge[],
-    nodeMap: Map<string, WorkflowNode>,
-    backendTools: AgentsFunctionTool[],
-  ): AgentsFunctionTool[] {
-    const tools: AgentsFunctionTool[] = [];
-
-    const toolEdges = edges.filter(
-      e => e.source === agentNodeId && e.type === 'tool_binding',
-    );
-
-    for (const edge of toolEdges) {
-      const toolNode = nodeMap.get(edge.target);
-      if (!toolNode) continue;
-
-      if (toolNode.type === 'tool') {
-        const data = toolNode.data as ToolNodeData;
-        switch (data.kind) {
-          case 'mcp_server': {
-            if (data.mcpServerId) {
-              const filtered = data.mcpToolFilter;
-              for (const bt of backendTools) {
-                if (
-                  !filtered ||
-                  filtered.length === 0 ||
-                  filtered.includes(bt.name)
-                ) {
-                  tools.push(bt);
-                }
-              }
-            }
-            break;
-          }
-          case 'custom_function': {
-            if (data.functionDef) {
-              tools.push({
-                type: 'function',
-                name: data.functionDef.name,
-                description: data.functionDef.description,
-                parameters: data.functionDef.parameters,
-                strict: false,
-                execute: async () =>
-                  JSON.stringify({ result: 'custom function placeholder' }),
-              } as unknown as AgentsFunctionTool);
-            }
-            break;
-          }
-          case 'file_search':
-          case 'web_search':
-          case 'code_interpreter':
-            break;
-          default:
-            break;
-        }
-      } else if (toolNode.type === 'file_search') {
-        const data = toolNode.data as FileSearchNodeData;
-        const vectorStoreIds = data.vectorStoreIds || [];
-        const maxResults = data.maxResults || 10;
-        tools.push({
-          type: 'function',
-          name: `file_search_${toolNode.id.replace(/[^a-zA-Z0-9_]/g, '_')}`,
-          description: `Search files in vector stores: ${vectorStoreIds.join(', ') || 'default'}`,
-          parameters: {
-            type: 'object',
-            properties: {
-              query: { type: 'string', description: 'Search query' },
-            },
-            required: ['query'],
-          },
-          strict: false,
-          execute: async (args: Record<string, unknown>) => {
-            this.logger.info(
-              `File search: query="${args.query}", stores=${vectorStoreIds}, max=${maxResults}`,
-            );
-            return JSON.stringify({
-              results: [],
-              message: 'File search executed via LlamaStack vector_stores API',
-            });
-          },
-        } as unknown as AgentsFunctionTool);
-      } else if (toolNode.type === 'mcp') {
-        const data = toolNode.data as McpNodeData;
-        const serverLabel = data.serverLabel || 'MCP Server';
-        const serverUrl = data.serverUrl || '';
-        const requireApproval = data.requireApproval || 'never';
-        const allowedTools = data.allowedTools || [];
-
-        tools.push({
-          type: 'function',
-          name: `mcp_${toolNode.id.replace(/[^a-zA-Z0-9_]/g, '_')}`,
-          description: `MCP Server: ${serverLabel} (${serverUrl}). Approval: ${requireApproval}. Tools: ${allowedTools.length > 0 ? allowedTools.join(', ') : 'all'}`,
-          parameters: {
-            type: 'object',
-            properties: {
-              tool_name: {
-                type: 'string',
-                description: 'Name of the MCP tool to invoke',
-              },
-              arguments: {
-                type: 'object',
-                description: 'Arguments to pass to the tool',
-              },
-            },
-            required: ['tool_name'],
-          },
-          strict: false,
-          execute: async (args: Record<string, unknown>) => {
-            this.logger.info(
-              `MCP call: server=${serverUrl}, tool=${args.tool_name}, approval=${requireApproval}`,
-            );
-            if (requireApproval === 'always') {
-              return JSON.stringify({
-                status: 'pending_approval',
-                tool: args.tool_name,
-                server: serverLabel,
-              });
-            }
-            return JSON.stringify({
-              status: 'executed',
-              tool: args.tool_name,
-              server: serverLabel,
-              result: 'MCP tool placeholder',
-            });
-          },
-        } as unknown as AgentsFunctionTool);
-      }
-    }
-
-    if (tools.length === 0) {
-      return [...backendTools];
-    }
-    return tools;
   }
 
   createExecutionRecord(node: WorkflowNode): NodeExecutionRecord {

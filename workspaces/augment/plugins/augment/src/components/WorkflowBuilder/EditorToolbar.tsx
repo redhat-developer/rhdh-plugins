@@ -329,10 +329,11 @@ export function EditorToolbar({
               <CodeIcon sx={{ fontSize: 18 }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Publish this workflow">
+          <Tooltip title="Save workflow and go to My Agents">
             <Button
               size="small"
               variant="contained"
+              color="success"
               disableElevation
               onClick={onPublish}
               sx={{
@@ -342,7 +343,7 @@ export function EditorToolbar({
                 ml: 0.5,
               }}
             >
-              Publish
+              Save to My Agents
             </Button>
           </Tooltip>
         </Box>

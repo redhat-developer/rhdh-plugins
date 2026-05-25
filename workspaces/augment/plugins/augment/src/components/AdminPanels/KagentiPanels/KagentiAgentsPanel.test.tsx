@@ -18,7 +18,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ApiRef } from '@backstage/core-plugin-api';
-import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  configApiRef,
+  fetchApiRef,
+  discoveryApiRef,
+} from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../../../api';
 import { KagentiAgentsPanel } from './KagentiAgentsPanel';
 import { makeKagentiAgentSummary } from './kagentiTestFixtures';
@@ -89,6 +94,8 @@ function setupUseApiMock(api: ReturnType<typeof createPanelMockApi>) {
     if (ref === augmentApiRef) return api;
     if (ref === configApiRef) return mockConfigApi;
     if (ref === fetchApiRef) return mockFetchApi;
+    if (ref === discoveryApiRef)
+      return { getBaseUrl: jest.fn().mockResolvedValue('http://localhost') };
     throw new Error(`Unexpected API ref in test: ${String(ref)}`);
   });
 }

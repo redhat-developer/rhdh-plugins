@@ -82,12 +82,9 @@ function renderPanel(apiOverrides: Partial<Record<string, jest.Mock>> = {}) {
 }
 
 describe('KagentiToolsPanel — rendering', () => {
-  it('renders heading and new tool button', async () => {
+  it('renders heading and tool list', async () => {
     renderPanel();
     expect(screen.getByText('Tools')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /New Tool/i }),
-    ).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText('weather-tool')).toBeInTheDocument();
     });

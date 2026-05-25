@@ -51,7 +51,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -90,12 +89,12 @@ import {
   normalizeLifecycleStage,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { useChatAgentConfig } from '../../../hooks/useChatAgentConfig';
+import { getFrameworkLabel } from '../../Marketplace/marketplace.constants';
 
 const MAX_FEATURED = 4;
-const MAX_STARTERS = 6;
 const PAGE_SIZE = 20;
 
-type SourceFilter = 'all' | 'kagenti' | 'orchestration';
+type SourceFilter = 'all' | 'kagenti' | 'orchestration' | 'skills';
 type StageFilter = 'all' | 'unregistered' | AgentLifecycleStage;
 
 interface RegistryRow {
@@ -189,12 +188,14 @@ function getStageBg(stage: AgentLifecycleStage, isDark: boolean): string {
 }
 
 function getSourceLabel(source?: string): string {
-  if (source === 'orchestration') return 'Orchestration';
-  return 'Kagenti';
+  if (source === 'orchestration') return 'Workflow Builder';
+  if (source === 'skills') return 'Skill Agent';
+  return 'BYO Agent';
 }
 
 function getSourceColor(source?: string, isDark = false): string {
   if (source === 'orchestration') return isDark ? '#a78bfa' : '#7c3aed';
+  if (source === 'skills') return isDark ? '#2dd4bf' : '#009596';
   return isDark ? '#60a5fa' : '#2563eb';
 }
 
@@ -249,6 +250,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
   const [agents, setAgents] = useState<ChatAgent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
+  const [approvalMode, setApprovalMode] = useState<string>('built-in');
   const [rows, setRows] = useState<RegistryRow[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -345,8 +347,17 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
           15_000,
         ),
       );
-      const result = await Promise.race([api.listAgents(), timeout]);
+      const [result, status] = await Promise.race([
+        Promise.all([api.listAgents(), api.getStatus()]),
+        timeout.then(() => {
+          throw new Error('Request timed out');
+        }),
+      ]);
       setAgents(result);
+      setApprovalMode(
+        ((status as unknown as Record<string, unknown>)
+          .approvalMode as string) ?? 'built-in',
+      );
     } catch (err) {
       setToast(
         `Failed to load agents: ${err instanceof Error ? err.message : 'Unknown error'}`,
@@ -395,13 +406,15 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
     const stageRank: Record<string, number> = {
       published: 0,
-      production: 0,
+      production: 0, // legacy compat
+      deployed: 0, // legacy compat
       pending: 1,
-      review: 1,
-      staging: 1,
+      review: 1, // legacy compat
+      staging: 1, // legacy compat
+      registered: 1, // legacy compat
       draft: 2,
       archived: 3,
-      retired: 3,
+      retired: 3, // legacy compat
     };
     newRows.sort((a, b) => {
       const sa = stageRank[a.config.lifecycleStage ?? 'draft'] ?? 5;
@@ -454,6 +467,29 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         );
       } finally {
         setRegistering(null);
+      }
+    },
+    [api, refreshConfigs, fetchAgents],
+  );
+
+  const [deleteAgentId, setDeleteAgentId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDeleteAgent = useCallback(
+    async (agentId: string) => {
+      setDeleting(agentId);
+      setDeleteAgentId(null);
+      try {
+        await api.deleteAgentConfig(agentId);
+        await refreshConfigs();
+        await fetchAgents();
+        setToast(`Deleted: ${agentId}`);
+      } catch (err) {
+        setToast(
+          `Delete failed: ${err instanceof Error ? err.message : 'Unknown'}`,
+        );
+      } finally {
+        setDeleting(null);
       }
     },
     [api, refreshConfigs, fetchAgents],
@@ -747,7 +783,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                   lineHeight: 1.3,
                 }}
               >
-                Lifecycle management from draft to production
+                Agent lifecycle management
               </Typography>
             </Box>
           </Box>
@@ -815,9 +851,9 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
               </Button>
             }
           >
-            {stats.unregistered} runtime agent
-            {stats.unregistered === 1 ? ' is' : 's are'} not registered for
-            governance. Register them before lifecycle promotion.
+            {stats.unregistered} agent{stats.unregistered === 1 ? '' : 's'}{' '}
+            discovered from runtime. Register to manage{' '}
+            {stats.unregistered === 1 ? 'its' : 'their'} lifecycle.
           </Alert>
         )}
         <LifecyclePipeline
@@ -867,53 +903,99 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
             onChange={e => setSourceFilter(e.target.value as SourceFilter)}
             sx={{ fontSize: '0.8rem', borderRadius: 1.5, height: 32 }}
           >
-            <MenuItem value="all">All Sources</MenuItem>
-            <MenuItem value="kagenti">Kagenti</MenuItem>
-            <MenuItem value="orchestration">Orchestration</MenuItem>
+            <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="kagenti">BYO Agent</MenuItem>
+            <MenuItem value="orchestration">Workflow Builder</MenuItem>
+            <MenuItem value="skills">Skill Agent</MenuItem>
           </Select>
         </FormControl>
 
-        {selectedIds.size > 0 && (
-          <Box
-            sx={{ display: 'flex', gap: 0.5, ml: 'auto', alignItems: 'center' }}
-          >
-            <Chip
-              size="small"
-              label={`${selectedIds.size} selected`}
-              sx={{ height: 22, fontSize: '0.675rem', fontWeight: 600 }}
-            />
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
-              onClick={() => handleBulkPublish(true)}
-              disabled={promoting === 'bulk'}
-              sx={{
-                textTransform: 'none',
-                fontSize: '0.7rem',
-                borderRadius: 1.5,
-                height: 28,
-              }}
-            >
-              Promote to Production
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
-              onClick={() => handleBulkPublish(false)}
-              disabled={promoting === 'bulk'}
-              sx={{
-                textTransform: 'none',
-                fontSize: '0.7rem',
-                borderRadius: 1.5,
-                height: 28,
-              }}
-            >
-              Rollback to Staging
-            </Button>
-          </Box>
-        )}
+        {selectedIds.size > 0 &&
+          (() => {
+            const selectedRows = [...selectedIds]
+              .map(id => rows.find(r => r.agent.id === id))
+              .filter(Boolean);
+            const allPending = selectedRows.every(
+              r => r!.config.lifecycleStage === 'pending',
+            );
+            const allPublished = selectedRows.every(
+              r => r!.config.lifecycleStage === 'published',
+            );
+            const publishDisabled =
+              promoting === 'bulk' ||
+              approvalMode === 'workflow' ||
+              !allPending;
+            const unpublishDisabled =
+              promoting === 'bulk' ||
+              approvalMode === 'workflow' ||
+              !allPublished;
+            const publishTip =
+              approvalMode === 'workflow'
+                ? 'Bulk actions disabled when approval workflow is active.'
+                : !allPending
+                  ? 'Select only Pending agents to publish.'
+                  : '';
+            const unpublishTip =
+              approvalMode === 'workflow'
+                ? 'Bulk actions disabled when approval workflow is active.'
+                : !allPublished
+                  ? 'Select only Published agents to unpublish.'
+                  : '';
+            return (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  ml: 'auto',
+                  alignItems: 'center',
+                }}
+              >
+                <Chip
+                  size="small"
+                  label={`${selectedIds.size} selected`}
+                  sx={{ height: 22, fontSize: '0.675rem', fontWeight: 600 }}
+                />
+                <Tooltip title={publishTip}>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
+                      onClick={() => handleBulkPublish(true)}
+                      disabled={publishDisabled}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.7rem',
+                        borderRadius: 1.5,
+                        height: 28,
+                      }}
+                    >
+                      Publish Selected
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip title={unpublishTip}>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
+                      onClick={() => handleBulkPublish(false)}
+                      disabled={unpublishDisabled}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.7rem',
+                        borderRadius: 1.5,
+                        height: 28,
+                      }}
+                    >
+                      Unpublish Selected
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Box>
+            );
+          })()}
       </Box>
 
       {/* ── Select All bar ── */}
@@ -1015,6 +1097,8 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                   }
                   onToggleFeatured={handleToggleFeatured}
                   onUpdateConfig={updateRowConfig}
+                  onDeleteAgent={id => setDeleteAgentId(id)}
+                  isDeleting={deleting === row.agent.id}
                 />
               ))}
           </Box>
@@ -1095,6 +1179,32 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
         }
         isDark={isDark}
       />
+
+      {/* Delete confirm dialog */}
+      <Dialog
+        open={!!deleteAgentId}
+        onClose={() => setDeleteAgentId(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete Agent</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Permanently delete <strong>{deleteAgentId}</strong>? This action
+            cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteAgentId(null)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => deleteAgentId && handleDeleteAgent(deleteAgentId)}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!toast}
@@ -1493,6 +1603,8 @@ interface AgentRowProps {
   onRegisterForGovernance: () => void;
   onToggleFeatured: (agentId: string, featured: boolean) => void;
   onUpdateConfig: (agentId: string, patch: Partial<ChatAgentConfig>) => void;
+  onDeleteAgent?: (agentId: string) => void;
+  isDeleting?: boolean;
 }
 
 const AgentRow: FC<AgentRowProps> = ({
@@ -1509,7 +1621,8 @@ const AgentRow: FC<AgentRowProps> = ({
   onRequestPromote,
   onRegisterForGovernance,
   onToggleFeatured,
-  onUpdateConfig,
+  onDeleteAgent,
+  isDeleting,
 }) => {
   const theme = useTheme();
   const { agent, config, governanceRegistered } = row;
@@ -1712,7 +1825,9 @@ const AgentRow: FC<AgentRowProps> = ({
               sx={{ color: 'text.disabled', fontSize: '0.65rem' }}
             >
               {agent.id}
-              {agent.framework ? ` · ${agent.framework}` : ''}
+              {agent.framework
+                ? ` · ${getFrameworkLabel(agent.framework)}`
+                : ''}
             </Typography>
             {agent.promotedAt && (
               <Typography
@@ -1800,7 +1915,19 @@ const AgentRow: FC<AgentRowProps> = ({
                   </IconButton>
                 </Tooltip>
               )}
-              {forwardTransitions.length > 0 && (
+              {stage === 'pending' ? (
+                <Chip
+                  size="small"
+                  label="In Review Queue"
+                  color="info"
+                  variant="outlined"
+                  sx={{
+                    height: 24,
+                    fontSize: '0.675rem',
+                    fontWeight: 600,
+                  }}
+                />
+              ) : forwardTransitions.length > 0 ? (
                 <Tooltip title={forwardTransitions[0].label}>
                   <Button
                     size="small"
@@ -1840,7 +1967,7 @@ const AgentRow: FC<AgentRowProps> = ({
                     {forwardTransitions[0].label}
                   </Button>
                 </Tooltip>
-              )}
+              ) : null}
               {stage === 'published' && (
                 <Chip
                   size="small"
@@ -1891,6 +2018,29 @@ const AgentRow: FC<AgentRowProps> = ({
             </IconButton>
           </Box>
         </Tooltip>
+
+        {/* Delete (draft only) */}
+        {stage === 'draft' && onDeleteAgent && (
+          <Tooltip title="Delete draft agent">
+            <IconButton
+              size="small"
+              disabled={isDeleting}
+              onClick={e => {
+                e.stopPropagation();
+                onDeleteAgent(agent.id);
+              }}
+              sx={{
+                width: 26,
+                height: 26,
+                color: 'error.main',
+                opacity: 0.6,
+                '&:hover': { opacity: 1 },
+              }}
+            >
+              <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
 
         {/* Expand */}
         <IconButton
@@ -2002,7 +2152,7 @@ const AgentRow: FC<AgentRowProps> = ({
             })}
           </Box>
 
-          {/* Kagenti Runtime Info (lazy-loaded) */}
+          {/* Agent Runtime Info (lazy-loaded) */}
           {agent.source === 'kagenti' && (
             <KagentiRuntimeInfo
               enrichment={enrichment}
@@ -2010,6 +2160,73 @@ const AgentRow: FC<AgentRowProps> = ({
               isDark={isDark}
             />
           )}
+
+          {/* Skill Agent Runtime Info */}
+          {(agent.source === 'skills' || agent.chatEndpoint) &&
+            agent.source !== 'kagenti' && (
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  bgcolor: isDark
+                    ? 'rgba(0,149,150,0.08)'
+                    : 'rgba(0,149,150,0.04)',
+                  border: `1px solid ${alpha('#009596', 0.2)}`,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.6875rem',
+                    color: '#009596',
+                    textTransform: 'uppercase',
+                    mb: 1,
+                    display: 'block',
+                  }}
+                >
+                  Skill Agent Runtime
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr',
+                    gap: 0.5,
+                  }}
+                >
+                  {agent.chatEndpoint && (
+                    <>
+                      <Typography variant="caption" color="text.secondary">
+                        Endpoint
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}
+                      >
+                        {agent.chatEndpoint}
+                      </Typography>
+                    </>
+                  )}
+                  {'namespace' in agent && agent.namespace && (
+                    <>
+                      <Typography variant="caption" color="text.secondary">
+                        Namespace
+                      </Typography>
+                      <Typography variant="caption">
+                        {String(agent.namespace)}
+                      </Typography>
+                    </>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    Framework
+                  </Typography>
+                  <Typography variant="caption">
+                    {getFrameworkLabel(agent.framework)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
 
           {/* Two-Column: Dev Info | Ops Info */}
           <Box
@@ -2037,11 +2254,11 @@ const AgentRow: FC<AgentRowProps> = ({
                 Development
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <DetailRow label="Type" value={getSourceLabel(agent.source)} />
                 <DetailRow
-                  label="Source"
-                  value={getSourceLabel(agent.source)}
+                  label="Framework"
+                  value={getFrameworkLabel(agent.framework) || '—'}
                 />
-                <DetailRow label="Framework" value={agent.framework || '—'} />
                 <DetailRow
                   label="Protocols"
                   value={agent.protocols?.join(', ') || '—'}
@@ -2131,191 +2348,9 @@ const AgentRow: FC<AgentRowProps> = ({
               </Typography>
             </>
           )}
-
-          <Divider sx={{ my: 1.5 }} />
-
-          {/* Display Overrides */}
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.6875rem',
-              color: 'text.secondary',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              mb: 1,
-              display: 'block',
-            }}
-          >
-            Display Overrides
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 1.5,
-              mb: 1.5,
-            }}
-          >
-            <TextField
-              label="Display Name"
-              size="small"
-              value={config.displayName || ''}
-              onChange={e =>
-                onUpdateConfig(agent.id, {
-                  displayName: e.target.value || undefined,
-                })
-              }
-              placeholder={agent.name || ''}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Accent Color"
-              size="small"
-              value={config.accentColor || ''}
-              onChange={e =>
-                onUpdateConfig(agent.id, {
-                  accentColor: e.target.value || undefined,
-                })
-              }
-              placeholder="#1e40af"
-              InputLabelProps={{ shrink: true }}
-            />
-          </Box>
-          <TextField
-            label="Description Override"
-            size="small"
-            multiline
-            minRows={2}
-            fullWidth
-            value={config.description || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                description: e.target.value || undefined,
-              })
-            }
-            placeholder={agent.description || ''}
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-          <TextField
-            label="Avatar URL"
-            size="small"
-            fullWidth
-            value={config.avatarUrl || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                avatarUrl: e.target.value || undefined,
-              })
-            }
-            placeholder="https://example.com/avatar.png"
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-          <TextField
-            label="Greeting Message"
-            size="small"
-            multiline
-            minRows={2}
-            fullWidth
-            value={config.greeting || ''}
-            onChange={e =>
-              onUpdateConfig(agent.id, {
-                greeting: e.target.value || undefined,
-              })
-            }
-            placeholder="Hi! I'm here to help."
-            helperText="First bot message when a user starts a new conversation"
-            InputLabelProps={{ shrink: true }}
-            sx={{ mb: 1.5 }}
-          />
-
-          {/* Conversation starters */}
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.75rem',
-                mb: 0.5,
-                display: 'block',
-                color: 'text.primary',
-              }}
-            >
-              Conversation Starters
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'text.disabled',
-                fontSize: '0.6875rem',
-                mb: 1,
-                display: 'block',
-              }}
-            >
-              Suggested prompts shown on the welcome screen for this agent
-            </Typography>
-            {(config.conversationStarters || []).map((starter, si) => (
-              <Box
-                key={si}
-                sx={{
-                  display: 'flex',
-                  gap: 0.5,
-                  mb: 0.75,
-                  alignItems: 'center',
-                }}
-              >
-                <Chip
-                  label={si + 1}
-                  size="small"
-                  sx={{ height: 20, fontSize: '0.65rem', minWidth: 24 }}
-                />
-                <TextField
-                  size="small"
-                  fullWidth
-                  value={starter}
-                  onChange={e => {
-                    const starters = [...(config.conversationStarters || [])];
-                    starters[si] = e.target.value;
-                    onUpdateConfig(agent.id, {
-                      conversationStarters: starters,
-                    });
-                  }}
-                  placeholder="Ask me about..."
-                  sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const starters = [...(config.conversationStarters || [])];
-                    starters.splice(si, 1);
-                    onUpdateConfig(agent.id, {
-                      conversationStarters: starters,
-                    });
-                  }}
-                  sx={{ color: 'text.disabled' }}
-                >
-                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              size="small"
-              startIcon={<AddIcon sx={{ fontSize: 14 }} />}
-              onClick={() => {
-                const starters = [...(config.conversationStarters || [])];
-                if (starters.length >= MAX_STARTERS) return;
-                starters.push('');
-                onUpdateConfig(agent.id, { conversationStarters: starters });
-              }}
-              disabled={
-                (config.conversationStarters || []).length >= MAX_STARTERS
-              }
-              sx={{ textTransform: 'none', fontSize: '0.75rem', mt: 0.5 }}
-            >
-              Add starter
-            </Button>
-          </Box>
+          {/* Display Overrides and Conversation Starters removed -- admins
+              configure these from the agent detail view, not the registry.
+              To restore, look at git history for this section. */}
         </Box>
       </Collapse>
     </Card>
@@ -2323,7 +2358,7 @@ const AgentRow: FC<AgentRowProps> = ({
 };
 
 // ---------------------------------------------------------------------------
-// Kagenti Runtime Info (lazy-loaded enrichment)
+// Agent Runtime Info (lazy-loaded enrichment)
 // ---------------------------------------------------------------------------
 
 interface KagentiRuntimeInfoProps {
@@ -2359,7 +2394,7 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({
           variant="caption"
           sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
         >
-          Loading runtime info from Kagenti...
+          Loading runtime info...
         </Typography>
       </Box>
     );
@@ -2433,7 +2468,7 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({
           mb: 1,
         }}
       >
-        Kagenti Runtime
+        Agent Runtime
       </Typography>
 
       {/* Status badges row */}

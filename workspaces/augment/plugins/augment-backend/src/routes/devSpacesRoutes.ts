@@ -36,6 +36,8 @@ export interface DevSpacesRouteDeps {
   requireAdminAccess: express.RequestHandler;
   /** Acquire a platform auth token (Keycloak client credentials). */
   getAuthToken?: () => Promise<string>;
+  /** Root Backstage config for reading static config values. */
+  config?: import('@backstage/config').Config;
 }
 
 /**
@@ -51,9 +53,15 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
     sendRouteError,
     requireAdminAccess,
     getAuthToken,
+    config,
   } = deps;
   const withRoute = createWithRoute(logger, sendRouteError);
-  const service = new DevSpacesService({ logger, adminConfig, getAuthToken });
+  const service = new DevSpacesService({
+    logger,
+    adminConfig,
+    getAuthToken,
+    config,
+  });
 
   // ── Health check ──────────────────────────────────────────────────────
   router.get(
@@ -77,9 +85,10 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
       'POST /devspaces/workspaces',
       'Failed to create Dev Spaces workspace',
       async (req, res) => {
-        const { namespace, git_repo, memory_limit, cpu_limit } = req.body ?? {};
-        if (!namespace || typeof namespace !== 'string') {
-          throw new InputError('namespace is required');
+        const { git_repo, memory_limit, cpu_limit } = req.body ?? {};
+        let { namespace } = (req.body ?? {}) as { namespace?: string };
+        if (!namespace || namespace === 'auto') {
+          namespace = service.resolveNamespaceForUser('user:default/guest');
         }
         if (!git_repo || typeof git_repo !== 'string') {
           throw new InputError('git_repo is required');
@@ -160,6 +169,31 @@ export function registerDevSpacesRoutes(deps: DevSpacesRouteDeps): void {
         const { namespace, name } = req.params;
         await service.deleteWorkspace(namespace, name);
         res.json({ success: true, message: `Workspace ${name} deleted` });
+      },
+    ),
+  );
+
+  // ── Frameworks (static config) ─────────────────────────────────────
+  router.get(
+    '/devspaces/frameworks',
+    withRoute(
+      'GET /devspaces/frameworks',
+      'Failed to read Dev Spaces frameworks',
+      async (_req, res) => {
+        const frameworks: unknown[] = [];
+        const arr =
+          config
+            ?.getOptionalConfigArray('augment.devSpaces.frameworks')
+            ?.map(c => ({
+              id: c.getString('id'),
+              name: c.getString('name'),
+              description: c.getOptionalString('description') ?? '',
+              tags: c.getOptionalStringArray('tags') ?? [],
+              starterRepo: c.getOptionalString('starterRepo') ?? '',
+              badge: c.getOptionalString('badge') ?? '',
+            })) ?? [];
+        frameworks.push(...arr);
+        res.json({ frameworks });
       },
     ),
   );

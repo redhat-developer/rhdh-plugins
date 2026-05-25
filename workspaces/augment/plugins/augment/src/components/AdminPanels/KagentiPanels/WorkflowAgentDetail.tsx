@@ -35,11 +35,17 @@ import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   getLifecycleTransition,
   getLifecycleStep,
 } from './lifecycleTransitions';
-import { useApi, configApiRef, fetchApiRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  discoveryApiRef,
+  fetchApiRef,
+} from '@backstage/core-plugin-api';
 import type {
   ChatAgent,
   AgentLifecycleStage,
@@ -54,6 +60,7 @@ import {
   reducedMotion,
 } from '../../../theme/tokens';
 import { CONTENT_MAX_WIDTH } from '../shared/commandCenterStyles';
+import { InlineAgentChat } from '../shared/InlineAgentChat';
 
 type DetailTab = 'overview' | 'test';
 
@@ -63,6 +70,7 @@ export interface WorkflowAgentDetailProps {
   agentId: string;
   onBack: () => void;
   onChatWithAgent?: (agentId: string) => void;
+  onEditInBuilder?: (agentId: string) => void;
 }
 
 /**
@@ -71,10 +79,24 @@ export interface WorkflowAgentDetailProps {
  * AgentLifecycleDetail but without Kagenti-specific tabs (Build,
  * Design, Agent Card) since those are for Kagenti-managed agents.
  */
+function getAgentTypeLabel(framework?: string): string {
+  if (framework === 'docsclaw') return 'Skill Agent (DocsClaw)';
+  if (framework === 'workflow-builder')
+    return 'Workflow Agent (No-Code Builder)';
+  return 'Responses API Agent';
+}
+
+function getAgentChipLabel(framework?: string): string {
+  if (framework === 'docsclaw') return 'Skill Agent';
+  if (framework === 'workflow-builder') return 'Workflow Agent';
+  return 'Responses API';
+}
+
 export function WorkflowAgentDetail({
   agentId,
   onBack,
   onChatWithAgent,
+  onEditInBuilder,
 }: WorkflowAgentDetailProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -86,6 +108,17 @@ export function WorkflowAgentDetail({
   const [error, setError] = useState<string | null>(null);
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishToast, setPublishToast] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [liveInfo, setLiveInfo] = useState<{
+    health?: { status?: string; error?: string };
+    models?: unknown;
+    skills?: { skills?: Array<{ id?: string; name?: string }> };
+    systemPrompt?: string;
+  } | null>(null);
+
+  const discoveryApi = useApi(discoveryApiRef);
+  const fetchApi = useApi(fetchApiRef);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +145,27 @@ export function WorkflowAgentDetail({
       cancelled = true;
     };
   }, [api, agentId]);
+
+  useEffect(() => {
+    if (!agent?.chatEndpoint) return undefined;
+    let cancelled = false;
+    discoveryApi
+      .getBaseUrl('augment')
+      .then(baseUrl =>
+        fetchApi.fetch(
+          `${baseUrl}/skills/agents/${encodeURIComponent(agentId)}/info`,
+          { headers: { 'X-Backstage-Request': 'augment' } },
+        ),
+      )
+      .then(r => r.json())
+      .then(data => {
+        if (!cancelled) setLiveInfo(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [agent?.chatEndpoint, agentId, discoveryApi, fetchApi]);
 
   const lifecycleStage = normalizeLifecycleStage(agent?.lifecycleStage);
 
@@ -159,6 +213,22 @@ export function WorkflowAgentDetail({
       setPublishLoading(false);
     }
   }, [api, agentId, nextTransition]);
+
+  const handleDelete = useCallback(async () => {
+    setDeleteLoading(true);
+    try {
+      await api.deleteAgentConfig(agentId);
+      setPublishToast('Agent deleted successfully');
+      onBack();
+    } catch (err) {
+      setPublishToast(
+        `Delete failed: ${err instanceof Error ? err.message : 'Unknown'}`,
+      );
+    } finally {
+      setDeleteLoading(false);
+      setDeleteConfirm(false);
+    }
+  }, [api, agentId, onBack]);
 
   const currentStep = getLifecycleStep(lifecycleStage);
   const glass = glassSurface(theme, 6);
@@ -316,13 +386,10 @@ export function WorkflowAgentDetail({
               }}
             >
               <Chip
-                label={
-                  agent.framework === 'workflow-builder'
-                    ? 'Workflow Agent'
-                    : 'Responses API'
-                }
+                label={getAgentChipLabel(agent.framework)}
                 size="small"
                 variant="outlined"
+                color={agent.framework === 'docsclaw' ? 'info' : 'default'}
                 sx={{ height: 22, fontSize: '0.7rem' }}
               />
               {agent.framework && (
@@ -398,6 +465,53 @@ export function WorkflowAgentDetail({
                 </Button>
               </Tooltip>
             )}
+            {lifecycleStage === 'draft' &&
+              onEditInBuilder &&
+              agent?.framework === 'workflow-builder' && (
+                <Tooltip title="Open in the visual workflow builder">
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    onClick={() => onEditInBuilder(agentId)}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      borderRadius: borderRadius.sm,
+                    }}
+                  >
+                    Edit in Builder
+                  </Button>
+                </Tooltip>
+              )}
+            {lifecycleStage === 'draft' && (
+              <Tooltip title="Delete this draft agent">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  startIcon={
+                    deleteLoading ? (
+                      <CircularProgress size={14} />
+                    ) : (
+                      <DeleteOutlineIcon />
+                    )
+                  }
+                  disabled={deleteLoading || publishLoading}
+                  onClick={() => setDeleteConfirm(true)}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    borderRadius: borderRadius.sm,
+                  }}
+                >
+                  Delete
+                </Button>
+              </Tooltip>
+            )}
             {onChatWithAgent && (
               <Button
                 size="small"
@@ -410,6 +524,37 @@ export function WorkflowAgentDetail({
               </Button>
             )}
           </Box>
+
+          {/* Delete confirmation */}
+          {deleteConfirm && (
+            <Alert
+              severity="warning"
+              sx={{ mt: 1 }}
+              action={
+                <Box display="flex" gap={1}>
+                  <Button
+                    size="small"
+                    color="inherit"
+                    onClick={() => setDeleteConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={handleDelete}
+                    disabled={deleteLoading}
+                  >
+                    {deleteLoading ? 'Deleting...' : 'Confirm Delete'}
+                  </Button>
+                </Box>
+              }
+            >
+              This will permanently delete this agent. This action cannot be
+              undone.
+            </Alert>
+          )}
         </Box>
 
         {/* Lifecycle Progress Stepper */}
@@ -521,9 +666,7 @@ export function WorkflowAgentDetail({
               Type
             </Typography>
             <Typography variant="body2">
-              {agent.framework === 'workflow-builder'
-                ? 'Workflow Agent (No-Code Builder)'
-                : 'Responses API Agent'}
+              {getAgentTypeLabel(agent.framework)}
             </Typography>
 
             <Typography
@@ -576,6 +719,112 @@ export function WorkflowAgentDetail({
               {agent.isDefault ? 'Yes' : 'No'}
             </Typography>
 
+            {agent.chatEndpoint && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Chat Endpoint
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                >
+                  {agent.chatEndpoint}
+                </Typography>
+              </>
+            )}
+
+            {liveInfo?.health && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Pod Health
+                </Typography>
+                <Typography variant="body2">
+                  {liveInfo.health.status === 'healthy' ? (
+                    <Chip
+                      label="Healthy"
+                      size="small"
+                      color="success"
+                      sx={{ height: 22, fontSize: '0.75rem' }}
+                    />
+                  ) : (
+                    <Chip
+                      label={String(
+                        liveInfo.health.status ??
+                          liveInfo.health.error ??
+                          'Unknown',
+                      )}
+                      size="small"
+                      color="warning"
+                      sx={{ height: 22, fontSize: '0.75rem' }}
+                    />
+                  )}
+                </Typography>
+              </>
+            )}
+
+            {liveInfo?.skills?.skills && liveInfo.skills.skills.length > 0 && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600 }}
+                >
+                  Loaded Skills
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={0.5}>
+                  {liveInfo.skills.skills.map((s, i) => (
+                    <Chip
+                      key={s.id ?? i}
+                      label={s.name ?? s.id ?? 'unknown'}
+                      size="small"
+                      variant="outlined"
+                      sx={{ height: 22, fontSize: '0.75rem' }}
+                    />
+                  ))}
+                </Box>
+              </>
+            )}
+
+            {liveInfo?.systemPrompt && (
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600, gridColumn: '1 / -1', mt: 1 }}
+                >
+                  Agent Instructions (system-prompt.txt)
+                </Typography>
+                <Box
+                  sx={{
+                    gridColumn: '1 / -1',
+                    bgcolor: isDark
+                      ? 'rgba(255,255,255,0.04)'
+                      : 'rgba(0,0,0,0.03)',
+                    borderRadius: borderRadius.sm,
+                    p: 2,
+                    maxHeight: 200,
+                    overflowY: 'auto',
+                    fontFamily: 'monospace',
+                    fontSize: '0.8rem',
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    color: 'text.primary',
+                  }}
+                >
+                  {liveInfo.systemPrompt}
+                </Box>
+              </>
+            )}
+
             {agent.agentRole && (
               <>
                 <Typography
@@ -612,198 +861,4 @@ export function WorkflowAgentDetail({
   );
 }
 
-function InlineAgentChat({
-  agentId,
-  agentName,
-}: {
-  agentId: string;
-  agentName: string;
-}) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
-  const configApi = useApi(configApiRef);
-  const { fetch: authFetch } = useApi(fetchApiRef);
-  const [chatMessages, setChatMessages] = useState<
-    Array<{ role: 'user' | 'agent'; text: string }>
-  >([]);
-  const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
-  const [sessionId, setSessionId] = useState<string | undefined>();
-
-  const handleSend = useCallback(async () => {
-    if (!input.trim() || sending) return;
-    const userMsg = input.trim();
-    setInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setSending(true);
-    try {
-      const backendUrl = configApi.getString('backend.baseUrl');
-      const resp = await authFetch(`${backendUrl}/api/augment/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: userMsg }],
-          model: agentId,
-          sessionId,
-        }),
-      });
-      if (!resp.ok) {
-        const errText = await resp.text().catch(() => `HTTP ${resp.status}`);
-        throw new Error(errText || `HTTP ${resp.status}`);
-      }
-      const data = await resp.json();
-      const content =
-        data?.choices?.[0]?.message?.content ||
-        data?.content ||
-        data?.message ||
-        JSON.stringify(data);
-      setChatMessages(prev => [...prev, { role: 'agent', text: content }]);
-      if (data?.sessionId) setSessionId(data.sessionId);
-    } catch (err) {
-      setChatMessages(prev => [
-        ...prev,
-        {
-          role: 'agent',
-          text: `Error: ${err instanceof Error ? err.message : 'Failed to reach agent'}`,
-        },
-      ]);
-    } finally {
-      setSending(false);
-    }
-  }, [agentId, input, sending, sessionId, configApi, authFetch]);
-
-  return (
-    <Box
-      sx={{
-        height: 420,
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: isDark
-          ? alpha(theme.palette.background.paper, 0.4)
-          : theme.palette.background.paper,
-      }}
-    >
-      <Box
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-        }}
-      >
-        {chatMessages.length === 0 && (
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="body2" color="text.disabled">
-              Send a message to test {agentName}
-            </Typography>
-          </Box>
-        )}
-        {chatMessages.map((msg, i) => (
-          <Box
-            key={i}
-            sx={{
-              alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%',
-              px: 2,
-              py: 1,
-              borderRadius: 2,
-              bgcolor:
-                msg.role === 'user'
-                  ? alpha(theme.palette.primary.main, isDark ? 0.2 : 0.1)
-                  : alpha(theme.palette.background.default, isDark ? 0.6 : 0.8),
-              border:
-                msg.role === 'agent'
-                  ? `1px solid ${alpha(theme.palette.divider, 0.3)}`
-                  : undefined,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: '0.85rem',
-                color: 'text.primary',
-                whiteSpace: 'pre-wrap',
-              }}
-            >
-              {msg.text}
-            </Typography>
-          </Box>
-        ))}
-        {sending && (
-          <Box sx={{ alignSelf: 'flex-start', px: 2, py: 1 }}>
-            <Typography
-              variant="body2"
-              color="text.disabled"
-              sx={{ fontStyle: 'italic' }}
-            >
-              {agentName} is thinking...
-            </Typography>
-          </Box>
-        )}
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          p: 1.5,
-          borderTop: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder={`Message ${agentName}...`}
-          disabled={sending}
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            background: 'transparent',
-            color: theme.palette.text.primary,
-            fontSize: '0.875rem',
-            padding: '8px 12px',
-            borderRadius: 8,
-            backgroundColor: alpha(
-              theme.palette.background.default,
-              isDark ? 0.5 : 0.8,
-            ),
-          }}
-        />
-        <Button
-          variant="contained"
-          size="small"
-          onClick={handleSend}
-          disabled={!input.trim() || sending}
-          sx={{
-            textTransform: 'none',
-            borderRadius: 2,
-            minWidth: 60,
-            boxShadow: 'none',
-          }}
-        >
-          Send
-        </Button>
-      </Box>
-    </Box>
-  );
-}
+// InlineAgentChat is now shared -- imported from ../shared/InlineAgentChat

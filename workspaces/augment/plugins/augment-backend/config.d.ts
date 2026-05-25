@@ -894,6 +894,32 @@ export interface Config {
     };
 
     /**
+     * Agent approval workflow configuration (SonataFlow integration).
+     * When enabled, lifecycle transitions go through an approval workflow.
+     * When disabled, transitions happen immediately (built-in mode).
+     * @visibility backend
+     */
+    agentApproval?: {
+      /**
+       * Enable SonataFlow approval workflow for agent lifecycle transitions
+       * @visibility backend
+       */
+      enabled?: boolean;
+
+      /**
+       * SonataFlow service URL (e.g. http://sonataflow.namespace.svc:8080)
+       * @visibility backend
+       */
+      serviceUrl?: string;
+
+      /**
+       * SonataFlow workflow ID to start for approval requests
+       * @visibility backend
+       */
+      workflowId?: string;
+    };
+
+    /**
      * Kagenti agent operations platform configuration.
      * Required when augment.provider is 'kagenti'.
      * @visibility backend
@@ -1389,5 +1415,89 @@ export interface Config {
         waitFor?: string;
       }>;
     }>;
+
+    /**
+     * Skills Marketplace configuration
+     * @visibility backend
+     */
+    skillsMarketplace?: {
+      /**
+       * Base URL for the skills marketplace backend
+       * @visibility backend
+       */
+      baseUrl?: string;
+
+      /**
+       * Default agent container image
+       * @visibility backend
+       */
+      agentImage?: string;
+
+      /**
+       * Advisor service URL
+       * @visibility backend
+       */
+      advisorUrl?: string;
+
+      /**
+       * LLM base URL for skill evaluation
+       * @visibility backend
+       */
+      llmBaseUrl?: string;
+
+      /**
+       * LLM model name for skill evaluation
+       * @visibility backend
+       */
+      llmModel?: string;
+
+      /**
+       * Available runtimes for skill deployment
+       * @visibility backend
+       */
+      runtimes?: Array<{
+        /** Runtime identifier */
+        id: string;
+        /** Display name */
+        name: string;
+        /** Runtime description */
+        description?: string;
+        /** Container image */
+        image?: string;
+        /** Programming language */
+        language?: string;
+        /** Resource footprint: small, medium, large */
+        footprint?: string;
+        /** Supported features */
+        features?: string[];
+        /** Runtime status */
+        status?: string;
+      }>;
+    };
+
+    /**
+     * Dev Spaces configuration
+     * @visibility backend
+     */
+    devSpaces?: {
+      /**
+       * Available frameworks for DevSpaces scaffolding
+       * @visibility backend
+       */
+      frameworks?: Array<{
+        /** Framework identifier */
+        id: string;
+        /** Display name */
+        name: string;
+        /** Framework description */
+        description?: string;
+        /** Tags (e.g. language, paradigm) */
+        tags?: string[];
+        /** Starter repo URL */
+        starterRepo?: string;
+        /** Badge label (e.g. "Popular") */
+        badge?: string;
+      }>;
+    };
   };
 }

@@ -113,6 +113,25 @@ export class WorkflowConfigService {
     delete versions[id];
     await this.saveVersionsRecord(versions, user);
 
+    // Clean up governance entries (workflow-level + per-node)
+    try {
+      const chatAgents =
+        ((await this.adminConfig.get('chatAgents')) as Array<
+          Record<string, unknown>
+        >) ?? [];
+      const filtered = chatAgents.filter(c => {
+        const cId = c.agentId as string;
+        return cId !== id && !cId.startsWith(`wf/${id}/`);
+      });
+      if (filtered.length !== chatAgents.length) {
+        await this.adminConfig.set('chatAgents', filtered, user);
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Failed to clean up chatAgents for workflow ${id}: ${err instanceof Error ? err.message : 'unknown'}`,
+      );
+    }
+
     this.logger.info(`Deleted workflow: ${id}`);
   }
 
@@ -281,6 +300,28 @@ export class WorkflowConfigService {
       >) ?? [];
 
     const workflowAgentIds = new Set<string>();
+
+    // Workflow-level entry so the agent appears in unified list and My Agents
+    const wfIdx = existingAgents.findIndex(
+      a => (a as Record<string, unknown>).agentId === workflowId,
+    );
+    const wfEntry: Record<string, unknown> = {
+      agentId: workflowId,
+      published: workflow.status === 'published',
+      visible: workflow.status === 'published',
+      featured: false,
+      lifecycleStage: workflow.status === 'published' ? 'published' : 'draft',
+      version: workflow.version ?? 0,
+      displayName: workflow.name,
+      description: workflow.description ?? '',
+      createdBy: user,
+      framework: 'workflow-builder',
+    };
+    if (wfIdx >= 0) {
+      existingAgents[wfIdx] = { ...existingAgents[wfIdx], ...wfEntry };
+    } else {
+      existingAgents.push(wfEntry);
+    }
 
     for (const node of agentNodes) {
       const data = node.data as Record<string, unknown>;

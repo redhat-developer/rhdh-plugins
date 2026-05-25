@@ -186,6 +186,8 @@ export function ChatView({
 
   const handleCloseIntentDialog = useCallback(() => {
     setIntentDialogOpen(false);
+    setMarketplaceRefreshKey(k => k + 1);
+    setSwitchToMyAgents(k => k + 1);
   }, []);
 
   const handleSelectDeploy = useCallback((method?: DeploymentMethod) => {
@@ -214,26 +216,32 @@ export function ChatView({
     setShowWorkflowBuilder(false);
     setActiveWorkflow(null);
     setShowMarketplace(true);
+    setMarketplaceRefreshKey(k => k + 1);
+    setSwitchToMyAgents(k => k + 1);
   }, []);
 
-  const handleAgentDetail = useCallback((agentId: string) => {
-    const parts = agentId.split('/');
-    if (parts.length === 2) {
-      setDetailAgent({
-        namespace: parts[0],
-        name: parts[1],
-        description: '',
-        status: '',
-        labels: {},
-      } as KagentiAgentSummary);
-      setDetailOrchAgentId(null);
+  const handleAgentDetail = useCallback(
+    (agentId: string, framework?: string) => {
+      const isSkillOrWorkflow =
+        framework === 'docsclaw' || framework === 'workflow-builder';
+      const parts = agentId.split('/');
+      if (parts.length === 2 && !isSkillOrWorkflow) {
+        setDetailAgent({
+          namespace: parts[0],
+          name: parts[1],
+          description: '',
+          status: '',
+          labels: {},
+        } as KagentiAgentSummary);
+        setDetailOrchAgentId(null);
+      } else {
+        setDetailOrchAgentId(agentId);
+        setDetailAgent(null);
+      }
       setShowMarketplace(false);
-    } else {
-      setDetailOrchAgentId(agentId);
-      setDetailAgent(null);
-      setShowMarketplace(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleCloseDetail = useCallback(() => {
     setDetailAgent(null);
@@ -250,6 +258,17 @@ export function ChatView({
     );
     setMarketplaceRefreshKey(k => k + 1);
     setSwitchToMyAgents(k => k + 1);
+  }, []);
+
+  const handleIntentCreated = useCallback(() => {
+    setIntentDialogOpen(false);
+    setMarketplaceRefreshKey(k => k + 1);
+    setSwitchToMyAgents(k => k + 1);
+    setTimeout(() => {
+      setCreateSuccess(
+        'Agent created successfully! It will appear in your agents list.',
+      );
+    }, 300);
   }, []);
 
   // --- Tool Creation Flow ---
@@ -354,7 +373,7 @@ export function ChatView({
                 onClick={handleCloseWorkflowBuilder}
                 sx={{ textTransform: 'none' }}
               >
-                Back to Marketplace
+                Back to My Agents
               </Button>
             </Box>
             <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
@@ -364,6 +383,39 @@ export function ChatView({
                     workflow={activeWorkflow}
                     onBack={() => setActiveWorkflow(null)}
                     onPreview={() => {}}
+                    onEnsurePersisted={async wf => {
+                      try {
+                        const baseUrl =
+                          await discoveryApi.getBaseUrl('augment');
+                        const hdrs = {
+                          'Content-Type': 'application/json',
+                          'X-Backstage-Request': 'augment',
+                        };
+                        const putResp = await authFetch(
+                          `${baseUrl}/workflows/${wf.id}`,
+                          {
+                            method: 'PUT',
+                            headers: hdrs,
+                            body: JSON.stringify(wf),
+                          },
+                        );
+                        if (putResp.ok) return true;
+                        if (putResp.status === 404) {
+                          const postResp = await authFetch(
+                            `${baseUrl}/workflows`,
+                            {
+                              method: 'POST',
+                              headers: hdrs,
+                              body: JSON.stringify(wf),
+                            },
+                          );
+                          return postResp.ok;
+                        }
+                        return false;
+                      } catch {
+                        return false;
+                      }
+                    }}
                     onSave={async wf => {
                       setActiveWorkflow(wf);
                       try {
@@ -371,7 +423,10 @@ export function ChatView({
                           await discoveryApi.getBaseUrl('augment');
                         await authFetch(`${baseUrl}/workflows/${wf.id}`, {
                           method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-Backstage-Request': 'augment',
+                          },
                           body: JSON.stringify(wf),
                         });
                       } catch {
@@ -383,33 +438,27 @@ export function ChatView({
                       try {
                         const baseUrl =
                           await discoveryApi.getBaseUrl('augment');
-                        // 1. Publish the workflow
-                        const resp = await authFetch(
+                        const hdrs = {
+                          'Content-Type': 'application/json',
+                          'X-Backstage-Request': 'augment',
+                        };
+                        await authFetch(
                           `${baseUrl}/workflows/${activeWorkflow.id}/publish`,
                           {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: hdrs,
                             body: JSON.stringify({
                               changelog: 'Published from Agent Builder',
                             }),
                           },
                         );
-                        if (resp.ok) {
-                          const published = await resp.json();
-                          setActiveWorkflow(published);
-                        }
-                        // 2. Submit the workflow-agent for review (registered lifecycle = review queue)
-                        const agentId = activeWorkflow.id;
-                        await authFetch(
-                          `${baseUrl}/agents/${encodeURIComponent(agentId)}/promote`,
-                          {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ targetStage: 'pending' }),
-                          },
-                        );
+                        setShowWorkflowBuilder(false);
+                        setActiveWorkflow(null);
+                        setShowMarketplace(true);
+                        setMarketplaceRefreshKey(k => k + 1);
+                        setSwitchToMyAgents(k => k + 1);
                         setCreateSuccess(
-                          'Workflow submitted for review! It will appear in the marketplace once approved.',
+                          'Workflow saved! Find it in My Agents to test and submit for review.',
                         );
                       } catch {
                         /* silent */
@@ -426,7 +475,10 @@ export function ChatView({
                           await discoveryApi.getBaseUrl('augment');
                         await authFetch(`${baseUrl}/workflows`, {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-Backstage-Request': 'augment',
+                          },
                           body: JSON.stringify(wf),
                         });
                       } catch {
@@ -481,6 +533,25 @@ export function ChatView({
               agentId={detailOrchAgentId}
               onBack={handleCloseDetail}
               onChatWithAgent={handleChatWithAgent}
+              onEditInBuilder={async wfId => {
+                try {
+                  const baseUrl = await discoveryApi.getBaseUrl('augment');
+                  const resp = await authFetch(`${baseUrl}/workflows/${wfId}`, {
+                    headers: {
+                      'X-Backstage-Request': 'augment',
+                    },
+                  });
+                  if (resp.ok) {
+                    const wf = await resp.json();
+                    setActiveWorkflow(wf);
+                    setDetailOrchAgentId(null);
+                    setShowMarketplace(false);
+                    setShowWorkflowBuilder(true);
+                  }
+                } catch {
+                  /* silent */
+                }
+              }}
             />
           </Box>
         )}
@@ -491,6 +562,7 @@ export function ChatView({
           onClose={handleCloseIntentDialog}
           onSelectDeploy={handleSelectDeploy}
           onSelectConfigure={handleSelectConfigure}
+          onCreated={handleIntentCreated}
         />
 
         <CreateAgentWizard

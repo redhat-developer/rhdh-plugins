@@ -13,36 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type {
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
-import type { ResponsesApiClient } from '../ResponsesApiClient';
 import type {
   SafetyConfig,
   ShieldInfo,
-  ShieldRegistration,
   SafetyViolation,
   RunShieldResponse,
 } from '../../../types';
 import { toErrorMessage } from '../../../services/utils';
+import { loadSafetyConfig, loadAvailableShields } from './safetyConfigLoader';
 
-/**
- * Accessor function that returns the current ResponsesApiClient.
- * Allows SafetyService to always use the latest client managed by ClientManager.
- */
-export type SafetyClientAccessor = () => ResponsesApiClient;
+export type { SafetyClientAccessor } from './safetyConfigLoader';
+import type { SafetyClientAccessor } from './safetyConfigLoader';
 
-/**
- * Safety Service - Handles guardrails using Llama Stack Safety API
- *
- * Provides:
- * - Input validation (check user messages before processing)
- * - Output filtering (check AI responses before returning)
- *
- * Uses ResponsesApiClient (via accessor) for all HTTP communication,
- * ensuring consistent TLS handling and dynamic baseUrl support.
- */
 export class SafetyService {
   private readonly logger: LoggerService;
   private readonly config: RootConfigService;
@@ -77,7 +64,7 @@ export class SafetyService {
         return;
       }
 
-      this.safetyConfig = this.loadSafetyConfig();
+      this.safetyConfig = loadSafetyConfig(this.config, this.logger);
 
       if (!this.safetyConfig?.enabled) {
         this.logger.info('Safety guardrails are disabled');
@@ -93,7 +80,11 @@ export class SafetyService {
         return;
       }
 
-      await this.loadAvailableShields();
+      this.availableShields = await loadAvailableShields(
+        this.getClient,
+        this.safetyConfig,
+        this.logger,
+      );
 
       this.logger.info(
         `Safety service initialized with ${this.availableShields.length} shield(s) available`,
@@ -110,141 +101,6 @@ export class SafetyService {
     }
   }
 
-  private loadSafetyConfig(): SafetyConfig | null {
-    try {
-      const safetyConfig = this.config.getOptionalConfig('augment.safety');
-      if (!safetyConfig) {
-        return { enabled: false };
-      }
-
-      const registerShieldsConfig =
-        safetyConfig.getOptionalConfigArray('registerShields');
-      const registerShields: ShieldRegistration[] = [];
-
-      if (registerShieldsConfig) {
-        for (const shieldConfig of registerShieldsConfig) {
-          registerShields.push({
-            shieldId: shieldConfig.getString('shieldId'),
-            providerId: shieldConfig.getString('providerId'),
-            providerShieldId: shieldConfig.getString('providerShieldId'),
-          });
-        }
-      }
-
-      const onErrorValue = safetyConfig.getOptionalString('onError');
-      const onError: 'allow' | 'block' =
-        onErrorValue === 'allow' ? 'allow' : 'block';
-
-      return {
-        enabled: safetyConfig.getOptionalBoolean('enabled') ?? false,
-        inputShields: safetyConfig.getOptionalStringArray('inputShields'),
-        outputShields: safetyConfig.getOptionalStringArray('outputShields'),
-        registerShields:
-          registerShields.length > 0 ? registerShields : undefined,
-        onError,
-      };
-    } catch (error) {
-      this.logger.debug('No safety configuration found');
-      return { enabled: false };
-    }
-  }
-
-  /**
-   * Fetch available shields from Llama Stack.
-   * If none found, attempt to register configured shields.
-   */
-  private async loadAvailableShields(): Promise<void> {
-    try {
-      const client = this.getClient!();
-      const response = await client.request<
-        { data?: ShieldInfo[] } | ShieldInfo[]
-      >('/v1/shields', { method: 'GET' });
-
-      const shields = Array.isArray(response) ? response : response.data || [];
-      this.availableShields = shields;
-
-      this.logger.debug(
-        `Found ${this.availableShields.length} existing shields`,
-      );
-
-      if (this.availableShields.length === 0) {
-        this.logger.info(
-          'No shields found, attempting to register configured shields...',
-        );
-        await this.registerConfiguredShields();
-
-        const reloadResponse = await client.request<
-          { data?: ShieldInfo[] } | ShieldInfo[]
-        >('/v1/shields', { method: 'GET' });
-        const reloadedShields = Array.isArray(reloadResponse)
-          ? reloadResponse
-          : reloadResponse.data || [];
-        this.availableShields = reloadedShields;
-      }
-
-      if (this.availableShields.length > 0) {
-        this.logger.info(
-          `Safety shields available: ${this.availableShields
-            .map(s => s.identifier)
-            .join(', ')}`,
-        );
-      }
-    } catch (error) {
-      this.logger.warn(`Could not load shields: ${toErrorMessage(error)}`);
-      this.availableShields = [];
-    }
-  }
-
-  /**
-   * Register safety shields on Llama Stack.
-   * Only registers shields that are explicitly configured in registerShields.
-   */
-  private async registerConfiguredShields(): Promise<void> {
-    const shieldsToRegister = this.safetyConfig?.registerShields;
-
-    if (!shieldsToRegister || shieldsToRegister.length === 0) {
-      this.logger.info(
-        'No shields configured for registration (augment.safety.registerShields). ' +
-          'Safety checks will only work with pre-existing shields on the server.',
-      );
-      return;
-    }
-
-    this.logger.info(
-      `Attempting to register ${shieldsToRegister.length} configured shield(s)...`,
-    );
-
-    const client = this.getClient!();
-
-    for (const shield of shieldsToRegister) {
-      try {
-        await client.request('/v1/shields/register', {
-          method: 'POST',
-          body: {
-            shield_id: shield.shieldId,
-            provider_id: shield.providerId,
-            provider_shield_id: shield.providerShieldId,
-          },
-        });
-        this.logger.info(
-          `Registered shield: ${shield.shieldId} (provider: ${shield.providerId})`,
-        );
-      } catch (error) {
-        const errorMsg = toErrorMessage(error);
-        this.logger.warn(
-          `Could not register shield "${shield.shieldId}": ${errorMsg}`,
-        );
-        this.logger.info(
-          `  Make sure the "${shield.providerId}" provider is configured on your Llama Stack server`,
-        );
-      }
-    }
-  }
-
-  /**
-   * Dynamic overrides from admin panel (EffectiveConfig).
-   * When set, these take precedence over the YAML-loaded safetyConfig.
-   */
   private dynamicOverrides?: {
     enabled?: boolean;
     inputShields?: string[];
@@ -252,10 +108,6 @@ export class SafetyService {
     onError?: 'allow' | 'block';
   };
 
-  /**
-   * Apply dynamic overrides from EffectiveConfig.
-   * Called per-request (or when admin config changes) by the orchestrator/provider.
-   */
   applyDynamicOverrides(overrides: {
     safetyEnabled?: boolean;
     inputShields?: string[];
@@ -304,10 +156,6 @@ export class SafetyService {
     return this.availableShields;
   }
 
-  /**
-   * Check user input against input shields.
-   * Returns violation if input is blocked, undefined if OK.
-   */
   async checkInput(userMessage: string): Promise<SafetyViolation | undefined> {
     if (!this.isEffectivelyEnabled()) {
       return undefined;
@@ -336,10 +184,6 @@ export class SafetyService {
     return undefined;
   }
 
-  /**
-   * Check AI output against output shields.
-   * Returns violation if output is blocked, undefined if OK.
-   */
   async checkOutput(aiResponse: string): Promise<SafetyViolation | undefined> {
     if (!this.isEffectivelyEnabled()) {
       return undefined;
@@ -365,13 +209,6 @@ export class SafetyService {
     return undefined;
   }
 
-  /**
-   * Run a specific shield against content via POST /v1/safety/run-shield.
-   *
-   * On API error the behavior depends on onError config:
-   * - 'block': Return a synthetic violation (fail-closed, secure default)
-   * - 'allow': Return undefined to let the message through (fail-open)
-   */
   private static readonly SHIELD_TIMEOUT_MS = 5_000;
 
   private async runShield(

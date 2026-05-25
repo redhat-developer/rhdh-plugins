@@ -35,7 +35,7 @@ const LIFECYCLE_TRANSITION_MAP: Record<string, LifecycleTransition> = {
   },
   pending: {
     target: 'published',
-    label: 'Promote to Production',
+    label: 'Approve and Publish',
     action: 'promote',
     variant: 'contained',
     color: 'success',
@@ -43,7 +43,7 @@ const LIFECYCLE_TRANSITION_MAP: Record<string, LifecycleTransition> = {
   },
   published: {
     target: 'pending',
-    label: 'Rollback to Pending',
+    label: 'Request Unpublish',
     action: 'demote',
     variant: 'outlined',
     color: 'inherit',
@@ -51,7 +51,7 @@ const LIFECYCLE_TRANSITION_MAP: Record<string, LifecycleTransition> = {
   },
   archived: {
     target: 'draft',
-    label: 'Reactivate',
+    label: 'Restore',
     action: 'demote',
     variant: 'outlined',
     color: 'inherit',

@@ -90,8 +90,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
     const pendingReview = agents.filter(
       a => a.lifecycleStage === 'pending',
     ).length;
-    const inStaging = agents.filter(a => a.lifecycleStage === 'pending').length;
-    const production = agents.filter(
+    const published = agents.filter(
       a => a.lifecycleStage === 'published',
     ).length;
     const readyTools = tools.filter(
@@ -102,8 +101,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
       total,
       ready,
       pendingReview,
-      inStaging,
-      production,
+      published,
       readyTools,
       totalTools: tools.length,
       allHealthy,
@@ -159,13 +157,13 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
           glow={!stats.allHealthy && stats.total > 0}
         />
         <MetricTile
-          label="Production"
-          value={loading ? '...' : stats.production}
+          label="Published"
+          value={loading ? '...' : stats.published}
           subtitle={
-            stats.production > 0 ? 'Live in marketplace' : 'None in production'
+            stats.published > 0 ? 'Live in marketplace' : 'None published'
           }
           icon={<CheckCircleIcon />}
-          color={LIFECYCLE_COLORS.production}
+          color={LIFECYCLE_COLORS.published}
           loading={loading}
         />
         <MetricTile
@@ -176,7 +174,7 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
           }
           color={
             stats.pendingReview > 0
-              ? LIFECYCLE_COLORS.review
+              ? LIFECYCLE_COLORS.pending
               : STATUS_COLORS.neutral
           }
           loading={loading}
@@ -224,11 +222,11 @@ export function OpsOverview({ namespace, onNavigate }: OpsOverviewProps) {
                   fontWeight: 600,
                   fontSize: '0.72rem',
                   borderRadius: 2,
-                  borderColor: alpha(LIFECYCLE_COLORS.review, 0.4),
-                  color: LIFECYCLE_COLORS.review,
+                  borderColor: alpha(LIFECYCLE_COLORS.pending, 0.4),
+                  color: LIFECYCLE_COLORS.pending,
                   '&:hover': {
-                    borderColor: LIFECYCLE_COLORS.review,
-                    bgcolor: alpha(LIFECYCLE_COLORS.review, 0.08),
+                    borderColor: LIFECYCLE_COLORS.pending,
+                    bgcolor: alpha(LIFECYCLE_COLORS.pending, 0.08),
                   },
                 }}
               >

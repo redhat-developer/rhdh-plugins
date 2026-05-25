@@ -15,7 +15,6 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -39,22 +38,23 @@ import type { Entity } from '@backstage/catalog-model';
 import { useAgentTemplates } from './useAgentTemplates';
 
 export interface AgentTemplateBrowserProps {
-  onBack: () => void;
-  tag?: string;
+  readonly onBack: () => void;
+  readonly onDone?: () => void;
+  readonly tag?: string;
   /** Filter templates by `spec.type` (e.g. "agent" or "tool"). */
-  specType?: string;
+  readonly specType?: string;
   /** Callback to open a template's source repo in a DevSpace. */
-  onOpenInDevSpace?: (gitRepoUrl: string) => void;
+  readonly onOpenInDevSpace?: (gitRepoUrl: string) => void;
   /** Header title. Defaults to "Agent Templates". */
-  title?: string;
+  readonly title?: string;
   /** Descriptive blurb below the header. */
-  description?: string;
+  readonly description?: string;
   /** Title shown when no templates match. Defaults to "No agent templates found". */
-  emptyTitle?: string;
+  readonly emptyTitle?: string;
   /** Description shown when no templates match. */
-  emptyDescription?: string;
+  readonly emptyDescription?: string;
   /** Tooltip and aria-label for the DevSpace button. Defaults to "Open in Agent DevSpace". */
-  devSpaceLabel?: string;
+  readonly devSpaceLabel?: string;
 }
 
 function templateTitle(entity: Entity): string {
@@ -150,6 +150,7 @@ function defaultEmptyDescription(
 
 export function AgentTemplateBrowser({
   onBack,
+  onDone,
   tag,
   specType,
   onOpenInDevSpace,
@@ -161,7 +162,6 @@ export function AgentTemplateBrowser({
   devSpaceLabel = 'Open in Agent DevSpace',
 }: AgentTemplateBrowserProps) {
   const theme = useTheme();
-  const navigate = useNavigate();
   const hookOpts = tag || specType ? { tag, specType } : undefined;
   const { templates, loading, error, reload } = useAgentTemplates(hookOpts);
   const [search, setSearch] = useState('');
@@ -178,7 +178,8 @@ export function AgentTemplateBrowser({
   }, [templates, search]);
 
   const handleLaunch = (entity: Entity) => {
-    navigate(buildScaffolderUrl(entity));
+    window.open(buildScaffolderUrl(entity), '_blank', 'noopener');
+    onDone?.();
   };
 
   return (

@@ -194,15 +194,30 @@ export function PreviewChatPanel({
         `${backendUrl}/api/augment/workflows/${workflowId}/run/stream`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Backstage-Request': 'augment',
+          },
           body: JSON.stringify({ input: text }),
           signal: controller.signal,
         },
       );
 
       if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error(
+            'Workflow not saved yet. The workflow needs to be saved to the server before you can preview it. Try closing the preview, making an edit, then opening preview again.',
+          );
+        }
+        if (res.status === 403) {
+          throw new Error(
+            'Preview requires admin access. Check your permissions.',
+          );
+        }
         const errBody = await res.text().catch(() => '');
-        throw new Error(`Run failed: ${res.status} ${errBody}`);
+        throw new Error(
+          `Preview failed (${res.status}). ${errBody.slice(0, 100)}`,
+        );
       }
 
       const reader = res.body!.getReader();

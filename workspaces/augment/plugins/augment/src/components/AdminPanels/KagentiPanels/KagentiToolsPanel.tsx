@@ -38,7 +38,6 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import BuildIcon from '@mui/icons-material/Build';
-import AddIcon from '@mui/icons-material/Add';
 import InputAdornment from '@mui/material/InputAdornment';
 import { useTheme } from '@mui/material/styles';
 import type { KagentiToolSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -228,16 +227,8 @@ export function KagentiToolsPanel({
           >
             Refresh
           </Button>
-          <Button
-            variant="contained"
-            size="small"
-            data-tour="new-tool-btn"
-            startIcon={<AddIcon />}
-            onClick={() => setIntentOpen(true)}
-            sx={{ textTransform: 'none' }}
-          >
-            New Tool
-          </Button>
+          {/* New Tool button removed -- tools are created via self-service
+              from the My Agents tab, not the admin Command Center */}
         </Box>
       </Box>
 
@@ -302,16 +293,7 @@ export function KagentiToolsPanel({
             Create your first MCP tool to give your agents additional
             capabilities.
           </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            data-tour="new-tool-btn"
-            startIcon={<AddIcon />}
-            onClick={() => setIntentOpen(true)}
-            sx={{ textTransform: 'none', mt: 1 }}
-          >
-            New Tool
-          </Button>
+          {/* Create tool button removed -- tools are created via My Agents */}
         </Box>
       )}
       {!loading && tools.length > 0 && (

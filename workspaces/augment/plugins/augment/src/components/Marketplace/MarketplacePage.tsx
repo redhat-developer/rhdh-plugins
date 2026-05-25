@@ -45,7 +45,7 @@ interface MarketplacePageProps {
   onChatWithAgent?: (agentId: string) => void;
   onCreateAgent?: () => void;
   onCreateTool?: () => void;
-  onAgentDetail?: (agentId: string) => void;
+  onAgentDetail?: (agentId: string, framework?: string) => void;
   isAdmin?: boolean;
   onOpenCommandCenter?: () => void;
   onOpenGuidedTour?: () => void;
@@ -169,14 +169,13 @@ export function MarketplacePage({
 
   const myAgents = useMemo(
     () =>
-      userRef
-        ? agents.filter(
-            a =>
-              a.createdBy === userRef ||
-              (a.governanceRegistered && a.framework === 'workflow-builder') ||
-              (!a.governanceRegistered && a.lifecycleStage !== 'published'),
-          )
-        : agents,
+      agents.filter(a => {
+        if (a.createdBy === userRef) return true;
+        if (a.governanceRegistered && a.lifecycleStage !== 'published')
+          return true;
+        if (!a.governanceRegistered) return true;
+        return false;
+      }),
     [agents, userRef],
   );
 
@@ -432,7 +431,8 @@ export function MarketplacePage({
                 loading={loading}
                 onAgentClick={id => {
                   if (onAgentDetail) {
-                    onAgentDetail(id);
+                    const a = myAgents.find(agent => agent.id === id);
+                    onAgentDetail(id, a?.framework);
                   } else {
                     handleChat(id);
                   }

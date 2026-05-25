@@ -115,17 +115,20 @@ export interface DevSpacesServiceOptions {
   logger: LoggerService;
   adminConfig: AdminConfigService;
   getAuthToken?: () => Promise<string>;
+  config?: import('@backstage/config').Config;
 }
 
 export class DevSpacesService {
   private readonly logger: LoggerService;
   private readonly adminConfig: AdminConfigService;
   private readonly getAuthToken?: () => Promise<string>;
+  private readonly rootConfig?: import('@backstage/config').Config;
 
   constructor(opts: DevSpacesServiceOptions) {
     this.logger = opts.logger;
     this.adminConfig = opts.adminConfig;
     this.getAuthToken = opts.getAuthToken;
+    this.rootConfig = opts.config;
   }
 
   // ── Health ──────────────────────────────────────────────────────────────
@@ -204,21 +207,6 @@ export class DevSpacesService {
       `Creating DevWorkspace ${workspaceName} in ${ns} from ${req.git_repo}`,
     );
 
-    const components: Array<{
-      name: string;
-      container: KubeDevWorkspaceContainer;
-    }> = [];
-    if (req.memory_limit || req.cpu_limit) {
-      components.push({
-        name: 'dev-tools',
-        container: {
-          name: 'dev-tools',
-          ...(req.memory_limit && { memoryLimit: req.memory_limit }),
-          ...(req.cpu_limit && { cpuLimit: req.cpu_limit }),
-        },
-      });
-    }
-
     const devworkspace: KubeDevWorkspace = {
       apiVersion: `${DW_API_GROUP}/${DW_API_VERSION}`,
       kind: 'DevWorkspace',
@@ -233,7 +221,6 @@ export class DevSpacesService {
               git: { remotes: { origin: req.git_repo } },
             },
           ],
-          ...(components.length > 0 && { components }),
         },
       },
     };
@@ -368,7 +355,9 @@ export class DevSpacesService {
       name: dw.metadata.name,
       namespace: dw.metadata.namespace,
       phase: dw.status?.phase ?? 'Unknown',
-      url: dw.status?.mainUrl,
+      url:
+        dw.status?.mainUrl ??
+        this.buildDashboardUrl(dw.metadata.namespace, dw.metadata.name),
       created_at: dw.metadata.creationTimestamp,
       git_repo: project?.git?.remotes?.origin,
     };
@@ -382,7 +371,9 @@ export class DevSpacesService {
       namespace: dw.metadata.namespace,
       phase: dw.status?.phase ?? 'Starting',
       message: dw.status?.message,
-      url: dw.status?.mainUrl,
+      url:
+        dw.status?.mainUrl ??
+        this.buildDashboardUrl(dw.metadata.namespace, dw.metadata.name),
       created_at: dw.metadata.creationTimestamp,
     };
   }
@@ -403,9 +394,9 @@ export class DevSpacesService {
     const raw = (await this.adminConfig.get('devSpacesApiUrl')) as
       | string
       | undefined;
-    return raw && typeof raw === 'string'
-      ? stripTrailingSlashes(raw)
-      : undefined;
+    if (raw && typeof raw === 'string') return stripTrailingSlashes(raw);
+    const fromConfig = this.rootConfig?.getOptionalString('augment.k8s.apiUrl');
+    return fromConfig ? stripTrailingSlashes(fromConfig) : undefined;
   }
 
   private async requireApiUrl(): Promise<string> {
@@ -436,6 +427,17 @@ export class DevSpacesService {
     return hint ? `${hint}-devspaces` : DEFAULT_DEVSPACES_NAMESPACE;
   }
 
+  /**
+   * Derive a DevSpaces namespace from a Backstage user entity ref.
+   * Extracts the username from 'user:default/jsmith' and returns 'jsmith-devspaces'.
+   */
+  resolveNamespaceForUser(userRef: string): string {
+    const match = userRef.match(/^user:[^/]+\/(.+)$/);
+    const username = match ? match[1] : userRef;
+    const sanitized = this.sanitizeName(username);
+    return `${sanitized}-devspaces`;
+  }
+
   private async resolveToken(): Promise<string> {
     const adminToken = (await this.adminConfig.get('devSpacesToken')) as
       | string
@@ -444,6 +446,9 @@ export class DevSpacesService {
     if (adminToken && typeof adminToken === 'string' && adminToken.trim()) {
       return adminToken.trim();
     }
+
+    const fromConfig = this.rootConfig?.getOptionalString('augment.k8s.token');
+    if (fromConfig?.trim()) return fromConfig.trim();
 
     if (this.getAuthToken) {
       return this.getAuthToken();
@@ -469,6 +474,20 @@ export class DevSpacesService {
     };
   }
 
+  private buildDashboardUrl(
+    namespace: string,
+    workspaceName: string,
+  ): string | undefined {
+    try {
+      const apiUrl = this.rootConfig?.getOptionalString('augment.k8s.apiUrl');
+      if (!apiUrl) return undefined;
+      const host = new URL(apiUrl).hostname.replace(/^api\./, '');
+      return `https://devspaces.apps.${host}/#/ide/${namespace}/${workspaceName}`;
+    } catch {
+      return undefined;
+    }
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────────────────
 
   private async fetchWithTimeout(
@@ -478,7 +497,17 @@ export class DevSpacesService {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      return await fetch(url, { ...init, signal: controller.signal });
+      const opts: RequestInit & { dispatcher?: unknown } = {
+        ...init,
+        signal: controller.signal,
+      };
+      if (url.startsWith('https://')) {
+        const { Agent } = await import('undici');
+        opts.dispatcher = new Agent({
+          connect: { rejectUnauthorized: false },
+        });
+      }
+      return await fetch(url, opts);
     } finally {
       clearTimeout(timeout);
     }

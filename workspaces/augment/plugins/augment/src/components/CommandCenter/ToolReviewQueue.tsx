@@ -75,8 +75,8 @@ export function ToolReviewQueue() {
     async (toolId: string) => {
       setActing(toolId);
       try {
-        await api.promoteToolLifecycle(toolId, 'pending');
-        setToast(`Approved to staging: ${toolId}`);
+        await api.promoteToolLifecycle(toolId, 'published');
+        setToast(`Approved and published: ${toolId}`);
         loadTools();
       } catch (err) {
         setToast(`Failed: ${err instanceof Error ? err.message : 'Unknown'}`);
@@ -155,8 +155,11 @@ export function ToolReviewQueue() {
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    bgcolor: alpha(LIFECYCLE_COLORS.review, isDark ? 0.2 : 0.1),
-                    color: LIFECYCLE_COLORS.review,
+                    bgcolor: alpha(
+                      LIFECYCLE_COLORS.pending,
+                      isDark ? 0.2 : 0.1,
+                    ),
+                    color: LIFECYCLE_COLORS.pending,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
