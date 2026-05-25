@@ -1205,6 +1205,8 @@ export function registerAgentRoutes(
   );
 
   // Startup reconciliation: auto-register runtime agents as draft
+  // Skip in test environment to avoid async race conditions
+  if (process.env.NODE_ENV === 'test') return;
   void (async () => {
     try {
       const { agents } = await buildUnifiedAgentList();

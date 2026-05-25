@@ -62,11 +62,10 @@ describe('AgentConfigPanel', () => {
     });
   });
 
-  it('renders all 6 sub-tabs', async () => {
+  it('renders all 5 sub-tabs', async () => {
     renderPanel();
     await waitFor(() => {
       expect(screen.getByRole('tab', { name: 'Model' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Tools' })).toBeInTheDocument();
       expect(
         screen.getByRole('tab', { name: 'MCP Servers' }),
       ).toBeInTheDocument();
@@ -93,20 +92,6 @@ describe('AgentConfigPanel', () => {
     await waitFor(() => {
       const modelInput = screen.getByLabelText('Model') as HTMLInputElement;
       expect(modelInput.value).toBe('llama-3');
-    });
-  });
-
-  it('switches to Tools tab and shows tools config', async () => {
-    renderPanel();
-
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: 'Tools' })).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Tools' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Tools Configuration')).toBeInTheDocument();
     });
   });
 

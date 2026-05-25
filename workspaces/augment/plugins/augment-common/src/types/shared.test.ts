@@ -107,11 +107,11 @@ describe('getAvailableTransitions', () => {
     );
   });
 
-  it('returns unpublish and archive for published', () => {
+  it('returns request-unpublish and archive for published', () => {
     const transitions = getAvailableTransitions('published');
     expect(transitions).toHaveLength(2);
     expect(transitions.map(t => t.action)).toEqual(
-      expect.arrayContaining(['unpublish', 'archive']),
+      expect.arrayContaining(['request-unpublish', 'archive']),
     );
   });
 
