@@ -60,10 +60,14 @@ export function registerStatusRoutes(
       const status = await currentProvider.getStatus();
       const isAdmin = await ctx.checkIsAdmin(req);
 
+      const approvalEnabled =
+        config.getOptionalBoolean('augment.agentApproval.enabled') ?? false;
+
       const redacted = {
         ...status,
         providerId: currentProvider.id,
         isAdmin,
+        approvalMode: approvalEnabled ? 'workflow' : 'built-in',
         provider: {
           ...status.provider,
           baseUrl: status.provider.connected

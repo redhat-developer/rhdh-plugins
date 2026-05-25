@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
-import { useApi } from '@backstage/core-plugin-api';
+import { useEffect, useState, useMemo } from 'react';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { Entity } from '@backstage/catalog-model';
 import { getErrorMessage } from '../../../utils';
 
 export interface UseAgentTemplatesOptions {
-  /** Filter by `metadata.tags` value. */
   tag?: string;
-  /** Filter by `spec.type` (e.g. "agent" or "tool"). */
   specType?: string;
 }
 
@@ -34,18 +32,18 @@ export interface UseAgentTemplatesReturn {
   reload: () => void;
 }
 
-/**
- * Fetches `kind: Template` entities from the Backstage catalog.
- *
- * - `specType` prefers templates with that `spec.type` but falls back to
- *   showing **all** templates if none match (graceful degradation).
- * - `tag` filters by `metadata.tags` (hard filter, no fallback).
- * - When neither is provided, **all** catalog templates are returned.
- */
 export function useAgentTemplates(
   options?: UseAgentTemplatesOptions,
 ): UseAgentTemplatesReturn {
-  const catalogApi = useApi(catalogApiRef);
+  const apiHolder = useApiHolder();
+  const catalogApi = useMemo(() => {
+    try {
+      return apiHolder.get(catalogApiRef);
+    } catch {
+      return undefined;
+    }
+  }, [apiHolder]);
+
   const [templates, setTemplates] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +53,14 @@ export function useAgentTemplates(
   const specType = options?.specType;
 
   useEffect(() => {
+    if (!catalogApi) {
+      setLoading(false);
+      setError(
+        'Catalog API is not available. Templates require a full Backstage deployment with the catalog plugin.',
+      );
+      return undefined;
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -66,12 +72,12 @@ export function useAgentTemplates(
 
     async function fetchTemplates(): Promise<Entity[]> {
       if (specType) {
-        const typed = await catalogApi.getEntities({
+        const typed = await catalogApi!.getEntities({
           filter: { ...baseFilter, 'spec.type': specType },
         });
         if (typed.items.length > 0) return typed.items;
       }
-      const all = await catalogApi.getEntities({ filter: baseFilter });
+      const all = await catalogApi!.getEntities({ filter: baseFilter });
       return all.items;
     }
 

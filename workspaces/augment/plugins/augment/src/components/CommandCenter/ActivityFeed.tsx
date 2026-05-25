@@ -55,7 +55,7 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
   const items = useMemo<ActivityItem[]>(() => {
     const feed: ActivityItem[] = [];
 
-    const deployed = agents.filter(
+    const publishedAgents = agents.filter(
       a =>
         a.lifecycleStage === 'published' ||
         (a.lifecycleStage as string) === 'deployed',
@@ -77,19 +77,19 @@ export function ActivityFeed({ agents }: ActivityFeedProps) {
       feed.push({
         id: 'review',
         text: `${inReview.length} agent${inReview.length > 1 ? 's' : ''} awaiting review`,
-        color: LIFECYCLE_COLORS.review,
+        color: LIFECYCLE_COLORS.pending,
       });
     }
 
-    if (deployed.length > 0) {
-      const recent = deployed
+    if (publishedAgents.length > 0) {
+      const recent = publishedAgents
         .sort((a, b) => (b.promotedAt ?? '').localeCompare(a.promotedAt ?? ''))
         .slice(0, 2);
       for (const a of recent) {
         feed.push({
-          id: `deployed-${a.id}`,
-          text: `${a.name} published to catalog`,
-          color: LIFECYCLE_COLORS.production,
+          id: `published-${a.id}`,
+          text: `${a.name} published to marketplace`,
+          color: LIFECYCLE_COLORS.published,
           time: relativeTime(a.promotedAt),
         });
       }

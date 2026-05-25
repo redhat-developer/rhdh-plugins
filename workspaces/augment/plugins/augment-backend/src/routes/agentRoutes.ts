@@ -249,7 +249,7 @@ export function registerAgentRoutes(
    */
   async function buildUnifiedAgentList(): Promise<{
     agents: ChatAgent[];
-    sources: { kagenti: number; orchestration: number };
+    sources: { byo: number; workflowBuilder: number };
   }> {
     const provider = ctx.provider;
 
@@ -288,6 +288,8 @@ export function registerAgentRoutes(
         rejectionReason: cfg?.rejectionReason,
         rejectedBy: cfg?.rejectedBy,
         rejectedAt: cfg?.rejectedAt,
+        pendingAction: cfg?.pendingAction,
+        chatEndpoint: cfg?.chatEndpoint,
       };
     }
 
@@ -329,11 +331,49 @@ export function registerAgentRoutes(
       merged.push(overlayConfig(agent, cfg));
     }
 
+    for (const cfg of chatConfigs) {
+      if (seen.has(cfg.agentId)) continue;
+      seen.add(cfg.agentId);
+      const stage = normalizeLifecycleStage(cfg.lifecycleStage);
+      const cfgAny = cfg as unknown as Record<string, unknown>;
+      const storedFramework = cfgAny.framework as string | undefined;
+      const hasChatEndpoint = !!cfg.chatEndpoint;
+      const isSkillAgent = storedFramework === 'docsclaw' || hasChatEndpoint;
+      merged.push({
+        id: cfg.agentId,
+        name: cfg.displayName ?? cfg.agentId,
+        description: cfg.description,
+        status: isPublishedStage(stage) ? 'ready' : 'config',
+        isDefault: false,
+        providerType: isSkillAgent ? 'augment' : 'orchestration',
+        framework:
+          storedFramework ?? (isSkillAgent ? 'docsclaw' : 'workflow-builder'),
+        source: isSkillAgent ? 'skills' : 'orchestration',
+        published: isPublishedStage(stage),
+        lifecycleStage: stage,
+        governanceRegistered: true,
+        version: cfg.version ?? 0,
+        promotedAt: cfg.promotedAt,
+        promotedBy: cfg.promotedBy,
+        createdBy: cfg.createdBy,
+        pendingAction: cfg.pendingAction,
+        chatEndpoint: cfg.chatEndpoint,
+        namespace: cfgAny.namespace as string | undefined,
+        rejectionReason: cfg.rejectionReason,
+        rejectedBy: cfg.rejectedBy,
+        rejectedAt: cfg.rejectedAt,
+      });
+    }
+
     return {
       agents: merged,
       sources: {
-        kagenti: merged.filter(a => a.source !== 'orchestration').length,
-        orchestration: merged.filter(a => a.source === 'orchestration').length,
+        byo: merged.filter(
+          a => a.source !== 'orchestration' && a.source !== 'skills',
+        ).length,
+        workflowBuilder: merged.filter(
+          a => a.source === 'orchestration' || a.source === 'skills',
+        ).length,
       },
     };
   }
@@ -361,7 +401,11 @@ export function registerAgentRoutes(
         );
       }
 
-      res.json({ agents: filtered, sources });
+      res.json({
+        agents: filtered,
+        sources,
+        approvalMode: approvalService?.enabled ? 'workflow' : 'built-in',
+      });
     }),
   );
 
@@ -489,6 +533,34 @@ export function registerAgentRoutes(
           return;
         }
 
+        const isWorkflowCallback =
+          req.headers['x-augment-workflow-callback'] === 'true';
+        const isAdminApprove =
+          currentStage === 'pending' && nextStage === 'published';
+
+        // In SonataFlow mode, admin approve sends CloudEvent instead of
+        // applying the transition directly. The workflow will callback later
+        // with X-Augment-Workflow-Callback: true to apply it.
+        if (
+          isAdminApprove &&
+          approvalService?.enabled &&
+          existing?.approvalWorkflowInstanceId &&
+          !isWorkflowCallback
+        ) {
+          await approvalService.sendDecision(
+            existing.approvalWorkflowInstanceId,
+            true,
+            userRef,
+          );
+          res.json({
+            success: true,
+            agentId,
+            lifecycleStage: currentStage,
+            workflowDecisionSent: true,
+          });
+          return;
+        }
+
         const result = await applyLifecycleTransition({
           configs,
           agentId,
@@ -500,11 +572,59 @@ export function registerAgentRoutes(
           logger,
           req,
         });
+
+        // Clear workflow fields after callback-driven promotion
+        if (isWorkflowCallback && existing) {
+          existing.approvalWorkflowInstanceId = undefined;
+          existing.pendingAction = undefined;
+          await saveChatAgentConfigs(configs, userRef);
+        }
+
+        let workflowInstanceId: string | undefined;
+        if (isSubmitForReview && approvalService?.enabled) {
+          const updated = configs.find(c => c.agentId === agentId);
+          if (updated) updated.pendingAction = 'publish';
+          workflowInstanceId = await approvalService.startWorkflow({
+            agentId,
+            agentName: updated?.displayName ?? agentId,
+            requestedBy: userRef,
+            action: 'publish',
+            currentStage: 'draft',
+            targetStage: 'pending',
+          });
+          if (workflowInstanceId && updated) {
+            updated.approvalWorkflowInstanceId = workflowInstanceId;
+            await saveChatAgentConfigs(configs, userRef);
+          } else if (!workflowInstanceId) {
+            // Fail-closed: workflow could not start, revert to draft
+            logger.warn(
+              `SonataFlow workflow failed to start for ${agentId}, reverting to draft`,
+            );
+            await applyLifecycleTransition({
+              configs,
+              agentId,
+              targetStage: 'draft',
+              userRef: 'system:workflow-revert',
+              direction: 'demote',
+              saveFn: saveChatAgentConfigs,
+              audit,
+              logger,
+              req,
+            });
+            res.status(502).json({
+              error:
+                'Approval workflow could not be started. Agent returned to draft.',
+            });
+            return;
+          }
+        }
+
         res.json({
           success: true,
           agentId: result.agentId,
           lifecycleStage: result.to,
           version: result.version,
+          workflowInstanceId,
         });
       },
     ),
@@ -560,6 +680,23 @@ export function registerAgentRoutes(
           logger,
           req,
         });
+
+        if (
+          isRejection &&
+          approvalService?.enabled &&
+          existing?.approvalWorkflowInstanceId
+        ) {
+          await approvalService.sendDecision(
+            existing.approvalWorkflowInstanceId,
+            false,
+            userRef,
+            reason,
+          );
+          existing.approvalWorkflowInstanceId = undefined;
+          existing.pendingAction = undefined;
+          await saveChatAgentConfigs(configs, userRef);
+        }
+
         res.json({
           success: true,
           agentId: result.agentId,
@@ -611,6 +748,19 @@ export function registerAgentRoutes(
           logger,
           req,
         });
+
+        if (approvalService?.enabled && existing.approvalWorkflowInstanceId) {
+          const isApprove = dir === 'publish';
+          await approvalService.sendDecision(
+            existing.approvalWorkflowInstanceId,
+            isApprove,
+            userRef,
+          );
+          existing.approvalWorkflowInstanceId = undefined;
+          existing.pendingAction = undefined;
+          await saveChatAgentConfigs(configs, userRef);
+        }
+
         res.json({
           success: true,
           agentId: result.agentId,
@@ -765,6 +915,10 @@ export function registerAgentRoutes(
             currentStage: 'published',
             targetStage: 'pending',
           });
+          if (workflowInstanceId && existing) {
+            existing.approvalWorkflowInstanceId = workflowInstanceId;
+            await saveChatAgentConfigs(configs, userRef);
+          }
         }
         res.json({
           success: true,
@@ -952,11 +1106,52 @@ export function registerAgentRoutes(
           cleanupResults.kagenti = 'skipped';
         }
 
-        // TODO [E8 - Skill Agent K8s Cleanup]: When the deleted agent has a
-        // chatEndpoint (skill agents), issue K8s resource deletion for the
-        // Deployment, Service, ConfigMap, and Secret via DevSpaces API
-        // credentials. Identify skill agents by the presence of chatEndpoint
-        // on the ChatAgentConfig entry (existing?.chatEndpoint).
+        if (existing?.chatEndpoint) {
+          try {
+            const apiUrl = (await adminConfig.get('devSpacesApiUrl')) as
+              | string
+              | undefined;
+            const token = (await adminConfig.get('devSpacesToken')) as
+              | string
+              | undefined;
+            if (apiUrl && token) {
+              const agentName = agentId.includes('/')
+                ? agentId.split('/').pop()!
+                : agentId;
+              const ns = existing.namespace ?? 'default';
+              const k8sBase = `${apiUrl}/apis/apps/v1/namespaces/${ns}`;
+              const coreBase = `${apiUrl}/api/v1/namespaces/${ns}`;
+              const headers = { Authorization: `Bearer ${token}` };
+              const { Agent: UndiciAgent } = await import('undici');
+              const dispatcher = new UndiciAgent({
+                connect: { rejectUnauthorized: false },
+              });
+              const fetchK8s = (url: string, method: string) =>
+                fetch(url, {
+                  method,
+                  headers,
+                  dispatcher: dispatcher as unknown as undefined,
+                } as RequestInit);
+              await Promise.allSettled([
+                fetchK8s(`${k8sBase}/deployments/${agentName}`, 'DELETE'),
+                fetchK8s(`${coreBase}/services/${agentName}`, 'DELETE'),
+                fetchK8s(
+                  `${coreBase}/configmaps/${agentName}-config`,
+                  'DELETE',
+                ),
+              ]);
+              cleanupResults.k8s = 'success';
+              logger.info(`K8s resources deleted for skill agent ${agentId}`);
+            } else {
+              cleanupResults.k8s = 'skipped (no devSpaces credentials)';
+            }
+          } catch (k8sErr) {
+            cleanupResults.k8s = `error: ${k8sErr instanceof Error ? k8sErr.message : String(k8sErr)}`;
+            logger.warn(
+              `K8s cleanup failed for ${agentId}: ${cleanupResults.k8s}`,
+            );
+          }
+        }
 
         audit.log({
           action: 'agent.delete',
@@ -978,4 +1173,39 @@ export function registerAgentRoutes(
       },
     ),
   );
+
+  // Startup reconciliation: auto-register runtime agents as draft
+  void (async () => {
+    try {
+      const { agents } = await buildUnifiedAgentList();
+      const configs = await loadChatAgentConfigs();
+      const registered = new Set(configs.map(c => c.agentId));
+      const unregistered = agents.filter(
+        a => !registered.has(a.id) && a.source !== 'skills',
+      );
+
+      if (unregistered.length === 0) return;
+
+      const now = new Date().toISOString();
+      for (const agent of unregistered) {
+        configs.push({
+          agentId: agent.id,
+          lifecycleStage: 'draft',
+          published: false,
+          visible: false,
+          featured: false,
+          version: 0,
+          createdAt: now,
+        });
+      }
+      await saveChatAgentConfigs(configs, 'system:startup');
+      logger.info(
+        `Startup reconciliation: auto-registered ${unregistered.length} agent(s) as draft`,
+      );
+    } catch (err) {
+      logger.warn(
+        `Startup reconciliation failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  })();
 }

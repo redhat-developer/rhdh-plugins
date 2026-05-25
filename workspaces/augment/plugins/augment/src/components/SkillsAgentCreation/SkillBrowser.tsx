@@ -29,16 +29,20 @@ import {
   fetchApiRef,
 } from '@backstage/core-plugin-api';
 
-interface SkillDefinition {
+export interface SkillDefinition {
   name: string;
+  skillName?: string;
+  slug?: string;
   description?: string;
   domain?: string;
+  pluginName?: string;
   gitPath?: string;
+  body?: string;
 }
 
 export interface SkillBrowserProps {
-  readonly onSelectionChange: (selectedSkills: string[]) => void;
-  readonly selectedSkills: string[];
+  readonly onSelectionChange: (selected: SkillDefinition[]) => void;
+  readonly selectedSkills: SkillDefinition[];
 }
 
 export function SkillBrowser({
@@ -101,10 +105,15 @@ export function SkillBrowser({
     });
   }, [skills, activeDomain, domains, search]);
 
-  const handleToggle = (skillId: string) => {
-    const next = selectedSkills.includes(skillId)
-      ? selectedSkills.filter(id => id !== skillId)
-      : [...selectedSkills, skillId];
+  const selectedNames = useMemo(
+    () => new Set(selectedSkills.map(s => s.name)),
+    [selectedSkills],
+  );
+
+  const handleToggle = (skill: SkillDefinition) => {
+    const next = selectedNames.has(skill.name)
+      ? selectedSkills.filter(s => s.name !== skill.name)
+      : [...selectedSkills, skill];
     onSelectionChange(next);
   };
 
@@ -161,8 +170,8 @@ export function SkillBrowser({
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={selectedSkills.includes(skill.name)}
-                  onChange={() => handleToggle(skill.name)}
+                  checked={selectedNames.has(skill.name)}
+                  onChange={() => handleToggle(skill)}
                   size="small"
                 />
               }

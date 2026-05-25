@@ -39,11 +39,9 @@ import type {
   PaginatedTasksResponse,
 } from './types';
 import { SANDBOX_PREFIX as P, encodePathSegment as e } from './utils';
+import * as fileOps from './sandboxFileOps';
+import * as sidecarOps from './sandboxSidecarOps';
 
-/**
- * Client for Kagenti sandbox feature-flagged endpoints.
- * Only instantiated when the Kagenti server reports sandbox=true.
- */
 export class KagentiSandboxClient {
   constructor(private readonly api: KagentiApiClient) {}
 
@@ -304,159 +302,158 @@ export class KagentiSandboxClient {
     return this.api.request('PUT', `${P}/${e(namespace)}/${e(name)}`, body);
   }
 
-  // -- Files ------------------------------------------------------------------
+  // -- Files (delegated) ------------------------------------------------------
 
-  async browseFiles(
+  browseFiles(
     namespace: string,
     agentName: string,
     path = '/',
   ): Promise<DirectoryListing | FileContent> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/files/${e(agentName)}?path=${e(path)}`,
-    );
+    return fileOps.browseFiles(this.api, namespace, agentName, path);
   }
 
-  async listDirectory(
+  listDirectory(
     namespace: string,
     agentName: string,
     path = '/',
   ): Promise<DirectoryListing> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/files/${e(agentName)}/list?path=${e(path)}`,
-    );
+    return fileOps.listDirectory(this.api, namespace, agentName, path);
   }
 
-  async getFileContent(
+  getFileContent(
     namespace: string,
     agentName: string,
     path: string,
   ): Promise<FileContent> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/files/${e(agentName)}/content?path=${e(path)}`,
-    );
+    return fileOps.getFileContent(this.api, namespace, agentName, path);
   }
 
-  async browseContextFiles(
+  browseContextFiles(
     namespace: string,
     agentName: string,
     contextId: string,
     path = '/',
   ): Promise<DirectoryListing | FileContent> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/files/${e(agentName)}/${e(contextId)}?path=${e(path)}`,
+    return fileOps.browseContextFiles(
+      this.api,
+      namespace,
+      agentName,
+      contextId,
+      path,
     );
   }
 
-  async getStorageStats(
+  getStorageStats(
     namespace: string,
     agentName: string,
   ): Promise<PodStorageStats> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/stats/${e(agentName)}`,
-    );
+    return fileOps.getStorageStats(this.api, namespace, agentName);
   }
 
-  // -- Sidecars ---------------------------------------------------------------
+  // -- Sidecars (delegated) ---------------------------------------------------
 
-  async listSidecars(
+  listSidecars(
     namespace: string,
     contextId: string,
   ): Promise<SidecarResponse[]> {
-    return this.api.request(
-      'GET',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars`,
-    );
+    return sidecarOps.listSidecars(this.api, namespace, contextId);
   }
 
-  async enableSidecar(
+  enableSidecar(
     namespace: string,
     contextId: string,
     sidecarType: string,
     opts?: EnableSidecarRequest,
   ): Promise<SidecarResponse> {
-    return this.api.request(
-      'POST',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/enable`,
+    return sidecarOps.enableSidecar(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
       opts,
     );
   }
 
-  async disableSidecar(
+  disableSidecar(
     namespace: string,
     contextId: string,
     sidecarType: string,
   ): Promise<{ status: string; sidecar_type: string }> {
-    return this.api.request(
-      'POST',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/disable`,
+    return sidecarOps.disableSidecar(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
     );
   }
 
-  async updateSidecarConfig(
+  updateSidecarConfig(
     namespace: string,
     contextId: string,
     sidecarType: string,
     config: SidecarConfigUpdateRequest,
   ): Promise<SidecarResponse> {
-    return this.api.request(
-      'PUT',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/config`,
+    return sidecarOps.updateSidecarConfig(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
       config,
     );
   }
 
-  async resetSidecar(
+  resetSidecar(
     namespace: string,
     contextId: string,
     sidecarType: string,
   ): Promise<Record<string, unknown>> {
-    return this.api.request(
-      'POST',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/reset`,
-    );
+    return sidecarOps.resetSidecar(this.api, namespace, contextId, sidecarType);
   }
 
-  async streamObservations(
+  streamObservations(
     namespace: string,
     contextId: string,
     sidecarType: string,
     onLine: (line: string) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    return this.api.streamRequest(
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/observations`,
-      {},
+    return sidecarOps.streamObservations(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
       onLine,
       signal,
     );
   }
 
-  async approveSidecar(
+  approveSidecar(
     namespace: string,
     contextId: string,
     sidecarType: string,
     msgId: string,
   ): Promise<{ status: string; id: string }> {
-    return this.api.request(
-      'POST',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/approve/${e(msgId)}`,
+    return sidecarOps.approveSidecar(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
+      msgId,
     );
   }
 
-  async denySidecar(
+  denySidecar(
     namespace: string,
     contextId: string,
     sidecarType: string,
     msgId: string,
   ): Promise<{ status: string; id: string }> {
-    return this.api.request(
-      'POST',
-      `${P}/${e(namespace)}/sessions/${e(contextId)}/sidecars/${e(sidecarType)}/deny/${e(msgId)}`,
+    return sidecarOps.denySidecar(
+      this.api,
+      namespace,
+      contextId,
+      sidecarType,
+      msgId,
     );
   }
 

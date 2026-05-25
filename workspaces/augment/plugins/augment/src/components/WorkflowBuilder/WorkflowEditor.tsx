@@ -69,6 +69,10 @@ export function WorkflowEditor({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [evalOpen, setEvalOpen] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>(
+    'saved',
+  );
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Undo/redo history
   const historyRef = useRef<WorkflowDefinition[]>([workflow]);
@@ -104,6 +108,15 @@ export function WorkflowEditor({
     skipHistoryRef.current = true;
     onSave(historyRef.current[historyIndexRef.current]);
   }, [onSave]);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => setSaveStatus('saved'), 1000);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [workflow.updatedAt]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -303,6 +316,7 @@ export function WorkflowEditor({
         onRename={handleRename}
         onDuplicate={handleDuplicate}
         onDelete={onDelete}
+        saveStatus={saveStatus}
       />
 
       <Box

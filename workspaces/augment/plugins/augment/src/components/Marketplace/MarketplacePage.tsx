@@ -45,7 +45,7 @@ interface MarketplacePageProps {
   onChatWithAgent?: (agentId: string) => void;
   onCreateAgent?: () => void;
   onCreateTool?: () => void;
-  onAgentDetail?: (agentId: string) => void;
+  onAgentDetail?: (agentId: string, framework?: string) => void;
   isAdmin?: boolean;
   onOpenCommandCenter?: () => void;
   onOpenGuidedTour?: () => void;
@@ -173,7 +173,9 @@ export function MarketplacePage({
         ? agents.filter(
             a =>
               a.createdBy === userRef ||
-              (a.governanceRegistered && a.framework === 'workflow-builder') ||
+              (a.governanceRegistered &&
+                (a.framework === 'workflow-builder' ||
+                  a.framework === 'docsclaw')) ||
               (!a.governanceRegistered && a.lifecycleStage !== 'published'),
           )
         : agents,
@@ -432,7 +434,8 @@ export function MarketplacePage({
                 loading={loading}
                 onAgentClick={id => {
                   if (onAgentDetail) {
-                    onAgentDetail(id);
+                    const a = myAgents.find(agent => agent.id === id);
+                    onAgentDetail(id, a?.framework);
                   } else {
                     handleChat(id);
                   }

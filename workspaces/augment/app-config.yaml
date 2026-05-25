@@ -50,6 +50,33 @@ catalog:
 
 augment:
   provider: kagenti
+  devSpaces:
+    frameworks:
+      - id: google-adk
+        name: Google ADK
+        description: Build agents with Google's Agent Development Kit
+        starterRepo: https://github.com/rrbanda/devspaces-demo
+        tags: [python, google-adk, a2a]
+        badge: Popular
+      - id: langgraph
+        name: LangGraph
+        description: Build stateful agent graphs with LangChain
+        starterRepo: https://github.com/rrbanda/devspaces-demo
+        tags: [python, langgraph, langchain]
+        badge: Popular
+      - id: crewai
+        name: CrewAI
+        description: Build role-based multi-agent teams
+        starterRepo: https://github.com/rrbanda/devspaces-demo
+        tags: [python, crewai, multi-agent]
+      - id: openai-agents
+        name: OpenAI Agents
+        description: Build agents using the OpenAI Responses API
+        starterRepo: https://github.com/rrbanda/devspaces-demo
+        tags: [python, openai, responses-api]
+      - id: custom
+        name: DIY / Custom
+        description: Bring your own repository
   security:
     mode: 'none'
     adminUsers:
@@ -74,7 +101,7 @@ augment:
     skipTlsVerify: false
     verboseStreamLogging: true
   skillsMarketplace:
-    baseUrl: ${SKILLS_MARKETPLACE_URL:-https://backstage-developer-hub-rhdh.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com/api/skill-marketplace}
+    baseUrl: ${SKILLS_MARKETPLACE_URL:-https://backstage-developer-hub-rhdh.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com/api/skill-marketplace/skills}
     agentImage: ghcr.io/redhat-et/docsclaw:latest
     advisorUrl: https://skill-advisor-smp-agents.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com
     llmBaseUrl: ${LLM_BASE_URL:-https://llamastack-llamastack.apps.cluster-6crhb.6crhb.sandbox1011.opentlc.com/v1}

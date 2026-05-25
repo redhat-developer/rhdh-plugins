@@ -383,7 +383,9 @@ export function registerKagentiAgentRoutes(
       async (req, res) => {
         const namespace = req.query.namespace as string | undefined;
         const allNamespaces = req.query.all_namespaces === 'true';
-        const result = await api.listAgentBuilds(namespace, allNamespaces);
+        const result = await api.listAgentBuilds(
+          allNamespaces ? undefined : namespace,
+        );
         res.json(result);
       },
     ),

@@ -27,6 +27,8 @@ import { createWithRoute } from './routeWrapper';
 import { SseHeartbeat } from './sseRouteHelpers';
 import { sanitizeErrorMessage } from '../services/utils/errorSanitizer';
 import type { FlushableResponse, RouteContext } from './types';
+import type { AdminConfigService } from '../services/AdminConfigService';
+import { trySkillChatProxy } from './skillChatProxy';
 
 function getLastUserContent(messages: ChatMessage[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -425,7 +427,10 @@ async function resolveProvider(
   return orchestration;
 }
 
-export function registerChatRoutes(ctx: RouteContext): void {
+export function registerChatRoutes(
+  ctx: RouteContext,
+  adminConfig?: AdminConfigService,
+): void {
   const {
     router,
     logger,
@@ -620,6 +625,19 @@ export function registerChatRoutes(ctx: RouteContext): void {
       );
       return;
     }
+
+    if (adminConfig) {
+      const handled = await trySkillChatProxy({
+        model: parsedRequest.model,
+        messages: parsedRequest.messages,
+        adminConfig,
+        config: ctx.config,
+        logger,
+        res: res as FlushableResponse,
+      });
+      if (handled) return;
+    }
+
     const provider = await resolveProvider(
       ctx.provider,
       ctx.orchestrationProvider,

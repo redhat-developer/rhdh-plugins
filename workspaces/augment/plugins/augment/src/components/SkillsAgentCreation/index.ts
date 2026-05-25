@@ -17,6 +17,9 @@
 export { RuntimePicker } from './RuntimePicker';
 export type { RuntimePickerProps } from './RuntimePicker';
 export { SkillBrowser } from './SkillBrowser';
-export type { SkillBrowserProps } from './SkillBrowser';
+export type { SkillBrowserProps, SkillDefinition } from './SkillBrowser';
 export { SkillAgentConfigForm } from './SkillAgentConfigForm';
-export type { SkillAgentConfigFormProps } from './SkillAgentConfigForm';
+export type {
+  SkillAgentConfigFormProps,
+  SkillForDeploy,
+} from './SkillAgentConfigForm';

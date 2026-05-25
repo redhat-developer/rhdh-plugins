@@ -282,6 +282,28 @@ export class WorkflowConfigService {
 
     const workflowAgentIds = new Set<string>();
 
+    // Workflow-level entry so the agent appears in unified list and My Agents
+    const wfIdx = existingAgents.findIndex(
+      a => (a as Record<string, unknown>).agentId === workflowId,
+    );
+    const wfEntry: Record<string, unknown> = {
+      agentId: workflowId,
+      published: workflow.status === 'published',
+      visible: workflow.status === 'published',
+      featured: false,
+      lifecycleStage: workflow.status === 'published' ? 'published' : 'draft',
+      version: workflow.version ?? 0,
+      displayName: workflow.name,
+      description: workflow.description ?? '',
+      createdBy: user,
+      framework: 'workflow-builder',
+    };
+    if (wfIdx >= 0) {
+      existingAgents[wfIdx] = { ...existingAgents[wfIdx], ...wfEntry };
+    } else {
+      existingAgents.push(wfEntry);
+    }
+
     for (const node of agentNodes) {
       const data = node.data as Record<string, unknown>;
       const agentId = `wf/${workflowId}/${node.id}`;

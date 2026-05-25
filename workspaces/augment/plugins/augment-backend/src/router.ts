@@ -361,10 +361,10 @@ export async function createRouter({
   router.post('/chat/approve', mutationLimiter);
 
   // Authenticated routes
-  registerChatRoutes(ctx);
+  registerChatRoutes(ctx, adminConfig);
   const agentApprovalService = new AgentApprovalWorkflowService(config, logger);
   registerAgentRoutes(ctx, adminConfig, agentApprovalService);
-  registerSkillsRoutes(ctx);
+  registerSkillsRoutes(ctx, adminConfig);
 
   // Tool lifecycle routes -- unified tool listing with lifecycle overlay
   {
@@ -433,6 +433,7 @@ export async function createRouter({
     sendRouteError,
     requireAdminAccess,
     getAuthToken: kagentiTokenFn,
+    config,
   });
 
   return router;

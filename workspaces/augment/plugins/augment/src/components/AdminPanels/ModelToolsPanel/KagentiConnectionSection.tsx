@@ -89,8 +89,8 @@ export const KagentiConnectionSection = ({
   return (
     <>
       <AdminSection
-        title="Kagenti Connection"
-        description="Configure the Kagenti backend API endpoint. This URL is used to communicate with the Kagenti agent orchestration service."
+        title="Agent Ops"
+        description="Configure the Agent Ops backend API endpoint. This URL is used to communicate with the agent orchestration service."
         source={kagentiUrlConfig.source === 'database' ? 'database' : 'default'}
         saving={kagentiUrlConfig.saving}
         error={kagentiUrlConfig.error}

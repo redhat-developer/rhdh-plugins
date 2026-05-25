@@ -92,12 +92,26 @@ export interface AugmentApi {
   unpublishAgent(agentId: string): Promise<void>;
 
   /**
+   * Request that a published agent be unpublished (non-admin flow).
+   */
+  requestUnpublish(agentId: string): Promise<void>;
+
+  /**
+   * Withdraw a pending-review agent back to draft.
+   */
+  withdrawAgent(agentId: string): Promise<void>;
+
+  /**
    * Promote an agent to the next lifecycle stage (draft → registered → deployed).
    */
   promoteAgent(
     agentId: string,
     targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
-  ): Promise<{ lifecycleStage: string; version: number }>;
+  ): Promise<{
+    lifecycleStage: string;
+    version?: number;
+    workflowDecisionSent?: boolean;
+  }>;
 
   /**
    * Demote an agent to a previous lifecycle stage (deployed → registered → draft).
@@ -796,10 +810,27 @@ export class AugmentApiClient implements AugmentApi {
     });
   }
 
+  async requestUnpublish(agentId: string): Promise<void> {
+    await this.fetchJson(
+      `/agents/${encodeURIComponent(agentId)}/request-unpublish`,
+      { method: 'PUT' },
+    );
+  }
+
+  async withdrawAgent(agentId: string): Promise<void> {
+    await this.fetchJson(`/agents/${encodeURIComponent(agentId)}/withdraw`, {
+      method: 'PUT',
+    });
+  }
+
   async promoteAgent(
     agentId: string,
     targetStage?: import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
-  ): Promise<{ lifecycleStage: string; version: number }> {
+  ): Promise<{
+    lifecycleStage: string;
+    version?: number;
+    workflowDecisionSent?: boolean;
+  }> {
     return this.fetchJson(`/agents/${encodeURIComponent(agentId)}/promote`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

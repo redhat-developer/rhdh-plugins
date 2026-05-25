@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type {
-  EffectiveConfig,
-  DocumentInfo,
-  VectorStoreInfo,
-} from '../../types';
+import type { DocumentInfo, VectorStoreInfo } from '../../types';
 import type { VectorStoreService } from './VectorStoreService';
 import type { DocumentSyncService, SyncResult } from './DocumentSyncService';
 import type { ConfigResolutionService } from './ConfigResolutionService';
 import { toErrorMessage } from '../../services/utils';
+import {
+  getVectorStoreConfig as queryGetConfig,
+  getVectorStoreStatus as queryGetStatus,
+  searchVectorStore as querySearch,
+  syncDocuments as querySyncDocs,
+  uploadDocument as queryUploadDoc,
+} from './VectorStoreQueryOps';
 
 /**
  * Context provided by the orchestrator for vector store operations.
@@ -193,80 +196,27 @@ export class VectorStoreFacade {
     this.ctx.configResolution.invalidateCache();
   }
 
-  /**
-   * Sync documents from configured sources to the vector store.
-   * Lazily creates the vector store on first call.
-   */
   async syncDocuments(): Promise<SyncResult> {
-    this.ctx.ensureInitialized();
-    if (!this.docSync) {
-      return {
-        added: 0,
-        removed: 0,
-        failed: 0,
-        unchanged: 0,
-        updated: 0,
-        errors: [],
-      };
-    }
-
-    await this.ensureVectorStoreReady();
-
-    const config = this.ctx.configResolution.getLlamaStackConfig();
-    if (config && this.vectorStore) {
-      const cfg = await this.ctx.configResolution.resolve();
-      this.vectorStore.updateConfig({
-        ...config,
-        chunkingStrategy: cfg.chunkingStrategy ?? config.chunkingStrategy,
-        maxChunkSizeTokens: cfg.maxChunkSizeTokens ?? config.maxChunkSizeTokens,
-        chunkOverlapTokens: cfg.chunkOverlapTokens ?? config.chunkOverlapTokens,
-      });
-    }
-
-    return this.docSync.sync();
+    return querySyncDocs(this.vectorStore, this.docSync, this.ctx, () =>
+      this.ensureVectorStoreReady(),
+    );
   }
 
-  /**
-   * Upload a single document to the vector store via the Files API.
-   */
   async uploadDocument(
     fileName: string,
     content: Buffer,
     vectorStoreId?: string,
   ): Promise<{ fileId: string; fileName: string; status: string }> {
-    this.ctx.ensureInitialized();
-    if (!this.vectorStore) {
+    if (!this.vectorStore)
       throw new Error('Vector store service not available');
-    }
-    await this.ensureVectorStoreReady();
-
-    const config = this.ctx.configResolution.getLlamaStackConfig();
-    if (config) {
-      const cfg = await this.ctx.configResolution.resolve();
-      this.vectorStore.updateConfig({
-        ...config,
-        chunkingStrategy: cfg.chunkingStrategy ?? config.chunkingStrategy,
-        maxChunkSizeTokens: cfg.maxChunkSizeTokens ?? config.maxChunkSizeTokens,
-        chunkOverlapTokens: cfg.chunkOverlapTokens ?? config.chunkOverlapTokens,
-      });
-    }
-
-    const result = await this.vectorStore.uploadDocuments(
-      [{ fileName, content: content.toString('utf-8') }],
+    return queryUploadDoc(
+      this.vectorStore,
+      this.ctx,
+      () => this.ensureVectorStoreReady(),
+      fileName,
+      content,
       vectorStoreId,
     );
-
-    if (result.failed.length > 0) {
-      throw new Error(
-        `Upload failed for ${fileName}: ${result.failed[0].error}`,
-      );
-    }
-    if (result.uploaded.length === 0) {
-      throw new Error(`Upload produced no result for ${fileName}`);
-    }
-
-    const doc = result.uploaded[0];
-    return { fileId: doc.id, fileName: doc.fileName, status: doc.status };
   }
 
   /**
@@ -297,9 +247,6 @@ export class VectorStoreFacade {
     return this.vectorStore.deleteVectorStore(vectorStoreId);
   }
 
-  /**
-   * Search one or more vector stores for chunks matching a query.
-   */
   async searchVectorStore(
     query: string,
     maxResults: number = 5,
@@ -318,50 +265,16 @@ export class VectorStoreFacade {
     totalResults: number;
   }> {
     this.ctx.ensureInitialized();
-    if (!this.vectorStore) {
+    if (!this.vectorStore)
       throw new Error('Vector store service not available');
-    }
-
-    const ids: string[] =
-      targetVectorStoreIds && targetVectorStoreIds.length > 0
-        ? targetVectorStoreIds
-        : [
-            targetVectorStoreId ??
-              this.vectorStore.getDefaultVectorStoreId() ??
-              '',
-          ].filter(Boolean);
-
-    if (ids.length === 0) {
-      throw new Error('No vector store available to search');
-    }
-
-    this.logger.info(
-      `searchVectorStore: query="${query.substring(0, 80)}${
-        query.length > 80 ? '...' : ''
-      }", storeIds=[${ids.join(',')}], maxResults=${maxResults}`,
-    );
-
-    const perStore = await Promise.all(
-      ids.map(storeId =>
-        this.vectorStore!.searchSingle(storeId, query, maxResults),
-      ),
-    );
-    const allChunks = perStore
-      .flat()
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-
-    this.logger.info(
-      `searchVectorStore: ${allChunks.length} results across ${
-        ids.length
-      } store(s), topScore=${allChunks[0]?.score ?? 'N/A'}`,
-    );
-
-    return {
+    return querySearch(
+      this.vectorStore,
       query,
-      chunks: allChunks,
-      vectorStoreId: ids.join(','),
-      totalResults: allChunks.length,
-    };
+      maxResults,
+      targetVectorStoreId,
+      targetVectorStoreIds,
+      this.logger,
+    );
   }
 
   /**
@@ -387,40 +300,9 @@ export class VectorStoreFacade {
     fileSearchMaxResults?: number;
     fileSearchScoreThreshold?: number;
   } | null> {
-    if (
-      !this.ctx.getInitialized() ||
-      !this.ctx.configResolution.getLlamaStackConfig()
-    ) {
-      return null;
-    }
-    let cfg: EffectiveConfig;
-    try {
-      cfg = await this.ctx.configResolution.resolve();
-    } catch (error) {
-      this.logger.debug(
-        'Config resolution failed, using fallback vector store IDs',
-        error as Error,
-      );
-      cfg = this.ctx.configResolution.buildYamlFallback();
-    }
-    return {
-      vectorStoreName: cfg.vectorStoreName,
-      embeddingModel: cfg.embeddingModel,
-      embeddingDimension: cfg.embeddingDimension,
-      searchMode: cfg.searchMode,
-      bm25Weight: cfg.bm25Weight,
-      semanticWeight: cfg.semanticWeight,
-      chunkingStrategy: cfg.chunkingStrategy,
-      maxChunkSizeTokens: cfg.maxChunkSizeTokens,
-      chunkOverlapTokens: cfg.chunkOverlapTokens,
-      fileSearchMaxResults: cfg.fileSearchMaxResults,
-      fileSearchScoreThreshold: cfg.fileSearchScoreThreshold,
-    };
+    return queryGetConfig(this.ctx, this.logger);
   }
 
-  /**
-   * Apply config overrides and create / find the vector store.
-   */
   async createVectorStoreWithConfig(
     overrides: Record<string, unknown>,
   ): Promise<{
@@ -431,27 +313,19 @@ export class VectorStoreFacade {
     embeddingDimension?: number;
   }> {
     this.ctx.ensureInitialized();
-    if (!this.vectorStore || !this.ctx.configResolution.getLlamaStackConfig()) {
+    if (!this.vectorStore || !this.ctx.configResolution.getLlamaStackConfig())
       throw new Error('Vector store service not available');
-    }
-
     const existingIds = await this.getActiveVectorStoreIds();
     const config = this.ctx.configResolution.getLlamaStackConfig()!;
-
     const result = await this.vectorStore.createWithConfig(config, overrides);
-
     this.ctx.configResolution.setLlamaStackConfig(this.vectorStore.getConfig());
     this.ctx.setVectorStoreReady(false);
-
     await this.ensureVectorStoreReady();
-
     const newId = result.vectorStoreId;
-
     const mergedIds = [...new Set([...existingIds, newId])];
     const updatedConfig = this.ctx.configResolution.getLlamaStackConfig()!;
     updatedConfig.vectorStoreIds = mergedIds;
     this.vectorStore.updateConfig(updatedConfig);
-
     return {
       vectorStoreId: newId,
       vectorStoreName: result.vectorStoreName,
@@ -472,67 +346,11 @@ export class VectorStoreFacade {
     embeddingModel?: string;
     ready: boolean;
   }> {
-    if (
-      !this.ctx.getInitialized() ||
-      !this.vectorStore ||
-      !this.ctx.configResolution.getLlamaStackConfig()
-    ) {
-      return { exists: false, ready: false };
-    }
-
-    let resolved: EffectiveConfig;
-    try {
-      resolved = await this.ctx.configResolution.resolve();
-    } catch (error) {
-      this.logger.debug(
-        'Config resolution failed, using fallback vector store IDs',
-        error as Error,
-      );
-      resolved = this.ctx.configResolution.buildYamlFallback();
-    }
-
-    if (!this.ctx.getVectorStoreReady()) {
-      try {
-        await this.ensureVectorStoreReady();
-      } catch (error) {
-        this.logger.debug(
-          'Vector store readiness check failed, using existing store',
-          error as Error,
-        );
-        return {
-          exists: false,
-          ready: false,
-          vectorStoreName: resolved.vectorStoreName,
-          embeddingModel: resolved.embeddingModel,
-        };
-      }
-    }
-
-    try {
-      const docs = await this.vectorStore.listDocuments();
-      const vsId = this.vectorStore.getDefaultVectorStoreId();
-      return {
-        exists: true,
-        ready: true,
-        vectorStoreId: vsId,
-        vectorStoreName: resolved.vectorStoreName,
-        documentCount: docs.length,
-        embeddingModel: resolved.embeddingModel,
-      };
-    } catch (error) {
-      this.logger.warn(
-        `Failed to get vector store status: ${toErrorMessage(
-          error,
-          'Unknown',
-        )}`,
-      );
-      return {
-        exists: true,
-        ready: true,
-        vectorStoreId: this.vectorStore.getDefaultVectorStoreId(),
-        vectorStoreName: resolved.vectorStoreName,
-        embeddingModel: resolved.embeddingModel,
-      };
-    }
+    return queryGetStatus(
+      this.vectorStore,
+      this.ctx,
+      () => this.ensureVectorStoreReady(),
+      this.logger,
+    );
   }
 }

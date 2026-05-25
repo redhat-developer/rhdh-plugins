@@ -47,7 +47,6 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../../api';
 import { getErrorMessage } from '../../../utils';
-import { NamespacePicker } from './NamespacePicker';
 
 function stripTrailingSlashes(s: string): string {
   let end = s.length;
@@ -87,9 +86,11 @@ const PHASE_COLORS: Record<
 const STATUS_POLL_INTERVAL_MS = 5_000;
 
 export interface DevSpacesLaunchFormProps {
-  onBack: () => void;
-  initialGitRepo?: string;
-  resourceKind?: 'agent' | 'tool';
+  readonly onBack: () => void;
+  readonly onDone?: () => void;
+  readonly initialGitRepo?: string;
+  readonly resourceKind?: 'agent' | 'tool';
+  readonly frameworkName?: string;
 }
 
 type FormStatus = 'idle' | 'creating' | 'polling' | 'success' | 'error';
@@ -142,13 +143,20 @@ function NextStep({
 
 export function DevSpacesLaunchForm({
   onBack,
+  onDone,
   initialGitRepo,
   resourceKind = 'agent',
+  frameworkName,
 }: DevSpacesLaunchFormProps) {
   const theme = useTheme();
   const api = useApi(augmentApiRef);
   const label = resourceKind === 'tool' ? 'tool' : 'agent';
-  const Label = resourceKind === 'tool' ? 'Tool' : 'Agent';
+  // eslint-disable-next-line no-nested-ternary
+  const Label = frameworkName
+    ? frameworkName
+    : resourceKind === 'tool'
+      ? 'Tool'
+      : 'Agent';
 
   // ── Health check ────────────────────────────────────────────────────
   const [health, setHealth] = useState<HealthState>('loading');
@@ -181,7 +189,7 @@ export function DevSpacesLaunchForm({
   }, [api]);
 
   // ── Form state ──────────────────────────────────────────────────────
-  const [namespace, setNamespace] = useState<string | undefined>(undefined);
+  const [namespace] = useState<string | undefined>('auto');
   const [gitRepo, setGitRepo] = useState(initialGitRepo ?? '');
   const [memoryLimit, setMemoryLimit] = useState('8Gi');
   const [cpuLimit, setCpuLimit] = useState('2000m');
@@ -522,18 +530,35 @@ export function DevSpacesLaunchForm({
                     title={`Open your ${Label} DevSpace`}
                     description={
                       result.url ? (
-                        <>
-                          Your cloud IDE is ready.{' '}
-                          <a
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 1,
+                          }}
+                        >
+                          <Typography variant="body2">
+                            Your cloud IDE is ready. Open it to start writing
+                            your {label} code.
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            size="small"
                             href={result.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontWeight: 600 }}
+                            startIcon={<CodeIcon sx={{ fontSize: 16 }} />}
+                            sx={{
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              borderRadius: 1.5,
+                              alignSelf: 'flex-start',
+                              boxShadow: 'none',
+                            }}
                           >
                             Open DevSpace
-                          </a>{' '}
-                          to start writing your {label} code.
-                        </>
+                          </Button>
+                        </Box>
                       ) : (
                         `Your cloud IDE is ready. Open it to start writing your ${label} code.`
                       )
@@ -552,8 +577,8 @@ export function DevSpacesLaunchForm({
                     description={
                       <>
                         Once your image is ready, return here and use{' '}
-                        <strong>Create {Label} &rarr; Deploy</strong> to deploy
-                        it to the platform.
+                        <strong>BYO {Label}</strong> to deploy it to the
+                        platform.
                       </>
                     }
                   />
@@ -608,6 +633,14 @@ export function DevSpacesLaunchForm({
                   size="small"
                   variant="outlined"
                   onClick={onBack}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() => onDone?.()}
                   sx={{ textTransform: 'none' }}
                 >
                   Done
@@ -666,14 +699,13 @@ export function DevSpacesLaunchForm({
             disabled={status === 'creating'}
           />
 
-          <NamespacePicker
-            value={namespace}
-            onChange={setNamespace}
-            label="Namespace"
-            size="small"
-            enabledOnly
-            required
-          />
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontStyle: 'italic' }}
+          >
+            Namespace will be auto-derived from your identity
+          </Typography>
 
           <Box>
             <Button

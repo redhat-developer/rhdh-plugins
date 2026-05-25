@@ -23,9 +23,11 @@ export interface AgentApprovalConfig {
   enabled: boolean;
   serviceUrl?: string;
   workflowId: string;
+  jiraProjectKey?: string;
+  jiraBaseUrl?: string;
 }
 
-interface WorkflowStartInput {
+export interface WorkflowStartInput {
   agentId: string;
   agentName: string;
   requestedBy: string;
@@ -73,11 +75,18 @@ export class AgentApprovalWorkflowService {
     }
 
     const url = `${this.config.serviceUrl}/${this.config.workflowId}`;
+    const payload = {
+      agentId: input.agentId,
+      agentName: input.agentName,
+      submittedBy: input.requestedBy,
+      jiraProjectKey: this.config.jiraProjectKey ?? 'RHDHPLAN',
+      jiraBaseUrl: this.config.jiraBaseUrl ?? 'https://redhat.atlassian.net',
+    };
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -126,6 +135,11 @@ export class AgentApprovalWorkflowService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/cloudevents+json',
+          'ce-specversion': '1.0',
+          'ce-id': cloudEvent.id,
+          'ce-source': cloudEvent.source,
+          'ce-type': cloudEvent.type,
+          'ce-kogitoprocrefid': instanceId,
         },
         body: JSON.stringify(cloudEvent),
       });
@@ -176,6 +190,8 @@ export class AgentApprovalWorkflowService {
       enabled: section.getOptionalBoolean('enabled') ?? false,
       serviceUrl: section.getOptionalString('serviceUrl'),
       workflowId: section.getOptionalString('workflowId') ?? 'agentApproval',
+      jiraProjectKey: section.getOptionalString('jiraProjectKey'),
+      jiraBaseUrl: section.getOptionalString('jiraBaseUrl'),
     };
   }
 }

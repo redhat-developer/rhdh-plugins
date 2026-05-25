@@ -90,12 +90,13 @@ import {
   normalizeLifecycleStage,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { useChatAgentConfig } from '../../../hooks/useChatAgentConfig';
+import { getFrameworkLabel } from '../../Marketplace/marketplace.constants';
 
 const MAX_FEATURED = 4;
 const MAX_STARTERS = 6;
 const PAGE_SIZE = 20;
 
-type SourceFilter = 'all' | 'kagenti' | 'orchestration';
+type SourceFilter = 'all' | 'kagenti' | 'orchestration' | 'skills';
 type StageFilter = 'all' | 'unregistered' | AgentLifecycleStage;
 
 interface RegistryRow {
@@ -189,12 +190,14 @@ function getStageBg(stage: AgentLifecycleStage, isDark: boolean): string {
 }
 
 function getSourceLabel(source?: string): string {
-  if (source === 'orchestration') return 'Orchestration';
-  return 'Kagenti';
+  if (source === 'orchestration') return 'Workflow Builder';
+  if (source === 'skills') return 'Skill Agent';
+  return 'BYO Agent';
 }
 
 function getSourceColor(source?: string, isDark = false): string {
   if (source === 'orchestration') return isDark ? '#a78bfa' : '#7c3aed';
+  if (source === 'skills') return isDark ? '#2dd4bf' : '#009596';
   return isDark ? '#60a5fa' : '#2563eb';
 }
 
@@ -249,6 +252,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
   const [agents, setAgents] = useState<ChatAgent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
+  const [approvalMode, setApprovalMode] = useState<string>('built-in');
   const [rows, setRows] = useState<RegistryRow[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -345,8 +349,17 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
           15_000,
         ),
       );
-      const result = await Promise.race([api.listAgents(), timeout]);
+      const [result, status] = await Promise.race([
+        Promise.all([api.listAgents(), api.getStatus()]),
+        timeout.then(() => {
+          throw new Error('Request timed out');
+        }),
+      ]);
       setAgents(result);
+      setApprovalMode(
+        ((status as unknown as Record<string, unknown>)
+          .approvalMode as string) ?? 'built-in',
+      );
     } catch (err) {
       setToast(
         `Failed to load agents: ${err instanceof Error ? err.message : 'Unknown error'}`,
@@ -395,13 +408,15 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
 
     const stageRank: Record<string, number> = {
       published: 0,
-      production: 0,
+      production: 0, // legacy compat
+      deployed: 0, // legacy compat
       pending: 1,
-      review: 1,
-      staging: 1,
+      review: 1, // legacy compat
+      staging: 1, // legacy compat
+      registered: 1, // legacy compat
       draft: 2,
       archived: 3,
-      retired: 3,
+      retired: 3, // legacy compat
     };
     newRows.sort((a, b) => {
       const sa = stageRank[a.config.lifecycleStage ?? 'draft'] ?? 5;
@@ -747,7 +762,7 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
                   lineHeight: 1.3,
                 }}
               >
-                Lifecycle management from draft to production
+                Agent lifecycle management
               </Typography>
             </Box>
           </Box>
@@ -867,9 +882,10 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
             onChange={e => setSourceFilter(e.target.value as SourceFilter)}
             sx={{ fontSize: '0.8rem', borderRadius: 1.5, height: 32 }}
           >
-            <MenuItem value="all">All Sources</MenuItem>
-            <MenuItem value="kagenti">Kagenti</MenuItem>
-            <MenuItem value="orchestration">Orchestration</MenuItem>
+            <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="kagenti">BYO Agent</MenuItem>
+            <MenuItem value="orchestration">Workflow Builder</MenuItem>
+            <MenuItem value="skills">Skill Agent</MenuItem>
           </Select>
         </FormControl>
 
@@ -882,36 +898,56 @@ export const AgentRegistryPanel: FC<AgentRegistryPanelProps> = ({
               label={`${selectedIds.size} selected`}
               sx={{ height: 22, fontSize: '0.675rem', fontWeight: 600 }}
             />
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
-              onClick={() => handleBulkPublish(true)}
-              disabled={promoting === 'bulk'}
-              sx={{
-                textTransform: 'none',
-                fontSize: '0.7rem',
-                borderRadius: 1.5,
-                height: 28,
-              }}
+            <Tooltip
+              title={
+                approvalMode === 'workflow'
+                  ? 'Bulk actions disabled when approval workflow is active. Use Review Queue for individual approvals.'
+                  : ''
+              }
             >
-              Promote to Production
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
-              onClick={() => handleBulkPublish(false)}
-              disabled={promoting === 'bulk'}
-              sx={{
-                textTransform: 'none',
-                fontSize: '0.7rem',
-                borderRadius: 1.5,
-                height: 28,
-              }}
+              <span>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<RocketLaunchIcon sx={{ fontSize: 13 }} />}
+                  onClick={() => handleBulkPublish(true)}
+                  disabled={promoting === 'bulk' || approvalMode === 'workflow'}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.7rem',
+                    borderRadius: 1.5,
+                    height: 28,
+                  }}
+                >
+                  Publish Selected
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip
+              title={
+                approvalMode === 'workflow'
+                  ? 'Bulk actions disabled when approval workflow is active.'
+                  : ''
+              }
             >
-              Rollback to Staging
-            </Button>
+              <span>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<CloudOffIcon sx={{ fontSize: 13 }} />}
+                  onClick={() => handleBulkPublish(false)}
+                  disabled={promoting === 'bulk' || approvalMode === 'workflow'}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.7rem',
+                    borderRadius: 1.5,
+                    height: 28,
+                  }}
+                >
+                  Unpublish Selected
+                </Button>
+              </span>
+            </Tooltip>
           </Box>
         )}
       </Box>
@@ -1712,7 +1748,9 @@ const AgentRow: FC<AgentRowProps> = ({
               sx={{ color: 'text.disabled', fontSize: '0.65rem' }}
             >
               {agent.id}
-              {agent.framework ? ` · ${agent.framework}` : ''}
+              {agent.framework
+                ? ` · ${getFrameworkLabel(agent.framework)}`
+                : ''}
             </Typography>
             {agent.promotedAt && (
               <Typography
@@ -1800,7 +1838,19 @@ const AgentRow: FC<AgentRowProps> = ({
                   </IconButton>
                 </Tooltip>
               )}
-              {forwardTransitions.length > 0 && (
+              {stage === 'pending' ? (
+                <Chip
+                  size="small"
+                  label="In Review Queue"
+                  color="info"
+                  variant="outlined"
+                  sx={{
+                    height: 24,
+                    fontSize: '0.675rem',
+                    fontWeight: 600,
+                  }}
+                />
+              ) : forwardTransitions.length > 0 ? (
                 <Tooltip title={forwardTransitions[0].label}>
                   <Button
                     size="small"
@@ -1840,7 +1890,7 @@ const AgentRow: FC<AgentRowProps> = ({
                     {forwardTransitions[0].label}
                   </Button>
                 </Tooltip>
-              )}
+              ) : null}
               {stage === 'published' && (
                 <Chip
                   size="small"
@@ -2002,7 +2052,7 @@ const AgentRow: FC<AgentRowProps> = ({
             })}
           </Box>
 
-          {/* Kagenti Runtime Info (lazy-loaded) */}
+          {/* Agent Runtime Info (lazy-loaded) */}
           {agent.source === 'kagenti' && (
             <KagentiRuntimeInfo
               enrichment={enrichment}
@@ -2010,6 +2060,73 @@ const AgentRow: FC<AgentRowProps> = ({
               isDark={isDark}
             />
           )}
+
+          {/* Skill Agent Runtime Info */}
+          {(agent.source === 'skills' || agent.chatEndpoint) &&
+            agent.source !== 'kagenti' && (
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  bgcolor: isDark
+                    ? 'rgba(0,149,150,0.08)'
+                    : 'rgba(0,149,150,0.04)',
+                  border: `1px solid ${alpha('#009596', 0.2)}`,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '0.6875rem',
+                    color: '#009596',
+                    textTransform: 'uppercase',
+                    mb: 1,
+                    display: 'block',
+                  }}
+                >
+                  Skill Agent Runtime
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr',
+                    gap: 0.5,
+                  }}
+                >
+                  {agent.chatEndpoint && (
+                    <>
+                      <Typography variant="caption" color="text.secondary">
+                        Endpoint
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}
+                      >
+                        {agent.chatEndpoint}
+                      </Typography>
+                    </>
+                  )}
+                  {'namespace' in agent && agent.namespace && (
+                    <>
+                      <Typography variant="caption" color="text.secondary">
+                        Namespace
+                      </Typography>
+                      <Typography variant="caption">
+                        {String(agent.namespace)}
+                      </Typography>
+                    </>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    Framework
+                  </Typography>
+                  <Typography variant="caption">
+                    {getFrameworkLabel(agent.framework)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
 
           {/* Two-Column: Dev Info | Ops Info */}
           <Box
@@ -2037,11 +2154,11 @@ const AgentRow: FC<AgentRowProps> = ({
                 Development
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <DetailRow label="Type" value={getSourceLabel(agent.source)} />
                 <DetailRow
-                  label="Source"
-                  value={getSourceLabel(agent.source)}
+                  label="Framework"
+                  value={getFrameworkLabel(agent.framework) || '—'}
                 />
-                <DetailRow label="Framework" value={agent.framework || '—'} />
                 <DetailRow
                   label="Protocols"
                   value={agent.protocols?.join(', ') || '—'}
@@ -2323,7 +2440,7 @@ const AgentRow: FC<AgentRowProps> = ({
 };
 
 // ---------------------------------------------------------------------------
-// Kagenti Runtime Info (lazy-loaded enrichment)
+// Agent Runtime Info (lazy-loaded enrichment)
 // ---------------------------------------------------------------------------
 
 interface KagentiRuntimeInfoProps {
@@ -2359,7 +2476,7 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({
           variant="caption"
           sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
         >
-          Loading runtime info from Kagenti...
+          Loading runtime info...
         </Typography>
       </Box>
     );
@@ -2433,7 +2550,7 @@ const KagentiRuntimeInfo: FC<KagentiRuntimeInfoProps> = ({
           mb: 1,
         }}
       >
-        Kagenti Runtime
+        Agent Runtime
       </Typography>
 
       {/* Status badges row */}

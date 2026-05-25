@@ -21,7 +21,11 @@ import { createWithRoute } from './routeWrapper';
 import type { RouteContext } from './types';
 import type { AdminConfigService } from '../services/AdminConfigService';
 import { generateSkillAgentManifests } from './skillsManifestBuilder';
-import type { SkillAgentManifestInput } from './skillsManifestBuilder';
+import type {
+  SkillAgentManifestInput,
+  SkillRef,
+} from './skillsManifestBuilder';
+import { resolveK8sCredentials } from './k8sCredentials';
 
 function loadSkillsConfig(config: Config) {
   const section = config.getOptionalConfig('augment.skillsMarketplace');
@@ -74,8 +78,14 @@ export function registerSkillsRoutes(
         });
         return;
       }
-      const data = await response.json();
-      res.json(data);
+      const data = (await response.json()) as {
+        skills?: Array<Record<string, unknown>>;
+      };
+      const skills = (data.skills ?? []).map(s => ({
+        ...s,
+        domain: (s.pluginName as string) ?? (s.domain as string),
+      }));
+      res.json({ skills, configured: true, total: skills.length });
     }),
   );
 
@@ -106,12 +116,12 @@ export function registerSkillsRoutes(
             return;
           }
           const data = (await response.json()) as {
-            skills?: Array<{ domain?: string }>;
+            skills?: Array<{ domain?: string; pluginName?: string }>;
           };
           const domains = [
             ...new Set(
               (data.skills ?? [])
-                .map(s => s.domain)
+                .map(s => s.pluginName ?? s.domain)
                 .filter(
                   (d): d is string => typeof d === 'string' && d.length > 0,
                 ),
@@ -134,31 +144,35 @@ export function registerSkillsRoutes(
   // ---------------------------------------------------------------------------
   router.post(
     '/agents/from-skills',
-    ctx.requireAdminAccess,
     withRoute(
       'POST /agents/from-skills',
-      'Failed to generate skill agent manifests',
+      'Failed to deploy skill agent',
       async (req, res) => {
-        const { name, namespace, runtime, skills, systemPrompt, llmModel } =
-          req.body as {
-            name?: string;
-            namespace?: string;
-            runtime?: string;
-            skills?: string[];
-            systemPrompt?: string;
-            llmModel?: string;
-          };
+        const body = req.body as {
+          name?: string;
+          runtime?: string;
+          skills?: SkillRef[];
+          systemPrompt?: string;
+          llmModel?: string;
+          namespace?: string;
+        };
+        const { name, runtime, skills, systemPrompt, llmModel } = body;
+        let namespace = body.namespace;
 
         if (
           !name ||
-          !namespace ||
           !runtime ||
           !Array.isArray(skills) ||
           skills.length === 0
         ) {
-          throw new InputError(
-            'name, namespace, runtime, and skills[] are required',
-          );
+          throw new InputError('name, runtime, and skills[] are required');
+        }
+
+        const userRef = await ctx.getUserRef(req);
+        if (!namespace) {
+          const match = userRef.match(/^user:[^/]+\/(.+)$/);
+          const username = match ? match[1] : 'default';
+          namespace = `${username.toLocaleLowerCase('en-US').replace(/[^a-z0-9-]/g, '-')}-agents`;
         }
 
         const runtimeEntry = skillsConfig.runtimes.find(
@@ -167,13 +181,12 @@ export function registerSkillsRoutes(
         const runtimeImage =
           runtimeEntry?.image ?? 'ghcr.io/redhat-et/docsclaw:latest';
 
-        const registryBaseUrl = skillsConfig.baseUrl.replace(
-          /\/v2\/.*$/,
-          '/v2',
-        );
+        const agentName = name
+          .toLocaleLowerCase('en-US')
+          .replace(/[^a-z0-9-]/g, '-');
 
         const input: SkillAgentManifestInput = {
-          name: name.toLocaleLowerCase('en-US').replace(/[^a-z0-9-]/g, '-'),
+          name: agentName,
           namespace,
           runtime,
           skills,
@@ -182,24 +195,118 @@ export function registerSkillsRoutes(
           runtimeImage,
           llmBaseUrl: skillsConfig.llmBaseUrl,
           llmProvider: 'openai',
-          registryBaseUrl,
         };
 
         const manifests = generateSkillAgentManifests(input);
+        const chatEndpoint = `http://${agentName}.${namespace}.svc:8000`;
 
-        // E6: Register agent in governance chatAgents config
-        const chatEndpoint = `http://${input.name}.${namespace}.svc:8000`;
+        // --- K8s apply via OpenShift credentials ---
+        let deployed = false;
         if (adminConfig) {
+          const k8sCreds = await resolveK8sCredentials(config, adminConfig);
+
+          if (k8sCreds) {
+            const k8sApiUrl = k8sCreds.apiUrl;
+            const k8sToken = k8sCreds.token;
+            const { Agent } = await import('undici');
+            const dispatcher = new Agent({
+              connect: { rejectUnauthorized: false },
+            });
+            const headers: Record<string, string> = {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${k8sToken}`,
+            };
+            const fetchOpts = { dispatcher } as RequestInit;
+
+            // 1. Ensure namespace
+            const nsResp = await fetch(
+              `${k8sApiUrl}/api/v1/namespaces/${namespace}`,
+              { headers, ...fetchOpts },
+            );
+            if (nsResp.status === 404) {
+              await fetch(`${k8sApiUrl}/api/v1/namespaces`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  apiVersion: 'v1',
+                  kind: 'Namespace',
+                  metadata: { name: namespace },
+                }),
+                ...fetchOpts,
+              });
+              logger.info(`Created namespace ${namespace}`);
+            }
+
+            // 2. Create LLM secret if missing
+            const secretName = `${agentName}-llm-secret`;
+            const secResp = await fetch(
+              `${k8sApiUrl}/api/v1/namespaces/${namespace}/secrets/${secretName}`,
+              { headers, ...fetchOpts },
+            );
+            if (secResp.status === 404) {
+              await fetch(
+                `${k8sApiUrl}/api/v1/namespaces/${namespace}/secrets`,
+                {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify(manifests.secret),
+                  ...fetchOpts,
+                },
+              );
+              logger.info(`Created secret ${secretName} in ${namespace}`);
+            }
+
+            // 3. Apply ConfigMap
+            await fetch(
+              `${k8sApiUrl}/api/v1/namespaces/${namespace}/configmaps`,
+              {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(manifests.configMap),
+                ...fetchOpts,
+              },
+            );
+
+            // 4. Apply Service
+            await fetch(
+              `${k8sApiUrl}/api/v1/namespaces/${namespace}/services`,
+              {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(manifests.service),
+                ...fetchOpts,
+              },
+            );
+
+            // 5. Apply Deployment
+            const depResp = await fetch(
+              `${k8sApiUrl}/apis/apps/v1/namespaces/${namespace}/deployments`,
+              {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(manifests.deployment),
+                ...fetchOpts,
+              },
+            );
+            deployed = depResp.ok;
+            logger.info(
+              `Applied K8s manifests for ${agentName} in ${namespace}: deployment=${depResp.status}`,
+            );
+          } else {
+            logger.info(
+              'No devSpaces credentials configured; returning manifests only',
+            );
+          }
+
+          // E6: Register agent in governance
           try {
-            const userRef = await ctx.getUserRef(req);
             const raw = await adminConfig.get('chatAgents');
             const configs: ChatAgentConfig[] = Array.isArray(raw)
               ? (raw as ChatAgentConfig[])
               : [];
 
-            const agentId = `${namespace}/${input.name}`;
+            const agentId = agentName;
             const existing = configs.find(c => c.agentId === agentId);
-            const now = new Date().toISOString();
 
             if (!existing) {
               configs.push({
@@ -210,29 +317,149 @@ export function registerSkillsRoutes(
                 lifecycleStage: 'draft',
                 version: 0,
                 createdBy: userRef,
-                createdAt: now,
+                createdAt: new Date().toISOString(),
                 chatEndpoint,
+                namespace,
                 displayName: name,
-                description: `Skill agent (${skills.length} skills) on ${runtime}`,
-              });
+                description: `Skill-based agent with ${skills.length} skills`,
+                framework: 'docsclaw',
+              } as ChatAgentConfig);
               await adminConfig.set('chatAgents', configs, userRef);
               logger.info(
-                `Skill agent "${agentId}" registered in governance (draft) by ${userRef}`,
+                `Skill agent "${agentId}" registered in governance (draft)`,
               );
             }
           } catch (err) {
             logger.warn(
-              `Failed to register skill agent in governance: ${err instanceof Error ? err.message : String(err)}`,
+              `Failed to register skill agent: ${err instanceof Error ? err.message : String(err)}`,
             );
           }
         }
 
         res.status(201).json({
           success: true,
-          agentName: input.name,
+          deployed,
+          agentName,
           namespace,
           chatEndpoint,
+          skillCount: skills.length,
           manifests,
+        });
+      },
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // GET /skills/agents/:agentId/info -- live pod info (health, models, skills,
+  // system prompt) fetched from the running DocsClaw agent via K8s API.
+  // ---------------------------------------------------------------------------
+  router.get(
+    '/skills/agents/:agentId/info',
+    withRoute(
+      'GET /skills/agents/:agentId/info',
+      'Failed to fetch skill agent info',
+      async (req, res) => {
+        const agentId = decodeURIComponent(req.params.agentId);
+        if (!adminConfig) {
+          res.json({ error: 'Admin config not available' });
+          return;
+        }
+
+        const raw = await adminConfig.get('chatAgents');
+        const configs = Array.isArray(raw) ? (raw as ChatAgentConfig[]) : [];
+        const cfg = configs.find(c => c.agentId === agentId);
+        if (!cfg?.chatEndpoint) {
+          res.json({ error: 'Agent not found or no endpoint configured' });
+          return;
+        }
+
+        const cfgAny = cfg as unknown as Record<string, unknown>;
+        const ns = cfgAny.namespace as string | undefined;
+        const agentName = agentId.includes('/')
+          ? agentId.split('/').pop()!
+          : agentId;
+
+        const k8sCreds = await resolveK8sCredentials(config, adminConfig);
+
+        if (!k8sCreds || !ns) {
+          res.json({
+            agentId,
+            chatEndpoint: cfg.chatEndpoint,
+            info: 'K8s credentials or namespace not available',
+          });
+          return;
+        }
+
+        const { Agent } = await import('undici');
+        const dispatcher = new Agent({
+          connect: { rejectUnauthorized: false },
+        });
+        const headers: Record<string, string> = {
+          Authorization: `Bearer ${k8sCreds.token}`,
+          Accept: 'application/json',
+        };
+        const fetchOpts = { dispatcher } as RequestInit;
+        const proxyBase = `${k8sCreds.apiUrl}/api/v1/namespaces/${ns}/services/${agentName}:8000/proxy`;
+
+        const fetchJson = async (path: string) => {
+          try {
+            const r = await fetch(`${proxyBase}${path}`, {
+              headers,
+              signal: AbortSignal.timeout(8000),
+              ...fetchOpts,
+            });
+            if (!r.ok) return { error: `${r.status}` };
+            return await r.json();
+          } catch (err) {
+            return {
+              error: err instanceof Error ? err.message : 'unreachable',
+            };
+          }
+        };
+
+        const fetchText = async (url: string) => {
+          try {
+            const r = await fetch(url, {
+              headers,
+              signal: AbortSignal.timeout(8000),
+              ...fetchOpts,
+            });
+            if (!r.ok) return undefined;
+            return await r.text();
+          } catch {
+            return undefined;
+          }
+        };
+
+        const [health, models, skills, systemPrompt] = await Promise.all([
+          fetchJson('/health'),
+          fetchJson('/v1/models'),
+          fetchJson('/v1/skills'),
+          fetchText(
+            `${k8sCreds.apiUrl}/api/v1/namespaces/${ns}/configmaps/${agentName}-config`,
+          ),
+        ]);
+
+        let systemPromptText: string | undefined;
+        if (systemPrompt) {
+          try {
+            const cm = JSON.parse(systemPrompt) as {
+              data?: Record<string, string>;
+            };
+            systemPromptText = cm.data?.['system-prompt.txt'];
+          } catch {
+            logger.debug('Failed to parse configmap for system prompt');
+          }
+        }
+
+        res.json({
+          agentId,
+          namespace: ns,
+          chatEndpoint: cfg.chatEndpoint,
+          health,
+          models,
+          skills,
+          systemPrompt: systemPromptText,
         });
       },
     ),

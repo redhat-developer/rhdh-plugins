@@ -14,17 +14,51 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+
+export interface SkillForDeploy {
+  name: string;
+  skillName?: string;
+  slug?: string;
+  gitPath?: string;
+  pluginName?: string;
+  body?: string;
+  description?: string;
+}
 
 export interface SkillAgentConfigFormProps {
   readonly runtimeId: string;
-  readonly selectedSkills: string[];
+  readonly selectedSkills: SkillForDeploy[];
   readonly onDeploy: (config: { name: string; systemPrompt: string }) => void;
   readonly deploying?: boolean;
+}
+
+function deriveAgentName(skills: SkillForDeploy[]): string {
+  if (skills.length === 1) {
+    return (skills[0].skillName ?? skills[0].name)
+      .toLocaleLowerCase('en-US')
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+  const domain = skills[0]?.pluginName ?? 'multi';
+  return `${domain}-agent`
+    .toLocaleLowerCase('en-US')
+    .replace(/[^a-z0-9-]/g, '-');
+}
+
+function deriveSystemPrompt(skills: SkillForDeploy[]): string {
+  const names = skills.map(s => s.skillName ?? s.name).join(', ');
+  return `You are a specialized AI agent with expertise in: ${names}. Use the load_skill tool to leverage your mounted skills when answering questions.`;
 }
 
 export function SkillAgentConfigForm({
@@ -33,25 +67,49 @@ export function SkillAgentConfigForm({
   onDeploy,
   deploying,
 }: SkillAgentConfigFormProps) {
-  const [name, setName] = useState('');
-  const [systemPrompt, setSystemPrompt] = useState('');
+  const defaultName = useMemo(
+    () => deriveAgentName(selectedSkills),
+    [selectedSkills],
+  );
+  const defaultPrompt = useMemo(
+    () => deriveSystemPrompt(selectedSkills),
+    [selectedSkills],
+  );
+
+  const [name, setName] = useState(defaultName);
+  const [systemPrompt, setSystemPrompt] = useState(defaultPrompt);
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  useEffect(() => {
+    setName(defaultName);
+    setSystemPrompt(defaultPrompt);
+  }, [defaultName, defaultPrompt]);
 
   const handleSubmit = useCallback(() => {
     if (!name.trim()) return;
     onDeploy({ name: name.trim(), systemPrompt: systemPrompt.trim() });
   }, [name, systemPrompt, onDeploy]);
 
+  const skillBodies = useMemo(
+    () =>
+      selectedSkills
+        .filter(s => s.body?.trim())
+        .map(s => ({
+          name: s.skillName ?? s.name,
+          body: s.body!.trim(),
+        })),
+    [selectedSkills],
+  );
+
   return (
     <Box display="flex" flexDirection="column" gap={2}>
-      <Typography variant="h6">Agent Configuration</Typography>
-
       <TextField
         label="Agent Name"
         required
         fullWidth
         value={name}
         onChange={e => setName(e.target.value)}
-        placeholder="my-skill-agent"
+        helperText="Lowercase, alphanumeric, and hyphens only"
         size="small"
       />
 
@@ -59,29 +117,101 @@ export function SkillAgentConfigForm({
         label="System Prompt"
         fullWidth
         multiline
-        minRows={3}
-        maxRows={8}
+        minRows={2}
+        maxRows={6}
         value={systemPrompt}
         onChange={e => setSystemPrompt(e.target.value)}
-        placeholder="Describe the agent's behavior..."
+        helperText="Agent persona. Mounted at /config/agent/system-prompt.txt"
         size="small"
       />
 
-      <TextField
-        label="Runtime"
-        fullWidth
-        value={runtimeId}
-        size="small"
-        InputProps={{ readOnly: true }}
-      />
+      <Box>
+        <Typography variant="caption" color="text.secondary" gutterBottom>
+          Runtime
+        </Typography>
+        <Typography variant="body2">{runtimeId}</Typography>
+      </Box>
 
-      <TextField
-        label="Selected Skills"
-        fullWidth
-        value={`${selectedSkills.length} skill${selectedSkills.length !== 1 ? 's' : ''} selected`}
-        size="small"
-        InputProps={{ readOnly: true }}
-      />
+      <Box>
+        <Typography variant="caption" color="text.secondary" gutterBottom>
+          Skills ({selectedSkills.length})
+        </Typography>
+        <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
+          {selectedSkills.map(s => (
+            <Chip
+              key={s.name}
+              label={s.skillName ?? s.name}
+              size="small"
+              variant="outlined"
+            />
+          ))}
+        </Box>
+      </Box>
+
+      {skillBodies.length > 0 && (
+        <Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={0.5}
+            sx={{ cursor: 'pointer' }}
+            onClick={() => setShowInstructions(v => !v)}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
+              Skill Instructions (preview)
+            </Typography>
+            <IconButton size="small" sx={{ p: 0 }}>
+              {showInstructions ? (
+                <ExpandLessIcon sx={{ fontSize: 16 }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 16 }} />
+              )}
+            </IconButton>
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            These instructions will be fetched from the OCI registry and mounted
+            into the DocsClaw runtime at /skills/ when the pod starts.
+          </Typography>
+          <Collapse in={showInstructions}>
+            {skillBodies.map(s => (
+              <Box
+                key={s.name}
+                sx={{
+                  mt: 1,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  p: 1.5,
+                  maxHeight: 180,
+                  overflowY: 'auto',
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}
+                >
+                  {s.name} (SKILL.md)
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.75rem',
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {s.body}
+                </Typography>
+              </Box>
+            ))}
+          </Collapse>
+        </Box>
+      )}
 
       <Box pt={1}>
         <Button

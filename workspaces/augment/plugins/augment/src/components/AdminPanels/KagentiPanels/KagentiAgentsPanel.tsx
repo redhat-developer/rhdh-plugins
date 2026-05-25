@@ -996,11 +996,6 @@ export function KagentiAgentsPanel({
           setShowDashboard(true);
           onFullScreenChange?.(true);
         }}
-        onSelectSkills={() => {
-          setIntentOpen(false);
-          setShowDashboard(true);
-          onFullScreenChange?.(true);
-        }}
       />
 
       <CreateAgentWizard
