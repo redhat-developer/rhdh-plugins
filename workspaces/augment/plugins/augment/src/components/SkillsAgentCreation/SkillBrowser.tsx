@@ -82,7 +82,10 @@ export function SkillBrowser({
     for (const s of skills) {
       if (s.domain) set.add(s.domain);
     }
-    return ['All', ...Array.from(set).sort()];
+    return [
+      'All',
+      ...Array.from(set).sort((a, b) => a.localeCompare(b, 'en-US')),
+    ];
   }, [skills]);
 
   const filteredSkills = useMemo(() => {
@@ -90,7 +93,9 @@ export function SkillBrowser({
     return skills.filter(s => {
       if (domainFilter !== 'All' && s.domain !== domainFilter) return false;
       if (search) {
-        return s.name.toLowerCase().includes(search.toLowerCase());
+        return s.name
+          .toLocaleLowerCase('en-US')
+          .includes(search.toLocaleLowerCase('en-US'));
       }
       return true;
     });
