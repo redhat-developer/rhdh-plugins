@@ -54,7 +54,9 @@ export class X2AnsiblePage {
   }
 
   async verifyConversionHubPage() {
-    const heading = this.page.getByText('Conversion Hub');
+    const heading = this.page.getByRole('heading', {
+      name: 'Conversion Hub',
+    });
     await expect(heading).toBeVisible({ timeout: 15000 });
   }
 
@@ -354,10 +356,9 @@ export class X2AnsiblePage {
   ): Promise<string> {
     await this.clickPhaseTab(phase);
     await this.page.waitForTimeout(1000);
-    const chip = this.page
-      .locator(
-        '[class*="Chip"]:visible, [class*="chip"]:visible, [class*="status"]:visible',
-      )
+    const tabPanel = this.page.locator('[role="tabpanel"]:visible');
+    const chip = tabPanel
+      .locator('[class*="Chip"], [class*="chip"], [class*="status"]')
       .first();
     return (await chip.textContent()) ?? 'unknown';
   }

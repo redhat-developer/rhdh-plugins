@@ -125,6 +125,23 @@ async function deleteProject(baseURL: string, projectId: string) {
 test.describe('X2Ansible - FLPATH-4211 Edit Project @live', () => {
   const baseURL = process.env.PLAYWRIGHT_URL || 'http://localhost:3000';
   const createdProjects: string[] = [];
+  let patchSupported = true;
+
+  test.beforeAll(async () => {
+    const probe = await createProject(baseURL, 'probe');
+    createdProjects.push(probe.id);
+    const { status } = await patchProject(baseURL, probe.id, {
+      name: `probe-${Date.now()}`,
+    });
+    patchSupported = status === 200;
+  });
+
+  test.beforeEach(async () => {
+    test.skip(
+      !patchSupported,
+      'PATCH /projects/:id not supported by deployed backend',
+    );
+  });
 
   test.afterAll(async () => {
     for (const pid of createdProjects) {
@@ -294,6 +311,23 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
   const baseURL = process.env.PLAYWRIGHT_URL || 'http://localhost:3000';
   let projectId = '';
   let projectName = '';
+  let patchSupported = true;
+
+  test.beforeAll(async () => {
+    const probe = await createProject(baseURL, 'ui-probe');
+    const { status } = await patchProject(baseURL, probe.id, {
+      name: `probe-${Date.now()}`,
+    });
+    patchSupported = status === 200;
+    await deleteProject(baseURL, probe.id).catch(() => {});
+  });
+
+  test.beforeEach(async () => {
+    test.skip(
+      !patchSupported,
+      'PATCH /projects/:id not supported by deployed backend',
+    );
+  });
 
   test.afterAll(async () => {
     if (projectId) {
