@@ -18,11 +18,37 @@ import { JsonObject, JsonValue } from '@backstage/types';
 
 import type { JSONSchema7 } from 'json-schema';
 import { JsonSchema, Draft07 as JSONSchema } from 'json-schema-library';
+import get from 'lodash/get';
 
 import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { HiddenCondition } from '../types/HiddenCondition';
 import { evaluateHiddenCondition } from './evaluateHiddenCondition';
+
+/** Parent object form data for sibling `when` paths (e.g. `inputs.field1`). */
+function getScopedFormData(
+  schemaKey: string,
+  rootFormState: JsonObject,
+): { localFormData: JsonObject; rootFormData: JsonObject } {
+  const rootFormData = rootFormState;
+  if (!schemaKey) {
+    return { localFormData: rootFormData, rootFormData };
+  }
+  const parts = schemaKey.split('/');
+  if (parts.length === 1) {
+    const local = get(rootFormData, parts[0]);
+    return {
+      localFormData: isJsonObject(local) ? local : rootFormData,
+      rootFormData,
+    };
+  }
+  const parentPath = parts.slice(0, -1).join('.');
+  const local = get(rootFormData, parentPath);
+  return {
+    localFormData: isJsonObject(local) ? local : rootFormData,
+    rootFormData,
+  };
+}
 
 export function processSchema(
   key: string,
@@ -47,7 +73,12 @@ export function processSchema(
     if (!includeHiddenFields && uiHidden !== undefined) {
       // Handle both static boolean and condition objects
       const hiddenCondition = uiHidden as HiddenCondition;
-      const isHidden = evaluateHiddenCondition(hiddenCondition, formState);
+      const { localFormData, rootFormData } = getScopedFormData(key, formState);
+      const isHidden = evaluateHiddenCondition(
+        hiddenCondition,
+        localFormData,
+        rootFormData,
+      );
       if (isHidden) {
         return {};
       }
@@ -57,24 +88,32 @@ export function processSchema(
       return { [name]: '******' };
     }
 
-    if (isJsonObject(value)) {
-      // Recurse nested objects
-      const nestedValue = Object.entries(value).reduce(
-        (prev, [nestedKey, _nestedValue]) => {
-          const curKey = key ? `${key}/${nestedKey}` : nestedKey;
-          return {
-            ...prev,
-            ...processSchema(
-              curKey,
-              _nestedValue,
-              schema,
-              formState,
-              includeHiddenFields,
-            ),
-          };
-        },
-        {},
-      );
+    if (isJsonObject(value) || definitionInSchema.properties) {
+      const dataObj = isJsonObject(value) ? value : {};
+      const schemaProperties = definitionInSchema.properties ?? {};
+      const nestedKeys = includeHiddenFields
+        ? [
+            ...new Set([
+              ...Object.keys(schemaProperties),
+              ...Object.keys(dataObj),
+            ]),
+          ]
+        : Object.keys(dataObj);
+
+      // Recurse nested objects; include schema-only keys when showing hidden fields
+      const nestedValue = nestedKeys.reduce<JsonObject>((prev, nestedKey) => {
+        const curKey = key ? `${key}/${nestedKey}` : nestedKey;
+        return {
+          ...prev,
+          ...processSchema(
+            curKey,
+            dataObj[nestedKey],
+            schema,
+            formState,
+            includeHiddenFields,
+          ),
+        };
+      }, {});
 
       // Skip if all nested fields are hidden (resulting in empty object)
       if (Object.keys(nestedValue).length === 0) {

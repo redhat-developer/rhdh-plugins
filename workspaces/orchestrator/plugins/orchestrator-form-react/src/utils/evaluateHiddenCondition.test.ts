@@ -20,7 +20,10 @@ import {
   HiddenCondition,
   HiddenConditionObject,
 } from '../types/HiddenCondition';
-import { evaluateHiddenCondition } from './evaluateHiddenCondition';
+import {
+  evaluateHiddenCondition,
+  getValueForWhen,
+} from './evaluateHiddenCondition';
 
 describe('evaluateHiddenCondition', () => {
   describe('boolean conditions', () => {
@@ -183,6 +186,64 @@ describe('evaluateHiddenCondition', () => {
         ],
       };
       expect(evaluateHiddenCondition(condition, formData)).toBe(true);
+    });
+  });
+
+  describe('scoped form data (wizard step / object siblings)', () => {
+    const rootFormData: JsonObject = {
+      inputs: {
+        field1: 'show',
+        field2: 'ready',
+        conditionalDetail: 'value',
+      },
+      step2: {
+        other: 'x',
+      },
+    };
+
+    const stepLocalData = rootFormData.inputs as JsonObject;
+
+    it('getValueForWhen resolves sibling fields from local object data', () => {
+      expect(getValueForWhen('field1', stepLocalData, rootFormData)).toBe(
+        'show',
+      );
+      expect(getValueForWhen('field1', rootFormData)).toBeUndefined();
+    });
+
+    it('shows field3 when field1 is show and field2 is ready (local scope)', () => {
+      const condition: HiddenCondition = {
+        anyOf: [
+          { when: 'field1', isNot: 'show' },
+          { when: 'field2', isNot: 'ready' },
+        ],
+      };
+      expect(
+        evaluateHiddenCondition(condition, stepLocalData, rootFormData),
+      ).toBe(false);
+      expect(evaluateHiddenCondition(condition, rootFormData)).toBe(true);
+    });
+
+    it('hides field3 when field1 is hide or field2 is idle', () => {
+      const condition: HiddenCondition = {
+        anyOf: [
+          { when: 'field1', isNot: 'show' },
+          { when: 'field2', isNot: 'ready' },
+        ],
+      };
+      expect(
+        evaluateHiddenCondition(
+          condition,
+          { field1: 'hide', field2: 'ready' },
+          rootFormData,
+        ),
+      ).toBe(true);
+      expect(
+        evaluateHiddenCondition(
+          condition,
+          { field1: 'show', field2: 'idle' },
+          rootFormData,
+        ),
+      ).toBe(true);
     });
   });
 });
