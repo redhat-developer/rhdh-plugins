@@ -148,7 +148,20 @@ export function SkillBrowser({
         onChange={(_, v) => setActiveDomain(v as number)}
         variant="scrollable"
         scrollButtons="auto"
-        sx={{ mb: 2 }}
+        allowScrollButtonsMobile
+        sx={{
+          mb: 2,
+          minHeight: 36,
+          '& .MuiTab-root': {
+            minHeight: 36,
+            textTransform: 'none',
+            fontSize: '0.8125rem',
+            fontWeight: 500,
+            minWidth: 'auto',
+            px: 2,
+            mr: 0.5,
+          },
+        }}
       >
         {domains.map(d => (
           <Tab key={d} label={d} />

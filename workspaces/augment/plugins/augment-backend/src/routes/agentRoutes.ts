@@ -538,9 +538,13 @@ export function registerAgentRoutes(
         const isAdminApprove =
           currentStage === 'pending' && nextStage === 'published';
 
+        const secMode =
+          ctx.config.getOptionalString('augment.security.mode') ||
+          'plugin-only';
         if (
           isAdminApprove &&
           !isWorkflowCallback &&
+          secMode !== 'none' &&
           existing?.createdBy &&
           existing.createdBy === userRef
         ) {
