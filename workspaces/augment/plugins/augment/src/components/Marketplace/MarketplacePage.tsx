@@ -169,16 +169,13 @@ export function MarketplacePage({
 
   const myAgents = useMemo(
     () =>
-      userRef
-        ? agents.filter(
-            a =>
-              a.createdBy === userRef ||
-              (a.governanceRegistered &&
-                (a.framework === 'workflow-builder' ||
-                  a.framework === 'docsclaw')) ||
-              (!a.governanceRegistered && a.lifecycleStage !== 'published'),
-          )
-        : agents,
+      agents.filter(a => {
+        if (a.createdBy === userRef) return true;
+        if (a.governanceRegistered && a.lifecycleStage !== 'published')
+          return true;
+        if (!a.governanceRegistered) return true;
+        return false;
+      }),
     [agents, userRef],
   );
 
