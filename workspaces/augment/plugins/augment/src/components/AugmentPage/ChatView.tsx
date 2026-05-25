@@ -475,7 +475,10 @@ export function ChatView({
                           await discoveryApi.getBaseUrl('augment');
                         await authFetch(`${baseUrl}/workflows`, {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-Backstage-Request': 'augment',
+                          },
                           body: JSON.stringify(wf),
                         });
                       } catch {
