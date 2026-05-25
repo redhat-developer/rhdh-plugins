@@ -25,11 +25,8 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
 import Skeleton from '@mui/material/Skeleton';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import PublishIcon from '@mui/icons-material/Publish';
@@ -41,6 +38,11 @@ import {
   getLifecycleTransition,
   getLifecycleStep,
 } from './lifecycleTransitions';
+import {
+  LifecycleActionButtons,
+  useWithdrawHandler,
+} from './LifecycleActionButtons';
+import { LifecycleDetailShell } from './LifecycleDetailShell';
 import {
   useApi,
   discoveryApiRef,
@@ -64,13 +66,12 @@ import { InlineAgentChat } from '../shared/InlineAgentChat';
 
 type DetailTab = 'overview' | 'test';
 
-const LIFECYCLE_STAGES = ['Draft', 'Pending', 'Published', 'Archived'];
-
 export interface WorkflowAgentDetailProps {
   agentId: string;
   onBack: () => void;
   onChatWithAgent?: (agentId: string) => void;
   onEditInBuilder?: (agentId: string) => void;
+  isAdmin?: boolean;
 }
 
 /**
@@ -97,6 +98,7 @@ export function WorkflowAgentDetail({
   onBack,
   onChatWithAgent,
   onEditInBuilder,
+  isAdmin = false,
 }: WorkflowAgentDetailProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -214,6 +216,23 @@ export function WorkflowAgentDetail({
     }
   }, [api, agentId, nextTransition]);
 
+  const { handleWithdraw } = useWithdrawHandler({
+    api,
+    agentId,
+    onSuccess: () =>
+      setAgent(prev =>
+        prev
+          ? {
+              ...prev,
+              lifecycleStage:
+                'draft' as import('@red-hat-developer-hub/backstage-plugin-augment-common').AgentLifecycleStage,
+            }
+          : prev,
+      ),
+    setToast: setPublishToast,
+    setLoading: setPublishLoading,
+  });
+
   const handleDelete = useCallback(async () => {
     setDeleteLoading(true);
     try {
@@ -307,32 +326,7 @@ export function WorkflowAgentDetail({
         '@media (prefers-reduced-motion: reduce)': reducedMotion,
       }}
     >
-      <Button
-        size="small"
-        startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-        onClick={onBack}
-        sx={{
-          textTransform: 'none',
-          mb: 1.5,
-          color: theme.palette.primary.main,
-          fontWeight: 500,
-        }}
-      >
-        Agents
-      </Button>
-
-      {/* Agent Header Card */}
-      <Box
-        sx={{
-          ...glass,
-          borderRadius: borderRadius.lg,
-          p: 3,
-          mb: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-        }}
-      >
+      <LifecycleDetailShell onBack={onBack} currentStep={currentStep}>
         <Box
           sx={{
             display: 'flex',
@@ -413,58 +407,14 @@ export function WorkflowAgentDetail({
               flexShrink: 0,
             }}
           >
-            {lifecycleStage !== 'archived' && (
-              <Tooltip title={nextTransition.label}>
-                <Button
-                  size="small"
-                  variant={nextTransition.variant}
-                  color={nextTransition.color}
-                  startIcon={
-                    publishLoading ? (
-                      <CircularProgress size={14} />
-                    ) : (
-                      nextTransition.icon
-                    )
-                  }
-                  disabled={publishLoading}
-                  onClick={handleLifecycleAction}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    borderRadius: borderRadius.sm,
-                  }}
-                >
-                  {nextTransition.label}
-                </Button>
-              </Tooltip>
-            )}
-            {lifecycleStage === 'archived' && (
-              <Tooltip title="Reactivate this agent to draft status">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="inherit"
-                  startIcon={
-                    publishLoading ? (
-                      <CircularProgress size={14} />
-                    ) : (
-                      <PublishIcon />
-                    )
-                  }
-                  disabled={publishLoading}
-                  onClick={handleLifecycleAction}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    borderRadius: borderRadius.sm,
-                  }}
-                >
-                  Reactivate
-                </Button>
-              </Tooltip>
-            )}
+            <LifecycleActionButtons
+              lifecycleStage={lifecycleStage}
+              isAdmin={isAdmin}
+              loading={publishLoading}
+              onSubmitForReview={handleLifecycleAction}
+              onWithdraw={handleWithdraw}
+              onReactivate={handleLifecycleAction}
+            />
             {lifecycleStage === 'draft' &&
               onEditInBuilder &&
               agent?.framework === 'workflow-builder' && (
@@ -556,30 +506,7 @@ export function WorkflowAgentDetail({
             </Alert>
           )}
         </Box>
-
-        {/* Lifecycle Progress Stepper */}
-        <Box sx={{ mt: 1 }}>
-          <Stepper
-            activeStep={currentStep}
-            alternativeLabel
-            sx={{
-              '& .MuiStepLabel-label': {
-                fontSize: typeScale.caption.fontSize,
-                fontWeight: 500,
-              },
-              '& .MuiStepConnector-line': {
-                borderColor: alpha(theme.palette.divider, isDark ? 0.3 : 0.2),
-              },
-            }}
-          >
-            {LIFECYCLE_STAGES.map(label => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
-      </Box>
+      </LifecycleDetailShell>
 
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>

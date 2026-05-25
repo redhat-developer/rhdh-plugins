@@ -28,6 +28,7 @@ import type {
   KagentiToolSummary,
   AgentLifecycleStage,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { normalizeLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../api';
 import {
   pageTitleSx,
@@ -61,7 +62,11 @@ export function ToolReviewQueue() {
     api
       .listToolsWithLifecycle()
       .then(result =>
-        setTools(result.filter(t => t.lifecycleStage === 'pending')),
+        setTools(
+          result.filter(
+            t => normalizeLifecycleStage(t.lifecycleStage) === 'pending',
+          ),
+        ),
       )
       .catch(() => {})
       .finally(() => setLoading(false));

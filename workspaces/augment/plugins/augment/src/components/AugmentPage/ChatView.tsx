@@ -533,6 +533,7 @@ export function ChatView({
               agentId={detailOrchAgentId}
               onBack={handleCloseDetail}
               onChatWithAgent={handleChatWithAgent}
+              isAdmin={isAdmin}
               onEditInBuilder={async wfId => {
                 try {
                   const baseUrl = await discoveryApi.getBaseUrl('augment');

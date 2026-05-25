@@ -538,6 +538,19 @@ export function registerAgentRoutes(
         const isAdminApprove =
           currentStage === 'pending' && nextStage === 'published';
 
+        if (
+          isAdminApprove &&
+          !isWorkflowCallback &&
+          existing?.createdBy &&
+          existing.createdBy === userRef
+        ) {
+          res.status(403).json({
+            error:
+              'Cannot approve your own submission. A different admin must approve this agent.',
+          });
+          return;
+        }
+
         // In SonataFlow mode, admin approve sends CloudEvent instead of
         // applying the transition directly. The workflow will callback later
         // with X-Augment-Workflow-Callback: true to apply it.
@@ -737,6 +750,26 @@ export function registerAgentRoutes(
           res.status(404).json({ error: notFoundMsg });
           return;
         }
+
+        if (
+          dir === 'publish' &&
+          approvalService?.enabled &&
+          existing.approvalWorkflowInstanceId
+        ) {
+          await approvalService.sendDecision(
+            existing.approvalWorkflowInstanceId,
+            true,
+            userRef,
+          );
+          res.json({
+            success: true,
+            agentId,
+            lifecycleStage: normalizeLifecycleStage(existing.lifecycleStage),
+            workflowDecisionSent: true,
+          });
+          return;
+        }
+
         const result = await applyLifecycleTransition({
           configs,
           agentId,
@@ -890,6 +923,23 @@ export function registerAgentRoutes(
         const agentId = decodeURIComponent(req.params.agentId);
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
+        const existing = configs.find(c => c.agentId === agentId);
+        if (!existing) {
+          res
+            .status(404)
+            .json({ error: 'Agent not found in lifecycle config.' });
+          return;
+        }
+        const isRequestOwner = existing.createdBy === userRef;
+        if (!isRequestOwner) {
+          const isAdmin = await ctx.checkIsAdmin(req);
+          if (!isAdmin) {
+            res.status(403).json({
+              error: 'You can only request unpublish for agents you created.',
+            });
+            return;
+          }
+        }
         const result = await applyLifecycleTransition({
           configs,
           agentId,
@@ -901,8 +951,8 @@ export function registerAgentRoutes(
           logger,
           req,
         });
-        const existing = configs.find(c => c.agentId === agentId);
-        if (existing) existing.pendingAction = 'unpublish';
+        const updated = configs.find(c => c.agentId === agentId);
+        if (updated) updated.pendingAction = 'unpublish';
         await saveChatAgentConfigs(configs, userRef);
 
         let workflowInstanceId: string | undefined;
@@ -941,7 +991,14 @@ export function registerAgentRoutes(
         const userRef = await ctx.getUserRef(req);
         const configs = await loadChatAgentConfigs();
         const existing = configs.find(c => c.agentId === agentId);
-        if (existing?.createdBy && existing.createdBy !== userRef) {
+        if (!existing) {
+          res
+            .status(404)
+            .json({ error: 'Agent not found in lifecycle config.' });
+          return;
+        }
+        const isOwner = existing.createdBy === userRef;
+        if (!isOwner) {
           const isAdmin = await ctx.checkIsAdmin(req);
           if (!isAdmin) {
             res

@@ -29,6 +29,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
 import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import { normalizeLifecycleStage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { augmentApiRef } from '../../api';
 import {
   pageTitleSx,
@@ -63,7 +64,11 @@ export function ReviewQueue() {
     api
       .listAgents()
       .then(result =>
-        setAgents(result.filter(a => a.lifecycleStage === 'pending')),
+        setAgents(
+          result.filter(
+            a => normalizeLifecycleStage(a.lifecycleStage) === 'pending',
+          ),
+        ),
       )
       .catch(() => {})
       .finally(() => {

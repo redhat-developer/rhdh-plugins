@@ -118,7 +118,7 @@ export function MetricTile({
       <Typography
         variant="caption"
         sx={{
-          fontSize: '0.68rem',
+          fontSize: '0.75rem',
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -155,7 +155,7 @@ export function MetricTile({
       {subtitle && (
         <Typography
           sx={{
-            fontSize: '0.65rem',
+            fontSize: '0.75rem',
             color: 'text.secondary',
             mt: 0.75,
             lineHeight: 1.3,
@@ -172,7 +172,7 @@ export function MetricTile({
       {onClick && (
         <Typography
           sx={{
-            fontSize: '0.6rem',
+            fontSize: '0.7rem',
             color: alpha(color, 0.7),
             mt: 0.5,
             fontWeight: 600,

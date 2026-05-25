@@ -60,6 +60,7 @@ function buildSafetyResponse(
 function setupSseStream(
   res: Response,
   logger: LoggerService,
+  onDisconnect?: () => void,
 ): {
   abortController: AbortController;
   clientDisconnectedRef: { current: boolean };
@@ -77,6 +78,7 @@ function setupSseStream(
   res.on('close', () => {
     clientDisconnectedRef.current = true;
     abortController.abort();
+    onDisconnect?.();
     logger.info('Client disconnected from stream');
   });
   return { abortController, clientDisconnectedRef };
@@ -314,6 +316,11 @@ async function resolveConversationId(
     );
     if (!ownerSession) {
       throw new InputError('Conversation not found or access denied');
+    }
+    if (ownerSession.id !== sessionId) {
+      throw new InputError(
+        'Session ID does not match the conversation. Use the correct session.',
+      );
     }
     return { resolvedConversationId, userRef };
   }
@@ -652,13 +659,14 @@ export function registerChatRoutes(
       sessionId,
     } = parsedRequest;
 
+    const heartbeat = new SseHeartbeat(res);
     const { abortController, clientDisconnectedRef } = setupSseStream(
       res,
       logger,
+      () => heartbeat.stop(),
     );
     const { forward, streamedTextRef, streamMetadataRef } =
       createStreamEventForwarder(res, clientDisconnectedRef, logger);
-    const heartbeat = new SseHeartbeat(res);
     heartbeat.start();
 
     try {

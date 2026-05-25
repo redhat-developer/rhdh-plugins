@@ -1205,20 +1205,20 @@ describe('agentRoutes', () => {
               published: false,
               visible: false,
               featured: false,
-              createdBy: 'user:default/admin',
+              createdBy: 'user:default/alice',
             },
           ],
         },
       });
 
-      // draft → pending
+      // draft → pending (alice submitted, admin approves)
       let res = await request(app)
         .put('/agents/e2ebot/promote')
         .send({ targetStage: 'pending' });
       expect(res.status).toBe(200);
       expect(res.body.lifecycleStage).toBe('pending');
 
-      // pending → published
+      // pending → published (admin approves alice's agent)
       res = await request(app)
         .put('/agents/e2ebot/promote')
         .send({ targetStage: 'published' });
