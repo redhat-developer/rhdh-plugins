@@ -46,6 +46,7 @@ export type AdminPanel =
   | 'kagenti-admin'
   | 'kagenti-branding'
   | 'kagenti-registry'
+  | 'kagenti-connection'
   | 'kagenti-docs';
 
 export interface UseAdminViewOptions {

@@ -32,6 +32,7 @@ import {
   KagentiBuildPipelinePanel,
   KagentiSandboxPanel,
 } from '../AdminPanels/KagentiPanels';
+import { KagentiConnectionSection } from '../AdminPanels/ModelToolsPanel/KagentiConnectionSection';
 import { DocsPanel } from '../AdminPanels/DocsPanel';
 import { AgentRegistryPanel } from '../AdminPanels/AgentRegistryPanel';
 import { OpsOverview } from '../CommandCenter';
@@ -64,6 +65,7 @@ const PLATFORM_PANELS: AdminPanel[] = [
   'kagenti-tools',
   'ops-tool-review',
   'ops-platform',
+  'kagenti-connection',
   'ops-observability',
 ];
 const SETTINGS_PANELS: AdminPanel[] = ['ops-branding', 'ops-admin', 'ops-docs'];
@@ -331,6 +333,11 @@ export function AdminLayout({
                     tour: 'subtab-config',
                   },
                   {
+                    id: 'kagenti-connection' as AdminPanel,
+                    label: 'Agent Ops',
+                    tour: 'subtab-agent-ops',
+                  },
+                  {
                     id: 'ops-observability' as AdminPanel,
                     label: 'Observability',
                     tour: 'subtab-observability',
@@ -569,6 +576,8 @@ function AdminPanelContent({
     case 'kagenti-platform':
     case 'platform':
       return <AgentConfigPanel />;
+    case 'kagenti-connection':
+      return <KagentiConnectionSection />;
     case 'ops-observability':
     case 'kagenti-dashboards':
       return <KagentiDashboardLinks namespace={namespace || undefined} />;
