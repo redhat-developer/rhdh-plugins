@@ -740,6 +740,32 @@ export class KagentiProvider implements AgenticProvider {
       }
     }
 
+    if (allItems.length === 0 && config.agents?.length) {
+      this.logger.info(
+        `Kagenti API returned 0 agents, using ${config.agents.length} config-seeded fallback(s)`,
+      );
+      for (const agentRef of config.agents) {
+        const { namespace: ns, name: n } = agentRef.includes('/')
+          ? { namespace: agentRef.split('/')[0], name: agentRef.split('/')[1] }
+          : { namespace: config.namespace, name: agentRef };
+        try {
+          const card = await this.getAgentCardCached(ns, n);
+          allItems.push({
+            name: n,
+            namespace: ns,
+            description: card.card?.description,
+            status: 'ready',
+            createdAt: new Date().toISOString(),
+            labels: {},
+          });
+        } catch (err) {
+          this.logger.warn(
+            `Failed to fetch fallback agent card ${ns}/${n}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+    }
+
     const agents: ChatAgent[] = allItems.map(agent => ({
       id: `${agent.namespace}/${agent.name}`,
       name: agent.name,

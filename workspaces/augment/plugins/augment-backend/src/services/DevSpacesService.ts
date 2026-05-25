@@ -436,6 +436,17 @@ export class DevSpacesService {
     return hint ? `${hint}-devspaces` : DEFAULT_DEVSPACES_NAMESPACE;
   }
 
+  /**
+   * Derive a DevSpaces namespace from a Backstage user entity ref.
+   * Extracts the username from 'user:default/jsmith' and returns 'jsmith-devspaces'.
+   */
+  resolveNamespaceForUser(userRef: string): string {
+    const match = userRef.match(/^user:[^/]+\/(.+)$/);
+    const username = match ? match[1] : userRef;
+    const sanitized = this.sanitizeName(username);
+    return `${sanitized}-devspaces`;
+  }
+
   private async resolveToken(): Promise<string> {
     const adminToken = (await this.adminConfig.get('devSpacesToken')) as
       | string
@@ -478,7 +489,17 @@ export class DevSpacesService {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      return await fetch(url, { ...init, signal: controller.signal });
+      const opts: RequestInit & { dispatcher?: unknown } = {
+        ...init,
+        signal: controller.signal,
+      };
+      if (url.startsWith('https://')) {
+        const { Agent } = await import('undici');
+        opts.dispatcher = new Agent({
+          connect: { rejectUnauthorized: false },
+        });
+      }
+      return await fetch(url, opts);
     } finally {
       clearTimeout(timeout);
     }
