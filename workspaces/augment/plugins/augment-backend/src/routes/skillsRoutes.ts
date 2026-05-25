@@ -108,7 +108,7 @@ export function registerSkillsRoutes(ctx: RouteContext): void {
                   (d): d is string => typeof d === 'string' && d.length > 0,
                 ),
             ),
-          ].sort();
+          ].sort((a, b) => a.localeCompare(b, 'en-US'));
           res.json({ domains });
         } catch (err) {
           logger.warn(
