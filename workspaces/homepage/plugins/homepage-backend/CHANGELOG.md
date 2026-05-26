@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-backend
 
+## 0.1.3
+
+### Patch Changes
+
+- ab8323b: Fix conditional permission checks.
+
 ## 0.1.2
 
 ### Patch Changes
