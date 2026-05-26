@@ -44,6 +44,42 @@ export interface Artifact {
 }
 
 // @public (undocumented)
+export class ArtifactKind {
+    // (undocumented)
+    static all(): readonly ArtifactKind[];
+    // (undocumented)
+    static readonly ANSIBLE_PROJECT: ArtifactKind;
+    // (undocumented)
+    equals(other: ArtifactKind): boolean;
+    // (undocumented)
+    static from(raw: string): ArtifactKind;
+    // (undocumented)
+    isAnsibleProject(): boolean;
+    // (undocumented)
+    isMigratedSources(): boolean;
+    // (undocumented)
+    isMigrationPlan(): boolean;
+    // (undocumented)
+    isModuleMigrationPlan(): boolean;
+    // (undocumented)
+    isProjectMetadata(): boolean;
+    // (undocumented)
+    static readonly MIGRATED_SOURCES: ArtifactKind;
+    // (undocumented)
+    static readonly MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly MODULE_MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly PROJECT_METADATA: ArtifactKind;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: ArtifactType;
+    // (undocumented)
+    static values(): readonly ArtifactType[];
+}
+
+// @public (undocumented)
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public

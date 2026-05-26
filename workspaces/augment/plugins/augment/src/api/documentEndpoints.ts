@@ -37,15 +37,6 @@ export interface DocumentApiDeps {
 // Documents
 // ---------------------------------------------------------------------------
 
-export async function listDocuments(
-  deps: DocumentApiDeps,
-): Promise<DocumentInfo[]> {
-  const data = await deps.fetchJson<{ documents: DocumentInfo[] }>(
-    '/documents',
-  );
-  return data.documents;
-}
-
 export async function syncDocuments(deps: DocumentApiDeps): Promise<{
   added: number;
   updated: number;

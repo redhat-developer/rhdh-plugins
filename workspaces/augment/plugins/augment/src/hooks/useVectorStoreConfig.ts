@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import { augmentApiRef } from '../api';
 import type {
@@ -34,10 +34,18 @@ export function useVectorStoreConfig() {
   const api = useApi(augmentApiRef);
   const mountedRef = useRef(true);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [fetchErrorCleared, setFetchErrorCleared] = useState(false);
 
   const fetcher = useCallback(async (): Promise<VectorStoreData> => {
     const [configResult, statusResult] = await Promise.allSettled([
@@ -72,9 +80,12 @@ export function useVectorStoreConfig() {
     },
   });
 
-  const error = mutationError ?? fetchError;
+  const error = mutationError ?? (fetchErrorCleared ? null : fetchError);
 
-  const clearError = useCallback(() => setMutationError(null), []);
+  const clearError = useCallback(() => {
+    setMutationError(null);
+    setFetchErrorCleared(true);
+  }, []);
 
   const save = useCallback(
     async (overrides: Partial<VectorStoreConfig>) => {

@@ -27,8 +27,7 @@ const homepageTranslationDe = createTranslationMessages({
     'header.welcome': 'Willkommen zurück!',
     'header.welcomePersonalized': 'Willkommen zurück, {{name}}!',
     'header.local': 'Lokal',
-    'homePage.empty':
-      'Keine Homepage-Karten (Einbindungspunkte) konfiguriert oder gefunden.',
+    'homePage.empty': 'Keine Homepage-Karten konfiguriert oder gefunden.',
     'search.placeholder': 'Suchen',
     'quickAccess.title': 'Schnellzugriff',
     'quickAccess.fetchError': 'Daten konnten nicht abgerufen werden.',

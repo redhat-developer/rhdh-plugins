@@ -29,10 +29,16 @@ import {
 import { ConfigLoader } from './ConfigLoader';
 import { ClientManager } from './ClientManager';
 import { ConfigResolutionService } from './ConfigResolutionService';
+import { coordinatorChat, coordinatorChatStream } from './CoordinatorChatOps';
+import type { ChatOpsContext } from './CoordinatorChatOps';
+import {
+  getCoordinatorStatus,
+  postInitialize as doPostInitialize,
+  initializeBackendApprovalHandler as doInitApprovalHandler,
+} from './CoordinatorLifecycleOps';
 import { ResponsesApiService } from './ResponsesApiService';
 import { ChatDepsBuilder } from './ChatDepsBuilder';
 import { StatusService } from './StatusService';
-import { aggregateStatus } from './StatusAggregator';
 import { McpAuthService } from './McpAuthService';
 import type { ConversationService } from './ConversationService';
 import {
@@ -44,24 +50,16 @@ import {
   ConversationFacadeContext,
 } from './ConversationFacade';
 import { initializeOrchestrator } from './OrchestratorInitializer';
-import { AdkOrchestrator } from './adk-adapters/AdkOrchestrator';
+import { OpenAIAgentsOrchestrator } from './openai-agents-adapters/OpenAIAgentsOrchestrator';
 import { AgentGraphManager } from './AgentGraphManager';
 import { BackendApprovalStore } from './BackendApprovalStore';
 import { BackendToolExecutor } from './BackendToolExecutor';
-import { BackendApprovalHandler } from './BackendApprovalHandler';
 import type { RuntimeConfigResolver } from '../../services/RuntimeConfigResolver';
 import type { AdminConfigService } from '../../services/AdminConfigService';
 import type { ToolScopeService } from '../../services/toolscope';
 import { toErrorMessage } from '../../services/utils';
 import { resolveCapabilities } from './ServerCapabilities';
 
-/**
- * Responses API Coordinator
- *
- * Coordinates all sub-services to provide agentic chat via the Responses API
- * (OpenAI-compatible). Acts as the service coordinator between the provider
- * layer and individual domain services.
- */
 export class ResponsesApiCoordinator {
   private readonly logger: LoggerService;
   private readonly database?: DatabaseService;
@@ -82,7 +80,7 @@ export class ResponsesApiCoordinator {
   private securityConfig: SecurityConfig = { mode: 'plugin-only' };
 
   private readonly chatDepsBuilder: ChatDepsBuilder;
-  private adkOrchestrator: AdkOrchestrator | null = null;
+  private orchestrator: OpenAIAgentsOrchestrator | null = null;
   private agentGraphManager: AgentGraphManager | null = null;
   private backendToolExecutor: BackendToolExecutor | null = null;
   private readonly backendApprovalStore = new BackendApprovalStore();
@@ -149,42 +147,18 @@ export class ResponsesApiCoordinator {
     });
   }
 
-  /**
-   * Expose ClientManager so peer services (SafetyService, EvaluationService)
-   * can obtain the current ResponsesApiClient without duplicating HTTP code.
-   */
   getClientManager(): ClientManager {
     return this.clientManager;
   }
-
-  /**
-   * Expose the RuntimeConfigResolver so the provider layer can
-   * push dynamic overrides to safety/evaluation services per-request.
-   */
   getResolver(): RuntimeConfigResolver | null {
     return this.configResolution.getResolver();
   }
-
-  /**
-   * Expose the VectorStoreFacade so callers (ResponsesApiProvider) can
-   * invoke document / vector-store operations directly.
-   */
   getVectorStoreFacade(): VectorStoreFacade {
     return this.vectorStoreFacade;
   }
-
-  /**
-   * Expose the ConversationFacade so callers (ResponsesApiProvider) can
-   * invoke conversation operations directly.
-   */
   getConversationFacade(): ConversationFacade {
     return this.conversationFacade;
   }
-
-  /**
-   * Return the currently configured model identifier.
-   * Prefers the last runtime-resolved model, falls back to static config.
-   */
   getConfiguredModel(): string {
     return (
       this.configResolution.getLastResolvedModel() ??
@@ -193,10 +167,6 @@ export class ResponsesApiCoordinator {
     );
   }
 
-  /**
-   * Initialize the service by loading config and testing connection.
-   * Delegates all wiring to initializeOrchestrator() and stores the result.
-   */
   async initialize(): Promise<void> {
     if (this.initialized) {
       return;
@@ -235,7 +205,7 @@ export class ResponsesApiCoordinator {
         this.configLoader,
         this.logger,
       );
-      this.adkOrchestrator = new AdkOrchestrator({
+      this.orchestrator = new OpenAIAgentsOrchestrator({
         chatService: this.chatService,
         logger: this.logger,
         backendApprovalStore: this.backendApprovalStore,
@@ -256,152 +226,91 @@ export class ResponsesApiCoordinator {
     }
   }
 
-  /**
-   * Ensures the service is initialized before use
-   * @throws Error if the service has not been initialized
-   */
   private ensureInitialized(): void {
-    if (!this.initialized) {
-      throw new Error(
-        'ResponsesApiCoordinator not initialized. Call initialize() first.',
-      );
-    }
+    if (!this.initialized)
+      throw new Error('ResponsesApiCoordinator not initialized');
   }
 
-  /**
-   * Post-initialization hook.
-   *
-   * Warms caches so the first user request is fast:
-   * - Resolves config (populates RuntimeConfigResolver cache)
-   * - Runs a status check (populates MCP tools cache and detects proxy conflicts)
-   *
-   * Uses Promise.allSettled so individual failures do not block startup.
-   * Vector store creation and document sync are still deferred to first use.
-   */
   async postInitialize(): Promise<void> {
-    const warmupTasks: Array<{ name: string; task: Promise<unknown> }> = [];
-
-    warmupTasks.push({
-      name: 'config',
-      task: this.configResolution.resolve(),
+    return doPostInitialize({
+      configResolution: this.configResolution,
+      mcpServers: this.mcpServers,
+      orchestrator: this.orchestrator,
+      chatDepsBuilder: this.chatDepsBuilder,
+      logger: this.logger,
+      getStatus: () => this.getStatus(),
     });
-
-    if (this.mcpServers.length > 0) {
-      warmupTasks.push({
-        name: 'mcp-status-warmup',
-        task: this.getStatus(),
-      });
-    }
-
-    const results = await Promise.allSettled(warmupTasks.map(w => w.task));
-
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i];
-      if (result.status === 'rejected') {
-        this.logger.warn(
-          `Warmup task "${
-            warmupTasks[i].name
-          }" failed (non-fatal): ${toErrorMessage(result.reason)}`,
-        );
-      }
-    }
-
-    this.logger.info('Post-initialization warmup complete');
   }
 
-  // =============================================================================
-  // Security Configuration
-  // =============================================================================
-
-  /**
-   * Get the current security configuration
-   * Used by router to determine access control behavior
-   */
   getSecurityConfig(): SecurityConfig {
     return this.securityConfig;
   }
 
-  // =============================================================================
-  // Chat Methods
-  // =============================================================================
-
-  /**
-   * Invalidate the runtime config cache and agent graph so the next
-   * request picks up freshly-saved admin overrides immediately.
-   */
   invalidateRuntimeConfig(): void {
     this.configResolution.invalidateCache();
     this.agentGraphManager?.invalidate();
-    this.adkOrchestrator?.invalidateToolCache();
+    this.orchestrator?.invalidateToolCache();
+
+    if (this.orchestrator && this.mcpServers.length > 0) {
+      this.chatDepsBuilder
+        .buildChatDeps()
+        .then(deps => this.orchestrator!.warmUpToolCache(deps))
+        .catch(err =>
+          this.logger.warn(
+            `Background tool re-warm after config invalidation failed: ${toErrorMessage(err)}`,
+          ),
+        );
+    }
   }
 
-  /**
-   * Send a chat message. All requests go through the AdkOrchestrator,
-   * which handles both single-agent (auto-synthesized) and multi-agent
-   * (YAML-configured) scenarios through the same code path.
-   *
-   * The agent graph snapshot is resolved per-request from the effective
-   * config (YAML + DB overrides), following the OpenAI SDK pattern where
-   * the Runner receives agents at call time.
-   */
   async chat(request: ChatRequest): Promise<ChatResponse> {
-    const orchestrator = this.getAdkOrchestrator();
-    const snapshot = await this.getAgentGraphManager().getSnapshot();
-    const userQuery = this.chatDepsBuilder.extractUserQuery(request);
-
-    return orchestrator.chat(
-      request,
-      snapshot,
-      this.chatDepsBuilder.makeBuildDepsForAgent(userQuery),
-    );
+    return coordinatorChat(this.buildChatOpsContext(), request);
   }
 
-  /**
-   * Stream a chat message with real-time events.
-   * Uses AdkOrchestrator.chatStream() for real per-token SSE
-   * streaming (thinking, tool calls, handoffs, text deltas).
-   */
   async chatStream(
     request: ChatRequest,
     onEvent: (event: string) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const orchestrator = this.getAdkOrchestrator();
-    const snapshot = await this.getAgentGraphManager().getSnapshot();
-    const userQuery = this.chatDepsBuilder.extractUserQuery(request);
-
-    await orchestrator.chatStream(
+    return coordinatorChatStream(
+      this.buildChatOpsContext(),
       request,
-      snapshot,
       onEvent,
-      this.chatDepsBuilder.makeBuildDepsForAgent(userQuery),
       signal,
     );
   }
 
-  private getAdkOrchestrator(): AdkOrchestrator {
-    if (!this.adkOrchestrator) {
-      throw new Error(
-        'AdkOrchestrator not initialized. Call initialize() first.',
-      );
-    }
-    return this.adkOrchestrator;
+  private buildChatOpsContext(): ChatOpsContext {
+    return {
+      logger: this.logger,
+      chatService: this.chatService,
+      chatDepsBuilder: this.chatDepsBuilder,
+      getOrchestrator: () => this.getOrchestrator(),
+      requireAgentGraphManager: () => this.requireAgentGraphManager(),
+      ensureInitialized: () => this.ensureInitialized(),
+    };
   }
 
-  private getAgentGraphManager(): AgentGraphManager {
-    if (!this.agentGraphManager) {
-      throw new Error(
-        'AgentGraphManager not initialized. Call initialize() first.',
-      );
-    }
+  private getOrchestrator(): OpenAIAgentsOrchestrator {
+    if (!this.orchestrator)
+      throw new Error('OpenAIAgentsOrchestrator not initialized');
+    return this.orchestrator;
+  }
+
+  getAgentGraphManager(): AgentGraphManager | null {
+    return this.agentGraphManager;
+  }
+
+  private requireAgentGraphManager(): AgentGraphManager {
+    if (!this.agentGraphManager)
+      throw new Error('AgentGraphManager not initialized');
     return this.agentGraphManager;
   }
 
   private initializeBackendApprovalHandler(): void {
     if (this.configLoader.loadToolExecutionMode() !== 'backend') return;
     if (!this.backendToolExecutor) return;
-
-    const handler = new BackendApprovalHandler({
+    doInitApprovalHandler({
       conversationFacade: this.conversationFacade,
       backendApprovalStore: this.backendApprovalStore,
       backendToolExecutor: this.backendToolExecutor,
@@ -413,61 +322,34 @@ export class ResponsesApiCoordinator {
       getMcpServers: () => this.mcpServers ?? [],
       logger: this.logger,
     });
-    handler.initialize();
   }
 
-  /**
-   * Check if verbose stream logging is enabled
-   */
   isVerboseStreamLoggingEnabled(): boolean {
     return this.configResolution.isVerboseStreamLoggingEnabled();
   }
 
-  // =============================================================================
-  // Status Methods — Delegated to StatusService
-  // =============================================================================
-
   async getStatus(): Promise<AugmentStatus> {
-    const llamaStackConfig = this.configResolution.getLlamaStackConfig();
-    if (!llamaStackConfig) {
-      return aggregateStatus({
-        llamaStackConfig: null,
-        clientManager: this.clientManager,
-        mcpAuth: this.mcpAuth,
-        mcpServers: this.mcpServers,
-        yamlMcpServers: this.mcpServers,
-        securityConfig: this.securityConfig,
-        vectorStoreReady: this.vectorStoreReady,
-        statusService: this.statusService,
-        logger: this.logger,
-      });
-    }
-
-    let resolved;
-    try {
-      this.ensureInitialized();
-      resolved = await this.configResolution.resolve();
-    } catch (error) {
-      this.logger.debug(
-        'Config resolution failed, using YAML fallback config',
-        error instanceof Error ? error : undefined,
-      );
-      resolved = this.configResolution.buildYamlFallback();
-    }
-
-    return aggregateStatus({
-      llamaStackConfig,
-      resolved,
+    return getCoordinatorStatus({
+      configResolution: this.configResolution,
       clientManager: this.clientManager,
+      configLoader: this.configLoader,
       mcpAuth: this.mcpAuth,
-      mcpServers: resolved.mcpServers ?? this.mcpServers,
-      yamlMcpServers: this.mcpServers,
+      mcpServers: this.mcpServers,
       securityConfig: this.securityConfig,
       vectorStoreReady: this.vectorStoreReady,
       statusService: this.statusService,
+      agentGraphManager: this.agentGraphManager,
       logger: this.logger,
-      toolExecutionMode: this.configLoader.loadToolExecutionMode(),
-      agentGraphError: this.agentGraphManager?.getLastResolutionError(),
+      ensureInitialized: () => this.ensureInitialized(),
     });
+  }
+
+  async shutdown(): Promise<void> {
+    if (this.backendToolExecutor) {
+      this.logger.info(
+        '[ResponsesApiCoordinator] Shutting down — closing MCP clients',
+      );
+      await this.backendToolExecutor.closeAllClients();
+    }
   }
 }

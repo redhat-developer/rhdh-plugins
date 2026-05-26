@@ -196,7 +196,7 @@ describe('AgentGraphManager', () => {
     );
   });
 
-  it('falls back to single agent on invalid graph (missing default)', async () => {
+  it('falls back to first agent when default agent is missing', async () => {
     const logger = mockLogger();
     const config = baseEffectiveConfig({
       agents: {
@@ -213,9 +213,10 @@ describe('AgentGraphManager', () => {
 
     const snapshot = await manager.getSnapshot();
 
-    expect(snapshot.agents.has('default')).toBe(true);
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to resolve agent graph'),
+    expect(snapshot.agents.has('agent1')).toBe(true);
+    expect(snapshot.defaultAgentKey).toBe('agent1');
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('nonexistent'),
     );
   });
 

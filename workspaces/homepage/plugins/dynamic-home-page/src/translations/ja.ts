@@ -27,8 +27,7 @@ const homepageTranslationJa = createTranslationMessages({
     'header.welcome': 'おかえりなさい!',
     'header.welcomePersonalized': 'おかえりなさい、{{name}}!',
     'header.local': 'ローカル',
-    'homePage.empty':
-      'ホームページカード (マウントポイント) が設定されていないか見つかりません。',
+    'homePage.empty': 'ホームページカード が設定されていないか見つかりません。',
     'search.placeholder': '検索',
     'quickAccess.title': 'クイックアクセス',
     'quickAccess.fetchError': 'データを取得できませんでした。',

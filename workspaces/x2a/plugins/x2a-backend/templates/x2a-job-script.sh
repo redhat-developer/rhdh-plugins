@@ -109,6 +109,71 @@ run_x2a() {
   ERROR_MESSAGE=""
 }
 
+# Copy all new/modified files from the source directory to a destination.
+# Uses git to detect what the x2a tool created or changed, so we don't
+# hardcode file patterns and never miss output (e.g. .github/workflows/).
+#
+# Usage: copy_changed_files <source_dir> <dest_dir> [exclude_pattern ...]
+#   source_dir       — git repo where x2a wrote its output
+#   dest_dir         — where to copy the files
+#   exclude_pattern  — optional grep -E patterns for files to skip
+#                      (files we copied INTO source before running x2a)
+copy_changed_files() {
+  local source_dir="$1"
+  local dest_dir="$2"
+  shift 2
+  local exclude_patterns=("$@")
+
+  # Always exclude internal telemetry file
+  exclude_patterns+=('\.x2a-telemetry\.json$')
+
+  echo "=== Copying changed files to ${dest_dir}/ ==="
+
+  pushd "${source_dir}" > /dev/null
+
+  # Collect new (untracked) and modified files into a single list
+  local changed_files=()
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    changed_files+=("$file")
+  done < <(git ls-files --others --exclude-standard)
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    changed_files+=("$file")
+  done < <(git diff --name-only)
+
+  if [[ ${#changed_files[@]} -eq 0 ]]; then
+    echo "  No changed files detected"
+    popd > /dev/null
+    return 0
+  fi
+
+  local copied=0
+  for file in "${changed_files[@]}"; do
+    # Apply exclude patterns
+    local skip=false
+    for pattern in "${exclude_patterns[@]}"; do
+      if echo "$file" | grep -qE "$pattern"; then
+        echo "  Skipping (excluded): $file"
+        skip=true
+        break
+      fi
+    done
+    if [[ "$skip" = true ]]; then
+      continue
+    fi
+
+    mkdir -p "${dest_dir}/$(dirname "$file")"
+    cp -v "${source_dir}/$file" "${dest_dir}/$file"
+    copied=$((copied + 1))
+  done
+
+  echo "  Copied ${copied} file(s)"
+
+  popd > /dev/null
+}
+
 # Authenticated git wrappers using credential helper.
 # Backstage provides tokens in format "username:password" where:
 # - GitHub:    "git:token"           (username is ignored, token is used)
@@ -316,15 +381,9 @@ case "${PHASE}" in
     fi
     run_x2a uv run app.py init "${INIT_ARGS[@]}" "${USER_REQ}"
 
-    # Copy output to target location
-    # Note: x2a tool writes files to the source directory (--source-dir)
-    echo "Copying output to ${PROJECT_PATH}/"
-    cp -v "${SOURCE_BASE}/migration-plan.md" "${PROJECT_PATH}/"
-    # Copy any other generated files (like metadata, agent files)
-    cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}/INPUT-AGENTS.md" "${PROJECT_PATH}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}/EXPORT-AGENTS.md" "${PROJECT_PATH}/" 2>/dev/null || true
+    # Copy all files the x2a tool created/modified to the target project directory
+    # Exclude accepted rules we copied in before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${PROJECT_PATH}" '^x2a-rules/'
 
     # Show what was created
     echo ""
@@ -382,16 +441,10 @@ case "${PHASE}" in
     USER_REQ="${USER_PROMPT:-Analyze the module '${MODULE_NAME}' for migration to Ansible}"
     run_x2a uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
-    # Copy output to target location
-    # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
-    echo "Copying output to ${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -rv "${SOURCE_BASE}/migration-dependencies" "${OUTPUT_DIR}/" 2>/dev/null || true
-
-    # Update project-level Policyfile.lock.json - the source tool (like chef-cli) may have updated it
-    # during dependency resolution. Keep it at project root only, not per-module.
-    cp -v "${SOURCE_BASE}/Policyfile.lock.json" "${PROJECT_PATH}/" 2>/dev/null || true
+    # Copy all files the x2a tool created/modified to the module output directory
+    # Exclude files we copied into source before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
+      '^migration-plan\.md$'
 
     echo ""
     echo "=== Output directory contents ==="
@@ -431,9 +484,9 @@ case "${PHASE}" in
     # Copy migration-dependencies from target repo back to source dir.
     # The analyze phase created this directory and committed it to the target repo.
     # The migrate phase runs in a separate pod, so we need to restore it.
-    if [ -d "${PROJECT_PATH}/migration-dependencies" ]; then
+    if [ -d "${OUTPUT_DIR}/migration-dependencies" ]; then
       echo "Copying migration-dependencies from target to source directory..."
-      cp -rv "${PROJECT_PATH}/migration-dependencies" "${SOURCE_BASE}/"
+      cp -rv "${OUTPUT_DIR}/migration-dependencies" "${SOURCE_BASE}/"
     fi
 
     # Check if x2a tool is available (required)
@@ -461,11 +514,10 @@ case "${PHASE}" in
       --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
       "${USER_REQ}"
 
-    # Copy output to target location
-    # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
-    echo "Copying output to ${OUTPUT_DIR}/"
-    cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+    # Copy all files the x2a tool created/modified to the module output directory
+    # Exclude files we copied into source before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
+      '^migration-plan\.md$' '^migration-dependencies/'
 
     echo ""
     echo "=== Output directory contents ==="

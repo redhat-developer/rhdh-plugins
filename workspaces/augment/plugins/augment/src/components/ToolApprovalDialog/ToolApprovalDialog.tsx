@@ -59,8 +59,6 @@ interface ToolApprovalDialogProps {
   onReject: (approvalId: string, reason?: string) => void;
   isSubmitting?: boolean;
   error?: string | null;
-  /** Description of the tool being executed (from MCP server metadata) */
-  toolDescription?: string;
 }
 
 /**
@@ -78,7 +76,6 @@ export function ToolApprovalDialog({
   onReject,
   isSubmitting = false,
   error = null,
-  toolDescription,
 }: ToolApprovalDialogProps) {
   const theme = useTheme();
   const [editorState, setEditorState] = useState<ToolArgumentsEditorState>({
@@ -193,7 +190,7 @@ export function ToolApprovalDialog({
       </Box>
 
       {/* Tool context */}
-      {(pendingApproval.toolCall.serverLabel || toolDescription) && (
+      {pendingApproval.toolCall.serverLabel && (
         <Box
           sx={{
             mb: 1,
@@ -203,32 +200,17 @@ export function ToolApprovalDialog({
             bgcolor: alpha(theme.palette.action.hover, 0.3),
           }}
         >
-          {pendingApproval.toolCall.serverLabel && (
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                fontSize: '0.7rem',
-                color: theme.palette.text.secondary,
-                fontWeight: 600,
-              }}
-            >
-              MCP Server: {pendingApproval.toolCall.serverLabel}
-            </Typography>
-          )}
-          {toolDescription && (
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                fontSize: '0.7rem',
-                color: theme.palette.text.disabled,
-                mt: 0.25,
-              }}
-            >
-              {toolDescription}
-            </Typography>
-          )}
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              fontSize: '0.7rem',
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+            }}
+          >
+            MCP Server: {pendingApproval.toolCall.serverLabel}
+          </Typography>
         </Box>
       )}
 

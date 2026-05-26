@@ -15,29 +15,26 @@
  */
 
 import { Theme, SxProps, alpha } from '@mui/material/styles';
-import {
-  getSharedMarkdownSx,
-  surfaceOverlay,
-  codeBlockBackground,
-} from '../../theme/markdown';
+import { getSharedMarkdownSx, codeBlockBackground } from '../../theme/markdown';
+import { surfaceOverlay } from '../../theme/tokens';
 
 /**
  * Keyframe animations for StreamingMessage
  */
 export const streamingAnimations = {
   spin: {
-    '@keyframes spin': {
+    '@keyframes augmentSpin': {
       '100%': { transform: 'rotate(360deg)' },
     },
   },
   bounce: {
-    '@keyframes bounce': {
+    '@keyframes augmentStreamBounce': {
       '0%, 80%, 100%': { transform: 'scale(0.6)', opacity: 0.4 },
       '40%': { transform: 'scale(1)', opacity: 1 },
     },
   },
   blink: {
-    '@keyframes blink': {
+    '@keyframes augmentBlink': {
       '0%, 50%': { opacity: 1 },
       '51%, 100%': { opacity: 0 },
     },
@@ -169,7 +166,7 @@ export const getTypingCursorSx = (): SxProps<Theme> => ({
   height: '1em',
   bgcolor: 'primary.main',
   ml: 0.25,
-  animation: 'blink 0.8s infinite',
+  animation: 'augmentBlink 0.8s infinite',
   verticalAlign: 'text-bottom',
   ...streamingAnimations.blink,
 });
@@ -185,7 +182,7 @@ export const getLoadingDotSx = (
   height: 6,
   borderRadius: '50%',
   bgcolor: color,
-  animation: 'bounce 1.4s infinite',
+  animation: 'augmentStreamBounce 1.4s infinite',
   animationDelay: `${delay}s`,
   ...streamingAnimations.bounce,
 });

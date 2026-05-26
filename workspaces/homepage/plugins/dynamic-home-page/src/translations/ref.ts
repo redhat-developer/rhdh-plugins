@@ -29,7 +29,7 @@ export const homepageMessages = {
     local: 'Local',
   },
   homePage: {
-    empty: 'No home page cards (mount points) configured or found.',
+    empty: 'No home page widgets configured or found.',
   },
   search: {
     placeholder: 'Search',

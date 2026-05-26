@@ -50,18 +50,19 @@ export function sanitizeToolsForServer(
   capabilities: CapabilityInfo,
   logger: LoggerService,
 ): ResponsesApiTool[] {
-  if (capabilities.strictField) return tools;
-
   return tools.map(tool => {
     if (tool.type !== 'function') return tool;
 
-    const { strict, ...rest } = tool;
-    if (strict !== undefined) {
-      logger.debug(
-        `[ToolsBuilder] Stripped 'strict' field from function tool "${rest.name}" (server does not support it)`,
-      );
+    if (!capabilities.strictField) {
+      const { strict, ...rest } = tool;
+      if (strict !== undefined) {
+        logger.debug(
+          `[ToolsBuilder] Stripped 'strict' field from function tool "${rest.name}" (server does not support it)`,
+        );
+      }
+      return rest as ResponsesApiTool;
     }
-    return rest as ResponsesApiTool;
+    return tool;
   });
 }
 

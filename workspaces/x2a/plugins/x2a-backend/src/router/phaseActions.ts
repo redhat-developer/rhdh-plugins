@@ -19,7 +19,10 @@ import type {
   Artifact,
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { normalizeSourceTechnology } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  ArtifactKind,
+  normalizeSourceTechnology,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
 
@@ -43,8 +46,8 @@ interface PhaseAction {
 
 class InitPhaseAction implements PhaseAction {
   async execute(context: PhaseActionContext): Promise<void> {
-    const metadataArtifact = context.artifacts.find(
-      a => a.type === 'project_metadata',
+    const metadataArtifact = context.artifacts.find(a =>
+      ArtifactKind.from(a.type).isProjectMetadata(),
     );
     if (!metadataArtifact) {
       return;

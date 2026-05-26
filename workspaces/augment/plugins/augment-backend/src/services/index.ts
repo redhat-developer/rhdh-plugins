@@ -19,5 +19,29 @@ export { DocumentIngestionService } from './DocumentIngestionService';
 export { ChatSessionService } from './ChatSessionService';
 export type { ChatSession } from './ChatSessionService';
 
+// Shared cross-provider services
+export {
+  ResponsesApiClient,
+  ResponsesApiError,
+  LlamaStackApiError,
+  type ResponsesApiRequestOptions,
+} from './ResponsesApiClient';
+export {
+  VectorStoreService,
+  DuplicateVectorStoreError,
+} from './VectorStoreService';
+export {
+  buildMetaPrompt,
+  extractToolContext,
+  PROMPT_ENGINEER_INSTRUCTIONS,
+  type MetaPromptResult,
+  type ToolCapabilityInfo,
+  type PromptCapabilities,
+} from './promptGeneration';
+
+// Agent approval workflow
+export { AgentApprovalWorkflowService } from './AgentApprovalWorkflowService';
+export type { AgentApprovalConfig } from './AgentApprovalWorkflowService';
+
 // Utilities
 export { detectFileFormat } from './utils/file-utils';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -49,7 +49,7 @@ const ACTIONS_SX = {
   flexShrink: 0,
 } as const;
 
-export const PromptsPanelHeader: React.FC<PromptsPanelHeaderProps> = ({
+export const PromptsPanelHeader: FC<PromptsPanelHeaderProps> = ({
   source,
   dirty,
   saving,
@@ -60,10 +60,23 @@ export const PromptsPanelHeader: React.FC<PromptsPanelHeaderProps> = ({
 }) => (
   <Box sx={HEADER_SX}>
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography
+        variant="h5"
+        sx={{
+          fontSize: '1.25rem',
+          fontWeight: 700,
+          letterSpacing: '-0.01em',
+          color: 'text.primary',
+        }}
+        gutterBottom
+      >
         Prompts &amp; Actions
       </Typography>
-      <Typography variant="body2" color="textSecondary" component="div">
+      <Typography
+        variant="body2"
+        sx={{ color: 'text.secondary' }}
+        component="div"
+      >
         Configure prompt groups and clickable prompts shown on the welcome
         screen.{' '}
         {source === 'database' && (

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-/** @deprecated Import from '../responses-api/client/ResponsesApiClient' instead */
+/** @deprecated Import from '../../services/ResponsesApiClient' instead */
 export {
   ResponsesApiClient,
   ResponsesApiError,
   LlamaStackApiError,
   type ResponsesApiRequestOptions,
-} from '../responses-api/client/ResponsesApiClient';
+} from '../../services/ResponsesApiClient';

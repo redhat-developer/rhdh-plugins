@@ -13,63 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
-import * as fs from 'fs';
 import {
   MAX_TOKEN_CACHE_SIZE,
-  MIN_TOKEN_LIFETIME_S,
   TOKEN_EXPIRY_BUFFER_S,
-  DEFAULT_TOKEN_EXPIRATION_S,
 } from '../../../constants';
 import { fetchWithTlsControl } from '../../../services/utils/http';
 import { toErrorMessage } from '../../../services/utils';
-import {
-  MCPAuthConfig,
-  MCPServerConfig,
-  OAuthClientConfig,
-  MCPServerServiceAccountConfig,
-  SecurityConfig,
-} from '../../../types';
+import { MCPAuthConfig, MCPServerConfig, SecurityConfig } from '../../../types';
 import { getApiApprovalConfig } from '../config/McpConfigLoader';
+import {
+  fetchOAuthToken,
+  fetchOAuthClientCredentials,
+  fetchServiceAccountToken,
+} from './mcpTokenFetchers';
+import type { TokenCacheEntry } from './mcpTokenFetchers';
 
-/**
- * Token cache entry
- */
-interface TokenCacheEntry {
-  token: string;
-  expiresAt: number;
-}
-
-/**
- * MCP Authentication Service
- *
- * Handles all authentication for MCP servers including:
- * - OAuth client credentials flow
- * - Kubernetes ServiceAccount tokens
- * - Token caching with expiry
- */
 export class McpAuthService {
   private readonly securityConfig: SecurityConfig;
   private readonly mcpAuthConfigs: Map<string, MCPAuthConfig>;
   private readonly logger: LoggerService;
   private readonly skipTlsVerify: boolean;
 
-  /**
-   * Token caches - separated by token type for different TTL handling
-   * OAuth tokens typically expire in 5-60 minutes
-   * ServiceAccount tokens typically expire in 1 hour
-   */
   private readonly oauthTokenCache: Map<string, TokenCacheEntry> = new Map();
   private readonly serviceAccountTokenCache: Map<string, TokenCacheEntry> =
     new Map();
 
-  // In-flight token request deduplication: if a token fetch is already in
-  // progress for a given key, subsequent callers receive the same promise
-  // instead of issuing a duplicate request to the token endpoint.
   private readonly inflightTokenRequests: Map<string, Promise<string | null>> =
     new Map();
 
-  // Global security.mcpOAuth token (used in 'full' mode)
   private mcpOAuthToken: string | null = null;
   private mcpOAuthTokenExpiry: number | null = null;
 
@@ -99,30 +72,29 @@ export class McpAuthService {
     }
   }
 
-  private fetchWithTlsControl(
-    url: string,
-    options: { method: string; headers: Record<string, string>; body: string },
-  ) {
-    return fetchWithTlsControl(url, {
-      method: options.method,
-      headers: options.headers,
-      body: options.body,
-      skipTlsVerify: this.skipTlsVerify,
-    });
+  private makeFetchFn() {
+    const skipTls = this.skipTlsVerify;
+    return (
+      url: string,
+      options: {
+        method: string;
+        headers: Record<string, string>;
+        body: string;
+      },
+    ) =>
+      fetchWithTlsControl(url, {
+        method: options.method,
+        headers: options.headers,
+        body: options.body,
+        skipTlsVerify: skipTls,
+      });
   }
 
-  /**
-   * Get headers for an MCP server, including auth token if configured
-   * Supports: authRef (named config), oauth (inline), serviceAccount
-   */
   async getServerHeaders(
     server: MCPServerConfig,
   ): Promise<Record<string, string>> {
     const headers: Record<string, string> = { ...server.headers };
 
-    // Priority: authRef > inline oauth > inline serviceAccount > security.mcpOAuth (full mode)
-
-    // 1. Check for authRef (reference to named config)
     if (server.authRef) {
       const authConfig = this.mcpAuthConfigs.get(server.authRef);
       if (!authConfig) {
@@ -151,7 +123,6 @@ export class McpAuthService {
       return headers;
     }
 
-    // 2. Check for inline OAuth config
     if (server.oauth) {
       const token = await this.getOAuthToken(server.id, server.oauth);
       if (token) {
@@ -164,7 +135,6 @@ export class McpAuthService {
       return headers;
     }
 
-    // 3. Check for inline ServiceAccount config
     if (server.serviceAccount) {
       const token = await this.getServiceAccountToken(
         server.id,
@@ -180,7 +150,6 @@ export class McpAuthService {
       return headers;
     }
 
-    // 4. Use global security.mcpOAuth if in 'full' mode
     if (this.securityConfig.mode === 'full' && this.securityConfig.mcpOAuth) {
       const token = await this.getSecurityMcpOAuthToken();
       if (token) {
@@ -199,38 +168,26 @@ export class McpAuthService {
     return headers;
   }
 
-  /**
-   * Convert MCPServerConfig's requireApproval to Llama Stack API format.
-   * Delegates to McpConfigLoader.
-   */
   getApiApprovalConfig(
     configApproval: Parameters<typeof getApiApprovalConfig>[0],
   ): ReturnType<typeof getApiApprovalConfig> {
     return getApiApprovalConfig(configApproval, this.logger);
   }
 
-  /**
-   * Fetch OAuth token for an MCP server using client credentials grant.
-   * Tokens are cached until they expire (with a 60s buffer).
-   * Concurrent requests for the same server share a single in-flight fetch
-   * to avoid duplicate token endpoint calls.
-   */
   private async getOAuthToken(
     serverId: string,
-    oauth: OAuthClientConfig,
+    oauth: import('../../../types').OAuthClientConfig,
   ): Promise<string | null> {
     if (!oauth) {
       return null;
     }
 
-    // Check cache first (no lock needed — cache hit is synchronous)
     const cached = this.oauthTokenCache.get(serverId);
     if (cached && cached.expiresAt > Date.now()) {
       this.logger.debug(`Using cached OAuth token for MCP server ${serverId}`);
       return cached.token;
     }
 
-    // Deduplicate: if a fetch is already in-flight for this server, await it
     const inflightKey = `oauth:${serverId}`;
     const inflight = this.inflightTokenRequests.get(inflightKey);
     if (inflight !== undefined) {
@@ -240,7 +197,14 @@ export class McpAuthService {
       return inflight;
     }
 
-    const request = this.fetchOAuthToken(serverId, oauth);
+    const request = fetchOAuthToken(
+      serverId,
+      oauth,
+      this.oauthTokenCache,
+      this.makeFetchFn(),
+      cache => this.evictExpiredEntries(cache),
+      this.logger,
+    );
     this.inflightTokenRequests.set(inflightKey, request);
 
     try {
@@ -250,206 +214,24 @@ export class McpAuthService {
     }
   }
 
-  /**
-   * Fetch OAuth token using client credentials grant.
-   * Shared by per-server OAuth and global security.mcpOAuth.
-   * @returns { token, expiresIn } on success
-   * @throws on HTTP error or network/parse failure
-   */
-  private async fetchOAuthClientCredentials(
-    url: string,
-    clientId: string,
-    clientSecret: string,
-    scopes: string[],
-  ): Promise<{ token: string; expiresIn: number }> {
-    const body = new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: scopes.join(' '),
-    });
-
-    const response = await this.fetchWithTlsControl(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `OAuth token request failed: HTTP ${response.status}${
-          errorText ? ` - ${errorText}` : ''
-        }`,
-      );
-    }
-
-    const data = (await response.json()) as {
-      access_token: string;
-      expires_in?: number;
-    };
-    const token = data.access_token;
-    const expiresIn = data.expires_in || MIN_TOKEN_LIFETIME_S;
-    return { token, expiresIn };
-  }
-
-  private async fetchOAuthToken(
-    serverId: string,
-    oauth: OAuthClientConfig,
-  ): Promise<string | null> {
-    try {
-      this.logger.info(`Fetching OAuth token for MCP server ${serverId}`);
-
-      const scopes = oauth.scopes || ['openid'];
-      const result = await this.fetchOAuthClientCredentials(
-        oauth.tokenUrl,
-        oauth.clientId,
-        oauth.clientSecret,
-        scopes,
-      );
-
-      const { token, expiresIn } = result;
-      this.evictExpiredEntries(this.oauthTokenCache);
-      this.oauthTokenCache.set(serverId, {
-        token,
-        expiresAt: Date.now() + (expiresIn - TOKEN_EXPIRY_BUFFER_S) * 1000,
-      });
-
-      this.logger.info(
-        `OAuth token obtained for ${serverId}, expires in ${expiresIn}s`,
-      );
-      return token;
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch OAuth token for ${serverId}: ${toErrorMessage(error)}`,
-      );
-      return null;
-    }
-  }
-
-  /**
-   * Get a ServiceAccount token from the cluster
-   * Reads from the mounted token file or creates a token via Kubernetes API
-   */
   private async getServiceAccountToken(
     serverId: string,
-    saConfig: MCPServerServiceAccountConfig,
+    saConfig: import('../../../types').MCPServerServiceAccountConfig,
   ): Promise<string | null> {
-    // Check cache first (uses separate cache from OAuth tokens)
-    const cacheKey = `${saConfig.namespace || 'default'}/${saConfig.name}`;
-    const cached = this.serviceAccountTokenCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      this.logger.debug(`Using cached ServiceAccount token for ${serverId}`);
-      return cached.token;
-    }
-
-    try {
-      // Path to the mounted ServiceAccount token (if running in-cluster)
-      // When a pod references a specific ServiceAccount, we can create a token for it
-      const inClusterTokenPath =
-        '/var/run/secrets/kubernetes.io/serviceaccount/token';
-
-      // Check if we're running in-cluster with the default SA token
-      if (fs.existsSync(inClusterTokenPath)) {
-        // If the requested SA matches the pod's SA, use the mounted token
-        const namespaceFile =
-          '/var/run/secrets/kubernetes.io/serviceaccount/namespace';
-        const podNamespace = fs.existsSync(namespaceFile)
-          ? (await fs.promises.readFile(namespaceFile, 'utf8')).trim()
-          : 'default';
-
-        const requestedNamespace = saConfig.namespace || podNamespace;
-
-        // For now, we'll use the in-cluster token and create a TokenRequest
-        // This requires the pod's SA to have permission to create tokens for other SAs
-        this.logger.info(
-          `Getting ServiceAccount token for ${requestedNamespace}/${saConfig.name}`,
-        );
-
-        // Use the Kubernetes API to create a token for the specified ServiceAccount
-        const k8sHost = process.env.KUBERNETES_SERVICE_HOST;
-        const k8sPort = process.env.KUBERNETES_SERVICE_PORT;
-
-        if (k8sHost && k8sPort) {
-          const podToken = (
-            await fs.promises.readFile(inClusterTokenPath, 'utf8')
-          ).trim();
-
-          // Create a TokenRequest for the target ServiceAccount
-          const tokenRequestUrl = `https://${k8sHost}:${k8sPort}/api/v1/namespaces/${requestedNamespace}/serviceaccounts/${saConfig.name}/token`;
-
-          const tokenRequest = {
-            apiVersion: 'authentication.k8s.io/v1',
-            kind: 'TokenRequest',
-            spec: {
-              audiences: ['mcp-server'], // Request token for MCP server audience
-              expirationSeconds: DEFAULT_TOKEN_EXPIRATION_S,
-            },
-          };
-
-          const response = await fetch(tokenRequestUrl, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${podToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tokenRequest),
-            signal: AbortSignal.timeout(15_000),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            this.logger.error(
-              `Failed to create token for ServiceAccount ${requestedNamespace}/${saConfig.name}: ${response.status} ${errorText}`,
-            );
-            return null;
-          }
-
-          const data = (await response.json()) as {
-            status: { token: string; expirationTimestamp: string };
-          };
-          const token = data.status.token;
-
-          // Cache the token in ServiceAccount cache (with buffer before expiry)
-          const expiresAt =
-            new Date(data.status.expirationTimestamp).getTime() -
-            TOKEN_EXPIRY_BUFFER_S * 1000;
-          this.evictExpiredEntries(this.serviceAccountTokenCache);
-          this.serviceAccountTokenCache.set(cacheKey, { token, expiresAt });
-
-          this.logger.info(
-            `ServiceAccount token obtained for ${requestedNamespace}/${saConfig.name}`,
-          );
-          return token;
-        }
-      }
-
-      this.logger.warn(
-        `Cannot get ServiceAccount token for ${serverId}: not running in-cluster`,
-      );
-      return null;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get ServiceAccount token for ${serverId}: ${toErrorMessage(
-          error,
-        )}`,
-      );
-      return null;
-    }
+    return fetchServiceAccountToken(
+      serverId,
+      saConfig,
+      this.serviceAccountTokenCache,
+      cache => this.evictExpiredEntries(cache),
+      this.logger,
+    );
   }
 
-  /**
-   * Get OAuth token for MCP servers (used in 'full' security mode)
-   * Uses the global mcpOAuth config from security settings
-   */
   private async getSecurityMcpOAuthToken(): Promise<string | null> {
     if (this.securityConfig.mode !== 'full' || !this.securityConfig.mcpOAuth) {
       return null;
     }
 
-    // Check token cache
     if (
       this.mcpOAuthToken &&
       this.mcpOAuthTokenExpiry &&
@@ -458,7 +240,6 @@ export class McpAuthService {
       return this.mcpOAuthToken;
     }
 
-    // In-flight dedup: share a single token request across concurrent callers
     const inflightKey = 'security:mcpOAuth';
     const inflight = this.inflightTokenRequests.get(inflightKey);
     if (inflight !== undefined) {
@@ -483,11 +264,12 @@ export class McpAuthService {
     this.logger.info(`Fetching security OAuth token for MCP servers`);
 
     try {
-      const result = await this.fetchOAuthClientCredentials(
+      const result = await fetchOAuthClientCredentials(
         tokenUrl,
         clientId,
         clientSecret,
         scopes || ['openid'],
+        this.makeFetchFn(),
       );
 
       this.mcpOAuthToken = result.token;

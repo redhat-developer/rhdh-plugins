@@ -85,7 +85,7 @@ export const SafetyPatternsSection = ({
           </Button>
         </Box>
       </Box>
-      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         Words or phrases that trigger safety guardrails when detected in user
         input.
       </Typography>

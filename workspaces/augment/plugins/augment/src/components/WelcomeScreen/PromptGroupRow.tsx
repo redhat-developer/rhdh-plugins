@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
@@ -65,7 +65,7 @@ const GRID_SX = {
   gap: `${CARD_GAP}px`,
 } as const;
 
-export const PromptGroupRow: React.FC<PromptGroupRowProps> = ({
+export const PromptGroupRow: FC<PromptGroupRowProps> = ({
   promptGroup,
   onCardClick,
   isDark,

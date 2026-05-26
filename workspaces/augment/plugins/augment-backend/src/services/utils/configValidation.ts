@@ -135,6 +135,11 @@ function validateAgents(value: unknown): void {
 
     if (Array.isArray(agent.handoffs)) {
       for (const target of agent.handoffs as string[]) {
+        if (target === key) {
+          throw new InputError(
+            `Agent "${key}" has a handoff to itself — this would cause an infinite loop`,
+          );
+        }
         if (!keys.has(target)) {
           throw new InputError(
             `Agent "${key}" has handoff to "${target}" which does not exist ` +
@@ -146,6 +151,11 @@ function validateAgents(value: unknown): void {
 
     if (Array.isArray(agent.asTools)) {
       for (const target of agent.asTools as string[]) {
+        if (target === key) {
+          throw new InputError(
+            `Agent "${key}" has an asTools reference to itself — this would cause an infinite loop`,
+          );
+        }
         if (!keys.has(target)) {
           throw new InputError(
             `Agent "${key}" has asTools reference to "${target}" which does ` +
@@ -156,11 +166,77 @@ function validateAgents(value: unknown): void {
     }
   }
 
+  // Detect circular handoff chains (A → B → C → A).
+  // Only checks handoffs (transfer of control), not asTools (function calls
+  // that return results and don't transfer control permanently).
+  const handoffGraph: Record<string, string[]> = {};
+  for (const [key, agentVal] of Object.entries(agents)) {
+    const agent = agentVal as Record<string, unknown>;
+    handoffGraph[key] = Array.isArray(agent.handoffs)
+      ? (agent.handoffs as string[]).filter(t => keys.has(t))
+      : [];
+  }
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+  function dfs(node: string, path: string[]): void {
+    if (inStack.has(node)) {
+      const cycleStart = path.indexOf(node);
+      const cycle = path.slice(cycleStart).concat(node);
+      throw new InputError(
+        `Circular handoff chain detected: ${cycle.join(' → ')}`,
+      );
+    }
+    if (visited.has(node)) return;
+    visited.add(node);
+    inStack.add(node);
+    for (const target of handoffGraph[node] ?? []) {
+      dfs(target, [...path, node]);
+    }
+    inStack.delete(node);
+  }
+  for (const key of keys) {
+    dfs(key, []);
+  }
+
   assertSizeLimit(value, 'agents');
+}
+
+function validateWorkflows(value: unknown): void {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new InputError(
+      'workflows must be a non-null object (Record<string, WorkflowDefinition>)',
+    );
+  }
+  const workflows = value as Record<string, unknown>;
+  for (const [key, wfVal] of Object.entries(workflows)) {
+    if (typeof wfVal !== 'object' || wfVal === null || Array.isArray(wfVal)) {
+      throw new InputError(`Workflow "${key}" must be a non-null object`);
+    }
+    const wf = wfVal as Record<string, unknown>;
+    if (typeof wf.id !== 'string' || wf.id.trim().length === 0) {
+      throw new InputError(`Workflow "${key}" must have a non-empty id`);
+    }
+    if (wf.id !== key) {
+      throw new InputError(
+        `Workflow key "${key}" must match its id field "${wf.id}"`,
+      );
+    }
+    if (typeof wf.name !== 'string' || wf.name.trim().length === 0) {
+      throw new InputError(`Workflow "${key}" must have a non-empty name`);
+    }
+    if (!Array.isArray(wf.nodes)) {
+      throw new InputError(`Workflow "${key}" must have a nodes array`);
+    }
+    if (!Array.isArray(wf.edges)) {
+      throw new InputError(`Workflow "${key}" must have an edges array`);
+    }
+  }
+  assertSizeLimit(value, 'workflows');
 }
 
 const VALIDATORS: Partial<Record<AdminConfigKey, (value: unknown) => void>> = {
   agents: validateAgents,
+  workflows: validateWorkflows,
   promptGroups: validatePromptGroups,
 
   baseUrl: value => {

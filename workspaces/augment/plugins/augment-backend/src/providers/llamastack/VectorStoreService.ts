@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-/** @deprecated Import from '../responses-api/documents/VectorStoreService' instead */
-export * from '../responses-api/documents/VectorStoreService';
+/** @deprecated Import from '../../services/VectorStoreService' instead */
+export * from '../../services/VectorStoreService';
