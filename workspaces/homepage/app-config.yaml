@@ -87,6 +87,85 @@ homepage:
   # For 1.x this references a mount point (`config.id`).
   # For 2.x this references a homepage widget extension (name).
   defaultWidgets:
+    - id: test-no-if
+      ref: headline
+      props:
+        title: 'This widget has no "if" condition and should always render'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user
+      ref: headline
+      if:
+        users: [user:development/guest]
+      props:
+        title: 'This widget has an "if" condition that allows only the guest user to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-another-user
+      ref: headline
+      if:
+        users: [user:development/another-user]
+      props:
+        title: 'This widget has an "if" condition that allows only another user to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-group
+      ref: headline
+      if:
+        groups: [group:development/guests]
+      props:
+        title: 'This widget has an "if" condition that allows only the guests group to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-another-group
+      ref: headline
+      if:
+        groups: [group:development/another-group]
+      props:
+        title: 'This widget has an "if" condition that allows only another group to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-catalog-entities
+      ref: headline
+      if:
+        permissions: [catalog.entity.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with catalog read permissions to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-create-catalog-entities
+      ref: headline
+      if:
+        permissions: [catalog.entity.create]
+      props:
+        title: 'This widget has an "if" condition that allows only users with catalog create permissions to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-this-widget
+      ref: headline
+      if:
+        permissions: [homepage.default-widgets.read, catalog.entity.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with access to read default widgets to see it (id: test-if-user-can-read-this-widget)'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-another-widget
+      ref: headline
+      if:
+        permissions: [homepage.default-widgets.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with access to read default widgets to see it (id: test-if-user-can-read-another-widget)'
+      layout:
+        xl: { w: 12, h: 1 }
+
     - id: onboarding
       ref: 'rhdh-onboarding-section'
       layout:
@@ -230,9 +309,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:default/guest-user
-      ownershipEntityRefs: []
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -279,6 +356,15 @@ permission:
       - homepage
     admin:
       users:
-        - name: user:default/guest-user
+        - name: user:development/guest
+
+      # if you make the guest user super admin here you might see "unexpected" default widgets
+      # on the homepage, as some widgets are only visible to users with access to read default widgets,
+      # which the guest user has then by default.
+      # You can either remove the guest user from the admin users or configure the superUsers instead.
       superUsers:
-        - name: user:default/guest-user
+        []
+        # - name: user:development/guest
+    policyFileReload: true
+    policies-csv-file: ../../rbac-policy.csv
+    conditionalPoliciesFile: ../../conditional-policies.yaml

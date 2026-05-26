@@ -44,6 +44,7 @@ import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
 import { DebugHomepageAvailableWidgets } from './components/homepage/DebugHomepageAvailableWidgets';
 import { DebugHomepageDefaultWidgets } from './components/homepage/DebugHomepageDefaultWidgets';
+import { DebugHomepageSavedWidgets } from './components/homepage/DebugHomepageSavedWidgets';
 
 import {
   AlertDisplay,
@@ -170,9 +171,9 @@ const createHeadline = ({
   priority,
 }: {
   id: string;
-  title: string;
-  align: string;
-  priority: number;
+  title?: string;
+  align?: string;
+  priority?: number;
 }): HomePageCardMountPoint => ({
   Component: Headline,
   config: {
@@ -243,6 +244,9 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     },
   },
   // Add extra mount points to verify same components can mount multiple times
+  createHeadline({
+    id: 'headline',
+  }),
   createHeadline({
     id: 'headline-left',
     title: 'Left title',
@@ -453,6 +457,10 @@ const routes = (
     <Route
       path="/debug-default-widgets"
       element={<DebugHomepageDefaultWidgets />}
+    />
+    <Route
+      path="/debug-saved-widgets"
+      element={<DebugHomepageSavedWidgets />}
     />
   </FlatRoutes>
 );
