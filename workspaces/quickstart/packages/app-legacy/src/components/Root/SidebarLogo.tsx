@@ -42,7 +42,7 @@ export const SidebarLogo = () => {
       }}
     >
       <Link
-        to="/catalog"
+        to="/"
         underline="none"
         aria-label="Home"
         style={{
