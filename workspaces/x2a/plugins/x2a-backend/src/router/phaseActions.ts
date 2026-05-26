@@ -55,7 +55,14 @@ class InitPhaseAction implements PhaseAction {
 
     let metadataModules: MetadataModule[];
     try {
-      metadataModules = JSON.parse(metadataArtifact.value);
+      const parsed = JSON.parse(metadataArtifact.value);
+      if (!Array.isArray(parsed)) {
+        context.logger.warn(
+          `project_metadata artifact is not an array, skipping module sync`,
+        );
+        return;
+      }
+      metadataModules = parsed;
     } catch (error) {
       context.logger.warn(
         `Failed to parse project_metadata artifact, skipping module sync: ${error instanceof Error ? error.message : String(error)}`,
@@ -66,36 +73,126 @@ class InitPhaseAction implements PhaseAction {
     await this.syncModules(context, metadataModules);
   }
 
+  private normalizeTechWithWarning(
+    logger: LoggerService,
+    technology: string | undefined,
+    moduleName: string,
+  ): ReturnType<typeof normalizeSourceTechnology> {
+    const normalized = normalizeSourceTechnology(technology);
+    if (technology && !normalized) {
+      logger.warn(
+        `Unrecognized source technology "${technology}" for module "${moduleName}" - storing as undefined`,
+      );
+    }
+    return normalized;
+  }
+
+  private classifyModuleChanges(
+    logger: LoggerService,
+    existingModules: Awaited<
+      ReturnType<PhaseActionContext['x2aDatabase']['listModules']>
+    >,
+    metadataModules: MetadataModule[],
+    projectId: string,
+  ) {
+    const existingByName = new Map(
+      existingModules.map(m => [m.name.trim(), m]),
+    );
+    const metadataNames = new Set(metadataModules.map(m => m.name.trim()));
+
+    logger.debug(
+      `syncModules for project ${projectId}: existingNames=[${[...existingByName.keys()].join(', ')}], metadataNames=[${[...metadataNames].join(', ')}]`,
+    );
+
+    // Modules in DB but not in metadata: soft-delete
+    const toRemove = existingModules.filter(
+      m => !metadataNames.has(m.name.trim()) && !m.removedAt,
+    );
+
+    // Modules in metadata but not in DB (or previously soft-deleted): add or restore
+    const toAdd: MetadataModule[] = [];
+    const toRestore: typeof existingModules = [];
+    const toUpdate: Array<{
+      id: string;
+      sourcePath?: string;
+      technology?: ReturnType<typeof normalizeSourceTechnology>;
+    }> = [];
+
+    for (const mm of metadataModules) {
+      const existing = existingByName.get(mm.name.trim());
+      if (existing) {
+        const technology = this.normalizeTechWithWarning(
+          logger,
+          mm.technology,
+          mm.name,
+        );
+        const pathChanged = existing.sourcePath !== mm.path;
+        const techChanged = existing.technology !== technology;
+
+        if (existing.removedAt) {
+          toRestore.push(existing);
+        }
+
+        if (pathChanged || techChanged) {
+          toUpdate.push({
+            id: existing.id,
+            ...(pathChanged ? { sourcePath: mm.path } : {}),
+            ...(techChanged ? { technology } : {}),
+          });
+        }
+      } else {
+        toAdd.push(mm);
+      }
+    }
+
+    return { toRemove, toAdd, toRestore, toUpdate };
+  }
+
   private async syncModules(
     context: PhaseActionContext,
     metadataModules: MetadataModule[],
   ): Promise<void> {
     const { projectId, x2aDatabase, logger } = context;
 
-    const existingModules = await x2aDatabase.listModules({ projectId });
-    const existingNames = new Set(existingModules.map(m => m.name));
-    const metadataNames = new Set(metadataModules.map(m => m.name));
+    const existingModules = await x2aDatabase.listModules({
+      projectId,
+      includeRemoved: true,
+    });
 
-    const toAdd = metadataModules.filter(m => !existingNames.has(m.name));
-    const toRemove = existingModules.filter(m => !metadataNames.has(m.name));
-
-    await Promise.all(
-      toRemove.map(m => {
-        logger.info(
-          `Removing module "${m.name}" (${m.id}) from project ${projectId}`,
-        );
-        return x2aDatabase.deleteModule({ id: m.id });
-      }),
+    logger.debug(
+      `syncModules for project ${projectId}: existingNames=[${existingModules.map(m => m.name).join(', ')}], metadataNames=[${metadataModules.map(m => m.name).join(', ')}]`,
     );
+
+    const { toRemove, toAdd, toRestore, toUpdate } = this.classifyModuleChanges(
+      logger,
+      existingModules,
+      metadataModules,
+      projectId,
+    );
+
+    // Persist the changes
+    await Promise.all([
+      ...toRemove.map(m => {
+        logger.info(
+          `Soft-deleting module "${m.name}" (${m.id}) from project ${projectId}`,
+        );
+        return x2aDatabase.softDeleteModule({ id: m.id });
+      }),
+      ...toRestore.map(m => {
+        logger.info(
+          `Restoring previously removed module "${m.name}" (${m.id}) in project ${projectId}`,
+        );
+        return x2aDatabase.restoreModule({ id: m.id });
+      }),
+    ]);
 
     await Promise.all(
       toAdd.map(m => {
-        const technology = normalizeSourceTechnology(m.technology);
-        if (m.technology && !technology) {
-          logger.warn(
-            `Unrecognized source technology "${m.technology}" for module "${m.name}" - storing as undefined`,
-          );
-        }
+        const technology = this.normalizeTechWithWarning(
+          logger,
+          m.technology,
+          m.name,
+        );
         logger.info(
           `Creating module "${m.name}" for project ${projectId} with technology ${technology}`,
         );
@@ -108,8 +205,17 @@ class InitPhaseAction implements PhaseAction {
       }),
     );
 
+    await Promise.all(
+      toUpdate.map(({ id, sourcePath, technology }) => {
+        logger.info(
+          `Updating module (${id}) in project ${projectId}: sourcePath=${sourcePath ?? '(unchanged)'}, technology=${technology ?? '(unchanged)'}`,
+        );
+        return x2aDatabase.updateModule({ id, sourcePath, technology });
+      }),
+    );
+
     logger.info(
-      `Module sync complete for project ${projectId}: added=${toAdd.length}, removed=${toRemove.length}, kept=${existingModules.length - toRemove.length}`,
+      `Module sync complete for project ${projectId}: added=${toAdd.length}, removed=${toRemove.length}, restored=${toRestore.length}, updated=${toUpdate.length}`,
     );
   }
 }

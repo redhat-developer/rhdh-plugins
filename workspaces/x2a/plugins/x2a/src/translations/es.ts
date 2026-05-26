@@ -69,6 +69,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'projectModulesCard.noModules': 'Aún no se encontraron módulos...',
     'projectModulesCard.toReview': 'revisar',
     'projectModulesCard.published': 'publicado',
+    'projectModulesCard.spinner':
+      'Ejecutando la fase de descubrimiento y actualizando la lista de módulos desde el plan de migración…',
     'projectPage.title': 'Proyecto',
     'projectPage.actionsTooltip':
       'Haga clic para abrir el menú para las acciones del proyecto',
@@ -113,6 +115,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.summary.running': 'En ejecución',
     'module.summary.error': 'Error',
     'module.summary.cancelled': 'Cancelado',
+    'module.summary.removed': 'Eliminado',
     'module.summary.toReview_one':
       '{{count}} módulo con artefactos para revisar',
     'module.summary.toReview_other':
@@ -138,6 +141,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.success': 'Éxito',
     'module.statuses.error': 'Error',
     'module.statuses.cancelled': 'Cancelado',
+    'module.statuses.removed': 'Eliminado',
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
     'artifact.types.ansible_project': 'Proyecto AAP',
@@ -270,6 +274,20 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Error al reiniciar la fase de inicio del proyecto "{{name}}"',
     'retriggerInit.errorStart':
       'Error al iniciar la inicialización del proyecto',
+    'resyncMigrationPlan.action': 'Resincronizar plan de migración',
+    'resyncMigrationPlan.confirm.title':
+      '¿Resincronizar el plan de migración para "{{name}}"?',
+    'resyncMigrationPlan.confirm.message':
+      'Esta operación releerá el plan de migración del repositorio de destino y actualizará la lista de módulos en consecuencia. Se añadirán los módulos nuevos y los que ya no estén en el plan se marcarán como eliminados. Si modifica el documento, por ejemplo eliminando un módulo, asegúrese de que el documento siga siendo coherente.',
+    'resyncMigrationPlan.confirm.warning':
+      'Los módulos marcados como eliminados conservarán su historial de trabajos pero ya no serán elegibles para nuevas ejecuciones de fase. Esta acción no se puede deshacer para los módulos eliminados a menos que se vuelvan a añadir al plan de migración.',
+    'resyncMigrationPlan.confirm.confirmButton': 'Resincronizar',
+    'resyncMigrationPlan.running':
+      'Resincronizando la lista de módulos desde el plan de migración…',
+    'resyncMigrationPlan.error':
+      'Error al resincronizar el plan de migración del proyecto "{{name}}"',
+    'resyncMigrationPlan.errorStart':
+      'Error al iniciar la resincronización del plan de migración',
     'scaffolder.rulesAcceptance.loadingRules': 'Cargando reglas...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'No hay reglas configuradas.',

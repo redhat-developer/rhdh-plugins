@@ -73,6 +73,8 @@ export function buildListModulesOutputSchema(z: typeof zod) {
     })
     .describe('Latest job for this phase on the module, if any.');
 
+  const moduleStatus = z.enum([...X2A_JOB_STATUS_VALUES, 'removed']);
+
   const moduleItem = z
     .object({
       id: z.string().describe('UUID of the module.'),
@@ -81,7 +83,7 @@ export function buildListModulesOutputSchema(z: typeof zod) {
         .string()
         .describe('Path to the module within the source repository.'),
       projectId: z.string(),
-      status: jobPhaseStatus
+      status: moduleStatus
         .optional()
         .describe('Aggregate module status derived from phase jobs.'),
       errorDetails: z
@@ -164,11 +166,17 @@ export function createListModulesAction(options: X2aActionsOptions) {
           projectId: z
             .string()
             .describe('UUID of the project whose modules should be listed.'),
+          includeRemoved: z
+            .boolean()
+            .optional()
+            .describe(
+              'When true, include modules that were soft-deleted during a migration plan resync. Defaults to false.',
+            ),
         }),
       output: z => buildListModulesOutputSchema(z),
     },
     action: async ({ input, credentials }) => {
-      const { projectId } = input;
+      const { projectId, includeRemoved } = input;
       logger.info(`MCP tool x2a-list-modules invoked for project ${projectId}`);
 
       const ctx = await resolveCredentialsContext({
@@ -193,7 +201,10 @@ export function createListModulesAction(options: X2aActionsOptions) {
         );
       }
 
-      const modules = await x2aDatabase.listModules({ projectId });
+      const modules = await x2aDatabase.listModules({
+        projectId,
+        includeRemoved,
+      });
       await listModulesWithReconciledStatuses(modules, {
         kubeService,
         x2aDatabase,

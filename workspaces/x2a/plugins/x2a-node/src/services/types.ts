@@ -119,4 +119,5 @@ export interface JobCreateParams {
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;
   acceptedRules?: RuleSnapshot[];
+  refresh?: boolean;
 }

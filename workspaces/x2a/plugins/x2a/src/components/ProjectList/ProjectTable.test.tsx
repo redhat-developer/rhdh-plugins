@@ -257,6 +257,7 @@ describe('ProjectTable', () => {
       running: 0,
       error: 0,
       cancelled: 0,
+      removed: 0,
     };
 
     const renderTable = (projects: Project[]) => {
@@ -458,6 +459,7 @@ describe('ProjectTable', () => {
       running: 0,
       error: 0,
       cancelled: 0,
+      removed: 0,
     };
 
     const openGlobalDialog = (projects: Project[]) => {

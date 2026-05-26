@@ -35,7 +35,7 @@ export const x2aPluginMessages = {
   },
   projectPage: {
     title: 'Project',
-    deleteProject: 'Delete',
+    deleteProject: 'Delete this project',
     actionsTooltip: 'Click to open the menu for project actions',
     deleteError: 'Failed to delete project',
     deleteConfirm: {
@@ -78,6 +78,8 @@ export const x2aPluginMessages = {
     noModules: 'No modules found yet...',
     toReview: 'review',
     published: 'published',
+    spinner:
+      'Running discovery phase and updating the module list from the migration plan…',
   },
   initPhaseCard: {
     title: 'Discovery Phase',
@@ -198,7 +200,7 @@ export const x2aPluginMessages = {
   bulkRun: {
     projectAction: 'Run all modules',
     globalAction: 'Run all',
-    projectPageAction: 'Run all',
+    projectPageAction: 'Run all modules',
     projectConfirm: {
       title: 'Run all modules in "{{name}}" project?',
       message:
@@ -266,6 +268,7 @@ export const x2aPluginMessages = {
       running: 'Running',
       error: 'Error',
       cancelled: 'Cancelled',
+      removed: 'Removed',
       toReview_one: '{{count}} module with artifacts to review',
       toReview_other: '{{count}} modules with artifacts to review',
     },
@@ -289,7 +292,22 @@ export const x2aPluginMessages = {
       success: 'Success',
       error: 'Error',
       cancelled: 'Cancelled',
+      removed: 'Removed',
     },
+  },
+  resyncMigrationPlan: {
+    action: 'Resync migration plan',
+    confirm: {
+      title: 'Resync migration plan for "{{name}}"?',
+      message:
+        'This will re-read the migration plan from the target repository and update the module list accordingly. New modules will be added and modules no longer in the plan will be marked as removed. If making changes to the document, like removing a module, make sure the document stays coherent.',
+      warning:
+        'Modules marked as removed will retain their job history but will no longer be eligible for new phase runs. This action cannot be undone for removed modules unless they are re-added to the migration plan.',
+      confirmButton: 'Resync',
+    },
+    running: 'Resyncing module list from migration plan…',
+    error: 'Failed to resync migration plan for project "{{name}}"',
+    errorStart: 'Failed to start migration plan resync',
   },
   artifact: {
     types: {
