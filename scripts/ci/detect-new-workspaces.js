@@ -87,7 +87,7 @@ function buildPresetJson(workspaceName) {
         extends: [
           `github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(${displayName})`,
         ],
-        addLabels: ['team/rhdh', `${workspaceName}`],
+        addLabels: [`${workspaceName}`],
       },
       {
         description: `all ${displayName} patch updates`,
@@ -95,7 +95,7 @@ function buildPresetJson(workspaceName) {
         extends: [
           `github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(${displayName})`,
         ],
-        addLabels: ['team/rhdh', `${workspaceName}`],
+        addLabels: [`${workspaceName}`],
       },
       {
         description: `all ${displayName} dev dependency updates`,
@@ -103,7 +103,7 @@ function buildPresetJson(workspaceName) {
         extends: [
           `github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(${displayName})`,
         ],
-        addLabels: ['team/rhdh', `${workspaceName}`],
+        addLabels: [`${workspaceName}`],
       },
     ],
   };
