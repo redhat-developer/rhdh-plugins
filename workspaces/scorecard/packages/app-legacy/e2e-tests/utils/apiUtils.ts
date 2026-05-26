@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Response } from '@playwright/test';
 import { Page, expect } from '@playwright/test';
 import { ScorecardRoutes } from '../constants/routes';
 
@@ -20,6 +21,15 @@ const GITHUB_AGGREGATION_ROUTE =
   ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE;
 const JIRA_AGGREGATION_ROUTE =
   ScorecardRoutes.JIRA_OPEN_ISSUES_METRIC_AGGREGATION_ROUTE;
+
+export type WaitForAggregationResponseOptions = {
+  status?: number;
+  timeout?: number;
+  expectedResult?: {
+    averageScore?: number;
+    total?: number;
+  };
+};
 
 export async function waitUntilApiCallSucceeds(
   page: Page,
@@ -35,6 +45,61 @@ export async function waitUntilApiCallSucceeds(
   );
 
   expect(response.status()).toBe(200);
+}
+
+function isAggregationDataUrl(url: string, aggregationId: string): boolean {
+  return (
+    url.includes(`/api/scorecard/aggregations/${aggregationId}`) &&
+    !url.includes('/metadata')
+  );
+}
+
+/**
+ * Waits for GET /api/scorecard/aggregations/{aggregationId} (not /metadata).
+ * Start the returned promise before the action that triggers the fetch (e.g. page.reload).
+ */
+export function waitForAggregationResponse(
+  page: Page,
+  aggregationId: string,
+  options?: WaitForAggregationResponseOptions,
+): Promise<Response> {
+  const status = options?.status ?? 200;
+  const timeout = options?.timeout ?? 60_000;
+
+  return page.waitForResponse(
+    async res => {
+      const isStatusValid = res.status() === status;
+
+      if (!isAggregationDataUrl(res.url(), aggregationId) || !isStatusValid) {
+        return false;
+      }
+
+      const expected = options?.expectedResult;
+      if (!expected) {
+        return true;
+      }
+
+      try {
+        const json = await res.json();
+        const result = json?.result;
+
+        const isAverageScoreValid =
+          expected.averageScore !== undefined &&
+          result?.averageScore !== expected.averageScore;
+        const isTotalValid =
+          expected.total !== undefined && result?.total !== expected.total;
+
+        if (!isAverageScoreValid || !isTotalValid) {
+          return false;
+        }
+
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { timeout },
+  );
 }
 
 export async function mockApiResponse(

@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
+import type { Page } from '@playwright/test';
 import type { HomePage } from '../pages/HomePage';
-import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/homepageWidgetTitles';
+import {
+  AGGREGATED_CARDS_WIDGET_TITLES,
+  AGGREGATED_CARDS_METRIC_IDS,
+} from '../constants/aggregations';
+import { mockApiResponse, waitForAggregationResponse } from './apiUtils';
+import { mockAggregationNoDataFound } from './mockHomepageAggregations';
+
+type SetupHomepageAggregationCardOptions = {
+  aggregationMetadata: { id: string; title: string };
+  route: string;
+  response: object;
+  status?: number;
+};
 
 export async function addWidgets(homePage: HomePage, widgetTitle: string) {
   await homePage.navigateToHome();
@@ -30,11 +43,41 @@ export async function addAggregatedScorecardWidgets(homePage: HomePage) {
   await homePage.enterEditMode();
   await homePage.clearAllCards();
 
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDeprecatedMetricId);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withDefaultAggregation);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withGithubOpenPrs);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withJiraOpenIssuesKpi);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.jiraMetricId);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.githubMetricId);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.githubOpenPrsKpi);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.jiraOpenIssuesKpi);
+  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.openPrsWeightedKpi);
 
   await homePage.saveChanges();
+}
+
+export async function setupHomepageAggregationCard(
+  page: Page,
+  homePage: HomePage,
+  options: SetupHomepageAggregationCardOptions,
+): Promise<void> {
+  const { aggregationMetadata, route, response, status } = options;
+
+  await mockApiResponse(page, route, response, status ?? 200);
+
+  await addWidgets(homePage, aggregationMetadata.title);
+
+  // Reload clears the singleton React Query cache
+  await page.reload();
+}
+
+export async function setupHomepageAllCardsNoData(
+  page: Page,
+  homePage: HomePage,
+): Promise<void> {
+  await mockAggregationNoDataFound(page);
+
+  const responseWaits = Object.values(AGGREGATED_CARDS_METRIC_IDS).map(id =>
+    waitForAggregationResponse(page, id),
+  );
+
+  await addAggregatedScorecardWidgets(homePage);
+  await page.reload();
+  await Promise.all(responseWaits);
 }

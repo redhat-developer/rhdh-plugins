@@ -15,7 +15,7 @@
  */
 
 import { Locator, Page, expect } from '@playwright/test';
-import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/homepageWidgetTitles';
+import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/aggregations';
 import {
   ScorecardMessages,
   getEntityCount,
@@ -63,9 +63,7 @@ export class HomePage {
       cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
     } else if (cardName === 'Scorecard: Jira open blocking') {
       cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
-    } else if (
-      cardName === AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi
-    ) {
+    } else if (cardName === AGGREGATED_CARDS_WIDGET_TITLES.openPrsWeightedKpi) {
       cardPattern =
         /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardOpenPrsWeightedKpi/i;
     } else {

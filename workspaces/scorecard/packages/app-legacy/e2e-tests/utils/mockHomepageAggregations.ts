@@ -18,6 +18,9 @@ import type { Page } from '@playwright/test';
 import { mockApiResponse } from './apiUtils';
 import { ScorecardRoutes } from '../constants/routes';
 import {
+  emptyGithubAggregatedResponse,
+  emptyJiraAggregatedResponse,
+  emptyOpenPrsWeightedAggregatedResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
   notAllowedAggregationErrorBody,
@@ -65,6 +68,50 @@ export async function mockHomepageAggregationsPermissionDenied(
     }
     await route.fulfill({
       status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify(notAllowedAggregationErrorBody),
+    });
+  });
+}
+
+export async function mockAggregationNoDataFound(page: Page): Promise<void> {
+  await page.route('**/api/scorecard/aggregations/**', async route => {
+    const url = route.request().url();
+    const id = url.split('/').pop();
+
+    if (id === 'openPrsWeightedKpi') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyOpenPrsWeightedAggregatedResponse),
+      });
+      return;
+    }
+
+    const githubAggregations = ['openPrsKpi', 'github.open_prs'];
+    if (id && githubAggregations.includes(id)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyGithubAggregatedResponse),
+      });
+
+      return;
+    }
+
+    const jiraAggregations = ['openIssuesKpi', 'jira.open_issues'];
+    if (id && jiraAggregations.includes(id)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyJiraAggregatedResponse),
+      });
+
+      return;
+    }
+
+    await route.fulfill({
+      status: 404,
       contentType: 'application/json',
       body: JSON.stringify(notAllowedAggregationErrorBody),
     });
