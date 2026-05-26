@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.13.4
+
+### Patch Changes
+
+- ab8323b: Fix issue that defaul widget props are ignored when customization is enabled.
+
 ## 1.13.3
 
 ### Patch Changes
