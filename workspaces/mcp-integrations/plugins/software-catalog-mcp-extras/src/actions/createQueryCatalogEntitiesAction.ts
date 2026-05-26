@@ -30,11 +30,6 @@ export const createQueryCatalogEntitiesAction = ({
   actionsRegistry.register({
     name: 'query-catalog-entities',
     title: 'Fetch Catalog Entities',
-    attributes: {
-      destructive: false,
-      readOnly: true,
-      idempotent: true,
-    },
     description: `Search and retrieve catalog entities from the Backstage server.
 
 List all Backstage entities such as Components, Systems, Resources, APIs, Locations, Users, and Groups. 

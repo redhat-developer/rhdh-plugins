@@ -37,11 +37,6 @@ export const createAnalyzeTechDocsCoverageAction = ({
   actionsRegistry.register({
     name: 'analyze-techdocs-coverage',
     title: 'Analyze TechDocs Coverage',
-    attributes: {
-      destructive: false,
-      readOnly: true,
-      idempotent: true,
-    },
     description: `Analyze documentation coverage across Backstage entities to understand what percentage of entities have TechDocs available.
 
       It calculates the percentage of entities that have TechDocs configured, helping identify documentation gaps and improve overall documentation coverage.

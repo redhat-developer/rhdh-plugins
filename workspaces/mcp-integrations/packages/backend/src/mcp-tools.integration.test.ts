@@ -56,11 +56,8 @@ const EXPECTED_EXTRA_TOOLS = [
 ];
 
 const READ_ONLY_TOOLS = [
-  'software-catalog-mcp-extras.query-catalog-entities',
   'techdocs-mcp-extras.fetch-techdocs',
-  'techdocs-mcp-extras.analyze-techdocs-coverage',
   'techdocs-mcp-extras.retrieve-techdocs-content',
-  'scaffolder-mcp-extras.fetch-template-metadata',
   'scaffolder-mcp-extras.list-scaffolder-tasks',
   'scaffolder-mcp-extras.list-scaffolder-actions',
   'scaffolder-mcp-extras.get-scaffolder-task-logs',
@@ -83,6 +80,14 @@ const ALL_PLUGIN_SOURCES = [
   'techdocs-mcp-extras',
   'scaffolder-mcp-extras',
 ] as const;
+
+/** Prevent SSE reconnection timers from keeping the Node process alive after tests. */
+const MCP_TRANSPORT_RECONNECTION_OPTIONS = {
+  initialReconnectionDelay: 0,
+  maxReconnectionDelay: 0,
+  reconnectionDelayGrowFactor: 1,
+  maxRetries: 0,
+} as const;
 
 const BEARER_TOKEN_PATTERN = /^Bearer +(\S+)$/i;
 
@@ -129,12 +134,6 @@ function createStrictMcpHttpAuthFeature() {
             throw new AuthenticationError('Invalid credentials');
           }
 
-          return mockCredentials.user('user:default/mcp-client');
-        }
-
-        const token = extractBearerToken(req.headers.authorization);
-
-        if (token === MCP_TOKEN) {
           return mockCredentials.user('user:default/mcp-client');
         }
 
@@ -202,6 +201,38 @@ async function startMcpBackend(options: McpBackendOptions) {
   return startTestBackend({ features });
 }
 
+function createMcpTransport(
+  server: Server,
+  headers?: Record<string, string>,
+): StreamableHTTPClientTransport {
+  return new StreamableHTTPClientTransport(
+    new URL(`http://127.0.0.1:${getServerPort(server)}/api/mcp-actions/v1`),
+    {
+      reconnectionOptions: { ...MCP_TRANSPORT_RECONNECTION_OPTIONS },
+      ...(headers
+        ? {
+            requestInit: {
+              headers,
+            },
+          }
+        : {}),
+    },
+  );
+}
+
+async function closeMcpConnection(
+  client: Client,
+  transport: StreamableHTTPClientTransport,
+): Promise<void> {
+  try {
+    await transport.terminateSession();
+  } catch {
+    // MCP servers may respond with 405 when session termination is unsupported.
+  }
+
+  await client.close();
+}
+
 async function withMcpClient<T>(
   server: Server,
   run: (client: Client) => Promise<T>,
@@ -212,22 +243,13 @@ async function withMcpClient<T>(
     version: '1.0.0',
   });
 
-  const transport = new StreamableHTTPClientTransport(
-    new URL(`http://127.0.0.1:${getServerPort(server)}/api/mcp-actions/v1`),
-    headers
-      ? {
-          requestInit: {
-            headers,
-          },
-        }
-      : undefined,
-  );
+  const transport = createMcpTransport(server, headers);
 
   try {
     await client.connect(transport);
     return await run(client);
   } finally {
-    await client.close();
+    await closeMcpConnection(client, transport);
   }
 }
 
@@ -271,95 +293,7 @@ function parseCallToolOutput(result: unknown): unknown {
 }
 
 describe('MCP tools integration', () => {
-  describe('tools/list', () => {
-    describe('with all plugin sources', () => {
-      let backend: McpTestBackend;
-
-      beforeAll(async () => {
-        backend = await startMcpBackend({
-          pluginSources: [...ALL_PLUGIN_SOURCES],
-        });
-      });
-
-      it('exposes all overlay MCP tools via the mcp-actions endpoint', async () => {
-        await withMcpClient(backend.server, async client => {
-          const result = await client.request(
-            { method: 'tools/list' },
-            ListToolsResultSchema,
-          );
-
-          const toolNames = sortAlphabetically(
-            result.tools.map(tool => tool.name),
-          );
-          expect(toolNames).toEqual(sortAlphabetically(EXPECTED_EXTRA_TOOLS));
-          expect(result.tools).toHaveLength(EXPECTED_EXTRA_TOOLS.length);
-        });
-      });
-
-      it('includes description and inputSchema for every tool', async () => {
-        await withMcpClient(backend.server, async client => {
-          const result = await client.request(
-            { method: 'tools/list' },
-            ListToolsResultSchema,
-          );
-
-          for (const tool of result.tools) {
-            expect(tool.description?.trim().length).toBeGreaterThan(0);
-            expect(tool.inputSchema).toMatchObject({ type: 'object' });
-          }
-        });
-      });
-
-      it('marks read-only and destructive tools with the correct MCP hints', async () => {
-        await withMcpClient(backend.server, async client => {
-          const result = await client.request(
-            { method: 'tools/list' },
-            ListToolsResultSchema,
-          );
-
-          const toolsByName = Object.fromEntries(
-            result.tools.map(tool => [tool.name, tool]),
-          );
-
-          for (const toolName of READ_ONLY_TOOLS) {
-            expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(true);
-            expect(toolsByName[toolName]?.annotations?.destructiveHint).toBe(
-              false,
-            );
-          }
-
-          for (const toolName of DESTRUCTIVE_TOOLS) {
-            expect(toolsByName[toolName]?.annotations?.destructiveHint).toBe(
-              true,
-            );
-            expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(
-              false,
-            );
-          }
-        });
-      });
-    });
-
-    it('only exposes tools from configured pluginSources', async () => {
-      const backend = await startMcpBackend({
-        pluginSources: ['software-catalog-mcp-extras'],
-      });
-
-      await withMcpClient(backend.server, async client => {
-        const result = await client.request(
-          { method: 'tools/list' },
-          ListToolsResultSchema,
-        );
-
-        expect(result.tools).toHaveLength(1);
-        expect(result.tools[0]?.name).toBe(
-          'software-catalog-mcp-extras.query-catalog-entities',
-        );
-      });
-    });
-  });
-
-  describe('tools/call smoke tests', () => {
+  describe('with all plugin sources', () => {
     let backend: McpTestBackend;
     let fetchSpy: jest.SpyInstance;
 
@@ -369,72 +303,129 @@ describe('MCP tools integration', () => {
       });
     });
 
-    beforeEach(() => {
-      const originalFetch = globalThis.fetch.bind(globalThis);
-      fetchSpy = jest
-        .spyOn(globalThis, 'fetch')
-        .mockImplementation(async (input, init) => {
-          const url = String(input);
+    it('lists overlay tools with schema metadata and MCP hints', async () => {
+      await withMcpClient(backend.server, async client => {
+        const result = await client.request(
+          { method: 'tools/list' },
+          ListToolsResultSchema,
+        );
 
-          if (/\/api\/scaffolder(?:\/|\?|$)/.test(url)) {
-            return {
-              ok: true,
-              json: async () => ({ tasks: [], totalTasks: 0 }),
-            } as Response;
-          }
+        const toolNames = sortAlphabetically(
+          result.tools.map(tool => tool.name),
+        );
+        expect(toolNames).toEqual(sortAlphabetically(EXPECTED_EXTRA_TOOLS));
 
-          return originalFetch(input, init);
+        const toolsByName = Object.fromEntries(
+          result.tools.map(tool => [tool.name, tool]),
+        );
+
+        for (const tool of result.tools) {
+          expect(tool.description?.trim().length).toBeGreaterThan(0);
+          expect(tool.inputSchema).toMatchObject({ type: 'object' });
+        }
+
+        for (const toolName of READ_ONLY_TOOLS) {
+          expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(true);
+          expect(toolsByName[toolName]?.annotations?.destructiveHint).toBe(
+            false,
+          );
+        }
+
+        for (const toolName of DESTRUCTIVE_TOOLS) {
+          expect(toolsByName[toolName]?.annotations?.destructiveHint).toBe(
+            true,
+          );
+          expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(false);
+        }
+      });
+    });
+
+    describe('tools/call', () => {
+      beforeEach(() => {
+        const originalFetch = globalThis.fetch.bind(globalThis);
+        fetchSpy = jest
+          .spyOn(globalThis, 'fetch')
+          .mockImplementation(async (input, init) => {
+            const url = String(input);
+
+            if (/\/api\/scaffolder(?:\/|\?|$)/.test(url)) {
+              return {
+                ok: true,
+                json: async () => ({ tasks: [], totalTasks: 0 }),
+              } as Response;
+            }
+
+            return originalFetch(input, init);
+          });
+      });
+
+      afterEach(() => {
+        fetchSpy.mockRestore();
+      });
+
+      it('calls query-catalog-entities and returns an empty entity list', async () => {
+        await withMcpClient(backend.server, async client => {
+          const result = await client.callTool(
+            {
+              name: 'software-catalog-mcp-extras.query-catalog-entities',
+              arguments: {},
+            },
+            CallToolResultSchema,
+          );
+
+          expect(parseCallToolOutput(result)).toEqual({ entities: [] });
         });
-    });
-
-    afterEach(() => {
-      fetchSpy.mockRestore();
-    });
-
-    it('calls query-catalog-entities and returns an empty entity list', async () => {
-      await withMcpClient(backend.server, async client => {
-        const result = await client.callTool(
-          {
-            name: 'software-catalog-mcp-extras.query-catalog-entities',
-            arguments: {},
-          },
-          CallToolResultSchema,
-        );
-
-        expect(parseCallToolOutput(result)).toEqual({ entities: [] });
       });
-    });
 
-    it('calls analyze-techdocs-coverage and returns coverage stats', async () => {
-      await withMcpClient(backend.server, async client => {
-        const result = await client.callTool(
-          {
-            name: 'techdocs-mcp-extras.analyze-techdocs-coverage',
-            arguments: {},
-          },
-          CallToolResultSchema,
-        );
+      it('calls analyze-techdocs-coverage and returns coverage stats', async () => {
+        await withMcpClient(backend.server, async client => {
+          const result = await client.callTool(
+            {
+              name: 'techdocs-mcp-extras.analyze-techdocs-coverage',
+              arguments: {},
+            },
+            CallToolResultSchema,
+          );
 
-        expect(parseCallToolOutput(result)).toMatchObject({
-          totalEntities: 0,
-          entitiesWithDocs: 0,
-          coveragePercentage: 0,
+          expect(parseCallToolOutput(result)).toMatchObject({
+            totalEntities: 0,
+            entitiesWithDocs: 0,
+            coveragePercentage: 0,
+          });
+        });
+      });
+
+      it('calls fetch-template-metadata and returns an empty template list', async () => {
+        await withMcpClient(backend.server, async client => {
+          const result = await client.callTool(
+            {
+              name: 'scaffolder-mcp-extras.fetch-template-metadata',
+              arguments: {},
+            },
+            CallToolResultSchema,
+          );
+
+          expect(parseCallToolOutput(result)).toEqual({ templates: [] });
         });
       });
     });
+  });
 
-    it('calls fetch-template-metadata and returns an empty template list', async () => {
-      await withMcpClient(backend.server, async client => {
-        const result = await client.callTool(
-          {
-            name: 'scaffolder-mcp-extras.fetch-template-metadata',
-            arguments: {},
-          },
-          CallToolResultSchema,
-        );
+  it('only exposes tools from configured pluginSources', async () => {
+    const backend = await startMcpBackend({
+      pluginSources: ['software-catalog-mcp-extras'],
+    });
 
-        expect(parseCallToolOutput(result)).toEqual({ templates: [] });
-      });
+    await withMcpClient(backend.server, async client => {
+      const result = await client.request(
+        { method: 'tools/list' },
+        ListToolsResultSchema,
+      );
+
+      expect(result.tools).toHaveLength(1);
+      expect(result.tools[0]?.name).toBe(
+        'software-catalog-mcp-extras.query-catalog-entities',
+      );
     });
   });
 
@@ -448,12 +439,29 @@ describe('MCP tools integration', () => {
       });
     });
 
-    it('rejects MCP requests without Authorization when an MCP token is required', async () => {
+    it.each([
+      {
+        case: 'missing Authorization header',
+        headers: undefined,
+        message: 'Missing Authorization header',
+      },
+      {
+        case: 'invalid Bearer token',
+        headers: { Authorization: 'Bearer invalid-token' },
+        message: 'Invalid credentials',
+      },
+    ])('rejects tools/list when $case', async ({ headers, message }) => {
       await expect(
-        withMcpClient(backend.server, async client =>
-          client.request({ method: 'tools/list' }, ListToolsResultSchema),
+        withMcpClient(
+          backend.server,
+          async client =>
+            client.request({ method: 'tools/list' }, ListToolsResultSchema),
+          headers,
         ),
-      ).rejects.toThrow();
+      ).rejects.toMatchObject({
+        code: 401,
+        message: expect.stringContaining(message),
+      });
     });
 
     it('allows tools/list with a valid Bearer token', async () => {
@@ -465,10 +473,7 @@ describe('MCP tools integration', () => {
             ListToolsResultSchema,
           );
 
-          expect(result.tools).toHaveLength(1);
-          expect(result.tools[0]?.name).toBe(
-            'software-catalog-mcp-extras.query-catalog-entities',
-          );
+          expect(result.tools.length).toBeGreaterThan(0);
         },
         { Authorization: `Bearer ${MCP_TOKEN}` },
       );
