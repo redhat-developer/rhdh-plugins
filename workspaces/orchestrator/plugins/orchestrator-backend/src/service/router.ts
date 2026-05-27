@@ -28,8 +28,6 @@ import {
 import type { Config } from '@backstage/config';
 import { NotAllowedError } from '@backstage/errors';
 import {
-  AuthorizePermissionRequest,
-  AuthorizePermissionResponse,
   AuthorizeResult,
   BasicPermission,
   PolicyDecision,
@@ -55,9 +53,7 @@ import {
   orchestratorInstanceAdminViewPermission,
   orchestratorPermissions,
   orchestratorWorkflowPermission,
-  orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -116,50 +112,24 @@ const authorize = async (
   genericPermission:
     | ResourcePermission<'orchestrator-workflow'>
     | BasicPermission,
-  specificPermissions: BasicPermission[],
   permissionsSvc: PermissionsService,
   httpAuth: HttpAuthService,
 ): Promise<PolicyDecision> => {
   const credentials = await httpAuth.credentials(request);
 
-  let genericDecision: PolicyDecision;
   if (genericPermission.type === 'resource') {
     const decisions = await permissionsSvc.authorizeConditional(
       [{ permission: genericPermission }],
       { credentials },
     );
-    genericDecision = decisions[0];
-    if (genericDecision.result === AuthorizeResult.CONDITIONAL) {
-      return genericDecision;
-    }
-  } else {
-    genericDecision = (
-      await permissionsSvc.authorize([{ permission: genericPermission }], {
-        credentials,
-      })
-    )[0];
+    return decisions[0];
   }
-
-  // legacy code... should be removed
-  const anyOfPermissions = specificPermissions;
-  const decisionResponses: AuthorizePermissionResponse[][] = await Promise.all(
-    anyOfPermissions.map(permission =>
-      permissionsSvc.authorize([{ permission }], {
-        credentials,
-      }),
-    ),
-  );
-  const decisions: AuthorizePermissionResponse[] = decisionResponses.map(
-    d => d[0],
-  );
-  decisions.push(genericDecision);
-
-  const allow = decisions.find(d => d.result === AuthorizeResult.ALLOW);
-  return (
-    allow || {
-      result: AuthorizeResult.DENY,
-    }
-  );
+  const decision = (
+    await permissionsSvc.authorize([{ permission: genericPermission }], {
+      credentials,
+    })
+  )[0];
+  return decision;
 };
 
 const isUserAuthorizedForInstanceAdminViewPermission = async (
@@ -198,18 +168,7 @@ const filterAuthorizedWorkflowIds = async (
     return workflowIds.filter(workflowId => matches({ workflowId }, filters));
   }
 
-  const specificWorkflowRequests: AuthorizePermissionRequest[] =
-    workflowIds.map(workflowId => ({
-      permission: orchestratorWorkflowSpecificPermission(workflowId),
-    }));
-
-  const decisions = await permissionsSvc.authorize(specificWorkflowRequests, {
-    credentials,
-  });
-
-  return workflowIds.filter(
-    (_, idx) => decisions[idx].result === AuthorizeResult.ALLOW,
-  );
+  return [];
 };
 
 const filterAuthorizedWorkflows = async (
@@ -563,7 +522,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowPermission,
-        [orchestratorWorkflowSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -602,7 +560,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowUsePermission,
-        [orchestratorWorkflowUseSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -650,7 +607,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowUsePermission,
-        [orchestratorWorkflowUseSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -693,7 +649,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowPermission,
-        [orchestratorWorkflowSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -763,7 +718,6 @@ function setupInternalRoutes(
         const decision = await authorize(
           req,
           orchestratorWorkflowPermission,
-          [orchestratorWorkflowSpecificPermission(workflowId)],
           permissions,
           httpAuth,
         );
@@ -875,7 +829,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowPermission,
-        [orchestratorWorkflowSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -911,7 +864,6 @@ function setupInternalRoutes(
       const decision = await authorize(
         req,
         orchestratorWorkflowPermission,
-        [orchestratorWorkflowSpecificPermission(workflowId)],
         permissions,
         httpAuth,
       );
@@ -1033,7 +985,6 @@ function setupInternalRoutes(
         const decision = await authorize(
           request,
           orchestratorWorkflowPermission,
-          [orchestratorWorkflowSpecificPermission(workflowId)],
           permissions,
           httpAuth,
         );
@@ -1118,7 +1069,6 @@ function setupInternalRoutes(
         const decision = await authorize(
           request,
           orchestratorWorkflowPermission,
-          [orchestratorWorkflowSpecificPermission(workflowId)],
           permissions,
           httpAuth,
         );
@@ -1179,7 +1129,6 @@ function setupInternalRoutes(
         const decision = await authorize(
           request,
           orchestratorWorkflowUsePermission,
-          [orchestratorWorkflowUseSpecificPermission(workflowId)],
           permissions,
           httpAuth,
         );
