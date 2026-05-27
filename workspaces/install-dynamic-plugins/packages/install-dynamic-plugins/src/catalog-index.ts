@@ -287,8 +287,7 @@ export function parseExtraCatalogIndexImages(
     }
     if (!isSafeSubdirectoryName(name)) {
       log(
-        `WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with unsafe subdirectory name '${name}' in '${entry}'. ` +
-          `Names must be non-empty and must not contain '/', '\\\\', or '..'.`,
+        String.raw`WARNING: Skipping EXTRA_CATALOG_INDEX_IMAGES entry with unsafe subdirectory name '${name}' in '${entry}'. Names must be non-empty and must not contain '/', '\\', or '..'.`,
       );
       continue;
     }

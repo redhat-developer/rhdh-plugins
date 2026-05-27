@@ -49,11 +49,9 @@ describe('deepMerge', () => {
     ) as Record<string, unknown>;
     deepMerge(malicious, dst);
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
-    expect(Object.prototype.hasOwnProperty.call(dst, '__proto__')).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(dst, 'constructor')).toBe(
-      false,
-    );
-    expect(Object.prototype.hasOwnProperty.call(dst, 'prototype')).toBe(false);
+    expect(Object.hasOwn(dst, '__proto__')).toBe(false);
+    expect(Object.hasOwn(dst, 'constructor')).toBe(false);
+    expect(Object.hasOwn(dst, 'prototype')).toBe(false);
   });
 });
 

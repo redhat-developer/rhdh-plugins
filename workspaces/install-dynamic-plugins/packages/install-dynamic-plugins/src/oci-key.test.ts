@@ -188,11 +188,11 @@ describe('ociPluginKey — {{inherit}} without path', () => {
   });
 });
 
-describe('ociPluginKey — auto-detect from image cache', () => {
-  function fakeImageCache(paths: string[]): OciImageCache {
-    return { getPluginPaths: async () => paths } as unknown as OciImageCache;
-  }
+function fakeImageCache(paths: string[]): OciImageCache {
+  return { getPluginPaths: async () => paths } as unknown as OciImageCache;
+}
 
+describe('ociPluginKey — auto-detect from image cache', () => {
   it('resolves a single plugin path', async () => {
     const parsed = await ociPluginKey(
       'oci://registry.io/plugin:v1.0',

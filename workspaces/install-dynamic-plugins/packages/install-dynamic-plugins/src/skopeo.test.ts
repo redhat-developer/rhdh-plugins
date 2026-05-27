@@ -47,7 +47,7 @@ function makeFakeSkopeo(opts: {
     binPath,
     `#!/bin/sh
 echo "$@" >> "${logPath}"
-echo '${stdout.replace(/'/g, `'\\''`)}'
+echo '${stdout.replaceAll("'", String.raw`'\''`)}'
 exit ${exitCode}
 `,
   );

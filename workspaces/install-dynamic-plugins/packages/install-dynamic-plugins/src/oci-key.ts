@@ -18,19 +18,20 @@ import { log } from './log';
 import { type OciImageCache } from './image-cache';
 import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types';
 
-export const OCI_REGEX = new RegExp(
-  `^(${escape(OCI_PROTO)}${
-    String.raw`[^\s/:@]+` // registry host
-  }${
-    String.raw`(?::\d+)?` // optional port
-  }${
-    String.raw`(?:/[^\s:@]+)+` // at least one path segment
-  })${
-    String.raw`(?::([^\s!@:]+)` // tag
-  }|${
-    String.raw`@((?:sha256|sha512|blake3):[^\s!@:]+))` // or digest
-  }${String.raw`(?:!([^\s]+))?$`}`, // optional !<plugin-path>
-);
+const OCI_PATTERN = [
+  '^(',
+  escape(OCI_PROTO),
+  String.raw`[^\s/:@]+`, // registry host
+  String.raw`(?::\d+)?`, // optional port
+  String.raw`(?:/[^\s:@]+)+`, // at least one path segment
+  ')',
+  String.raw`(?::([^\s!@:]+)`, // tag
+  '|',
+  String.raw`@((?:sha256|sha512|blake3):[^\s!@:]+))`, // or digest
+  String.raw`(?:!([^\s]+))?$`, // optional !<plugin-path>
+].join('');
+
+export const OCI_REGEX = new RegExp(OCI_PATTERN);
 
 export type ParsedOciKey = {
   /** `oci://registry/image:!plugin_path` — version-stripped identifier. */

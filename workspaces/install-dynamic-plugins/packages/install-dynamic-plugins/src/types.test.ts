@@ -19,7 +19,7 @@ describe('parseMaxEntrySize', () => {
   const DEFAULT = 40_000_000;
 
   it('returns the default when unset', () => {
-    expect(parseMaxEntrySize(undefined)).toBe(DEFAULT);
+    expect(parseMaxEntrySize()).toBe(DEFAULT);
   });
 
   it('returns the default when empty', () => {

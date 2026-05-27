@@ -125,7 +125,7 @@ describe('parseExtraCatalogIndexImages', () => {
     ['..', '..=quay.io/x:1'],
     ['.', '.=quay.io/x:1'],
     ['foo/bar', 'foo/bar=quay.io/x:1'],
-    ['..\\evil', '..\\evil=quay.io/x:1'],
+    [String.raw`..\evil`, String.raw`..\evil=quay.io/x:1`],
   ])(
     'rejects path-traversing or separator-bearing subdirectory name %p',
     (_badName, entry) => {
@@ -151,6 +151,19 @@ describe('parseExtraCatalogIndexImages', () => {
     ]);
   });
 });
+
+/** Stage a `catalog-entities/<sub>/<file>` tree for the fake skopeo to pack. */
+async function stageLayer(
+  sub: 'extensions' | 'marketplace',
+  file: string,
+  body: string,
+): Promise<string> {
+  const stage = mkdtempSync(join(tmpdir(), 'extra-layer-stage-'));
+  const dir = join(stage, 'catalog-entities', sub);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, file), body);
+  return stage;
+}
 
 describe('extractExtraCatalogIndex', () => {
   let workRoot: string;
@@ -196,19 +209,6 @@ EOF
     rmSync(workRoot, { recursive: true, force: true });
     rmSync(fakeSkopeoDir, { recursive: true, force: true });
   });
-
-  /** Stage a `catalog-entities/<sub>/<file>` tree for the fake skopeo to pack. */
-  async function stageLayer(
-    sub: 'extensions' | 'marketplace',
-    file: string,
-    body: string,
-  ): Promise<string> {
-    const stage = mkdtempSync(join(tmpdir(), 'extra-layer-stage-'));
-    const dir = join(stage, 'catalog-entities', sub);
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, file), body);
-    return stage;
-  }
 
   it("writes catalog entities to <parent>/<sub>/catalog-entities/ from 'extensions/'", async () => {
     const stage = await stageLayer(
@@ -333,7 +333,7 @@ EOF
     }
   });
 
-  it.each(['', '.', '..', 'foo/bar', 'foo\\bar'])(
+  it.each(['', '.', '..', 'foo/bar', String.raw`foo\bar`])(
     'refuses to extract into unsafe subdirectory %p (defense in depth)',
     async badName => {
       const stage = await stageLayer(
