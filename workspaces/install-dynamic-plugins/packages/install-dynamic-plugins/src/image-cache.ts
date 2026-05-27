@@ -16,11 +16,11 @@
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { InstallException } from './errors.js';
-import { log } from './log.js';
-import { resolveImage } from './image-resolver.js';
-import { type Skopeo } from './skopeo.js';
-import { DOCKER_PROTO, OCI_PROTO } from './types.js';
+import { InstallException } from './errors';
+import { log } from './log';
+import { resolveImage } from './image-resolver';
+import { type Skopeo } from './skopeo';
+import { DOCKER_PROTO, OCI_PROTO } from './types';
 
 type OciManifest = {
   layers?: Array<{ digest: string }>;

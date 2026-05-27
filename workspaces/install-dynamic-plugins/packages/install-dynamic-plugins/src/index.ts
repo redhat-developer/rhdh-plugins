@@ -23,27 +23,27 @@ import {
   extractCatalogIndex,
   extractExtraCatalogIndex,
   parseExtraCatalogIndexImages,
-} from './catalog-index.js';
+} from './catalog-index';
 import {
   getNpmWorkers,
   getWorkers,
   mapConcurrent,
   type Outcome,
-} from './concurrency.js';
-import { InstallException } from './errors.js';
-import { OciImageCache } from './image-cache.js';
-import { installNpmPlugin } from './installer-npm.js';
-import { installOciPlugin } from './installer-oci.js';
-import { createLock, registerLockCleanup, removeLock } from './lock-file.js';
-import { log } from './log.js';
+} from './concurrency';
+import { InstallException } from './errors';
+import { OciImageCache } from './image-cache';
+import { installNpmPlugin } from './installer-npm';
+import { installOciPlugin } from './installer-oci';
+import { createLock, registerLockCleanup, removeLock } from './lock-file';
+import { log } from './log';
 import {
   deepMerge,
   filterDisabledOciPlugins,
   mergePlugin,
   preMergeOciDisabledState,
-} from './merger.js';
-import { computePluginHash } from './plugin-hash.js';
-import { Skopeo } from './skopeo.js';
+} from './merger';
+import { computePluginHash } from './plugin-hash';
+import { Skopeo } from './skopeo';
 import {
   CONFIG_HASH_FILE,
   DPDY_FILENAME,
@@ -56,12 +56,12 @@ import {
   type PluginMap,
   type PluginSpec,
   PullPolicy,
-} from './types.js';
-import { fileExists, isPlainObject } from './util.js';
+} from './types';
+import { fileExists, isPlainObject } from './util';
 
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const [rootArg] = process.argv.slice(2);
   if (!rootArg) {
     process.stderr.write(
@@ -623,15 +623,4 @@ async function readInstalledPluginHashes(
     }
   }
   return installed;
-}
-
-// Only run main() when invoked directly (CLI or esbuild's CJS bundle entry),
-// not when imported for tests. Under ts-jest the source is transpiled to CJS,
-// so `require.main === module` is the reliable signal.
-if (require.main === module) {
-  main().catch((err: unknown) => {
-    const msg = err instanceof InstallException ? err.message : String(err);
-    process.stderr.write(`\ninstall-dynamic-plugins failed: ${msg}\n`);
-    process.exit(1);
-  });
 }

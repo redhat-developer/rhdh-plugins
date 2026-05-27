@@ -16,10 +16,10 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as tar from 'tar';
-import { InstallException } from './errors.js';
-import { log } from './log.js';
-import { MAX_ENTRY_SIZE } from './types.js';
-import { isAllowedEntryType, isInside } from './util.js';
+import { InstallException } from './errors';
+import { log } from './log';
+import { MAX_ENTRY_SIZE } from './types';
+import { isAllowedEntryType, isInside } from './util';
 
 const PACKAGE_PREFIX = 'package/';
 

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InstallException } from './errors.js';
-import { log } from './log.js';
-import { type OciImageCache } from './image-cache.js';
-import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types.js';
+import { InstallException } from './errors';
+import { log } from './log';
+import { type OciImageCache } from './image-cache';
+import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types';
 
 export const OCI_REGEX = new RegExp(
   `^(${escape(OCI_PROTO)}${

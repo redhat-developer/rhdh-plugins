@@ -16,8 +16,8 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
-import { InstallException } from './errors.js';
-import { RECOGNIZED_ALGORITHMS, type Algorithm } from './types.js';
+import { InstallException } from './errors';
+import { RECOGNIZED_ALGORITHMS, type Algorithm } from './types';
 
 /**
  * Verify an NPM package archive matches the declared SRI-style integrity string.

@@ -24,8 +24,9 @@
     "node": "22 || 24"
   },
   "main": "dist/install-dynamic-plugins.cjs",
-  "bin": "dist/install-dynamic-plugins.cjs",
+  "bin": "bin/install-dynamic-plugins",
   "files": [
+    "bin",
     "dist/install-dynamic-plugins.cjs",
     "install-dynamic-plugins.sh",
     "README.md"
@@ -36,15 +37,11 @@
   },
   "scripts": {
     "build": "node esbuild.config.mjs",
+    "prepack": "node esbuild.config.mjs",
     "tsc": "tsc",
     "test": "backstage-cli package test",
     "lint": "backstage-cli package lint",
     "clean": "backstage-cli package clean"
-  },
-  "jest": {
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    }
   },
   "dependencies": {
     "tar": "^7.5.13",

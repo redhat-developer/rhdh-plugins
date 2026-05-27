@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { build } from 'esbuild';
+import { InstallException } from './errors';
+import { main } from './index';
 
-await build({
-  entryPoints: ['src/cli.ts'],
-  bundle: true,
-  platform: 'node',
-  target: 'node22',
-  format: 'cjs',
-  outfile: 'dist/install-dynamic-plugins.cjs',
-  // Minify the production bundle to reduce cold-start parse cost in the
-  // init container. The external sourcemap is what `node --enable-source-maps`
-  // consumes if a stack trace needs to be unminified during debugging.
-  minify: true,
-  sourcemap: 'external',
-  legalComments: 'external',
-  logLevel: 'info',
+main().catch((err: unknown) => {
+  const msg = err instanceof InstallException ? err.message : String(err);
+  process.stderr.write(`\ninstall-dynamic-plugins failed: ${msg}\n`);
+  process.exit(1);
 });

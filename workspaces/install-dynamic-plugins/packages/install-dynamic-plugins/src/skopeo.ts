@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import { spawn } from 'node:child_process';
-import { InstallException } from './errors.js';
-import { run } from './run.js';
-import { which } from './which.js';
+import { InstallException } from './errors';
+import { run } from './run';
+import { which } from './which';
 
 /**
  * Wrapper around the `skopeo` CLI with in-memory caching for `inspect` results.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { spawn, type SpawnOptions } from 'node:child_process';
-import { InstallException } from './errors.js';
+import { InstallException } from './errors';
 
 export type RunResult = {
   stdout: string;

@@ -15,18 +15,18 @@
  */
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { InstallException } from './errors.js';
-import { type OciImageCache } from './image-cache.js';
-import { log } from './log.js';
-import { extractOciPlugin } from './tar-extract.js';
+import { InstallException } from './errors';
+import { type OciImageCache } from './image-cache';
+import { log } from './log';
+import { extractOciPlugin } from './tar-extract';
 import {
   CONFIG_HASH_FILE,
   effectivePullPolicy,
   IMAGE_HASH_FILE,
   type Plugin,
   PullPolicy,
-} from './types.js';
-import { fileExists, markAsFresh } from './util.js';
+} from './types';
+import { fileExists, markAsFresh } from './util';
 
 /**
  * Split an OCI package spec into `<image-part>!<plugin-path>`. Uses

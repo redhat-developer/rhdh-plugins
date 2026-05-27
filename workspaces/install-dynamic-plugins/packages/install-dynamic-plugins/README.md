@@ -4,7 +4,24 @@ Init-container utility that downloads, extracts, and configures RHDH dynamic plu
 
 This package replaces the previous Python implementation (`install-dynamic-plugins.py`) with a TypeScript/Node.js implementation. The runtime contract — input config, output `app-config.dynamic-plugins.yaml`, on-disk layout, hash-based change detection, lock file — is **unchanged**.
 
-## How it runs in the RHDH container
+## Usage
+
+Run it against a directory containing a `dynamic-plugins.yaml`:
+
+```sh
+npx @red-hat-developer-hub/install-dynamic-plugins ./dynamic-plugins-root
+```
+
+Or install globally:
+
+```sh
+npm install -g @red-hat-developer-hub/install-dynamic-plugins
+install-dynamic-plugins ./dynamic-plugins-root
+```
+
+Runtime requirements: Node.js 22 or 24, and `skopeo` on `PATH` for OCI plugin support. `npm` is also expected on `PATH` for NPM-sourced plugins.
+
+## How RHDH consumes it
 
 The container's init container invokes the wrapper:
 
@@ -18,7 +35,7 @@ The wrapper executes the bundled CommonJS entry point with Node.js:
 exec node install-dynamic-plugins.cjs "$1"
 ```
 
-Both files live at `/opt/app-root/src/` inside the runtime image. Node.js 22 is already present (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.
+Both files live at `/opt/app-root/src/` inside the runtime image. Node.js is already present (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.
 
 ## Architecture
 

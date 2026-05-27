@@ -15,15 +15,15 @@
  */
 import * as fs from 'node:fs/promises';
 import { parse as parseYaml } from 'yaml';
-import { InstallException } from './errors.js';
-import { log } from './log.js';
-import { type OciImageCache } from './image-cache.js';
-import { npmPluginKey } from './npm-key.js';
+import { InstallException } from './errors';
+import { log } from './log';
+import { type OciImageCache } from './image-cache';
+import { npmPluginKey } from './npm-key';
 import {
   ociPluginKey,
   type ParsedOciKey,
   tryParseOciRegistryAndPath,
-} from './oci-key.js';
+} from './oci-key';
 import {
   type DynamicPluginsConfig,
   OCI_PROTO,
@@ -31,8 +31,8 @@ import {
   type PluginMap,
   type PluginSpec,
   RECOGNIZED_ALGORITHMS,
-} from './types.js';
-import { isPlainObject } from './util.js';
+} from './types';
+import { isPlainObject } from './util';
 
 /**
  * Reject `__proto__`, `constructor`, and `prototype` keys.

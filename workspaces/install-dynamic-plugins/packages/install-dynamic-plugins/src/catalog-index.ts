@@ -17,17 +17,17 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as tar from 'tar';
-import { InstallException } from './errors.js';
-import { log } from './log.js';
-import { resolveImage } from './image-resolver.js';
-import { type Skopeo } from './skopeo.js';
+import { InstallException } from './errors';
+import { log } from './log';
+import { resolveImage } from './image-resolver';
+import { type Skopeo } from './skopeo';
 import {
   DOCKER_PROTO,
   DPDY_FILENAME,
   MAX_ENTRY_SIZE,
   OCI_PROTO,
-} from './types.js';
-import { fileExists, isAllowedEntryType, isInside } from './util.js';
+} from './types';
+import { fileExists, isAllowedEntryType, isInside } from './util';
 
 type OciManifest = {
   layers?: Array<{ digest: string }>;
@@ -131,6 +131,10 @@ export async function extractCatalogIndexLayers(
         file: layerPath,
         cwd: destDirAbs,
         preservePaths: false,
+        // The filter captures `pending` (a single-write latch) and runs
+        // synchronously inside the awaited tar.x call — iterations are
+        // serialised, so the closure-in-loop hazard the rule guards against
+        // does not apply.
         // eslint-disable-next-line no-loop-func
         filter: (filePath, entry) => {
           if (pending) return false;

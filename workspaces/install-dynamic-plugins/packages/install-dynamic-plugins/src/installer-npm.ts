@@ -15,13 +15,13 @@
  */
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { InstallException } from './errors.js';
-import { verifyIntegrity } from './integrity.js';
-import { log } from './log.js';
-import { run } from './run.js';
-import { extractNpmPackage } from './tar-extract.js';
-import { CONFIG_HASH_FILE, type Plugin } from './types.js';
-import { markAsFresh } from './util.js';
+import { InstallException } from './errors';
+import { verifyIntegrity } from './integrity';
+import { log } from './log';
+import { run } from './run';
+import { extractNpmPackage } from './tar-extract';
+import { CONFIG_HASH_FILE, type Plugin } from './types';
+import { markAsFresh } from './util';
 
 export type NpmInstallResult = {
   pluginPath: string | null;

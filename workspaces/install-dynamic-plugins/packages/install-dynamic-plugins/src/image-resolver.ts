@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { log } from './log.js';
-import { type Skopeo } from './skopeo.js';
-import {
-  DOCKER_PROTO,
-  OCI_PROTO,
-  RHDH_FALLBACK,
-  RHDH_REGISTRY,
-} from './types.js';
+import { log } from './log';
+import { type Skopeo } from './skopeo';
+import { DOCKER_PROTO, OCI_PROTO, RHDH_FALLBACK, RHDH_REGISTRY } from './types';
 
 /**
  * Resolve a (possibly oci:// / docker://) image reference. If it points at

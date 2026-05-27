@@ -15,8 +15,8 @@
  */
 import { unlinkSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
-import { InstallException } from './errors.js';
-import { log } from './log.js';
+import { InstallException } from './errors';
+import { log } from './log';
 
 const POLL_INTERVAL_MS = 1000;
 const DEFAULT_LOCK_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes

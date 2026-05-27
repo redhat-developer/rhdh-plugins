@@ -18,6 +18,9 @@ export const PullPolicy = {
   ALWAYS: 'Always',
 } as const;
 
+// PullPolicy is intentionally both a const (runtime values) and a type
+// (string union) so callers can use `PullPolicy.ALWAYS` and `PullPolicy` as
+// a type. The no-redeclare rule doesn't recognise this enum-like pattern.
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type PullPolicy = (typeof PullPolicy)[keyof typeof PullPolicy];
 

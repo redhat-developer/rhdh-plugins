@@ -16,7 +16,7 @@
 import { createHash } from 'node:crypto';
 import { statSync, existsSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { type Plugin } from './types.js';
+import { type Plugin } from './types';
 
 /**
  * Compute the config-hash for a plugin, used to detect "already installed".
