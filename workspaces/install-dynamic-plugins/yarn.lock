@@ -3776,6 +3776,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.10.0"
     "@types/tar": "npm:^6.1.13"
+    cleye: "npm:^2.6.0"
     esbuild: "npm:^0.25.0"
     tar: "npm:^7.5.13"
     typescript: "npm:~5.8.0"
@@ -7264,7 +7265,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cleye@npm:^2.3.0":
+"cleye@npm:^2.3.0, cleye@npm:^2.6.0":
   version: 2.6.0
   resolution: "cleye@npm:2.6.0"
   dependencies:

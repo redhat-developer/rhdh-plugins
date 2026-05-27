@@ -17,6 +17,7 @@ import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { cli } from 'cleye';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import {
   cleanupCatalogIndexTemp,
@@ -61,19 +62,16 @@ import { fileExists, isPlainObject } from './util';
 
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
-const USAGE = `Usage: install-dynamic-plugins <dynamic-plugins-root>\n`;
-
 export async function main(): Promise<void> {
-  const [rootArg] = process.argv.slice(2);
-  if (rootArg === '--help' || rootArg === '-h') {
-    process.stdout.write(USAGE);
-    process.exit(0);
-  }
-  if (!rootArg) {
-    process.stderr.write(USAGE);
-    process.exit(1);
-  }
-  const root = path.resolve(rootArg);
+  const argv = cli({
+    name: 'install-dynamic-plugins',
+    parameters: ['<dynamic-plugins-root>'],
+    help: {
+      description:
+        'Install RHDH dynamic plugins listed in dynamic-plugins.yaml into the given directory.',
+    },
+  });
+  const root = path.resolve(argv._.dynamicPluginsRoot);
   const lockPath = path.join(root, LOCK_FILENAME);
   registerLockCleanup(lockPath);
   await fs.mkdir(root, { recursive: true });

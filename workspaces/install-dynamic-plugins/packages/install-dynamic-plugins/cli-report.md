@@ -5,5 +5,8 @@
 ### `install-dynamic-plugins`
 
 ```
-Usage: install-dynamic-plugins <dynamic-plugins-root>
+Usage: install-dynamic-plugins [flags...] <dynamic-plugins-root>
+
+Options:
+  -h, --help
 ```
