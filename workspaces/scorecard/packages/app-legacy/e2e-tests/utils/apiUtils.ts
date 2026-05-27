@@ -83,17 +83,13 @@ export function waitForAggregationResponse(
         const json = await res.json();
         const result = json?.result;
 
-        const isAverageScoreValid =
-          expected.averageScore !== undefined &&
-          result?.averageScore !== expected.averageScore;
-        const isTotalValid =
-          expected.total !== undefined && result?.total !== expected.total;
+        const isAverageOk =
+          expected.averageScore === undefined ||
+          result?.averageScore === expected.averageScore;
+        const isTotalOk =
+          expected.total === undefined || result?.total === expected.total;
 
-        if (!isAverageScoreValid || !isTotalValid) {
-          return false;
-        }
-
-        return true;
+        return isAverageOk && isTotalOk;
       } catch {
         return false;
       }

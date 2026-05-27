@@ -73,11 +73,11 @@ export async function setupHomepageAllCardsNoData(
 ): Promise<void> {
   await mockAggregationNoDataFound(page);
 
+  await addAggregatedScorecardWidgets(homePage);
+
   const responseWaits = Object.values(AGGREGATED_CARDS_METRIC_IDS).map(id =>
     waitForAggregationResponse(page, id),
   );
 
-  await addAggregatedScorecardWidgets(homePage);
-  await page.reload();
-  await Promise.all(responseWaits);
+  await Promise.all([page.reload(), ...responseWaits]);
 }
