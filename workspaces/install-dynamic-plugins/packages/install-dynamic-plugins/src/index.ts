@@ -61,12 +61,16 @@ import { fileExists, isPlainObject } from './util';
 
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
+const USAGE = `Usage: install-dynamic-plugins <dynamic-plugins-root>\n`;
+
 export async function main(): Promise<void> {
   const [rootArg] = process.argv.slice(2);
+  if (rootArg === '--help' || rootArg === '-h') {
+    process.stdout.write(USAGE);
+    process.exit(0);
+  }
   if (!rootArg) {
-    process.stderr.write(
-      `Usage: install-dynamic-plugins <dynamic-plugins-root>\n`,
-    );
+    process.stderr.write(USAGE);
     process.exit(1);
   }
   const root = path.resolve(rootArg);
