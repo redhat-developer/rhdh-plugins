@@ -18,6 +18,5 @@
  * @public
  */
 export enum ExtensionsAnnotation {
-  CERTIFIED_BY = 'extensions.backstage.io/certified-by',
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }

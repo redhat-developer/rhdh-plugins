@@ -44,21 +44,6 @@ const getBadgeOptions = (
   const supportLevel = entity.spec?.support?.level;
   const supportProvider = entity.spec?.support?.provider;
 
-  if (entity.metadata.annotations?.[ExtensionsAnnotation.CERTIFIED_BY]) {
-    return {
-      isBadge: true,
-      color: colors.certified,
-      label: t('badges.certified'),
-      tooltip: t('badges.certifiedBy' as any, {
-        provider:
-          entity.metadata.annotations[ExtensionsAnnotation.CERTIFIED_BY],
-      }),
-      statusTooltip: t('badges.stableAndSecured' as any, {
-        provider:
-          entity.metadata.annotations[ExtensionsAnnotation.CERTIFIED_BY],
-      }),
-    };
-  }
   if (supportLevel === ExtensionsSupportLevel.GENERALLY_AVAILABLE) {
     return {
       isBadge: true,

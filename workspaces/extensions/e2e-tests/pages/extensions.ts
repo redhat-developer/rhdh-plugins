@@ -72,7 +72,6 @@ export class Extensions {
   private get supportTypeOptions() {
     return [
       this.translations.badges.generallyAvailable,
-      this.translations.badges.certified,
       this.translations.badges.customPlugin,
       this.translations.badges.techPreview,
       this.translations.badges.devPreview,
