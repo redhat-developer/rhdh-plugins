@@ -15,7 +15,7 @@
  */
 
 import type { Knex } from 'knex';
-import { Project } from '../src/services/Project';
+import { computeDirName } from '../lib/projectNaming';
 
 /**
  * Adds the dir_name column and renames created_by to owned_by in the projects table.
@@ -36,7 +36,7 @@ export async function up(knex: Knex): Promise<void> {
   for (const row of rows) {
     await knex('projects')
       .where('id', row.id)
-      .update({ dir_name: new Project(row.id, row.name).dirName });
+      .update({ dir_name: computeDirName(row.id, row.name) });
   }
 
   // SQLite does not support ALTER COLUMN to set NOT NULL after the fact.
