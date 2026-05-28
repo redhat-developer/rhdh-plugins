@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.6.0
+
+### Minor Changes
+
+- 2a40df0: The user can newly update the project migration plan in an external flow and then let the X2A resync the module list changes.
+
+### Patch Changes
+
+- 9cc09db: Show attempt counter for repeated executions of phases.
+- 72b56e4: Migration scripts must be self-contained, refactoring project-naming logic to work in dynamic plugins.
+- Updated dependencies [9cc09db]
+- Updated dependencies [2a40df0]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.4.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.4.0
+
 ## 1.5.0
 
 ### Minor Changes

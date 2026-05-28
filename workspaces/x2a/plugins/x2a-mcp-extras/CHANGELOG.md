@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-mcp-extras
 
+## 0.3.0
+
+### Minor Changes
+
+- 2a40df0: The user can newly update the project migration plan in an external flow and then let the X2A resync the module list changes.
+
+### Patch Changes
+
+- Updated dependencies [9cc09db]
+- Updated dependencies [2a40df0]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.4.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@0.4.0
+
 ## 0.2.2
 
 ### Patch Changes
