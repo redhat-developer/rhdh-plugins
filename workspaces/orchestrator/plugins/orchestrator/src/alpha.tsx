@@ -33,6 +33,8 @@ import {
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import OrchestratorIcon from './components/OrchestratorIcon';
 import {
@@ -45,6 +47,12 @@ import {
   workflowRunsRouteRef,
 } from './routes';
 import { orchestratorTranslations } from './translations';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
 
 const orchestratorPage = PageBlueprint.make({
   params: {
