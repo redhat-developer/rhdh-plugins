@@ -70,7 +70,6 @@
   },
   "files": [
     "dist",
-    "lib",
     "migrations",
     "public",
     "templates"

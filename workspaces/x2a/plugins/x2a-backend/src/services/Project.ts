@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-// Following import is a workaround so we can reuse the same logic in migrations as well.
-// The migrations must be self-contained.
-import {
-  sanitizeBaseName,
-  computeDirName,
-  SHORT_ID_LENGTH,
-} from '../../lib/projectNaming';
+const MAX_BASE_NAME_LENGTH = 64;
+const SHORT_ID_LENGTH = 6;
+const DEFAULT_BASE_NAME = 'project';
 
 /**
  * Value Object that encapsulates project naming and directory conventions.
@@ -44,13 +40,52 @@ export class Project {
     return this.id.substring(0, SHORT_ID_LENGTH);
   }
 
-  /** Sanitized project name suitable for use as a directory component. */
+  /**
+   * Sanitized project name suitable for use as a directory component.
+   *
+   * Rules:
+   *  - Lowercased
+   *  - Non-alphanumeric characters (except dash) replaced with dash
+   *  - Consecutive dashes collapsed
+   *  - Leading/trailing dashes removed
+   *  - Truncated to 64 characters
+   *  - Falls back to "project" if empty after sanitization
+   *
+   * Uses manual iteration for trimming to prevent ReDoS (O(n) guaranteed).
+   */
   get baseName(): string {
-    return sanitizeBaseName(this.projectName);
+    let sanitized = this.projectName
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-{2,}/g, '-');
+
+    // Remove leading dashes (manual iteration — O(n), no ReDoS)
+    let start = 0;
+    while (start < sanitized.length && sanitized[start] === '-') {
+      start++;
+    }
+    sanitized = sanitized.substring(start);
+
+    // Remove trailing dashes (manual iteration — O(n), no ReDoS)
+    let end = sanitized.length;
+    while (end > 0 && sanitized[end - 1] === '-') {
+      end--;
+    }
+    sanitized = sanitized.substring(0, end);
+
+    // Truncate to max length
+    sanitized = sanitized.substring(0, MAX_BASE_NAME_LENGTH);
+
+    // Remove any trailing dash created by truncation
+    while (sanitized.length > 0 && sanitized[sanitized.length - 1] === '-') {
+      sanitized = sanitized.substring(0, sanitized.length - 1);
+    }
+
+    return sanitized || DEFAULT_BASE_NAME;
   }
 
   /** Directory name for the target repo: `<baseName>-<shortId>` */
   get dirName(): string {
-    return computeDirName(this.id, this.projectName);
+    return `${this.baseName}-${this.shortId}`;
   }
 }
