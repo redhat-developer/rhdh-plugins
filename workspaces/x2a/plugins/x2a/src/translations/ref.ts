@@ -134,6 +134,8 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       runError: 'Failed to run phase for module',
       cancelError: 'Failed to cancel phase for module',
+      attempts: 'Attempts',
+      totalElapsed: 'Total Elapsed',
       commitId: 'Last Commit ID',
       viewLog: 'View Log',
       hideLog: 'Hide Log',

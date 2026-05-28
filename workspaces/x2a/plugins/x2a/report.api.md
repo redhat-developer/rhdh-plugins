@@ -140,6 +140,8 @@ readonly "modulePage.phases.republishInstructions": string;
 readonly "modulePage.phases.rerunPublish": string;
 readonly "modulePage.phases.runError": string;
 readonly "modulePage.phases.cancelError": string;
+readonly "modulePage.phases.attempts": string;
+readonly "modulePage.phases.totalElapsed": string;
 readonly "modulePage.phases.commitId": string;
 readonly "modulePage.phases.viewLog": string;
 readonly "modulePage.phases.hideLog": string;

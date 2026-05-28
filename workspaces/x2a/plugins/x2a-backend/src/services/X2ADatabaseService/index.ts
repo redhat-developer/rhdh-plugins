@@ -95,6 +95,18 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
   }
 
   /**
+   * Attaches attemptCount and firstAttemptAt to a Job object (mutates in place).
+   */
+  private attachAttemptStats(
+    job: Job | undefined,
+    stats: { count: number; firstStartedAt: Date | undefined } | undefined,
+  ): void {
+    if (!job || !stats) return;
+    job.attemptCount = stats.count;
+    job.firstAttemptAt = stats.firstStartedAt;
+  }
+
+  /**
    * Enriches a project with migration plan and status (used by listProjects and getProject).
    */
   private async enrichProject(project: Project): Promise<void> {
@@ -117,6 +129,14 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     );
 
     project.initJob = removeSensitiveFromJob(lastInitJob);
+
+    if (project.initJob) {
+      const stats = await this.#jobOps.getPhaseAttemptStats({
+        projectId,
+        phase: 'init',
+      });
+      this.attachAttemptStats(project.initJob, stats);
+    }
   }
 
   // Projects (facade enriches basic objects when needed)
@@ -348,6 +368,22 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
       module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
 
+      // Attach attempt stats per phase
+      const phases = ['analyze', 'migrate', 'publish'] as const;
+      await Promise.all(
+        phases.map(async phase => {
+          const job = module[phase];
+          if (job) {
+            const stats = await this.#jobOps.getPhaseAttemptStats({
+              projectId: module.projectId,
+              moduleId: id,
+              phase,
+            });
+            this.attachAttemptStats(job, stats);
+          }
+        }),
+      );
+
       return enrichModuleWithJobStatus(module, {
         analyze: module.analyze,
         migrate: module.migrate,
@@ -401,6 +437,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       ),
     );
 
+    const attemptStatsMap = await this.#jobOps.batchPhaseAttemptStats({
+      projectId,
+    });
+
     const response: Array<Module> = modules.map((module, idxModule) => {
       const analyze = removeSensitiveFromJob(
         lastAnalyzeJobsOfModules[idxModule][0],
@@ -411,6 +451,12 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       const publish = removeSensitiveFromJob(
         lastPublishJobsOfModules[idxModule][0],
       );
+
+      const moduleStats = attemptStatsMap.get(module.id);
+      this.attachAttemptStats(analyze, moduleStats?.get('analyze'));
+      this.attachAttemptStats(migrateJob, moduleStats?.get('migrate'));
+      this.attachAttemptStats(publish, moduleStats?.get('publish'));
+
       const lastJobs = { analyze, migrate: migrateJob, publish };
       return enrichModuleWithJobStatus(module, lastJobs);
     });

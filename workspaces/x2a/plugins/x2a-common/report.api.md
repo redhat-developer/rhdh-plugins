@@ -182,9 +182,11 @@ export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
+    attemptCount?: number;
     commitId?: string;
     errorDetails?: string;
     finishedAt?: Date;
+    firstAttemptAt?: Date;
     id: string;
     k8sJobName: string;
     moduleId?: string;
