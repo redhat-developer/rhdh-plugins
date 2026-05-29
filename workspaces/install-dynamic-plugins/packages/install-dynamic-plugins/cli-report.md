@@ -19,7 +19,7 @@ Commands:
 ### `install-dynamic-plugins install`
 
 ```
-Usage: install-dynamic-plugins [flags...] <dynamic-plugins-root>
+Usage: install-dynamic-plugins install [flags...] <dynamic-plugins-root>
 
 Options:
   -h, --help

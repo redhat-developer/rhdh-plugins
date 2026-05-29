@@ -63,17 +63,21 @@ import { fileExists, isPlainObject } from './util';
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
 /**
- * Entry point for the `install` command. Exported for the cli-module command
- * loader and unit tests; not part of the package's public API.
+ * Entry point for the `install` command. `args` is the argv slice after the
+ * command path and `programName` is how the command was invoked (e.g.
+ * `install-dynamic-plugins install`), used so the `--help` usage line matches
+ * the real invocation. Exported for the cli-module command loader and unit
+ * tests; not part of the package's public API.
  *
  * @internal
  */
 export async function main(
-  args: string[] = process.argv.slice(2),
+  args: string[],
+  programName = 'install-dynamic-plugins',
 ): Promise<void> {
   const argv = cli(
     {
-      name: 'install-dynamic-plugins',
+      name: programName,
       parameters: ['<dynamic-plugins-root>'],
       help: {
         description:

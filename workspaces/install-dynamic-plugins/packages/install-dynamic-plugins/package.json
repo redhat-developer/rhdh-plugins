@@ -24,7 +24,9 @@
     "node": "22 || 24"
   },
   "main": "dist/install-dynamic-plugins.cjs",
-  "bin": "bin/install-dynamic-plugins",
+  "bin": {
+    "install-dynamic-plugins": "bin/install-dynamic-plugins"
+  },
   "files": [
     "bin",
     "dist/install-dynamic-plugins.cjs",

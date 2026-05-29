@@ -16,6 +16,6 @@
 import type { CliCommandContext } from '@backstage/cli-node';
 import { main } from './index';
 
-export default async ({ args }: CliCommandContext): Promise<void> => {
-  await main(args);
+export default async ({ args, info }: CliCommandContext): Promise<void> => {
+  await main(args, info.usage);
 };

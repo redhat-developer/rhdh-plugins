@@ -3783,7 +3783,7 @@ __metadata:
     typescript: "npm:~5.8.0"
     yaml: "npm:^2.8.2"
   bin:
-    cli-module-install-dynamic-plugins: bin/install-dynamic-plugins
+    install-dynamic-plugins: bin/install-dynamic-plugins
   languageName: unknown
   linkType: soft
 
