@@ -241,6 +241,15 @@ export const orchestratorMessages = {
   formDecorator: {
     error: 'Form decorator must provide context data.',
   },
+  samlSso: {
+    title: 'GitHub SAML SSO Session Expired',
+    reauthorizeButton: 'Re-authorize SSO',
+    body: 'Your GitHub SAML SSO session has expired. Your organization requires an active SAML session to access its resources.',
+    reauthorizeHint:
+      "Click 'Re-authorize SSO' to re-authenticate with your organization's identity provider.",
+    fallbackHint:
+      'Please sign out and sign back in from Settings > Auth Providers to re-establish your SAML session.',
+  },
   aria: {
     close: 'close',
   },

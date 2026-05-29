@@ -202,6 +202,14 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.progress': 'Workflow-Fortschritt',
     'workflow.status.available': 'Verfügbar',
     'workflow.status.unavailable': 'Nicht verfügbar',
+    'samlSso.title': 'GitHub SAML SSO-Sitzung abgelaufen',
+    'samlSso.reauthorizeButton': 'SSO erneut autorisieren',
+    'samlSso.body':
+      'Ihre GitHub SAML SSO-Sitzung ist abgelaufen. Ihre Organisation erfordert eine aktive SAML-Sitzung, um auf ihre Ressourcen zugreifen zu können.',
+    'samlSso.reauthorizeHint':
+      "Klicken Sie auf 'SSO erneut autorisieren', um sich bei dem Identitätsanbieter Ihrer Organisation erneut zu authentifizieren.",
+    'samlSso.fallbackHint':
+      'Bitte melden Sie sich ab und über Einstellungen > Auth-Anbieter erneut an, um Ihre SAML-Sitzung wiederherzustellen.',
   },
 });
 
