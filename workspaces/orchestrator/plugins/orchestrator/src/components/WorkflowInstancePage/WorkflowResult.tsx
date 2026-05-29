@@ -48,8 +48,13 @@ import { orchestratorApiRef } from '../../api';
 import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef } from '../../routes';
+import {
+  extractSsoReauthorizeUrl,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
 import { buildUrl } from '../../utils/UrlUtils';
 import { Trans } from '../Trans';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
@@ -416,6 +421,12 @@ export const WorkflowResult: React.FC<{
   );
   const logsEnabled = useLogsEnabled();
 
+  const errorObj = instance.error?.message
+    ? new Error(instance.error.message)
+    : undefined;
+  const hasSamlError = isSamlSsoError(errorObj);
+  const [isSamlDialogOpen, setIsSamlDialogOpen] = useState(hasSamlError);
+
   return (
     <>
       <InfoCard
@@ -466,6 +477,11 @@ export const WorkflowResult: React.FC<{
         open={isLogsDialogOpen}
         onClose={toggleLogsDialog}
         instanceId={instance.id}
+      />
+      <SamlSsoExpiredDialog
+        open={isSamlDialogOpen}
+        reauthorizeUrl={extractSsoReauthorizeUrl(errorObj)}
+        onClose={() => setIsSamlDialogOpen(false)}
       />
     </>
   );

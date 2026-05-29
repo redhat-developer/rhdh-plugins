@@ -203,6 +203,14 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.progress': 'Avanzamento del flusso di lavoro',
     'workflow.status.available': 'Disponibile',
     'workflow.status.unavailable': 'Non disponibile',
+    'samlSso.title': 'Sessione GitHub SAML SSO scaduta',
+    'samlSso.reauthorizeButton': 'Riautorizza SSO',
+    'samlSso.body':
+      'La sessione GitHub SAML SSO è scaduta. La tua organizzazione richiede una sessione SAML attiva per accedere alle sue risorse.',
+    'samlSso.reauthorizeHint':
+      "Fai clic su 'Riautorizza SSO' per riautenticarti con il provider di identità della tua organizzazione.",
+    'samlSso.fallbackHint':
+      'Disconnettiti e accedi nuovamente da Impostazioni > Provider di autenticazione per ristabilire la sessione SAML.',
   },
 });
 

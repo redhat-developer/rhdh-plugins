@@ -46,6 +46,7 @@ export type OrchestratorFormContextProps = {
   setIsChangedByUser: (id: string, isChangedByUser: boolean) => void;
   handleFetchStarted?: () => void;
   handleFetchEnded?: () => void;
+  onSamlSsoError?: (error: Error) => void;
 };
 
 /**

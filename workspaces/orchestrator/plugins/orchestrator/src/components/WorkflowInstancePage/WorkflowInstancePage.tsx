@@ -73,6 +73,10 @@ import {
 } from '../../routes';
 import { orchestratorTranslationRef } from '../../translations';
 import { deepSearchObject } from '../../utils/deepSearchObject';
+import {
+  extractSsoReauthorizeUrl,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
@@ -82,6 +86,7 @@ import {
   isAccessDeniedError,
   PermissionDeniedPanel,
 } from '../ui/PermissionDeniedPanel';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -232,6 +237,7 @@ export const WorkflowInstancePage = () => {
   const [isRetrigger, setIsRetrigger] = useState(false);
   const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] = useState(false);
   const [retriggerError, setRetriggerError] = useState('');
+  const [samlSsoError, setSamlSsoError] = useState<Error | undefined>();
 
   const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
@@ -359,8 +365,17 @@ export const WorkflowInstancePage = () => {
           authTokens,
         );
         restart();
-      } catch (retriggerInstanceError) {
-        if (retriggerInstanceError.toString().includes('Failed Node ID')) {
+      } catch (retriggerInstanceError: any) {
+        const retriggerErr =
+          retriggerInstanceError instanceof globalThis.Error
+            ? retriggerInstanceError
+            : new globalThis.Error(String(retriggerInstanceError));
+        if (isSamlSsoError(retriggerErr)) {
+          setSamlSsoError(retriggerErr);
+          return;
+        } else if (
+          retriggerInstanceError.toString().includes('Failed Node ID')
+        ) {
           setRetriggerError(t('workflow.buttons.runFailedAgain'));
         } else {
           setRetriggerError(
@@ -568,6 +583,11 @@ export const WorkflowInstancePage = () => {
             </Alert>
           </Snackbar>
           <WorkflowInstancePageContent instance={value} />
+          <SamlSsoExpiredDialog
+            open={!!samlSsoError}
+            reauthorizeUrl={extractSsoReauthorizeUrl(samlSsoError)}
+            onClose={() => setSamlSsoError(undefined)}
+          />
         </>
       ) : null}
     </BaseOrchestratorPage>
