@@ -18,7 +18,11 @@ import { test, expect } from '@playwright/test';
 import { DcmPage } from './pages/DcmPage';
 
 const suffix = () => Date.now().toString(36).slice(-5);
-const uniquePriority = () => String(Math.floor(Math.random() * 900) + 50);
+const uniquePriority = () => {
+  const buf = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(buf);
+  return String((buf[0] % 900) + 50);
+};
 
 test.describe('DCM Bug Regression Tests @dcm', () => {
   let dcm: DcmPage;
