@@ -62,15 +62,27 @@ import { fileExists, isPlainObject } from './util';
 
 const CONFIG_FILE = 'dynamic-plugins.yaml';
 
-export async function main(): Promise<void> {
-  const argv = cli({
-    name: 'install-dynamic-plugins',
-    parameters: ['<dynamic-plugins-root>'],
-    help: {
-      description:
-        'Install RHDH dynamic plugins listed in dynamic-plugins.yaml into the given directory.',
+/**
+ * Entry point for the `install` command. Exported for the cli-module command
+ * loader and unit tests; not part of the package's public API.
+ *
+ * @internal
+ */
+export async function main(
+  args: string[] = process.argv.slice(2),
+): Promise<void> {
+  const argv = cli(
+    {
+      name: 'install-dynamic-plugins',
+      parameters: ['<dynamic-plugins-root>'],
+      help: {
+        description:
+          'Install RHDH dynamic plugins listed in dynamic-plugins.yaml into the given directory.',
+      },
     },
-  });
+    undefined,
+    args,
+  );
   const root = path.resolve(argv._.dynamicPluginsRoot);
   const lockPath = path.join(root, LOCK_FILENAME);
   registerLockCleanup(lockPath);
@@ -305,6 +317,12 @@ function resolveIncludes(
   return includes;
 }
 
+/**
+ * Write the global config, prune obsolete plugin dirs, and compute the exit
+ * code. Exported for unit tests; not part of the package's public API.
+ *
+ * @internal
+ */
 export async function finalizeInstall(
   errors: string[],
   globalConfigFile: string,

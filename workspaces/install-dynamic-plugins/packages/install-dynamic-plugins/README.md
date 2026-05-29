@@ -1,23 +1,25 @@
-# install-dynamic-plugins
+# cli-module-install-dynamic-plugins
 
-Init-container utility that downloads, extracts, and configures RHDH dynamic plugins listed in a `dynamic-plugins.yaml` file.
+Backstage CLI module that downloads, extracts, and configures RHDH dynamic plugins listed in a `dynamic-plugins.yaml` file.
 
-This package replaces the previous Python implementation (`install-dynamic-plugins.py`) with a TypeScript/Node.js implementation. The runtime contract — input config, output `app-config.dynamic-plugins.yaml`, on-disk layout, hash-based change detection, lock file — is **unchanged**.
+This package replaces the previous Python implementation (`install-dynamic-plugins.py`) with a TypeScript/Node.js implementation built on `@backstage/cli-node`'s `createCliModule`. The runtime contract — input config, output `app-config.dynamic-plugins.yaml`, on-disk layout, hash-based change detection, lock file — is **unchanged**.
 
 ## Usage
 
-Run it against a directory containing a `dynamic-plugins.yaml`:
+Run the `install` command against a directory containing a `dynamic-plugins.yaml`:
 
 ```sh
-npx @red-hat-developer-hub/install-dynamic-plugins ./dynamic-plugins-root
+npx @red-hat-developer-hub/cli-module-install-dynamic-plugins install ./dynamic-plugins-root
 ```
 
 Or install globally:
 
 ```sh
-npm install -g @red-hat-developer-hub/install-dynamic-plugins
-install-dynamic-plugins ./dynamic-plugins-root
+npm install -g @red-hat-developer-hub/cli-module-install-dynamic-plugins
+install-dynamic-plugins install ./dynamic-plugins-root
 ```
+
+Because this is a Backstage CLI module, once it is a dependency of a project the command is also discovered by `backstage-cli` automatically.
 
 Runtime requirements: Node.js 22 or 24, and `skopeo` on `PATH` for OCI plugin support. `npm` is also expected on `PATH` for NPM-sourced plugins.
 
@@ -32,7 +34,7 @@ The container's init container invokes the wrapper:
 The wrapper executes the bundled CommonJS entry point with Node.js:
 
 ```sh
-exec node install-dynamic-plugins.cjs "$1"
+exec node install-dynamic-plugins.cjs install "$1"
 ```
 
 Both files live at `/opt/app-root/src/` inside the runtime image. Node.js is already present (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.

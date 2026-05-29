@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { runCliModule } from '@backstage/cli-node';
-import cliModule from './module';
-import packageJson from '../package.json';
 
-runCliModule({
-  module: cliModule,
-  name: 'install-dynamic-plugins',
-  version: packageJson.version,
-});
+// keytar is a native (.node) credential-store module pulled in transitively by
+// @backstage/cli-node (for `@backstage/cli-module-auth`). esbuild cannot bundle
+// native binaries into a single .cjs, and the install command never touches
+// credentials — so we alias keytar to these no-ops at build time to keep the
+// init-container artifact a single self-contained file.
+module.exports = {
+  getPassword: async () => null,
+  setPassword: async () => {},
+  deletePassword: async () => false,
+  findCredentials: async () => [],
+  findPassword: async () => null,
+};

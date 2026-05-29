@@ -3768,11 +3768,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/install-dynamic-plugins@workspace:packages/install-dynamic-plugins":
+"@red-hat-developer-hub/cli-module-install-dynamic-plugins@workspace:packages/install-dynamic-plugins":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/install-dynamic-plugins@workspace:packages/install-dynamic-plugins"
+  resolution: "@red-hat-developer-hub/cli-module-install-dynamic-plugins@workspace:packages/install-dynamic-plugins"
   dependencies:
     "@backstage/cli": "npm:^0.36.0"
+    "@backstage/cli-node": "npm:^0.3.2"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.10.0"
     "@types/tar": "npm:^6.1.13"
@@ -3782,7 +3783,7 @@ __metadata:
     typescript: "npm:~5.8.0"
     yaml: "npm:^2.8.2"
   bin:
-    install-dynamic-plugins: bin/install-dynamic-plugins
+    cli-module-install-dynamic-plugins: bin/install-dynamic-plugins
   languageName: unknown
   linkType: soft
 

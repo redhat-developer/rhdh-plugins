@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { runCliModule } from '@backstage/cli-node';
-import cliModule from './module';
-import packageJson from '../package.json';
+import type { CliCommandContext } from '@backstage/cli-node';
+import { main } from './index';
 
-runCliModule({
-  module: cliModule,
-  name: 'install-dynamic-plugins',
-  version: packageJson.version,
-});
+export default async ({ args }: CliCommandContext): Promise<void> => {
+  await main(args);
+};

@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+
+const keytarStub = fileURLToPath(
+  new URL('./esbuild-keytar-stub.cjs', import.meta.url),
+);
 
 await build({
   entryPoints: ['src/cli.ts'],
@@ -22,6 +27,10 @@ await build({
   target: 'node22',
   format: 'cjs',
   outfile: 'dist/install-dynamic-plugins.cjs',
+  // @backstage/cli-node pulls in keytar (a native .node credential store) that
+  // esbuild cannot bundle into a single file. The install command never reads
+  // credentials, so alias keytar to no-ops to keep a single self-contained .cjs.
+  alias: { keytar: keytarStub },
   // Minify the production bundle to reduce cold-start parse cost in the
   // init container. The external sourcemap is what `node --enable-source-maps`
   // consumes if a stack trace needs to be unminified during debugging.

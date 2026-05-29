@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-exec node install-dynamic-plugins.cjs "$1"
+exec node install-dynamic-plugins.cjs install "$1"

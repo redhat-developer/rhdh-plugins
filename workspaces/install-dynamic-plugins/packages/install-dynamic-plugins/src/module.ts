@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { runCliModule } from '@backstage/cli-node';
-import cliModule from './module';
+import { createCliModule } from '@backstage/cli-node';
 import packageJson from '../package.json';
 
-runCliModule({
-  module: cliModule,
-  name: 'install-dynamic-plugins',
-  version: packageJson.version,
+export default createCliModule({
+  packageJson,
+  init: async reg => {
+    reg.addCommand({
+      path: ['install'],
+      description:
+        'Install RHDH dynamic plugins listed in dynamic-plugins.yaml into the given directory.',
+      execute: { loader: () => import('./command') },
+    });
+  },
 });
