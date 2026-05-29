@@ -31,9 +31,15 @@ const useStyles = makeStyles<{ isDarkMode: boolean; maxHeight?: number }>()(
       paddingBottom: theme.spacing(2),
       maxWidth: 600,
       marginTop: '0.6rem',
+      overflow: 'hidden',
       '&&': {
         outline: 'unset',
         backgroundColor: isDarkMode ? '#151515' : '#F0F0F0',
+      },
+      // RHDH theme rounds Paper's last child (MuiPaper.rounded); avoid clipping <pre> content.
+      '& > :last-child': {
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
       },
     },
     iconButton: {
@@ -51,10 +57,11 @@ const useStyles = makeStyles<{ isDarkMode: boolean; maxHeight?: number }>()(
       fontSize: '0.875rem',
       whiteSpace: 'pre-wrap',
       wordBreak: 'break-word',
+      overflowWrap: 'anywhere',
       color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
       maxHeight: maxHeight || 'none',
       overflowY: maxHeight ? 'auto' : 'visible',
-      overflowX: 'hidden',
+      overflowX: 'auto',
     },
   }),
 );
