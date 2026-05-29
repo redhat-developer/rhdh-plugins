@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 1.4.0
+
+### Minor Changes
+
+- 2a40df0: The user can newly update the project migration plan in an external flow and then let the X2A resync the module list changes.
+
+### Patch Changes
+
+- 9cc09db: Show attempt counter for repeated executions of phases.
+
 ## 1.3.0
 
 ### Minor Changes
