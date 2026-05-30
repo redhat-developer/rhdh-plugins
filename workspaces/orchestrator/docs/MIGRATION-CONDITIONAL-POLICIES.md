@@ -292,7 +292,7 @@ For roles that need access to specific workflows only (not all workflows), creat
 
 #### Option A: YAML Configuration File
 
-Create a YAML file with conditional policies (recommended for static configuration):
+Create a YAML file with conditional policies (recommended for static configuration).
 
 **Configure the file path in `app-config.yaml`:**
 
@@ -307,4 +307,422 @@ permission:
 
 **Create `conditional-policies.yaml` with migrated converted conditional policies**. See examples above.
 
-Todo UI migration guide
+#### Option B: RBAC UI (Dynamic Configuration)
+
+Create conditional policies via RBAC UI:
+
+1. Navigate to your Backstage RBAC Administration page
+2. Select the role you want to configure (e.g., `role:default/developer`) from the list
+3. Click role name link
+4. Take a look permissions table and click "Edit" button
+5. Expand list plugins and select "Orchestator" plugin
+6. Select permissions `orchestrator.workflow`(with "read" action) or `orchestrator.workflow.use`(with "use" action)
+7. Click conditional button at the end of the permission row - "Configure access" dialog should appear
+8. Select condition with rule "IS_ALLOWED_WORKFLOW_ID"
+9. Type list workflow ids separated by comma
+10. Click "Save button" and close dialog
+11. Add more conditional policies if needed(repeat steps 6-10)
+12. Click "Next" and "Save" button to complete role edition
+
+**Note:** Changes via RBAC UI are stored in the database and take effect immediately.
+
+### Step 4: Remove Deprecated Policies
+
+#### Remove from CSV file
+
+Delete all lines from your CSV file containing deprecated permission patterns:
+
+```bash
+# Backup your file first
+cp /path/to/rbac-policy.csv /path/to/rbac-policy.csv.backup
+
+# Take a look, what will be removed
+
+grep -E '^(##)?p, role:default/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,' /path/to/rbac-policy.csv
+
+# Take a look, what will remain
+
+sed -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /Users/oandriie/rhdh-plugins/workspaces/orchestrator/docs/rbac-policy.csv
+
+# And if everything is ok, remove deprecated permissions
+sed -i '' -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /Users/oandriie/rhdh-plugins/workspaces/orchestrator/docs/rbac-policy.csv
+```
+
+Or manually edit the file and remove lines like:
+
+```csv
+p, role:default/user, orchestrator.workflow.yamlgreet, read, allow
+p, role:default/user, orchestrator.workflow.use.checkout, update, allow
+```
+
+#### Remove policies via RBAC UI
+
+RBAC UI don't allow users create or delete deprecated permissions.
+
+#### Remove policies via REST API
+
+If you created policies via REST API, then fetch list all policies to find the ones to delete
+
+```bash
+curl -X GET https://<your-rhdh-url>/api/permission/policies \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Delete every specific deprecated permission policy
+
+```bash
+curl -X DELETE "https://<your-rhdh-url>/api/permission/policies/role/default/<your-role>" \
+     -d '[
+           {
+             "permission": "orchestrator.workflow.myflow1",
+             "policy": "read",
+             "effect": "allow"
+           },
+           {
+             "permission": "orchestrator.workflow.use.myflow1",
+             "policy": "update",
+             "effect": "allow"
+           },
+          {
+             "permission": "orchestrator.workflow.myflow2",
+             "policy": "read",
+             "effect": "allow"
+           },
+           {
+             "permission": "orchestrator.workflow.use.myflow2",
+             "policy": "update",
+             "effect": "allow"
+           }
+         ]' \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $TOKEN" \
+     -v
+```
+
+### Step 5: Verify Migration
+
+#### Test that new permissions work
+
+1. **Verify conditional policies were created:**
+   - **YAML file**: Check your `conditional-policies.yaml` file contains the correct entries
+   - **RBAC UI**: Navigate to RBAC Administration page and verify conditional policies are listed for the role
+
+2. **Test user access:**
+   - Log in as a user with the migrated role
+   - Navigate to the Orchestrator workflows page
+   - Verify you see ONLY workflows listed in the conditional policy `workflowIds`
+   - Attempt to execute a workflow in the list (should succeed)
+   - Attempt to access a workflow NOT in the list (should get 403 Forbidden)
+
+3. **Test full access (no conditional policy):**
+   - Log in as a user with a role that has only basic permissions (no conditional policy)
+   - Verify you see ALL workflows
+   - Verify you can execute ALL workflows
+
+4. **Test denied access:**
+   - Log in as a user with no orchestrator permissions
+   - Verify you see an empty workflow list
+   - Verify you get 403 Forbidden when attempting to access any workflow
+
+## Common Migration Scenarios
+
+### Scenario 1: CSV-Only Users
+
+You manage permissions only through `rbac-policy.csv` file.
+
+**Migration steps:**
+
+1. Update CSV to replace deprecated permissions with generic ones
+2. Create `conditional-policies.yaml` file with workflow-specific access rules
+3. Configure the conditional policies file path in RBAC plugin configuration
+4. Remove deprecated permission entries from CSV
+5. Reload or restart Backstage
+
+### Scenario 2: REST API Users
+
+You created roles and assigned permissions through the RBAC REST API.
+
+**Migration steps:**
+
+1. List existing policies via REST API to identify deprecated permissions
+2. Create conditional policies via REST API or RBAC UI for workflow-specific access
+3. Delete deprecated permission policies via REST API
+4. Verify access via REST API or UI
+
+**Note:** Conditional policies created via REST API or UI take effect immediately.
+
+### Scenario 3: Mixed Configurations
+
+You use a combination of CSV file and RBAC REST API. For this scenario keep in mind: RBAC plugin has deferentiation beetwen RBAC role source. If you created role with help of REST API , then you should migration this role with help of REST API. The same with permission policies files. You can not attach conditional policies from yaml file to the role created with help of REST API.
+
+**Migration steps:**
+
+1. Audit all sources (CSV file + REST API)
+2. Update each source following the relevant scenario above.
+3. Verify all users have correct access
+
+## Complete Migration Examples
+
+### Example 1: Read-only access to specific workflows
+
+**Before:**
+
+```csv
+p, role:default/viewer, orchestrator.workflow.approval, read, allow
+p, role:default/viewer, orchestrator.workflow.notification, read, allow
+g, user:default/bob, role:default/viewer
+```
+
+**After:**
+
+CSV file:
+
+```csv
+g, user:default/bob, role:default/viewer
+```
+
+Create conditional policies with help of YAML file (`conditional-policies.yaml`):
+
+```yaml
+conditionalPolicies:
+  - permission: orchestrator.workflow
+    resourceType: orchestrator-workflow
+    result: CONDITIONAL
+    roleEntityRef: role:default/viewer
+    permissionMapping:
+      - read
+    conditions:
+      rule: IS_ALLOWED_WORKFLOW_ID
+      resourceType: orchestrator-workflow
+      params:
+        workflowIds:
+          - approval
+          - notification
+```
+
+### Example 2: Execute specific workflows only
+
+**Before:**
+
+```csv
+p, role:default/operator, orchestrator.workflow.deploy, read, allow
+p, role:default/operator, orchestrator.workflow.rollback, read, allow
+p, role:default/operator, orchestrator.workflow.use.deploy, update, allow
+p, role:default/operator, orchestrator.workflow.use.rollback, update, allow
+g, user:default/charlie, role:default/operator
+```
+
+**After:**
+
+CSV file:
+
+```csv
+g, user:default/charlie, role:default/operator
+```
+
+Conditional policies file (`conditional-policies.yaml`):
+
+```yaml
+conditionalPolicies:
+  - permission: orchestrator.workflow
+    resourceType: orchestrator-workflow
+    result: CONDITIONAL
+    roleEntityRef: role:default/operator
+    permissionMapping:
+      - read
+    conditions:
+      rule: IS_ALLOWED_WORKFLOW_ID
+      resourceType: orchestrator-workflow
+      params:
+        workflowIds:
+          - deploy
+          - rollback
+  - permission: orchestrator.workflow.use
+    resourceType: orchestrator-workflow
+    result: CONDITIONAL
+    roleEntityRef: role:default/operator
+    permissionMapping:
+      - update
+    conditions:
+      rule: IS_ALLOWED_WORKFLOW_ID
+      resourceType: orchestrator-workflow
+      params:
+        workflowIds:
+          - deploy
+          - rollback
+```
+
+### Example 3: Full access (no conditions needed)
+
+**Before:**
+
+```csv
+p, role:default/admin, orchestrator.workflow, read, allow
+p, role:default/admin, orchestrator.workflow.use, update, allow
+p, role:default/admin, orchestrator.workflowAdminView, read, allow
+g, user:default/eve, role:default/admin
+```
+
+**After (no change needed):**
+
+```csv
+p, role:default/admin, orchestrator.workflow, read, allow
+p, role:default/admin, orchestrator.workflow.use, update, allow
+p, role:default/admin, orchestrator.workflowAdminView, read, allow
+g, user:default/eve, role:default/admin
+```
+
+**No conditional policy needed** - user has access to ALL workflows.
+
+## Troubleshooting
+
+### User lost access after upgrade
+
+**Problem:** User had `orchestrator.workflow.myflow` permission but now sees empty workflow list.
+
+**Root cause:** Deprecated specific permission was removed, but no conditional policy was created.
+
+**Solution:**
+
+Create conditional policy (see Step 3 above).
+
+### Cannot create conditional policy via RBAC UI
+
+**Problem:** 403 Forbidden when trying to create conditional policy via RBAC UI.
+
+**Root cause:** User doesn't have admin access to RBAC.
+
+**Solution:** Configure RBAC admins in `app-config.yaml`:
+
+```yaml
+permission:
+  enabled: true
+  rbac:
+    admin:
+      users:
+        - name: user:default/YOUR_USERNAME
+```
+
+Restart Backstage after making this change.
+
+### Conditional policy not working
+
+**Problem:** Created conditional policy, but user still can't access workflows.
+
+**Potential causes:**
+
+- defined wrong workflow id or action("update" instead of "read" and so on)
+- user is not member of the RBAC role which has assinged corresponding permissions
+
+**Solution:** Double check conditional policies. Make sure that user is member of the RBAC role.
+
+### Can see workflow but cannot execute
+
+**Problem:** Workflow appears in list but execute button fails with 403.
+
+**Root cause:** User has read conditional policy but no execute conditional policy.
+
+**Solution:** Add "update" action to the `permissionMapping` section in the created conditional policy. Or create separated conditional policy with "update" action to allow execute workflow.
+
+### Changes not taking effect
+
+**Problem:** Updated CSV file but changes aren't reflected.
+
+**Solution:**
+
+1. Check if `policyFileReload: true` is enabled in `app-config.yaml`:
+
+   ```yaml
+   permission:
+     rbac:
+       policyFileReload: true
+   ```
+
+2. If not enabled, restart Backstage:
+
+   ```bash
+   # Stop and restart your Backstage instance
+   ```
+
+3. Verify permission files path are correct in config:
+
+   ```yaml
+   permission:
+     rbac:
+       policies-csv-file: /absolute/path/to/rbac-policy.csv
+      conditionalPoliciesFile: /path/to/conditional-policies.yaml
+   ```
+
+4. Check RHDH logs for CSV parsing errors/warnings. RBAC plugin skips permissions with invalid format, but log warnings.
+
+## Reference
+
+### Permission Names
+
+| Permission Name                  | Resource Type           | Description                                       |
+| -------------------------------- | ----------------------- | ------------------------------------------------- |
+| `orchestrator.workflow`          | `orchestrator-workflow` | Read access to workflow definitions and instances |
+| `orchestrator.workflow.use`      | `orchestrator-workflow` | Execute and abort workflows                       |
+| `orchestrator.workflowAdminView` | basic                   | View workflow definition editor                   |
+| `orchestrator.instanceAdminView` | basic                   | View all workflow instances                       |
+
+### Resource Type
+
+- **Resource type:** `orchestrator-workflow`
+- Used in both permission definitions and conditional policies
+
+### Rule Name
+
+- **Rule name:** `IS_ALLOWED_WORKFLOW_ID`
+- Used in conditional policies to specify allowed workflow IDs
+
+### REST API Endpoints (for viewing existing policies)
+
+Use these endpoints to audit existing permissions and find roles with deprecated permissions:
+
+| Method | Endpoint                            | Description                               |
+| ------ | ----------------------------------- | ----------------------------------------- |
+| GET    | `/api/permission/policies`          | List all policies to find deprecated ones |
+| GET    | `/api/permission/policies/:roleRef` | List policies for a role                  |
+| GET    | `/api/permission/roles/conditions`  | List all conditional policies             |
+
+### Related Documentation
+
+- [Orchestrator Permissions Documentation](./Permissions.md)
+- [RBAC Conditional Policies Documentation](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend/docs/conditions.md)
+- [Red Hat Developer Hub Authorization Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.2/html/authorization/index)
+
+### Configuration Reference
+
+**app-config.yaml:**
+
+```yaml
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: /path/to/rbac-policy.csv
+    conditionalPoliciesFile: /path/to/conditional-policies.yaml # Optional: for YAML-based conditional policies
+    pluginsWithPermission:
+      - orchestrator
+      # ... more plugin ids
+    policyFileReload: true
+    admin:
+      users:
+        - name: user:default/YOUR_USERNAME
+```
+
+## Support
+
+For questions or issues with migration:
+
+- Review the [Permissions.md](./Permissions.md) documentation
+- Check RBAC plugin conditional policies documentation
+- Test in non-production environment first
+- Consult Red Hat Developer Hub authorization documentation
+
+**Before upgrading to the new plugin version:**
+
+1. Audit your current permissions (Step 1)
+2. Test the migration in a non-production environment
+3. Document your current configuration for rollback if needed
+4. Schedule a maintenance window for the upgrade
