@@ -1119,24 +1119,10 @@ export const orchestratorPermissions: (
 // @public (undocumented)
 export const orchestratorWorkflowPermission: ResourcePermission<'orchestrator-workflow'>;
 
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowSpecificPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const orchestratorWorkflowSpecificPermission: (
-  workflowId: string,
-) => BasicPermission;
-
 // Warning: (ae-missing-release-tag) "orchestratorWorkflowUsePermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
 export const orchestratorWorkflowUsePermission: ResourcePermission<'orchestrator-workflow'>;
-
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowUseSpecificPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const orchestratorWorkflowUseSpecificPermission: (
-  workflowId: string,
-) => BasicPermission;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
@@ -2591,12 +2577,10 @@ export interface WorkflowRunStatusDTO {
 // src/models.d.ts:105:5 - (ae-undocumented) Missing documentation for "Date".
 // src/permissions.d.ts:1:22 - (ae-undocumented) Missing documentation for "ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE".
 // src/permissions.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowPermission".
-// src/permissions.d.ts:3:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowSpecificPermission".
-// src/permissions.d.ts:4:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUsePermission".
-// src/permissions.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUseSpecificPermission".
-// src/permissions.d.ts:6:22 - (ae-undocumented) Missing documentation for "orchestratorAdminViewPermission".
-// src/permissions.d.ts:7:22 - (ae-undocumented) Missing documentation for "orchestratorInstanceAdminViewPermission".
-// src/permissions.d.ts:8:22 - (ae-undocumented) Missing documentation for "orchestratorPermissions".
+// src/permissions.d.ts:3:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUsePermission".
+// src/permissions.d.ts:4:22 - (ae-undocumented) Missing documentation for "orchestratorAdminViewPermission".
+// src/permissions.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorInstanceAdminViewPermission".
+// src/permissions.d.ts:6:22 - (ae-undocumented) Missing documentation for "orchestratorPermissions".
 // src/types.d.ts:9:1 - (ae-undocumented) Missing documentation for "OmitRecursively".
 // src/types.d.ts:12:1 - (ae-undocumented) Missing documentation for "WorkflowDefinition".
 // src/types.d.ts:13:1 - (ae-undocumented) Missing documentation for "WorkflowListResult".
