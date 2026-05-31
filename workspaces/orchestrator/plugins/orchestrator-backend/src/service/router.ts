@@ -418,11 +418,10 @@ function setupInternalRoutes(
     decision: PolicyDecision,
     workflowId: string,
     auditEvent: AuditorServiceEvent,
-  ) {
+  ): void {
     if (decision.result === AuthorizeResult.DENY) {
       manageDenyAuthorization(auditEvent);
-    }
-    if (decision.result === AuthorizeResult.CONDITIONAL) {
+    } else if (decision.result === AuthorizeResult.CONDITIONAL) {
       const filters = conditionTransformer(decision.conditions);
       if (!matches({ workflowId }, filters)) {
         manageDenyAuthorization(auditEvent);
@@ -432,7 +431,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowsOverviewForEntity',
     async (_c, req, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({
@@ -469,7 +467,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowsOverview',
     async (_c, req, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({
@@ -505,7 +502,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowSourceById',
     async (c, req, res, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -540,7 +536,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'executeWorkflow',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -587,7 +582,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'retriggerInstance',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -632,7 +626,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowOverviewById',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -673,7 +666,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowStatuses',
     async (_c, request: express.Request, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({
@@ -698,7 +690,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowInputSchemaById',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -816,7 +807,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowInstances',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -851,7 +841,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'pingWorkflowServiceById',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
@@ -884,7 +873,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getInstances',
     async (_c, req: express.Request, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({
@@ -963,7 +951,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getInstanceById',
     async (c, request: express.Request, res: express.Response, next) => {
       const instanceId = c.request.params.instanceId as string;
@@ -1042,7 +1029,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'getWorkflowLogById',
     async (c, request: express.Request, res: express.Response, next) => {
       const instanceId = c.request.params.instanceId as string;
@@ -1108,7 +1094,6 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
-    // done
     'abortWorkflow',
     async (c, request, res, next) => {
       const instanceId = c.request.params.instanceId as string;
