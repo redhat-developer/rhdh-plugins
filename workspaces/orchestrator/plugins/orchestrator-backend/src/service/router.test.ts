@@ -151,7 +151,7 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-orchestrator-common', () => {
   );
 
   // Create a simplified schema without the circular Filter reference
-  const openApiDocument = JSON.parse(JSON.stringify(actual.openApiDocument));
+  const openApiDocument = structuredClone(actual.openApiDocument);
 
   // Remove the problematic Filter schema to avoid circular reference during validation
   if (openApiDocument.components?.schemas?.Filter) {
