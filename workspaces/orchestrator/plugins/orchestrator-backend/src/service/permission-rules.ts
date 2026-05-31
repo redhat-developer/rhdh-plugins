@@ -25,7 +25,7 @@ import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/back
 
 export type OrchestratorFilter = {
   key: string;
-  values: any[];
+  values: unknown[];
 };
 
 /**
