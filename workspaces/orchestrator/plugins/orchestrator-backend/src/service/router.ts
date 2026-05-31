@@ -336,7 +336,6 @@ function initPublicServices(
   permissionsRegistry.addResourceType({
     resourceRef: orchestratorWorkflowResourceRef,
     getResources: resourceRefs =>
-      // todo: can we use single request to fetch all resources?
       Promise.all(
         resourceRefs.map(ref => {
           return orchestratorService.fetchWorkflowOverview({
