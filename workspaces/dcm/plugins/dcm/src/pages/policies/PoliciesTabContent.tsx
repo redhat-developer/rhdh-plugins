@@ -55,11 +55,11 @@ import type { Policy } from '@red-hat-developer-hub/backstage-plugin-dcm-common'
 import { policyManagerApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
-import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
+import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { PolicyFormFields } from './components/PolicyFormFields';
 import {
@@ -95,6 +95,7 @@ export function PoliciesTabContent() {
 
   /** IDs currently being toggled (to show per-row spinner). */
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   const crud = useCrudTab<Policy, PolicyForm>({
     loadFn: () => policyApi.listPolicies().then(res => res.policies ?? []),
@@ -121,8 +122,8 @@ export function PoliciesTabContent() {
           enabled: !p.enabled,
         });
         setItems(replacePolicyById(id, updated));
-      } catch {
-        // noop — leave the displayed value unchanged on failure
+      } catch (err) {
+        setToggleError(extractApiError(err));
       } finally {
         setTogglingIds(removeTogglingId(id));
       }
@@ -331,6 +332,11 @@ export function PoliciesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
+        actionError={crud.deleteError ?? toggleError}
+        onDismissActionError={() => {
+          crud.setDeleteError(null);
+          setToggleError(null);
+        }}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -381,11 +387,6 @@ export function PoliciesTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.id ?? ''
         }
         resourceLabel="policy"
-      />
-
-      <DcmErrorSnackbar
-        error={crud.deleteError}
-        onClose={() => crud.setDeleteError(null)}
       />
     </>
   );

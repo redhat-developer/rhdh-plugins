@@ -44,7 +44,6 @@ import type {
 import { catalogApiRef, providersApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
-import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
@@ -294,6 +293,8 @@ export function ProvidersTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
+        actionError={crud.deleteError}
+        onDismissActionError={() => crud.setDeleteError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -344,11 +345,6 @@ export function ProvidersTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.name ?? ''
         }
         resourceLabel="provider"
-      />
-
-      <DcmErrorSnackbar
-        error={crud.deleteError}
-        onClose={() => crud.setDeleteError(null)}
       />
     </>
   );

@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { IconButton, Tooltip } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 
 const useStyles = makeStyles(theme => ({
@@ -29,6 +30,10 @@ const useStyles = makeStyles(theme => ({
     fontSize: 14,
     color: '#28a745',
   },
+  failedIcon: {
+    fontSize: 14,
+    color: theme.palette.error.main,
+  },
   copyIcon: {
     fontSize: 14,
   },
@@ -38,27 +43,39 @@ const useStyles = makeStyles(theme => ({
 export function CopyButton({ text }: Readonly<{ text: string }>) {
   const classes = useStyles();
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const handleCopy = () => {
-    globalThis.navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    globalThis.navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        setCopyFailed(true);
+        setTimeout(() => setCopyFailed(false), 2000);
+      });
   };
 
+  let tooltipTitle = 'Copy';
+  if (copied) tooltipTitle = 'Copied!';
+  else if (copyFailed) tooltipTitle = 'Copy failed';
+
+  let icon = <FileCopyOutlinedIcon className={classes.copyIcon} />;
+  if (copied) icon = <CheckIcon className={classes.copiedIcon} />;
+  else if (copyFailed)
+    icon = <ErrorOutlineIcon className={classes.failedIcon} />;
+
   return (
-    <Tooltip title={copied ? 'Copied!' : 'Copy'} placement="top">
+    <Tooltip title={tooltipTitle} placement="top">
       <IconButton
         size="small"
         onClick={handleCopy}
         aria-label="Copy to clipboard"
         className={classes.copyButton}
       >
-        {copied ? (
-          <CheckIcon className={classes.copiedIcon} />
-        ) : (
-          <FileCopyOutlinedIcon className={classes.copyIcon} />
-        )}
+        {icon}
       </IconButton>
     </Tooltip>
   );
