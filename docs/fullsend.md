@@ -1,84 +1,80 @@
-# Fullsend AI Review Pilot
+# Fullsend AI Pilot
 
 ## What is fullsend?
 
 [Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events, and uses Vertex AI (Anthropic Claude) for inference.
 
-This repo uses fullsend in **review-only pilot mode** — only the Review agent is enabled, scoped to a subset of workspaces.
-
 ## Pilot scope
 
-### Enabled workspaces
+### Enabled agents
 
-| Workspace | Why |
-|-----------|-----|
-| `workspaces/augment/` | Initial pilot workspace |
+| Agent | Trigger | How to use |
+|-------|---------|------------|
+| Triage | `/fs-triage` slash command | Post on any issue |
+| Coder | `/fs-code` slash command, or `ready-to-code` label | Post on a triaged issue |
+| Review | Auto-triggers on PR open/update | Automatic for `workspaces/augment/` PRs |
+| Fix | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
 
-### What runs
+### Review auto-trigger scope
 
-- **Review agent** — auto-triggers on `pull_request_target` (opened, synchronize, ready_for_review)
-- Only PRs touching files in the pilot workspaces trigger the agent (GitHub Actions `paths` filter)
+The Review agent auto-triggers only on PRs touching `workspaces/augment/**` (via GitHub Actions `paths` filter on `pull_request_target`). All other agents are triggered repo-wide via slash commands or labels.
 
-### What does NOT run (and why)
+### What does NOT run
 
-| Agent | Why disabled |
-|-------|-------------|
-| Triage | Not needed — rhdh-plugins doesn't use issue-driven workflows |
-| Coder | Sandbox timeout issue upstream (fullsend #1bf016d9), and not needed for the pilot |
-| Fix | Depends on coder agent; also not needed for pilot |
-| Retro / Prioritize | Out of scope for initial pilot |
-| **Slash commands** | **Security risk** — rhdh-plugins is a public repo. Fullsend's triage/code/review agents have no authorization check on slash commands. Any external user posting `/fs-review`, `/fs-code`, or `/fs-triage` would trigger Vertex AI inference on our GCP project, burning tokens. The `issue_comment` trigger is intentionally omitted. |
+| Agent | Why |
+|-------|-----|
+| Retro | Out of scope for initial pilot |
+| Prioritize | Out of scope for initial pilot |
+
+## Slash commands
+
+Slash commands are **restricted to org members and collaborators** via an `author_association` check in the workflow shim. This prevents external users from burning Vertex AI tokens on this public repo.
+
+Available commands:
+
+| Command | What it does |
+|---------|-------------|
+| `/fs-triage` | Run triage on an issue |
+| `/fs-code` | Generate code for a triaged issue |
+| `/fs-review` | Run review on a PR |
+| `/fs-fix` | Fix issues flagged in a review |
+| `/fs-fix-stop` | Disable fix agent for a PR (adds `fullsend-no-fix` label) |
 
 ## Coexistence with PR Agent
 
-rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently on PRs in the pilot workspaces:
+rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently:
 
 - **PR Agent** — runs on all PRs across the entire repo
-- **Fullsend Review** — runs only on PRs touching the pilot workspace (`augment`)
+- **Fullsend Review** — auto-triggers only on PRs touching `workspaces/augment/`
 
-This parallel setup allows comparing review quality between the two agents. Neither blocks the other. PR Agent configuration is not modified by this pilot.
+This parallel setup allows comparing review quality. Neither blocks the other. PR Agent configuration is not modified.
 
-## How to expand to more workspaces
+## How to expand review to more workspaces
 
 Add paths to the `paths` filter in `.github/workflows/fullsend.yaml`:
 
 ```yaml
 on:
   pull_request_target:
-    types: [opened, synchronize, ready_for_review]
+    types: [opened, synchronize, ready_for_review, closed]
     paths:
       - "workspaces/augment/**"
       - "workspaces/your-new-workspace/**"  # add here
 ```
 
-To enable fullsend for ALL workspaces, remove the `paths` filter entirely.
+To enable review for ALL workspaces, remove the `paths` filter entirely.
 
-## How to enable slash commands safely
-
-If the repo were private, or if fullsend adds an authorization check on slash commands, re-enable by adding to `.github/workflows/fullsend.yaml`:
-
-```yaml
-on:
-  issue_comment:
-    types: [created]
-  # ... existing triggers
-```
-
-And add the bot-comment filter to the dispatch job:
-
-```yaml
-if: >-
-  github.event_name != 'issue_comment'
-  || github.event.comment.user.type != 'Bot'
-```
-
-Until then, slash commands remain disabled for external safety.
+Note: the `paths` filter only affects the Review agent's auto-trigger. Triage, coder, and fix are already available repo-wide via slash commands.
 
 ## Authorization model
 
+### Slash command auth gate
+
+The dispatch job checks `author_association` on `issue_comment` events. Only `OWNER`, `MEMBER`, and `COLLABORATOR` can trigger agents via slash commands. External contributors are silently ignored.
+
 ### CODEOWNERS protection
 
-The `.fullsend/` directory and `.github/workflows/fullsend.yaml` are protected via CODEOWNERS, requiring maintainer approval for any changes. This prevents agents from modifying their own configuration.
+The `.fullsend/` directory and `.github/workflows/fullsend.yaml` are protected via CODEOWNERS, requiring `@redhat-developer/rhdh-plugins-maintainers` approval. This prevents agents from modifying their own configuration.
 
 ### GitHub branch protection
 
@@ -92,9 +88,9 @@ Fullsend uses GCP Workload Identity Federation (WIF) to authenticate GitHub Acti
 
 | Path | Purpose |
 |------|---------|
-| `.fullsend/config.yaml` | Declares enabled roles (`review` only) |
+| `.fullsend/config.yaml` | Declares enabled roles (triage, coder, review, fix) |
 | `.fullsend/customized/` | Scaffold for future agent customization (agents, harness, policies, schemas, env, scripts, skills) |
-| `.github/workflows/fullsend.yaml` | Event shim — routes `pull_request_target` to fullsend's reusable workflows |
+| `.github/workflows/fullsend.yaml` | Event shim — routes GitHub events to fullsend's reusable workflows, with auth gate on slash commands |
 
 ## Debugging
 
@@ -119,10 +115,11 @@ Available in the workflow run logs under the sandbox creation step. Look for `fu
 
 | Symptom | Likely cause |
 |---------|-------------|
-| Workflow doesn't trigger | PR doesn't touch files in pilot workspace paths |
+| Slash command ignored | Commenter is not OWNER/MEMBER/COLLABORATOR |
+| Review doesn't trigger | PR doesn't touch files in `workspaces/augment/` |
 | 403 from mint | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
 | `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project |
-| Agent produces no review | Check transcript artifact for agent errors |
+| Agent produces no output | Check transcript artifact for agent errors |
 
 ## Reference
 
