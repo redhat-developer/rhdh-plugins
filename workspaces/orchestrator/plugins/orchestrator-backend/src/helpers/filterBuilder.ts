@@ -111,23 +111,53 @@ function handleNestedFilter(
   return filterClause;
 }
 
-function handleBetweenOperator(filter: FieldFilter): FilterClause {
+function getGraphQLVariableType(
+  fieldName: string,
+  fieldDef: IntrospectionField | undefined,
+  type: ProcessType,
+  isArray: boolean,
+): string {
+  if (isEnumFilter(fieldName, type)) {
+    return isArray ? '[ProcessInstanceState!]' : 'ProcessInstanceState';
+  }
+
+  if (fieldDef?.type.name === TypeName.Date) {
+    return 'DateTime!';
+  }
+
+  if (isArray) {
+    return '[String!]';
+  }
+
+  return 'String';
+}
+
+function handleBetweenOperator(
+  filter: FieldFilter,
+  fieldDef: IntrospectionField | undefined,
+): FilterClause {
   if (!Array.isArray(filter.value) || filter.value.length !== 2) {
     throw new Error('Between operator requires an array of two elements');
   }
+  const paramType = getGraphQLVariableType(
+    filter.field,
+    fieldDef,
+    'ProcessInstance',
+    false,
+  );
   const filterClauseVariableArray: FilterClauseVariable[] = [];
   const clauseVariableName1 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const filterClauseVariable1: FilterClauseVariable = {
     clauseVariableName: clauseVariableName1,
     formattedValue: filter.value[0],
-    clauseVariableType: 'String',
+    clauseVariableType: paramType,
   };
 
   const clauseVariableName2 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const filterClauseVariable2: FilterClauseVariable = {
     clauseVariableName: clauseVariableName2,
     formattedValue: filter.value[1],
-    clauseVariableType: 'String',
+    clauseVariableType: paramType,
   };
 
   const clause = `${filter.field}: {${getGraphQLOperator(
@@ -193,14 +223,11 @@ function handleBinaryOperator(
     }
   }
   let formattedValue: any;
-  let paramType: string;
-  if (Array.isArray(binaryFilter.value)) {
-    formattedValue = binaryFilter.value.map(v =>
+  const isArray = Array.isArray(binaryFilter.value);
+  if (isArray) {
+    formattedValue = (binaryFilter.value as unknown[]).map((v: unknown) =>
       formatValue(binaryFilter.field, v, fieldDef, type),
     );
-    paramType = isEnumFilter(binaryFilter.field, type)
-      ? '[ProcessInstanceState!]'
-      : '[String!]';
   } else {
     formattedValue = formatValue(
       binaryFilter.field,
@@ -208,8 +235,13 @@ function handleBinaryOperator(
       fieldDef,
       type,
     );
-    paramType = 'String';
   }
+  const paramType = getGraphQLVariableType(
+    binaryFilter.field,
+    fieldDef,
+    type,
+    isArray,
+  );
 
   const clauseVariableName = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const clause = `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator)}: $${clauseVariableName}}`;
@@ -273,7 +305,7 @@ export function buildFilterCondition(
     case FieldFilterOperatorEnum.IsNull:
       return handleIsNullOperator(filters);
     case FieldFilterOperatorEnum.Between:
-      return handleBetweenOperator(filters);
+      return handleBetweenOperator(filters, fieldDef);
     case FieldFilterOperatorEnum.Eq:
     case FieldFilterOperatorEnum.Like:
     case FieldFilterOperatorEnum.In:
