@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
+import type { AppTheme } from '@backstage/core-plugin-api';
+import type { ComponentType } from 'react';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
   RhdhLogoFull,
   RhdhLogoIcon,
 } from '@red-hat-developer-hub/backstage-plugin-dcm';
 
+type RhdhThemeOptions = {
+  RhdhLogoFull: ComponentType;
+  RhdhLogoIcon: ComponentType;
+  themes: AppTheme[];
+} | null;
+
 /**
  * Change this value to `true` if you want to use the RHDH theme.
  */
 const ENABLE_RHDH_THEME = true;
 
-export function useRhdhTheme() {
+export function useRhdhTheme(): RhdhThemeOptions {
   return ENABLE_RHDH_THEME
-    ? ({
+    ? {
         RhdhLogoFull,
         RhdhLogoIcon,
         get themes() {
           return getThemes();
         },
-      } as const)
+      }
     : null;
 }
