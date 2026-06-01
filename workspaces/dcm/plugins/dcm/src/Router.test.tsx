@@ -15,48 +15,32 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { ErrorBoundary } from '@backstage/core-components';
 import { wrapInTestApp } from '@backstage/test-utils';
+import { Router } from './Router';
 
-/**
- * A component that throws synchronously during render to simulate an unhandled
- * React render error (e.g. unexpected null, bad type-cast, etc.).
- */
-function Bomb(): JSX.Element {
-  throw new Error('simulated render error');
-}
+jest.mock('./pages/data-center/DataCenterPage', () => ({
+  DataCenterPage: () => <div>DataCenterPage</div>,
+}));
+jest.mock('./pages/environment-details', () => ({
+  EnvironmentDetailsPage: () => <div>EnvironmentDetailsPage</div>,
+}));
+jest.mock('./pages/service-spec-details', () => ({
+  ServiceSpecDetailsPage: () => <div>ServiceSpecDetailsPage</div>,
+}));
 
-describe('Router – ErrorBoundary', () => {
-  it('renders the Backstage error fallback instead of crashing when a child throws', () => {
-    render(
-      wrapInTestApp(
-        <ErrorBoundary>
-          <Bomb />
-        </ErrorBoundary>,
-      ),
-    );
-
-    // Backstage ErrorBoundary renders a fallback that shows the error message
-    // and prevents the whole page from going blank.
-    const body = document.body.textContent ?? '';
-    expect(body.length).toBeGreaterThan(0);
-
-    // The error boundary fallback contains the error message — at least one
-    // element with that text should be present in the DOM.
-    expect(
-      screen.queryAllByText(/simulated render error/i).length,
-    ).toBeGreaterThan(0);
+describe('Router', () => {
+  it('renders DataCenterPage on the default route', () => {
+    render(wrapInTestApp(<Router />));
+    expect(screen.getByText('DataCenterPage')).toBeInTheDocument();
   });
 
-  it('does not crash the test environment (fallback is rendered, not thrown)', () => {
-    expect(() => {
-      render(
-        wrapInTestApp(
-          <ErrorBoundary>
-            <Bomb />
-          </ErrorBoundary>,
-        ),
-      );
-    }).not.toThrow();
+  it('renders ServiceSpecDetailsPage for service-specs/:id/* routes', () => {
+    render(wrapInTestApp(<Router />, { routeEntries: ['/service-specs/123'] }));
+    expect(screen.getByText('ServiceSpecDetailsPage')).toBeInTheDocument();
+  });
+
+  it('renders EnvironmentDetailsPage for environments/:id/* routes', () => {
+    render(wrapInTestApp(<Router />, { routeEntries: ['/environments/456'] }));
+    expect(screen.getByText('EnvironmentDetailsPage')).toBeInTheDocument();
   });
 });

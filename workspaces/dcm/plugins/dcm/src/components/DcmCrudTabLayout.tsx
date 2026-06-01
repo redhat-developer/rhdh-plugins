@@ -23,6 +23,7 @@ import {
 import { Box, Button } from '@material-ui/core';
 import { Dispatch, SetStateAction } from 'react';
 import MuiAlert from '@material-ui/lab/Alert';
+import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
 import { DcmSearchCardAction } from './dcmTabListHelpers';
 import { useDcmStyles } from './dcmStyles';
@@ -67,6 +68,24 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   // ── Card header ──────────────────────────────────────────────────────────
   entityLabel: string;
 }>;
+
+function ActionErrorAlert({
+  message,
+  onClose,
+  boxProps,
+}: Readonly<{
+  message: string;
+  onClose?: () => void;
+  boxProps?: BoxProps;
+}>) {
+  return (
+    <Box {...boxProps}>
+      <MuiAlert severity="error" variant="outlined" onClose={onClose}>
+        {message}
+      </MuiAlert>
+    </Box>
+  );
+}
 
 /**
  * Generic layout shell for DCM CRUD tab pages.
@@ -137,15 +156,11 @@ export function DcmCrudTabLayout<T extends object>({
     return (
       <>
         {actionError && (
-          <Box p={2}>
-            <MuiAlert
-              severity="error"
-              variant="outlined"
-              onClose={onDismissActionError}
-            >
-              {actionError}
-            </MuiAlert>
-          </Box>
+          <ActionErrorAlert
+            message={actionError}
+            onClose={onDismissActionError}
+            boxProps={{ p: 2 }}
+          />
         )}
         <DcmDataCenterTabEmptyState
           title={emptyTitle}
@@ -178,15 +193,11 @@ export function DcmCrudTabLayout<T extends object>({
         titleTypographyProps={{ className: classes.cardTitle }}
       >
         {actionError && (
-          <Box px={2} pt={2}>
-            <MuiAlert
-              severity="error"
-              variant="outlined"
-              onClose={onDismissActionError}
-            >
-              {actionError}
-            </MuiAlert>
-          </Box>
+          <ActionErrorAlert
+            message={actionError}
+            onClose={onDismissActionError}
+            boxProps={{ px: 2, pt: 2 }}
+          />
         )}
         <Box className={classes.cardContent}>
           <Table<T>
