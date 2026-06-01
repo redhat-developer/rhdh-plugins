@@ -1,7 +1,7 @@
 # fullsend shim workflow — review-only pilot (per-repo installation mode)
 #
 # This is a hardened variant of the standard fullsend shim. Only the Review
-# agent is enabled, scoped to three AI-related workspaces via path filters.
+# agent is enabled, scoped to the augment workspace via path filters.
 #
 # What's intentionally absent and why:
 #   - issues trigger       → no triage or coder agents in this pilot
@@ -28,9 +28,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review]
     paths:
-      - "workspaces/ai-integrations/**"
-      - "workspaces/lightspeed/**"
-      - "workspaces/mcp-integrations/**"
+      - "workspaces/augment/**"
 
 jobs:
   dispatch:

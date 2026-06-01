@@ -12,9 +12,7 @@ This repo uses fullsend in **review-only pilot mode** — only the Review agent 
 
 | Workspace | Why |
 |-----------|-----|
-| `workspaces/ai-integrations/` | AI-related plugins — team is familiar with agent tooling |
-| `workspaces/lightspeed/` | AI assistant plugin — natural fit for agent-assisted review |
-| `workspaces/mcp-integrations/` | MCP plugin — new workspace, benefits from early review coverage |
+| `workspaces/augment/` | Initial pilot workspace |
 
 ### What runs
 
@@ -36,7 +34,7 @@ This repo uses fullsend in **review-only pilot mode** — only the Review agent 
 rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently on PRs in the pilot workspaces:
 
 - **PR Agent** — runs on all PRs across the entire repo
-- **Fullsend Review** — runs only on PRs touching pilot workspaces
+- **Fullsend Review** — runs only on PRs touching the pilot workspace (`augment`)
 
 This parallel setup allows comparing review quality between the two agents. Neither blocks the other. PR Agent configuration is not modified by this pilot.
 
@@ -49,9 +47,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review]
     paths:
-      - "workspaces/ai-integrations/**"
-      - "workspaces/lightspeed/**"
-      - "workspaces/mcp-integrations/**"
+      - "workspaces/augment/**"
       - "workspaces/your-new-workspace/**"  # add here
 ```
 
