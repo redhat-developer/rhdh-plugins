@@ -1,0 +1,48 @@
+# fullsend shim workflow — review-only pilot (per-repo installation mode)
+#
+# This is a hardened variant of the standard fullsend shim. Only the Review
+# agent is enabled, scoped to three AI-related workspaces via path filters.
+#
+# What's intentionally absent and why:
+#   - issues trigger       → no triage or coder agents in this pilot
+#   - issue_comment trigger → no slash commands; rhdh-plugins is public,
+#                             and fullsend triage/code/review have no auth
+#                             check — any external user posting /fs-* would
+#                             burn Vertex AI tokens
+#   - pull_request_review  → no fix agent
+#   - stop-fix job         → fix is not enabled
+#
+# Security: pull_request_target runs the BASE branch version of this workflow,
+# preventing PRs from modifying it to exfiltrate credentials.
+name: fullsend
+
+permissions:
+  actions: write
+  id-token: write
+  contents: write
+  issues: write
+  packages: read
+  pull-requests: write
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, ready_for_review]
+    paths:
+      - "workspaces/ai-integrations/**"
+      - "workspaces/lightspeed/**"
+      - "workspaces/mcp-integrations/**"
+
+jobs:
+  dispatch:
+    concurrency:
+      group: fullsend-dispatch-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@v0
+    with:
+      event_action: ${{ github.event.action }}
+      install_mode: per-repo
+      mint_url: ${{ vars.FULLSEND_MINT_URL }}
+      gcp_region: ${{ vars.FULLSEND_GCP_REGION }}
+    secrets:
+      FULLSEND_GCP_WIF_PROVIDER: ${{ secrets.FULLSEND_GCP_WIF_PROVIDER }}
+      FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}

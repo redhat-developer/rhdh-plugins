@@ -36,3 +36,8 @@
 /workspaces/konflux                                 @redhat-developer/rhdh-plugins-maintainers @rrosatti @sahil143 @milantaky
 /workspaces/x2a                                     @redhat-developer/rhdh-plugins-maintainers @mareklibra @elai-shalev @eloycoto
 /workspaces/dcm                                     @redhat-developer/rhdh-plugins-maintainers @asmasarw @jkilzi @mareklibra
+
+# Fullsend AI agent configuration — requires maintainer approval to prevent
+# agents from modifying their own guardrails.
+/.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers
+/.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers
