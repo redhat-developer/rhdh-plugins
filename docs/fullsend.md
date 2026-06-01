@@ -15,9 +15,26 @@
 | Review | Auto-triggers on PR open/update | Automatic for `workspaces/augment/` PRs |
 | Fix | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
 
-### Review auto-trigger scope
+### Auto-trigger vs. manual trigger
 
-The Review agent auto-triggers only on PRs touching `workspaces/augment/**` (via GitHub Actions `paths` filter on `pull_request_target`). All other agents are triggered repo-wide via slash commands or labels.
+Fullsend is designed to chain agents automatically (issue → triage → code → review → fix). In practice, most of that chain requires manual triggering. Here's what actually happens:
+
+| Agent | Designed auto-trigger | What actually happens | How to trigger manually |
+|-------|----------------------|----------------------|------------------------|
+| Triage | `issues/opened` | **Does not auto-trigger.** The upstream dispatcher only handles `issues/labeled`, not `issues/opened`. | `/fs-triage` on an issue |
+| Coder | `ready-to-code` label | **Does not auto-trigger from triage.** Triage labels issues `triaged`, not `ready-to-code`. | `/fs-code` on a triaged issue, or manually add `ready-to-code` label |
+| Review | `pull_request_target/opened\|synchronize` | **Auto-triggers on `workspaces/augment/` PRs.** This is the only agent that reliably auto-triggers. Scoped via `paths` filter. | `/fs-review` on any PR (auth-gated) |
+| Fix | `pull_request_review/submitted` with `changes_requested` | **Partially auto-triggers.** Only fires from bot reviews (e.g., fullsend-review requesting changes), not from human reviews. Effectively scoped to augment PRs because only augment PRs get auto-reviewed. | `/fs-fix` on a PR, `/fs-fix-stop` to disable |
+
+The "autonomous pipeline" does not chain automatically. In practice: review auto-triggers on augment PRs, everything else is slash-command-driven.
+
+### Scope details
+
+The `paths` filter (`workspaces/augment/**`) only applies to the `pull_request_target` event. Other triggers are repo-wide:
+
+- **`issues`** — fires for all issues (fine, since auto-triage doesn't work; slash commands are auth-gated)
+- **`issue_comment`** — fires for all comments (auth-gated to OWNER/MEMBER/COLLABORATOR)
+- **`pull_request_review`** — fires for all PR reviews (no `paths` support for this event type). Fix is transitively scoped: it only auto-fires from bot reviews, and the review bot only auto-reviews augment PRs.
 
 ### What does NOT run
 
