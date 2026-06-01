@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: boost
+  description: AI assistant plugin for Backstage — a rewrite of the augment plugin.
+spec:
+  type: website
+  owner: durandom
+  lifecycle: experimental
