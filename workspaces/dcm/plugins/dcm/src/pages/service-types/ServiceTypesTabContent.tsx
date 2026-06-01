@@ -18,11 +18,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import { TableColumn, Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, Typography } from '@material-ui/core';
+import { Box, Button, Chip, Typography } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
+import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
@@ -35,16 +37,21 @@ export function ServiceTypesTabContent() {
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = usePersistedPageSize('service-types');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     catalogApi
       .listServiceTypes()
       .then(res => setServiceTypes(res.results ?? []))
-      .catch(() => setServiceTypes([]))
+      .catch(err => {
+        setLoadError(extractApiError(err));
+        setServiceTypes([]);
+      })
       .finally(() => setLoading(false));
   }, [catalogApi]);
 
@@ -139,6 +146,24 @@ export function ServiceTypesTabContent() {
   );
 
   if (loading) return <Progress />;
+
+  if (loadError) {
+    return (
+      <Box p={2}>
+        <MuiAlert
+          severity="error"
+          variant="outlined"
+          action={
+            <Button color="inherit" size="small" onClick={load}>
+              Retry
+            </Button>
+          }
+        >
+          {loadError}
+        </MuiAlert>
+      </Box>
+    );
+  }
 
   return (
     <Box className={classes.root}>

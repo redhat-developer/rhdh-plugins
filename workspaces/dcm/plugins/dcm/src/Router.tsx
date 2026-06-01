@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ErrorBoundary } from '@backstage/core-components';
 import { Routes, Route } from 'react-router-dom';
 import { DataCenterPage } from './pages/data-center/DataCenterPage';
 import { EnvironmentDetailsPage } from './pages/environment-details';
@@ -26,10 +27,15 @@ import { ServiceSpecDetailsPage } from './pages/service-spec-details';
  */
 export function Router() {
   return (
-    <Routes>
-      <Route path="service-specs/:id/*" element={<ServiceSpecDetailsPage />} />
-      <Route path="environments/:id/*" element={<EnvironmentDetailsPage />} />
-      <Route path="*" element={<DataCenterPage />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route
+          path="service-specs/:id/*"
+          element={<ServiceSpecDetailsPage />}
+        />
+        <Route path="environments/:id/*" element={<EnvironmentDetailsPage />} />
+        <Route path="*" element={<DataCenterPage />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }

@@ -77,7 +77,6 @@ import type {
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
-import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
@@ -320,6 +319,8 @@ export function CatalogItemsTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
+        actionError={crud.deleteError}
+        onDismissActionError={() => crud.setDeleteError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -389,11 +390,6 @@ export function CatalogItemsTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
         resourceLabel="catalog item"
-      />
-
-      <DcmErrorSnackbar
-        error={crud.deleteError}
-        onClose={() => crud.setDeleteError(null)}
       />
     </>
   );

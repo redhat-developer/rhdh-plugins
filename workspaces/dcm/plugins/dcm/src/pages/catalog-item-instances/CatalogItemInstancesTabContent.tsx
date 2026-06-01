@@ -29,7 +29,6 @@ import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-com
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
-import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
@@ -261,6 +260,11 @@ export function CatalogItemInstancesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
+        actionError={crud.deleteError ?? rehydrateError}
+        onDismissActionError={() => {
+          crud.setDeleteError(null);
+          setRehydrateError(null);
+        }}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -313,16 +317,6 @@ export function CatalogItemInstancesTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
         resourceLabel="instance"
-      />
-
-      <DcmErrorSnackbar
-        error={crud.deleteError}
-        onClose={() => crud.setDeleteError(null)}
-      />
-
-      <DcmErrorSnackbar
-        error={rehydrateError}
-        onClose={() => setRehydrateError(null)}
       />
 
       <DcmSuccessSnackbar

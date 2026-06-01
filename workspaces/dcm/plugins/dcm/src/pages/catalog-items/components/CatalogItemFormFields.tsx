@@ -36,6 +36,7 @@ import {
   Tooltip,
   Typography,
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import CodeIcon from '@material-ui/icons/Code';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -204,6 +205,7 @@ export function CatalogItemFormFields({
   const classes = useStyles();
   const errors = useMemo(() => validateCatalogItemForm(form), [form]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState('');
 
   const set =
     (field: keyof ScalarFields) =>
@@ -245,9 +247,12 @@ export function CatalogItemFormFields({
         const parsed = isYaml ? loadYaml(text) : JSON.parse(text);
         setForm(catalogItemFromPayload(parsed));
         setTouched({});
+        setImportError('');
       })
       .catch(() => {
-        // silently ignore parse errors; form remains unchanged
+        setImportError(
+          'Failed to import file — check that it is valid JSON or YAML.',
+        );
       });
     e.target.value = '';
   };
@@ -256,24 +261,35 @@ export function CatalogItemFormFields({
 
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
-      <Box display="flex" justifyContent="flex-end">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,.yaml,.yml"
-          hidden
-          onChange={handleImportFile}
-        />
-        <Tooltip title="Fill the form from a JSON or YAML catalog item definition">
-          <Button
-            size="small"
-            startIcon={<PublishIcon />}
-            onClick={() => fileInputRef.current?.click()}
-            className={classes.importButton}
+      <Box display="flex" flexDirection="column" gridGap={8}>
+        <Box display="flex" justifyContent="flex-end">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,.yaml,.yml"
+            hidden
+            onChange={handleImportFile}
+          />
+          <Tooltip title="Fill the form from a JSON or YAML catalog item definition">
+            <Button
+              size="small"
+              startIcon={<PublishIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              className={classes.importButton}
+            >
+              Import from file
+            </Button>
+          </Tooltip>
+        </Box>
+        {importError && (
+          <MuiAlert
+            severity="error"
+            variant="outlined"
+            onClose={() => setImportError('')}
           >
-            Import from file
-          </Button>
-        </Tooltip>
+            {importError}
+          </MuiAlert>
+        )}
       </Box>
 
       <TextField
