@@ -37,6 +37,8 @@ export interface HiddenConditionObject {
   is?: JsonValue | JsonValue[];
   isEmpty?: boolean;
   isNot?: JsonValue | JsonValue[];
+  isNotEmptyList?: boolean;
+  notContains?: JsonValue;
   when: string;
 }
 
