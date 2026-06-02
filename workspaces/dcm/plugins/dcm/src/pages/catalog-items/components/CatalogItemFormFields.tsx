@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -43,6 +43,11 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import PublishIcon from '@material-ui/icons/Publish';
 import { makeStyles } from '@material-ui/core/styles';
 import { load as loadYaml } from 'js-yaml';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
+import docco from 'react-syntax-highlighter/dist/esm/styles/hljs/docco';
+
+SyntaxHighlighter.registerLanguage('json', json);
 
 const useStyles = makeStyles(theme => ({
   fieldRow: {
@@ -70,44 +75,151 @@ const useSchemaEditorStyles = makeStyles(theme => ({
   dialogContent: {
     paddingTop: theme.spacing(1),
   },
-  monoInput: {
-    fontFamily: 'monospace',
-    fontSize: 12,
+  editorWrapper: {
+    position: 'relative' as const,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    overflow: 'hidden',
+    '&:focus-within': {
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
+    },
+  },
+  editorWrapperError: {
+    borderColor: theme.palette.error.main,
+    '&:focus-within': {
+      borderColor: theme.palette.error.main,
+      boxShadow: `0 0 0 1px ${theme.palette.error.main}`,
+    },
+  },
+  editorTextarea: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    margin: 0,
+    padding: '12px',
+    border: 'none',
+    outline: 'none',
+    resize: 'none' as const,
+    background: 'transparent',
+    color: 'transparent',
+    caretColor: theme.palette.text.primary,
+    fontFamily:
+      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+    fontSize: 13,
+    lineHeight: '1.45',
+    whiteSpace: 'pre' as const,
+    overflowWrap: 'normal' as const,
+    overflow: 'auto',
+    zIndex: 1,
+    WebkitTextFillColor: 'transparent',
+  },
+  editorHighlight: {
+    margin: 0,
+    padding: '12px !important',
+    minHeight: 280,
+    fontFamily:
+      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important',
+    fontSize: '13px !important',
+    lineHeight: '1.45 !important',
+    whiteSpace: 'pre' as const,
+    overflowWrap: 'normal' as const,
+    overflow: 'auto',
+    background: `${theme.palette.background.paper} !important`,
+  },
+  editorHelperText: {
+    marginTop: theme.spacing(0.5),
+    display: 'block',
   },
 }));
 
 type SchemaButtonProps = Readonly<{
   value: string;
   onChange: (v: string) => void;
+  /** Error on the stored value (e.g. from import or duplicate detection). */
+  fieldError?: string;
 }>;
 
-function SchemaButton({ value, onChange }: SchemaButtonProps) {
+function validateSchemaJson(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return 'Must be a JSON object, not an array or primitive';
+    }
+    return '';
+  } catch {
+    return 'Invalid JSON syntax';
+  }
+}
+
+function prettyPrintIfValid(raw: string): string {
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
+function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
   const classes = useSchemaEditorStyles();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
-  const [parseError, setParseError] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  const jsonError = useMemo(() => validateSchemaJson(draft), [draft]);
+  const applyDisabled = draft.trim() !== '' && Boolean(jsonError);
+  const hasError = Boolean(draft.trim() && jsonError);
 
   const handleOpen = () => {
-    setDraft(value);
-    setParseError('');
+    setDraft(value ? prettyPrintIfValid(value) : '');
     setOpen(true);
   };
 
-  const handleApply = () => {
-    const trimmed = draft.trim();
-    if (trimmed) {
-      try {
-        JSON.parse(trimmed);
-      } catch {
-        setParseError('Invalid JSON — fix the syntax before applying.');
-        return;
-      }
-    }
-    onChange(trimmed);
+  const handleApply = useCallback(() => {
+    if (applyDisabled) return;
+    onChange(draft.trim());
     setOpen(false);
-  };
+  }, [applyDisabled, draft, onChange]);
 
   const handleClose = () => setOpen(false);
+
+  const syncScroll = () => {
+    if (textareaRef.current && highlightRef.current) {
+      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter') return;
+    const afterEnter = `${draft}\n`;
+    const formatted = prettyPrintIfValid(afterEnter);
+    if (formatted !== afterEnter) {
+      e.preventDefault();
+      setDraft(formatted);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = e.clipboardData.getData('text');
+    const { selectionStart: start, selectionEnd: end } = e.currentTarget;
+    const afterPaste =
+      draft.slice(0, start ?? 0) + pasted + draft.slice(end ?? 0);
+    const formatted = prettyPrintIfValid(afterPaste);
+    if (formatted !== afterPaste) {
+      e.preventDefault();
+      setDraft(formatted);
+    }
+  };
 
   return (
     <>
@@ -125,37 +237,66 @@ function SchemaButton({ value, onChange }: SchemaButtonProps) {
             variant="outlined"
             startIcon={<CodeIcon fontSize="small" />}
             onClick={handleOpen}
-            color="primary"
+            color={fieldError ? 'secondary' : 'primary'}
           >
-            View JSON
+            {value ? 'Edit JSON' : 'Add JSON'}
           </Button>
         </Box>
+        {fieldError && (
+          <Typography variant="caption" color="error">
+            {fieldError}
+          </Typography>
+        )}
       </Box>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>Validation schema</DialogTitle>
         <DialogContent className={classes.dialogContent}>
-          <TextField
-            value={draft}
-            onChange={e => {
-              setDraft(e.target.value);
-              setParseError('');
-            }}
-            error={Boolean(parseError)}
-            helperText={
-              parseError ||
-              'JSON Schema object — e.g. {"type":"integer","minimum":0}'
-            }
-            fullWidth
-            multiline
-            minRows={14}
-            variant="outlined"
-            inputProps={{ className: classes.monoInput }}
-          />
+          <Box
+            className={`${classes.editorWrapper} ${
+              hasError ? classes.editorWrapperError : ''
+            }`}
+          >
+            <div ref={highlightRef} style={{ overflow: 'hidden' }}>
+              <SyntaxHighlighter
+                language="json"
+                style={docco}
+                className={classes.editorHighlight}
+              >
+                {draft || ' '}
+              </SyntaxHighlighter>
+            </div>
+            <textarea
+              ref={textareaRef}
+              className={classes.editorTextarea}
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onScroll={syncScroll}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              placeholder='{"type":"integer","minimum":0}'
+            />
+          </Box>
+          <Typography
+            variant="caption"
+            color={hasError ? 'error' : 'textSecondary'}
+            className={classes.editorHelperText}
+          >
+            {(draft.trim() && jsonError) ||
+              'JSON Schema object — e.g. {"type":"integer","minimum":0}'}
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleApply} color="primary" variant="contained">
+          <Button
+            onClick={handleApply}
+            color="primary"
+            variant="contained"
+            disabled={applyDisabled}
+          >
             Apply
           </Button>
         </DialogActions>
@@ -169,8 +310,9 @@ import {
   emptyFieldRow,
   hasValidFields,
   validateCatalogItemForm,
+  validateFieldRows,
 } from '../catalogItemFormTypes';
-import type { FieldRow } from '../catalogItemFormTypes';
+import type { FieldRow, FieldRowErrors } from '../catalogItemFormTypes';
 
 type ScalarFields = Omit<CatalogItemForm, 'fields'>;
 type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
@@ -204,6 +346,10 @@ export function CatalogItemFormFields({
 }: CatalogItemFormFieldsProps) {
   const classes = useStyles();
   const errors = useMemo(() => validateCatalogItemForm(form), [form]);
+  const fieldRowErrors = useMemo(
+    () => validateFieldRows(form.fields),
+    [form.fields],
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState('');
 
@@ -225,8 +371,13 @@ export function CatalogItemFormFields({
       return { ...prev, fields: updated };
     });
 
-  const addField = () =>
+  const canAddField =
+    form.fields.length === 0 || form.fields.at(-1)!.path.trim() !== '';
+
+  const addField = () => {
+    if (!canAddField) return;
     setForm(prev => ({ ...prev, fields: [...prev.fields, emptyFieldRow()] }));
+  };
 
   const removeField = (index: number) =>
     setForm(prev => {
@@ -364,14 +515,25 @@ export function CatalogItemFormFields({
             (at least one required)
           </Typography>
         </Typography>
-        <Button
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={addField}
-          color="primary"
+        <Tooltip
+          title={
+            canAddField
+              ? ''
+              : 'Fill in the path of the last field before adding a new one'
+          }
         >
-          Add field
-        </Button>
+          <Box component="span" display="inline-block">
+            <Button
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={addField}
+              color="primary"
+              disabled={!canAddField}
+            >
+              Add field
+            </Button>
+          </Box>
+        </Tooltip>
       </Box>
 
       {showFieldsError && (
@@ -380,88 +542,97 @@ export function CatalogItemFormFields({
         </Typography>
       )}
 
-      {form.fields.map((row, i) => (
-        <Box
-          key={row.id}
-          display="flex"
-          flexDirection="column"
-          gridGap={8}
-          className={classes.fieldRow}
-        >
-          {/* Primary row: path, display name, editable toggle, delete */}
-          <Box display="flex" alignItems="flex-start" gridGap={8}>
-            <Box flex={2}>
-              <TextField
-                label="Path *"
-                helperText="e.g. config.replicas"
-                value={row.path}
-                onChange={e => setField(i, 'path', e.target.value)}
-                fullWidth
-                variant="outlined"
+      {form.fields.map((row, i) => {
+        const rowErrors: FieldRowErrors = fieldRowErrors[i] ?? {};
+        return (
+          <Box
+            key={row.id}
+            display="flex"
+            flexDirection="column"
+            gridGap={8}
+            className={classes.fieldRow}
+          >
+            {/* Primary row: path, display name, editable toggle, delete */}
+            <Box display="flex" alignItems="flex-start" gridGap={8}>
+              <Box flex={2}>
+                <TextField
+                  label="Path *"
+                  helperText={rowErrors.path ?? 'e.g. config.replicas'}
+                  error={Boolean(rowErrors.path)}
+                  value={row.path}
+                  onChange={e => setField(i, 'path', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              <Box flex={2}>
+                <TextField
+                  label="Display name"
+                  value={row.display_name}
+                  onChange={e => setField(i, 'display_name', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              <Box
+                display="flex"
+                alignItems="center"
+                className={classes.fieldRowSwitch}
+              >
+                <FormControlLabel
+                  control={
+                    <Switch
+                      size="small"
+                      checked={row.editable}
+                      onChange={e => setField(i, 'editable', e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography variant="caption">Editable</Typography>}
+                />
+              </Box>
+              <IconButton
                 size="small"
-              />
+                aria-label="Remove field"
+                onClick={() => removeField(i)}
+                className={classes.fieldRowDelete}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
             </Box>
-            <Box flex={2}>
-              <TextField
-                label="Display name"
-                value={row.display_name}
-                onChange={e => setField(i, 'display_name', e.target.value)}
-                fullWidth
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-            <Box
-              display="flex"
-              alignItems="center"
-              className={classes.fieldRowSwitch}
-            >
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={row.editable}
-                    onChange={e => setField(i, 'editable', e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label={<Typography variant="caption">Editable</Typography>}
-              />
-            </Box>
-            <IconButton
-              size="small"
-              aria-label="Remove field"
-              onClick={() => removeField(i)}
-              className={classes.fieldRowDelete}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
 
-          {/* Secondary row: default value and validation schema */}
-          <Box display="flex" alignItems="flex-start" gridGap={8}>
-            <Box flex={1}>
-              <TextField
-                label="Default value"
-                helperText='Any JSON value — e.g. 42, "hello", true, [1,2]'
-                value={row.default_value}
-                onChange={e => setField(i, 'default_value', e.target.value)}
-                fullWidth
-                variant="outlined"
-                size="small"
-                multiline
-                minRows={2}
-              />
-            </Box>
-            <Box flex={1} paddingTop={0.5}>
-              <SchemaButton
-                value={row.validation_schema}
-                onChange={v => setField(i, 'validation_schema', v)}
-              />
+            {/* Secondary row: default value and validation schema */}
+            <Box display="flex" alignItems="flex-start" gridGap={8}>
+              <Box flex={1}>
+                <TextField
+                  label="Default value"
+                  helperText={
+                    rowErrors.default_value ??
+                    'Any JSON value — e.g. 42, "hello", true, [1,2]'
+                  }
+                  error={Boolean(rowErrors.default_value)}
+                  value={row.default_value}
+                  onChange={e => setField(i, 'default_value', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  multiline
+                  minRows={2}
+                />
+              </Box>
+              <Box flex={1} paddingTop={0.5}>
+                <SchemaButton
+                  value={row.validation_schema}
+                  onChange={v => setField(i, 'validation_schema', v)}
+                  fieldError={rowErrors.validation_schema}
+                />
+              </Box>
             </Box>
           </Box>
-        </Box>
-      ))}
+        );
+      })}
     </Box>
   );
 }

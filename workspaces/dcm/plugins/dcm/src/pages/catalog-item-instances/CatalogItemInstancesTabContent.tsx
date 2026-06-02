@@ -292,7 +292,7 @@ export function CatalogItemInstancesTabContent() {
             onCancel={crud.handleCloseCreate}
             submitLabel="Create"
             submitting={crud.createSubmitting}
-            disabled={false}
+            disabled={!isInstanceFormValid(crud.createForm)}
           />
         }
       >

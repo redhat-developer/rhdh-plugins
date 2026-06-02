@@ -40,6 +40,8 @@ export type UserValueRow = {
   schemaMin?: number;
   /** Inclusive upper bound (from validation_schema.maximum). */
   schemaMax?: number;
+  /** Whether the field must be filled (from validation_schema.required). */
+  required?: boolean;
 };
 
 export type InstanceForm = {
@@ -66,12 +68,14 @@ const instanceSchema = yup.object({
     ),
 });
 
-export const { validate: validateInstanceForm, isValid: isInstanceFormValid } =
-  createYupValidator<InstanceForm>(instanceSchema, f => ({
-    display_name: f.display_name,
-    catalog_item_id: f.catalog_item_id,
-    api_version: f.api_version,
-  }));
+export const {
+  validate: validateInstanceForm,
+  isValid: isInstanceScalarValid,
+} = createYupValidator<InstanceForm>(instanceSchema, f => ({
+  display_name: f.display_name,
+  catalog_item_id: f.catalog_item_id,
+  api_version: f.api_version,
+}));
 
 export function emptyInstanceForm(): InstanceForm {
   return {
@@ -94,10 +98,25 @@ function defaultToString(val: unknown): string {
   }
 }
 
+function pickNumericBound(
+  obj: Record<string, unknown>,
+  primaryKey: string,
+  fallbackKey: string,
+): number | undefined {
+  const primary = obj[primaryKey];
+  if (typeof primary === 'number') return primary;
+  const fallback = obj[fallbackKey];
+  if (typeof fallback === 'number') return fallback;
+  return undefined;
+}
+
 /** Extract typed schema metadata from a {@link FieldConfiguration}. */
 function extractSchemaInfo(
   field: FieldConfiguration,
-): Pick<UserValueRow, 'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax'> {
+): Pick<
+  UserValueRow,
+  'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax' | 'required'
+> {
   const schema = field.validation_schema ?? {};
   const schemaType = typeof schema.type === 'string' ? schema.type : undefined;
   const enumValues =
@@ -105,11 +124,57 @@ function extractSchemaInfo(
     schema.enum.every(v => typeof v === 'string' || typeof v === 'number')
       ? (schema.enum as (string | number)[]).map(String)
       : undefined;
-  const schemaMin =
-    typeof schema.minimum === 'number' ? schema.minimum : undefined;
-  const schemaMax =
-    typeof schema.maximum === 'number' ? schema.maximum : undefined;
-  return { schemaType, enumValues, schemaMin, schemaMax };
+  const schemaMin = pickNumericBound(schema, 'minimum', 'min');
+  const schemaMax = pickNumericBound(schema, 'maximum', 'max');
+  const required = schema.required === true;
+  return { schemaType, enumValues, schemaMin, schemaMax, required };
+}
+
+/**
+ * Validates user-value rows against their schema constraints.
+ * Returns a record keyed by row index; only rows with errors are included.
+ */
+export function validateUserValues(
+  rows: UserValueRow[],
+): Record<number, string> {
+  const errors: Record<number, string> = {};
+
+  rows.forEach((row, i) => {
+    const v = row.value.trim();
+
+    if (row.required && v === '') {
+      errors[i] = 'This field is required';
+      return;
+    }
+
+    if (
+      v !== '' &&
+      (row.schemaType === 'integer' || row.schemaType === 'number')
+    ) {
+      const n = Number(v);
+      if (Number.isNaN(n)) {
+        errors[i] = 'Must be a valid number';
+        return;
+      }
+      if (row.schemaMin !== undefined && n < row.schemaMin) {
+        errors[i] = `Must be at least ${row.schemaMin}`;
+        return;
+      }
+      if (row.schemaMax !== undefined && n > row.schemaMax) {
+        errors[i] = `Must be at most ${row.schemaMax}`;
+        return;
+      }
+    }
+  });
+
+  return errors;
+}
+
+export function isInstanceFormValid(f: InstanceForm): boolean {
+  return (
+    isInstanceScalarValid(f) &&
+    Object.keys(validateUserValues(f.user_values)).length === 0
+  );
 }
 
 /** Build UserValueRows from the selected catalog item's editable fields. */
