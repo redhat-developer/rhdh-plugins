@@ -20,7 +20,7 @@ import type {
   LoggerService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 
 import type { Request, RequestHandler } from 'express';
 
@@ -48,12 +48,15 @@ export function createIdentityMiddleware(
       req.userEntityRef = user.userEntityRef;
       return next();
     } catch (error) {
-      logger.error('Identity resolution failed for request');
+      logger.error('Identity resolution failed for request', error);
 
       if (error instanceof NotAllowedError) {
         return res.status(403).json({ error: 'Forbidden' });
       }
-      return res.status(401).json({ error: 'Unauthorized' });
+      if (error instanceof AuthenticationError) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
   };
 }
