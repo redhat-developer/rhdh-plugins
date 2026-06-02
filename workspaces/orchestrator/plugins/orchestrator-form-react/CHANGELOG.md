@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.8.5
+
+### Patch Changes
+
+- 06ac2d0: Hide wizard steps when conditional `ui:hidden` rules evaluate to true, and add `isNotEmptyList`/`notContains` operators for conditional hidden expressions.
+- 06ac2d0: Remove unnecessary gaps from conditionally hidden form fields.
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [06ac2d0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.4
+
 ## 2.8.4
 
 ### Patch Changes
