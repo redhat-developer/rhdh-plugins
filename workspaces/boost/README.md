@@ -6,9 +6,9 @@ Boost is a rewrite of the [Augment](../augment/) plugin.
 
 ## Plugins
 
-| Plugin | Description |
-| ------ | ----------- |
-| _coming soon_ | |
+| Plugin        | Description |
+| ------------- | ----------- |
+| _coming soon_ |             |
 
 ## Development
 
