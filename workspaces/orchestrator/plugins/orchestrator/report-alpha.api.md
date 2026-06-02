@@ -387,6 +387,11 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'alerts.duplicateWorkflowIds.learnMore': string;
     readonly 'stepperObjectField.error': string;
     readonly 'formDecorator.error': string;
+    readonly 'samlSso.body': string;
+    readonly 'samlSso.title': string;
+    readonly 'samlSso.reauthorizeButton': string;
+    readonly 'samlSso.reauthorizeHint': string;
+    readonly 'samlSso.fallbackHint': string;
     readonly 'aria.close': string;
   }
 >;

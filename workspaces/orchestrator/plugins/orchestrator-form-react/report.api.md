@@ -37,6 +37,8 @@ export interface HiddenConditionObject {
   is?: JsonValue | JsonValue[];
   isEmpty?: boolean;
   isNot?: JsonValue | JsonValue[];
+  isNotEmptyList?: boolean;
+  notContains?: JsonValue;
   when: string;
 }
 
@@ -56,6 +58,7 @@ export type OrchestratorFormProps = {
   schema: JSONSchema7;
   updateSchema: OrchestratorFormContextProps['updateSchema'];
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
+  onSamlSsoError?: OrchestratorFormContextProps['onSamlSsoError'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;

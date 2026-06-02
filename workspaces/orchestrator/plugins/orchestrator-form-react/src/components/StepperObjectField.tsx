@@ -41,8 +41,8 @@ const StepperObjectField = ({
   const { t } = useTranslation();
 
   const sortedStepEntries = useMemo(
-    () => getSortedStepEntries(schema),
-    [schema],
+    () => getSortedStepEntries(schema, formData),
+    [schema, formData],
   );
   if (sortedStepEntries === undefined) {
     throw new Error(t('stepperObjectField.error'));

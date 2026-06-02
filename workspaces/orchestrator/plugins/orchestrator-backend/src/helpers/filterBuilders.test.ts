@@ -128,6 +128,7 @@ describe('column filters', () => {
     filter: Filter | undefined;
     expectedResult: string | FilterClause;
     expectedFormattedValue: Array<string | boolean | string[]>;
+    expectedVariableTypes?: string[];
   };
   describe('empty filter testcases', () => {
     const emptyFilterTestCases: FilterTestCase[] = [
@@ -519,6 +520,7 @@ describe('column filters', () => {
         ),
         expectedResult: `start: {equal: $variable1}`,
         expectedFormattedValue: [testDate1],
+        expectedVariableTypes: ['DateTime!'],
       },
       {
         name: 'returns correct filter for single date field with isNull operator (false as boolean)',
@@ -595,6 +597,7 @@ describe('column filters', () => {
         ]),
         expectedResult: `start: {between: {from: $variable1, to: $variable2}}`,
         expectedFormattedValue: [testDate1, testDate2],
+        expectedVariableTypes: ['DateTime!', 'DateTime!'],
       },
       {
         name: 'returns correct OR filter for multiple id fields with equal, isNull, and GT operators',
@@ -683,6 +686,7 @@ describe('column filters', () => {
         filter,
         expectedResult,
         expectedFormattedValue,
+        expectedVariableTypes,
       }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
@@ -698,6 +702,9 @@ describe('column filters', () => {
               `$${item.clauseVariableName}`,
             );
             expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
           });
           expect(formattedClause).toBe(result.clause);
         });
@@ -718,6 +725,7 @@ describe('column filters', () => {
         ),
         expectedResult: `state: {equal: $variable1}`,
         expectedFormattedValue: ['COMPLETED'],
+        expectedVariableTypes: ['ProcessInstanceState'],
       },
     ];
 
@@ -728,6 +736,7 @@ describe('column filters', () => {
         filter,
         expectedResult,
         expectedFormattedValue,
+        expectedVariableTypes,
       }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
@@ -743,6 +752,9 @@ describe('column filters', () => {
               `$${item.clauseVariableName}`,
             );
             expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
           });
           expect(formattedClause).toBe(result.clause);
         });
