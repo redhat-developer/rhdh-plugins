@@ -69,7 +69,7 @@ const useValidator = (isMultiStepSchema: boolean) => {
         return validationData;
       }
 
-      const activeKey = getActiveStepKey(_schema, activeStep);
+      const activeKey = getActiveStepKey(_schema, activeStep, formData);
       return {
         errors: validationData.errors.filter(err =>
           err.property?.startsWith(`.${activeKey}.`),
