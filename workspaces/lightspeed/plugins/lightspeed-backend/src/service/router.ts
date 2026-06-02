@@ -44,6 +44,10 @@ import {
   McpValidationResult,
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
+import {
+  createIdentityMiddleware,
+  getIdentity,
+} from './middleware/getIdentity';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
@@ -185,6 +189,20 @@ export async function createRouter(
   });
   router.use(permissionIntegrationRouter);
 
+  const identityMiddleware = createIdentityMiddleware(
+    httpAuth,
+    userInfo,
+    logger,
+  );
+  router.use((req, res, next) => {
+    // Middleware mounts to notebooks router independently
+    // so we skip it here
+    if (req.path.startsWith('/notebooks')) {
+      return next();
+    }
+    return identityMiddleware(req, res, next);
+  });
+
   const authorizer = userPermissionAuthorization(permissions);
 
   // ─── MCP Server Management Endpoints ────────────────────────────────
@@ -193,11 +211,10 @@ export async function createRouter(
 
   router.get('/mcp-servers', async (req, res) => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials, userEntityRef } = getIdentity(req);
       await authorizer.authorizeUser(lightspeedMcpReadPermission, credentials);
-      const user = await userInfo.getUserInfo(credentials);
 
-      const userSettings = await settingsStore.listByUser(user.userEntityRef);
+      const userSettings = await settingsStore.listByUser(userEntityRef);
       const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
 
       const hasAllUrls = staticServers.every(s => lcsUrlCache.has(s.name));
@@ -231,7 +248,7 @@ export async function createRouter(
 
   router.post('/mcp-servers/validate', async (req, res) => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials } = getIdentity(req);
       await authorizer.authorizeUser(lightspeedMcpReadPermission, credentials);
 
       const { url, token } = req.body;
@@ -268,12 +285,11 @@ export async function createRouter(
 
   router.post('/mcp-servers/:name/validate', async (req, res) => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials, userEntityRef } = getIdentity(req);
       await authorizer.authorizeUser(
         lightspeedMcpManagePermission,
         credentials,
       );
-      const user = await userInfo.getUserInfo(credentials);
 
       const { name } = req.params;
       const server = staticServers.find(s => s.name === name);
@@ -296,7 +312,7 @@ export async function createRouter(
         return;
       }
 
-      const setting = await settingsStore.get(name, user.userEntityRef);
+      const setting = await settingsStore.get(name, userEntityRef);
       const effectiveToken = setting?.token || server.token;
       if (!effectiveToken) {
         res
@@ -310,7 +326,7 @@ export async function createRouter(
 
       await settingsStore.updateStatus(
         name,
-        user.userEntityRef,
+        userEntityRef,
         status,
         validation.toolCount,
       );
@@ -333,12 +349,11 @@ export async function createRouter(
 
   router.patch('/mcp-servers/:name', async (req, res) => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials, userEntityRef } = getIdentity(req);
       await authorizer.authorizeUser(
         lightspeedMcpManagePermission,
         credentials,
       );
-      const user = await userInfo.getUserInfo(credentials);
 
       const { name } = req.params;
       const server = staticServers.find(s => s.name === name);
@@ -366,7 +381,7 @@ export async function createRouter(
         return;
       }
 
-      const setting = await settingsStore.upsert(name, user.userEntityRef, {
+      const setting = await settingsStore.upsert(name, userEntityRef, {
         enabled: hasEnabledField ? enabled : undefined,
         token: hasTokenField ? token : undefined,
       });
@@ -384,7 +399,7 @@ export async function createRouter(
           : 'error';
         await settingsStore.updateStatus(
           name,
-          user.userEntityRef,
+          userEntityRef,
           newStatus,
           validation.toolCount,
         );
@@ -418,9 +433,7 @@ export async function createRouter(
   // Returns conversation IDs associated with notebook sessions for filtering
   router.get('/notebook-conversation-ids', async (req, res) => {
     try {
-      const credentials = await httpAuth.credentials(req);
-      const user = await userInfo.getUserInfo(credentials);
-      const userId = user.userEntityRef;
+      const { userEntityRef } = getIdentity(req);
 
       const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
       const vectorStores = vectorStoresPage.data || [];
@@ -432,7 +445,7 @@ export async function createRouter(
         const conversationId = store.metadata?.conversation_id as string | null;
 
         // Only include this user's sessions with a conversation_id
-        if (sessionUserId === userId && conversationId) {
+        if (sessionUserId === userEntityRef && conversationId) {
           conversationIds.push(conversationId);
         }
       }
@@ -468,12 +481,9 @@ export async function createRouter(
       return res.status(404).json({ error: 'Requested path is not available' });
     }
 
-    // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    const userEntity = user.userEntityRef;
+    const { credentials, userEntityRef } = getIdentity(req);
 
-    logger.info(`receives call from user: ${userEntity}`);
+    logger.info(`receives call from user: ${userEntityRef}`);
     try {
       if (req.method === 'GET') {
         await authorizer.authorizeUser(
@@ -508,7 +518,7 @@ export async function createRouter(
         let newPath = path;
 
         // Add user_id
-        const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         newPath = path.includes('?')
           ? `${path}&${userQueryParam}`
           : `${path}?${userQueryParam}`;
@@ -533,17 +543,15 @@ export async function createRouter(
 
   router.post('/v1/feedback', async (request, response) => {
     try {
-      const credentials = await httpAuth.credentials(request);
-      const user = await userInfo.getUserInfo(credentials);
-      const user_id = user.userEntityRef;
+      const { credentials, userEntityRef } = getIdentity(request);
 
-      logger.info(`/v1/feedback receives call from user: ${user_id}`);
+      logger.info(`/v1/feedback receives call from user: ${userEntityRef}`);
 
       await authorizer.authorizeUser(
         lightspeedChatCreatePermission,
         credentials,
       );
-      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+      const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
       const requestBody = JSON.stringify(request.body);
       const fetchResponse = await fetch(
         `${lightspeedCoreBaseUrl}/v1/feedback?${userQueryParam}`,
@@ -585,14 +593,12 @@ export async function createRouter(
 
   router.post('/v1/query/interrupt', async (request, response) => {
     try {
-      const credentials = await httpAuth.credentials(request);
-      const userEntity = await userInfo.getUserInfo(credentials);
-      const user_id = userEntity.userEntityRef;
+      const { credentials, userEntityRef } = getIdentity(request);
       await authorizer.authorizeUser(
         lightspeedChatCreatePermission,
         credentials,
       );
-      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+      const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
       const requestBody = JSON.stringify(request.body);
       const fetchResponse = await fetch(
         `${lightspeedCoreBaseUrl}/v1/streaming_query/interrupt?${userQueryParam}`,
@@ -629,11 +635,9 @@ export async function createRouter(
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
-        const credentials = await httpAuth.credentials(request);
-        const user = await userInfo.getUserInfo(credentials);
-        const user_id = user.userEntityRef;
+        const { credentials, userEntityRef } = getIdentity(request);
 
-        logger.info(`/v1/query receives call from user: ${user_id}`);
+        logger.info(`/v1/query receives call from user: ${userEntityRef}`);
 
         await authorizer.authorizeUser(
           lightspeedChatCreatePermission,
@@ -653,7 +657,7 @@ export async function createRouter(
           request.body.vector_store_ids = [lightspeed_vector_store_id];
         }
 
-        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         // if system_prompt is defined in lightspeed config
         // set system_prompt to override the default rhdh system prompt
@@ -667,7 +671,7 @@ export async function createRouter(
         const mcpHeadersValue = await buildMcpHeaders(
           staticServers,
           settingsStore,
-          user_id,
+          userEntityRef,
         );
 
         const fetchResponse = await fetch(
@@ -717,9 +721,7 @@ export async function createRouter(
     '/v2/conversations/:conversation_id',
     async (request, response) => {
       try {
-        const credentials = await httpAuth.credentials(request);
-        const user = await userInfo.getUserInfo(credentials);
-        const user_id = user.userEntityRef;
+        const { credentials, userEntityRef } = getIdentity(request);
         const conversation_id = request.params.conversation_id;
 
         const requestBody = JSON.stringify(request.body);
@@ -727,7 +729,7 @@ export async function createRouter(
           lightspeedChatCreatePermission,
           credentials,
         );
-        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         const fetchResponse = await fetch(
           `${lightspeedCoreBaseUrl}/v2/conversations/${conversation_id}?${userQueryParam}`,
           {
