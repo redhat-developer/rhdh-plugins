@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.10.8
+
+### Patch Changes
+
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.4
+
 ## 1.10.7
 
 ### Patch Changes
