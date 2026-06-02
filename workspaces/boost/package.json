@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
+    "start:debug": "backstage-cli repo start --inspect",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
