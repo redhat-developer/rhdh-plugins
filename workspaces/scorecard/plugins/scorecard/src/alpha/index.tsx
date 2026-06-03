@@ -33,6 +33,10 @@ import {
   aggregatedCardWithGithubOpenPrsWeightedWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
+import {
+  scorecardEntityLayoutGrid,
+  scorecardEntityLayoutList,
+} from './extensions/scorecardLayoutExtensions';
 
 /**
  * Extension for Scorecard translations.
@@ -57,12 +61,22 @@ export default createFrontendPlugin({
 });
 
 /**
- * Catalog module that automatically injects the Scorecard tab into the Catalog.
+ * Catalog module that injects the Scorecard tab and its default layout
+ * extensions (grid + list) into the Catalog entity pages.
+ *
+ * The plugin ships both layouts; platform engineers enable/disable individual
+ * layouts via app-config.yaml. No separate module registration is needed
+ * in App.tsx for the layouts.
+ *
  * @alpha
  */
 export const scorecardCatalogModule = createFrontendModule({
   pluginId: 'catalog',
-  extensions: [scorecardEntityContent],
+  extensions: [
+    scorecardEntityContent,
+    scorecardEntityLayoutGrid,
+    scorecardEntityLayoutList,
+  ],
 });
 
 /**

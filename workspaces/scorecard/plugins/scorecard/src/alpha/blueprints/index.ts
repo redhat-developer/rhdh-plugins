@@ -13,9 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityScorecardContent } from './EntityScorecardContent';
 
-export { EntityScorecardContent };
-export { ScoreEntityContentGridView } from './ScoreEntityContentGridView';
-export { ScorecardEntityListView } from './ScorecardEntityListView';
-export { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
+export * from './ScorecardLayoutBlueprint';
