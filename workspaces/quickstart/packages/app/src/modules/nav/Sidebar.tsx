@@ -24,10 +24,10 @@ import {
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
-import HomeIcon from '@material-ui/icons/Home';
+import HomeIcon from '@mui/icons-material/Home';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
 import { SidebarLogo } from './SidebarLogo';
-import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 

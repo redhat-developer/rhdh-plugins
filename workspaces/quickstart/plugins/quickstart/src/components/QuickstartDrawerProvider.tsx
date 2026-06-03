@@ -20,14 +20,17 @@ import {
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
-import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
 import { useTranslation } from '../hooks/useTranslation';
+
+const generateClassName = createGenerateClassName({ seed: 'quickstart' });
 
 /**
  * Provider component for the Quickstart Drawer functionality
@@ -170,37 +173,39 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const handleNotificationClose = () => setShowNotification(false);
 
   return (
-    <QuickstartDrawerContext.Provider
-      value={{
-        isDrawerOpen,
-        openDrawer,
-        closeDrawer,
-        toggleDrawer,
-        setDrawerWidth,
-        drawerWidth,
-        userRole,
-        roleLoading,
-      }}
-    >
-      {children}
-      <Snackbar
-        sx={{ top: '80px !important' }}
-        open={showNotification}
-        autoHideDuration={10000}
-        onClose={handleNotificationClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        message={t('snackbar.helpPrompt')}
-        action={
-          <IconButton
-            size="small"
-            aria-label="close"
-            color="inherit"
-            onClick={handleNotificationClose}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        }
-      />
-    </QuickstartDrawerContext.Provider>
+    <StylesProvider generateClassName={generateClassName}>
+      <QuickstartDrawerContext.Provider
+        value={{
+          isDrawerOpen,
+          openDrawer,
+          closeDrawer,
+          toggleDrawer,
+          setDrawerWidth,
+          drawerWidth,
+          userRole,
+          roleLoading,
+        }}
+      >
+        {children}
+        <Snackbar
+          sx={{ top: '80px !important' }}
+          open={showNotification}
+          autoHideDuration={10000}
+          onClose={handleNotificationClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          message={t('snackbar.helpPrompt')}
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={handleNotificationClose}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        />
+      </QuickstartDrawerContext.Provider>
+    </StylesProvider>
   );
 };
