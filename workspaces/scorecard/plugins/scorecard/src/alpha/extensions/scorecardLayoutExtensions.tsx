@@ -28,9 +28,9 @@ export const scorecardEntityLayoutGrid =
     params: {
       title: 'Grid',
       loader: () =>
-        import('../../components/Scorecard/ScoreEntityContentGridView').then(
-          m => m.ScoreEntityContentGridView,
-        ),
+        import(
+          '../../components/Scorecard/ScorecardEntityContentGridView'
+        ).then(m => m.ScorecardEntityContentGridView),
     },
   });
 

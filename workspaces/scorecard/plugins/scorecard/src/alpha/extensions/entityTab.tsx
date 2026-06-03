@@ -55,7 +55,7 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
     ),
   },
   factory(original, { config, inputs }) {
-    const layouts = (inputs as any).layouts ?? [];
+    const layouts = inputs.layouts ?? [];
     return original({
       path: '/scorecard',
       title: 'Scorecard',
@@ -78,8 +78,8 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
       },
       loader: async () => {
         if (layouts.length > 0) {
-          const layoutItems = layouts.map((l: any) => ({
-            title: l.get(scorecardLayoutTitleDataRef) as string,
+          const layoutItems = layouts.map(l => ({
+            title: l.get(scorecardLayoutTitleDataRef),
             element: l.get(coreExtensionData.reactElement),
           }));
 

@@ -55,6 +55,9 @@ export const ScorecardEntityContentLayoutBlueprint = createExtensionBlueprint({
     input: 'layouts',
   },
   output: [coreExtensionData.reactElement, scorecardLayoutTitleDataRef],
+  dataRefs: {
+    title: scorecardLayoutTitleDataRef,
+  },
   config: {
     schema: {
       groups: schema =>

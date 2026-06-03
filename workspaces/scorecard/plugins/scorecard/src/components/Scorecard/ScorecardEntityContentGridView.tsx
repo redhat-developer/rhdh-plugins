@@ -197,7 +197,7 @@ function GroupCard({
   );
 }
 
-export const ScoreEntityContentGridView = ({
+export const ScorecardEntityContentGridView = ({
   groups,
 }: ScorecardLayoutProps) => {
   const { data: scorecards, isLoading, error } = useScorecards();

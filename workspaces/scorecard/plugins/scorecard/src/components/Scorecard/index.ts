@@ -16,6 +16,6 @@
 import { EntityScorecardContent } from './EntityScorecardContent';
 
 export { EntityScorecardContent };
-export { ScoreEntityContentGridView } from './ScoreEntityContentGridView';
+export { ScorecardEntityContentGridView } from './ScorecardEntityContentGridView';
 export { ScorecardEntityListView } from './ScorecardEntityListView';
 export { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
