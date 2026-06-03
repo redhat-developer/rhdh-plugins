@@ -16,18 +16,27 @@
 
 import { Entity } from '@backstage/catalog-model';
 import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
+import {
+  createExtensionInput,
+  coreExtensionData,
+} from '@backstage/frontend-plugin-api';
+
 import { rootRouteRef } from '../../routes';
+import { scorecardLayoutTitleDataRef } from '../blueprints/ScorecardLayoutBlueprint';
 
 /**
  * Extension for the Scorecard tab on Entity pages.
+ *
+ * When one or more layout blueprint extensions are attached, renders
+ * a {@link ScorecardLayoutSwitcher} with a toggle (when 2+).
+ * Otherwise falls back to the legacy flat {@link EntityScorecardContent}.
+ *
  * @alpha
  */
 export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
   name: 'entity-content-scorecard',
   config: {
     schema: {
-      // Allows flexible filtering: { kind: 'Component', type: 'service' }
-      // or just { type: 'service' } for all services.
       allowedFilters: schema =>
         schema
           .array(
@@ -39,7 +48,14 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
           .optional(),
     },
   },
-  factory(original, { config }) {
+  inputs: {
+    layouts: createExtensionInput(
+      [coreExtensionData.reactElement, scorecardLayoutTitleDataRef],
+      { optional: true },
+    ),
+  },
+  factory(original, { config, inputs }) {
+    const layouts = (inputs as any).layouts ?? [];
     return original({
       path: '/scorecard',
       title: 'Scorecard',
@@ -61,6 +77,17 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
         });
       },
       loader: async () => {
+        if (layouts.length > 0) {
+          const layoutItems = layouts.map((l: any) => ({
+            title: l.get(scorecardLayoutTitleDataRef) as string,
+            element: l.get(coreExtensionData.reactElement),
+          }));
+
+          const { ScorecardLayoutSwitcher } = await import(
+            '../../components/Scorecard/ScorecardLayoutSwitcher'
+          );
+          return <ScorecardLayoutSwitcher layouts={layoutItems} />;
+        }
         const { EntityScorecardContent } = await import(
           '../../components/Scorecard'
         );
