@@ -7,7 +7,6 @@ import type { ApiRef } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { PathParams } from '@backstage/core-plugin-api';
 import type { PolicyManagerApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { ProvidersApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { ResourcesApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
@@ -25,9 +24,6 @@ export const DcmPage: Router;
 export const dcmPlugin: BackstagePlugin<
   {
     root: RouteRef<undefined>;
-    serviceSpecs: SubRouteRef<undefined>;
-    environmentDetails: SubRouteRef<PathParams<'/environments/:id'>>;
-    serviceSpecDetails: SubRouteRef<PathParams<'/service-specs/:id'>>;
     providers: SubRouteRef<undefined>;
     policies: SubRouteRef<undefined>;
     serviceTypes: SubRouteRef<undefined>;
