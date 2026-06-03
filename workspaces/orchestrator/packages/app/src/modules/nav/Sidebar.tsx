@@ -14,34 +14,48 @@
  * limitations under the License.
  */
 import {
+  Sidebar,
   SidebarDivider,
   SidebarGroup,
   SidebarItem,
   SidebarScrollWrapper,
   SidebarSpace,
 } from '@backstage/core-components';
-import { compatWrapper } from '@backstage/core-compat-api';
-import { Sidebar } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import { SidebarLogo } from './SidebarLogo';
+import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import MenuIcon from '@mui/icons-material/Menu';
+
+import { SidebarLogo } from './SidebarLogo';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) =>
-      compatWrapper(
+    component: ({ navItems }) => {
+      const nav = navItems.withComponent(item => (
+        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+      ));
+
+      return (
         <Sidebar>
           <SidebarLogo />
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {nav.take('page:catalog')}
+            {nav.take('page:orchestrator')}
             <SidebarScrollWrapper>
-              {items.map((item, index) => (
-                <SidebarItem {...item} key={index} />
-              ))}
+              {nav.rest({ sortBy: 'title' })}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-        </Sidebar>,
-      ),
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            {nav.take('page:user-settings')}
+          </SidebarGroup>
+        </Sidebar>
+      );
+    },
   },
 });
