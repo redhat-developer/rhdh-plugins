@@ -190,6 +190,10 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     options.storageKey ?? '',
   );
 
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
   // ── Create dialog ────────────────────────────────────────────────────────
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<F>(() => options.emptyForm());

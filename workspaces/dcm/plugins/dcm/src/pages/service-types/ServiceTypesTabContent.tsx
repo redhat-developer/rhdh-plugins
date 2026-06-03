@@ -59,6 +59,10 @@ export function ServiceTypesTabContent() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
   const filtered = useMemo(() => {
     if (!search.trim()) return serviceTypes;
     const q = search.toLowerCase();
