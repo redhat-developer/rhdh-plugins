@@ -4,7 +4,11 @@ This workspace contains the Boost plugin family for Red Hat Developer Hub.
 
 ## Why Boost Exists
 
-Boost is a clean-room reimplementation of the [Augment](../augment/) plugin. Rather than refactoring Augment's accumulated tech debt in-place, Boost starts from a new codebase and implements the same (and evolving) product requirements with the right architecture from day one. There is no migration path or code sharing between the two — Augment remains the reference prototype and source of requirements, while Boost is the forward-looking implementation.
+Boost is a clean-room reimplementation of the [Augment](../augment/) plugin. This effort:
+
+- Initially serves as a litmus test for our organization's agentic SDLC initiatives that are based on [Fullsend](https://github.com/fullsend-ai/fullsend).
+- Subsequently provides a comparison with Augment as it evolves in parallel via work from Red Hat Consulting, where we can see how differences in RHDH architectural alignment and accumulated technical debt impact how well each plugin addresses customer requirements.
+  - As Augment remains the reference prototype and source of requirements, being able to properly translate those requirements into Boost will be an interesting subplot of this exercise.
 
 The rationale for this approach is documented in detail in [`specifications/boost-context.md`](specifications/boost-context.md).
 
