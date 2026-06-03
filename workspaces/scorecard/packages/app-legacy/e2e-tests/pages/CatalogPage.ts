@@ -69,9 +69,9 @@ export class CatalogPage {
     if (baseLocale === 'en') return;
 
     const displayName = getLocaleDisplayName(locale);
-    await this.page.getByRole('link', { name: 'Settings' }).click();
+    await this.page.goto('/settings');
     await this.page.getByRole('button', { name: 'English' }).click();
     await this.page.getByRole('option', { name: displayName }).click();
-    await this.page.locator('a').filter({ hasText: 'Home' }).click();
+    await this.page.goto('/');
   }
 }
