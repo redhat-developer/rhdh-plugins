@@ -84,6 +84,13 @@ async function fetchDynamicPermissions(
   try {
     const token = await getTokenFromApi(options);
 
+    // Fetch all known clusters and projects so we can register a permission
+    // for each one. limit:1000 is a high ceiling to capture all entries in a
+    // single request; the Cost Management API defaults to 10.
+    // This data is fetched once at plugin startup and determines which
+    // ros/<cluster> and cost/<cluster> permissions the RBAC backend will
+    // evaluate. Clusters or projects added after startup will not be
+    // recognised until the Backstage instance is restarted.
     const [rosData, costClusters, costProjects] = await Promise.allSettled([
       options.optimizationApi
         .getRecommendationList(
