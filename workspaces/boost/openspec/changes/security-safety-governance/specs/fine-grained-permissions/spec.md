@@ -10,7 +10,7 @@ RBAC policies govern agent lifecycle transitions with ownership and separation-o
 
 #### Scenario: Agent permission definitions
 
-- **WHEN** the augment plugin registers permissions via `permissionsRegistry.addPermissions()`
+- **WHEN** the boost plugin registers permissions via `permissionsRegistry.addPermissions()`
 - **THEN** the following agent permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
@@ -45,7 +45,7 @@ RBAC policies govern tool lifecycle transitions.
 
 #### Scenario: Tool permission definitions
 
-- **WHEN** the augment plugin registers permissions
+- **WHEN** the boost plugin registers permissions
 - **THEN** the following tool permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
@@ -123,7 +123,7 @@ A shared middleware replaces scattered route-level guards.
 
 #### Scenario: Functional permission definitions
 
-- **WHEN** the augment plugin registers permissions
+- **WHEN** the boost plugin registers permissions
 - **THEN** the following functional permissions are also registered:
   | Permission | Action | Gates |
   |---|---|---|

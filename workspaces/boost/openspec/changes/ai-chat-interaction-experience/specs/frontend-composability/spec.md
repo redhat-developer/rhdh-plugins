@@ -67,7 +67,7 @@ Deployers control feature visibility via `app-config.yaml`.
 
 #### Scenario: Backstage feature flags registration
 
-- **WHEN** the augment plugin is loaded
+- **WHEN** the boost plugin is loaded
 - **THEN** it registers feature flags with Backstage's `featureFlagsApiRef`
 - **AND** flags can be toggled in the Backstage settings UI without code changes or restarts
 
