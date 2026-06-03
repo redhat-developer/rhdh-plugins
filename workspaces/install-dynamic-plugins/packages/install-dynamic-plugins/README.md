@@ -1,22 +1,37 @@
-# install-dynamic-plugins
+# cli-module-install-dynamic-plugins
 
-Init-container utility that downloads, extracts, and configures RHDH dynamic plugins listed in a `dynamic-plugins.yaml` file.
+Backstage CLI module that downloads, extracts, and configures RHDH dynamic plugins listed in a `dynamic-plugins.yaml` file.
 
 This package replaces the previous Python implementation (`install-dynamic-plugins.py`) with a TypeScript/Node.js implementation. The runtime contract — input config, output `app-config.dynamic-plugins.yaml`, on-disk layout, hash-based change detection, lock file — is **unchanged**.
 
+The package has two faces:
+
+- A **self-contained esbuild bundle** (`dist/install-dynamic-plugins.cjs`) used by the package's `bin`. Direct `npx install-dynamic-plugins`, RHDH's init-container `COPY`, and any other standalone invocation hit this path — ~60 ms cold start, no `node_modules` required at runtime.
+- A **`createCliModule` entry** (`dist/index.cjs.js`) exposed through `main`. When a host project lists this package as a dependency, `backstage-cli` auto-discovers the `install` command — `backstage-cli install <dynamic-plugins-root>` works out of the box.
+
+Both share the same `installer.ts` source, so there is one install pipeline regardless of how the command is invoked.
+
 ## Usage
 
-Run it against a directory containing a `dynamic-plugins.yaml`:
+### Direct (bundled bin)
 
 ```sh
-npx @red-hat-developer-hub/install-dynamic-plugins ./dynamic-plugins-root
+npx @red-hat-developer-hub/cli-module-install-dynamic-plugins ./dynamic-plugins-root
 ```
 
 Or install globally:
 
 ```sh
-npm install -g @red-hat-developer-hub/install-dynamic-plugins
+npm install -g @red-hat-developer-hub/cli-module-install-dynamic-plugins
 install-dynamic-plugins ./dynamic-plugins-root
+```
+
+### Via `backstage-cli` discovery
+
+When the package is a dependency of a project that uses `backstage-cli`, the `install` command is registered automatically:
+
+```sh
+backstage-cli install ./dynamic-plugins-root
 ```
 
 Runtime requirements: Node.js 22 or 24, and `skopeo` on `PATH` for OCI plugin support. `npm` is also expected on `PATH` for NPM-sourced plugins.

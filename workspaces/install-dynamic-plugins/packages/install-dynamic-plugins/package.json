@@ -1,10 +1,10 @@
 {
-  "name": "@red-hat-developer-hub/install-dynamic-plugins",
+  "name": "@red-hat-developer-hub/cli-module-install-dynamic-plugins",
   "version": "0.1.0",
-  "description": "Install dynamic plugins into a RHDH instance from a dynamic-plugins.yaml config (OCI, NPM, local).",
+  "description": "Backstage CLI module that installs RHDH dynamic plugins from a dynamic-plugins.yaml config (OCI, NPM, local).",
   "license": "Apache-2.0",
   "backstage": {
-    "role": "cli"
+    "role": "cli-module"
   },
   "homepage": "https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/install-dynamic-plugins#readme",
   "repository": {
@@ -18,17 +18,18 @@
     "backstage",
     "dynamic-plugins",
     "cli",
+    "cli-module",
     "init-container"
   ],
   "engines": {
     "node": "22 || 24"
   },
-  "main": "dist/install-dynamic-plugins.cjs",
+  "main": "dist/index.cjs.js",
   "bin": "bin/install-dynamic-plugins",
   "files": [
     "bin",
+    "dist/**/*.js",
     "dist/install-dynamic-plugins.cjs",
-    "install-dynamic-plugins.sh",
     "README.md"
   ],
   "publishConfig": {
@@ -36,14 +37,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node esbuild.config.mjs",
-    "prepack": "node esbuild.config.mjs",
+    "build": "backstage-cli package build && node esbuild.config.mjs",
+    "prepack": "backstage-cli package build && node esbuild.config.mjs",
     "tsc": "tsc",
     "test": "backstage-cli package test",
     "lint": "backstage-cli package lint",
     "clean": "backstage-cli package clean"
   },
   "dependencies": {
+    "@backstage/cli-node": "^0.3.2",
     "cleye": "^2.6.0",
     "tar": "^7.5.13",
     "yaml": "^2.8.2"

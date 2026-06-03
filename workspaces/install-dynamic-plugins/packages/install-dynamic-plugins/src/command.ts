@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InstallException } from './errors';
+import type { CliCommandContext } from '@backstage/cli-node';
 import { main } from './installer';
 
-main().catch((err: unknown) => {
-  const msg = err instanceof InstallException ? err.message : String(err);
-  process.stderr.write(`\ninstall-dynamic-plugins failed: ${msg}\n`);
-  process.exit(1);
-});
+export default async ({ args, info }: CliCommandContext): Promise<void> => {
+  await main(args, info.usage);
+};

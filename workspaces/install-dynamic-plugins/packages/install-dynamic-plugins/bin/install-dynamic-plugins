@@ -30,5 +30,9 @@ if (isLocal) {
   require('@backstage/cli/config/nodeTransform.cjs');
   require('../src/cli');
 } else {
-  require('..');
+  // Direct fast path: the package's `main` field is the createCliModule
+  // export (loaded by backstage-cli discovery). For direct/`npx`/init-container
+  // invocations we skip cli-module dispatch and run the self-contained esbuild
+  // bundle instead — keeps the cold start at ~60 ms instead of ~180 ms.
+  require('../dist/install-dynamic-plugins.cjs');
 }

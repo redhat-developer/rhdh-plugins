@@ -23,7 +23,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { finalizeInstall } from './index';
+import { finalizeInstall } from './installer';
 import { GLOBAL_CONFIG_FILENAME } from './types';
 
 describe('finalizeInstall', () => {
