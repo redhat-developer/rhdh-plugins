@@ -24,7 +24,7 @@ Entity providers are **independently deployable Backstage backend services**, ea
 
 **Two deployment modes:**
 
-1. **Standalone:** Install `llamastack-entity-provider` or `kagenti-entity-provider` as independent RHDH dynamic plugins — gets AI domain objects in the catalog without the rest of boost. Packages live at `rhdh-plugins/workspace/boost/plugins/`.
+1. **Standalone:** Install `llamastack-entity-provider` or `kagenti-entity-provider` as independent RHDH dynamic plugins — gets AI domain objects in the catalog without the rest of boost. Packages live at `rhdh-plugins/workspaces/boost/plugins/`.
 2. **Composed:** When `boost-backend` is installed with provider modules, the same entity provider packages are composed internally — installing a provider module gives you both AI capabilities and catalog entities.
 
 Cross-cutting entities (MCP servers, vector stores) that aren't provider-specific live in the core plugin.

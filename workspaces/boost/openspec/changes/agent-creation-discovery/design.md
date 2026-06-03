@@ -41,7 +41,7 @@ Entity providers are separate packages registered as Backstage backend services,
 
 **Composed mode:** Boost provider modules compose these same packages internally — one install gives you AI capabilities + catalog entities.
 
-Packages live at `rhdh-plugins/workspace/boost/plugins/llamastack-entity-provider` and `kagenti-entity-provider`.
+Packages live at `rhdh-plugins/workspaces/boost/plugins/llamastack-entity-provider` and `kagenti-entity-provider`.
 
 ### Decision 3: Gradual cache elimination
 

@@ -4,7 +4,7 @@
 
 ### 1a. kagenti-entity-provider package
 
-- [ ] 1a.1 Create `kagenti-entity-provider` package at `rhdh-plugins/workspace/boost/plugins/kagenti-entity-provider`
+- [ ] 1a.1 Create `kagenti-entity-provider` package at `rhdh-plugins/workspaces/boost/plugins/kagenti-entity-provider`
 - [ ] 1a.2 Register as Backstage backend service per backend system architecture
 - [ ] 1a.3 Implement `KagentiAgentEntityProvider` polling Kagenti API for agents (kind: Component, spec.type: ai-agent)
 - [ ] 1a.4 Implement `KagentiToolEntityProvider` reading tool configs from Kagenti (kind: Resource, spec.type: ai-tool)
@@ -13,7 +13,7 @@
 
 ### 1b. llamastack-entity-provider package
 
-- [ ] 1b.1 Create `llamastack-entity-provider` package at `rhdh-plugins/workspace/boost/plugins/llamastack-entity-provider`
+- [ ] 1b.1 Create `llamastack-entity-provider` package at `rhdh-plugins/workspaces/boost/plugins/llamastack-entity-provider`
 - [ ] 1b.2 Register as Backstage backend service per backend system architecture
 - [ ] 1b.3 Implement `LlamaStackModelEntityProvider` polling `/v1/models` (kind: Resource, spec.type: ai-model)
 - [ ] 1b.4 Implement `LlamaStackAgentEntityProvider` reading configured agents from YAML/admin config (kind: Component, spec.type: ai-agent)

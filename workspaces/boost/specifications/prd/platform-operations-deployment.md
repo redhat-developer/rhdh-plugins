@@ -61,7 +61,7 @@ Admin panels, branding controls, RAG configuration, and onboarding flows must al
 
 **Workspace package structure:**
 
-All packages live at `rhdh-plugins/workspace/boost/plugins/`:
+All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 | Package                           | Type            | Description                                                                                               |
 | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |

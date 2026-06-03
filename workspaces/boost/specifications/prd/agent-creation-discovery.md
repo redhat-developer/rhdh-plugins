@@ -249,7 +249,7 @@ All methods produce an agent visible in the gallery and available in chat.
 - `llamastack-entity-provider` — emits Llama Stack models and agents as catalog entities. Loadable standalone (without the rest of boost) for RHDH deployments that use Llama Stack but don't need the full agentic portal.
 - `kagenti-entity-provider` — emits Kagenti agents and tools as catalog entities. Loadable standalone for RHDH deployments that use Kagenti but don't need the full portal.
 
-These packages live at `rhdh-plugins/workspace/boost/plugins/` and are registered as Backstage backend services per the [Backstage backend system architecture](https://backstage.io/docs/backend-system/architecture/services/). When the full `boost-backend` plugin is installed, it composes these same entity provider packages internally alongside the agentic provider modules. Cross-cutting entities (MCP servers, vector stores) that aren't provider-specific live in the core plugin.
+These packages live at `rhdh-plugins/workspaces/boost/plugins/` and are registered as Backstage backend services per the [Backstage backend system architecture](https://backstage.io/docs/backend-system/architecture/services/). When the full `boost-backend` plugin is installed, it composes these same entity provider packages internally alongside the agentic provider modules. Cross-cutting entities (MCP servers, vector stores) that aren't provider-specific live in the core plugin.
 
 **Entity kind strategy:**
 

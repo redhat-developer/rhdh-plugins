@@ -27,7 +27,7 @@ The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is 
 
 ## Workspace Structure
 
-All packages live at `rhdh-plugins/workspace/boost/plugins/`:
+All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ```
 workspace/boost/plugins/
