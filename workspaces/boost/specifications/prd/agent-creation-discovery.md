@@ -304,10 +304,6 @@ Home Dashboard, Agents, Tools, Build Pipelines, Sandbox, Platform Links, Dashboa
 - Backend execution mode (`BackendToolExecutor`) for air-gapped environments
 - Tool scoping: per-agent allowed tool subsets via configuration
 
-See architecture diagrams: `arch-diagrams/06-backend-detail-provider-framework.png`, `arch-diagrams/06-backend-detail-provider-framework-may26.png`, `arch-diagrams/08-backend-detail-kagenti.png`, `arch-diagrams/08-backend-detail-kagenti-may26.png`
-
-See flow diagrams: `use-case-flow-diagrams/UC-4.png`, `UC-4-may26.png`, `UC-7.png`, `UC-7-may26.png` through `UC-13.png`, `UC-23-may26.png`, `UC-24-may26.png`, `UC-25-may26.png`
-
 ---
 
 ## Traceability

@@ -304,10 +304,6 @@ Cross-Cutting Protections (all modes)
 - `services/SsrfGuard`: DNS re-check SSRF protection
 - Frontend `SecurityGate.tsx`: permission gating
 
-See architecture diagrams: `arch-diagrams/10-security-model.png`, `arch-diagrams/10-security-model-may26.png`
-
-See flow diagrams: `use-case-flow-diagrams/UC-19.png`, `UC-20.png`, `UC-23-may26.png`, `UC-24-may26.png`, `UC-25-may26.png`
-
 ---
 
 ## Traceability

@@ -213,10 +213,6 @@ Boost builds composable from the start, avoiding augment's monolithic frontend p
 - `NormalizedStreamEvent` union type covering all stream event categories
 - Permission contracts: `augmentAccessPermission`, `augmentAdminPermission`
 
-See architecture diagrams: `arch-diagrams/00-frontend-architecture.png`, `arch-diagrams/00-frontend-architecture-may26.png`, `arch-diagrams/04-streaming-pipeline.png`, `arch-diagrams/04-streaming-pipeline-may26.png`
-
-See flow diagrams: `use-case-flow-diagrams/UC-1.png` through `UC-6.png`, `UC-9-may26.png`
-
 ---
 
 ## Traceability

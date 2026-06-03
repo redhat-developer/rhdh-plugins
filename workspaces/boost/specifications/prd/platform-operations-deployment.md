@@ -273,10 +273,6 @@ Sources (GitHub, URL, File Upload)
     → Agent RAG queries at chat time
 ```
 
-See architecture diagrams: `arch-diagrams/02-backend-architecture-overview.png`, `arch-diagrams/02-backend-architecture-overview-may26.png`, `arch-diagrams/05-backend-detail-routes.png`, `arch-diagrams/05-backend-detail-routes-may26.png`, `arch-diagrams/09-backend-detail-services.png`, `arch-diagrams/09-backend-detail-services-may26.png`
-
-See flow diagrams: `use-case-flow-diagrams/UC-15.png` through `UC-22.png`, `UC-17-may26.png`, `UC-20-may26.png`
-
 ---
 
 ## Traceability

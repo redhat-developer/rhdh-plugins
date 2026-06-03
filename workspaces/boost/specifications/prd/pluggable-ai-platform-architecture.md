@@ -316,10 +316,6 @@ ChatInput → AugmentApiClient → POST /chat/stream
     → VirtualizedMessageList
 ```
 
-See architecture diagrams: `arch-diagrams/02-backend-architecture-overview.png`, `arch-diagrams/02-backend-architecture-overview-may26.png`, `arch-diagrams/04-streaming-pipeline.png`, `arch-diagrams/04-streaming-pipeline-may26.png`, `arch-diagrams/06-backend-detail-provider-framework.png`, `arch-diagrams/06-backend-detail-provider-framework-may26.png`
-
-See flow diagrams: `use-case-flow-diagrams/UC-14.png`, `UC-16.png`
-
 ---
 
 ## Traceability
