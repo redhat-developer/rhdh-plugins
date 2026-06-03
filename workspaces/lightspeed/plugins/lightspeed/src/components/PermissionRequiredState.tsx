@@ -16,7 +16,8 @@
 
 import { Fragment } from 'react';
 
-import { Typography } from '@material-ui/core';
+import { EmptyState } from '@backstage/core-components';
+
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -27,62 +28,46 @@ const useStyles = makeStyles(theme =>
   createStyles({
     root: {
       display: 'flex',
+      flexDirection: 'column',
       width: '100%',
       height: '100%',
+      minHeight: '100%',
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.palette.background.default,
       containerType: 'inline-size',
-    },
-    layout: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-      gap: theme.spacing(2),
-      padding: theme.spacing(4),
-      width: '100%',
-      '@container (min-width: 600px)': {
-        flexDirection: 'row',
-        textAlign: 'left',
+      '& [class*="BackstageEmptyState-root"]': {
         alignItems: 'center',
-        justifyContent: 'space-around',
-        padding: theme.spacing(4, 8),
+        padding: theme.spacing(4),
       },
-    },
-    textColumn: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(2),
-      order: 2,
-      '@container (min-width: 600px)': {
-        order: 1,
-        flex: 1,
+      '& [class*="MuiTypography-h5"]': {
+        fontSize: 'clamp(1.875rem, 3.75cqi, 3.125rem)',
+        fontWeight: 400,
       },
-    },
-    imageColumn: {
-      order: 1,
-      '@container (min-width: 600px)': {
-        order: 2,
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
+      '& [class*="MuiTypography-body1"]': {
+        fontSize: '1em',
+        color: theme.palette.text.secondary,
+        '& b': {
+          fontWeight: 500,
+          color: theme.palette.text.primary,
+        },
       },
-    },
-    title: {
-      fontSize: 'clamp(1.5rem, 3cqi, 2.5rem)',
-      fontWeight: 300,
-    },
-    description: {
-      fontSize: 'clamp(0.875rem, 1.5cqi, 1.125rem)',
-      color: theme.palette.text.secondary,
-      '& b': {
-        fontWeight: 500,
-        color: theme.palette.text.primary,
+      '@container (max-width: 899px)': {
+        '& [class*="BackstageEmptyState-root"]': {
+          textAlign: 'center',
+        },
+        '& [class*="MuiGrid-grid-md-6"]': {
+          maxWidth: '100%',
+          flexBasis: '100%',
+        },
+        '& [class*="BackstageEmptyState-imageContainer"]': {
+          order: -1,
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: theme.spacing(-4),
+        },
       },
-    },
-    action: {
-      marginTop: theme.spacing(1),
     },
   }),
 );
@@ -114,26 +99,20 @@ const PermissionRequiredState = ({
 
   return (
     <div className={classes.root}>
-      <div className={classes.layout}>
-        <div className={classes.textColumn}>
-          <Typography variant="h3" className={classes.title}>
-            {t('permission.required.title')}
-          </Typography>
-          <Typography variant="subtitle1" className={classes.description}>
-            <Trans
-              message="permission.required.description"
-              components={{
-                '<subject/>': <>{subject}</>,
-                '<permissions/>': permissionsList,
-              }}
-            />
-          </Typography>
-          <div className={classes.action}>{action}</div>
-        </div>
-        <div className={classes.imageColumn}>
-          <PermissionRequiredIcon />
-        </div>
-      </div>
+      <EmptyState
+        title={t('permission.required.title')}
+        description={
+          <Trans
+            message="permission.required.description"
+            components={{
+              '<subject/>': <>{subject}</>,
+              '<permissions/>': permissionsList,
+            }}
+          />
+        }
+        missing={{ customImage: <PermissionRequiredIcon /> }}
+        action={action}
+      />
     </div>
   );
 };
