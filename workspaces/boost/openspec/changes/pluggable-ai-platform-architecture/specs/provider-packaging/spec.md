@@ -1,5 +1,7 @@
 # Provider Packaging as Backstage Modules
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Each AI platform provider must be packaged as an independent Backstage backend module, following RHDH dynamic plugin conventions. This enables deployers to install only the providers they need and allows providers to evolve independently.
 
 ## ADDED Requirements

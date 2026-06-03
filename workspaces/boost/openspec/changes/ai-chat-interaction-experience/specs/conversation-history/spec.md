@@ -1,5 +1,7 @@
 # Conversation History
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Persistent, searchable conversation history with feedback, export, and developer inspection tools.
 
 ## EXISTING Requirements

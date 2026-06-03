@@ -1,5 +1,7 @@
 # Provider Abstraction
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Augment abstracts AI platform backends behind a pluggable provider interface, enabling any AI platform to be integrated without forking the plugin.
 
 ## EXISTING Requirements

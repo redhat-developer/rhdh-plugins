@@ -1,5 +1,7 @@
 # Agent Creation Paths
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Four creation methods converge on a unified `ChatAgent` model. All paths produce agents visible in the gallery and available in chat.
 
 ## EXISTING Requirements

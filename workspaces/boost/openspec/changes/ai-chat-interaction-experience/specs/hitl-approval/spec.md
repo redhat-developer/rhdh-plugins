@@ -1,5 +1,7 @@
 # Human-in-the-Loop Approval
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Review proposed agent actions (tool calls) before execution, with the ability to edit parameters, approve, or reject. No destructive action executes without explicit developer consent.
 
 ## EXISTING Requirements

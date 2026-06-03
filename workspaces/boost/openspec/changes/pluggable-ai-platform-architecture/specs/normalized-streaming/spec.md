@@ -1,5 +1,7 @@
 # Normalized Streaming Protocol
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 One event contract between all backend providers and the frontend. Each provider maps its native events to `NormalizedStreamEvent` so the frontend works identically regardless of active backend.
 
 ## EXISTING Requirements

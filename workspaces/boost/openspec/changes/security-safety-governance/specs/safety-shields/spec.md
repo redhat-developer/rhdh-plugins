@@ -1,5 +1,7 @@
 # Safety Shields and Guardrails
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Content safety filtering on agent inputs and outputs to prevent harmful, injected, or destructive content.
 
 ## EXISTING Requirements

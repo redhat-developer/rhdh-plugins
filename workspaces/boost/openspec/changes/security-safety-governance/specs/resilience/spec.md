@@ -1,5 +1,7 @@
 # Resilience Patterns
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Graceful degradation when things go wrong — provider offline detection, error boundaries, and transient notifications.
 
 ## EXISTING Requirements

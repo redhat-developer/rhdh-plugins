@@ -1,5 +1,7 @@
 # Agent Gallery and Discovery
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Browse, search, filter, and select agents from a curated gallery. The gallery merges agents from all providers into a unified view.
 
 ## EXISTING Requirements

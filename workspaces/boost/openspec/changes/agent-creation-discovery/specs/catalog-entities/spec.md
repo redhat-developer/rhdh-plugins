@@ -1,5 +1,7 @@
 # Catalog Entities for AI Domain Objects
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 AI agents, models, MCP servers, and vector stores are modeled as Backstage catalog entities. This replaces in-memory caches with catalog-managed lifecycle, providing discoverability, ownership, search, and RBAC integration.
 
 NOTE: These recommendations align with in-flight upstream Backstage initiatives:

@@ -1,5 +1,7 @@
 # RAG Knowledge Pipelines
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Ingest customer documentation into vector stores so agents can ground their answers in real data.
 
 ## EXISTING Requirements

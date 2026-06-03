@@ -1,5 +1,7 @@
 # Operational Caching via Backstage cacheService
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 All operational caches use Backstage `cacheService` from day one — no raw `Map<>` caches. This provides Redis-backed caching in production, consistent TTL semantics, and multi-instance safety. The cache inventory below is derived from augment's 17-cache analysis to ensure boost covers all the same operational caching needs with proper architecture.
 
 NOTE: Provider-specific caches (#2-#7) are covered in the platform-architecture change. Catalog entity candidate caches are covered in the agent-creation-discovery change. This spec covers the remaining operational caches (#1, #8-#14) plus 3 new caches identified in the May 26 analysis (#15-#17).

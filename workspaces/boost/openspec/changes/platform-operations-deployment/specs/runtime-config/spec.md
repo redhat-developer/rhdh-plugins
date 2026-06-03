@@ -1,5 +1,7 @@
 # Runtime Configuration Engine
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Change Augment's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
 
 ## EXISTING Requirements

@@ -1,5 +1,7 @@
 # Streaming Chat
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Real-time streamed conversation with specialist AI agents, including phase indicators, rich rendering, and provider-adaptive behavior.
 
 ## EXISTING Requirements

@@ -1,5 +1,7 @@
 # White-Label Branding
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Customize the Augment experience to match the organization's brand — all at runtime, no deployment required.
 
 ## EXISTING Requirements

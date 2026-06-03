@@ -1,5 +1,7 @@
 # Access Control and Security Posture
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Multi-level security configuration controlling who accesses Augment, who has admin privileges, and how tool connections are authenticated.
 
 ## EXISTING Requirements

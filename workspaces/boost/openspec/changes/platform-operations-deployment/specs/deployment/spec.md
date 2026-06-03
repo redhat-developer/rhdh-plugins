@@ -1,5 +1,7 @@
 # Plugin Deployment
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Install and configure Augment in an RHDH or vanilla Backstage instance via two deployment paths.
 
 ## EXISTING Requirements

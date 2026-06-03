@@ -1,5 +1,7 @@
 # Knowledge-Grounded Answers (RAG)
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Answers grounded in the organization's own documentation, with source citations enabling developers to trace every claim to a source.
 
 ## EXISTING Requirements

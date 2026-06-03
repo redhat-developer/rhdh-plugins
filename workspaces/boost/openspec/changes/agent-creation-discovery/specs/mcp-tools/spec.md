@@ -1,5 +1,7 @@
 # MCP Tool Configuration
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Connect agents to live systems by registering MCP servers, configuring authentication, and setting tool approval policies.
 
 ## EXISTING Requirements

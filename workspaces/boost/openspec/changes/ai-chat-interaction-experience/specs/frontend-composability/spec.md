@@ -1,5 +1,7 @@
 # Frontend Composability
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 The frontend must be decomposed from a monolithic `AugmentPage` into composable extensions with lazy loading, feature flags, and capability-driven rendering.
 
 ## ADDED Requirements

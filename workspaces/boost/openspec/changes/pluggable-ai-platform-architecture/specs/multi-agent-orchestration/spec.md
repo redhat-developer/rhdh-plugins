@@ -1,5 +1,7 @@
 # Multi-Agent Orchestration
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Config-driven multi-agent orchestration without writing code. Llama Stack agents are defined in YAML and assembled into handoff chains. Kagenti agents are framework-neutral K8s workloads discovered via A2A protocol.
 
 ## EXISTING Requirements

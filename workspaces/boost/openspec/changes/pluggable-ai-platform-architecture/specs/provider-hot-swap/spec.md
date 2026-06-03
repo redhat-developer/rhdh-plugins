@@ -1,5 +1,7 @@
 # Provider Hot-Swap
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Switch AI platform providers at runtime without downtime or data loss. The system starts the new provider, validates it, swaps the active pointer, and shuts down the old — with automatic rollback on failure.
 
 ## EXISTING Requirements

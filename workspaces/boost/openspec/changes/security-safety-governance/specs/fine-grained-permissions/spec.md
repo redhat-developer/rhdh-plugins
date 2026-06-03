@@ -1,5 +1,7 @@
 # Fine-Grained Permissions
 
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+
 Expand from 2 coarse permissions to 16 fine-grained permissions across 3 resource types with conditional rules, replacing custom route-level governance with proper Backstage RBAC. This eliminates the parallel authorization system (2,132 lines of custom governance code vs. 73 lines of Backstage permissions) by migrating all 12+ authorization decisions into `permissions.authorize()`.
 
 ## ADDED Requirements
