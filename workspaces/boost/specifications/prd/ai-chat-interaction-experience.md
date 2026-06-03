@@ -128,6 +128,8 @@ All frontend components and UI flows must align with RHDH usability and visual d
 
 **Epics/Stories:** Epic 5 (Features 5.1, 5.2)
 
+> **Note:** UC-4 (Agent Gallery & Discovery) is defined in the [Agent Creation & Discovery PRD](agent-creation-discovery.md).
+
 ### 4. Conversation History (UC-5)
 
 **Goal:** Return to past conversations, search history, provide feedback, and export sessions.
