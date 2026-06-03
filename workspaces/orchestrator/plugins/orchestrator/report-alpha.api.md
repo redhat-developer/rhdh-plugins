@@ -123,11 +123,11 @@ const _default: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
+              | 'operation'
               | 'overview'
               | 'documentation'
               | 'development'
               | 'deployment'
-              | 'operation'
               | 'observability'
             )
           | (string & {});
