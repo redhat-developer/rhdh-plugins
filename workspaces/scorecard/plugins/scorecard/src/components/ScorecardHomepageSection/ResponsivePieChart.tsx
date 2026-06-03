@@ -134,7 +134,7 @@ export const ResponsivePieChart = ({
           />
         ) : null}
 
-        <Tooltip content={isTooltipEnabled ? tooltipContent : () => null} />
+        {isTooltipEnabled && <Tooltip content={tooltipContent as never} />}
       </PieChart>
     </ResponsiveContainer>
   );

@@ -4,7 +4,7 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { JSX as JSX_2 } from 'react';
 import { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
 import { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
 import { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';

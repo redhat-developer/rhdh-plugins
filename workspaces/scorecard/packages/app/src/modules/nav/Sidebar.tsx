@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Fragment } from 'react';
 import {
   Sidebar,
   SidebarDivider,
@@ -26,6 +25,7 @@ import {
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
 import CategoryIcon from '@mui/icons-material/Category';
+import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
@@ -80,9 +80,7 @@ function splitNavItems(items: NavItem[]) {
 export const SidebarContent = NavContentBlueprint.make({
   params: {
     component: ({ items }) => {
-      const { headerItems, mainItems, footerItems } = splitNavItems(
-        items as NavItem[],
-      );
+      const { headerItems, mainItems } = splitNavItems(items as NavItem[]);
       const mainWithoutMyGroups = mainItems.filter(
         item =>
           !item.to.includes('my-groups') &&
@@ -101,48 +99,41 @@ export const SidebarContent = NavContentBlueprint.make({
             </>
           )}
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            <SidebarItem icon={HomeIcon} to="/" text="Home" />
+            <SidebarItem icon={CategoryIcon} to="/catalog" text="Catalog" />
+            <MyGroupsSidebarItem
+              singularTitle="My Group"
+              pluralTitle="My Groups"
+              icon={GroupIcon}
+            />
             <SidebarScrollWrapper>
-              {mainWithoutMyGroups.length === 0 ? (
-                <MyGroupsSidebarItem
-                  singularTitle="My Group"
-                  pluralTitle="My Groups"
-                  icon={GroupIcon}
-                />
-              ) : (
-                mainWithoutMyGroups.map((item, index) => (
-                  <Fragment key={`main-${index}`}>
-                    <SidebarItem
-                      to={item.to}
-                      text={item.text}
-                      title={item.title}
-                      icon={
-                        item.to.includes('/catalog') ? CategoryIcon : item.icon
-                      }
-                    />
-                    {index === 0 && (
-                      <MyGroupsSidebarItem
-                        singularTitle="My Group"
-                        pluralTitle="My Groups"
-                        icon={GroupIcon}
-                      />
-                    )}
-                  </Fragment>
-                ))
-              )}
+              {mainWithoutMyGroups
+                .filter(
+                  item =>
+                    !item.to.includes('/catalog') &&
+                    item.to !== '/' &&
+                    item.to !== '/home',
+                )
+                .map((item, index) => (
+                  <SidebarItem
+                    key={`main-${index}`}
+                    to={item.to}
+                    text={item.text}
+                    title={item.title}
+                    icon={item.icon}
+                  />
+                ))}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-          {footerItems.length > 0 && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                icon={<UserSettingsSignInAvatar />}
-              >
-                <SidebarSettings />
-              </SidebarGroup>
-            </>
-          )}
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            <SidebarSettings />
+          </SidebarGroup>
         </Sidebar>
       );
     },
