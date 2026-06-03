@@ -1,8 +1,9 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused dependencies (2)
 
-| Name      | Location          | Severity |
-| :-------- | :---------------- | :------- |
-| find-root | package.json:42:6 | error    |
+| Name                  | Location          | Severity |
+| :-------------------- | :---------------- | :------- |
+| @backstage/cli-common | package.json:40:6 | error    |
+| find-root             | package.json:46:6 | error    |
 
