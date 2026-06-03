@@ -409,7 +409,12 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
       res.set('Content-Type', contentType);
       return res.send(await upstreamResponse.text());
     } catch (error) {
-      options.logger.error('Secure proxy error', error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      options.logger.error(
+        `Secure proxy error for path "${proxyPath}": ${errorMessage}`,
+        error instanceof Error ? { stack: error.stack } : {},
+      );
 
       if (error instanceof SsoAuthenticationError) {
         return res.status(502).json({
@@ -419,6 +424,8 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
         });
       }
 
-      return res.status(500).json({ error: 'Internal proxy error' });
+      return res
+        .status(500)
+        .json({ error: `Internal proxy error: ${errorMessage}` });
     }
   };
