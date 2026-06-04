@@ -86,7 +86,7 @@ _Augment lesson: 671 lines of hand-written validators duplicating what schemas s
 
 The frontend is decomposed into composable routable extensions (`ChatPage`, `AdminPage`, `AgentStudioPage`) with `React.lazy()` at extension boundaries. Feature flags control visibility per deployment.
 
-_Augment lesson: Single monolithic `BoostPage` extension eagerly loading 200+ admin panel files. 13 components over 500 lines with zero lazy loading at primary entry points. No config-driven feature flags._
+_Augment lesson: Single monolithic `AugmentPage` extension eagerly loading 200+ admin panel files. 13 components over 500 lines with zero lazy loading at primary entry points. No config-driven feature flags._
 
 ### 8. UX/UXD-Driven UI Development
 
