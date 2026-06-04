@@ -29,7 +29,6 @@
   "files": [
     "bin",
     "dist/**/*.js",
-    "dist/install-dynamic-plugins.cjs",
     "README.md"
   ],
   "publishConfig": {
@@ -37,8 +36,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "backstage-cli package build && node esbuild.config.mjs",
-    "prepack": "backstage-cli package build && node esbuild.config.mjs",
+    "build": "backstage-cli package build",
     "tsc": "tsc",
     "test": "backstage-cli package test",
     "lint": "backstage-cli package lint",
@@ -55,7 +53,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.0",
     "@types/tar": "^6.1.13",
-    "esbuild": "^0.25.0",
     "typescript": "~5.8.0"
   }
 }

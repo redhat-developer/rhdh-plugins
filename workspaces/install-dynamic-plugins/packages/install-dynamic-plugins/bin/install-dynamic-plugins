@@ -15,24 +15,32 @@
  * limitations under the License.
  */
 
+// Fast path: invoke the installer directly without going through
+// @backstage/cli-node's runCliModule dispatch. The install command is the
+// only verb this package exposes for direct invocation, and the cli-module
+// dispatch adds ~80–100 ms of cold start (commander, zod, @manypkg/get-packages,
+// @yarnpkg/lockfile, proper-lockfile, fs-extra, …). The createCliModule
+// export in ./index is still discovered automatically when this package is
+// a dependency of a backstage-cli host — that path pays the dispatch cost
+// where it belongs.
+
 const path = require('node:path');
 const fs = require('node:fs');
 
-// Detect whether we're running inside the monorepo (src/ checked in) or as an
-// installed npm package (only dist/ + bin/ + README in the tarball). In the
-// monorepo we run TypeScript directly via Backstage's node transform so that
-// tooling (api-reports, repo lint, etc.) can require this bin file before the
-// esbuild bundle has been built.
 /* eslint-disable-next-line no-restricted-syntax */
 const isLocal = fs.existsSync(path.resolve(__dirname, '../src'));
 
 if (isLocal) {
   require('@backstage/cli/config/nodeTransform.cjs');
-  require('../src/cli');
-} else {
-  // Direct fast path: the package's `main` field is the createCliModule
-  // export (loaded by backstage-cli discovery). For direct/`npx`/init-container
-  // invocations we skip cli-module dispatch and run the self-contained esbuild
-  // bundle instead — keeps the cold start at ~60 ms instead of ~180 ms.
-  require('../dist/install-dynamic-plugins.cjs');
 }
+
+const { main } = require(
+  isLocal ? '../src/installer' : '../dist/installer.cjs.js',
+);
+
+main(process.argv.slice(2)).catch(err => {
+  process.stderr.write(
+    `\ninstall-dynamic-plugins failed: ${err?.message ?? err}\n`,
+  );
+  process.exit(1);
+});

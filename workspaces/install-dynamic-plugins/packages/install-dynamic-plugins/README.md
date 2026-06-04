@@ -4,12 +4,10 @@ Backstage CLI module that downloads, extracts, and configures RHDH dynamic plugi
 
 This package replaces the previous Python implementation (`install-dynamic-plugins.py`) with a TypeScript/Node.js implementation. The runtime contract — input config, output `app-config.dynamic-plugins.yaml`, on-disk layout, hash-based change detection, lock file — is **unchanged**.
 
-The package has two faces:
+The package has two invocation paths, both running the same `installer.ts` pipeline:
 
-- A **self-contained esbuild bundle** (`dist/install-dynamic-plugins.cjs`) used by the package's `bin`. Direct `npx install-dynamic-plugins`, RHDH's init-container `COPY`, and any other standalone invocation hit this path — ~60 ms cold start, no `node_modules` required at runtime.
-- A **`createCliModule` entry** (`dist/index.cjs.js`) exposed through `main`. When a host project lists this package as a dependency, `backstage-cli` auto-discovers the `install` command — `backstage-cli install <dynamic-plugins-root>` works out of the box.
-
-Both share the same `installer.ts` source, so there is one install pipeline regardless of how the command is invoked.
+- **`bin/install-dynamic-plugins` → fast-path** that loads `dist/installer.cjs.js` directly. Direct `npx install-dynamic-plugins` and any host that resolves the bin via `node_modules/.bin/...` hits this path — bypasses `@backstage/cli-node`'s `runCliModule` dispatch (~80 ms saved on cold start).
+- **`main: dist/index.cjs.js` → `createCliModule(...)`**, exposed for `backstage-cli` discovery. When a host project lists this package as a dependency, `backstage-cli install <dynamic-plugins-root>` is registered automatically.
 
 ## Usage
 
