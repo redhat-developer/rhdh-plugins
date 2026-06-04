@@ -12,7 +12,7 @@ The `AgenticProvider` interface defines the contract between Augment and any AI 
 
 #### Scenario: Provider implements required capabilities
 
-- **WHEN** a provider is registered with `augmentProviderExtensionPoint`
+- **WHEN** a provider is registered with `boostProviderExtensionPoint`
 - **THEN** it must implement `chat()` and `chatStream()` methods
 - **AND** it must provide a `ProviderDescriptor` declaring its ID, name, and supported capabilities
 
@@ -28,7 +28,7 @@ Providers register via a Backstage extension point, requiring zero Augment sourc
 
 #### Scenario: External provider module registers via extension point
 
-- **WHEN** a Backstage backend module depends on `augmentProviderExtensionPoint`
+- **WHEN** a Backstage backend module depends on `boostProviderExtensionPoint`
 - **THEN** it calls `addProvider()` to register its `AgenticProviderFactory`
 - **AND** the provider appears in the admin panel's provider switcher on next startup
 
@@ -46,17 +46,17 @@ Other Backstage plugins must be able to consume the active AI provider via Backs
 
 #### Scenario: External plugin consumes active AI provider
 
-- **WHEN** a Backstage plugin declares a dependency on `augmentAiProviderServiceRef`
+- **WHEN** a Backstage plugin declares a dependency on `boostAiProviderServiceRef`
 - **THEN** it receives the currently active `AgenticProvider` instance
 - **AND** it can call `chat()`, `chatStream()`, and any declared optional capabilities
 - **AND** if the active provider is hot-swapped, the consuming plugin receives the new provider on next request
 
-#### Scenario: Service ref declared in augment-common
+#### Scenario: Service ref declared in boost-common
 
-- **WHEN** the `augmentAiProviderServiceRef` is created via `createServiceRef` from `@backstage/backend-plugin-api`
-- **THEN** it is exported from the `augment-common` package (not `augment-backend`)
+- **WHEN** the `boostAiProviderServiceRef` is created via `createServiceRef` from `@backstage/backend-plugin-api`
+- **THEN** it is exported from the `boost-common` package (not `boost-backend`)
 - **AND** its type parameter is the `AgenticProvider` interface
-- **AND** its ID follows the pattern `augment.ai-provider`
+- **AND** its ID follows the pattern `boost.ai-provider`
 
 ### Requirement: Shared Types in Common Package
 
@@ -65,11 +65,11 @@ Provider interfaces and conversation types must live in the common package so bo
 #### Scenario: AgenticProvider types moved to common
 
 - **WHEN** the `AgenticProvider` interface, `ProviderDescriptor`, `ProviderCapabilities`, and `NormalizedStreamEvent` types are needed
-- **THEN** they are imported from `@augment/plugin-augment-common`
+- **THEN** they are imported from `@boost/plugin-boost-common`
 - **AND** provider-specific types (e.g., `LlamaStackConfig`, `KagentiConfig`) remain in their respective provider modules — not in the common package
 
 #### Scenario: Conversation types consolidated
 
 - **WHEN** conversation types (`ConversationSummary`, `ConversationDetails`, `InputItem`) are needed
-- **THEN** they are imported from `@augment/plugin-augment-common`
+- **THEN** they are imported from `@boost/plugin-boost-common`
 - **AND** they are no longer defined inside `providers/llamastack/conversationTypes.ts`

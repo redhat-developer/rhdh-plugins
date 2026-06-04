@@ -16,7 +16,7 @@
 
 ## 3. Feature Flags (P1)
 
-- [ ] 3.1 Add `augment.features` section to frontend `config.d.ts` schema
+- [ ] 3.1 Add `boost.features` section to frontend `config.d.ts` schema
 - [ ] 3.2 Register feature flags with Backstage `featureFlagsApiRef` in `createPlugin` call
 - [ ] 3.3 Create `useFeatureFlags` hook that reads from `configApiRef` with `featureFlagsApiRef` overrides
 - [ ] 3.4 Gate `agentCreation`, `devSpaces`, `workflowBuilder`, `sandbox`, `observability`, `adminPanel` behind feature flags

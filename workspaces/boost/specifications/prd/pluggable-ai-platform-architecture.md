@@ -34,9 +34,9 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 ### In Scope
 
 - Provider abstraction interface (`AgenticProvider`, `ProviderDescriptor`, `AgenticProviderFactory`)
-- `augmentAiProviderServiceRef` for cross-plugin provider consumption
+- `boostAiProviderServiceRef` for cross-plugin provider consumption
 - Backstage extension point for provider registration
-- Provider types and interfaces in `augment-common` (not locked inside plugin)
+- Provider types and interfaces in `boost-common` (not locked inside plugin)
 - Normalized streaming protocol (`NormalizedStreamEvent`)
 - Runtime provider hot-swap with rollback on failure
 - Capability-based frontend feature gating (replacing provider ID string checks)
@@ -45,7 +45,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - Backstage `cacheService` for all operational caches (replacing home-grown `Map<>` caches)
 - Llama Stack multi-agent orchestration (config-driven agents, handoffs, agents-as-tools)
 - Kagenti provider (A2A protocol, K8s agent operations)
-- ADK orchestration library (`@augment-adk/augment-adk`)
+- OpenAI Agent SDK orchestration (via Llama Stack Responses API)
 - Future provider placeholders (Google ADK)
 
 ### Out of Scope
@@ -68,7 +68,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - `AgenticProvider` interface: `chat()` and `chatStream()` are required capabilities; RAG, safety, evaluation, and conversation are optional capability objects
 - `ProviderDescriptor` declares the provider's ID, name, and supported capabilities
 - `AgenticProviderFactory` instantiates the provider from config
-- Registration via `augmentProviderExtensionPoint` in a Backstage backend module
+- Registration via `boostProviderExtensionPoint` in a Backstage backend module
 - No Augment source modification required
 
 **Built-in providers:**
@@ -119,7 +119,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 1. Implement `AgenticProvider` interface (chat/chatStream required, optional capabilities)
 2. Create `ProviderDescriptor` declaring ID, name, supported capabilities
 3. Create `AgenticProviderFactory` that instantiates from config
-4. Register via `augmentProviderExtensionPoint` in a Backstage backend module
+4. Register via `boostProviderExtensionPoint` in a Backstage backend module
 5. Deploy module alongside Augment backend
 6. New provider appears in admin panel's provider switcher — zero Augment source changes
 
@@ -158,7 +158,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - Agents-as-tools pattern: `call_{agent}` for manager-specialist delegation while keeping control
 - Per-agent config: model, temperature, max tokens, tool choice, MCP server subsets, vector store IDs
 
-**ADK library:** `@augment-adk/augment-adk` handles agent continuity, turn counting, handoff logic, tool execution.
+**Orchestration:** The OpenAI Agent SDK (via Llama Stack Responses API) handles agent orchestration, handoff logic, and tool execution.
 
 **Epics/Stories:** Epic 2 (Features 2.1)
 
@@ -182,21 +182,21 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 
 **How it works:**
 
-- Each provider is a `createBackendModule` (not a standalone plugin) that registers via `augmentProviderExtensionPoint`
+- Each provider is a `createBackendModule` (not a standalone plugin) that registers via `boostProviderExtensionPoint`
 - Provider modules have IDs: `llamastack` and `kagenti`
 - Both are exported as OCI images for RHDH dynamic plugin loading
 - Deployers install only the providers they need — no unused provider code loaded
-- Provider modules depend on `augment-common` for shared types and `augmentAiProviderServiceRef`
+- Provider modules depend on `boost-common` for shared types and `boostAiProviderServiceRef`
 - Boost ships modular from day one — no monolithic fallback needed
 
 **RHDH deployment example:**
 
 ```yaml
 # dynamic-plugins.override.yaml
-- package: @augment/plugin-augment-backend-module-llamastack
+- package: @boost/plugin-boost-backend-module-llamastack
   integrity: sha512-...
   disabled: false
-- package: @augment/plugin-augment-backend-module-kagenti
+- package: @boost/plugin-boost-backend-module-kagenti
   integrity: sha512-...
   disabled: false
 ```
@@ -238,14 +238,14 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 **Provider capability system:**
 
 ```
-AgenticProvider (in augment-common)
+AgenticProvider (in boost-common)
 ├── chat() / chatStream()     — required
 ├── rag?                      — optional
 ├── safety?                   — optional
 ├── evaluation?               — optional
 └── conversation?             — optional
 
-augmentAiProviderServiceRef (in augment-common)
+boostAiProviderServiceRef (in boost-common)
 └── enables cross-plugin consumption of the active provider
 
 ProviderManager
@@ -258,7 +258,7 @@ ProviderManager
 
 ```
 boost-backend (core plugin)
-├── augmentProviderExtensionPoint       — provider registration interface
+├── boostProviderExtensionPoint       — provider registration interface
 ├── ProviderManager                     — lifecycle, swap, rollback
 ├── McpEntityProvider                   — MCP server catalog entities (cross-cutting)
 ├── VectorStoreEntityProvider           — vector store catalog entities (cross-cutting)
@@ -270,14 +270,14 @@ plugin-boost-backend-module-llamastack (RHDH dynamic plugin)
 ├── ResponsesApiProvider                — Llama Stack AI capabilities
 ├── normalizeLlamaStackEvent()          — stream normalizer
 ├── composes llamastack-entity-provider — catalog entities
-├── registers via augmentProviderExtensionPoint
+├── registers via boostProviderExtensionPoint
 └── registers via catalogProcessingExtensionPoint
 
 plugin-boost-backend-module-kagenti (RHDH dynamic plugin)
 ├── KagentiProvider                     — A2A protocol AI capabilities
 ├── KagentiStreamNormalizer             — stream normalizer
 ├── composes kagenti-entity-provider    — catalog entities
-├── registers via augmentProviderExtensionPoint
+├── registers via boostProviderExtensionPoint
 └── registers via catalogProcessingExtensionPoint
 
 llamastack-entity-provider (independently deployable RHDH dynamic plugin)

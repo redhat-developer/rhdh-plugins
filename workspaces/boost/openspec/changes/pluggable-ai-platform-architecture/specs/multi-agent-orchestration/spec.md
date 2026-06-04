@@ -46,13 +46,13 @@ Agents built in any framework are accessible via RHDH through the A2A protocol.
 - **THEN** agents are scoped to their namespace with backend-enforced allowlists
 - **AND** the namespace picker in the admin UI filters the agent catalog accordingly
 
-### Requirement: ADK Orchestration Library
+### Requirement: OpenAI Agent SDK Orchestration
 
-The `@augment-adk/augment-adk` library handles agent continuity, turn counting, handoff logic, and tool execution.
+The OpenAI Agent SDK (via Llama Stack Responses API) handles agent orchestration, handoff logic, and tool execution for the Llama Stack provider.
 
-#### Scenario: ADK manages agent turn lifecycle
+#### Scenario: Agent SDK manages multi-agent orchestration
 
-- **WHEN** a chat interaction spans multiple agent turns
-- **THEN** the ADK library tracks turn count against configured limits
-- **AND** it manages handoff transitions between agents
+- **WHEN** a chat interaction involves multi-agent handoffs
+- **THEN** the OpenAI Agent SDK manages agent handoff transitions via the Responses API
 - **AND** it coordinates tool execution within agent turns
+- **AND** orchestration is defined via YAML configuration (not custom code)

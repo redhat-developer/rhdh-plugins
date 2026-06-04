@@ -9,7 +9,7 @@ NOTE: These recommendations align with in-flight upstream Backstage initiatives:
 - `AIContext`: Agent Cards will map to this kind when available
 - `API Discriminated Union v1alpha2`: MCP Servers and AI Model Servers will map to the expanded `API` kind when available
 
-The specifications below use existing Backstage kinds (`Resource`, `Component`) as the primary implementation path, with migration to upstream kinds when they land. Custom `CatalogProcessor` validators support both during transition.
+The specifications below use existing Backstage kinds (`Resource`, `Component`) as the primary implementation path, with adoption of upstream kinds when they land. Custom `CatalogProcessor` validators support both during transition.
 
 **Entity type strategy:**
 | Domain Object | Immediate Kind | `spec.type` | Future Kind (upstream) |
@@ -41,7 +41,7 @@ Agents are represented as Backstage catalog entities with lifecycle, ownership, 
 - **THEN** it polls the Kagenti API for all agents across configured namespaces
 - **AND** it emits catalog entities with `kind: Component, spec.type: ai-agent` (or `kind: AIContext` when upstream is available)
 - **AND** agent capabilities, LLM demands, and MCP demands map to `spec.dependsOn` relations
-- **AND** the entity replaces the in-memory `KagentiAgentCardCache` (cache #2)
+- **AND** the catalog is the source of truth for agent data — no in-memory cache needed
 
 #### Scenario: Llama Stack module emits agent entities
 
@@ -53,7 +53,7 @@ Agents are represented as Backstage catalog entities with lifecycle, ownership, 
 
 - **WHEN** an agent transitions through lifecycle stages (Draft → Pending → Published → Archived)
 - **THEN** the catalog entity's `metadata.annotations` reflect the current 4-stage lifecycle stage
-- **AND** catalog entity lifecycle state maps: Draft → `experimental`, Published → `production`, Archived → `deprecated`
+- **AND** catalog entity lifecycle state maps: Draft → `experimental`, Pending → `experimental`, Published → `production`, Archived → `deprecated`
 - **AND** `createdBy` ownership maps to catalog entity `spec.owner` for RBAC integration
 
 ### Requirement: AI Model Catalog Entities
@@ -106,7 +106,7 @@ Entity providers are independently deployable Backstage backend services.
 
 - **WHEN** a boost provider module (e.g., `plugin-boost-backend-module-kagenti`) is installed
 - **THEN** it composes the `kagenti-entity-provider` package internally
-- **AND** it registers both AI capabilities (via `augmentProviderExtensionPoint`) and catalog entities (via `catalogProcessingExtensionPoint`)
+- **AND** it registers both AI capabilities (via `boostProviderExtensionPoint`) and catalog entities (via `catalogProcessingExtensionPoint`)
 - **AND** installing the provider module gives you both AI capabilities and catalog entities in one step
 
 #### Scenario: Cross-cutting entity providers in core plugin

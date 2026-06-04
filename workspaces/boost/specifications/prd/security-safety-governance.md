@@ -81,31 +81,31 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 | Mode                       | Frontend                          | Backend                                                                  | Provider Auth                                                                       | Use Case                                 |
 | -------------------------- | --------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------- |
 | `development-only-no-auth` | No gate — all users pass as guest | No RBAC, everyone is admin                                               | Static token/TLS (if configured)                                                    | Development/demo only                    |
-| `plugin-only`              | SecurityGate wraps AugmentPage    | user-cookie, augment.access, admin allow-list, real user principal       | Token/TLS to Llama Stack, Keycloak OAuth2 for Kagenti                               | Recommended for production               |
-| `full`                     | SecurityGate wraps AugmentPage    | Fine-grained RBAC (16 permissions), real user principal, mcpOAuth config | Token/TLS + MCP OAuth chain, Keycloak OAuth2 + per-user token exchange + SPIRE mTLS | Full production with identity delegation |
+| `plugin-only`              | SecurityGate wraps BoostPage      | user-cookie, boost.access, admin allow-list, real user principal         | Token/TLS to Llama Stack, Keycloak OAuth2 for Kagenti                               | Recommended for production               |
+| `full`                     | SecurityGate wraps BoostPage      | Fine-grained RBAC (16 permissions), real user principal, mcpOAuth config | Token/TLS + MCP OAuth chain, Keycloak OAuth2 + per-user token exchange + SPIRE mTLS | Full production with identity delegation |
 
 **Note:** The legacy mode name `none` is deprecated; deployments should use `development-only-no-auth`. A prominent warning is logged if this mode is detected in a non-development environment.
 
 **Fine-grained RBAC (16 permissions across 3 resource types):**
 
-| Permission                | Resource Type   | Conditional Rules                       | Description                                         |
-| ------------------------- | --------------- | --------------------------------------- | --------------------------------------------------- |
-| `augment.agent.list`      | —               | —                                       | View agent list (visibility filtering by ownership) |
-| `augment.agent.register`  | —               | —                                       | Register a new agent for governance                 |
-| `augment.agent.promote`   | `augment-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | Submit draft agent for review (draft→pending)       |
-| `augment.agent.approve`   | `augment-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending agent (pending→published)           |
-| `augment.agent.demote`    | `augment-agent` | —                                       | Reject, request-unpublish, approve-unpublish        |
-| `augment.agent.publish`   | `augment-agent` | —                                       | Publish an approved agent                           |
-| `augment.agent.unpublish` | `augment-agent` | `IS_OWNER`                              | Request unpublishing of a published agent           |
-| `augment.agent.withdraw`  | `augment-agent` | `IS_OWNER`                              | Withdraw a pending submission                       |
-| `augment.agent.delete`    | `augment-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | Delete agent (draft stage only for non-admins)      |
-| `augment.agent.configure` | —               | —                                       | Edit agent configuration                            |
-| `augment.tool.promote`    | `augment-tool`  | `IS_OWNER`                              | Promote tool through lifecycle                      |
-| `augment.tool.approve`    | `augment-tool`  | `IS_NOT_CREATOR`                        | Approve tool promotion                              |
-| `augment.tool.demote`     | `augment-tool`  | —                                       | Demote tool lifecycle stage                         |
-| `augment.tool.publish`    | `augment-tool`  | —                                       | Publish a tool                                      |
-| `augment.tool.unpublish`  | `augment-tool`  | —                                       | Unpublish a tool                                    |
-| `augment.kagenti.admin`   | —               | —                                       | Kagenti infrastructure operations                   |
+| Permission              | Resource Type | Conditional Rules                       | Description                                         |
+| ----------------------- | ------------- | --------------------------------------- | --------------------------------------------------- |
+| `boost.agent.list`      | —             | —                                       | View agent list (visibility filtering by ownership) |
+| `boost.agent.register`  | —             | —                                       | Register a new agent for governance                 |
+| `boost.agent.promote`   | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | Submit draft agent for review (draft→pending)       |
+| `boost.agent.approve`   | `boost-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending agent (pending→published)           |
+| `boost.agent.demote`    | `boost-agent` | —                                       | Reject, request-unpublish, approve-unpublish        |
+| `boost.agent.publish`   | `boost-agent` | —                                       | Publish an approved agent                           |
+| `boost.agent.unpublish` | `boost-agent` | `IS_OWNER`                              | Request unpublishing of a published agent           |
+| `boost.agent.withdraw`  | `boost-agent` | `IS_OWNER`                              | Withdraw a pending submission                       |
+| `boost.agent.delete`    | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | Delete agent (draft stage only for non-admins)      |
+| `boost.agent.configure` | —             | —                                       | Edit agent configuration                            |
+| `boost.tool.promote`    | `boost-tool`  | `IS_OWNER`                              | Promote tool through lifecycle                      |
+| `boost.tool.approve`    | `boost-tool`  | `IS_NOT_CREATOR`                        | Approve tool promotion                              |
+| `boost.tool.demote`     | `boost-tool`  | —                                       | Demote tool lifecycle stage                         |
+| `boost.tool.publish`    | `boost-tool`  | —                                       | Publish a tool                                      |
+| `boost.tool.unpublish`  | `boost-tool`  | —                                       | Unpublish a tool                                    |
+| `boost.kagenti.admin`   | —             | —                                       | Kagenti infrastructure operations                   |
 
 **Conditional permission rules:**
 
@@ -116,9 +116,9 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 **RBAC configuration:**
 
 - Fine-grained permissions are the primary authorization mechanism from day one
-- `augment.access` serves as a top-level gate (if denied, all sub-permissions are denied)
-- `augment.admin` is available for deployments that prefer coarse-grained admin control
-- `augment.security.adminUsers` config is available for bootstrap/development only
+- `boost.access` serves as a top-level gate (if denied, all sub-permissions are denied)
+- `boost.admin` is available for deployments that prefer coarse-grained admin control
+- `boost.security.adminUsers` config is available for bootstrap/development only
 
 **MCP auth chain (4 levels):**
 
@@ -137,7 +137,7 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 
 **Frontend enforcement:**
 
-- `SecurityGate` wraps `AugmentPage` with loading, config errors, and `RequirePermission`
+- `SecurityGate` wraps `BoostPage` with loading, config errors, and `RequirePermission`
 - Fine-grained permission checks via `usePermissions` (batched) per admin panel section
 - Unauthorized users see a meaningful access-denied page
 
@@ -205,7 +205,7 @@ Draft → Pending → Published → Archived
 - Backend-only implementation: OIDC token read from a configurable request header (default: `X-Forwarded-Access-Token`)
 - `TokenExchangeManager` service: implements RFC 8693 exchange against Keycloak, with per-user token caching, concurrent request deduplication, and streaming-compatible token lifecycle
 - Graceful fallback on all failures: token exchange failure, missing header, disabled config, or Keycloak error → silently falls back to shared service-account token (no request blocking)
-- Configuration: `augment.kagenti.auth.tokenExchange.enabled` (default: false), `audience`, `userTokenHeader`
+- Configuration: `boost.kagenti.auth.tokenExchange.enabled` (default: false), `audience`, `userTokenHeader`
 - `ResponsesApiProvider` (Llama Stack) is unaffected: `setUserContext` method is optional and not implemented
 
 **Separation of authorization concerns:**
@@ -266,13 +266,13 @@ Draft → Pending → Published → Archived
 
 ```
 Frontend Layer
-├── SecurityGate.tsx         — wraps AugmentPage, checks RequirePermission
+├── SecurityGate.tsx         — wraps BoostPage, checks RequirePermission
 ├── usePermissions (batched) — fine-grained per admin panel section
 └── CSRF                     — X-Backstage-Request header on all mutating fetches
 
 Backend Middleware (5 layers)
 ├── Backstage HTTP           — user-cookie / unauthenticated
-├── requirePluginAccess      — augment.access / skipped
+├── requirePluginAccess      — boost.access / skipped
 ├── authorizeLifecycleAction — fine-grained permission check via permissions.authorize()
 ├── User identity            — real user principal (OIDC) / user-default/guest
 └── MCP OAuth                — mcpOAuth config / N/A / N/A

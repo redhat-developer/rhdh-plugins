@@ -35,7 +35,7 @@ Users can take actions on sessions and individual messages.
 #### Scenario: Provide feedback on a message
 
 - **WHEN** the user clicks thumbs up or thumbs down on an agent response
-- **THEN** the feedback is stored via `augment_feedback` table with optional reasons
+- **THEN** the feedback is stored via `boost_feedback` table with optional reasons
 - **AND** the feedback is associated with the specific message ID
 
 #### Scenario: Edit and regenerate
@@ -53,7 +53,7 @@ Users can take actions on sessions and individual messages.
 
 - **WHEN** an admin toggles "Show all users" in the history panel
 - **THEN** sessions from all users are visible (not just the current user's)
-- **AND** this is gated by `augment.admin` permission
+- **AND** this is gated by `boost.admin` permission
 
 ### Requirement: Developer Inspection Tools
 

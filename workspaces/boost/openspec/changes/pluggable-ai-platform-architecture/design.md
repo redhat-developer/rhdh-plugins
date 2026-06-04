@@ -2,7 +2,7 @@
 
 ## Context
 
-Boost implements the provider abstraction as modular RHDH dynamic plugins from the start, informed by augment's experience. Augment had a clean provider abstraction design (`AgenticProvider` interface, extension point registration, hot-swap lifecycle) but locked everything inside one monolithic plugin with 17 raw `Map<>` caches, 18+ provider ID string checks, and 559 lines of Kagenti-specific types in the common package. Boost avoids all of these patterns by building modular, capability-gated, and cacheService-backed from day one.
+Boost implements the provider abstraction as modular RHDH dynamic plugins from the start. The Augment reference prototype had a clean provider abstraction design (`AgenticProvider` interface, extension point registration, hot-swap lifecycle) but locked everything inside one monolithic plugin. Boost avoids this by building modular, capability-gated, and `cacheService`-backed from day one.
 
 ## Goals
 
@@ -22,73 +22,69 @@ Boost implements the provider abstraction as modular RHDH dynamic plugins from t
 
 ## Decisions
 
-### Decision 1: serviceRef lives in augment-common
+### Decision 1: serviceRef lives in boost-common
 
-The `augmentAiProviderServiceRef` is exported from `@augment/plugin-augment-common` alongside the `AgenticProvider` interface types. This allows both backend consumers and frontend type consumers to reference the interface from a single package without depending on the full backend.
+The `boostAiProviderServiceRef` is exported from `boost-common` alongside the `AgenticProvider` interface types. This allows both backend consumers and frontend type consumers to reference the interface from a single package without depending on the full backend.
 
 ```typescript
-// plugins/augment-common/src/services.ts
+// plugins/boost-common/src/services.ts
 import { createServiceRef } from '@backstage/backend-plugin-api';
 import type { AgenticProvider } from './types';
 
-export const augmentAiProviderServiceRef = createServiceRef<AgenticProvider>({
-  id: 'augment.ai-provider',
+export const boostAiProviderServiceRef = createServiceRef<AgenticProvider>({
+  id: 'boost.ai-provider',
   scope: 'plugin',
 });
 ```
 
-The core `augment-backend` plugin registers the default factory via `createServiceFactory` that resolves to the `ProviderManager`'s active provider.
+The core `boost-backend` plugin registers the default factory via `createServiceFactory` that resolves to the `ProviderManager`'s active provider.
 
 ### Decision 2: Providers as backend modules, not separate plugins
 
-Each provider is a `createBackendModule` (not `createBackendPlugin`), because providers extend the augment plugin — they don't stand alone. Module IDs: `llamastack`, `kagenti`.
+Each provider is a `createBackendModule` (not `createBackendPlugin`), because providers extend the boost plugin — they don't stand alone. Module IDs: `llamastack`, `kagenti`.
 
 This follows the Backstage pattern established by `plugin-catalog-backend-module-*` and `plugin-kubernetes-backend-module-*`.
 
-### Decision 3: cacheService replaces ALL provider-internal Map<> caches
+### Decision 3: All caches use Backstage cacheService
 
-17 caches identified across the codebase; only 2 migrated to date. All providers must use `cacheService` consistently — no asymmetry between Kagenti (cacheService) and Llama Stack (raw Map). Provider modules depend on `coreServices.cache` and use `cache.withOptions()` for namespace isolation:
+All provider caches use `cacheService` from day one — no raw `Map<>` caches. Provider modules depend on `coreServices.cache` and use `cache.withOptions()` for namespace isolation. The full cache inventory (informed by the 17 cache use cases identified in the Augment analysis):
 
-| Current Cache                      | Location                         | Current State            | Migration Target                                                    |
-| ---------------------------------- | -------------------------------- | ------------------------ | ------------------------------------------------------------------- |
-| RuntimeConfigResolver              | `services/`                      | raw Map, 30s TTL         | `cache.withOptions({ defaultTtl: '30s' })` + immediate invalidation |
-| KagentiAgentCardCache              | `providers/kagenti/`             | **migrated ✓**           | —                                                                   |
-| KagentiProvider.\_modelsCache      | `providers/kagenti/`             | **migrated ✓**           | —                                                                   |
-| ResponsesApiProvider.\_modelsCache | `providers/llamastack/`          | raw object               | `cache.withOptions({ defaultTtl: '60s' })` — eliminate asymmetry    |
-| McpAuthService tokens              | `providers/llamastack/auth/`     | raw Map                  | `cache.set(key, token, { ttl: expiresIn })`                         |
-| KeycloakTokenManager               | `providers/kagenti/client/`      | raw Map                  | `cache.set(key, token, { ttl: expiresIn })`                         |
-| BackendToolExecutor                | `providers/responses-api/tools/` | raw Map, unbounded       | `cache.withOptions({ defaultTtl: '5m' })`                           |
-| ConversationRegistry               | `providers/responses-api/`       | raw Map, no TTL, 10k max | `cache.withOptions({ defaultTtl: '24h' })`                          |
-| DocumentSyncService                | `providers/responses-api/`       | raw Map, no TTL, 10k max | cache with no expiry (content hash tracking)                        |
-| KagentiProvider session maps       | `providers/kagenti/`             | raw Map, no TTL, 10k max | `cache.withOptions()` with session TTL                              |
-| ClientManager                      | `providers/llamastack/`          | raw Map                  | identity-keyed cache                                                |
-| EmbeddingCache (toolscope)         | `services/toolscope/`            | raw Map, unbounded       | Via injectable `CacheAdapter`                                       |
-| SessionCache (toolscope)           | `services/toolscope/`            | raw Map, 1h TTL, 1k max  | Via injectable `CacheAdapter`                                       |
-| ConfigResolutionService            | `providers/llamastack/config/`   | wrapper                  | Delegates to migrated RuntimeConfigResolver                         |
-| conversationAgents                 | `OpenAIAgentsOrchestrator.ts`    | new raw Map              | session-scoped cache                                                |
-| rateLimiter store                  | `middleware/rateLimiter.ts`      | new raw Map              | per-window cache                                                    |
-| BackendApprovalStore.pending       | `responses-api/tools/`           | new raw Map              | request-scoped cache                                                |
+| Cache Use Case              | Module/Location         | cacheService Configuration                                          |
+| --------------------------- | ----------------------- | ------------------------------------------------------------------- |
+| RuntimeConfigResolver       | core `boost-backend`    | `cache.withOptions({ defaultTtl: '30s' })` + immediate invalidation |
+| Agent card data             | `kagenti` module        | `cache.withOptions({ defaultTtl: '5m' })`                           |
+| Model lists (per provider)  | each provider module    | `cache.withOptions({ defaultTtl: '60s' })`                          |
+| MCP auth tokens             | `llamastack` module     | `cache.set(key, token, { ttl: expiresIn })`                         |
+| Keycloak tokens             | `kagenti` module        | `cache.set(key, token, { ttl: expiresIn })`                         |
+| Tool schema cache           | `responses-api` toolkit | `cache.withOptions({ defaultTtl: '5m' })`                           |
+| Conversation registry       | core `boost-backend`    | `cache.withOptions({ defaultTtl: '24h' })`                          |
+| Document sync hashes        | core `boost-backend`    | cache with no expiry (content hash tracking)                        |
+| Provider session maps       | each provider module    | `cache.withOptions()` with session TTL                              |
+| Client manager              | `llamastack` module     | identity-keyed cache                                                |
+| Embedding cache (toolscope) | `@boost/toolscope`      | Via injectable `CacheAdapter`                                       |
+| Session cache (toolscope)   | `@boost/toolscope`      | Via injectable `CacheAdapter`                                       |
+| Config resolution           | core `boost-backend`    | Delegates to RuntimeConfigResolver cache (single layer)             |
+| Conversation-agent maps     | core `boost-backend`    | session-scoped cache                                                |
+| Rate limiter state          | core `boost-backend`    | per-window cache                                                    |
+| HITL approval pending state | `responses-api` toolkit | request-scoped cache                                                |
 
 Backstage's cache layer handles max-size eviction and Redis backing in production.
 
 ### Decision 4: Capability checks via ProviderCapabilities
 
-Frontend replaces all `providerId === 'kagenti'` checks with capability queries. The `ProviderCapabilities` interface already exists and is partially used. The migration:
+Frontend uses capability queries instead of provider identity checks:
 
 ```typescript
-// Before (coupled to provider identity)
-const isFullProvider = liveStatus?.providerId === 'kagenti';
-
-// After (coupled to capabilities)
+// Capability-based (what boost implements)
 const hasAgentCatalog = capabilities?.agentCatalog === true;
 const hasNamespaceScoping = capabilities?.namespaceScoping === true;
 ```
 
-### Decision 5: Kagenti-specific types extracted from augment-common
+### Decision 5: Provider-specific types stay in their modules
 
-Currently 559 lines (60+ interfaces) of Kagenti-only types are exported from `augment-common`, violating the type package boundary. These must be moved to the Kagenti provider module, with only the shared `AgenticProvider` interface and conversation types remaining in `augment-common`.
+Provider-specific types (e.g., Kagenti-specific interfaces) live in their respective provider modules. Only shared interfaces (`AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, conversation types, `NormalizedStreamEvent`) live in `boost-common`.
 
 ## Risks
 
 - **Cache key collisions:** Mitigated by using `cache.withOptions()` which namespace-scopes keys per plugin/module.
-- **Provider module interdependency:** Provider modules must not import from each other. Shared utilities live in `augment-common` or standalone packages. Boost enforces this from the start.
+- **Provider module interdependency:** Provider modules must not import from each other. Shared utilities live in `boost-common` or standalone packages. Boost enforces this from the start.

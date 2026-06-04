@@ -32,7 +32,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 ```
 workspace/boost/plugins/
 ├── boost-frontend                    — Chat UI, agent gallery, admin panels, composable extensions
-├── boost-common                      — Shared types, permissions, augmentAiProviderServiceRef
+├── boost-common                      — Shared types, permissions, boostAiProviderServiceRef
 ├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
 ├── boost-backend-module-llamastack   — Llama Stack agentic provider (composes llamastack-entity-provider)
 ├── boost-backend-module-kagenti      — Kagenti agentic provider (composes kagenti-entity-provider)
@@ -60,7 +60,7 @@ _Augment lesson: 2,132 lines of custom governance code implementing 12 authoriza
 
 ### 3. Providers as Independent RHDH Dynamic Plugins
 
-Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in the common package. Cross-plugin consumption via `augmentAiProviderServiceRef`.
+Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in the common package. Cross-plugin consumption via `boostAiProviderServiceRef`.
 
 _Augment lesson: Monolithic plugin with providers locked inside. No serviceRef for cross-plugin consumption. 559 lines of Kagenti-specific types polluting the common package. 13+ provider ID string checks coupling frontend to specific providers._
 
@@ -86,7 +86,7 @@ _Augment lesson: 671 lines of hand-written validators duplicating what schemas s
 
 The frontend is decomposed into composable routable extensions (`ChatPage`, `AdminPage`, `AgentStudioPage`) with `React.lazy()` at extension boundaries. Feature flags control visibility per deployment.
 
-_Augment lesson: Single monolithic `AugmentPage` extension eagerly loading 200+ admin panel files. 13 components over 500 lines with zero lazy loading at primary entry points. No config-driven feature flags._
+_Augment lesson: Single monolithic `BoostPage` extension eagerly loading 200+ admin panel files. 13 components over 500 lines with zero lazy loading at primary entry points. No config-driven feature flags._
 
 ### 8. UX/UXD-Driven UI Development
 

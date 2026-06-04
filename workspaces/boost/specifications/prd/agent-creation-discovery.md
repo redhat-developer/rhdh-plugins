@@ -224,7 +224,7 @@ All methods produce an agent visible in the gallery and available in chat.
 
 **Integration architecture:**
 
-- `GET /skills` proxies to the external skills catalog backend (endpoint configured via `augment.skillsMarketplace.endpoint`)
+- `GET /skills` proxies to the external skills catalog backend (endpoint configured via `boost.skillsMarketplace.endpoint`)
 - `GET /skills/runtimes` and `GET /skills/domains` proxy filter metadata from the external catalog
 - Augment handles deployment only: K8s manifest generation, OCI init containers, namespace scoping
 - Deployed skills agents carry a `chatEndpoint` field for direct chat routing within Augment

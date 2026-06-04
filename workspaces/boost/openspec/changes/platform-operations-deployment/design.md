@@ -2,7 +2,7 @@
 
 ## Context
 
-Boost implements the runtime configuration engine (DB-backed overlay, 25+ keys) with proper architecture from the start, informed by augment's experience. Augment built this as a product feature but accumulated debt: 671 lines of hand-written validators, no documentation of config field scopes, raw `Map<>` caches instead of Backstage `cacheService`, and a 1,500+ line config schema growing without resolution. Boost uses Zod schema-driven validation and `cacheService` from day one.
+Boost implements the runtime configuration engine (DB-backed overlay, 25+ keys) with proper architecture from the start. Zod schema-driven validation and Backstage `cacheService` are used from day one — no hand-written validators, no raw `Map<>` caches.
 
 ## Goals
 
@@ -14,30 +14,30 @@ Boost implements the runtime configuration engine (DB-backed overlay, 25+ keys) 
 ## Non-Goals
 
 - Removing the DB-backed dynamic config system (it's a product feature)
-- Migrating provider-specific caches (covered in platform-architecture change)
-- Migrating catalog entity candidates (covered in agent-creation-discovery change)
+- Provider-specific caches (covered in platform-architecture change)
+- Catalog entity providers (covered in agent-creation-discovery change)
 
 ## Decisions
 
-### Decision 1: Zod schemas derived from config.d.ts
+### Decision 1: Zod schemas as single source of truth
 
-Replace `configValidation.ts` with Zod schemas that are the single source of truth. The TypeScript `config.d.ts` interface is generated from the Zod schemas (not the other way around). This ensures DB-stored values are validated by the same rules as YAML values.
+Zod schemas define all admin-configurable fields. The TypeScript `config.d.ts` interface is generated from the Zod schemas (not the other way around). This ensures DB-stored values are validated by the same rules as YAML values — a single validation path for all config sources.
 
-### Decision 2: Cache migration order follows traffic and risk
+### Decision 2: Cache inventory via cacheService
 
-1. `RuntimeConfigResolver` (cache #1) — highest traffic, 30s TTL, cleanest migration
-2. `ConversationRegistry` (cache #8) — add TTL (24h), multi-instance benefit
-3. `DocumentSyncService` (cache #9) — multi-instance sync consistency
-4. `KagentiProvider` session maps (cache #10) — multi-instance safety
-5. `ClientManager` (cache #11) — low risk, singleton pattern
-6. `ConfigResolutionService` (cache #14) — eliminate entirely (delegate to #1)
-7. `conversationAgents` (cache #15) — new, session-scoped
-8. `rateLimiter store` (cache #16) — new, per-window
-9. `BackendApprovalStore.pending` (cache #17) — new, request-scoped HITL approvals
+All operational caches use `cacheService` from the start. The cache inventory covers the same operational needs identified in the Augment analysis (17 cache use cases):
 
-Caches #12 and #13 (toolscope) are migrated via the injectable `CacheAdapter` in the toolscope extraction (covered in agent-creation-discovery change).
+1. `RuntimeConfigResolver` — highest traffic, 30s TTL, immediate invalidation on write
+2. `ConversationRegistry` — 24h TTL, multi-instance benefit
+3. `DocumentSyncService` — content hash tracking, multi-instance consistency
+4. Provider session maps — session-appropriate TTL
+5. `ClientManager` — identity-keyed, singleton pattern
+6. Config resolution — single cache layer (delegates to RuntimeConfigResolver, no duplicate wrapper)
+7. Conversation-agent maps — session-scoped
+8. Rate limiter state — per-window
+9. HITL approval pending state — request-scoped
 
-**Note:** Config schema has grown to 1,500+ lines (was 1,393 at original audit). Hand-written validators are 671 lines. Each new feature (agent approval, skills marketplace, token exchange, DevSpaces credentials) adds config keys without Zod migration, increasing eventual cleanup cost.
+Provider-specific caches (embedding, tool scope) live in their respective modules and also use `cacheService` (covered in platform-architecture change).
 
 ### Decision 3: Config field metadata annotation
 
@@ -51,5 +51,5 @@ This metadata drives both the admin UI (which fields to show) and validation (wh
 
 ## Risks
 
-- **Redis dependency in production:** `cacheService` defaults to in-memory but uses Redis when configured. Deployments without Redis lose multi-instance cache sharing. Mitigated: in-memory mode is functionally identical to current behavior.
-- **Schema migration for existing DB values:** Switching to schema-driven validation may reject currently-stored values. Mitigated by running a one-time migration that validates and reports (but doesn't block) existing values.
+- **Redis dependency in production:** `cacheService` defaults to in-memory but uses Redis when configured. Deployments without Redis lose multi-instance cache sharing. Mitigated: in-memory mode is functionally identical for single-instance deployments.
+- **Schema evolution:** New config fields added over time must have Zod schemas defined alongside them. Mitigated by making Zod schema the required entry point for any new config field — no config key can be added without a schema definition.

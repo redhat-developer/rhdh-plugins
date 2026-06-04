@@ -29,7 +29,7 @@ Deploy Augment as a traditional Backstage plugin with npm packages.
 
 #### Scenario: Static plugin installation
 
-- **WHEN** the developer installs `@augment/plugin-augment`, `@augment/plugin-augment-backend`, and `@augment/plugin-augment-common`
+- **WHEN** the developer installs `@boost/plugin-boost`, `@boost/plugin-boost-backend`, and `@boost/plugin-boost-common`
 - **THEN** frontend route, sidebar entry, icon, and backend plugin are registered manually
 - **AND** `app-config.yaml` is configured
 - **AND** the application is rebuilt and deployed

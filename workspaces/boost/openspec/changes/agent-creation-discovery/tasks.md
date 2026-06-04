@@ -22,8 +22,8 @@
 
 ### 1c. Composition into boost provider modules
 
-- [ ] 1c.1 `plugin-boost-backend-module-kagenti` composes `kagenti-entity-provider` internally
-- [ ] 1c.2 `plugin-boost-backend-module-llamastack` composes `llamastack-entity-provider` internally
+- [ ] 1c.1 `boost-backend-module-kagenti` composes `kagenti-entity-provider` internally
+- [ ] 1c.2 `boost-backend-module-llamastack` composes `llamastack-entity-provider` internally
 - [ ] 1c.3 Verify composed deployment: provider module install gives AI capabilities + catalog entities
 
 ### 1d. Core plugin entity providers (cross-cutting)
@@ -35,26 +35,24 @@
 ### 1e. Shared entity concerns
 
 - [ ] 1e.1 Map agent `createdBy` → catalog entity `spec.owner` for RBAC integration
-- [ ] 1e.2 Map 4-stage lifecycle (Draft/Pending/Published/Archived) → catalog lifecycle state (experimental/production/deprecated) in entity annotations
+- [ ] 1e.2 Map 4-stage lifecycle (Draft/Pending/Published/Archived) → catalog lifecycle state (experimental/experimental/production/deprecated) in entity annotations
 - [ ] 1e.3 Create `CatalogProcessor` validators for ai-agent, ai-model, mcp-server, vector-store, ai-tool types
 - [ ] 1e.4 Configure scheduled task runners per provider (60s models, 5m agents/MCP/tools, 10m vector stores)
 
-## 2. Catalog Migration (P2)
+## 2. Catalog Integration (P2)
 
-- [ ] 2.1 Add catalog API queries alongside existing cache reads (dual-read phase)
-- [ ] 2.2 Update `useAgentGalleryData` to optionally read from catalog API
-- [ ] 2.3 Update model list endpoints to read from catalog
-- [ ] 2.4 Remove `KagentiAgentCardCache` (cache #2) after catalog migration
-- [ ] 2.5 Remove `ResponsesApiProvider._modelsCache` (cache #3) and `KagentiProvider._modelsCache` (cache #4) after catalog migration
-- [ ] 2.6 Remove `BackendToolExecutor` tool schema cache (cache #7) after catalog migration
+- [ ] 2.1 Implement `useAgentGalleryData` reading from catalog API
+- [ ] 2.2 Implement model list endpoints reading from catalog
+- [ ] 2.3 Implement tool list endpoints reading from catalog
+- [ ] 2.4 Verify all domain object queries go through catalog — no standalone in-memory caches
 
-## 3. Toolscope Extraction (P2)
+## 3. Toolscope Package (P2)
 
-- [ ] 3.1 Create `@augment/toolscope` package from `services/toolscope/` (29 files)
-- [ ] 3.2 Define `CacheAdapter` interface replacing raw `Map<>` in embedding and session caches
+- [ ] 3.1 Create `@boost/toolscope` package (29 files, zero Backstage dependencies)
+- [ ] 3.2 Define `CacheAdapter` interface for embedding and session caches
 - [ ] 3.3 Create default in-memory `CacheAdapter` for standalone use
 - [ ] 3.4 Create Backstage `CacheAdapter` wrapping `coreServices.cache`
-- [ ] 3.5 Update `augment-backend` to import from `@augment/toolscope`
+- [ ] 3.5 Import `@boost/toolscope` from `boost-backend`
 
 ## 4. Lifecycle Model (P1)
 
@@ -73,9 +71,9 @@
 ## 6. Verify
 
 - [ ] 6.1 Verify catalog entities appear for agents, models, MCP servers, vector stores, and tools
-- [ ] 6.2 Verify catalog-based agent gallery matches cache-based gallery
+- [ ] 6.2 Verify catalog-based agent gallery displays correctly
 - [ ] 6.3 Verify agent `spec.owner` matches `createdBy` for RBAC
-- [ ] 6.4 Verify lifecycle stage mapping: Draft→experimental, Published→production, Archived→deprecated
+- [ ] 6.4 Verify lifecycle stage mapping: Draft→experimental, Pending→experimental, Published→production, Archived→deprecated
 - [ ] 6.5 Verify toolscope package works standalone (without Backstage)
 - [ ] 6.6 Verify toolscope package works with Backstage cacheService adapter
 - [ ] 6.7 Verify skills deployment creates correct K8s manifests
