@@ -38,7 +38,7 @@ Creates agents and submits them for governance review. Subject to ownership-base
 ### In Scope
 
 - Three security modes: `development-only-no-auth`, `plugin-only`, `full`
-- Fine-grained RBAC via Backstage permissions (16 permissions, 3 resource types, conditional rules)
+- Fine-grained RBAC via Backstage permissions (16 permissions, 2 resource types, conditional rules)
 - Agent lifecycle governance: 4-stage model (Draft → Pending → Published → Archived) with approval workflows
 - SonataFlow integration for external approval orchestration
 - Per-user Kagenti identity via RFC 8693 OAuth2 Token Exchange
@@ -86,7 +86,7 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 
 **Note:** The legacy mode name `none` is deprecated; deployments should use `development-only-no-auth`. A prominent warning is logged if this mode is detected in a non-development environment.
 
-**Fine-grained RBAC (16 permissions across 3 resource types):**
+**Fine-grained RBAC (16 permissions across 2 resource types):**
 
 | Permission              | Resource Type | Conditional Rules                       | Description                                         |
 | ----------------------- | ------------- | --------------------------------------- | --------------------------------------------------- |

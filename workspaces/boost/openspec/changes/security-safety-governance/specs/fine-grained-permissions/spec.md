@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Implement 16 fine-grained Backstage permissions across 3 resource types with conditional rules, using `permissions.authorize()` as the sole authorization mechanism. All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
+Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules, using `permissions.authorize()` as the sole authorization mechanism. All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
 
 ## ADDED Requirements
 
