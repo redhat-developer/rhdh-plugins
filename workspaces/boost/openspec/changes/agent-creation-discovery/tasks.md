@@ -37,7 +37,7 @@
 - [ ] 1e.1 Map agent `createdBy` → catalog entity `spec.owner` for RBAC integration
 - [ ] 1e.2 Map 4-stage lifecycle (Draft/Pending/Published/Archived) → catalog lifecycle state (experimental/experimental/production/deprecated) in entity annotations
 - [ ] 1e.3 Create `CatalogProcessor` validators for ai-agent, ai-model, mcp-server, vector-store, ai-tool types
-- [ ] 1e.4 Configure scheduled task runners per provider (60s models, 5m agents/MCP/tools, 10m vector stores)
+- [ ] 1e.4 Implement configurable upstream refresh intervals per entity provider via `app-config.yaml` (defaults: 60s models, 5m agents/MCP/tools, 10m vector stores); Backstage catalog polling is managed by the catalog infrastructure independently
 
 ## 2. Catalog Integration (P2)
 

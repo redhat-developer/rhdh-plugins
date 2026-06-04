@@ -37,16 +37,19 @@ Agents are represented as Backstage catalog entities with lifecycle, ownership, 
 
 #### Scenario: Kagenti module emits agent entities
 
-- **WHEN** the `KagentiAgentEntityProvider` (inside the Kagenti provider module) runs on its scheduled interval
+- **WHEN** the `KagentiAgentEntityProvider` (inside the Kagenti provider module) refreshes its upstream data
 - **THEN** it polls the Kagenti API for all agents across configured namespaces
+- **AND** the upstream refresh interval is configurable via `app-config.yaml` (default: 5m)
+- **AND** Backstage's catalog infrastructure polls the entity provider on its own independent schedule
 - **AND** it emits catalog entities with `kind: Component, spec.type: ai-agent` (or `kind: AIContext` when upstream is available)
 - **AND** agent capabilities, LLM demands, and MCP demands map to `spec.dependsOn` relations
 - **AND** the catalog is the source of truth for agent data — no in-memory cache needed
 
 #### Scenario: Llama Stack module emits agent entities
 
-- **WHEN** the `LlamaStackAgentEntityProvider` (inside the Llama Stack provider module) runs on its scheduled interval
+- **WHEN** the `LlamaStackAgentEntityProvider` (inside the Llama Stack provider module) refreshes its upstream data
 - **THEN** it reads configured agents from YAML/admin config
+- **AND** the upstream refresh interval is configurable via `app-config.yaml` (default: 5m)
 - **AND** it emits catalog entities for each configured agent with their tool sets and handoff targets
 
 #### Scenario: Agent lifecycle reflected in catalog

@@ -33,9 +33,11 @@ Use `kind: Component, spec.type: ai-agent` for agents and `kind: Resource, spec.
 
 Entity providers are separate packages registered as Backstage backend services, each independently deployable as an RHDH dynamic plugin:
 
-- `kagenti-entity-provider` — `KagentiAgentEntityProvider` (5m), `KagentiToolEntityProvider` (5m)
-- `llamastack-entity-provider` — `LlamaStackModelEntityProvider` (60s), `LlamaStackAgentEntityProvider` (5m)
-- Core plugin: `McpEntityProvider` (5m), `VectorStoreEntityProvider` (10m) — cross-cutting
+- `kagenti-entity-provider` — `KagentiAgentEntityProvider`, `KagentiToolEntityProvider`
+- `llamastack-entity-provider` — `LlamaStackModelEntityProvider`, `LlamaStackAgentEntityProvider`
+- Core plugin: `McpEntityProvider`, `VectorStoreEntityProvider` — cross-cutting
+
+**Two-layer polling model:** Backstage's catalog infrastructure polls entity providers on its own schedule. Independently, each entity provider manages its own upstream refresh interval — how often it fetches from the external API (Kagenti, Llama Stack). When Backstage polls the entity provider, the provider returns its most recently cached upstream data rather than blocking on a live API call every time. The upstream refresh interval is configurable via `app-config.yaml` (defaults: 60s for models, 5m for agents/tools/MCP servers, 10m for vector stores).
 
 **Standalone mode:** Install entity providers without boost to get catalog discoverability for teams already using Llama Stack or Kagenti.
 
