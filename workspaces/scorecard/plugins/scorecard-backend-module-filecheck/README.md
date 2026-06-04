@@ -104,6 +104,25 @@ Each configured file produces one boolean metric.
 
 You can override the default thresholds via `app-config.yaml`. Check out the detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
 
+Example configuration:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    filecheck:
+      thresholds:
+        rules:
+          - key: present
+            expression: '==true'
+            icon: scorecardSuccessStatusIcon
+            color: 'success.main'
+          - key: absent
+            expression: '==false'
+            icon: scorecardErrorStatusIcon
+            color: 'error.main'
+```
+
 ## Schedule Configuration
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. You can change this schedule in the `app-config.yaml` file:

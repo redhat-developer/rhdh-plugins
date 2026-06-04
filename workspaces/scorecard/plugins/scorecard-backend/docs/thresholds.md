@@ -51,7 +51,8 @@ Validation **does not** require full coverage when:
 
 ### 1. Provider Default Thresholds
 
-Metric providers can define default thresholds that apply to all entities using that metric.
+Metric providers must define default thresholds that apply to all entities using that metric.
+Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use in your metric provider.
 
 **Example Provider Implementation:**
 
@@ -73,45 +74,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults through app configuration (`app-config.yaml`). Your metric provider needs to support configuration-based thresholds.
-Duplicated threshold keys are not allowed (throws `ConfigFormatError`).
-
-**Provider Implementation:**
-
-```typescript
-import {
-  MetricProvider,
-  validateThresholdsForMetric,
-  getThresholdsFromConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-
-export class MyMetricProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
-
-  private constructor(thresholds?: ThresholdConfig) {
-    // Use configured thresholds or fall back to defaults
-    this.thresholds = thresholds ?? this.getDefaultThresholds();
-  }
-
-  static fromConfig(config: Config): MyMetricProvider {
-    const configPath = 'scorecard.plugins.myDatasource.myMetric.thresholds';
-    // Validates structure, colors/icons, expressions, and number interval coverage (when applicable)
-    const configuredThresholds = getThresholdsFromConfig(
-      config,
-      configPath,
-      'number',
-    );
-
-    return new MyMetricProvider(configuredThresholds);
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-}
-```
-
-You can also call **`validateThresholdsForMetric(configuredThresholds, 'number')`** directly if you already have a config object (not reading from `Config`).
+You can override provider defaults through app configuration (`app-config.yaml`).
+Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
 
@@ -254,12 +218,12 @@ Example:
 
 ```yaml
 rules:
-  - key: error
-    expression: '>100'
-  - key: warning
-    expression: '80-100' # between 80 and 100 (inclusive)
   - key: success
     expression: '<80'
+  - key: warning
+    expression: '80-100' # between 80 and 100 (inclusive)
+  - key: error
+    expression: '>100'
 ```
 
 ### Boolean Metric
