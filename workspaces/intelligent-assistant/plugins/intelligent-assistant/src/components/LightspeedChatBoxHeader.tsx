@@ -16,7 +16,6 @@
 
 import { Ref, useState } from 'react';
 
-import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
@@ -39,6 +38,7 @@ import {
   OpenDrawerRightIcon,
   OutlinedWindowRestoreIcon,
 } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { McpSettingsIcon } from './McpSettingsIcon';
@@ -58,27 +58,25 @@ type LightspeedChatBoxHeaderProps = {
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    dropdown: {
-      '& ul, & li': {
-        padding: 0,
-        margin: 0,
-      },
+const useStyles = makeStyles()(theme => ({
+  dropdown: {
+    '& ul, & li': {
+      padding: 0,
+      margin: 0,
     },
-    header: {
-      backgroundColor: theme.palette.action.disabled,
+  },
+  header: {
+    backgroundColor: theme.palette.action.disabled,
+  },
+  optionsToggle: {
+    '& svg': {
+      transform: 'none !important',
     },
-    optionsToggle: {
-      '& svg': {
-        transform: 'none !important',
-      },
-    },
-    groupTitle: {
-      fontWeight: 'bold',
-    },
-  }),
-);
+  },
+  groupTitle: {
+    fontWeight: 'bold',
+  },
+}));
 
 export const LightspeedChatBoxHeader = ({
   selectedModel,
@@ -96,7 +94,7 @@ export const LightspeedChatBoxHeader = ({
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
 
-  const styles = useStyles();
+  const { classes: styles } = useStyles();
 
   const maxLabelLength = Math.max(
     ...models.map(m => m.label.length),

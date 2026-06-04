@@ -16,7 +16,6 @@
 
 import { Ref, useState } from 'react';
 
-import { makeStyles } from '@material-ui/core';
 import {
   Dropdown,
   DropdownItem,
@@ -25,6 +24,7 @@ import {
   MenuToggleElement,
 } from '@patternfly/react-core';
 import { AngleDownIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -35,21 +35,21 @@ type MessageBarModelSelectorProps = {
   disabled?: boolean;
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   selectorToggle: {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
-    color: theme.palette.text.secondary,
-    fontSize: 14,
-    fontWeight: 500,
+    color: `${theme.palette.text.secondary} !important`,
+    fontSize: '14px !important',
+    fontWeight: '500 !important' as any,
     cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: 8,
-    border: 'none',
-    background: 'transparent',
+    padding: '4px 8px !important',
+    borderRadius: '8px !important',
+    border: 'none !important',
+    background: 'transparent !important',
     '&:hover': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: `${theme.palette.action.hover} !important`,
     },
     '&:disabled': {
       cursor: 'not-allowed',
@@ -71,7 +71,7 @@ export const MessageBarModelSelector = ({
   disabled = false,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   const selectedModelLabel =

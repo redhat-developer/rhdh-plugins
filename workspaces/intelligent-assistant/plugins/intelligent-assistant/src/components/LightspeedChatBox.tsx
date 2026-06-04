@@ -22,7 +22,6 @@ import {
   useRef,
 } from 'react';
 
-import { makeStyles } from '@material-ui/core';
 import {
   ChatbotDisplayMode,
   ChatbotWelcomePrompt,
@@ -36,6 +35,7 @@ import {
   WelcomePrompt,
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
+import { makeStyles } from 'tss-react/mui';
 
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
@@ -46,7 +46,7 @@ import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 import { SourcesChipModal } from './SourcesChipModal';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   prompt: {
     'justify-content': 'flex-end',
   },
@@ -139,7 +139,7 @@ export const LightspeedChatBox = forwardRef(
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
-    const classes = useStyles();
+    const { classes } = useStyles();
     const scrollQueued = useRef(false);
     const containerRef = useRef<MessageBoxHandle>(null);
     const { t } = useTranslation();

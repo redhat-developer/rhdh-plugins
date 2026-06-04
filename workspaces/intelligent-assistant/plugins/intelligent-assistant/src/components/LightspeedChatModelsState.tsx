@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Link,
-  Typography,
-} from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -33,66 +31,64 @@ const LLAMA_STACK_CONFIGURE_DOCS_URL =
 const LIGHTSPEED_BACKEND_README_URL =
   'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant-backend/README.md';
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      boxSizing: 'border-box',
-      width: '100%',
-      maxWidth: '100%',
-      minWidth: 0,
-      minHeight: '100%',
-      height: '100%',
-      flex: '1 1 auto',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing(4, 2),
-      backgroundColor: theme.palette.background.default,
-    },
-    panel: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-      width: '100%',
-      maxWidth: 440,
-      gap: theme.spacing(2),
-    },
-    emptyStateIcon: {
-      fontSize: 64,
-      color: theme.palette.text.secondary,
-    },
-    errorIcon: {
-      fontSize: 64,
-      color: theme.palette.warning.main,
-    },
-    description: {
-      lineHeight: 1.5,
-      color: theme.palette.text.secondary,
-    },
-    actions: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: theme.spacing(1.5),
-      marginTop: theme.spacing(1),
-    },
-    backendLink: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: theme.spacing(0.5),
-      fontSize: theme.typography.body1.fontSize,
-      fontWeight: 500,
-    },
-  }),
-);
+const useStyles = makeStyles()(theme => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    boxSizing: 'border-box',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+    minHeight: '100%',
+    height: '100%',
+    flex: '1 1 auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(4, 2),
+    backgroundColor: theme.palette.background.default,
+  },
+  panel: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    width: '100%',
+    maxWidth: 440,
+    gap: theme.spacing(2),
+  },
+  emptyStateIcon: {
+    fontSize: 64,
+    color: theme.palette.text.secondary,
+  },
+  errorIcon: {
+    fontSize: 64,
+    color: theme.palette.warning.main,
+  },
+  description: {
+    lineHeight: 1.5,
+    color: theme.palette.text.secondary,
+  },
+  actions: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(1.5),
+    marginTop: theme.spacing(1),
+  },
+  backendLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: theme.typography.body1.fontSize,
+    fontWeight: 500,
+  },
+}));
 
 /**
  * Shown while the models list is loading for an authorized user.
  */
 export const LightspeedChatModelsLoading = () => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   return (
     <div
@@ -111,7 +107,7 @@ export const LightspeedChatModelsLoading = () => {
  * Shown when LCORE / Llama Stack is up but no LLM models are registered.
  */
 export const LcoreNotConfiguredEmptyState = () => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -178,7 +174,7 @@ type ModelsLoadErrorEmptyStateProps = {
 export const ModelsLoadErrorEmptyState = ({
   onRetry,
 }: ModelsLoadErrorEmptyStateProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   return (

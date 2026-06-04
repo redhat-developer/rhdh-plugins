@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import {
   AttachmentEdit,
   ChatbotDisplayMode,
   PreviewAttachment,
 } from '@patternfly/chatbot';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { useFileAttachmentContext } from './AttachmentContext';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   modalFooter: {
     '&>button': {
       width: '12% !important',
@@ -38,7 +38,7 @@ const Attachment = () => {
     modalState,
     setCurrentFileContent,
   } = useFileAttachmentContext();
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   if (!currentFileContent) {

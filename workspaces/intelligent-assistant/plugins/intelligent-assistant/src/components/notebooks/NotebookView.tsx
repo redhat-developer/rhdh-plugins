@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
 import {
   ChatbotContent,
   ChatbotFooter,
@@ -40,6 +40,7 @@ import {
 } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { makeStyles } from 'tss-react/mui';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
 import {
@@ -66,7 +67,7 @@ import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -119,7 +120,7 @@ const useStyles = makeStyles(theme => ({
   topBar: {
     display: 'flex',
     justifyContent: 'flex-end',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+    padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
@@ -148,7 +149,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     maxWidth: 'unset',
     margin: 0,
-    padding: `0 0 ${theme.spacing(1)}px`,
+    padding: `0 0 ${theme.spacing(1)}`,
     boxSizing: 'border-box',
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
@@ -172,8 +173,8 @@ const useStyles = makeStyles(theme => ({
     margin: '0 auto',
   },
   toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
     '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
@@ -203,14 +204,14 @@ const useStyles = makeStyles(theme => ({
   notebookContentArea: {
     width: '95%',
     maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto 0 auto`,
+    margin: `${theme.spacing(3)} auto 0 auto`,
     padding: 0,
   },
   notebookHeading: {
     fontSize: '2rem',
     fontWeight: 500,
     lineHeight: 1.25,
-    padding: `${theme.spacing(1)}px 0`,
+    padding: `${theme.spacing(1)} 0`,
   },
   notebookSummary: {
     fontSize: '1rem',
@@ -224,7 +225,7 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(1),
     width: '95%',
     maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
+    margin: `${theme.spacing(3)} auto ${theme.spacing(3)} auto`,
     justifyContent: 'flex-start',
   },
   promptPill: {
@@ -232,7 +233,7 @@ const useStyles = makeStyles(theme => ({
     background: 'transparent',
     border: `1px solid var(--pf-t--global--border--color--default)`,
     borderRadius: '999px',
-    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
+    padding: `${theme.spacing(1)} ${theme.spacing(2.5)}`,
     fontSize: '0.875rem',
     color: 'var(--pf-t--global--text--color--regular)',
     cursor: 'pointer',
@@ -252,7 +253,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
@@ -298,7 +299,7 @@ export const NotebookView = ({
   topicRestrictionEnabled,
   onClose,
 }: NotebookViewProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import { Button, Tooltip } from '@patternfly/react-core';
 import { PenIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   strip: {
     display: 'flex',
     flexDirection: 'column',
@@ -81,7 +81,7 @@ export const CollapsedHistoryStrip = ({
   onNewChat,
   newChatDisabled = false,
 }: CollapsedHistoryStripProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   return (

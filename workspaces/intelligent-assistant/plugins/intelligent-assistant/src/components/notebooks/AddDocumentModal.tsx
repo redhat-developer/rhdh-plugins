@@ -17,7 +17,6 @@
 import { useEffect, useState } from 'react';
 import { FileRejection } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -33,6 +32,7 @@ import {
   MultipleFileUploadMain,
 } from '@patternfly/react-core';
 import { UploadIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
@@ -43,7 +43,7 @@ import {
 } from '../../utils/notebook-upload-utils';
 import { FileListItem } from './FileListItem';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   dialogPaper: {
     borderRadius: 24,
     maxWidth: 578,
@@ -135,7 +135,7 @@ export const AddDocumentModal = ({
   filesToAdd,
   onFilesAdded,
 }: AddDocumentModalProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const uploadMutation = useUploadDocument();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);

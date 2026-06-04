@@ -16,7 +16,7 @@
 
 import { useState } from 'react';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
 import {
   Button,
   Dropdown,
@@ -27,6 +27,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -34,7 +35,7 @@ import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   sidebar: {
     display: 'flex',
     flexDirection: 'column',
@@ -89,7 +90,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
+    padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
     borderRadius: 4,
   },
   fileIcon: {
@@ -147,7 +148,7 @@ export const DocumentSidebar = ({
   onAddDocument,
   onDeleteDocument,
 }: DocumentSidebarProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
 
