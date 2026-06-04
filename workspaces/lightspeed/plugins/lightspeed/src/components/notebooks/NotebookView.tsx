@@ -18,7 +18,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import {
   ChatbotContent,
   ChatbotFooter,
@@ -66,205 +67,141 @@ import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    height: '100%',
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+const Root = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  height: '100%',
+  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+});
+
+const DrawerContainer = styled(Drawer)({
+  flex: 1,
+  minHeight: 0,
+  '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
-  drawerContainer: {
-    flex: 1,
-    minHeight: 0,
-    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
-    },
+  '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
-  expandStrip: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: theme.spacing(1.5),
-    gap: theme.spacing(1),
-    borderRight: '1px solid var(--pf-t--global--border--color--default)',
+  '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
+  },
+  '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
-  addIconButton: {
-    padding: 0,
-    minWidth: 0,
-    lineHeight: 1,
-  },
-  mainArea: {
-    display: 'flex',
-    flexDirection: 'row',
-    height: '100%',
-    minWidth: 0,
-  },
-  topBar: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+});
+
+const ExpandStrip = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingTop: theme.spacing(1.5),
+  gap: theme.spacing(1),
+  borderRight: '1px solid var(--pf-t--global--border--color--default)',
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+}));
+
+const TopBar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+}));
+
+const NotebookDisclaimerStrip = styled('div')(({ theme }) => ({
+  width: '100%',
+  maxWidth: 'unset',
+  margin: 0,
+  padding: `0 0 ${theme.spacing(1)}`,
+  boxSizing: 'border-box',
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+  '& .pf-v6-c-alert, & .pf-v5-c-alert': {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+      'var(--pf-t--global--background--color--secondary--default) !important',
   },
-  closeButton: {
-    textTransform: 'none',
+  '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
+    backgroundColor: 'transparent !important',
   },
-  mainContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
+  '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
+    backgroundColor: 'transparent !important',
   },
-  drawerContentBody: {
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-    height: '100%',
-  },
-  contentColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    minHeight: 0,
-    overflow: 'hidden',
-  },
-  notebookDisclaimerStrip: {
-    width: '100%',
-    maxWidth: 'unset',
-    margin: 0,
-    padding: `0 0 ${theme.spacing(1)}px`,
-    boxSizing: 'border-box',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default) !important',
-    },
-    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
-      backgroundColor: 'transparent !important',
-    },
-  },
-  notebookDisclaimerInner: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: '0 auto',
-  },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
-  },
-  welcomeContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflow: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookEmptyUpload: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookContentArea: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto 0 auto`,
-    padding: 0,
-  },
-  notebookHeading: {
-    fontSize: '2rem',
-    fontWeight: 500,
-    lineHeight: 1.25,
-    padding: `${theme.spacing(1)}px 0`,
-  },
-  notebookSummary: {
-    fontSize: '1rem',
-    lineHeight: 2,
-    color: 'var(--pf-t--global--text--color--regular)',
-    paddingTop: theme.spacing(0.5),
-  },
-  promptSuggestions: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: theme.spacing(1),
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
-    justifyContent: 'flex-start',
-  },
-  promptPill: {
-    appearance: 'none' as const,
-    background: 'transparent',
-    border: `1px solid var(--pf-t--global--border--color--default)`,
-    borderRadius: '999px',
-    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
-    fontSize: '0.875rem',
-    color: 'var(--pf-t--global--text--color--regular)',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s, border-color 0.15s',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default)',
-      borderColor: 'var(--pf-t--global--border--color--hover)',
-    },
-  },
-  footer: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    '&>.pf-chatbot__footer-container': {
-      width: '95% !important',
-      maxWidth: 'unset !important',
-    },
-    '& .pf-chatbot__message-bar': {
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[100]
-          : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-  },
-  chatContent: {
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflow: 'auto',
+  '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
+    backgroundColor: 'transparent !important',
   },
 }));
+
+const WelcomeContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  overflow: 'auto',
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+});
+
+const PromptSuggestions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  width: '95%',
+  maxWidth: 'unset',
+  margin: `${theme.spacing(3)} auto ${theme.spacing(3)} auto`,
+  justifyContent: 'flex-start',
+}));
+
+const PromptPill = styled('button')(({ theme }) => ({
+  appearance: 'none',
+  background: 'transparent',
+  border: `1px solid var(--pf-t--global--border--color--default)`,
+  borderRadius: '999px',
+  padding: `${theme.spacing(1)} ${theme.spacing(2.5)}`,
+  fontSize: '0.875rem',
+  color: 'var(--pf-t--global--text--color--regular)',
+  cursor: 'pointer',
+  transition: 'background-color 0.15s, border-color 0.15s',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--secondary--default)',
+    borderColor: 'var(--pf-t--global--border--color--hover)',
+  },
+}));
+
+const StyledFooter = styled(ChatbotFooter)(({ theme }) => ({
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+  '&>.pf-chatbot__footer-container': {
+    width: '95% !important',
+    maxWidth: 'unset !important',
+  },
+  '& .pf-chatbot__message-bar': {
+    backgroundColor:
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
+  },
+}));
+
+const ToastAlertGroup = styled(AlertGroup)(
+  ({ theme }) =>
+    ({
+      '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}`,
+      '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}`,
+      '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+      '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
+    }) as any,
+);
+
+const ToastAlert = styled(Alert)({
+  maxWidth: '350px',
+  '& .pf-v6-c-alert__title': {
+    margin: 0,
+  },
+});
 
 type NotebookViewProps = {
   sessionId: string;
@@ -293,14 +230,12 @@ export const NotebookView = ({
   topicRestrictionEnabled,
   onClose,
 }: NotebookViewProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
   const notebooksApi = useApi(notebooksApiRef);
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
-  // Use notebook-specific model from config instead of chat's selected model
   const notebookModel =
     configApi.getOptionalString('lightspeed.notebooks.queryDefaults.model') ||
     '';
@@ -578,19 +513,29 @@ export const NotebookView = ({
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <div className={classes.notebookDisclaimerStrip}>
-      <div className={classes.notebookDisclaimerInner}>
+    <NotebookDisclaimerStrip>
+      <div style={{ width: '95%', maxWidth: 'unset', margin: '0 auto' }}>
         <Alert isInline variant="info" title={t('aria.important')}>
           {t('disclaimer.withoutValidation')}
         </Alert>
       </div>
-    </div>
+    </NotebookDisclaimerStrip>
   );
 
   const renderMainContent = () => {
     if (hasNoDocuments && messages.length === 0) {
       return (
-        <Typography component="span" className={classes.notebookEmptyUpload}>
+        <Typography
+          component="span"
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            backgroundColor:
+              'var(--pf-t--global--background--color--floating--default)',
+          }}
+        >
           <UploadResourceScreen
             onUploadClick={handleOpenUploadModal}
             isProcessing={uploadingFileNames.length > 0}
@@ -600,7 +545,15 @@ export const NotebookView = ({
     }
     if (messages.length > 0) {
       return (
-        <ChatbotContent className={classes.chatContent}>
+        <ChatbotContent
+          style={{
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            overflow: 'auto',
+          }}
+        >
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -616,52 +569,66 @@ export const NotebookView = ({
       );
     }
     return (
-      <div className={classes.welcomeContainer}>
+      <WelcomeContainer>
         <div style={{ flex: 1 }} />
         {renderNotebookDisclaimerAlert()}
-        <div className={classes.notebookContentArea}>
-          <Typography className={classes.notebookHeading}>
+        <div
+          style={{
+            width: '95%',
+            maxWidth: 'unset',
+            margin: '24px auto 0 auto',
+            padding: 0,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: '2rem',
+              fontWeight: 500,
+              lineHeight: 1.25,
+              padding: '8px 0',
+            }}
+          >
             {notebookName}
           </Typography>
           {topicSummary && (
-            <Typography className={classes.notebookSummary}>
+            <Typography
+              sx={{
+                fontSize: '1rem',
+                lineHeight: 2,
+                color: 'var(--pf-t--global--text--color--regular)',
+                paddingTop: 0.5,
+              }}
+            >
               {topicSummary}
             </Typography>
           )}
         </div>
         {welcomePrompts.length > 0 && (
-          <div className={classes.promptSuggestions}>
+          <PromptSuggestions>
             {welcomePrompts.map(prompt => (
-              <button
+              <PromptPill
                 key={prompt.title}
                 type="button"
-                className={classes.promptPill}
                 onClick={prompt.onClick}
               >
                 {prompt.title}
-              </button>
+              </PromptPill>
             ))}
-          </div>
+          </PromptSuggestions>
         )}
-      </div>
+      </WelcomeContainer>
     );
   };
 
   return (
-    <div className={classes.root}>
+    <Root>
       {toastAlerts.length > 0 && (
-        <AlertGroup
-          hasAnimations
-          isToast
-          isLiveRegion
-          className={classes.toastAlertGroup}
-        >
+        <ToastAlertGroup hasAnimations isToast isLiveRegion>
           {toastAlerts.map(({ key, title, variant }) => (
-            <Alert
+            <ToastAlert
               key={key}
               variant={AlertVariant[variant ?? 'success']}
               title={title}
-              className={classes.toastAlert}
               timeout={2000}
               onTimeout={() => handleRemoveToastAlert(key as React.Key)}
               actionClose={
@@ -673,21 +640,29 @@ export const NotebookView = ({
               }
             />
           ))}
-        </AlertGroup>
+        </ToastAlertGroup>
       )}
-      <Drawer
-        isExpanded={!sidebarCollapsed}
-        isInline
-        position="start"
-        className={classes.drawerContainer}
-      >
+      <DrawerContainer isExpanded={!sidebarCollapsed} isInline position="start">
         <DrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
         >
-          <DrawerContentBody className={classes.drawerContentBody}>
-            <div className={classes.mainArea}>
+          <DrawerContentBody
+            style={{
+              backgroundColor:
+                'var(--pf-t--global--background--color--primary--default)',
+              height: '100%',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                height: '100%',
+                minWidth: 0,
+              }}
+            >
               {sidebarCollapsed && (
-                <div className={classes.expandStrip}>
+                <ExpandStrip>
                   <Tooltip
                     content={t('notebook.view.sidebar.expand')}
                     position="right"
@@ -714,7 +689,7 @@ export const NotebookView = ({
                     <Typography component="span">
                       <Button
                         variant="plain"
-                        className={classes.addIconButton}
+                        style={{ padding: 0, minWidth: 0, lineHeight: 1 }}
                         onClick={
                           isAddDisabled ? undefined : handleOpenUploadModal
                         }
@@ -725,30 +700,48 @@ export const NotebookView = ({
                       </Button>
                     </Typography>
                   </Tooltip>
-                </div>
+                </ExpandStrip>
               )}
 
-              <div className={classes.contentColumn}>
-                <div className={classes.topBar}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flex: 1,
+                  minWidth: 0,
+                  minHeight: 0,
+                  overflow: 'hidden',
+                }}
+              >
+                <TopBar>
                   <Button
                     variant="link"
-                    className={classes.closeButton}
+                    style={{ textTransform: 'none' }}
                     onClick={onClose}
                     icon={<TimesIcon />}
                     iconPosition="end"
                   >
                     {t('notebook.view.close')}
                   </Button>
-                </div>
+                </TopBar>
 
-                <div className={classes.mainContent}>{renderMainContent()}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
+                  }}
+                >
+                  {renderMainContent()}
+                </div>
 
                 {hasNoDocuments &&
                   messages.length === 0 &&
                   renderNotebookDisclaimerAlert()}
 
-                <ChatbotFooter className={classes.footer}>
-                  {hasNoDocuments ? (
+                <StyledFooter>
+                  {documents.length === 0 ? (
                     <Tooltip
                       content={t('notebook.view.input.disabledTooltip')}
                       position="top"
@@ -776,12 +769,12 @@ export const NotebookView = ({
                     />
                   )}
                   <ChatbotFootnote label={t('footer.accuracy.label')} />
-                </ChatbotFooter>
+                </StyledFooter>
               </div>
             </div>
           </DrawerContentBody>
         </DrawerContent>
-      </Drawer>
+      </DrawerContainer>
 
       <AddDocumentModal
         isOpen={isUploadModalOpen}
@@ -810,6 +803,6 @@ export const NotebookView = ({
         onConfirm={confirmDeleteDocument}
         documentName={deleteDocumentTarget?.name ?? ''}
       />
-    </div>
+    </Root>
   );
 };

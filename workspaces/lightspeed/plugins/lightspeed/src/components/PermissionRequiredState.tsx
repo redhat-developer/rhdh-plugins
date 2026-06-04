@@ -18,59 +18,55 @@ import { Fragment } from 'react';
 
 import { EmptyState } from '@backstage/core-components';
 
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { PermissionRequiredIcon } from './PermissionRequiredIcon';
 import { Trans } from './Trans';
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      height: '100%',
-      minHeight: '100%',
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.palette.background.default,
-      containerType: 'inline-size',
-      '& [class*="BackstageEmptyState-root"]': {
-        alignItems: 'center',
-        padding: theme.spacing(4),
-      },
-      '& [class*="MuiTypography-h5"]': {
-        fontSize: 'clamp(1.875rem, 3.75cqi, 3.125rem)',
-        fontWeight: 400,
-      },
-      '& [class*="MuiTypography-body1"]': {
-        fontSize: '1em',
-        color: theme.palette.text.secondary,
-        '& b': {
-          fontWeight: 500,
-          color: theme.palette.text.primary,
-        },
-      },
-      '@container (max-width: 899px)': {
-        '& [class*="BackstageEmptyState-root"]': {
-          textAlign: 'center',
-        },
-        '& [class*="MuiGrid-grid-md-6"]': {
-          maxWidth: '100%',
-          flexBasis: '100%',
-        },
-        '& [class*="BackstageEmptyState-imageContainer"]': {
-          order: -1,
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: theme.spacing(-4),
-        },
-      },
+const Root = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  height: '100%',
+  minHeight: '100%',
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: theme.palette.background.default,
+  containerType: 'inline-size',
+  '& [class*="BackstageEmptyState-root"]': {
+    alignItems: 'center',
+    padding: theme.spacing(4),
+  },
+  '& [class*="MuiTypography-h5"]': {
+    fontSize: 'clamp(1.875rem, 3.75cqi, 3.125rem)',
+    fontWeight: 400,
+  },
+  '& [class*="MuiTypography-body1"]': {
+    fontSize: '1em',
+    color: theme.palette.text.secondary,
+    '& b': {
+      fontWeight: 500,
+      color: theme.palette.text.primary,
     },
-  }),
-);
+  },
+  '@container (max-width: 899px)': {
+    '& [class*="BackstageEmptyState-root"]': {
+      textAlign: 'center',
+    },
+    '& [class*="MuiGrid-grid-md-6"]': {
+      maxWidth: '100%',
+      flexBasis: '100%',
+    },
+    '& [class*="BackstageEmptyState-imageContainer"]': {
+      order: -1,
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: theme.spacing(-4),
+    },
+  },
+}));
 
 interface PermissionRequiredStateProps {
   subject: string;
@@ -83,7 +79,6 @@ const PermissionRequiredState = ({
   permissions,
   action,
 }: PermissionRequiredStateProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   const permissionsList = (
@@ -98,7 +93,7 @@ const PermissionRequiredState = ({
   );
 
   return (
-    <div className={classes.root}>
+    <Root>
       <EmptyState
         title={t('permission.required.title')}
         description={
@@ -113,7 +108,7 @@ const PermissionRequiredState = ({
         missing={{ customImage: <PermissionRequiredIcon /> }}
         action={action}
       />
-    </div>
+    </Root>
   );
 };
 export default PermissionRequiredState;

@@ -16,7 +16,7 @@
 
 import { Ref, useState } from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import {
   Dropdown,
   DropdownItem,
@@ -35,34 +35,33 @@ type MessageBarModelSelectorProps = {
   disabled?: boolean;
 };
 
-const useStyles = makeStyles(theme => ({
-  selectorToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    color: theme.palette.text.secondary,
-    fontSize: 14,
-    fontWeight: 500,
-    cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: 8,
-    border: 'none',
-    background: 'transparent',
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:disabled': {
-      cursor: 'not-allowed',
-      opacity: 0.5,
-    },
+const StyledMenuToggle = styled(MenuToggle)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  color: theme.palette.text.secondary,
+  fontSize: 14,
+  fontWeight: 500,
+  cursor: 'pointer',
+  padding: '4px 8px',
+  borderRadius: 8,
+  border: 'none',
+  background: 'transparent',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
   },
-  dropdown: {
-    '& ul, & li': {
-      padding: 0,
-      margin: 0,
-    },
+  '&:disabled': {
+    cursor: 'not-allowed',
+    opacity: 0.5,
   },
 }));
+
+const StyledDropdown = styled(Dropdown)({
+  '& ul, & li': {
+    padding: 0,
+    margin: 0,
+  },
+});
 
 export const MessageBarModelSelector = ({
   selectedModel,
@@ -71,30 +70,27 @@ export const MessageBarModelSelector = ({
   disabled = false,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const classes = useStyles();
   const { t } = useTranslation();
 
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
+    <StyledMenuToggle
       ref={toggleRef}
       onClick={() => setIsOpen(!isOpen)}
       isExpanded={isOpen}
       isDisabled={disabled}
       variant="plain"
-      className={classes.selectorToggle}
       aria-label={t('aria.chatbotSelector')}
     >
       {selectedModelLabel}
       <AngleDownIcon />
-    </MenuToggle>
+    </StyledMenuToggle>
   );
 
   return (
-    <Dropdown
-      className={classes.dropdown}
+    <StyledDropdown
       isOpen={isOpen}
       onSelect={(_e, value) => {
         onSelect(value as string);
@@ -119,6 +115,6 @@ export const MessageBarModelSelector = ({
           </DropdownItem>
         ))}
       </DropdownList>
-    </Dropdown>
+    </StyledDropdown>
   );
 };

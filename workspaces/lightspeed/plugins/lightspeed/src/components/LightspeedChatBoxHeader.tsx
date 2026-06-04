@@ -16,10 +16,10 @@
 
 import { Ref, useState } from 'react';
 
-import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
+import { styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
   ChatbotHeaderActions,
@@ -58,27 +58,33 @@ type LightspeedChatBoxHeaderProps = {
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    dropdown: {
-      '& ul, & li': {
-        padding: 0,
-        margin: 0,
-      },
-    },
-    header: {
-      backgroundColor: theme.palette.action.disabled,
-    },
-    optionsToggle: {
-      '& svg': {
-        transform: 'none !important',
-      },
-    },
-    groupTitle: {
-      fontWeight: 'bold',
-    },
+const dropdownOverrideStyles = {
+  '& ul, & li': {
+    padding: 0,
+    margin: 0,
+  },
+} as const;
+
+const StyledDropdown = styled(Dropdown)(dropdownOverrideStyles);
+
+const StyledOptionsDropdown = styled(ChatbotHeaderOptionsDropdown)({
+  ...dropdownOverrideStyles,
+  '& .pf-v6-c-menu-toggle svg, & .pf-v5-c-menu-toggle svg': {
+    transform: 'none !important',
+  },
+});
+
+const StyledMenuToggle = styled(MenuToggle, {
+  shouldForwardProp: (prop: string) => prop !== 'isDisabledStyle',
+})<{ isDisabledStyle?: boolean }>(({ theme, isDisabledStyle }) => ({
+  ...(isDisabledStyle && {
+    backgroundColor: theme.palette.action.disabled,
   }),
-);
+}));
+
+const StyledDropdownGroup = styled(DropdownGroup)({
+  fontWeight: 'bold',
+});
 
 export const LightspeedChatBoxHeader = ({
   selectedModel,
@@ -96,8 +102,6 @@ export const LightspeedChatBoxHeader = ({
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
 
-  const styles = useStyles();
-
   const maxLabelLength = Math.max(
     ...models.map(m => m.label.length),
     selectedModel.length,
@@ -106,8 +110,8 @@ export const LightspeedChatBoxHeader = ({
   const toggleMinWidth = `${maxLabelLength + 4}ch`;
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
-      className={isModelSelectorDisabled ? styles.header : ''}
+    <StyledMenuToggle
+      isDisabledStyle={isModelSelectorDisabled}
       variant="secondary"
       aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
@@ -117,7 +121,7 @@ export const LightspeedChatBoxHeader = ({
       style={{ minWidth: toggleMinWidth }}
     >
       {selectedModel}
-    </MenuToggle>
+    </StyledMenuToggle>
   );
 
   const handlePinningChatsToggle = (state: boolean) => {
@@ -143,8 +147,7 @@ export const LightspeedChatBoxHeader = ({
   return (
     <ChatbotHeaderActions>
       {!hideModelSelector && (
-        <Dropdown
-          className={styles.dropdown}
+        <StyledDropdown
           isOpen={isOptionsMenuOpen}
           onSelect={(_e, value) => {
             handleSelectedModel(value as string);
@@ -160,7 +163,7 @@ export const LightspeedChatBoxHeader = ({
         >
           <DropdownList>
             {models.map(model => (
-              <DropdownGroup className={styles.groupTitle} key={model.label}>
+              <StyledDropdownGroup key={model.label}>
                 <DropdownItem
                   value={model.value}
                   key={model.value}
@@ -168,17 +171,15 @@ export const LightspeedChatBoxHeader = ({
                 >
                   {model.label}
                 </DropdownItem>
-              </DropdownGroup>
+              </StyledDropdownGroup>
             ))}
           </DropdownList>
-        </Dropdown>
+        </StyledDropdown>
       )}
-      <ChatbotHeaderOptionsDropdown
-        className={styles.dropdown}
+      <StyledOptionsDropdown
         isCompact
         toggleProps={{
           'aria-label': t('aria.settings.label'),
-          className: styles.optionsToggle,
         }}
         tooltipProps={{
           content: t('tooltip.settings'),
@@ -259,7 +260,7 @@ export const LightspeedChatBoxHeader = ({
             </DropdownGroup>
           </>
         )}
-      </ChatbotHeaderOptionsDropdown>
+      </StyledOptionsDropdown>
     </ChatbotHeaderActions>
   );
 };
