@@ -30,7 +30,7 @@ type SetupHomepageAggregationCardOptions = {
   status?: number;
 };
 
-export async function addWidgets(homePage: HomePage, widgetTitle: string) {
+async function addWidget(homePage: HomePage, widgetTitle: string) {
   await homePage.navigateToHome();
   await homePage.enterEditMode();
   await homePage.clearAllCards();
@@ -43,11 +43,9 @@ export async function addAggregatedScorecardWidgets(homePage: HomePage) {
   await homePage.enterEditMode();
   await homePage.clearAllCards();
 
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.jiraMetricId);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.githubMetricId);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.githubOpenPrsKpi);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.jiraOpenIssuesKpi);
-  await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES.openPrsWeightedKpi);
+  for (const instanceId of Object.keys(AGGREGATED_CARDS_METRIC_IDS)) {
+    await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES[instanceId]);
+  }
 
   await homePage.saveChanges();
 }
@@ -61,7 +59,7 @@ export async function setupHomepageAggregationCard(
 
   await mockApiResponse(page, route, response, status ?? 200);
 
-  await addWidgets(homePage, aggregationMetadata.title);
+  await addWidget(homePage, aggregationMetadata.title);
 
   // Reload clears the singleton React Query cache
   await page.reload();

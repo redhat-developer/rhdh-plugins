@@ -29,6 +29,7 @@ import {
   openPrsWeightedAggregatedResponse,
   openPrsWeightedKpiMetadataResponse,
 } from './scorecardResponseUtils';
+import { AGGREGATED_CARDS_METRIC_IDS } from '../constants/aggregations';
 
 function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openIssuesKpi')) {
@@ -77,9 +78,17 @@ export async function mockHomepageAggregationsPermissionDenied(
 export async function mockAggregationNoDataFound(page: Page): Promise<void> {
   await page.route('**/api/scorecard/aggregations/**', async route => {
     const url = route.request().url();
-    const id = url.split('/').pop();
 
-    if (id === 'openPrsWeightedKpi') {
+    if (url.includes('metadata')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(aggregationMetadataForRequestUrl(url)),
+      });
+      return;
+    }
+
+    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.openPrsWeightedKpi)) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -88,8 +97,15 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
       return;
     }
 
-    const githubAggregations = ['openPrsKpi', 'github.open_prs'];
-    if (id && githubAggregations.includes(id)) {
+    const githubAggregations = [
+      AGGREGATED_CARDS_METRIC_IDS.githubOpenPrsKpi,
+      AGGREGATED_CARDS_METRIC_IDS.githubMetricId,
+    ];
+    const isGithubAggregation = githubAggregations.some(aggregation =>
+      url.includes(aggregation),
+    );
+
+    if (isGithubAggregation) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -99,8 +115,15 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
       return;
     }
 
-    const jiraAggregations = ['openIssuesKpi', 'jira.open_issues'];
-    if (id && jiraAggregations.includes(id)) {
+    const jiraAggregations = [
+      AGGREGATED_CARDS_METRIC_IDS.jiraOpenIssuesKpi,
+      AGGREGATED_CARDS_METRIC_IDS.jiraMetricId,
+    ];
+    const isJiraAggregation = jiraAggregations.some(aggregation =>
+      url.includes(aggregation),
+    );
+
+    if (isJiraAggregation) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
