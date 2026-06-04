@@ -22,6 +22,7 @@ import type {
   UserValue,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
+import { pickNumericBound } from '../../utils/schemaUtils';
 
 /** One user-supplied field value, with string value for form binding. */
 export type UserValueRow = {
@@ -96,18 +97,6 @@ function defaultToString(val: unknown): string {
   } catch {
     return '';
   }
-}
-
-function pickNumericBound(
-  obj: Record<string, unknown>,
-  primaryKey: string,
-  fallbackKey: string,
-): number | undefined {
-  const primary = obj[primaryKey];
-  if (typeof primary === 'number') return primary;
-  const fallback = obj[fallbackKey];
-  if (typeof fallback === 'number') return fallback;
-  return undefined;
 }
 
 /** Extract typed schema metadata from a {@link FieldConfiguration}. */

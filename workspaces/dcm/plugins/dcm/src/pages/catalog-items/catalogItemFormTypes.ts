@@ -20,6 +20,7 @@ import type {
   FieldConfiguration,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
+import { pickNumericBound } from '../../utils/schemaUtils';
 
 export type FieldRow = {
   /** Stable client-side identifier used as React list key. Never sent to the API. */
@@ -91,18 +92,6 @@ function looksLikeJson(s: string): boolean {
  *
  * Returns a record keyed by row index; only rows with errors are included.
  */
-
-function pickNumericBound(
-  obj: Record<string, unknown>,
-  primaryKey: string,
-  fallbackKey: string,
-): number | undefined {
-  const primary = obj[primaryKey];
-  if (typeof primary === 'number') return primary;
-  const fallback = obj[fallbackKey];
-  if (typeof fallback === 'number') return fallback;
-  return undefined;
-}
 
 export function validateFieldRows(
   fields: FieldRow[],
