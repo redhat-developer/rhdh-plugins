@@ -66,6 +66,30 @@ interface StaticMcpServer {
 }
 
 /**
+ * Sanitizes Lightspeed Core Service (LCS) error responses to prevent
+ * information disclosure. Logs full error details server-side for debugging
+ * while returning only generic messages to clients.
+ *
+ * @param errorBody - The error response body from LCS
+ * @param logger - Logger instance for server-side logging
+ * @param context - Context string describing the operation (e.g., "sending feedback")
+ * @returns Generic error message safe to return to clients
+ */
+function sanitizeLcsError(
+  errorBody: any,
+  logger: any,
+  context: string,
+): string {
+  // Log full error details server-side for debugging
+  logger.error(
+    `Error from lightspeed-core server while ${context}: ${JSON.stringify(errorBody)}`,
+  );
+
+  // Return only generic message to client (no internal LCS details)
+  return `Error from lightspeed-core server while ${context}`;
+}
+
+/**
  * Build MCP-HEADERS for LCS.  Format matches the LCS "client" auth model:
  *   { "server-name": { "Authorization": "<token>" } }
  *
@@ -565,13 +589,15 @@ export async function createRouter(
       );
 
       if (!fetchResponse.ok) {
-        // Read the error body
         const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
+        const sanitizedError = sanitizeLcsError(
+          errorBody,
+          logger,
+          'sending feedback',
+        );
 
         response.status(fetchResponse.status).json({
-          error: errormsg,
+          error: sanitizedError,
         });
 
         return;
@@ -612,9 +638,12 @@ export async function createRouter(
       );
       if (!fetchResponse.ok) {
         const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
-        response.status(fetchResponse.status).json({ error: errormsg });
+        const sanitizedError = sanitizeLcsError(
+          errorBody,
+          logger,
+          'interrupting query',
+        );
+        response.status(fetchResponse.status).json({ error: sanitizedError });
         return;
       }
       response.status(fetchResponse.status).json(await fetchResponse.json());
@@ -687,13 +716,15 @@ export async function createRouter(
         );
 
         if (!fetchResponse.ok) {
-          // Read the error body
           const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
+          const sanitizedError = sanitizeLcsError(
+            errorBody,
+            logger,
+            'processing query',
+          );
 
           response.status(fetchResponse.status).json({
-            error: errormsg,
+            error: sanitizedError,
           });
 
           return;
@@ -741,13 +772,15 @@ export async function createRouter(
           },
         );
         if (!fetchResponse.ok) {
-          // Read the error body
           const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
+          const sanitizedError = sanitizeLcsError(
+            errorBody,
+            logger,
+            'updating conversation',
+          );
 
           response.status(fetchResponse.status).json({
-            error: errormsg,
+            error: sanitizedError,
           });
           return;
         }
