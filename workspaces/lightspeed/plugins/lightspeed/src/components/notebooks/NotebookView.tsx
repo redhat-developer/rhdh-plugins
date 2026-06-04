@@ -63,6 +63,7 @@ import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
+import { ProcessingResourceScreen } from './ProcessingResourceScreen';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
@@ -592,6 +593,17 @@ export const NotebookView = ({
       return (
         <Typography component="span" className={classes.notebookEmptyUpload}>
           <UploadResourceScreen onUploadClick={handleOpenUploadModal} />
+        </Typography>
+      );
+    }
+    if (
+      documents.length === 0 &&
+      uploadingFileNames.length > 0 &&
+      messages.length === 0
+    ) {
+      return (
+        <Typography component="span" className={classes.notebookEmptyUpload}>
+          <ProcessingResourceScreen />
         </Typography>
       );
     }
