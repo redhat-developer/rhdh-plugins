@@ -10,12 +10,19 @@ Multi-level security configuration controlling who accesses Boost, who has admin
 
 The plugin supports progressive security enforcement from development through production.
 
-#### Scenario: Security mode `none` (development only)
+#### Scenario: Security mode `development-only-no-auth` (development only)
 
-- **WHEN** `boost.security.mode` is set to `none`
+- **WHEN** `boost.security.mode` is set to `development-only-no-auth`
 - **THEN** the frontend shows no SecurityGate — all users pass as guest
 - **AND** the backend skips RBAC and treats everyone as admin
 - **AND** provider auth uses static token/TLS if configured
+- **AND** if detected in a non-development environment, a prominent warning is logged at startup
+
+#### Scenario: Rejected legacy mode name `none`
+
+- **WHEN** `boost.security.mode` is set to `none`
+- **THEN** boost fails to start with a clear error message
+- **AND** the error directs the user to use `development-only-no-auth` instead
 
 #### Scenario: Security mode `plugin-only` (recommended production)
 
@@ -134,14 +141,13 @@ Sensitive credentials are stored encrypted in the admin config database.
 
 ### Requirement: Security Mode Naming
 
-The `none` mode name must clearly indicate its development-only nature.
+The development security mode uses an explicit name that communicates its purpose. The legacy name `none` is not accepted.
 
-#### Scenario: Renamed security mode with production warning
+#### Scenario: Only valid mode names accepted
 
-- **WHEN** `boost.security.mode` is set to `development-only-no-auth` (renamed from `none`)
-- **THEN** behavior is identical to the current `none` mode
-- **AND** if detected in a non-development environment, a prominent warning is logged at startup
-- **AND** boost uses `development-only-no-auth` as the only name for this mode (no legacy aliases)
+- **WHEN** `boost.security.mode` is set to any value
+- **THEN** only `development-only-no-auth`, `plugin-only`, and `full` are accepted
+- **AND** any other value (including `none`) causes a startup error with guidance on valid options
 
 ### Requirement: Identity Resolution
 
