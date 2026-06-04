@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import { DEFAULT_HISTORY_LENGTH, SKIP_USER_ID_ENDPOINTS } from './constant';
+
 /**
  * Interface for Lightspeed Core Service error response structure
  */
@@ -76,4 +78,30 @@ export async function handleLCSFetchError(
   }
   const sanitizedError = sanitizeLCSError(errorBody, logger, context);
   response.status(fetchResponse.status).json({ error: sanitizedError });
+}
+
+export function rewriteLightspeedProxyPath(
+  path: string,
+  userEntityRef: string,
+): string {
+  const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
+    path.startsWith(endpoint),
+  );
+  if (isSkippable) {
+    return path;
+  }
+
+  const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+  let newPath = path.includes('?')
+    ? `${path}&${userQueryParam}`
+    : `${path}?${userQueryParam}`;
+
+  if (!path.includes('history_length') && path.includes('conversation_id')) {
+    const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;
+    newPath = newPath.includes('?')
+      ? `${newPath}&${historyLengthQuery}`
+      : `${newPath}?${historyLengthQuery}`;
+  }
+
+  return newPath;
 }
