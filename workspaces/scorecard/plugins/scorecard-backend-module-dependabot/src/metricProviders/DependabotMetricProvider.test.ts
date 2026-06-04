@@ -18,7 +18,10 @@ import { ConfigReader } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import { DependabotMetricProvider } from './DependabotMetricProvider';
-import { DEPENDABOT_SEVERITY_METRIC } from './DependabotConfig';
+import {
+  DEPENDABOT_SEVERITY_METRIC,
+  DEPENDABOT_THRESHOLDS,
+} from './DependabotConfig';
 import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -105,25 +108,13 @@ describe('DependabotMetricProvider', () => {
   });
 
   describe('getMetricThresholds', () => {
-    it('returns default thresholds when none provided', () => {
+    it('returns default thresholds', () => {
       const provider = new DependabotMetricProvider(
         mockConfig,
         mockLogger,
         'critical',
       );
-      expect(provider.getMetricThresholds()).toBeDefined();
-      expect(provider.getMetricThresholds().rules).toBeDefined();
-    });
-
-    it('returns custom thresholds when provided', () => {
-      const custom = { rules: [{ key: 'ok', expression: '<1' }] };
-      const provider = new DependabotMetricProvider(
-        mockConfig,
-        mockLogger,
-        'critical',
-        custom,
-      );
-      expect(provider.getMetricThresholds()).toEqual(custom);
+      expect(provider.getMetricThresholds()).toEqual(DEPENDABOT_THRESHOLDS);
     });
   });
 

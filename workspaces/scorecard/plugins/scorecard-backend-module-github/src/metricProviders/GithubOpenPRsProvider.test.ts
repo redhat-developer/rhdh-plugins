@@ -31,55 +31,10 @@ jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
   describe('fromConfig', () => {
-    it('should create provider with default thresholds when no thresholds are configured', () => {
+    it('should create provider with default thresholds', () => {
       const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
 
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
-    });
-
-    it('should create provider with custom thresholds when configured', () => {
-      const customThresholds = {
-        rules: [
-          { key: 'error', expression: '>100' },
-          { key: 'warning', expression: '50-100' },
-          { key: 'success', expression: '<50' },
-        ],
-      };
-
-      const configWithThresholds = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              open_prs: {
-                thresholds: customThresholds,
-              },
-            },
-          },
-        },
-      });
-      const provider = GithubOpenPRsProvider.fromConfig(configWithThresholds);
-
-      expect(provider.getMetricThresholds()).toEqual(customThresholds);
-    });
-
-    it('should throw error when invalid custom thresholds', () => {
-      const invalidConfig = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              open_prs: {
-                thresholds: {
-                  rules: [{ key: 'error', expression: '>!100' }],
-                },
-              },
-            },
-          },
-        },
-      });
-
-      expect(() => GithubOpenPRsProvider.fromConfig(invalidConfig)).toThrow(
-        'Cannot parse "!100" as number from expression: ">!100"',
-      );
     });
   });
 

@@ -19,7 +19,6 @@ import type { Entity } from '@backstage/catalog-model';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { JiraOpenIssuesProvider } from './JiraOpenIssuesProvider';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
@@ -27,7 +26,6 @@ import { JiraClient } from '../clients/base';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   newEntityComponent,
-  newThresholdsConfig,
   newMockRootConfig,
 } from '../../__fixtures__/testUtils';
 import { ScorecardJiraAnnotations } from '../annotations';
@@ -60,8 +58,6 @@ const mockedDirectConnectionStrategy =
 const mockEntity: Entity = newEntityComponent({
   [PROJECT_KEY]: 'TEST',
 });
-
-const customThresholds: ThresholdConfig = newThresholdsConfig();
 
 const mockAuthOptions = {
   discovery: mockServices.discovery(),
@@ -142,22 +138,12 @@ describe('JiraOpenIssuesProvider', () => {
   });
 
   describe('getMetricThresholds', () => {
-    it('should return default config when no thresholds are configured', () => {
+    it('should return default provider thresholds', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
         mockAuthOptions,
       );
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
-    });
-
-    it('should return custom config when thresholds are configured', () => {
-      const config = newMockRootConfig({ thresholds: customThresholds });
-
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        config,
-        mockAuthOptions,
-      );
-      expect(provider.getMetricThresholds()).toEqual(customThresholds);
     });
   });
 
@@ -189,27 +175,6 @@ describe('JiraOpenIssuesProvider', () => {
       );
 
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
-    });
-
-    it('should create provider with custom config when thresholds are configured', () => {
-      const config = newMockRootConfig({ thresholds: customThresholds });
-
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        config,
-        mockAuthOptions,
-      );
-      expect(provider.getMetricThresholds()).toEqual(customThresholds);
-    });
-
-    it('should throw an error when invalid thresholds are configured', () => {
-      const invalidThresholds = {
-        rules: [{ key: 'invalid', expression: 'bad' }],
-      };
-      const config = newMockRootConfig({ thresholds: invalidThresholds });
-
-      expect(() =>
-        JiraOpenIssuesProvider.fromConfig(config, mockAuthOptions),
-      ).toThrow('Invalid thresholds');
     });
 
     it('should create provider with proxy connection strategy when proxy path is configured', () => {
