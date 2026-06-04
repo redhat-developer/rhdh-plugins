@@ -73,9 +73,7 @@ export const useFilteredPluginFacet = (
         }
         if (
           excludeFilterType === 'support' &&
-          (filter === 'certified' ||
-            filter === 'custom' ||
-            filter.startsWith('support-level='))
+          (filter === 'custom' || filter.startsWith('support-level='))
         ) {
           return false;
         }
@@ -122,28 +120,18 @@ export const useFilteredPluginFacet = (
           ) {
             return true;
           }
-          // Check certification annotation as fallback
-          const certifiedBy =
-            plugin.metadata?.annotations?.[ExtensionsAnnotation.CERTIFIED_BY];
-          return certifiedBy && authors.includes(certifiedBy);
+          return false;
         });
       }
 
       // Apply support type filters
-      const showCertified = activeFilters.includes('certified');
       const showCustom = activeFilters.includes('custom');
       const supportLevels = activeFilters
         .filter(filter => filter.startsWith('support-level='))
         .map(filter => filter.substring('support-level='.length));
 
-      if (showCertified || showCustom || supportLevels.length > 0) {
+      if (showCustom || supportLevels.length > 0) {
         filteredPlugins = filteredPlugins.filter(plugin => {
-          if (
-            showCertified &&
-            plugin.metadata?.annotations?.[ExtensionsAnnotation.CERTIFIED_BY]
-          ) {
-            return true;
-          }
           if (
             showCustom &&
             plugin.metadata?.annotations?.[
