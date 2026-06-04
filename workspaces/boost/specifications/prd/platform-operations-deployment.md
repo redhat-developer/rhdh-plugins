@@ -158,7 +158,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ### 4. Manage Runtime Configuration (UC-21)
 
-**Goal:** Change Augment's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
+**Goal:** Change Boost's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
 
 **Configuration engine:**
 
@@ -194,7 +194,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ### 5. White-Label the Portal (UC-22)
 
-**Goal:** Customize the Augment experience to match the organization's brand — all at runtime.
+**Goal:** Customize the Boost experience to match the organization's brand — all at runtime.
 
 **Customizable elements:**
 

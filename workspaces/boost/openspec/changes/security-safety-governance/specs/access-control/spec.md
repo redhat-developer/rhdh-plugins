@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Multi-level security configuration controlling who accesses Augment, who has admin privileges, and how tool connections are authenticated.
+Multi-level security configuration controlling who accesses Boost, who has admin privileges, and how tool connections are authenticated.
 
 ## EXISTING Requirements
 
@@ -38,7 +38,7 @@ Unauthorized users see meaningful access-denied pages, not broken UIs.
 
 #### Scenario: SecurityGate blocks unauthorized access
 
-- **WHEN** a user without `boost.access` permission navigates to Augment
+- **WHEN** a user without `boost.access` permission navigates to Boost
 - **THEN** `SecurityGate` renders a meaningful access-denied page
 - **AND** the page explains what permission is needed and how to request access
 

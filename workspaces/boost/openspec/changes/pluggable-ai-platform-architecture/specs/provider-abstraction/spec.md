@@ -2,13 +2,13 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Augment abstracts AI platform backends behind a pluggable provider interface, enabling any AI platform to be integrated without forking the plugin.
+Boost abstracts AI platform backends behind a pluggable provider interface, enabling any AI platform to be integrated without forking the plugin.
 
 ## EXISTING Requirements
 
 ### Requirement: AgenticProvider Interface
 
-The `AgenticProvider` interface defines the contract between Augment and any AI platform backend. Chat and streaming are required capabilities; RAG, safety, evaluation, and conversation management are optional capability objects.
+The `AgenticProvider` interface defines the contract between Boost and any AI platform backend. Chat and streaming are required capabilities; RAG, safety, evaluation, and conversation management are optional capability objects.
 
 #### Scenario: Provider implements required capabilities
 
@@ -24,7 +24,7 @@ The `AgenticProvider` interface defines the contract between Augment and any AI 
 
 ### Requirement: Extension Point Registration
 
-Providers register via a Backstage extension point, requiring zero Augment source code modification.
+Providers register via a Backstage extension point, requiring zero Boost source code modification.
 
 #### Scenario: External provider module registers via extension point
 

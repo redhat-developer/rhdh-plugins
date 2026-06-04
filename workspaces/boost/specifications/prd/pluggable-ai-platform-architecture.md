@@ -11,9 +11,9 @@
 
 ## Why
 
-Enterprise customers run different AI platforms — and they change their minds. A platform that hard-codes a single AI backend becomes a liability: vendor lock-in, inability to evaluate alternatives, and deployment friction when the AI strategy evolves. Augment must be the experience layer that sits above any AI platform, not a client of one specific platform.
+Enterprise customers run different AI platforms — and they change their minds. A platform that hard-codes a single AI backend becomes a liability: vendor lock-in, inability to evaluate alternatives, and deployment friction when the AI strategy evolves. Boost must be the experience layer that sits above any AI platform, not a client of one specific platform.
 
-This PRD defines the pluggable provider architecture that makes Augment provider-agnostic: the abstraction interface, the normalized streaming protocol, runtime hot-swap, multi-agent orchestration via Llama Stack, and the framework-neutral Kagenti integration.
+This PRD defines the pluggable provider architecture that makes Boost provider-agnostic: the abstraction interface, the normalized streaming protocol, runtime hot-swap, multi-agent orchestration via Llama Stack, and the framework-neutral Kagenti integration.
 
 ## What This Product Does
 
@@ -23,7 +23,7 @@ Boost abstracts AI platform backends behind a provider interface. Each provider 
 
 ### Professional Developer (Provider Integrator)
 
-Implements the `AgenticProvider` interface to add a new AI platform backend. Creates a Backstage backend module that registers the provider — no modification to Augment source code required.
+Implements the `AgenticProvider` interface to add a new AI platform backend. Creates a Backstage backend module that registers the provider — no modification to Boost source code required.
 
 ### Administrator
 
@@ -69,7 +69,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - `ProviderDescriptor` declares the provider's ID, name, and supported capabilities
 - `AgenticProviderFactory` instantiates the provider from config
 - Registration via `boostProviderExtensionPoint` in a Backstage backend module
-- No Augment source modification required
+- No Boost source modification required
 
 **Built-in providers:**
 
@@ -120,8 +120,8 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 2. Create `ProviderDescriptor` declaring ID, name, supported capabilities
 3. Create `AgenticProviderFactory` that instantiates from config
 4. Register via `boostProviderExtensionPoint` in a Backstage backend module
-5. Deploy module alongside Augment backend
-6. New provider appears in admin panel's provider switcher — zero Augment source changes
+5. Deploy module alongside Boost backend
+6. New provider appears in admin panel's provider switcher — zero Boost source changes
 
 **Stream normalization:** Implement a stream normalizer mapping native events to `NormalizedStreamEvent` types.
 
@@ -233,7 +233,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 
 ## Architecture Context
 
-**Core design principle:** Augment is the **experience layer** — the AI frontend and orchestration surface. It does not run models, serve inference, or manage GPUs. Those come from the underlying AI platform (OpenShift AI, Kagenti infrastructure, or customer-provided backends).
+**Core design principle:** Boost is the **experience layer** — the AI frontend and orchestration surface. It does not run models, serve inference, or manage GPUs. Those come from the underlying AI platform (OpenShift AI, Kagenti infrastructure, or customer-provided backends).
 
 **Provider capability system:**
 
@@ -308,7 +308,7 @@ kagenti-entity-provider (independently deployable RHDH dynamic plugin)
 **Streaming pipeline (end-to-end):**
 
 ```
-ChatInput → AugmentApiClient → POST /chat/stream
+ChatInput → BoostApiClient → POST /chat/stream
     → chatRoutes.ts → setupSseStream → createStreamEventForwarder
     → provider.chatStream() → provider normalizer
     → NormalizedStreamEvent → SSE → sseStreaming.ts
@@ -335,4 +335,4 @@ ChatInput → AugmentApiClient → POST /chat/stream
 
 Derived from the Citi engagement. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
 
-Citi runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Augment is the stable surface while backends change underneath.
+Citi runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.

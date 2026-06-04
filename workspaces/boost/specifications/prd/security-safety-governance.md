@@ -74,7 +74,7 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 
 ### 1. Define Security Posture and Access Control (UC-20)
 
-**Goal:** Configure who can access Augment, who has admin privileges, and how tool connections and AI providers are authenticated.
+**Goal:** Configure who can access Boost, who has admin privileges, and how tool connections and AI providers are authenticated.
 
 **Three security modes:**
 
@@ -185,7 +185,7 @@ Draft → Pending → Published → Archived
 
 - Dual-mode: built-in lifecycle transitions OR SonataFlow-managed approval workflows
 - When SonataFlow is enabled, `promote` triggers a CloudEvents POST to start an external approval workflow
-- SonataFlow callbacks via `X-Augment-Workflow-Callback: true` header execute the approved/rejected transition
+- SonataFlow callbacks via `X-Boost-Workflow-Callback: true` header execute the approved/rejected transition
 - Callback loop prevention guards prevent re-triggering workflows on callback-driven transitions
 - Fail-closed: if workflow fails to start, agent reverts to Draft with 502 error
 - SonataFlow callbacks create a separate trust boundary — callback identity should be verified
@@ -252,7 +252,7 @@ Draft → Pending → Published → Archived
 
 **Error handling:**
 
-- `AugmentErrorBoundary` prevents page crashes
+- `BoostErrorBoundary` prevents page crashes
 - `ErrorCard` displayed inline on per-message errors
 - Snackbar toasts via `useToast` for transient notifications
 

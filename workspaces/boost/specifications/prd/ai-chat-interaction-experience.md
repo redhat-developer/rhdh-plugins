@@ -11,7 +11,7 @@
 
 ## Why
 
-Augment's core value proposition is enabling developers to have intelligent, grounded conversations with specialist AI agents — directly within their developer portal. Without a compelling chat experience, the platform has no user-facing value regardless of what's configured behind it.
+Boost's core value proposition is enabling developers to have intelligent, grounded conversations with specialist AI agents — directly within their developer portal. Without a compelling chat experience, the platform has no user-facing value regardless of what's configured behind it.
 
 This PRD defines the primary interaction surface: the streaming chat interface, knowledge-grounded answers, human-in-the-loop approval controls, conversation history management, and developer debugging tools. Together, these capabilities form the "inner loop" of the developer-agent relationship.
 
