@@ -25,9 +25,9 @@ Boost integrates with an external skills marketplace (provided by a separate wor
 
 ## Decisions
 
-### Decision 1: Use existing kinds with path to upstream
+### Decision 1: Use upstream kinds where available, existing kinds as fallback
 
-Use `kind: Component, spec.type: ai-agent` for agents and `kind: Resource, spec.type: ai-model|mcp-server|vector-store|ai-tool` for infrastructure resources. When upstream `AIContext` and `API v1alpha2` land, adopt those kinds. Custom `CatalogProcessor` validators support both during transition. Tools are added as `kind: Resource, spec.type: ai-tool` to enable tool lifecycle permissions via catalog RBAC.
+Use `kind: Component, spec.type: ai-agent` for agents. For MCP servers, prefer `kind: API, spec.type: mcp-server` using the upstream `McpServerApiEntity` from `@backstage/plugin-catalog-backend-module-ai-model` ([backstage#34016](https://github.com/backstage/backstage/pull/34016), merged) — fall back to `kind: Resource, spec.type: mcp-server` if the model module is not installed. Use `kind: Resource` for models (`ai-model`), vector stores (`vector-store`), and Kagenti tools (`ai-tool`). When upstream `AIContext` lands, adopt it for agents. Custom `CatalogProcessor` validators support both current and future kinds during transitions.
 
 ### Decision 2: Entity providers as independently deployable backend services
 

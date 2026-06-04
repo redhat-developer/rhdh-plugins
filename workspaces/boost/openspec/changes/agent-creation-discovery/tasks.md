@@ -28,7 +28,7 @@
 
 ### 1d. Core plugin entity providers (cross-cutting)
 
-- [ ] 1d.1 Implement `McpEntityProvider` reading MCP server configs from admin DB (kind: Resource, spec.type: mcp-server)
+- [ ] 1d.1 Implement `McpEntityProvider` reading MCP server configs from admin DB — prefer `kind: API, spec.type: mcp-server` with `spec.remotes` (upstream `McpServerApiEntity` from `@backstage/plugin-catalog-backend-module-ai-model`); fall back to `kind: Resource, spec.type: mcp-server` if model module is not installed
 - [ ] 1d.2 Implement `VectorStoreEntityProvider` reading vector store configs (kind: Resource, spec.type: vector-store)
 - [ ] 1d.3 Register both via `catalogProcessingExtensionPoint` in core plugin
 

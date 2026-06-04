@@ -43,7 +43,7 @@ RBAC policies govern agent lifecycle transitions with ownership and separation-o
 
 ### Requirement: Tool Lifecycle Permissions (Resource-Based)
 
-RBAC policies govern tool lifecycle transitions.
+RBAC policies govern Kagenti tool lifecycle transitions. The `boost-tool` resource type represents Kagenti tools (K8s workloads with lifecycle governance) — not MCP servers or MCP tools. MCP servers are registered endpoints without lifecycle permissions; MCP tools are runtime-discovered children of MCP servers with no independent lifecycle.
 
 #### Scenario: Tool permission definitions
 

@@ -12,13 +12,17 @@ NOTE: These recommendations align with in-flight upstream Backstage initiatives:
 The specifications below use existing Backstage kinds (`Resource`, `Component`) as the primary implementation path, with adoption of upstream kinds when they land. Custom `CatalogProcessor` validators support both during transition.
 
 **Entity type strategy:**
-| Domain Object | Immediate Kind | `spec.type` | Future Kind (upstream) |
-|---|---|---|---|
-| AI Agents | `Component` | `ai-agent` | `AIContext` |
-| AI Models | `Resource` | `ai-model` | `API` (v1alpha2 discriminated union) |
-| MCP Servers | `Resource` | `mcp-server` | `API` (v1alpha2 discriminated union) |
-| Vector Stores | `Resource` | `vector-store` | (no upstream equivalent planned) |
-| Tools | `Resource` | `ai-tool` | (no upstream equivalent planned) |
+| Domain Object | Preferred Kind | `spec.type` | Fallback Kind | Notes |
+|---|---|---|---|---|
+| AI Agents | `Component` | `ai-agent` | — | Future: `AIContext` when upstream lands |
+| AI Models | `Resource` | `ai-model` | — | Future: `API` v1alpha2 discriminated union |
+| MCP Servers | `API` | `mcp-server` | `Resource` | Upstream `McpServerApiEntity` available via `@backstage/plugin-catalog-backend-module-ai-model` ([backstage#34016](https://github.com/backstage/backstage/pull/34016), merged). Uses `spec.remotes: {type, url}[]` instead of `spec.definition`. Fall back to `kind: Resource, spec.type: mcp-server` if the catalog model module is not installed. |
+| Vector Stores | `Resource` | `vector-store` | — | No upstream equivalent planned |
+| Kagenti Tools | `Resource` | `ai-tool` | — | No upstream equivalent planned |
+
+**Note on MCP Server entity kind:** When `@backstage/plugin-catalog-backend-module-ai-model` is installed, MCP servers use `kind: API, spec.type: mcp-server` with `spec.remotes` for transport endpoints. The `McpEntityProvider` should detect whether the model module is available and emit the appropriate kind. Use `isMcpServerApiEntity` type guard from `@backstage/catalog-model` when available.
+
+**Note on tools:** "Kagenti Tools" (`ai-tool`) are K8s workloads with lifecycle governance (`boost-tool` permission resource type). "MCP Servers" (`mcp-server`) are registered protocol endpoints. Individual MCP tools (discovered at runtime via MCP `tools/list`) are not separate catalog entities — they are nested data within their parent MCP server.
 
 Entity providers are **independently deployable Backstage backend services**, each packaged as its own RHDH dynamic plugin (`llamastack-entity-provider`, `kagenti-entity-provider`). They are registered as backend services per the [Backstage backend system architecture](https://backstage.io/docs/backend-system/architecture/services/).
 
