@@ -51,3 +51,23 @@ export function sanitizeLCSError(
   // Return only generic message to client (no internal LCS details)
   return `Error from lightspeed-core server while ${context}`;
 }
+
+/**
+ * Handles LCS fetch errors by sanitizing the error response and sending it to the client.
+ * This helper eliminates code duplication across multiple endpoints.
+ *
+ * @param fetchResponse - The failed fetch response from LCS
+ * @param logger - Logger instance for server-side logging
+ * @param context - Context string describing the operation
+ * @param response - Express response object
+ */
+export async function handleLCSFetchError(
+  fetchResponse: Response,
+  logger: LoggerService,
+  context: string,
+  response: any,
+): Promise<void> {
+  const errorBody = await fetchResponse.json();
+  const sanitizedError = sanitizeLCSError(errorBody, logger, context);
+  response.status(fetchResponse.status).json({ error: sanitizedError });
+}
