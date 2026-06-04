@@ -16,7 +16,8 @@
 
 import { useState } from 'react';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import {
   Button,
   Dropdown,
@@ -34,93 +35,47 @@ import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
-const useStyles = makeStyles(theme => ({
-  sidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%',
-    padding: theme.spacing(2),
-    overflow: 'hidden',
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
-    gap: theme.spacing(1),
-  },
-  title: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '2rem',
-    letterSpacing: '-0.25px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    flex: 1,
-    minWidth: 0,
-  },
-  collapseButton: {
-    flexShrink: 0,
-  },
-  documentsRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  documentCount: {
-    fontWeight: 700,
-    fontSize: '1.125rem',
-    lineHeight: '2rem',
-  },
-  addButton: {
-    textTransform: 'none',
-  },
-  documentsList: {
-    marginTop: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-    overflowY: 'auto',
-    flex: 1,
-  },
-  documentItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
-    borderRadius: 4,
-  },
-  fileIcon: {
-    flexShrink: 0,
-    color: theme.palette.grey[500],
-    fontSize: '1rem',
-  },
-  fileName: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  spinnerContainer: {
-    flexShrink: 0,
-  },
-  kebabToggle: {
-    padding: 0,
-    flexShrink: 0,
-  },
-  kebabDropdownMenu: {
-    '& .pf-v6-c-menu__list': {
-      paddingInlineStart: 0,
-      marginBlockStart: 0,
-      marginBlockEnd: 0,
-    },
-  },
+const Sidebar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  height: '100%',
+  padding: theme.spacing(2),
+  overflow: 'hidden',
 }));
+
+const TitleRow = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: theme.spacing(2),
+  gap: theme.spacing(1),
+}));
+
+const DocumentsList = styled('div')(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  overflowY: 'auto',
+  flex: 1,
+}));
+
+const DocumentItem = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
+  borderRadius: 4,
+}));
+
+const KebabDropdownMenu = styled(Dropdown)({
+  '& .pf-v6-c-menu__list': {
+    paddingInlineStart: 0,
+    marginBlockStart: 0,
+    marginBlockEnd: 0,
+  },
+});
 
 type DocumentSidebarProps = {
   notebookName: string;
@@ -147,7 +102,6 @@ export const DocumentSidebar = ({
   onAddDocument,
   onDeleteDocument,
 }: DocumentSidebarProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
 
@@ -163,23 +117,49 @@ export const DocumentSidebar = ({
   const isAddDisabled = totalCount >= NOTEBOOK_MAX_FILES;
 
   return (
-    <div className={classes.sidebar}>
-      <div className={classes.titleRow}>
-        <Typography className={classes.title}>{notebookName}</Typography>
+    <Sidebar>
+      <TitleRow>
+        <Typography
+          sx={{
+            fontWeight: 500,
+            fontSize: '1.25rem',
+            lineHeight: '2rem',
+            letterSpacing: '-0.25px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          {notebookName}
+        </Typography>
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
           <Button
             variant="plain"
-            className={classes.collapseButton}
+            style={{ flexShrink: 0 }}
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
           >
             <SidebarCollapseIcon />
           </Button>
         </Tooltip>
-      </div>
+      </TitleRow>
 
-      <div className={classes.documentsRow}>
-        <Typography className={classes.documentCount}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: '1.125rem',
+            lineHeight: '2rem',
+          }}
+        >
           {t('notebook.view.documents.count', {
             count: totalCount,
           } as any)}
@@ -196,7 +176,7 @@ export const DocumentSidebar = ({
             <Typography component="div">
               <Button
                 variant="link"
-                className={classes.addButton}
+                style={{ textTransform: 'none' }}
                 icon={<PlusCircleIcon />}
                 isDisabled
               >
@@ -207,7 +187,7 @@ export const DocumentSidebar = ({
         ) : (
           <Button
             variant="link"
-            className={classes.addButton}
+            style={{ textTransform: 'none' }}
             icon={<PlusCircleIcon />}
             onClick={onAddDocument}
           >
@@ -217,21 +197,32 @@ export const DocumentSidebar = ({
       </div>
 
       {(documents.length > 0 || activePending.length > 0) && (
-        <div className={classes.documentsList}>
+        <DocumentsList>
           {documents.map(doc => (
-            <div key={doc.document_id} className={classes.documentItem}>
+            <DocumentItem key={doc.document_id}>
               <FileTypeIcon fileName={doc.title} />
-              <Typography className={classes.fileName}>{doc.title}</Typography>
+              <Typography
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem',
+                }}
+              >
+                {doc.title}
+              </Typography>
               {deletingDocumentIds?.has(doc.document_id) ? (
-                <div className={classes.spinnerContainer}>
+                <div style={{ flexShrink: 0 }}>
                   <Spinner
                     size="md"
                     aria-label={t('notebook.document.delete')}
                   />
                 </div>
               ) : (
-                <Dropdown
-                  className={classes.kebabDropdownMenu}
+                <KebabDropdownMenu
                   isOpen={openMenuDocId === doc.document_id}
                   popperProps={{
                     position: 'end',
@@ -244,7 +235,7 @@ export const DocumentSidebar = ({
                     <MenuToggle
                       ref={toggleRef}
                       variant="plain"
-                      className={classes.kebabToggle}
+                      style={{ padding: 0, flexShrink: 0 }}
                       isExpanded={openMenuDocId === doc.document_id}
                       onClick={event => {
                         event.stopPropagation();
@@ -270,26 +261,38 @@ export const DocumentSidebar = ({
                       {t('notebook.document.delete')}
                     </DropdownItem>
                   </DropdownList>
-                </Dropdown>
+                </KebabDropdownMenu>
               )}
-            </div>
+            </DocumentItem>
           ))}
           {activePending.map(fileName => (
-            <div key={`pending-${fileName}`} className={classes.documentItem}>
+            <DocumentItem key={`pending-${fileName}`}>
               <FileTypeIcon fileName={fileName} />
-              <Typography className={classes.fileName}>{fileName}</Typography>
+              <Typography
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem',
+                }}
+              >
+                {fileName}
+              </Typography>
               {!completedFileNames?.has(fileName) && (
-                <div className={classes.spinnerContainer}>
+                <div style={{ flexShrink: 0 }}>
                   <Spinner
                     size="md"
                     aria-label={t('notebook.view.documents.uploading')}
                   />
                 </div>
               )}
-            </div>
+            </DocumentItem>
           ))}
-        </div>
+        </DocumentsList>
       )}
-    </div>
+    </Sidebar>
   );
 };

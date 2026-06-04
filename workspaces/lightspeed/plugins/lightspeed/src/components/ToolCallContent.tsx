@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import { Message } from '@patternfly/chatbot';
 import {
   Content,
@@ -38,14 +38,12 @@ interface ToolCallContentProps {
   role?: 'user' | 'bot';
 }
 
-const useStyles = makeStyles(() => ({
-  codeBlock: {
-    '& .pf-chatbot__message-code-block': {
-      border: '1px solid var(--pf-t--global--border--color--default)',
-      borderRadius: 'var(--pf-t--global--border--radius--small)',
-    },
+const CodeBlockWrapper = styled(FlexItem)({
+  '& .pf-chatbot__message-code-block': {
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    borderRadius: 'var(--pf-t--global--border--radius--small)',
   },
-}));
+});
 
 /**
  * Lightweight component for rendering tool call expandable content.
@@ -55,7 +53,6 @@ export const ToolCallContent = ({
   toolCall,
   role = 'bot',
 }: ToolCallContentProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   const formatExecutionTime = (seconds?: number): string => {
@@ -236,7 +233,7 @@ export const ToolCallContent = ({
                         direction={{ default: 'column' }}
                         spaceItems={{ default: 'spaceItemsXs' }}
                       >
-                        <FlexItem className={classes.codeBlock}>
+                        <CodeBlockWrapper>
                           <Message
                             content={formatToolResponseForMarkdown(
                               toolCall.response,
@@ -249,7 +246,7 @@ export const ToolCallContent = ({
                               },
                             }}
                           />
-                        </FlexItem>
+                        </CodeBlockWrapper>
                       </Flex>
                     </DescriptionListDescription>
                   </DescriptionListGroup>

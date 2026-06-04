@@ -34,7 +34,8 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button, makeStyles } from '@material-ui/core';
+import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import {
@@ -144,10 +145,61 @@ const ConditionalWrapper = ({
   children: React.ReactNode;
 }) => (condition ? wrapper(children) : children);
 
-const useStyles = makeStyles(theme => ({
-  body: {
-    // remove default margin and padding from common elements
-    // lists excluded for proper formatting
+const PREFIX = 'LightspeedChat';
+const classes = {
+  body: `${PREFIX}-body`,
+  header: `${PREFIX}-header`,
+  errorContainer: `${PREFIX}-errorContainer`,
+  drawerFileDropZone: `${PREFIX}-drawerFileDropZone`,
+  headerMenu: `${PREFIX}-headerMenu`,
+  headerLogo: `${PREFIX}-headerLogo`,
+  headerTitle: `${PREFIX}-headerTitle`,
+  headerDivider: `${PREFIX}-headerDivider`,
+  notebooksContainer: `${PREFIX}-notebooksContainer`,
+  notebooksHeader: `${PREFIX}-notebooksHeader`,
+  notebooksHeading: `${PREFIX}-notebooksHeading`,
+  notebooksHeadingEmpty: `${PREFIX}-notebooksHeadingEmpty`,
+  notebooksEmptyState: `${PREFIX}-notebooksEmptyState`,
+  notebooksIcon: `${PREFIX}-notebooksIcon`,
+  notebooksDescription: `${PREFIX}-notebooksDescription`,
+  notebooksAction: `${PREFIX}-notebooksAction`,
+  notebooksActionEmpty: `${PREFIX}-notebooksActionEmpty`,
+  notebooksGrid: `${PREFIX}-notebooksGrid`,
+  notebookCard: `${PREFIX}-notebookCard`,
+  notebookCardHeader: `${PREFIX}-notebookCardHeader`,
+  notebookCardDivider: `${PREFIX}-notebookCardDivider`,
+  notebookCardBody: `${PREFIX}-notebookCardBody`,
+  notebookDocuments: `${PREFIX}-notebookDocuments`,
+  notebookUpdated: `${PREFIX}-notebookUpdated`,
+  notebookTitle: `${PREFIX}-notebookTitle`,
+  notebookCardHeaderActions: `${PREFIX}-notebookCardHeaderActions`,
+  notebookTitleText: `${PREFIX}-notebookTitleText`,
+  notebookMenuButton: `${PREFIX}-notebookMenuButton`,
+  notebookDropdownList: `${PREFIX}-notebookDropdownList`,
+  notebookDropdownMenu: `${PREFIX}-notebookDropdownMenu`,
+  notebookDropdownItem: `${PREFIX}-notebookDropdownItem`,
+  footer: `${PREFIX}-footer`,
+  fullscreenFooter: `${PREFIX}-fullscreenFooter`,
+  messageBar: `${PREFIX}-messageBar`,
+  sortDropdown: `${PREFIX}-sortDropdown`,
+  chatbotContent: `${PREFIX}-chatbotContent`,
+  chatbotContentHasOverflow: `${PREFIX}-chatbotContentHasOverflow`,
+  chatbotContentScroll: `${PREFIX}-chatbotContentScroll`,
+  chatbotContentScrollNewChat: `${PREFIX}-chatbotContentScrollNewChat`,
+  toastAlertGroup: `${PREFIX}-toastAlertGroup`,
+  toastAlert: `${PREFIX}-toastAlert`,
+  chatbotContentSpacer: `${PREFIX}-chatbotContentSpacer`,
+  settingsFlat: `${PREFIX}-settingsFlat`,
+  mcpFullscreenLayout: `${PREFIX}-mcpFullscreenLayout`,
+  mcpChatPane: `${PREFIX}-mcpChatPane`,
+  mcpSettingsPane: `${PREFIX}-mcpSettingsPane`,
+  mcpCollapsedDrawerOrderFix: `${PREFIX}-mcpCollapsedDrawerOrderFix`,
+  fullscreenChatLayout: `${PREFIX}-fullscreenChatLayout`,
+  fullscreenMainContent: `${PREFIX}-fullscreenMainContent`,
+};
+
+const StyledChatRoot = styled('div')(({ theme }) => ({
+  [`& .${classes.body}`]: {
     '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
       margin: 0,
       padding: 0,
@@ -157,17 +209,15 @@ const useStyles = makeStyles(theme => ({
         'var(--pf-t--global--background--color--floating--default)',
     },
   },
-  header: {
-    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
-      3,
-    )}px !important`,
+  [`& .${classes.header}`]: {
+    padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
   },
-  errorContainer: {
+  [`& .${classes.errorContainer}`]: {
     padding: theme.spacing(3),
   },
-  drawerFileDropZone: {
+  [`& .${classes.drawerFileDropZone}`]: {
     gap: 0,
     rowGap: 0,
     columnGap: 0,
@@ -176,29 +226,28 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minWidth: 0,
   },
-  headerMenu: {
-    // align hamburger icon with title
+  [`& .${classes.headerMenu}`]: {
     '& .pf-v6-c-button': {
       display: 'flex',
       alignItems: 'center',
     },
   },
-  headerLogo: {
+  [`& .${classes.headerLogo}`]: {
     width: 48,
     height: 48,
     marginRight: theme.spacing(1.5),
     flexShrink: 0,
   },
-  headerTitle: {
+  [`& .${classes.headerTitle}`]: {
     justifyContent: 'left !important',
   },
-  headerDivider: {
+  [`& .${classes.headerDivider}`]: {
     paddingTop: 8,
     borderBottom: '1px solid var(--pf-t--global--border--color--default)',
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
-  notebooksContainer: {
+  [`& .${classes.notebooksContainer}`]: {
     padding: theme.spacing(3),
     height: '100%',
     display: 'flex',
@@ -209,22 +258,22 @@ const useStyles = makeStyles(theme => ({
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
-  notebooksHeader: {
+  [`& .${classes.notebooksHeader}`]: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: theme.spacing(4),
   },
-  notebooksHeading: {
+  [`& .${classes.notebooksHeading}`]: {
     marginBottom: 0,
   },
-  notebooksHeadingEmpty: {
+  [`& .${classes.notebooksHeadingEmpty}`]: {
     '&&': {
       marginBottom: theme.spacing(1),
       paddingBottom: theme.spacing(1),
     },
   },
-  notebooksEmptyState: {
+  [`& .${classes.notebooksEmptyState}`]: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -232,30 +281,30 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     textAlign: 'center',
   },
-  notebooksIcon: {
+  [`& .${classes.notebooksIcon}`]: {
     fontSize: 48,
     color: 'var(--pf-t--global--icon--color--subtle)',
     marginBottom: theme.spacing(1.5),
   },
-  notebooksDescription: {
+  [`& .${classes.notebooksDescription}`]: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(3),
     maxWidth: 420,
   },
-  notebooksAction: {
+  [`& .${classes.notebooksAction}`]: {
     textTransform: 'none',
     borderRadius: 999,
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
   },
-  notebooksActionEmpty: {
+  [`& .${classes.notebooksActionEmpty}`]: {
     textTransform: 'none',
     borderRadius: 999,
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
     marginTop: theme.spacing(3),
   },
-  notebooksGrid: {
+  [`& .${classes.notebooksGrid}`]: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
     gap: theme.spacing(2),
@@ -269,7 +318,7 @@ const useStyles = makeStyles(theme => ({
       gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
     },
   },
-  notebookCard: {
+  [`& .${classes.notebookCard}`]: {
     borderRadius: theme.spacing(1.5),
     display: 'flex',
     flexDirection: 'column',
@@ -280,62 +329,62 @@ const useStyles = makeStyles(theme => ({
       cursor: 'pointer',
     },
   },
-  notebookCardHeader: {
+  [`& .${classes.notebookCardHeader}`]: {
     padding: theme.spacing(2),
     paddingBottom: 0,
     alignItems: 'center',
   },
-  notebookCardDivider: {
+  [`& .${classes.notebookCardDivider}`]: {
     borderTop: '1px solid var(--pf-t--global--border--color--default)',
     marginTop: theme.spacing(1),
   },
-  notebookCardBody: {
+  [`& .${classes.notebookCardBody}`]: {
     padding: theme.spacing(2),
     paddingTop: theme.spacing(1.5),
   },
-  notebookDocuments: {
+  [`& .${classes.notebookDocuments}`]: {
     paddingTop: theme.spacing(1),
     paddingLeft: theme.spacing(2),
   },
-  notebookUpdated: {
+  [`& .${classes.notebookUpdated}`]: {
     paddingBottom: theme.spacing(5),
     paddingLeft: theme.spacing(2),
     paddingTop: theme.spacing(2),
   },
-  notebookTitle: {
+  [`& .${classes.notebookTitle}`]: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
     minWidth: 0,
     flex: 1,
   },
-  notebookCardHeaderActions: {
+  [`& .${classes.notebookCardHeaderActions}`]: {
     marginLeft: theme.spacing(1),
   },
-  notebookTitleText: {
+  [`& .${classes.notebookTitleText}`]: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
-  notebookMenuButton: {
+  [`& .${classes.notebookMenuButton}`]: {
     color: theme.palette.text.secondary,
   },
-  notebookDropdownList: {
+  [`& .${classes.notebookDropdownList}`]: {
     paddingTop: 0,
     paddingBottom: 0,
     paddingInlineStart: 0,
   },
-  notebookDropdownMenu: {
+  [`& .${classes.notebookDropdownMenu}`]: {
     '--pf-v6-c-menu--PaddingBlockStart': '0',
     '--pf-v6-c-menu--PaddingBlockEnd': '0',
   },
-  notebookDropdownItem: {
+  [`& .${classes.notebookDropdownItem}`]: {
     justifyContent: 'flex-start',
     textAlign: 'left',
     paddingLeft: theme.spacing(1.5),
     paddingRight: theme.spacing(1.5),
   },
-  footer: {
+  [`& .${classes.footer}`]: {
     '&.pf-chatbot__footer': {
       backgroundColor:
         'var(--pf-t--global--background--color--floating--default) !important',
@@ -346,12 +395,12 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
   },
-  fullscreenFooter: {
+  [`& .${classes.fullscreenFooter}`]: {
     '&>.pf-chatbot__footer-container': {
       width: '100% !important',
       padding: theme.spacing(1.5),
@@ -359,7 +408,7 @@ const useStyles = makeStyles(theme => ({
       margin: '0 auto',
     },
   },
-  messageBar: {
+  [`& .${classes.messageBar}`]: {
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
     padding: theme.spacing(0.5),
@@ -367,12 +416,11 @@ const useStyles = makeStyles(theme => ({
       display: 'none',
     },
   },
-  sortDropdown: {
+  [`& .${classes.sortDropdown}`]: {
     padding: 0,
     margin: 0,
   },
-  // Outer content wrapper (library may override overflow; we rely on inner scroll wrapper).
-  chatbotContent: {
+  [`& .${classes.chatbotContent}`]: {
     minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
@@ -390,14 +438,13 @@ const useStyles = makeStyles(theme => ({
       wordBreak: 'break-word',
     },
   },
-  chatbotContentHasOverflow: {
+  [`& .${classes.chatbotContentHasOverflow}`]: {
     '& .pf-chatbot__jump': {
       visibility: 'visible',
       pointerEvents: 'auto',
     },
   },
-  // Inner scroll container we control: always scrollable so zoomed-in users see full content.
-  chatbotContentScroll: {
+  [`& .${classes.chatbotContentScroll}`]: {
     minHeight: 0,
     flex: 1,
     display: 'flex',
@@ -405,28 +452,27 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
   },
-  chatbotContentScrollNewChat: {
+  [`& .${classes.chatbotContentScrollNewChat}`]: {
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+  [`& .${classes.toastAlertGroup}`]: {
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
     '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
-  toastAlert: {
+  [`& .${classes.toastAlert}`]: {
     maxWidth: '350px',
     '& .pf-v6-c-alert__title': {
       margin: 0,
     },
   },
-  // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
-  chatbotContentSpacer: {
+  [`& .${classes.chatbotContentSpacer}`]: {
     flex: 1,
     minHeight: 0,
   },
-  settingsFlat: {
+  [`& .${classes.settingsFlat}`]: {
     height: '100%',
     width: '100%',
     '&.pf-chatbot__settings-form-container': {
@@ -467,7 +513,7 @@ const useStyles = makeStyles(theme => ({
       display: 'none',
     },
   },
-  mcpFullscreenLayout: {
+  [`& .${classes.mcpFullscreenLayout}`]: {
     display: 'grid',
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
     minHeight: 0,
@@ -477,7 +523,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     overflow: 'hidden',
   },
-  mcpChatPane: {
+  [`& .${classes.mcpChatPane}`]: {
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
@@ -487,7 +533,7 @@ const useStyles = makeStyles(theme => ({
     wordBreak: 'break-word',
     overflowWrap: 'break-word',
   },
-  mcpSettingsPane: {
+  [`& .${classes.mcpSettingsPane}`]: {
     width: '100%',
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
@@ -498,7 +544,7 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     overflow: 'auto',
   },
-  mcpCollapsedDrawerOrderFix: {
+  [`& .${classes.mcpCollapsedDrawerOrderFix}`]: {
     '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
       {
         order: 'unset',
@@ -510,11 +556,7 @@ const useStyles = makeStyles(theme => ({
         transition: 'none !important',
       },
   },
-  // TODO: These PF Chatbot overrides are fragile (version-specific class names).
-  // Remove once the upstream issues are addressed:
-  // - https://github.com/patternfly/chatbot/issues/834 (custom close/collapse icon & positioning)
-  // - https://github.com/patternfly/chatbot/issues/848 (sidebar padding & spacing customization)
-  fullscreenChatLayout: {
+  [`& .${classes.fullscreenChatLayout}`]: {
     display: 'flex',
     flexDirection: 'row',
     flex: 1,
@@ -593,7 +635,7 @@ const useStyles = makeStyles(theme => ({
         opacity: 1,
       },
   },
-  fullscreenMainContent: {
+  [`& .${classes.fullscreenMainContent}`]: {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
@@ -625,7 +667,6 @@ export const LightspeedChat = ({
   models,
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
-  const classes = useStyles();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);
@@ -1640,14 +1681,7 @@ export const LightspeedChat = ({
         </SelectList>
       </Select>
     ),
-    [
-      isSortSelectOpen,
-      selectedSort,
-      onSortSelect,
-      sortToggle,
-      t,
-      classes.sortDropdown,
-    ],
+    [isSortSelectOpen, selectedSort, onSortSelect, sortToggle, t],
   );
 
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
@@ -1841,7 +1875,7 @@ export const LightspeedChat = ({
   }
 
   return (
-    <>
+    <StyledChatRoot>
       {notebookAlerts.length > 0 && (
         <AlertGroup
           hasAnimations
@@ -2194,6 +2228,6 @@ export const LightspeedChat = ({
           )}
       </Chatbot>
       <Attachment />
-    </>
+    </StyledChatRoot>
   );
 };

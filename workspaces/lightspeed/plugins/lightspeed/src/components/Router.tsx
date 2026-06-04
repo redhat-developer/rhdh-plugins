@@ -18,13 +18,9 @@ import { Route, Routes } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { StylesProvider as StylesProviderV4 } from '@material-ui/core/styles';
 import { StylesProvider } from '@mui/styles';
 
-import {
-  generateClassName,
-  generateClassNameV4,
-} from '../utils/generateClassName';
+import { generateClassName } from '../utils/generateClassName';
 import { LightspeedPage } from './LightspeedPage';
 
 /**
@@ -38,24 +34,19 @@ export const Router = () => {
 
   return (
     <StylesProvider generateClassName={generateClassName}>
-      <StylesProviderV4 generateClassName={generateClassNameV4}>
-        <Routes>
-          <Route path="/" element={<LightspeedPage />} />
-          <Route
-            path="/conversation/:conversationId"
-            element={<LightspeedPage />}
-          />
-          {notebooksEnabled && (
-            <>
-              <Route path="/notebooks" element={<LightspeedPage />} />
-              <Route
-                path="/notebooks/:notebookId"
-                element={<LightspeedPage />}
-              />
-            </>
-          )}
-        </Routes>
-      </StylesProviderV4>
+      <Routes>
+        <Route path="/" element={<LightspeedPage />} />
+        <Route
+          path="/conversation/:conversationId"
+          element={<LightspeedPage />}
+        />
+        {notebooksEnabled && (
+          <>
+            <Route path="/notebooks" element={<LightspeedPage />} />
+            <Route path="/notebooks/:notebookId" element={<LightspeedPage />} />
+          </>
+        )}
+      </Routes>
     </StylesProvider>
   );
 };

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -23,73 +22,26 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { FileTypeIcon } from './FileTypeIcon';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 24,
-    maxWidth: 578,
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
-    letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
-  },
-  fileList: {
-    margin: 0,
-    padding: 0,
-    listStyle: 'none',
-  },
-  fileItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: `${theme.spacing(2)}px 0`,
-    borderBottom:
-      '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
-    cursor: 'pointer',
-  },
-  fileName: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  overwriteButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  warningAlert: {
-    borderRadius: '6px',
-  },
+const FileList = styled('ul')({
+  margin: 0,
+  padding: 0,
+  listStyle: 'none',
+});
+
+const FileItem = styled('li')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: `${theme.spacing(2)} 0`,
+  borderBottom:
+    '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+  cursor: 'pointer',
 }));
 
 type OverwriteConfirmModalProps = {
@@ -105,7 +57,6 @@ export const OverwriteConfirmModal = ({
   onConfirm,
   fileNames,
 }: OverwriteConfirmModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -114,50 +65,77 @@ export const OverwriteConfirmModal = ({
       onClose={onClose}
       aria-labelledby="overwrite-confirm-modal-title"
       PaperProps={{
-        className: classes.dialogPaper,
+        sx: { borderRadius: '24px', maxWidth: 578 },
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '24px 24px 16px',
+        }}
+      >
+        <Typography
+          component="h2"
+          sx={{
+            fontWeight: 500,
+            fontSize: '1.25rem',
+            lineHeight: '1.625rem',
+            letterSpacing: '-0.25px',
+          }}
+        >
           {t('notebook.overwrite.modal.title')}
         </Typography>
         <IconButton
           aria-label={t('common.close')}
           onClick={onClose}
-          className={classes.closeButton}
+          sx={{ color: 'text.primary' }}
           size="small"
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
-        <Alert severity="warning" className={classes.warningAlert}>
+      <DialogContent sx={{ padding: '0 24px 24px' }}>
+        <Alert severity="warning" sx={{ borderRadius: '6px' }}>
           {t('notebook.overwrite.modal.description')}
         </Alert>
 
-        <ul className={classes.fileList}>
+        <FileList>
           {fileNames.map(name => (
-            <li key={name} className={classes.fileItem}>
+            <FileItem key={name}>
               <FileTypeIcon fileName={name} />
-              <Typography className={classes.fileName}>{name}</Typography>
-            </li>
+              <Typography
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem',
+                }}
+              >
+                {name}
+              </Typography>
+            </FileItem>
           ))}
-        </ul>
+        </FileList>
       </DialogContent>
 
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions sx={{ justifyContent: 'left', padding: 2.5, gap: 1 }}>
         <Button
           variant="contained"
           color="error"
-          className={classes.overwriteButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onConfirm}
         >
           {t('notebook.overwrite.modal.action')}
         </Button>
         <Button
           variant="outlined"
-          className={classes.cancelButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onClose}
         >
           {t('common.cancel')}
