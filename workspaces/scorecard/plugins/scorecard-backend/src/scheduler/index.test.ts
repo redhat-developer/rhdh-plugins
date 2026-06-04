@@ -75,7 +75,10 @@ describe('Scheduler', () => {
       database: mockDatabase,
       metricProvidersRegistry: mockRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      thresholdResolver: new ThresholdResolver(mockConfig),
+      thresholdResolver: new ThresholdResolver(
+        mockConfig,
+        mockRegistry.listProviders(),
+      ),
     });
 
     mockCleanupTask = {

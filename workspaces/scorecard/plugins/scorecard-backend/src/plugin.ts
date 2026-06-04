@@ -95,7 +95,10 @@ export const scorecardPlugin = createBackendPlugin({
 
         const client = await database.getClient();
         const dbMetricValues = new DatabaseMetricValues(client);
-        const thresholdResolver = new ThresholdResolver(config);
+        const thresholdResolver = new ThresholdResolver(
+          config,
+          metricProvidersRegistry.listProviders(),
+        );
 
         const catalogMetricService = new CatalogMetricService({
           catalog,

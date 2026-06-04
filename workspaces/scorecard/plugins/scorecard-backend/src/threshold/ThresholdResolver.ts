@@ -24,15 +24,18 @@ import {
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
 
 export class ThresholdResolver {
-  constructor(private readonly config: Config) {}
+  private readonly configuredThresholds = new Map<string, ThresholdConfig>(); // providerId: thresholds
+
+  constructor(private readonly config: Config, providers: MetricProvider[]) {
+    for (const provider of providers) {
+      this.setConfiguredThresholds(provider);
+    }
+  }
 
   resolveProviderThresholds(provider: MetricProvider): ThresholdConfig {
     return (
-      getThresholdsFromConfig(
-        this.config,
-        `scorecard.plugins.${provider.getProviderId()}.thresholds`,
-        provider.getMetricType(),
-      ) ?? provider.getMetricThresholds()
+      this.configuredThresholds.get(provider.getProviderId()) ??
+      provider.getMetricThresholds()
     );
   }
 
@@ -45,5 +48,18 @@ export class ThresholdResolver {
       provider,
       this.resolveProviderThresholds(provider),
     );
+  }
+
+  private setConfiguredThresholds(provider: MetricProvider): void {
+    const providerId = provider.getProviderId();
+    const thresholds = getThresholdsFromConfig(
+      this.config,
+      `scorecard.plugins.${providerId}.thresholds`,
+      provider.getMetricType(),
+    );
+
+    if (thresholds) {
+      this.configuredThresholds.set(providerId, thresholds);
+    }
   }
 }

@@ -98,13 +98,13 @@ const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
     ],
   },
 };
-const thresholdResolver = new ThresholdResolver(new ConfigReader({}));
 
 describe('createRouter', () => {
   let app: express.Express;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
   let aggregationsService: AggregationsService;
+  let thresholdResolver: ThresholdResolver;
   let mockLogger: ReturnType<typeof mockServices.logger.mock>;
   let httpAuthMock: ServiceMock<
     import('@backstage/backend-plugin-api').HttpAuthService
@@ -117,6 +117,10 @@ describe('createRouter', () => {
 
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
+    thresholdResolver = new ThresholdResolver(
+      new ConfigReader({}),
+      metricProvidersRegistry.listProviders(),
+    );
     const catalog = catalogServiceMock.mock();
     mockLogger = mockServices.logger.mock();
     catalogMetricService = new CatalogMetricService({
