@@ -36,25 +36,15 @@ Runtime requirements: Node.js 22 or 24, and `skopeo` on `PATH` for OCI plugin su
 
 ## How RHDH consumes it
 
-The container's init container invokes the wrapper:
-
-```sh
-./install-dynamic-plugins.sh /dynamic-plugins-root
-```
-
-The wrapper executes the bundled CommonJS entry point with Node.js:
-
-```sh
-exec node install-dynamic-plugins.cjs "$1"
-```
-
-Both files live at `/opt/app-root/src/` inside the runtime image. Node.js is already present (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.
+The init container invokes the wrapper `install-dynamic-plugins.sh /dynamic-plugins-root`, which delegates to the bin installed via `yarn install` from this package (see [redhat-developer/rhdh#4908](https://github.com/redhat-developer/rhdh/pull/4908)). Node.js is already present in the runtime image (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.
 
 ## Architecture
 
 ```
 src/
-├── index.ts              # main() — argv + orchestration of the full install flow
+├── index.ts              # createCliModule default export (backstage-cli discovery)
+├── command.ts            # loader for the `install` command (used by cli-module)
+├── installer.ts          # install pipeline + main() — the single source of truth
 ├── log.ts                # uniform stdout logger
 ├── errors.ts             # InstallException
 ├── types.ts              # PluginSpec / Plugin / PluginMap / PullPolicy + constants
@@ -118,21 +108,16 @@ All tar extraction is streaming via `node-tar` — large layers never load into 
 
 ## Development
 
+From the workspace root:
+
 ```sh
-npm install
-npm run tsc       # type-check
-npm test          # Jest unit tests (105 tests)
-npm run build     # produce dist/install-dynamic-plugins.cjs
+yarn install
+yarn tsc          # type-check
+yarn test         # Jest unit tests (166 tests)
+yarn workspace @red-hat-developer-hub/cli-module-install-dynamic-plugins build
 ```
 
-`dist/install-dynamic-plugins.cjs` **is** committed to the repo (consumed directly by the Containerfile, similar to `.yarn/releases/yarn-*.cjs`). The PR check verifies the bundle is up to date relative to the source.
-
-## Testing in CI
-
-The CI workflow (`.github/workflows/pr.yaml`) runs:
-
-1. `npm install && npm run tsc && npm test` — type check + Jest unit tests
-2. `npm run build` and a `git diff` check on the committed `dist/install-dynamic-plugins.cjs`
+`yarn build` runs `backstage-cli package build` and emits the unbundled `dist/*.cjs.js` + type declarations. The package is published as-is; no committed bundle.
 
 ## Compatibility notes
 

@@ -18,9 +18,10 @@ import packageJson from '../package.json';
 
 /**
  * Entry exposed to `backstage-cli` discovery. The package's `bin`
- * (`install-dynamic-plugins`) keeps using the self-contained esbuild bundle
- * for direct/init-container invocations — this default export only matters
- * when a host project loads the package via `backstage-cli`.
+ * (`install-dynamic-plugins`) takes a fast path that calls `installer.main`
+ * directly, so this default export only matters when a host project loads
+ * the package via `backstage-cli` and reaches the `install` command through
+ * the cli-module dispatch.
  */
 export default createCliModule({
   packageJson,
