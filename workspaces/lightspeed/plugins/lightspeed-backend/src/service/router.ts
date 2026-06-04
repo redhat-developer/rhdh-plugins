@@ -56,6 +56,7 @@ import {
   QueryRequestBody,
   RouterOptions,
 } from './types';
+import { sanitizeLCSError } from './utils';
 import { isAllowedProxyPath, validateCompletionsRequest } from './validation';
 
 const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
@@ -63,30 +64,6 @@ const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
 interface StaticMcpServer {
   name: string;
   token?: string;
-}
-
-/**
- * Sanitizes Lightspeed Core Service (LCS) error responses to prevent
- * information disclosure. Logs full error details server-side for debugging
- * while returning only generic messages to clients.
- *
- * @param errorBody - The error response body from LCS
- * @param logger - Logger instance for server-side logging
- * @param context - Context string describing the operation (e.g., "sending feedback")
- * @returns Generic error message safe to return to clients
- */
-function sanitizeLcsError(
-  errorBody: any,
-  logger: any,
-  context: string,
-): string {
-  // Log full error details server-side for debugging
-  logger.error(
-    `Error from lightspeed-core server while ${context}: ${JSON.stringify(errorBody)}`,
-  );
-
-  // Return only generic message to client (no internal LCS details)
-  return `Error from lightspeed-core server while ${context}`;
 }
 
 /**
@@ -590,7 +567,7 @@ export async function createRouter(
 
       if (!fetchResponse.ok) {
         const errorBody = await fetchResponse.json();
-        const sanitizedError = sanitizeLcsError(
+        const sanitizedError = sanitizeLCSError(
           errorBody,
           logger,
           'sending feedback',
@@ -638,7 +615,7 @@ export async function createRouter(
       );
       if (!fetchResponse.ok) {
         const errorBody = await fetchResponse.json();
-        const sanitizedError = sanitizeLcsError(
+        const sanitizedError = sanitizeLCSError(
           errorBody,
           logger,
           'interrupting query',
@@ -717,7 +694,7 @@ export async function createRouter(
 
         if (!fetchResponse.ok) {
           const errorBody = await fetchResponse.json();
-          const sanitizedError = sanitizeLcsError(
+          const sanitizedError = sanitizeLCSError(
             errorBody,
             logger,
             'processing query',
@@ -773,7 +750,7 @@ export async function createRouter(
         );
         if (!fetchResponse.ok) {
           const errorBody = await fetchResponse.json();
-          const sanitizedError = sanitizeLcsError(
+          const sanitizedError = sanitizeLCSError(
             errorBody,
             logger,
             'updating conversation',

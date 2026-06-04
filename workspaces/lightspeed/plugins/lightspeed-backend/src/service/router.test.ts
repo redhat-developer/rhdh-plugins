@@ -247,7 +247,9 @@ describe('lightspeed router tests', () => {
         });
 
       expect(response.statusCode).toEqual(404);
-      expect(response.body.error).toContain('not found');
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
 
     it('should handle upstream server errors properly', async () => {
