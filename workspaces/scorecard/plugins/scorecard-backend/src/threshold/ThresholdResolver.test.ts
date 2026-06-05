@@ -15,7 +15,10 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { MockNumberProvider } from '../../__fixtures__/mockProviders';
+import {
+  MockBooleanProvider,
+  MockNumberProvider,
+} from '../../__fixtures__/mockProviders';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { ThresholdResolver } from './ThresholdResolver';
 
@@ -58,7 +61,7 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [provider, new MockNumberProvider('github.other_netric', 'github')],
+      [provider, new MockNumberProvider('github.other_metric', 'github')],
     );
 
     expect(resolver.resolveProviderThresholds(provider)).toEqual({
@@ -73,7 +76,7 @@ describe('ThresholdResolver', () => {
   it('uses configured thresholds before provider default thresholds', () => {
     const provider = new MockNumberProvider('github.number_metric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      new MockNumberProvider('github.other_netric', 'github'),
+      new MockNumberProvider('github.other_metric', 'github'),
       provider,
     ]);
 
@@ -82,6 +85,54 @@ describe('ThresholdResolver', () => {
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>50' },
         { key: 'success', expression: '<=50' },
+      ],
+    });
+  });
+
+  it('uses configured thresholds before provider default thresholds for batch provider', () => {
+    const provider = new MockBooleanProvider('filecheck', 'filecheck');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          plugins: {
+            filecheck: {
+              thresholds: {
+                rules: [
+                  {
+                    key: 'present',
+                    expression: '==true',
+                    color: 'success.main',
+                    icon: 'scorecardSuccessStatusIcon',
+                  },
+                  {
+                    key: 'absent',
+                    expression: '==false',
+                    color: 'error.main',
+                    icon: 'scorecardErrorStatusIcon',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      }),
+      [new MockNumberProvider('github.other_metric', 'github'), provider],
+    );
+
+    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+      rules: [
+        {
+          key: 'present',
+          expression: '==true',
+          color: 'success.main',
+          icon: 'scorecardSuccessStatusIcon',
+        },
+        {
+          key: 'absent',
+          expression: '==false',
+          color: 'error.main',
+          icon: 'scorecardErrorStatusIcon',
+        },
       ],
     });
   });
@@ -145,7 +196,27 @@ describe('ThresholdResolver', () => {
     });
   });
 
-  it('loads configured thresholds at startup', () => {
+  it('merges entity annotation overrides on top of custom provider thresholds for batch provider', () => {
+    const provider = new MockBooleanProvider('filecheck', 'filecheck');
+    const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
+      provider,
+    ]);
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/filecheck.thresholds.rules.success': '==false',
+        'scorecard.io/filecheck.thresholds.rules.error': '==true',
+      })
+      .build();
+
+    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+      rules: [
+        { key: 'success', expression: '==false' },
+        { key: 'error', expression: '==true' },
+      ],
+    });
+  });
+
+  it('loads configured thresholds once at startup', () => {
     const mockConfig = {
       getOptional: jest.fn().mockReturnValue({
         rules: [

@@ -132,6 +132,8 @@ spec:
   type: service
 ```
 
+You can only override existing threshold severity keys for provider. This means you can not specify new custom severity keys in entity annotations, they must be first configured for provider in app configuration.
+
 #### Annotation Format Reference
 
 Entity annotations use this format:
