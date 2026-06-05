@@ -45,8 +45,8 @@ function makeMockRes() {
       res.body = data;
       return res;
     },
-  } as unknown as Response;
-  return res;
+  };
+  return res as typeof res & Response;
 }
 
 describe('createPermissionMiddleware', () => {
