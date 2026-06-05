@@ -241,29 +241,36 @@ export const ScorecardEntityContentGridView = ({
       gridTemplateColumns="repeat(auto-fill, minmax(340px, 1fr))"
       gap={2.5}
     >
-      {Object.entries(groups).map(([groupKey, groupConfig]) => {
-        const metricsInGroup = groupedMetrics.get(groupKey) || [];
+      {/* show groups if they are configured for entity tab */}
+      {false &&
+        Object.entries(groups).map(([groupKey, groupConfig]) => {
+          const metricsInGroup = groupedMetrics.get(groupKey) || [];
 
-        const metricsWithLabels = metricsInGroup.map(m => ({
-          ...m,
-          metadata: {
-            ...m.metadata,
-            title: resolveMetricTranslation(t, m.id, 'title', m.metadata.title),
-          },
-        }));
+          const metricsWithLabels = metricsInGroup.map(m => ({
+            ...m,
+            metadata: {
+              ...m.metadata,
+              title: resolveMetricTranslation(
+                t,
+                m.id,
+                'title',
+                m.metadata.title,
+              ),
+            },
+          }));
 
-        return (
-          <GroupCard
-            key={groupKey}
-            title={groupConfig.title}
-            description={groupConfig.description}
-            metrics={metricsWithLabels}
-          />
-        );
-      })}
+          return (
+            <GroupCard
+              key={groupKey}
+              title={groupConfig.title}
+              description={groupConfig.description}
+              metrics={metricsWithLabels}
+            />
+          );
+        })}
 
-      {ungroupedMetrics.length > 0 &&
-        ungroupedMetrics.map((metric: MetricResult) => {
+      {scorecards.length > 0 &&
+        scorecards.map((metric: MetricResult) => {
           const isMetricDataError =
             metric.status === 'error' || metric.result?.value === null;
           const isThresholdError =
