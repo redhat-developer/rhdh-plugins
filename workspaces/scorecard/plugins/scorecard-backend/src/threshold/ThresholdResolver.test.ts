@@ -105,6 +105,25 @@ describe('ThresholdResolver', () => {
     });
   });
 
+  it('merges entity annotation overrides on top of default provider thresholds when provider is unexpectedly not loaded on startup', () => {
+    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const resolver = new ThresholdResolver(new ConfigReader({}), []);
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+      })
+      .build();
+
+    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+      rules: [
+        { key: 'error', expression: '>40' },
+        { key: 'warning', expression: '>10' },
+        { key: 'success', expression: '<=10' },
+      ],
+    });
+  });
+
   it('merges entity annotation overrides on top of custom provider thresholds', () => {
     const provider = new MockNumberProvider('github.number_metric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [

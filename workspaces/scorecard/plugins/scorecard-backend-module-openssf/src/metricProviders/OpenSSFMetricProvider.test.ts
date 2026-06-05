@@ -204,10 +204,7 @@ describe('OpenSSFMetricProvider', () => {
           }),
         });
 
-        const provider = new OpenSSFMetricProvider(
-          maintainedConfig,
-          OPENSSF_THRESHOLDS,
-        );
+        const provider = new OpenSSFMetricProvider(maintainedConfig);
 
         await expect(provider.calculateMetric(entity)).rejects.toThrow(
           `OpenSSF check 'Maintained' has invalid score ${invalidScore}`,
