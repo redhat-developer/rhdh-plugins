@@ -54,9 +54,7 @@ export default defineConfig({
 
   use: {
     actionTimeout: 0,
-    baseURL:
-      process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
@@ -68,9 +66,22 @@ export default defineConfig({
     {
       name: 'chromium',
       testDir: 'packages/app/e2e-tests',
+      testMatch: /app\.test\.ts$/,
       use: {
         channel: 'chrome',
       },
     },
+    ...(process.env.PLAYWRIGHT_URL
+      ? [
+          {
+            name: 'live',
+            testDir: 'packages/app/e2e-tests',
+            testMatch: /dcm-.*\.test\.ts$/,
+            use: {
+              channel: 'chrome' as const,
+            },
+          },
+        ]
+      : []),
   ],
 });

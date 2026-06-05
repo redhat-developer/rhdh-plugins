@@ -28,7 +28,8 @@
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
-    "e2e-test": "playwright test"
+    "e2e-test": "playwright test",
+    "e2e-test:live": "playwright test --project=live"
   },
   "workspaces": {
     "packages": [
