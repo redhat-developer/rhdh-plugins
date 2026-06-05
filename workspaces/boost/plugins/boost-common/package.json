@@ -1,0 +1,61 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-boost-common",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Common functionalities for the boost plugin",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "common-library",
+    "pluginId": "boost",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-common",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost-common"
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.3.0",
+    "@backstage/plugin-permission-common": "^0.9.7"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5"
+  },
+  "peerDependencies": {
+    "@backstage/backend-plugin-api": "^1.3.0",
+    "@backstage/plugin-permission-common": "^0.9.7"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/boost/plugins/boost-common"
+  },
+  "keywords": [
+    "backstage",
+    "plugin"
+  ],
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "maintainers": [
+    "@durandom",
+    "@gabemontero"
+  ],
+  "author": "Red Hat"
+}
