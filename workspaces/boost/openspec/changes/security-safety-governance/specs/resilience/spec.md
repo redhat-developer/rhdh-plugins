@@ -24,7 +24,7 @@ Per-message and page-level error isolation prevents cascading failures.
 
 - **WHEN** an agent or streaming error occurs
 - **THEN** `ErrorCard` is displayed inline on the affected message
-- **AND** `AugmentErrorBoundary` prevents the entire page from crashing
+- **AND** `BoostErrorBoundary` prevents the entire page from crashing
 - **AND** other messages and navigation remain functional
 
 ### Requirement: Transient Notifications

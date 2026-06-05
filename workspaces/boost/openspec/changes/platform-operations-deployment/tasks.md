@@ -20,11 +20,9 @@
 - [ ] 2.3 Validate all config writes (YAML and DB) via Zod `.parse()` — no hand-written validators
 - [ ] 2.4 Annotate each field with `configScope`: `yaml-only`, `db-overridable`, or `db-only`
 - [ ] 2.5 Add Zod schemas for new config fields: agentApproval, skillsMarketplace, tokenExchange, DevSpaces credentials
-- [ ] 2.6 Update admin UI to only show DB-overridable and DB-only fields
-- [ ] 2.7 Create one-time migration script that validates existing DB values against new schemas
-- [ ] 2.8 Implement credential encryption for sensitive DB-stored values (DevSpaces tokens)
-- [ ] 2.9 Implement schema version tracking: store schema version alongside DB values, re-validate on startup
-- [ ] 2.10 Implement startup migration: validate existing DB values against current Zod schema, remove invalid overrides with logging
+- [ ] 2.6 Admin UI shows only DB-overridable and DB-only fields
+- [ ] 2.7 Implement credential encryption for sensitive DB-stored values (DevSpaces tokens)
+- [ ] 2.8 Implement schema version tracking: store schema version alongside DB values, re-validate on startup
 
 ## 3. Config Field Documentation (P2)
 
@@ -35,6 +33,5 @@
 
 - [ ] 4.1 Verify RuntimeConfigResolver cache works with both in-memory and Redis backends
 - [ ] 4.2 Verify config write → immediate invalidation → new value served in under 1 second
-- [ ] 4.3 Verify Zod validation rejects the same invalid values that hand-written validators did
-- [ ] 4.4 Verify existing DB values pass Zod validation (migration script)
-- [ ] 4.5 Verify multi-instance cache sharing works with Redis in production config
+- [ ] 4.3 Verify Zod validation rejects invalid config values
+- [ ] 4.4 Verify multi-instance cache sharing works with Redis in production config

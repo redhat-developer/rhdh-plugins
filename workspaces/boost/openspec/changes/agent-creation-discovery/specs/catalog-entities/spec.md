@@ -9,16 +9,20 @@ NOTE: These recommendations align with in-flight upstream Backstage initiatives:
 - `AIContext`: Agent Cards will map to this kind when available
 - `API Discriminated Union v1alpha2`: MCP Servers and AI Model Servers will map to the expanded `API` kind when available
 
-The specifications below use existing Backstage kinds (`Resource`, `Component`) as the primary implementation path, with migration to upstream kinds when they land. Custom `CatalogProcessor` validators support both during transition.
+The specifications below use existing Backstage kinds (`Resource`, `Component`) as the primary implementation path, with adoption of upstream kinds when they land. Custom `CatalogProcessor` validators support both during transition.
 
 **Entity type strategy:**
-| Domain Object | Immediate Kind | `spec.type` | Future Kind (upstream) |
-|---|---|---|---|
-| AI Agents | `Component` | `ai-agent` | `AIContext` |
-| AI Models | `Resource` | `ai-model` | `API` (v1alpha2 discriminated union) |
-| MCP Servers | `Resource` | `mcp-server` | `API` (v1alpha2 discriminated union) |
-| Vector Stores | `Resource` | `vector-store` | (no upstream equivalent planned) |
-| Tools | `Resource` | `ai-tool` | (no upstream equivalent planned) |
+| Domain Object | Preferred Kind | `spec.type` | Fallback Kind | Notes |
+|---|---|---|---|---|
+| AI Agents | `Component` | `ai-agent` | — | Future: `AIContext` when upstream lands |
+| AI Models | `Resource` | `ai-model` | — | Future: `API` v1alpha2 discriminated union |
+| MCP Servers | `API` | `mcp-server` | `Resource` | Upstream `McpServerApiEntity` available via `@backstage/plugin-catalog-backend-module-ai-model` ([backstage#34016](https://github.com/backstage/backstage/pull/34016), merged). Uses `spec.remotes: {type, url}[]` instead of `spec.definition`. Fall back to `kind: Resource, spec.type: mcp-server` if the catalog model module is not installed. |
+| Vector Stores | `Resource` | `vector-store` | — | No upstream equivalent planned |
+| Kagenti Tools | `Resource` | `ai-tool` | — | No upstream equivalent planned |
+
+**Note on MCP Server entity kind:** When `@backstage/plugin-catalog-backend-module-ai-model` is installed, MCP servers use `kind: API, spec.type: mcp-server` with `spec.remotes` for transport endpoints. The `McpEntityProvider` should detect whether the model module is available and emit the appropriate kind. Use `isMcpServerApiEntity` type guard from `@backstage/catalog-model` when available.
+
+**Note on tools:** "Kagenti Tools" (`ai-tool`) are K8s workloads with lifecycle governance (`boost-tool` permission resource type). "MCP Servers" (`mcp-server`) are registered protocol endpoints. Individual MCP tools (discovered at runtime via MCP `tools/list`) are not separate catalog entities — they are nested data within their parent MCP server.
 
 Entity providers are **independently deployable Backstage backend services**, each packaged as its own RHDH dynamic plugin (`llamastack-entity-provider`, `kagenti-entity-provider`). They are registered as backend services per the [Backstage backend system architecture](https://backstage.io/docs/backend-system/architecture/services/).
 
@@ -37,23 +41,26 @@ Agents are represented as Backstage catalog entities with lifecycle, ownership, 
 
 #### Scenario: Kagenti module emits agent entities
 
-- **WHEN** the `KagentiAgentEntityProvider` (inside the Kagenti provider module) runs on its scheduled interval
+- **WHEN** the `KagentiAgentEntityProvider` (inside the Kagenti provider module) refreshes its upstream data
 - **THEN** it polls the Kagenti API for all agents across configured namespaces
+- **AND** the upstream refresh interval is configurable via `app-config.yaml` (default: 5m)
+- **AND** Backstage's catalog infrastructure polls the entity provider on its own independent schedule
 - **AND** it emits catalog entities with `kind: Component, spec.type: ai-agent` (or `kind: AIContext` when upstream is available)
 - **AND** agent capabilities, LLM demands, and MCP demands map to `spec.dependsOn` relations
-- **AND** the entity replaces the in-memory `KagentiAgentCardCache` (cache #2)
+- **AND** the catalog is the source of truth for agent data — no in-memory cache needed
 
 #### Scenario: Llama Stack module emits agent entities
 
-- **WHEN** the `LlamaStackAgentEntityProvider` (inside the Llama Stack provider module) runs on its scheduled interval
+- **WHEN** the `LlamaStackAgentEntityProvider` (inside the Llama Stack provider module) refreshes its upstream data
 - **THEN** it reads configured agents from YAML/admin config
+- **AND** the upstream refresh interval is configurable via `app-config.yaml` (default: 5m)
 - **AND** it emits catalog entities for each configured agent with their tool sets and handoff targets
 
 #### Scenario: Agent lifecycle reflected in catalog
 
 - **WHEN** an agent transitions through lifecycle stages (Draft → Pending → Published → Archived)
 - **THEN** the catalog entity's `metadata.annotations` reflect the current 4-stage lifecycle stage
-- **AND** catalog entity lifecycle state maps: Draft → `experimental`, Published → `production`, Archived → `deprecated`
+- **AND** catalog entity lifecycle state maps: Draft → `experimental`, Pending → `experimental`, Published → `production`, Archived → `deprecated`
 - **AND** `createdBy` ownership maps to catalog entity `spec.owner` for RBAC integration
 
 ### Requirement: AI Model Catalog Entities
@@ -106,7 +113,7 @@ Entity providers are independently deployable Backstage backend services.
 
 - **WHEN** a boost provider module (e.g., `plugin-boost-backend-module-kagenti`) is installed
 - **THEN** it composes the `kagenti-entity-provider` package internally
-- **AND** it registers both AI capabilities (via `augmentProviderExtensionPoint`) and catalog entities (via `catalogProcessingExtensionPoint`)
+- **AND** it registers both AI capabilities (via `boostProviderExtensionPoint`) and catalog entities (via `catalogProcessingExtensionPoint`)
 - **AND** installing the provider module gives you both AI capabilities and catalog entities in one step
 
 #### Scenario: Cross-cutting entity providers in core plugin

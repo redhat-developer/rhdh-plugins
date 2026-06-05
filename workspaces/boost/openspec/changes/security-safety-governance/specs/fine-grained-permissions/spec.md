@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Expand from 2 coarse permissions to 16 fine-grained permissions across 3 resource types with conditional rules, replacing custom route-level governance with proper Backstage RBAC. This eliminates the parallel authorization system (2,132 lines of custom governance code vs. 73 lines of Backstage permissions) by migrating all 12+ authorization decisions into `permissions.authorize()`.
+Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules, using `permissions.authorize()` as the sole authorization mechanism. All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
 
 ## ADDED Requirements
 
@@ -16,16 +16,16 @@ RBAC policies govern agent lifecycle transitions with ownership and separation-o
 - **THEN** the following agent permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
-  | `augment.agent.list` | — | — | View agent list (visibility filtering) |
-  | `augment.agent.register` | — | — | Register an agent for governance |
-  | `augment.agent.promote` | `augment-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Submit draft for review (draft→pending) |
-  | `augment.agent.approve` | `augment-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending (pending→published) |
-  | `augment.agent.demote` | `augment-agent` | — | Reject, request-unpublish, approve-unpublish |
-  | `augment.agent.publish` | `augment-agent` | — | Publish an approved agent |
-  | `augment.agent.unpublish` | `augment-agent` | `IS_OWNER` | Request unpublishing |
-  | `augment.agent.withdraw` | `augment-agent` | `IS_OWNER` | Withdraw pending submission |
-  | `augment.agent.delete` | `augment-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Delete agent |
-  | `augment.agent.configure` | — | — | Edit agent configuration |
+  | `boost.agent.list` | — | — | View agent list (visibility filtering) |
+  | `boost.agent.register` | — | — | Register an agent for governance |
+  | `boost.agent.promote` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Submit draft for review (draft→pending) |
+  | `boost.agent.approve` | `boost-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending (pending→published) |
+  | `boost.agent.demote` | `boost-agent` | — | Reject, request-unpublish, approve-unpublish |
+  | `boost.agent.publish` | `boost-agent` | — | Publish an approved agent |
+  | `boost.agent.unpublish` | `boost-agent` | `IS_OWNER` | Request unpublishing |
+  | `boost.agent.withdraw` | `boost-agent` | `IS_OWNER` | Withdraw pending submission |
+  | `boost.agent.delete` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Delete agent |
+  | `boost.agent.configure` | — | — | Edit agent configuration |
 
 #### Scenario: Self-approval prevention via IS_NOT_CREATOR rule
 
@@ -43,7 +43,7 @@ RBAC policies govern agent lifecycle transitions with ownership and separation-o
 
 ### Requirement: Tool Lifecycle Permissions (Resource-Based)
 
-RBAC policies govern tool lifecycle transitions.
+RBAC policies govern Kagenti tool lifecycle transitions. The `boost-tool` resource type represents Kagenti tools (K8s workloads with lifecycle governance) — not MCP servers or MCP tools. MCP servers are registered endpoints without lifecycle permissions; MCP tools are runtime-discovered children of MCP servers with no independent lifecycle.
 
 #### Scenario: Tool permission definitions
 
@@ -51,18 +51,18 @@ RBAC policies govern tool lifecycle transitions.
 - **THEN** the following tool permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
-  | `augment.tool.promote` | `augment-tool` | `IS_OWNER` | Promote tool lifecycle |
-  | `augment.tool.approve` | `augment-tool` | `IS_NOT_CREATOR` | Approve tool promotion |
-  | `augment.tool.demote` | `augment-tool` | — | Demote tool lifecycle stage |
-  | `augment.tool.publish` | `augment-tool` | — | Publish a tool |
-  | `augment.tool.unpublish` | `augment-tool` | — | Unpublish a tool |
+  | `boost.tool.promote` | `boost-tool` | `IS_OWNER` | Promote tool lifecycle |
+  | `boost.tool.approve` | `boost-tool` | `IS_NOT_CREATOR` | Approve tool promotion |
+  | `boost.tool.demote` | `boost-tool` | — | Demote tool lifecycle stage |
+  | `boost.tool.publish` | `boost-tool` | — | Publish a tool |
+  | `boost.tool.unpublish` | `boost-tool` | — | Unpublish a tool |
 
 ### Requirement: Infrastructure Permissions
 
 #### Scenario: Kagenti admin permission
 
 - **WHEN** a user accesses Kagenti infrastructure operations
-- **THEN** `augment.kagenti.admin` permission is checked
+- **THEN** `boost.kagenti.admin` permission is checked
 - **AND** this covers namespace management, build pipelines, sandbox, and platform links
 
 ### Requirement: Conditional Permission Rules
@@ -95,8 +95,8 @@ Existing 2-permission deployments continue to work without policy changes.
 
 - **WHEN** a lifecycle or admin action is invoked
 - **THEN** the specific fine-grained permission is checked via `permissions.authorize()`
-- **AND** `augment.access` serves as a top-level gate (if denied, all sub-permissions are denied)
-- **AND** `augment.admin` is available for deployments that prefer coarse-grained admin control
+- **AND** `boost.access` serves as a top-level gate (if denied, all sub-permissions are denied)
+- **AND** `boost.admin` is available for deployments that prefer coarse-grained admin control
 
 ### Requirement: Route-Level Authorization Middleware
 
@@ -108,7 +108,7 @@ A shared middleware replaces scattered route-level guards.
 - **THEN** `authorizeLifecycleAction(permission, resourceLoader)` middleware:
   1. Loads the resource (agent or tool)
   2. Calls `permissions.authorize()` with the fine-grained permission and resource
-  3. On DENY, falls back to `augment.admin`
+  3. On DENY, falls back to `boost.admin`
   4. On both DENY, returns 403
 - **AND** this replaces the per-route `checkIsAdmin` + `getUserRef` + ownership patterns
 
@@ -117,9 +117,9 @@ A shared middleware replaces scattered route-level guards.
 #### Scenario: Permissions exported from common package
 
 - **WHEN** permission constants are needed by frontend or backend
-- **THEN** they are exported from `@augment/plugin-augment-common`
+- **THEN** they are exported from `@boost/plugin-boost-common`
 - **AND** basic permissions use `createPermission` from `@backstage/plugin-permission-common`
-- **AND** resource permissions use `createResourcePermission` with resource types `augment-agent` and `augment-tool`
+- **AND** resource permissions use `createResourcePermission` with resource types `boost-agent` and `boost-tool`
 
 ### Requirement: Functional Area Permissions (non-lifecycle)
 
@@ -129,9 +129,9 @@ A shared middleware replaces scattered route-level guards.
 - **THEN** the following functional permissions are also registered:
   | Permission | Action | Gates |
   |---|---|---|
-  | `augment.chat.read` | read | View chat interface, read messages |
-  | `augment.chat.create` | create | Send messages, start sessions |
-  | `augment.documents.manage` | update | Upload documents, sync RAG sources |
-  | `augment.mcp.manage` | update | Configure MCP servers |
-  | `augment.config.manage` | update | Modify admin configuration |
+  | `boost.chat.read` | read | View chat interface, read messages |
+  | `boost.chat.create` | create | Send messages, start sessions |
+  | `boost.documents.manage` | update | Upload documents, sync RAG sources |
+  | `boost.mcp.manage` | update | Configure MCP servers |
+  | `boost.config.manage` | update | Modify admin configuration |
 - **AND** these supplement the lifecycle permissions for comprehensive coverage

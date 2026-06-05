@@ -11,7 +11,7 @@
 
 ## Why
 
-Augment's core value proposition is enabling developers to have intelligent, grounded conversations with specialist AI agents — directly within their developer portal. Without a compelling chat experience, the platform has no user-facing value regardless of what's configured behind it.
+Boost's core value proposition is enabling developers to have intelligent, grounded conversations with specialist AI agents — directly within their developer portal. Without a compelling chat experience, the platform has no user-facing value regardless of what's configured behind it.
 
 This PRD defines the primary interaction surface: the streaming chat interface, knowledge-grounded answers, human-in-the-loop approval controls, conversation history management, and developer debugging tools. Together, these capabilities form the "inner loop" of the developer-agent relationship.
 
@@ -183,7 +183,7 @@ All frontend components and UI flows must align with RHDH usability and visual d
 
 The chat experience spans the full plugin stack:
 
-**Frontend (`plugins/augment/src/`):**
+**Frontend (`plugins/boost/src/`):**
 
 - `ChatContainer` orchestrates the chat experience (welcome vs thread mode)
 - `StreamingMessage` with `StreamingProgress` for real-time rendering
@@ -202,7 +202,7 @@ Boost builds composable from the start, avoiding augment's monolithic frontend p
 - No component exceeds reasonable size without decomposition
 - All UI built from UX/UXD-provided mockups with PatternFly alignment
 
-**Backend (`plugins/augment-backend/src/`):**
+**Backend (`plugins/boost-backend/src/`):**
 
 - `chatRoutes.ts`: POST `/chat/stream`, POST `/chat/approve`
 - `sessionRoutes.ts`: GET `/sessions`, GET `/sessions/:id/messages`
@@ -210,10 +210,10 @@ Boost builds composable from the start, avoiding augment's monolithic frontend p
 - `BackendApprovalStore` / `BackendApprovalHandler`: HITL continuation
 - Streaming pipeline: `createStreamEventForwarder` → provider → `NormalizedStreamEvent` → SSE
 
-**Common (`plugins/augment-common/`):**
+**Common (`plugins/boost-common/`):**
 
 - `NormalizedStreamEvent` union type covering all stream event categories
-- Permission contracts: `augmentAccessPermission`, `augmentAdminPermission`
+- Permission contracts: `boostAccessPermission`, `boostAdminPermission`
 
 ---
 

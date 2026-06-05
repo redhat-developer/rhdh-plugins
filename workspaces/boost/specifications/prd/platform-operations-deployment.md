@@ -66,7 +66,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 | Package                           | Type            | Description                                                                                               |
 | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
 | `boost-frontend`                  | Frontend plugin | Chat UI, agent gallery, admin panels, composable extensions                                               |
-| `boost-common`                    | Common library  | Shared types (`AgenticProvider`, `NormalizedStreamEvent`, permissions), `augmentAiProviderServiceRef`     |
+| `boost-common`                    | Common library  | Shared types (`AgenticProvider`, `NormalizedStreamEvent`, permissions), `boostAiProviderServiceRef`       |
 | `boost-backend`                   | Backend plugin  | Core routes, services, middleware, `ProviderManager`, cross-cutting entity providers (MCP, vector stores) |
 | `boost-backend-module-llamastack` | Backend module  | Llama Stack agentic provider (composes `llamastack-entity-provider`)                                      |
 | `boost-backend-module-kagenti`    | Backend module  | Kagenti agentic provider (composes `kagenti-entity-provider`)                                             |
@@ -158,7 +158,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ### 4. Manage Runtime Configuration (UC-21)
 
-**Goal:** Change Augment's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
+**Goal:** Change Boost's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
 
 **Configuration engine:**
 
@@ -194,7 +194,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ### 5. White-Label the Portal (UC-22)
 
-**Goal:** Customize the Augment experience to match the organization's brand — all at runtime.
+**Goal:** Customize the Boost experience to match the organization's brand — all at runtime.
 
 **Customizable elements:**
 
@@ -226,7 +226,7 @@ app-config.yaml (YAML baseline)
          ↓
 RuntimeConfigResolver (cacheService-backed, 30s TTL)
          ↓ (merges)
-AdminConfigService (DB overrides, augment_admin_config table)
+AdminConfigService (DB overrides, boost_admin_config table)
          ↓
 Zod schema validation (single source of truth)
          ↓
@@ -238,10 +238,10 @@ Backend services + Frontend via admin API
 **Database layer:**
 
 - 6 tables in Backstage database (SQLite dev, PostgreSQL prod)
-- `augment_admin_config`: runtime configuration overrides
-- `augment_sessions`: conversation persistence
-- `augment_messages`: message history
-- `augment_feedback`: user feedback on messages
+- `boost_admin_config`: runtime configuration overrides
+- `boost_sessions`: conversation persistence
+- `boost_messages`: message history
+- `boost_feedback`: user feedback on messages
 
 **Deployment models:**
 

@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Multi-level security configuration controlling who accesses Augment, who has admin privileges, and how tool connections are authenticated.
+Multi-level security configuration controlling who accesses Boost, who has admin privileges, and how tool connections are authenticated.
 
 ## EXISTING Requirements
 
@@ -10,25 +10,32 @@ Multi-level security configuration controlling who accesses Augment, who has adm
 
 The plugin supports progressive security enforcement from development through production.
 
-#### Scenario: Security mode `none` (development only)
+#### Scenario: Security mode `development-only-no-auth` (development only)
 
-- **WHEN** `augment.security.mode` is set to `none`
+- **WHEN** `boost.security.mode` is set to `development-only-no-auth`
 - **THEN** the frontend shows no SecurityGate — all users pass as guest
 - **AND** the backend skips RBAC and treats everyone as admin
 - **AND** provider auth uses static token/TLS if configured
+- **AND** if detected in a non-development environment, a prominent warning is logged at startup
+
+#### Scenario: Rejected legacy mode name `none`
+
+- **WHEN** `boost.security.mode` is set to `none`
+- **THEN** boost fails to start with a clear error message
+- **AND** the error directs the user to use `development-only-no-auth` instead
 
 #### Scenario: Security mode `plugin-only` (recommended production)
 
-- **WHEN** `augment.security.mode` is set to `plugin-only`
-- **THEN** `SecurityGate` wraps `AugmentPage` with `RequirePermission`
-- **AND** the backend enforces `augment.access` via `requirePluginAccess` middleware
+- **WHEN** `boost.security.mode` is set to `plugin-only`
+- **THEN** `SecurityGate` wraps `BoostPage` with `RequirePermission`
+- **AND** the backend enforces `boost.access` via `requirePluginAccess` middleware
 - **AND** admin access uses an explicit `adminUsers` allowlist
 - **AND** real user principal is extracted from the request
 
 #### Scenario: Security mode `full` (full production with token propagation)
 
-- **WHEN** `augment.security.mode` is set to `full`
-- **THEN** the backend enforces both `augment.access` and `augment.admin` via Backstage RBAC
+- **WHEN** `boost.security.mode` is set to `full`
+- **THEN** the backend enforces both `boost.access` and `boost.admin` via Backstage RBAC
 - **AND** MCP OAuth chain is configured for token propagation to tool servers
 - **AND** Kagenti uses Keycloak OAuth2 + SPIRE mTLS
 
@@ -38,7 +45,7 @@ Unauthorized users see meaningful access-denied pages, not broken UIs.
 
 #### Scenario: SecurityGate blocks unauthorized access
 
-- **WHEN** a user without `augment.access` permission navigates to Augment
+- **WHEN** a user without `boost.access` permission navigates to Boost
 - **THEN** `SecurityGate` renders a meaningful access-denied page
 - **AND** the page explains what permission is needed and how to request access
 
@@ -80,7 +87,7 @@ User identity is delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agen
 
 #### Scenario: Token exchange enabled
 
-- **WHEN** `augment.kagenti.auth.tokenExchange.enabled` is `true`
+- **WHEN** `boost.kagenti.auth.tokenExchange.enabled` is `true`
 - **AND** a user's OIDC token is available via the configured header (default: `X-Forwarded-Access-Token`)
 - **THEN** `TokenExchangeManager` exchanges the user's token for a Kagenti-scoped token via RFC 8693
 - **AND** the exchanged token is cached per-user with TTL from token expiry
@@ -100,9 +107,9 @@ User identity is delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agen
 - **THEN** the following config is used:
   | Key | Default | Description |
   |---|---|---|
-  | `augment.kagenti.auth.tokenExchange.enabled` | `false` | Enable per-user token exchange |
-  | `augment.kagenti.auth.tokenExchange.audience` | — | Target audience for exchanged token |
-  | `augment.kagenti.auth.tokenExchange.userTokenHeader` | `X-Forwarded-Access-Token` | Header containing user's OIDC token |
+  | `boost.kagenti.auth.tokenExchange.enabled` | `false` | Enable per-user token exchange |
+  | `boost.kagenti.auth.tokenExchange.audience` | — | Target audience for exchanged token |
+  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | `X-Forwarded-Access-Token` | Header containing user's OIDC token |
 
 #### Scenario: LlamaStack provider unaffected
 
@@ -127,21 +134,20 @@ Sensitive credentials are stored encrypted in the admin config database.
 #### Scenario: DevSpaces token encryption
 
 - **WHEN** a DevSpaces token is stored in admin configuration
-- **THEN** the token is encrypted at rest in the `augment_admin_config` table
+- **THEN** the token is encrypted at rest in the `boost_admin_config` table
 - **AND** plaintext storage of credentials is not permitted
 
 ## MODIFIED Requirements
 
 ### Requirement: Security Mode Naming
 
-The `none` mode name must clearly indicate its development-only nature.
+The development security mode uses an explicit name that communicates its purpose. The legacy name `none` is not accepted.
 
-#### Scenario: Renamed security mode with production warning
+#### Scenario: Only valid mode names accepted
 
-- **WHEN** `augment.security.mode` is set to `development-only-no-auth` (renamed from `none`)
-- **THEN** behavior is identical to the current `none` mode
-- **AND** if detected in a non-development environment, a prominent warning is logged at startup
-- **AND** boost uses `development-only-no-auth` as the only name for this mode (no legacy aliases)
+- **WHEN** `boost.security.mode` is set to any value
+- **THEN** only `development-only-no-auth`, `plugin-only`, and `full` are accepted
+- **AND** any other value (including `none`) causes a startup error with guidance on valid options
 
 ### Requirement: Identity Resolution
 

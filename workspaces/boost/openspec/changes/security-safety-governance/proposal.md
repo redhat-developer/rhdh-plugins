@@ -2,32 +2,47 @@
 
 ## Why
 
-Enterprise AI platforms must treat security, safety, and governance as foundational capabilities. Augment implements a three-tier security mode system, RBAC, content safety shields, SSRF protection, and zero data retention. However, the permission model is too coarse (2 permissions vs. peer plugins' 7+), the security modes are non-standard, and there are no resource-based permissions for owned resources.
+Enterprise AI platforms must treat security, safety, and governance as foundational capabilities. Boost implements a three-tier security mode system, RBAC, content safety shields, SSRF protection, and zero data retention. The permission model uses 16 fine-grained Backstage permissions from day one, with resource-based permissions for owned resources and conditional rules for ownership and lifecycle gating.
 
-## What Changes
+## What Boost Builds
 
-### Current Capabilities (retroactive documentation)
+### Security Modes
 
-- Three security modes: `none`, `plugin-only`, `full`
-- RBAC via Keycloak OIDC + Backstage permissions (`augment.access`, `augment.admin`)
-- Frontend `SecurityGate` with meaningful access-denied page
-- Content safety shields (input/output) with fail-open/fail-closed
-- SSRF protection via `SsrfGuard` on all backend HTTP paths
-- Zero Data Retention mode with encrypted reasoning tokens
+- Three security modes: `development-only-no-auth`, `plugin-only`, `full`
+- Production environment detection with startup warning
+
+### Fine-Grained Permissions
+
+- 16 Backstage permissions across 2 resource types (`boost-agent`, `boost-tool`) plus functional permissions
+- Conditional rules: `IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`
+- `authorizeLifecycleAction` middleware as the sole authorization path — no scattered per-route guards
+- All authorization decisions use `permissions.authorize()` from day one
+
+### Identity & Authentication
+
+- RBAC via Keycloak OIDC + Backstage permissions (`boost.access`, `boost.admin` as top-level gates)
+- RFC 8693 token exchange for per-user Kagenti identity delegation
+- Graceful fallback to service-account token on any exchange failure
 - MCP 4-level auth chain
 - Kagenti SPIRE integration for infrastructure mTLS
-- Provider offline detection and error boundaries
 
-### Architectural Improvements (from tech debt analysis)
+### Safety & Protection
 
-- Expand from 2 to 7-9 fine-grained permissions (matching Lightspeed granularity)
-- Add resource-based permissions for owned resources (sessions, documents, agents)
-- Rename `none` security mode to `development-only-no-auth` with production warning
-- Replace `adminUsers` fallback with standard Backstage RBAC-only pattern
+- Content safety shields (input/output) with fail-open/fail-closed modes
+- SSRF protection via `SsrfGuard` on all backend HTTP paths
+- Zero Data Retention mode with encrypted reasoning tokens
+- CSRF protection via `X-Backstage-Request` header
+- Credential encryption for sensitive DB-stored values
+
+### Frontend Security
+
+- `SecurityGate` component with meaningful access-denied page
+- `<RequirePermission>` wrapping for fine-grained UI gating
+- Batched permission checks via `usePermissions` for performance
 
 ## Impact
 
-- `plugins/augment-common/src/permissions.ts` — expanded permission definitions
-- `plugins/augment-backend/src/middleware/security.ts` — fine-grained enforcement
-- `plugins/augment/src/components/SecurityGate.tsx` — granular permission checks
-- `plugins/augment-backend/src/routes/` — per-route permission requirements
+- `plugins/boost-common/src/permissions.ts` — 16 permission definitions with resource types
+- `plugins/boost-backend/src/middleware/security.ts` — `authorizeLifecycleAction` middleware
+- `plugins/boost-frontend/src/components/SecurityGate.tsx` — granular permission checks
+- `plugins/boost-backend/src/services/TokenExchangeManager.ts` — RFC 8693 implementation

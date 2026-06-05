@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-The frontend must be decomposed from a monolithic `AugmentPage` into composable extensions with lazy loading, feature flags, and capability-driven rendering.
+The frontend must be decomposed from a monolithic `BoostPage` into composable extensions with lazy loading, feature flags, and capability-driven rendering.
 
 ## ADDED Requirements
 
@@ -13,20 +13,20 @@ Deployers can mount chat, admin, and agent studio independently.
 #### Scenario: Independent chat extension
 
 - **WHEN** a deployer wants only the chat interface without admin panels
-- **THEN** they mount `AugmentChatPage` as a standalone routable extension
-- **AND** it is provided via `augmentPlugin.provide(createRoutableExtension({ name: 'AugmentChatPage', mountPoint: chatRouteRef }))`
+- **THEN** they mount `BoostChatPage` as a standalone routable extension
+- **AND** it is provided via `boostPlugin.provide(createRoutableExtension({ name: 'BoostChatPage', mountPoint: chatRouteRef }))`
 - **AND** it can be configured independently in `dynamic-plugins.yaml` with its own `dynamicRoutes` entry
 
 #### Scenario: Independent admin extension
 
 - **WHEN** a deployer wants to mount the admin panel at a separate route
-- **THEN** they mount `AugmentAdminPage` as a standalone routable extension
+- **THEN** they mount `BoostAdminPage` as a standalone routable extension
 - **AND** it uses the existing `settingsAdminRouteRef` mount point
 
 #### Scenario: Monolithic default preserved
 
 - **WHEN** no specific extensions are configured
-- **THEN** the existing `AugmentPage` continues to work as the all-in-one default
+- **THEN** the default `BoostPage` continues to work as the all-in-one composition root
 - **AND** each extension is independently mountable
 
 ### Requirement: Lazy Loading in Primary Paths
@@ -55,7 +55,7 @@ Deployers control feature visibility via `app-config.yaml`.
 - **WHEN** an administrator configures feature flags in `app-config.yaml`
 - **THEN** the following features can be individually enabled or disabled:
   ```yaml
-  augment:
+  boost:
     features:
       agentCreation: true
       devSpaces: false

@@ -44,7 +44,7 @@ The chat interface degrades gracefully on errors.
 
 - **WHEN** an agent returns an error during a streaming response
 - **THEN** an `ErrorCard` is displayed inline within the message
-- **AND** the page does not crash (protected by `AugmentErrorBoundary`)
+- **AND** the page does not crash (protected by `BoostErrorBoundary`)
 - **AND** the conversation remains navigable
 
 ### Requirement: Conversation Auto-Save

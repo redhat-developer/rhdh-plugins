@@ -12,9 +12,9 @@ The Llama Stack provider is packaged as an independent Backstage backend module 
 
 #### Scenario: Module registration
 
-- **WHEN** the `plugin-augment-backend-module-llamastack` package is installed
-- **THEN** it creates a `createBackendModule` with `pluginId: 'augment'` and `moduleId: 'llamastack'`
-- **AND** it registers `ResponsesApiProviderFactory` via `augmentProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
+- **WHEN** the `plugin-boost-backend-module-llamastack` package is installed
+- **THEN** it creates a `createBackendModule` with `pluginId: 'boost'` and `moduleId: 'llamastack'`
+- **AND** it registers `ResponsesApiProviderFactory` via `boostProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
 - **AND** it composes `llamastack-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint`
 - **AND** `llamastack-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost)
 - **AND** it depends on `coreServices.config` for Llama Stack connection settings
@@ -26,10 +26,10 @@ The Llama Stack provider is packaged as an independent Backstage backend module 
 - **THEN** it is packaged as an OCI image via `@red-hat-developer-hub/cli plugin export`
 - **AND** it is configured in `dynamic-plugins.yaml` as:
   ```yaml
-  - package: oci://registry/augment-backend-module-llamastack:tag!augment-backend-module-llamastack-dynamic
+  - package: oci://registry/boost-backend-module-llamastack:tag!boost-backend-module-llamastack-dynamic
     disabled: false
   ```
-- **AND** it can be installed or removed independently of the core augment backend
+- **AND** it can be installed or removed independently of the core boost backend
 
 #### Scenario: Module uses Backstage cacheService
 
@@ -44,9 +44,9 @@ The Kagenti provider is packaged as an independent Backstage backend module.
 
 #### Scenario: Module registration
 
-- **WHEN** the `plugin-augment-backend-module-kagenti` package is installed
-- **THEN** it creates a `createBackendModule` with `pluginId: 'augment'` and `moduleId: 'kagenti'`
-- **AND** it registers `KagentiProviderFactory` via `augmentProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
+- **WHEN** the `plugin-boost-backend-module-kagenti` package is installed
+- **THEN** it creates a `createBackendModule` with `pluginId: 'boost'` and `moduleId: 'kagenti'`
+- **AND** it registers `KagentiProviderFactory` via `boostProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
 - **AND** it composes `kagenti-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint`
 - **AND** `kagenti-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost)
 - **AND** it depends on `coreServices.config` for Kagenti/Keycloak connection settings
@@ -72,7 +72,7 @@ Provider-internal subsystems with zero Backstage coupling are extracted as stand
 #### Scenario: toolscope extracted as standalone package
 
 - **WHEN** the `services/toolscope/` subsystem (29 files, zero Backstage dependencies) is needed
-- **THEN** it is available as `@augment/toolscope` (or `@augment-adk/toolscope`)
+- **THEN** it is available as `@boost/toolscope`
 - **AND** the embedding cache (currently unbounded `Map<>`) is replaced with an injectable cache interface
 - **AND** the session cache (currently raw `Map<>` with 1h TTL, max 1000) uses the injected cache
 

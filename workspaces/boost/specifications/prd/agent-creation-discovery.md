@@ -11,7 +11,7 @@
 
 ## Why
 
-An agentic AI platform is only as valuable as the agents running on it. Augment must support the full agent lifecycle — from initial creation through discovery by end users — across two fundamentally different personas: citizen developers who create agents visually and professional developers who build agents with code.
+An agentic AI platform is only as valuable as the agents running on it. Boost must support the full agent lifecycle — from initial creation through discovery by end users — across two fundamentally different personas: citizen developers who create agents visually and professional developers who build agents with code.
 
 This PRD defines the four creation paths, the discovery and browsing experience, and MCP tool connectivity that powers agent capabilities. Together, these form the "supply side" of the agent ecosystem.
 
@@ -99,7 +99,7 @@ All agent creation, gallery, and admin UI flows must align with RHDH usability a
 
 ### 3. Create an Agent — Umbrella (UC-7)
 
-**Goal:** Create a new AI agent that serves users through the Augment chat interface.
+**Goal:** Create a new AI agent that serves users through the Boost chat interface.
 
 Four creation methods converge to a unified `ChatAgent` model:
 
@@ -171,7 +171,7 @@ All methods produce an agent visible in the gallery and available in chat.
 
 ### 7. Import an Existing Agent (UC-12)
 
-**Goal:** Bring an already-built agent (container image or source repo) and make it available through Augment.
+**Goal:** Bring an already-built agent (container image or source repo) and make it available through Boost.
 
 **Container image flow:**
 
@@ -210,24 +210,24 @@ All methods produce an agent visible in the gallery and available in chat.
 
 ### 9. Skills Marketplace Integration
 
-**Goal:** Integrate with an external skills marketplace (provided by a separate workspace) to browse, select, and deploy pre-built skills-based agents into the Augment environment.
+**Goal:** Integrate with an external skills marketplace (provided by a separate workspace) to browse, select, and deploy pre-built skills-based agents into the Boost environment.
 
-**Note:** Augment does not own or implement the skills marketplace itself. The marketplace is provided by another workspace/team. Augment is a consumer that proxies requests to the external skills catalog and handles the deployment of selected skills into the local Kagenti environment.
+**Note:** Boost does not own or implement the skills marketplace itself. The marketplace is provided by another workspace/team. Boost is a consumer that proxies requests to the external skills catalog and handles the deployment of selected skills into the local Kagenti environment.
 
 **How it works:**
 
 1. Admin navigates to the Skills section in the admin panel
-2. Augment proxies browse/filter requests to the external skills catalog backend
-3. Admin selects a skill → Augment generates the K8s deployment manifest with init container for OCI skill extraction
+2. Boost proxies browse/filter requests to the external skills catalog backend
+3. Admin selects a skill → Boost generates the K8s deployment manifest with init container for OCI skill extraction
 4. Deploy skill agent to local namespace → deployment progress polling shows status
-5. Deployed skill agents appear in the Augment gallery with a `DocsClaw` framework label and skill badge
+5. Deployed skill agents appear in the Boost gallery with a `DocsClaw` framework label and skill badge
 
 **Integration architecture:**
 
-- `GET /skills` proxies to the external skills catalog backend (endpoint configured via `augment.skillsMarketplace.endpoint`)
+- `GET /skills` proxies to the external skills catalog backend (endpoint configured via `boost.skillsMarketplace.endpoint`)
 - `GET /skills/runtimes` and `GET /skills/domains` proxy filter metadata from the external catalog
-- Augment handles deployment only: K8s manifest generation, OCI init containers, namespace scoping
-- Deployed skills agents carry a `chatEndpoint` field for direct chat routing within Augment
+- Boost handles deployment only: K8s manifest generation, OCI init containers, namespace scoping
+- Deployed skills agents carry a `chatEndpoint` field for direct chat routing within Boost
 
 ### 10. Backstage Catalog Representation
 
@@ -290,8 +290,8 @@ Boost uses the 4-stage model from the start — no legacy stage mappings or norm
 
 **Skills marketplace integration:**
 
-- Augment proxies browse/filter requests to an external skills catalog backend (separate workspace)
-- Augment owns deployment only: K8s manifest generation with OCI init containers
+- Boost proxies browse/filter requests to an external skills catalog backend (separate workspace)
+- Boost owns deployment only: K8s manifest generation with OCI init containers
 - Deployed skill agents carry `framework: 'docsclaw'` and `chatEndpoint` field
 
 **Kagenti admin surface:**

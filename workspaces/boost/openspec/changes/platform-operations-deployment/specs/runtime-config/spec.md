@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Change Augment's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
+Change Boost's behavior at runtime — model, system prompt, tools, caps, and more — without restarting.
 
 ## EXISTING Requirements
 
@@ -21,7 +21,7 @@ YAML baseline + database overrides with automatic fallback.
 #### Scenario: Config write invalidation
 
 - **WHEN** an admin writes a config value via the admin panel
-- **THEN** `AdminConfigService` persists it to the `augment_admin_config` table
+- **THEN** `AdminConfigService` persists it to the `boost_admin_config` table
 - **AND** the `RuntimeConfigResolver` cache is immediately invalidated
 - **AND** the new value takes effect within seconds (not waiting for TTL expiry)
 
@@ -90,8 +90,8 @@ New features require additional runtime configuration fields.
 - **THEN** the following fields are available:
   | Field | Scope | Description |
   |---|---|---|
-  | `augment.agentApproval.mode` | db-overridable | Built-in or SonataFlow-managed approval |
-  | `augment.agentApproval.sonataflow.endpoint` | yaml-only | SonataFlow workflow endpoint |
+  | `boost.agentApproval.mode` | db-overridable | Built-in or SonataFlow-managed approval |
+  | `boost.agentApproval.sonataflow.endpoint` | yaml-only | SonataFlow workflow endpoint |
 
 #### Scenario: Skills marketplace configuration
 
@@ -99,8 +99,8 @@ New features require additional runtime configuration fields.
 - **THEN** the following fields are available:
   | Field | Scope | Description |
   |---|---|---|
-  | `augment.skillsMarketplace.endpoint` | yaml-only | Skills catalog backend URL |
-  | `augment.skillsMarketplace.enabled` | db-overridable | Enable/disable skills marketplace |
+  | `boost.skillsMarketplace.endpoint` | yaml-only | Skills catalog backend URL |
+  | `boost.skillsMarketplace.enabled` | db-overridable | Enable/disable skills marketplace |
 
 #### Scenario: Token exchange configuration
 
@@ -108,14 +108,14 @@ New features require additional runtime configuration fields.
 - **THEN** the following fields are available:
   | Field | Scope | Description |
   |---|---|---|
-  | `augment.kagenti.auth.tokenExchange.enabled` | yaml-only | Enable RFC 8693 token exchange |
-  | `augment.kagenti.auth.tokenExchange.audience` | yaml-only | Target audience for exchanged token |
-  | `augment.kagenti.auth.tokenExchange.userTokenHeader` | yaml-only | Header containing user OIDC token |
+  | `boost.kagenti.auth.tokenExchange.enabled` | yaml-only | Enable RFC 8693 token exchange |
+  | `boost.kagenti.auth.tokenExchange.audience` | yaml-only | Target audience for exchanged token |
+  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | yaml-only | Header containing user OIDC token |
 
 #### Scenario: Credential encryption
 
 - **WHEN** sensitive credentials (DevSpaces tokens) are stored
-- **THEN** they are encrypted at rest in the `augment_admin_config` table
+- **THEN** they are encrypted at rest in the `boost_admin_config` table
 - **AND** the admin UI masks credential values
 
 ### Requirement: Config Schema Versioning
@@ -125,7 +125,7 @@ DB-stored config values survive schema changes across upgrades.
 #### Scenario: Schema evolution on startup
 
 - **WHEN** boost starts and the Zod schema has changed since the last run
-- **THEN** a startup migration validates all existing DB values against the current schema
+- **THEN** a startup validation checks all existing DB values against the current schema
 - **AND** values that pass validation are kept as-is
 - **AND** values that fail validation are logged with details (field, stored value, validation error)
 - **AND** failed values are removed from the DB override, restoring the YAML baseline for those fields

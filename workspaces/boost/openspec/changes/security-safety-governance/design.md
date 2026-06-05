@@ -2,18 +2,18 @@
 
 ## Context
 
-Boost builds the security and governance layer from scratch, informed by augment's experience. Augment's governance system grew into a parallel authorization layer (2,132 lines of custom code vs. 73 lines of Backstage permissions — 29x ratio) where 12 authorization decisions bypassed `permissions.authorize()`. Boost avoids this entirely: all authorization decisions use Backstage fine-grained permissions from day one.
+Boost builds the security and governance layer with Backstage fine-grained permissions as the sole authorization mechanism from day one. The Augment reference prototype's governance system grew into a parallel authorization layer where authorization decisions bypassed `permissions.authorize()`. Boost avoids this entirely.
 
-Augment also authenticated to Kagenti using a shared service-account token for all users, making per-user audit trails impossible. Boost implements RFC 8693 token exchange for per-user identity delegation from the start.
+Boost also implements RFC 8693 token exchange for per-user identity delegation to Kagenti from the start, enabling per-user audit trails.
 
 ## Goals
 
 - Implement 16 fine-grained Backstage permissions as the sole authorization mechanism
 - Add conditional permission rules for ownership (IS_OWNER), separation of duties (IS_NOT_CREATOR), and lifecycle stage gating (HAS_LIFECYCLE_STAGE)
 - Implement RFC 8693 token exchange for per-user Kagenti identity
-- Rename `none` security mode with deprecation path
+- Use `development-only-no-auth` as the only dev security mode name (no legacy aliases)
 - Add CSRF protection and credential encryption
-- Export all permissions from `augment-common`
+- Export all permissions from `boost-common`
 
 ## Non-Goals
 
@@ -26,7 +26,7 @@ Augment also authenticated to Kagenti using a shared service-account token for a
 
 ### Decision 1: 16 permissions with resource-based conditions and admin fallback
 
-Agent and tool lifecycle actions get resource-based permissions with conditional rules. The `authorizeLifecycleAction` middleware replaces scattered per-route guards. On fine-grained DENY, the system falls back to checking `augment.admin` — enabling gradual adoption without breaking existing 2-permission deployments.
+Agent and tool lifecycle actions use resource-based permissions with conditional rules. The `authorizeLifecycleAction` middleware is the single authorization entry point for all lifecycle routes. On fine-grained DENY, the system falls back to checking `boost.admin` — enabling deployments that prefer coarse-grained control to work without configuring all 16 permissions.
 
 ### Decision 2: Three conditional permission rules
 
@@ -38,7 +38,7 @@ These rules are evaluated against loaded resources via `createConditionalDecisio
 
 ### Decision 3: Self-approval prevention stays layered
 
-The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. The existing route-level guard remains as defense-in-depth (belt and suspenders). Both layers are active in `security.mode === 'full'`.
+The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. A route-level guard remains as defense-in-depth (belt and suspenders). Both layers are active in `security.mode === 'full'`.
 
 ### Decision 4: Per-user token exchange is backend-only with graceful fallback
 
@@ -54,6 +54,6 @@ Three non-overlapping authorization layers:
 
 ## Risks
 
-- **RBAC policy complexity:** 16 permissions with conditions is more complex than 2. Mitigated by sensible defaults — `augment.access` as top-level gate and `augment.admin` available for coarse control.
+- **RBAC policy complexity:** 16 permissions with conditions is more complex than 2. Mitigated by sensible defaults — `boost.access` as top-level gate and `boost.admin` available for coarse control.
 - **Token exchange reliability:** Keycloak availability becomes a dependency. Mitigated by graceful fallback to service-account token on any failure.
 - **SonataFlow trust boundary:** Callbacks bypass self-approval prevention via header. Callback identity verification should be implemented to close this gap.

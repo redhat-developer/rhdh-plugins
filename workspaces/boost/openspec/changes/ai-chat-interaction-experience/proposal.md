@@ -2,32 +2,49 @@
 
 ## Why
 
-Augment's core value is the developer-agent conversation interface. Without a compelling chat experience, the platform has no user-facing value regardless of backend configuration. The chat surface must deliver streaming responses, knowledge-grounded answers with citations, human-in-the-loop approval for sensitive actions, persistent conversation history, and developer debugging tools.
+Boost's core value is the developer-agent conversation interface. Without a compelling chat experience, the platform has no user-facing value regardless of backend configuration. The chat surface must deliver streaming responses, knowledge-grounded answers with citations, human-in-the-loop approval for sensitive actions, persistent conversation history, and developer debugging tools.
 
-The current implementation delivers all product capabilities but the frontend is monolithic — all 204 admin panel files and all provider-specific components are eagerly loaded for every user. The chat view needs composable extensions, lazy loading, and capability-driven rendering.
+Boost builds the frontend as composable extensions from the start — chat, admin, and agent studio are independently mountable routable extensions with lazy loading and capability-driven rendering.
 
-## What Changes
+## What Boost Builds
 
-### Current Capabilities (retroactive documentation)
+### Streaming Chat
 
-- Streaming chat with real-time phase indicators and rich markdown rendering
-- Knowledge-grounded answers (RAG) with source citations and expandable source cards
-- Human-in-the-loop approval for tool calls with parameter editing
-- Interactive cards (forms, auth flows) within conversations
-- Conversation history with search, resume, feedback, and export
-- Developer tools: execution trace, session inspector, message inspector
-- Provider-adaptive chat experience (Llama Stack vs Kagenti paths)
+- Real-time streamed conversation with specialist AI agents
+- Phase indicators, rich markdown rendering, and provider-adaptive behavior
 
-### Architectural Improvements (from tech debt analysis)
+### Knowledge-Grounded Answers (RAG)
 
-- Lazy loading in `ChatView.tsx` for provider-specific components (204 admin panel files currently eagerly loaded)
-- Split `AugmentPage` into composable routable extensions (chat, admin, agent studio)
-- Capability-driven rendering replacing provider ID string checks
-- Frontend feature flags via `app-config.yaml` and Backstage `featureFlagsApiRef`
+- Answers grounded in organizational documentation with source citations
+- Expandable source cards for traceability
+
+### Human-in-the-Loop Approval
+
+- Tool call approval with parameter editing before execution
+- No destructive action executes without explicit developer consent
+
+### Interactive Cards
+
+- Forms, auth flows, and structured interactions within conversations
+
+### Conversation History
+
+- Persistent history with search, resume, feedback, and export
+
+### Developer Tools
+
+- Execution trace, session inspector, message inspector
+
+### Frontend Architecture
+
+- Composable routable extensions: `BoostChatPage`, `BoostAdminPage`, `BoostAgentStudioPage`
+- Lazy loading via `React.lazy()` at extension boundaries — deployers who mount only chat never download admin code
+- Capability-driven rendering adapting UI per provider's declared capabilities
+- Config-driven feature flags via `app-config.yaml` and Backstage `featureFlagsApiRef`
 
 ## Impact
 
-- `plugins/augment/src/plugin.ts` — new composable extensions
-- `plugins/augment/src/components/ChatView.tsx` — lazy loading
-- `plugins/augment/src/components/AugmentPage/AdminLayout.tsx` — lazy loading, capability checks
-- `plugins/augment/src/config.d.ts` — feature flags schema
+- `plugins/boost-frontend/src/plugin.ts` — composable routable extensions
+- `plugins/boost-frontend/src/components/ChatView.tsx` — lazy loading, capability checks
+- `plugins/boost-frontend/src/components/AdminLayout.tsx` — lazy loading per panel group
+- `plugins/boost-common/src/config.d.ts` — feature flags schema

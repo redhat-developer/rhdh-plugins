@@ -25,7 +25,7 @@ A full-featured agent browsing experience for the Kagenti provider.
 
 #### Scenario: First visit auto-open
 
-- **WHEN** a user visits Augment with Kagenti provider and no agent is selected
+- **WHEN** a user visits Boost with Kagenti provider and no agent is selected
 - **THEN** the agent catalog dialog auto-opens
 
 ### Requirement: Unified Agent List
