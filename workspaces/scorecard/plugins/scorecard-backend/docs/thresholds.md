@@ -74,7 +74,9 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults through app configuration (`app-config.yaml`).
+You can override provider defaults with your custom thresholds through app configuration (`app-config.yaml`) under `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+follow the format `<myDatasource>.<myMetric>`. Batch providers that specify `<myDatasource>` as the `providerId` currently only allow to override global provider thresholds that apply to all metrics the provider defines.
+
 Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
@@ -94,6 +96,22 @@ scorecard:
               expression: '>20'
     myOtherDatasource:
       myOtherMetric: ...
+```
+
+**Example App Configuration for batch provider:**
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      thresholds:
+        rules:
+          - key: success
+            expression: '<10'
+          - key: warning
+            expression: '<=20'
+          - key: error
+            expression: '>20'
 ```
 
 ### 3. Entity Annotation Overrides
