@@ -383,7 +383,7 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: Validate expressions loaded from config in custom providers using **`validateThresholdsForMetric`** or **`getThresholdsFromConfig`** from `@red-hat-developer-hub/backstage-plugin-scorecard-node`. Invalid expressions or gap configurations fail at validation time; unchecked configs may error at evaluation time.
+4. **Error handling**: Thresholds from providers and custom thresholds from configuration are validated on startup (using [validateThresholdsForMetric](../../scorecard-node/src/utils/thresholds/validateThresholds.ts) from `@red-hat-developer-hub/backstage-plugin-scorecard-node`). Threshold errors caused by invalid providers or invalid configuration cause startup failures. Annotation-based threshold errors are reported in the UI at evaluation time.
 
 ### Best Practices
 
