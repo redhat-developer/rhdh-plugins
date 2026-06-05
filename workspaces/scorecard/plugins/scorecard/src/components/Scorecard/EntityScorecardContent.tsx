@@ -24,10 +24,11 @@ import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
+import { ScorecardStylesProvider } from '../ScorecardStylesProvider';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardLoading } from '../Common/CardLoading';
 
-export const EntityScorecardContent = () => {
+const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
   const { t } = useTranslation();
 
@@ -102,3 +103,9 @@ export const EntityScorecardContent = () => {
     </Box>
   );
 };
+
+export const EntityScorecardContent = () => (
+  <ScorecardStylesProvider>
+    <EntityScorecardContentInner />
+  </ScorecardStylesProvider>
+);
