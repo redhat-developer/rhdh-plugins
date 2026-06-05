@@ -5,7 +5,21 @@
 ### `install-dynamic-plugins`
 
 ```
-Usage: install-dynamic-plugins [flags...] <dynamic-plugins-root>
+Usage: @red-hat-developer-hub/cli-module-install-dynamic-plugins [options] [command]
+
+Options:
+  -V, --version
+  -h, --help
+
+Commands:
+  help [command]
+  install
+```
+
+### `install-dynamic-plugins install`
+
+```
+Usage: @red-hat-developer-hub/cli-module-install-dynamic-plugins install [flags...] <dynamic-plugins-root>
 
 Options:
   -h, --help

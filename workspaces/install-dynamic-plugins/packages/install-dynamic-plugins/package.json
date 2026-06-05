@@ -24,23 +24,26 @@
   "engines": {
     "node": "22 || 24"
   },
-  "main": "dist/index.cjs.js",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "bin": "bin/install-dynamic-plugins",
   "files": [
     "bin",
-    "dist/**/*.js",
-    "README.md"
+    "dist"
   ],
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
   },
   "scripts": {
     "build": "backstage-cli package build",
-    "tsc": "tsc",
-    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
     "lint": "backstage-cli package lint",
-    "clean": "backstage-cli package clean"
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack",
+    "test": "backstage-cli package test",
+    "tsc": "tsc"
   },
   "dependencies": {
     "@backstage/cli-node": "^0.3.2",

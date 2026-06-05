@@ -223,6 +223,11 @@ async function loadDynamicPluginsConfig(
     await fs.writeFile(globalConfigFile, '');
     return null;
   }
+  if (!isPlainObject(content)) {
+    throw new InstallException(
+      `${configFileAbs} must contain a YAML mapping, got ${typeof content}`,
+    );
+  }
   return content;
 }
 

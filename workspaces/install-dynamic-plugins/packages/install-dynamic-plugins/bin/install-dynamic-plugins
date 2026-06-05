@@ -15,15 +15,6 @@
  * limitations under the License.
  */
 
-// Fast path: invoke the installer directly without going through
-// @backstage/cli-node's runCliModule dispatch. The install command is the
-// only verb this package exposes for direct invocation, and the cli-module
-// dispatch adds ~80–100 ms of cold start (commander, zod, @manypkg/get-packages,
-// @yarnpkg/lockfile, proper-lockfile, fs-extra, …). The createCliModule
-// export in ./index is still discovered automatically when this package is
-// a dependency of a backstage-cli host — that path pays the dispatch cost
-// where it belongs.
-
 const path = require('node:path');
 const fs = require('node:fs');
 
@@ -31,16 +22,11 @@ const fs = require('node:fs');
 const isLocal = fs.existsSync(path.resolve(__dirname, '../src'));
 
 if (isLocal) {
-  require('@backstage/cli/config/nodeTransform.cjs');
+  require('@backstage/cli-node/config/nodeTransform.cjs');
 }
 
-const { main } = require(
-  isLocal ? '../src/installer' : '../dist/installer.cjs.js',
-);
+const { runCliModule } = require('@backstage/cli-node');
+const cliModule = require(isLocal ? '../src/index' : '..').default;
+const pkg = require('../package.json');
 
-main(process.argv.slice(2)).catch(err => {
-  process.stderr.write(
-    `\ninstall-dynamic-plugins failed: ${err?.message ?? err}\n`,
-  );
-  process.exit(1);
-});
+runCliModule({ module: cliModule, name: pkg.name, version: pkg.version });
