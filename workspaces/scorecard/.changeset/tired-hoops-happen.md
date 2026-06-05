@@ -6,6 +6,7 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github': patch
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira': patch
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend': patch
+'@red-hat-developer-hub/backstage-plugin-scorecard-node': patch
 ---
 
 Custom thresholds for filecheck, openssf, and dependabot are now
