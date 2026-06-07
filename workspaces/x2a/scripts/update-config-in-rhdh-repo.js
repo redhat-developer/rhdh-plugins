@@ -105,6 +105,9 @@ const TEMPLATE_SOURCE = path.join(
 );
 const TEMPLATE_FILENAME = 'x2a-conversion-project-template.yaml';
 
+const ORG_DATA_SOURCE = path.join(__dirname, '../examples/org.yaml');
+const ORG_DATA_FILENAME = 'x2a-org.yaml';
+
 const permissionConfig = {
   enabled: true,
   rbac: {
@@ -176,10 +179,18 @@ function updateConfig() {
     config.dynamicPlugins.rootDirectory ??= 'dynamic-plugins-root';
     config.dynamicPlugins.frontend ??= {};
 
+    const source = x2aDynamicPlugins.frontend[pluginKey];
     if (!config.dynamicPlugins.frontend[pluginKey]) {
-      config.dynamicPlugins.frontend[pluginKey] =
-        x2aDynamicPlugins.frontend[pluginKey];
+      config.dynamicPlugins.frontend[pluginKey] = source;
       console.log(`✅ Added frontend plugin: ${pluginKey}`);
+    } else {
+      const target = config.dynamicPlugins.frontend[pluginKey];
+      for (const key of Object.keys(source)) {
+        if (!target[key]) {
+          target[key] = source[key];
+          console.log(`✅ Added ${key} to frontend plugin: ${pluginKey}`);
+        }
+      }
     }
 
     if (!config.dynamicPlugins.frontend[dcrPluginKey]) {
@@ -255,6 +266,19 @@ function updateConfig() {
     console.log('✅ Added catalog location for x2a scaffolder template.');
   }
 
+  const orgTarget = `../../${ORG_DATA_FILENAME}`;
+  const hasOrgLocation = config.catalog.locations.some(
+    loc => loc.target === orgTarget,
+  );
+  if (!hasOrgLocation) {
+    config.catalog.locations.push({
+      type: 'file',
+      target: orgTarget,
+      rules: [{ allow: ['User', 'Group'] }],
+    });
+    console.log('✅ Added catalog location for x2a org data.');
+  }
+
   // Merge x2a backend config
   if (!config.x2a) {
     config.x2a = x2aBEConfig;
@@ -273,6 +297,7 @@ function main() {
   }
   copyFileToRhdh(RBAC_POLICY_SOURCE, RBAC_POLICY_FILENAME, 'RBAC policy');
   copyFileToRhdh(TEMPLATE_SOURCE, TEMPLATE_FILENAME, 'scaffolder template');
+  copyFileToRhdh(ORG_DATA_SOURCE, ORG_DATA_FILENAME, 'org data');
   createLocalConfigIfMissing();
   updateConfig();
 }

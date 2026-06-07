@@ -1,6 +1,9 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-x2a:
+      scaffolderFieldExtensions:
+        - importName: RepoAuthenticationExtension
+        - importName: RulesAcceptanceExtension
       translationResources:
         - importName: x2aPluginTranslations
           ref: x2aPluginTranslationRef
