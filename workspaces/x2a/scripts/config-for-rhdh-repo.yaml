@@ -1,0 +1,123 @@
+app:
+  title: RHDH
+  baseUrl: http://localhost:3001
+organization:
+  name: My Org
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  csp:
+    connect-src:
+      - "'self'"
+      - "http:"
+      - "https:"
+  cors:
+    origin: http://localhost:3001
+    credentials: true
+    methods:
+      - GET
+      - HEAD
+      - PATCH
+      - POST
+      - PUT
+      - DELETE
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+  # MCP Actions: expose x2a tools to AI clients (Cursor, Claude, etc.)
+  actions:
+    pluginSources:
+      - "catalog"
+      - "software-catalog-mcp-tool"
+      - "x2a-mcp-extras"
+proxy:
+  skipInvalidProxies: true
+  endpoints: {}
+techdocs:
+  builder: external
+integrations:
+  # Needed for SCM provider detection in the x2a plugin
+  github:
+    - host: github.com
+  gitlab:
+    - host: gitlab.com
+  bitbucketCloud:
+    - host: bitbucket.org
+auth:
+  environment: development
+  experimentalDynamicClientRegistration:
+    enabled: true
+    allowedRedirectUriPatterns:
+      - cursor://*
+      - https://*
+      - http://*
+  providers:
+    guest: {}
+    gitlab:
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        audience: https://gitlab.com
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            - resolver: usernameMatchingUserEntityName
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow:
+        - Component
+        - System
+        - Group
+        - Resource
+        - Location
+        - Template
+        - API
+  locations:
+    - type: file
+      target: ../../catalog-entities/all.yaml
+    - type: file
+      target: ../../x2a-conversion-project-template.yaml
+      rules:
+        - allow: [Template]
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: ../../rbac-policy-x2a.csv
+    policyFileReload: true
+    pluginsWithPermission:
+      - x2a
+scaffolder: {}
+x2a:
+  kubernetes:
+    namespace: ${X2A_KUBERNETES_NAMESPACE:-default}
+    image: ${X2A_KUBERNETES_IMAGE:-quay.io/x2ansible/x2a-convertor}
+    imageTag: ${X2A_KUBERNETES_IMAGE_TAG:-latest}
+    ttlSecondsAfterFinished: ${X2A_KUBERNETES_TTL_SECONDS:-86400}
+    resources:
+      requests:
+        cpu: ${X2A_KUBERNETES_CPU_REQUEST:-500m}
+        memory: ${X2A_KUBERNETES_MEMORY_REQUEST:-1Gi}
+      limits:
+        cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
+        memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
+  credentials:
+    llm:
+      LLM_MODEL: ${LLM_MODEL:-anthropic.claude-v2}
+      AWS_REGION: ${AWS_REGION}
+      AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK}
+    aap:
+      url: ${AAP_URL:-https://aap.example.com}
+      orgName: ${AAP_ORG_NAME:-MyOrganization}
+      username: ${AAP_USERNAME}
+      password: ${AAP_PASSWORD}

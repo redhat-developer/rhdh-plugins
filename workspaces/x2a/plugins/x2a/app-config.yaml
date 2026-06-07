@@ -1,0 +1,15 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-x2a:
+      translationResources:
+        - importName: x2aPluginTranslations
+          ref: x2aPluginTranslationRef
+      appIcons:
+        - name: x2aIcon
+          importName: X2AIcon
+      dynamicRoutes:
+        - path: /x2a
+          importName: X2APage
+          menuItem:
+            icon: x2aIcon
+            text: X2Ansible
