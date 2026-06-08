@@ -247,7 +247,9 @@ describe('lightspeed router tests', () => {
         });
 
       expect(response.statusCode).toEqual(404);
-      expect(response.body.error).toContain('not found');
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
 
     it('should handle upstream server errors properly', async () => {
@@ -258,7 +260,13 @@ describe('lightspeed router tests', () => {
           return new HttpResponse(
             JSON.stringify({
               error: {
-                message: 'Internal server error',
+                message:
+                  'Model gpt-4-0613 failed with OpenAI API error: rate limit exceeded for organization org-abc123',
+              },
+              detail: {
+                cause: 'OpenAIError: Rate limit reached',
+                provider: 'openai',
+                model_id: 'gpt-4-0613',
               },
             }),
             {
@@ -279,6 +287,12 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toContain(
         'Error from lightspeed-core server',
       );
+      // Verify internal details are NOT exposed
+      expect(response.body.error).not.toContain('gpt-4');
+      expect(response.body.error).not.toContain('OpenAI');
+      expect(response.body.error).not.toContain('org-abc123');
+      expect(response.body.error).not.toContain('openai');
+      expect(response.body.error).not.toContain('rate limit');
     });
   });
 
@@ -407,7 +421,12 @@ describe('lightspeed router tests', () => {
           return new HttpResponse(
             JSON.stringify({
               error: {
-                message: 'Internal server error',
+                message:
+                  'Database connection failed at /app/db/postgres.py:142',
+              },
+              detail: {
+                cause: 'PostgreSQL connection timeout',
+                trace_id: 'req_xyz789',
               },
             }),
             {
@@ -432,6 +451,11 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toContain(
         'Error from lightspeed-core server',
       );
+      // Verify internal details are NOT exposed
+      expect(response.body.error).not.toContain('Database');
+      expect(response.body.error).not.toContain('postgres.py');
+      expect(response.body.error).not.toContain('PostgreSQL');
+      expect(response.body.error).not.toContain('req_xyz789');
     });
   });
 

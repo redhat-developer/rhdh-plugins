@@ -56,6 +56,7 @@ import {
   QueryRequestBody,
   RouterOptions,
 } from './types';
+import { handleLCSFetchError } from './utils';
 import { isAllowedProxyPath, validateCompletionsRequest } from './validation';
 
 const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
@@ -565,15 +566,12 @@ export async function createRouter(
       );
 
       if (!fetchResponse.ok) {
-        // Read the error body
-        const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
-
-        response.status(fetchResponse.status).json({
-          error: errormsg,
-        });
-
+        await handleLCSFetchError(
+          fetchResponse,
+          logger,
+          'sending feedback',
+          response,
+        );
         return;
       }
 
@@ -611,10 +609,12 @@ export async function createRouter(
         },
       );
       if (!fetchResponse.ok) {
-        const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
-        response.status(fetchResponse.status).json({ error: errormsg });
+        await handleLCSFetchError(
+          fetchResponse,
+          logger,
+          'interrupting query',
+          response,
+        );
         return;
       }
       response.status(fetchResponse.status).json(await fetchResponse.json());
@@ -687,15 +687,12 @@ export async function createRouter(
         );
 
         if (!fetchResponse.ok) {
-          // Read the error body
-          const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
-
-          response.status(fetchResponse.status).json({
-            error: errormsg,
-          });
-
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'processing query',
+            response,
+          );
           return;
         }
 
@@ -741,14 +738,12 @@ export async function createRouter(
           },
         );
         if (!fetchResponse.ok) {
-          // Read the error body
-          const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
-
-          response.status(fetchResponse.status).json({
-            error: errormsg,
-          });
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'updating conversation',
+            response,
+          );
           return;
         }
 
