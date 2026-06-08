@@ -45,13 +45,17 @@ Friction points and improvements discovered during monorepo onboarding.
 - [x] openspec needs to be available in sandbox — resolved: sandbox HAS network access, yarn install works after corepack setup. openspec installed as workspace devDep via `yarn install`
 - [x] Routing skill should not tell agent to run bare `yarn install` — replaced with setup script + YARN_ENABLE_SCRIPTS=false
 - [x] Custom fix harness created with host_files mounting sandbox-yarn-setup.sh
-- [x] Custom fix policy created with registry.yarnpkg.com + yarn/corepack binaries in allowlist
-- [ ] Validate end-to-end: trigger `/fs-fix` on a boost PR to confirm yarn + openspec work in sandbox
+- [x] Custom fix policy created with registry.yarnpkg.com + repo.yarnpkg.com + yarn/corepack binaries in allowlist
+- [x] Custom code policy created — upstream code.yaml also missing repo.yarnpkg.com (corepack downloads yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
+- [x] Validated locally (2026-06-08): YARN_SETUP_OK: 4.12.0, yarn install completed, openspec validate ran successfully
+- [ ] Git hooks (husky) need yarn in PATH — solved with /tmp/workspace/bin/yarn wrapper in setup script. Validate this works in CI too
+- [ ] yarn install takes ~10-15 min in sandbox for boost workspace (monorepo overhead) — consider pre-installing deps in custom image for faster runs
 
 ## Upstream (fullsend-ai/fullsend)
 
 - [ ] Feature request filed: [fullsend-ai/fullsend#1937](https://github.com/fullsend-ai/fullsend/issues/1937) — native `working_dir` field in harness schema
-- [ ] Drift risk: customized harness/policy files are copies of upstream (baseline 2025-06-05) — need to track upstream changes. Now includes: `harness/code.yaml`, `harness/fix.yaml`, `policies/fix.yaml`, `agents/code.md`
+- [ ] Drift risk: customized harness/policy files are copies of upstream (baseline 2025-06-05) — need to track upstream changes. Now includes: `harness/code.yaml`, `harness/fix.yaml`, `policies/code.yaml`, `policies/fix.yaml`, `agents/code.md`
+- [ ] File upstream issue: repo.yarnpkg.com missing from upstream code.yaml and fix.yaml policies — any JS monorepo using corepack + yarn will hit this
 - [ ] File upstream issue: request `sandbox_init_script` field in harness schema — current workaround (host_files + source in skill) works but is fragile and requires every skill to know about the setup script. A native `sandbox_init_script` would run before the agent starts, making PATH/env changes automatic
 - [ ] Fallback plan: if corepack workaround proves unreliable across sandbox image updates, build a custom image with yarn pre-installed (`FROM fullsend-code:latest` + `RUN corepack enable && corepack prepare yarn@stable --activate`)
 
