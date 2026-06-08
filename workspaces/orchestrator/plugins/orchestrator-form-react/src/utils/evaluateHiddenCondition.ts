@@ -91,24 +91,56 @@ function evaluateConditionObject(
     rootFormData,
   );
 
+  let hasCondition = false;
+  let shouldHide = true;
+
   // Check isEmpty condition
   if (condition.isEmpty !== undefined) {
+    hasCondition = true;
     const empty = isEmptyValue(fieldValue);
-    return condition.isEmpty ? empty : !empty;
+    if (!(condition.isEmpty ? empty : !empty)) {
+      shouldHide = false;
+    }
   }
 
   // Check 'is' condition (hide if field equals any value)
   if (condition.is !== undefined) {
-    return matchesAny(fieldValue, condition.is);
+    hasCondition = true;
+    if (!matchesAny(fieldValue, condition.is)) {
+      shouldHide = false;
+    }
   }
 
   // Check 'isNot' condition (hide if field does NOT equal any value)
   if (condition.isNot !== undefined) {
-    return !matchesAny(fieldValue, condition.isNot);
+    hasCondition = true;
+    if (matchesAny(fieldValue, condition.isNot)) {
+      shouldHide = false;
+    }
+  }
+
+  // Check 'isNotEmptyList' condition
+  if (condition.isNotEmptyList !== undefined) {
+    hasCondition = true;
+    const isNonEmptyList = Array.isArray(fieldValue) && fieldValue.length > 0;
+    if (!(condition.isNotEmptyList ? isNonEmptyList : !isNonEmptyList)) {
+      shouldHide = false;
+    }
+  }
+
+  // Check 'notContains' condition (hide when array does not include value)
+  if (condition.notContains !== undefined) {
+    hasCondition = true;
+    const notContainsValue =
+      Array.isArray(fieldValue) &&
+      !fieldValue.some(item => matchesAny(item, condition.notContains!));
+    if (!notContainsValue) {
+      shouldHide = false;
+    }
   }
 
   // No valid condition found, don't hide
-  return false;
+  return hasCondition ? shouldHide : false;
 }
 
 /**

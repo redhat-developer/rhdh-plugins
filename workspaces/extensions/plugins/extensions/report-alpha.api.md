@@ -480,7 +480,6 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'tooltips.missingDynamicArtifact': string;
     readonly 'tooltips.extensionsDisabled': string;
     readonly 'tooltips.noPermissions': string;
-    readonly 'supportTypes.certifiedBy': string;
     readonly 'supportTypes.verifiedBy': string;
     readonly 'supportTypes.customPlugins': string;
     readonly 'collection.kubernetes': string;
@@ -506,12 +505,9 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'aria.expandSection': string;
     readonly 'aria.collapseSection': string;
     readonly 'aria.sortBy': string;
-    readonly 'badges.certifiedBy': string;
     readonly 'badges.verifiedBy': string;
-    readonly 'badges.certified': string;
     readonly 'badges.verified': string;
     readonly 'badges.customPlugin': string;
-    readonly 'badges.stableAndSecured': string;
     readonly 'badges.generallyAvailable': string;
     readonly 'badges.gaAndSupportedBy': string;
     readonly 'badges.gaAndSupported': string;

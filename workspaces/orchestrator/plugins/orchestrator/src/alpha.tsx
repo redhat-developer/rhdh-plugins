@@ -27,7 +27,6 @@ import {
   createApiFactory,
   createFrontendModule,
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
@@ -58,16 +57,10 @@ const orchestratorPage = PageBlueprint.make({
   params: {
     path: '/orchestrator',
     routeRef: orchestratorRootRouteRef,
+    title: 'Orchestrator',
+    icon: <OrchestratorIcon />,
     noHeader: true,
     loader: () => import('./components/Router').then(m => <m.Router />),
-  },
-});
-
-const orchestratorNavItem = NavItemBlueprint.make({
-  params: {
-    routeRef: orchestratorRootRouteRef,
-    title: 'Orchestrator',
-    icon: OrchestratorIcon,
   },
 });
 
@@ -123,12 +116,7 @@ const orchestratorTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'orchestrator',
-  extensions: [
-    orchestratorPage,
-    orchestratorNavItem,
-    orchestratorApi,
-    orchestratorEntityContent,
-  ],
+  extensions: [orchestratorPage, orchestratorApi, orchestratorEntityContent],
   routes: {
     root: orchestratorRootRouteRef,
     workflow: workflowRouteRef,

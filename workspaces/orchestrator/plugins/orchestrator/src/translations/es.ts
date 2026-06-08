@@ -204,6 +204,14 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
+    'samlSso.title': 'Sesión de GitHub SAML SSO expirada',
+    'samlSso.reauthorizeButton': 'Reautorizar SSO',
+    'samlSso.body':
+      'Su sesión de GitHub SAML SSO ha expirado. Su organización requiere una sesión SAML activa para acceder a sus recursos.',
+    'samlSso.reauthorizeHint':
+      "Haga clic en 'Reautorizar SSO' para volver a autenticarse con el proveedor de identidad de su organización.",
+    'samlSso.fallbackHint':
+      'Por favor, cierre sesión y vuelva a iniciar sesión desde Configuración > Proveedores de autenticación para restablecer su sesión SAML.',
   },
 });
 
