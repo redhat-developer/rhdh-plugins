@@ -3,3 +3,4 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+packages/app/e2e-tests/fixtures/dcm/invalid-catalog-item.yaml
