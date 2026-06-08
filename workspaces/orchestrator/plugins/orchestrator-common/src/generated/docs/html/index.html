@@ -1289,6 +1289,14 @@ ul.nav-tabs {
     "version" : {
       "type" : "string",
       "description" : "Workflow definition version"
+    },
+    "successRatio" : {
+      "type" : "number",
+      "description" : "Ratio of completed runs to total runs"
+    },
+    "runsLastMonth" : {
+      "type" : "integer",
+      "description" : "Number of runs in the last 30 days"
     }
   }
 };
@@ -2835,8 +2843,8 @@ ID of the workflow instance
  "http://localhost/v2/workflows/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 5.637376656633329,
+    &quot;pageSize&quot; : 5.962133916683182,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -3738,8 +3746,8 @@ ID of instance
  "http://localhost/v2/workflows/{workflowId}/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 5.637376656633329,
+    &quot;pageSize&quot; : 5.962133916683182,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -5886,8 +5894,8 @@ pub fn main() {
  "http://localhost/v2/workflows/overview" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 5.637376656633329,
+    &quot;pageSize&quot; : 5.962133916683182,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
