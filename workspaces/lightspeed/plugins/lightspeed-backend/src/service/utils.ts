@@ -65,9 +65,15 @@ export async function handleLCSFetchError(
   fetchResponse: Response,
   logger: LoggerService,
   context: string,
-  response: any,
+  response: { status: (code: number) => { json: (body: any) => void } },
 ): Promise<void> {
-  const errorBody = await fetchResponse.json();
+  let errorBody: LCSErrorResponse;
+  try {
+    errorBody = await fetchResponse.json();
+  } catch {
+    // If LCS doesn't return JSON or doesn't have a body, use empty object
+    errorBody = {};
+  }
   const sanitizedError = sanitizeLCSError(errorBody, logger, context);
   response.status(fetchResponse.status).json({ error: sanitizedError });
 }

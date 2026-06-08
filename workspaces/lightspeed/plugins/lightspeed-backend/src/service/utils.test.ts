@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { sanitizeLCSError } from './utils';
+import { handleLCSFetchError, sanitizeLCSError } from './utils';
 
 describe('sanitizeLCSError', () => {
   const mockLogger = {
@@ -101,6 +101,68 @@ describe('sanitizeLCSError', () => {
     expect(result).toBe(
       'Error from lightspeed-core server while updating conversation',
     );
+    expect(mockLogger.error).toHaveBeenCalled();
+  });
+});
+
+describe('handleLCSFetchError', () => {
+  const mockLogger = {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    child: jest.fn(),
+  };
+
+  const mockResponse = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should handle fetch response with JSON body', async () => {
+    const mockFetchResponse = {
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({
+        error: { message: 'Database error' },
+      }),
+    } as unknown as Response;
+
+    await handleLCSFetchError(
+      mockFetchResponse,
+      mockLogger,
+      'processing query',
+      mockResponse,
+    );
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: 'Error from lightspeed-core server while processing query',
+    });
+  });
+
+  it('should handle fetch response without JSON body', async () => {
+    const mockFetchResponse = {
+      ok: false,
+      status: 503,
+      json: jest.fn().mockRejectedValue(new Error('Not JSON')),
+    } as unknown as Response;
+
+    await handleLCSFetchError(
+      mockFetchResponse,
+      mockLogger,
+      'sending feedback',
+      mockResponse,
+    );
+
+    expect(mockResponse.status).toHaveBeenCalledWith(503);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: 'Error from lightspeed-core server while sending feedback',
+    });
     expect(mockLogger.error).toHaveBeenCalled();
   });
 });
