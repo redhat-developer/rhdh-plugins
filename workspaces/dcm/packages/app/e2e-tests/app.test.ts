@@ -15,20 +15,15 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { performGuestLogin } from './fixtures/auth';
-
-const devMode = !process.env.PLAYWRIGHT_URL;
 
 test('App should render the welcome page', async ({ page }) => {
-  await performGuestLogin(page);
+  await page.goto('/');
 
-  if (devMode) {
-    await expect(
-      page.getByRole('heading', { name: 'Red Hat Catalog' }),
-    ).toBeVisible({ timeout: 10000 });
-  } else {
-    await expect(
-      page.getByRole('heading', { name: 'Welcome back!' }),
-    ).toBeVisible({ timeout: 10000 });
-  }
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+
+  const nav = page.getByRole('navigation');
+  await expect(nav.getByRole('link', { name: 'Catalog' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'APIs' })).toBeVisible();
 });
