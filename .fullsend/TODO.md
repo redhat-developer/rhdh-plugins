@@ -16,17 +16,17 @@ Friction points and improvements discovered during monorepo onboarding.
 
 ## What didn't work (issue #3314 test run)
 
-- [ ] `yarn install` failed — sandbox is network-isolated (OpenShell). Agent tried multiple times before giving up
-- [ ] `yarn openspec:validate` never ran — openspec not available without network install
-- [ ] The `@fission-ai/openspec` devDep approach is useless in the sandbox — deps must be pre-installed in the image or mounted via `host_files`
+- [x] `yarn install` failed — root cause: `yarn` not in PATH (corepack enable fails on read-only /usr/bin) + postinstall recursion. Fixed via sandbox-yarn-setup.sh + YARN_ENABLE_SCRIPTS=false
+- [x] `yarn openspec:validate` never ran — fixed: yarn now available after sourcing setup script, openspec accessible via workspace devDeps after install
+- [x] The `@fission-ai/openspec` devDep approach works IF yarn install succeeds — the sandbox DOES have network access (registry.npmjs.org was ALLOWED in sandbox logs)
 - [ ] Agent fell back to manual `grep` verification — correct but not ideal
-- [ ] Agent spent ~25min total, significant time wasted on yarn install retries
+- [x] Agent spent ~25min total, significant time wasted on yarn install retries — fixed by making yarn available upfront
 
 ## Routing skill
 
 - [ ] Prioritize `workspace/*` label over title/body parsing — if the label exists, trust it, don't guess
 - [ ] Add routing skill to triage harness — triage currently has no workspace awareness, misrouted #3314 to `workspace/ai-integrations` instead of `workspace/boost`
-- [ ] Routing skill step 4 says `yarn install` — this won't work in sandbox. Remove or gate behind network check
+- [x] Routing skill step 4 says `yarn install` — replaced with `source sandbox-yarn-setup.sh` + `YARN_ENABLE_SCRIPTS=false yarn install`
 
 ## Labels
 
@@ -42,16 +42,18 @@ Friction points and improvements discovered during monorepo onboarding.
 
 ## Sandbox / tooling
 
-- [ ] openspec needs to be available in sandbox without network. Options:
-  - Pre-install in custom sandbox image (`image:` in harness)
-  - Mount via `host_files` from the runner
-  - Install in `pre_script` (runs on host) and copy binary into sandbox
-- [ ] Routing skill should not tell agent to run `yarn install` — sandbox has no network
+- [x] openspec needs to be available in sandbox — resolved: sandbox HAS network access, yarn install works after corepack setup. openspec installed as workspace devDep via `yarn install`
+- [x] Routing skill should not tell agent to run bare `yarn install` — replaced with setup script + YARN_ENABLE_SCRIPTS=false
+- [x] Custom fix harness created with host_files mounting sandbox-yarn-setup.sh
+- [x] Custom fix policy created with registry.yarnpkg.com + yarn/corepack binaries in allowlist
+- [ ] Validate end-to-end: trigger `/fs-fix` on a boost PR to confirm yarn + openspec work in sandbox
 
 ## Upstream (fullsend-ai/fullsend)
 
 - [ ] Feature request filed: [fullsend-ai/fullsend#1937](https://github.com/fullsend-ai/fullsend/issues/1937) — native `working_dir` field in harness schema
-- [ ] Drift risk: customized `harness/code.yaml` and `agents/code.md` are full copies of upstream (baseline 2025-06-05) — need to track upstream changes
+- [ ] Drift risk: customized harness/policy files are copies of upstream (baseline 2025-06-05) — need to track upstream changes. Now includes: `harness/code.yaml`, `harness/fix.yaml`, `policies/fix.yaml`, `agents/code.md`
+- [ ] File upstream issue: request `sandbox_init_script` field in harness schema — current workaround (host_files + source in skill) works but is fragile and requires every skill to know about the setup script. A native `sandbox_init_script` would run before the agent starts, making PATH/env changes automatic
+- [ ] Fallback plan: if corepack workaround proves unreliable across sandbox image updates, build a custom image with yarn pre-installed (`FROM fullsend-code:latest` + `RUN corepack enable && corepack prepare yarn@stable --activate`)
 
 ## CLAUDE.md
 
