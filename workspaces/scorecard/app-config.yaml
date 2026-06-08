@@ -121,6 +121,18 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+  
+  # Uncomment this when MCP Actions are needed
+  # actions:
+  #   pluginSources:
+  #     - 'catalog'
+  #     - 'scorecard'
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
 
 integrations:
   github:

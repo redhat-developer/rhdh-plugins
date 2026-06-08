@@ -92,4 +92,5 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube'
   ),
 );
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
 backend.start();
