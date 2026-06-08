@@ -7,6 +7,10 @@
 #
 # The agent NEVER pushes or creates PRs (disallowedTools enforces this).
 # Only the post-script, running on the runner with PUSH_TOKEN, can write.
+#
+# Customizations over upstream code.yaml:
+#   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
+#   - host_files: mounts sandbox-yarn-setup.sh for corepack/yarn setup
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
