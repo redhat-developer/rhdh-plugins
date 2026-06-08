@@ -23,24 +23,17 @@ import {
 } from '@backstage/core-components';
 import { ComponentAccordion, HomePageToolkit } from '@backstage/plugin-home';
 
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles } from 'tss-react/mui';
+import { styled } from '@mui/material/styles';
 
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
 import { useTranslation } from '../hooks/useTranslation';
 import { QuickAccessIcon } from './QuickAccessIcon';
 
-const useStyles = makeStyles()({
-  center: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    '& div > div > div > div > p': {
-      textTransform: 'uppercase',
-    },
+const QuickAccessInfoCard = styled(InfoCard)({
+  '& div > div > div > div > p': {
+    textTransform: 'uppercase',
   },
 });
 
@@ -56,7 +49,6 @@ export interface QuickAccessCardProps {
  * @public
  */
 export const QuickAccessCard = (props: QuickAccessCardProps) => {
-  const { classes } = useStyles();
   const { t } = useTranslation();
   const { data, error, isLoading } = useQuickAccessLinks(props.path);
 
@@ -64,9 +56,16 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
 
   if (isLoading) {
     content = (
-      <div className={classes.center}>
+      <Box
+        sx={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <CircularProgress />
-      </div>
+      </Box>
     );
   } else if (!data) {
     content = (
@@ -103,12 +102,11 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
   }
 
   return (
-    <InfoCard
+    <QuickAccessInfoCard
       title={props.title ?? t('quickAccess.title')}
       noPadding
-      className={classes.title}
     >
       {content}
-    </InfoCard>
+    </QuickAccessInfoCard>
   );
 };

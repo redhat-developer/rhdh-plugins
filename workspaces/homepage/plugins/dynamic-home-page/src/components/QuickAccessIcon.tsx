@@ -15,19 +15,13 @@
  */
 
 import type { ReactElement } from 'react';
-import { makeStyles } from 'tss-react/mui';
-
 import { isValidElement } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 
+import Box from '@mui/material/Box';
 import MuiIcon from '@mui/material/Icon';
 
-const useStyles = makeStyles()({
-  img: {
-    height: '40px',
-    width: 'auto',
-  },
-});
+const iconSx = { height: '40px', width: 'auto' };
 
 export const QuickAccessIcon = ({
   icon,
@@ -36,7 +30,6 @@ export const QuickAccessIcon = ({
   icon: string | ReactElement;
   alt: string;
 }) => {
-  const { classes } = useStyles();
   const app = useApp();
 
   if (!icon) {
@@ -57,7 +50,7 @@ export const QuickAccessIcon = ({
 
   if (strIcon.startsWith('<svg')) {
     const svgDataUri = `data:image/svg+xml;base64,${btoa(strIcon)}`;
-    return <img src={svgDataUri} className={classes.img} alt={alt} />;
+    return <Box component="img" src={svgDataUri} alt={alt} sx={iconSx} />;
   }
 
   if (
@@ -66,7 +59,7 @@ export const QuickAccessIcon = ({
     strIcon.startsWith('/') ||
     strIcon.startsWith('data:image/')
   ) {
-    return <img src={strIcon} className={classes.img} alt={alt} />;
+    return <Box component="img" src={strIcon} alt={alt} sx={iconSx} />;
   }
 
   return <MuiIcon baseClassName="material-icons-outlined">{strIcon}</MuiIcon>;

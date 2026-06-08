@@ -114,7 +114,9 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
     },
     components: () =>
       import('../../components/SearchBar').then(m => ({
-        Content: () => compatWrapper(<m.SearchBar />),
+        Content: m.SearchBar,
+        Renderer: ({ Content }: { Content: React.ComponentType }) =>
+          compatWrapper(<Content />),
       })),
   },
 });
