@@ -8,7 +8,7 @@ The frontend must be decomposed from a monolithic `BoostPage` into composable ex
 
 ### Requirement: Composable Routable Extensions
 
-Deployers can mount chat, admin, and agent studio independently.
+Deployers SHALL be able to mount chat, admin, and agent studio independently.
 
 #### Scenario: Independent chat extension
 
@@ -31,7 +31,7 @@ Deployers can mount chat, admin, and agent studio independently.
 
 ### Requirement: Lazy Loading in Primary Paths
 
-Provider-specific and admin components are loaded only when needed.
+Provider-specific and admin components SHALL be loaded only when needed.
 
 #### Scenario: ChatView lazy loads provider-specific components
 
@@ -48,7 +48,7 @@ Provider-specific and admin components are loaded only when needed.
 
 ### Requirement: Config-Driven Feature Flags
 
-Deployers control feature visibility via `app-config.yaml`.
+Deployers SHALL control feature visibility via `app-config.yaml`.
 
 #### Scenario: Feature flags in app-config
 
@@ -75,7 +75,7 @@ Deployers control feature visibility via `app-config.yaml`.
 
 ### Requirement: UX/UXD Design Alignment
 
-All frontend components and UI flows align with RHDH usability and visual design standards.
+All frontend components and UI flows MUST align with RHDH usability and visual design standards.
 
 #### Scenario: Implementation from UX/UXD mockups
 
