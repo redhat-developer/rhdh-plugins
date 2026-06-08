@@ -29,8 +29,8 @@ export function createPermissionMiddleware(
   logger: LoggerService,
 ): RequestHandler {
   return async (req, res, next) => {
-    const { credentials } = getIdentity(req);
     try {
+      const { credentials } = getIdentity(req);
       await authorizer.authorizeUser(permission, credentials);
       return next();
     } catch (error) {
