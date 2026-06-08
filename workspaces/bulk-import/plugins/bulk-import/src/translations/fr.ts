@@ -127,14 +127,14 @@ const bulkImportTranslationFr = createTranslationMessages({
     'previewFile.previewFile': "Fichier d'aperçu",
     'previewFile.previewFiles': 'Aperçu des fichiers',
     'previewFile.pullRequest.annotations': 'Annotations',
-    'previewFile.pullRequest.bodyLabel': '{{tool}} corps',
+    'previewFile.pullRequest.bodyLabel': 'Corps de {{tool}}',
     'previewFile.pullRequest.bodyPlaceholder':
       'Un texte descriptif compatible avec Markdown',
     'previewFile.pullRequest.codeOwnersWarning':
       'ATTENTION : Cette opération peut échouer si aucun fichier CODEOWNERS n’est trouvé à l’emplacement cible.',
     'previewFile.pullRequest.componentNameLabel': 'Nom du composant créé',
     'previewFile.pullRequest.componentNamePlaceholder': 'Nom du composant',
-    'previewFile.pullRequest.details': '{{tool}} détails',
+    'previewFile.pullRequest.details': 'Détails de {{tool}}',
     'previewFile.pullRequest.entityConfiguration': "Configuration de l'entité",
     'previewFile.pullRequest.entityOwnerHelper':
       'Sélectionnez un propriétaire dans la liste ou saisissez une référence à un groupe ou à un utilisateur.',
@@ -148,7 +148,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'previewFile.pullRequest.serviceNowTicket': 'Ticket ServiceNow',
     'previewFile.pullRequest.spec': 'Spéc.',
     'previewFile.pullRequest.title': 'Demande d’extraction',
-    'previewFile.pullRequest.titleLabel': '{{outil}} titre',
+    'previewFile.pullRequest.titleLabel': 'Titre de {{tool}}',
     'previewFile.pullRequest.titlePlaceholder':
       "Ajouter des fichiers de descripteurs d'entités du catalogue Backstage",
     'previewFile.pullRequest.useCodeOwnersFile':
