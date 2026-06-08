@@ -218,6 +218,9 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
     'notebook.view.title': 'Quaderno senza titolo',
     'notebook.view.upload.action': 'Carica una risorsa',
+    'notebook.view.processing.description':
+      'I tuoi file sono in fase di indicizzazione. Potrai iniziare a fare domande una volta completata l’elaborazione.',
+    'notebook.view.processing.heading': 'Elaborazione delle risorse...',
     'notebook.view.upload.heading': 'Carica una risorsa per iniziare',
     'notebooks.actions.delete': 'Elimina',
     'notebooks.actions.rename': 'Rinomina',
