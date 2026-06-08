@@ -61,6 +61,11 @@ const useStyles = makeStyles(theme => ({
   removeButton: {
     textTransform: 'none',
     borderRadius: 999,
+    backgroundColor: theme.palette.error?.main || '#b1380b',
+    color: theme.palette.error?.contrastText || '#fff',
+    '&:hover': {
+      backgroundColor: theme.palette.error?.dark || '#731f00',
+    },
   },
   cancelButton: {
     textTransform: 'none',
@@ -127,7 +132,6 @@ export const DeleteDocumentModal = ({
       <DialogActions className={classes.dialogActions}>
         <Button
           variant="contained"
-          color="error"
           className={classes.removeButton}
           onClick={onConfirm}
         >
