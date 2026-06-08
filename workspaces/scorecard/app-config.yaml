@@ -125,7 +125,6 @@ backend:
   # Uncomment this when MCP Actions are needed
   # actions:
   #   pluginSources:
-  #     - 'catalog'
   #     - 'scorecard'
   # auth:
   #   externalAccess:
