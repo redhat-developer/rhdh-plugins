@@ -260,4 +260,6 @@ export interface WorldClockProps {
   // (undocumented)
   worldClocks: ClockConfig[];
 }
+
+// (No @packageDocumentation comment for this package)
 ```

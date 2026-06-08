@@ -17,6 +17,7 @@
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
+import { homepageMessages } from '../../translations/ref';
 
 const defaultCardLayout = {
   width: {
@@ -41,9 +42,11 @@ export const onboardingSectionWidget = HomePageWidgetBlueprint.make({
     name: 'Red Hat Developer Hub - Onboarding',
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/OnboardingSection').then(m => ({
-        Content: m.OnboardingSection,
-      })),
+      import('../../components/OnboardingSection/OnboardingSection').then(
+        m => ({
+          Content: m.OnboardingSectionContent,
+        }),
+      ),
   },
 });
 
@@ -55,10 +58,11 @@ export const entitySectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-entity-section',
   params: {
     name: 'Red Hat Developer Hub - Software Catalog',
+    title: homepageMessages.entities.title,
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/EntitySection').then(m => ({
-        Content: () => compatWrapper(<m.EntitySection />),
+      import('../../components/EntitySection/EntitySection').then(m => ({
+        Content: m.EntitySectionContent,
       })),
   },
 });
@@ -71,10 +75,11 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-template-section',
   params: {
     name: 'Red Hat Developer Hub - Explore templates',
+    title: homepageMessages.templates.title,
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/TemplateSection').then(m => ({
-        Content: m.TemplateSection,
+      import('../../components/TemplateSection/TemplateSection').then(m => ({
+        Content: m.TemplateSectionContent,
       })),
   },
 });
@@ -87,10 +92,11 @@ export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
   name: 'quick-access-card',
   params: {
     name: 'Quick Access Card',
+    title: homepageMessages.quickAccess.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/QuickAccessCard').then(m => ({
-        Content: () => compatWrapper(<m.QuickAccessCard />),
+        Content: m.QuickAccessCardContent,
       })),
   },
 });
@@ -122,6 +128,17 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
 });
 
 /**
+ * Renders a legacy plugin-home CardExtension directly, skipping the NFS
+ * CardExtension InfoCard shell. Used when upstream only exports full cards
+ * (not Content) from the public API.
+ */
+const legacyHomeCardRenderer = ({
+  Content,
+}: {
+  Content: React.ComponentType;
+}) => compatWrapper(<Content />);
+
+/**
  * NFS widget: FeaturedDocsCard (migrated from mountPoint home.page/cards).
  * @alpha
  */
@@ -133,6 +150,7 @@ export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('../../components/FeaturedDocsCard').then(m => ({
         Content: m.FeaturedDocsCard,
+        Renderer: legacyHomeCardRenderer,
       })),
   },
 });
@@ -172,6 +190,7 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('@backstage/plugin-home').then(m => ({
         Content: m.HomePageRecentlyVisited,
+        Renderer: legacyHomeCardRenderer,
       })),
   },
 });
@@ -187,7 +206,8 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
     name: 'Top visited',
     components: () =>
       import('@backstage/plugin-home').then(m => ({
-        Content: () => <m.HomePageTopVisited />,
+        Content: m.HomePageTopVisited,
+        Renderer: legacyHomeCardRenderer,
       })),
   },
 });

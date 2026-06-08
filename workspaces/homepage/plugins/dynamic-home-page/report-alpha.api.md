@@ -48,12 +48,12 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'onboarding.learn.ariaLabel': string;
     readonly 'entities.title': string;
     readonly 'entities.error': string;
-    readonly 'entities.description': string;
     readonly 'entities.close': string;
     readonly 'entities.empty': string;
     readonly 'entities.fetchError': string;
     readonly 'entities.emptyDescription': string;
     readonly 'entities.register': string;
+    readonly 'entities.description': string;
     readonly 'entities.browseTheCatalog': string;
   }
 >;

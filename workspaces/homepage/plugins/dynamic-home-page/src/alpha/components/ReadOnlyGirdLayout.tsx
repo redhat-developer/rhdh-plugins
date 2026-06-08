@@ -79,16 +79,7 @@ const defaultProps: ResponsiveProps = {
   compactType: null,
 };
 
-const cardWrapperSx = {
-  '& > div[class*="MuiCard-root"]': {
-    width: '100%',
-    height: '100%',
-  },
-  '& div[class*="MuiCardContent-root"]': {
-    overflow: 'auto',
-  },
-};
-
+import { cardWrapperSx } from '../../styles/cardWrapperSx';
 /**
  * Props for the read-only grid layout.
  * @alpha

@@ -13,5 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { TemplateSection } from './TemplateSection';
-export { TemplateSection as default } from './TemplateSection';
+export { TemplateSectionContent } from './TemplateSection';
+export { TemplateSection } from '../legacy/HomePageLegacyCards';
+export { TemplateSection as default } from '../legacy/HomePageLegacyCards';

@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 
+import { InfoCard } from '@backstage/core-components';
+
+import { styled } from '@mui/material/styles';
+
 import {
-  FeaturedDocsCard as PluginHomeFeaturedDocsCard,
-  FeaturedDocsCardProps,
-} from '@backstage/plugin-home';
+  QuickAccessCardContent,
+  type QuickAccessCardProps,
+} from '../QuickAccessCard';
+import { useTranslation } from '../../hooks/useTranslation';
 
-import { useTranslation } from '../hooks/useTranslation';
+const QuickAccessInfoCard = styled(InfoCard)({
+  '& div > div > div > div > p': {
+    textTransform: 'uppercase',
+  },
+});
 
-/**
- * Overrides `FeaturedDocsCard` from the home plugin, but overrides the
- * `subLinkText` prop to be " Learn more" instead of "LEARN MORE".
- *
- * 1. To fix the all uppercase that is used in home plugin
- * 2. To add a small missing gap between the title and the button
- *
- * @public
- */
-export const FeaturedDocsCard = (props: FeaturedDocsCardProps) => {
+/** @public */
+export const QuickAccessCard = (props: QuickAccessCardProps) => {
   const { t } = useTranslation();
+
   return (
-    <PluginHomeFeaturedDocsCard
-      subLinkText={` ${t('featuredDocs.learnMore')}`}
-      {...props}
-    />
+    <QuickAccessInfoCard
+      title={props.title ?? t('quickAccess.title')}
+      noPadding
+    >
+      <QuickAccessCardContent path={props.path} />
+    </QuickAccessInfoCard>
   );
 };

@@ -16,41 +16,28 @@
 
 import type { ReactNode } from 'react';
 
-import {
-  CodeSnippet,
-  InfoCard,
-  WarningPanel,
-} from '@backstage/core-components';
+import { CodeSnippet, WarningPanel } from '@backstage/core-components';
 import { ComponentAccordion, HomePageToolkit } from '@backstage/plugin-home';
 
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { styled } from '@mui/material/styles';
 
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
 import { useTranslation } from '../hooks/useTranslation';
 import { QuickAccessIcon } from './QuickAccessIcon';
 
-const QuickAccessInfoCard = styled(InfoCard)({
-  '& div > div > div > div > p': {
-    textTransform: 'uppercase',
-  },
-});
-
-/**
- * @public
- */
+/** @public */
 export interface QuickAccessCardProps {
   title?: string;
   path?: string;
 }
 
-/**
- * @public
- */
-export const QuickAccessCard = (props: QuickAccessCardProps) => {
+/** @public */
+export const QuickAccessCardContent = ({
+  path,
+}: Pick<QuickAccessCardProps, 'path'>) => {
   const { t } = useTranslation();
-  const { data, error, isLoading } = useQuickAccessLinks(props.path);
+  const { data, error, isLoading } = useQuickAccessLinks(path);
 
   let content: ReactNode;
 
@@ -87,9 +74,6 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
               ...link,
               icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
             }))}
-            // Component creation is allowed inside component props only
-            // if prop name starts with `render`.
-            // We accept it here since the upstream package use `Renderer` instead.
             Renderer={(
               renderProps, // NOSONAR
             ) => (
@@ -101,12 +85,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
     );
   }
 
-  return (
-    <QuickAccessInfoCard
-      title={props.title ?? t('quickAccess.title')}
-      noPadding
-    >
-      {content}
-    </QuickAccessInfoCard>
-  );
+  return content;
 };
+
+export { QuickAccessCard } from './legacy/QuickAccessCardLegacy';
