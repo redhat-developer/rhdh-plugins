@@ -10,13 +10,14 @@
 #   post_script      : push commit, post summary comment on PR
 #
 # Customizations over upstream fix.yaml:
-#   - host_files: mounts sandbox-yarn-setup.sh for corepack/yarn setup
+#   - image: rhdh custom image with yarn/corepack pre-installed
+#   - host_files: mounts sandbox-yarn-setup.sh for proxy config + corepack PATH
 #   - skills: adds monorepo-workspace-routing for workspace navigation
-#   - policy: custom fix policy with yarn registry allowlist
+#   - policy: custom fix policy with yarn registry + pnpm binary allowlist
 agent: agents/fix.md
 doc: docs/agents/fix.md
 model: opus
-image: ghcr.io/fullsend-ai/fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/fix.yaml
 
 pre_script: scripts/pre-fix.sh

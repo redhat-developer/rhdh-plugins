@@ -9,12 +9,13 @@
 # Only the post-script, running on the runner with PUSH_TOKEN, can write.
 #
 # Customizations over upstream code.yaml:
+#   - image: rhdh custom image with yarn/corepack pre-installed
 #   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
-#   - host_files: mounts sandbox-yarn-setup.sh for corepack/yarn setup
+#   - host_files: mounts sandbox-yarn-setup.sh for proxy config + corepack PATH
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
-image: ghcr.io/fullsend-ai/fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/code.yaml
 
 pre_script: scripts/pre-code.sh
