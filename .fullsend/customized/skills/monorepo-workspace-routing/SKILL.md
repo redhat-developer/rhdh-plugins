@@ -69,7 +69,7 @@ source /tmp/workspace/sandbox-yarn-setup.sh
 Verify you see `YARN_SETUP_OK` in the output before proceeding.
 
 ```bash
-YARN_ENABLE_SCRIPTS=false yarn install
+YARN_ENABLE_SCRIPTS=false yarn install --immutable
 ```
 
 After install, workspace-specific tools become available (e.g., `yarn openspec:validate`).

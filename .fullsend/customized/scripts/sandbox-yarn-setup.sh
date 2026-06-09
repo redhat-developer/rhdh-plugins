@@ -9,6 +9,9 @@
 #      can find yarn — they run in subprocesses without the agent's PATH
 #
 # Designed to be `source`d so PATH export persists in the caller's shell.
+# Saves and restores shell options to avoid side effects on the caller.
+
+_sandbox_yarn_saved_opts=$(set +o)
 set -euo pipefail
 
 export COREPACK_HOME=/sandbox/.corepack
@@ -26,7 +29,7 @@ corepack prepare --activate 2>/dev/null || true
 # husky's `yarn lint-staged` works without the agent's modified PATH.
 mkdir -p /tmp/workspace/bin
 cat > /tmp/workspace/bin/yarn << 'WRAPPER'
-#!/bin/bash
+#!/usr/bin/env bash
 export COREPACK_HOME=/sandbox/.corepack
 exec /usr/bin/corepack yarn "$@"
 WRAPPER
@@ -34,7 +37,11 @@ chmod +x /tmp/workspace/bin/yarn
 
 if yarn --version >/dev/null 2>&1; then
   echo "YARN_SETUP_OK: $(yarn --version 2>/dev/null)"
+  eval "$_sandbox_yarn_saved_opts"
+  unset _sandbox_yarn_saved_opts
 else
   echo "YARN_SETUP_FAILED" >&2
-  exit 1
+  eval "$_sandbox_yarn_saved_opts"
+  unset _sandbox_yarn_saved_opts
+  return 1 2>/dev/null || exit 1
 fi
