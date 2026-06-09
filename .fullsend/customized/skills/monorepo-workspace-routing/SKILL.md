@@ -55,13 +55,24 @@ test -f CLAUDE.md && cat CLAUDE.md
 These contain workspace-specific architecture rules, conventions, and constraints
 that override or supplement the root-level project instructions.
 
-## Step 4: Install dependencies
+## Step 4: Set up yarn and install dependencies
+
+The sandbox image has `corepack` but no global `yarn` binary, and `/usr/bin` is
+read-only. Source the setup script to install yarn into the writable
+`/sandbox/.corepack` directory, then install dependencies with lifecycle scripts
+disabled to avoid postinstall recursion.
 
 ```bash
-yarn install
+source /tmp/workspace/sandbox-yarn-setup.sh
 ```
 
-This ensures workspace-specific tools (e.g., `openspec`) are available.
+Verify you see `YARN_SETUP_OK` in the output before proceeding.
+
+```bash
+YARN_ENABLE_SCRIPTS=false yarn install --immutable
+```
+
+After install, workspace-specific tools become available (e.g., `yarn openspec:validate`).
 
 ## Rules
 
