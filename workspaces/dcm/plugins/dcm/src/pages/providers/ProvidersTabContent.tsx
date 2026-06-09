@@ -242,6 +242,7 @@ export function ProvidersTabContent() {
     submitLabel: string;
     submitting: boolean;
     error: string | null;
+    isEditMode?: boolean;
   };
 
   const formDialog = ({
@@ -256,6 +257,7 @@ export function ProvidersTabContent() {
     submitLabel,
     submitting,
     error,
+    isEditMode,
   }: ProviderDialogProps) => (
     <DcmFormDialog
       open={open}
@@ -279,6 +281,7 @@ export function ProvidersTabContent() {
         serviceTypes={serviceTypes}
         touched={touched}
         setTouched={setTouched}
+        isEditMode={isEditMode}
       />
     </DcmFormDialog>
   );
@@ -335,6 +338,7 @@ export function ProvidersTabContent() {
         submitLabel: 'Save',
         submitting: crud.editSubmitting,
         error: crud.editError,
+        isEditMode: true,
       })}
 
       <DcmDeleteDialog
