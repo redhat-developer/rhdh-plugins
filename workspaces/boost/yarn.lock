@@ -3700,6 +3700,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common"
+  dependencies:
+    "@backstage/cli": "npm:^0.34.5"
+  languageName: unknown
+  linkType: soft
+
 "@rollup/plugin-commonjs@npm:^26.0.0":
   version: 26.0.3
   resolution: "@rollup/plugin-commonjs@npm:26.0.3"
