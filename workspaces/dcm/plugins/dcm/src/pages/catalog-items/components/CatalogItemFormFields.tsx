@@ -480,18 +480,24 @@ export function CatalogItemFormFields({
         size="small"
         fullWidth
         disabled={isEditMode}
+        error={Boolean(
+          !isEditMode &&
+            (touched.service_type || submitAttempted) &&
+            errors.service_type,
+        )}
       >
-        <InputLabel shrink>Service type</InputLabel>
+        <InputLabel shrink>Service type *</InputLabel>
         <Select
           value={form.service_type}
-          onChange={e =>
+          onChange={e => {
             setForm(prev => ({
               ...prev,
               service_type: e.target.value as string,
-            }))
-          }
+            }));
+            setTouched(prev => ({ ...prev, service_type: true }));
+          }}
           displayEmpty
-          input={<OutlinedInput notched label="Service type" />}
+          input={<OutlinedInput notched label="Service type *" />}
         >
           <MenuItem value="">
             <em>None</em>
@@ -503,7 +509,11 @@ export function CatalogItemFormFields({
           ))}
         </Select>
         <FormHelperText>
-          {serviceTypeHelperText(isEditMode, serviceTypes.length)}
+          {!isEditMode &&
+          (touched.service_type || submitAttempted) &&
+          errors.service_type
+            ? errors.service_type
+            : serviceTypeHelperText(isEditMode, serviceTypes.length)}
         </FormHelperText>
       </FormControl>
 

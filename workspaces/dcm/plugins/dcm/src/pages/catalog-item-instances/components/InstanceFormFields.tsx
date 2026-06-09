@@ -24,6 +24,7 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  Switch,
   TextField,
   Typography,
 } from '@material-ui/core';
@@ -240,8 +241,10 @@ export function InstanceFormFields({
               );
             }
 
+            const schemaType = row.schemaType?.toLowerCase();
+
             /* Integer / number field → numeric text input */
-            if (row.schemaType === 'integer' || row.schemaType === 'number') {
+            if (schemaType === 'integer' || schemaType === 'number') {
               return (
                 <TextField
                   key={row.path}
@@ -256,11 +259,36 @@ export function InstanceFormFields({
                   size="small"
                   type="number"
                   inputProps={{
-                    step: row.schemaType === 'integer' ? 1 : 'any',
+                    step: schemaType === 'integer' ? 1 : 'any',
                     min: row.schemaMin,
                     max: row.schemaMax,
                   }}
                 />
+              );
+            }
+
+            /* Boolean field → Switch (label left, switch right) */
+            if (schemaType === 'boolean') {
+              return (
+                <Box
+                  key={row.path}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Box>
+                    <Typography variant="body2">{row.displayName}</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {helperText}
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={row.value === 'true'}
+                    onChange={e => setUserValue(i, String(e.target.checked))}
+                    color="primary"
+                    size="small"
+                  />
+                </Box>
               );
             }
 
