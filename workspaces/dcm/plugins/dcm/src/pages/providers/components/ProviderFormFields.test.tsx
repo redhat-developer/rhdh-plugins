@@ -159,8 +159,8 @@ describe('ProviderFormFields – service types dropdown', () => {
 
   it('renders provided service type options', async () => {
     const serviceTypes = [
-      { uid: '1', service_type: 'kubernetes' },
-      { uid: '2', service_type: 'aws-ec2' },
+      { uid: '1', service_type: 'kubernetes', api_version: 'v1', spec: {} },
+      { uid: '2', service_type: 'aws-ec2', api_version: 'v1', spec: {} },
     ];
     render(<Wrapper serviceTypes={serviceTypes} />);
 
