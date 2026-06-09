@@ -54,11 +54,16 @@ const catalogItemSchema = yup.object({
       /^v\d+(?:(?:alpha|beta)\d*)?$/,
       'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1',
     ),
+  service_type: yup.string().required('Service type is required'),
 });
 
 const { validate: validateScalar } = createYupValidator<CatalogItemForm>(
   catalogItemSchema,
-  f => ({ display_name: f.display_name, api_version: f.api_version }),
+  f => ({
+    display_name: f.display_name,
+    api_version: f.api_version,
+    service_type: f.service_type,
+  }),
 );
 
 export function validateCatalogItemForm(

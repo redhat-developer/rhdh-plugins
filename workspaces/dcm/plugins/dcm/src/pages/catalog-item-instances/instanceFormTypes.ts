@@ -99,7 +99,8 @@ function extractSchemaInfo(
   field: FieldConfiguration,
 ): Pick<UserValueRow, 'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax'> {
   const schema = field.validation_schema ?? {};
-  const schemaType = typeof schema.type === 'string' ? schema.type : undefined;
+  const schemaType =
+    typeof schema.type === 'string' ? schema.type.toLowerCase() : undefined;
   const enumValues =
     Array.isArray(schema.enum) &&
     schema.enum.every(v => typeof v === 'string' || typeof v === 'number')
