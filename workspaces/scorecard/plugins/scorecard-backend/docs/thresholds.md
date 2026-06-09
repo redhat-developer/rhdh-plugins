@@ -51,7 +51,7 @@ Validation **does not** require full coverage when:
 
 ### 1. Provider Default Thresholds
 
-Metric providers must define default thresholds that apply to all entities using that metric.
+Metric providers must define default thresholds that apply to all entities using that metric in `getMetricThresholds`.
 Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use in your metric provider.
 
 **Example Provider Implementation:**
