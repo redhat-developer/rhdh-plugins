@@ -63,6 +63,7 @@ export default defineConfig({
   outputDir: 'test-results',
 
   projects: [
+    // Merge-gate safe: runs against the local dev server in CI
     {
       name: 'chromium',
       testDir: 'packages/app/e2e-tests',
@@ -71,6 +72,9 @@ export default defineConfig({
         channel: 'chrome',
       },
     },
+    // Downstream E2E only: requires a deployed RHDH+DCM environment.
+    // Activated by setting PLAYWRIGHT_URL to the live cluster base URL.
+    // Run with: PLAYWRIGHT_URL=https://... yarn e2e-test:live
     ...(process.env.PLAYWRIGHT_URL
       ? [
           {
