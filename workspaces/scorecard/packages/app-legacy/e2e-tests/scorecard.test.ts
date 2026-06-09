@@ -49,6 +49,8 @@ import {
   sonarqubeFailedQualityGateResponse,
   fileCheckScorecardResponse,
   githubCustomAggregatedResponse,
+  gitHubPartiallyAggregatedResponse,
+  gitHubWeightedPartiallyAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -56,7 +58,8 @@ import {
   formatLastUpdatedDate,
   getTranslations,
   getEntityCount,
-  getThresholdsSnapshot,
+  getStatusGroupedCardSnapshot,
+  getAverageCardSnapshot,
   getTableFooterSnapshot,
   getEntitiesTableFooterRowsLabel,
 } from './utils/translationUtils';
@@ -493,7 +496,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await expect(card).toBeVisible();
         await expect(card).toMatchAriaSnapshot(
-          getThresholdsSnapshot(translations, {
+          getStatusGroupedCardSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             cardTitle: translationMetadata.title,
             cardDescription: translationMetadata.description,
@@ -566,7 +569,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await expect(card).toBeVisible();
         await expect(card).toMatchAriaSnapshot(
-          getThresholdsSnapshot(translations, {
+          getStatusGroupedCardSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             cardTitle: translationMetadata.title,
             cardDescription: translationMetadata.description,
@@ -639,7 +642,7 @@ test.describe('Scorecard Plugin Tests', () => {
       test('Verify entity counts with mocked API response', async ({}, testInfo) => {
         await expect(card).toBeVisible();
         await expect(card).toMatchAriaSnapshot(
-          getThresholdsSnapshot(translations, {
+          getStatusGroupedCardSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             drillDownAggregationId: aggregationMetadata.id,
             cardTitle: aggregatedResponse.metadata.title,
@@ -679,6 +682,34 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.expectPageTitle(
           'github.open_prs',
           aggregatedResponse.metadata.title,
+        );
+      });
+
+      test('Verify card shows healthy/total entity ratio when calculation errors exist', async ({}, testInfo) => {
+        const partialResponse = gitHubPartiallyAggregatedResponse;
+        const { entitiesConsidered, calculationErrorCount } =
+          partialResponse.result;
+
+        await setupHomepageAggregationCard(page, homePage, {
+          aggregationMetadata,
+          route: ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
+          response: partialResponse,
+        });
+
+        card = homePage.getCard(aggregationMetadata.id);
+
+        await expect(card).toBeVisible();
+        await expect(card).toMatchAriaSnapshot(
+          getStatusGroupedCardSnapshot(translations, {
+            drillDownMetricId: aggregationMetadata.metricId,
+            drillDownAggregationId: aggregationMetadata.id,
+            cardTitle: partialResponse.metadata.title,
+            cardDescription: partialResponse.metadata.description,
+            homepageCalculationHealth: {
+              healthy: String(entitiesConsidered - calculationErrorCount),
+              total: String(entitiesConsidered),
+            },
+          }),
         );
       });
     });
@@ -766,6 +797,35 @@ test.describe('Scorecard Plugin Tests', () => {
         });
 
         await homePage.expectCardHasNoDataFound(aggregationMetadata.id);
+      });
+
+      test('Verify card shows healthy/total entity ratio when calculation errors exist', async ({}, testInfo) => {
+        const partialResponse = gitHubWeightedPartiallyAggregatedResponse;
+        const { entitiesConsidered, calculationErrorCount } =
+          partialResponse.result;
+
+        await setupHomepageAggregationCard(page, homePage, {
+          aggregationMetadata,
+          route: ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
+          response: partialResponse,
+        });
+
+        const card = homePage.getCard(aggregationMetadata.id);
+
+        await expect(card).toBeVisible();
+        await expect(card).toMatchAriaSnapshot(
+          getAverageCardSnapshot(translations, {
+            drillDownMetricId: aggregationMetadata.metricId,
+            drillDownAggregationId: aggregationMetadata.id,
+            cardTitle: partialResponse.metadata.title,
+            cardDescription: partialResponse.metadata.description,
+            averageScoreLabel: `${partialResponse.result.averageScore}%`,
+            homepageCalculationHealth: {
+              healthy: String(entitiesConsidered - calculationErrorCount),
+              total: String(entitiesConsidered),
+            },
+          }),
+        );
       });
     });
 
