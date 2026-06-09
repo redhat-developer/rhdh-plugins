@@ -1,6 +1,6 @@
 # Spec: route-authorization
 
-Replacement of all inline route-level authorization guards with permission framework calls.
+Replacement of all inline route-level authorization guards in augment route handlers with Backstage permission framework calls. This spec defines the mapping from each augment route (agent lifecycle, tool lifecycle, Kagenti infrastructure) to its specific permission, conditional rules, and fallback behavior. The RBAC plugin evaluates the policies; this spec defines what the augment plugin _asks_ the permission framework to evaluate for each operation and how it interprets the result.
 
 ## ADDED Requirements
 

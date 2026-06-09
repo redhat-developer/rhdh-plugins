@@ -2,6 +2,12 @@
 
 Fine-grained permission constants, resource types, and permission rule definitions for augment agent and tool governance.
 
+### Scope: Why agents and tools first
+
+This spec defines fine-grained permissions for **agent and tool lifecycle operations** because these are the authorization decisions with the most nuanced requirements — ownership scoping, self-approval prevention, lifecycle stage gating, and filtered visibility. These are currently enforced via inline checks (`checkIsAdmin`, `createdBy` comparisons) that bypass the Backstage permission framework entirely.
+
+Other admin-only operations (config CRUD, document management, vector stores, models, evaluations, workflows, dev spaces) remain gated by the existing `augment.admin` permission. These are genuinely admin-only operations without ownership or conditional logic — the coarse gate is appropriate and adding fine-grained permissions for them today would increase surface area without clear demand. They are candidates for future fine-grained permissions if deployer requirements emerge (e.g., separating "can manage documents" from "can manage evaluations").
+
 ## ADDED Requirements
 
 ### Requirement: Agent resource type
