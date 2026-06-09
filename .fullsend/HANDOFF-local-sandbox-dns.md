@@ -155,7 +155,7 @@ $ yarn add is-odd   # with .yarnrc.yml httpProxy/httpsProxy set
 - The L7 proxy DOES accept explicit HTTP CONNECT (not just transparent interception)
 - `curl` gets 403 because it's not in the policy binary allowlist — use `node`/`yarn`
 - Previous `socketOnEnd` failure was likely curl-based testing, not node/yarn
-- `sandbox-yarn-setup.sh` updated to inject proxy settings into `.yarnrc.yml`
+- Replaced `sandbox-yarn-setup.sh` with `env/yarn-proxy.env` — maps OpenShell's `HTTP_PROXY` → `YARN_HTTP_PROXY` (no hardcoded IPs)
 
 **Not yet tested:** Full `yarn install` on the rhdh-plugins monorepo (hundreds
 of packages). The smoke test used a single package.
@@ -226,9 +226,9 @@ $ nslookup registry.npmjs.org 10.200.0.1 → ❌ connection refused
 
 ## Related files
 
-| File                                                 | Purpose                             |
-| ---------------------------------------------------- | ----------------------------------- |
-| `.fullsend/customized/policies/code.yaml`            | Network policy with host allowlists |
-| `.fullsend/customized/harness/code.yaml`             | Harness mounting setup script       |
-| `.fullsend/customized/scripts/sandbox-yarn-setup.sh` | Corepack/yarn PATH setup            |
-| `~/.config/openshell/gateway.env`                    | `OPENSHELL_DRIVERS=podman`          |
+| File                                      | Purpose                             |
+| ----------------------------------------- | ----------------------------------- |
+| `.fullsend/customized/policies/code.yaml` | Network policy with host allowlists |
+| `.fullsend/customized/harness/code.yaml`  | Harness mounting setup script       |
+| `.fullsend/customized/env/yarn-proxy.env` | Maps HTTP_PROXY → YARN_HTTP_PROXY   |
+| `~/.config/openshell/gateway.env`         | `OPENSHELL_DRIVERS=podman`          |

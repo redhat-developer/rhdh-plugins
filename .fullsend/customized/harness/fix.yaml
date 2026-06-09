@@ -11,7 +11,7 @@
 #
 # Customizations over upstream fix.yaml:
 #   - image: rhdh custom image with yarn/corepack pre-installed
-#   - host_files: mounts sandbox-yarn-setup.sh for proxy config + corepack PATH
+#   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 #   - skills: adds monorepo-workspace-routing for workspace navigation
 #   - policy: custom fix policy with yarn registry + pnpm binary allowlist
 agent: agents/fix.md
@@ -42,8 +42,8 @@ host_files:
   - src: ${GCP_OIDC_TOKEN_FILE}
     dest: /tmp/workspace/.gcp-oidc-token
     optional: true
-  - src: scripts/sandbox-yarn-setup.sh
-    dest: /tmp/workspace/sandbox-yarn-setup.sh
+  - src: env/yarn-proxy.env
+    dest: /tmp/workspace/.env.d/yarn-proxy.env
 
 skills:
   - skills/fix-review

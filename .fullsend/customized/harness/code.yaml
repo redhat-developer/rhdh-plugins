@@ -11,7 +11,7 @@
 # Customizations over upstream code.yaml:
 #   - image: rhdh custom image with yarn/corepack pre-installed
 #   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
-#   - host_files: mounts sandbox-yarn-setup.sh for proxy config + corepack PATH
+#   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
@@ -33,8 +33,8 @@ host_files:
   - src: ${GCP_OIDC_TOKEN_FILE}
     dest: /tmp/workspace/.gcp-oidc-token
     optional: true
-  - src: scripts/sandbox-yarn-setup.sh
-    dest: /tmp/workspace/sandbox-yarn-setup.sh
+  - src: env/yarn-proxy.env
+    dest: /tmp/workspace/.env.d/yarn-proxy.env
 
 skills:
   - skills/code-implementation

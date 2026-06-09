@@ -48,7 +48,7 @@ Friction points and improvements discovered during monorepo onboarding.
 - [x] Custom fix policy created with registry.yarnpkg.com + repo.yarnpkg.com + yarn/corepack binaries in allowlist
 - [x] Custom code policy created — upstream code.yaml also missing repo.yarnpkg.com (corepack downloads yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
 - [x] Validated locally (2026-06-08): YARN_SETUP_OK: 4.12.0, yarn install completed, openspec validate ran successfully
-- [ ] Git hooks (husky) need yarn in PATH — solved with /tmp/workspace/bin/yarn wrapper in setup script. Validate this works in CI too
+- [x] Git hooks (husky) need yarn in PATH — solved by custom image with /usr/local/bin/yarn wrapper
 - [ ] yarn install takes ~10-15 min in sandbox for boost workspace (monorepo overhead) — consider pre-installing deps in custom image for faster runs
 
 ## DNS / networking (investigated 2026-06-09)
@@ -58,7 +58,7 @@ See `HANDOFF-local-sandbox-dns.md` for full technical writeup.
 - [ ] **DNS is intentionally broken inside sandboxes.** All network must go through the L7 transparent proxy at `10.200.0.1:3128`. The inner sandbox netns (`10.200.0.2`) has no route to the Podman DNS (`10.89.0.1`). This is by design — OpenShell#364 was closed wontfix.
 - [ ] `yarn install` fails locally because Yarn resolves DNS via `getaddrinfo` before connecting. The transparent proxy intercepts TCP, not DNS.
 - [ ] Same architecture in CI (GitHub Actions) — Podman + OpenShell 0.0.54. yarn install works in CI because Node.js `undici`/`fetch` gets intercepted by the transparent proxy before DNS is needed.
-- [x] Test workaround: `httpProxy`/`httpsProxy` in `.yarnrc.yml` pointing to `http://10.200.0.1:3128` — **WORKS**. Proxy accepts explicit CONNECT from `node`/`yarn`. Smoke test: `yarn add is-odd` completed in 497ms. `sandbox-yarn-setup.sh` updated to inject proxy config.
+- [x] Test workaround: `httpProxy`/`httpsProxy` in `.yarnrc.yml` pointing to `http://10.200.0.1:3128` — **WORKS**. Proxy accepts explicit CONNECT from `node`/`yarn`. Smoke test: `yarn add is-odd` completed in 497ms. Replaced sandbox-yarn-setup.sh with env/yarn-proxy.env (maps OpenShell's HTTP_PROXY → YARN_HTTP_PROXY, no hardcoded IPs).
 - [ ] Full test: run `yarn install` on rhdh-plugins monorepo via sandbox with proxy config (smoke test only covered a single package)
 - [ ] Watch [NVIDIA/OpenShell#1107](https://github.com/NVIDIA/OpenShell/issues/1107) — proposes `/etc/hosts` injection for policy-allowed hostnames at sandbox creation. Would fix this cleanly.
 - [ ] Consider filing new OpenShell issue: `/etc/resolv.conf` points to unreachable nameserver — tools should fail fast (empty resolv.conf) instead of timing out on unreachable `10.89.0.1`
@@ -68,8 +68,8 @@ See `HANDOFF-local-sandbox-dns.md` for full technical writeup.
 - [ ] Feature request filed: [fullsend-ai/fullsend#1937](https://github.com/fullsend-ai/fullsend/issues/1937) — native `working_dir` field in harness schema
 - [ ] Drift risk: customized harness/policy files are copies of upstream (baseline 2025-06-05) — need to track upstream changes. Now includes: `harness/code.yaml`, `harness/fix.yaml`, `policies/code.yaml`, `policies/fix.yaml`, `agents/code.md`
 - [ ] File upstream issue: repo.yarnpkg.com missing from upstream code.yaml and fix.yaml policies — any JS monorepo using corepack + yarn will hit this
-- [ ] File upstream issue: request `sandbox_init_script` field in harness schema — current workaround (host_files + source in skill) works but is fragile and requires every skill to know about the setup script. A native `sandbox_init_script` would run before the agent starts, making PATH/env changes automatic
-- [ ] Fallback plan: if corepack workaround proves unreliable across sandbox image updates, build a custom image with yarn pre-installed (`FROM fullsend-code:latest` + `RUN corepack enable && corepack prepare yarn@stable --activate`)
+- [ ] File upstream issue: request `sandbox_init_script` field in harness schema — would allow pre-agent env setup without relying on .env.d or skills
+- [x] Fallback plan: custom image with yarn pre-installed — done (`rhdh-fullsend/images/code/Containerfile`). Setup script replaced with env/yarn-proxy.env.
 
 ## CLAUDE.md
 
