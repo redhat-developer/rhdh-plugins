@@ -118,7 +118,7 @@ const bulkImportTranslationEs = createTranslationMessages({
       'No se pudo obtener la solicitud de extracción. Se generó una nueva entidad YAML a continuación.',
     'previewFile.invalidEntityYaml':
       'La entidad YAML de su solicitud de extracción no es válida (archivo vacío o falta apiVersion, kind o metadata.name). Se generó una nueva entidad YAML a continuación.',
-    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
+    'previewFile.keyValuePlaceholder': 'clave1: valor1; clave2: valor2',
     'previewFile.prCreationUnsuccessful':
       'La creación de PR no se realizó correctamente en algunos repositorios. Haga clic en `Modificar` para ver el motivo.',
     'previewFile.preview': 'Vista previa',

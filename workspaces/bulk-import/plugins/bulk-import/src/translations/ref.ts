@@ -222,7 +222,7 @@ export const bulkImportMessages = {
     pullRequestText: 'pull request',
     viewRepository: 'View repository',
     closeDrawer: 'Close the drawer',
-    keyValuePlaceholder: 'key1: value2; key2: value2',
+    keyValuePlaceholder: 'key1: value1; key2: value2',
     useSemicolonSeparator: 'Use semicolon to separate {{label}}',
     preview: 'Preview',
     pullRequest: {

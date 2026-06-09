@@ -117,7 +117,7 @@ const bulkImportTranslationJa = createTranslationMessages({
       'プルリクエストの取得に失敗しました。以下に新しい YAML が生成されました。',
     'previewFile.invalidEntityYaml':
       'プルリクエスト内のエンティティー YAML が無効です (ファイルが空であるか、apiVersion、kind、または metadata.name がありません)。以下に新しい YAML が生成されました。',
-    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
+    'previewFile.keyValuePlaceholder': 'キー1: 値1; キー2: 値2',
     'previewFile.prCreationUnsuccessful':
       '一部のリポジトリーで PR の作成に失敗しました。理由を確認するには、`編集` をクリックしてください。',
     'previewFile.preview': 'プレビュー',
