@@ -22,15 +22,6 @@ const GITHUB_AGGREGATION_ROUTE =
 const JIRA_AGGREGATION_ROUTE =
   ScorecardRoutes.JIRA_OPEN_ISSUES_METRIC_AGGREGATION_ROUTE;
 
-export type WaitForAggregationResponseOptions = {
-  status?: number;
-  timeout?: number;
-  expectedResult?: {
-    averageScore?: number;
-    total?: number;
-  };
-};
-
 export async function waitUntilApiCallSucceeds(
   page: Page,
   urlPart: string = '/api/scorecard/metrics/catalog/Component/default/red-hat-developer-hub',
@@ -61,10 +52,9 @@ function isAggregationDataUrl(url: string, aggregationId: string): boolean {
 export function waitForAggregationResponse(
   page: Page,
   aggregationId: string,
-  options?: WaitForAggregationResponseOptions,
 ): Promise<Response> {
-  const status = options?.status ?? 200;
-  const timeout = options?.timeout ?? 60_000;
+  const status = 200;
+  const timeout = 60_000;
 
   return page.waitForResponse(
     async res => {
@@ -74,22 +64,13 @@ export function waitForAggregationResponse(
         return false;
       }
 
-      const expected = options?.expectedResult;
-      if (!expected) {
-        return true;
-      }
-
       try {
         const json = await res.json();
         const result = json?.result;
 
-        const isAverageOk =
-          expected.averageScore === undefined ||
-          result?.averageScore === expected.averageScore;
-        const isTotalOk =
-          expected.total === undefined || result?.total === expected.total;
-
-        return isAverageOk && isTotalOk;
+        return (
+          result?.averageScore !== undefined || result?.total !== undefined
+        );
       } catch {
         return false;
       }

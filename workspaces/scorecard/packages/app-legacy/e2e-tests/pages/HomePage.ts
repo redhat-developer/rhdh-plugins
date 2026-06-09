@@ -129,10 +129,13 @@ export class HomePage {
   }
 
   /**
-   * Clicks the homepage KPI drill-down link (healthy/total subheader).
+   * Clicks the homepage KPI drill-down link (healthy/total subheader) within a card.
    * Defaults to 10/10 (plain “10 entities” link). Pass overrides when mock `result.total` differs.
    */
-  async clickDrillDownLink(options?: { healthy?: string; total?: string }) {
+  async clickDrillDownLink(
+    card: Locator,
+    options?: { healthy?: string; total?: string },
+  ) {
     const healthy = options?.healthy ?? '10';
     const total = options?.total ?? '10';
     const name = getHomepageEntityCalculationHealthText(
@@ -140,7 +143,6 @@ export class HomePage {
       healthy,
       total,
     );
-    // Multiple homepage scorecards can share the same health string; target the first match.
-    await this.page.getByRole('link', { name }).first().click();
+    await card.getByRole('link', { name }).click();
   }
 }

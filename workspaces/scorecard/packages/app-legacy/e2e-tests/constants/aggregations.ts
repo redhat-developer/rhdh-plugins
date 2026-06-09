@@ -19,7 +19,7 @@ export const AGGREGATED_CARDS_METRIC_IDS = {
   githubMetricId: 'github.open_prs',
   githubOpenPrsKpi: 'openPrsKpi',
   jiraOpenIssuesKpi: 'openIssuesKpi',
-  openPrsWeightedKpi: 'openPrsWeightedKpi',
+  gitHubOpenPrsWeightedKpi: 'openPrsWeightedKpi',
 } as const;
 
 /** Must match `title` in App.tsx homepage widget config (Add widget picker). */
@@ -28,16 +28,16 @@ export const AGGREGATED_CARDS_WIDGET_TITLES = {
   githubMetricId: 'Scorecard: With default aggregation config (GitHub)',
   githubOpenPrsKpi: 'Scorecard: GitHub open PRs',
   jiraOpenIssuesKpi: 'Scorecard: Jira open blocking tickets',
-  openPrsWeightedKpi: 'Scorecard: GitHub open PRs (weighted health)',
+  gitHubOpenPrsWeightedKpi: 'Scorecard: GitHub open PRs (weighted health)',
 } as const;
 
 export const AGGREGATED_CARDS_METADATA = {
-  deprecatedMetricId: {
+  jiraDeprecatedMetricId: {
     id: AGGREGATED_CARDS_METRIC_IDS.jiraMetricId,
     title: 'Scorecard: With deprecated metricId property (Jira)',
     metricId: 'jira.open_issues',
   },
-  defaultAggregation: {
+  githubDefaultAggregation: {
     id: AGGREGATED_CARDS_METRIC_IDS.githubMetricId,
     title: 'Scorecard: With default aggregation config (GitHub)',
     metricId: 'github.open_prs',
@@ -52,8 +52,8 @@ export const AGGREGATED_CARDS_METADATA = {
     title: 'Scorecard: GitHub open PRs',
     metricId: 'github.open_prs',
   },
-  openPrsWeightedKpi: {
-    id: AGGREGATED_CARDS_METRIC_IDS.openPrsWeightedKpi,
+  githubOpenPrsWeightedKpi: {
+    id: AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi,
     title: 'Scorecard: GitHub open PRs (weighted health)',
     metricId: 'github.open_prs',
   },

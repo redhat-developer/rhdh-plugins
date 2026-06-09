@@ -73,6 +73,7 @@ export async function mockHomepageAggregationsPermissionDenied(
       body: JSON.stringify(notAllowedAggregationErrorBody),
     });
   });
+  await page.reload();
 }
 
 export async function mockAggregationNoDataFound(page: Page): Promise<void> {
@@ -88,7 +89,7 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
       return;
     }
 
-    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.openPrsWeightedKpi)) {
+    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi)) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -173,4 +174,6 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
     openPrsWeightedAggregatedResponse,
   );
+
+  await page.reload();
 }

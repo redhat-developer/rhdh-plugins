@@ -193,6 +193,22 @@ export function getSomeEntitiesNotReportingTooltip(
   );
 }
 
+/** Flat metric-namespace string by key (e.g. averageCenterTooltipTotalLabel). */
+export function getMetricTranslation(
+  translations: ScorecardMessages,
+  key: string,
+): string {
+  const metric = translations.metric as unknown as Record<
+    string,
+    string | undefined
+  >;
+  const refMetric = scorecardMessages.metric as unknown as Record<
+    string,
+    string | undefined
+  >;
+  return metric[key] ?? refMetric[key] ?? key;
+}
+
 /** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
 export function getEntitiesTableFooterRowsLabel(
   translations: ScorecardMessages,

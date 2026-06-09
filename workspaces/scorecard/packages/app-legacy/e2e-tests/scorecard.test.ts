@@ -36,7 +36,6 @@ import {
   githubAggregatedResponse,
   jiraAggregatedResponse,
   emptyJiraAggregatedResponse,
-  openPrsKpiMetadataResponse,
   openPrsWeightedAggregatedResponse,
   emptyOpenPrsWeightedAggregatedResponse,
   openPrsWeightedKpiMetadataResponse,
@@ -49,6 +48,7 @@ import {
   sonarqubeScorecardResponse,
   sonarqubeFailedQualityGateResponse,
   fileCheckScorecardResponse,
+  githubCustomAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -424,7 +424,6 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify missing permission on all default homepage scorecard widgets', async () => {
       await mockHomepageAggregationsPermissionDenied(page);
       await addAggregatedScorecardWidgets(homePage);
-      await page.reload();
 
       const entityCount = getEntityCount(translations, currentLocale, '0');
 
@@ -449,7 +448,6 @@ test.describe('Scorecard Plugin Tests', () => {
 
     test('Manage scorecards on Home page', async () => {
       await mockAllDefaultHomepageAggregationsSuccess(page);
-      await page.reload();
 
       await homePage.navigateToHome();
       await homePage.enterEditMode();
@@ -470,7 +468,8 @@ test.describe('Scorecard Plugin Tests', () => {
 
     test.describe('Deprecated homepage card (metricId only)', () => {
       let card: Locator;
-      const aggregationMetadata = AGGREGATED_CARDS_METADATA.deprecatedMetricId;
+      const aggregationMetadata =
+        AGGREGATED_CARDS_METADATA.jiraDeprecatedMetricId;
 
       test.beforeAll(async () => {
         await setupHomepageAggregationCard(page, homePage, {
@@ -522,26 +521,27 @@ test.describe('Scorecard Plugin Tests', () => {
 
       test('Verify status grouped drill-down link', async () => {
         await expect(card).toBeVisible();
-        await homePage.clickDrillDownLink();
+        await homePage.clickDrillDownLink(card);
 
         await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
           aggregationId: aggregationMetadata.id,
         });
 
-        const githubOpenPrsTitle = evaluateMessage(
+        const jiraOpenIssuesTitle = evaluateMessage(
           translations.metric['jira.open_issues'].title,
           'jira.open_issues',
         );
         await scorecardDrillDownPage.expectPageTitle(
           'jira.open_issues',
-          githubOpenPrsTitle,
+          jiraOpenIssuesTitle,
         );
       });
     });
 
     test.describe('Default aggregation (aggregationId equals metric id)', () => {
       let card: Locator;
-      const aggregationMetadata = AGGREGATED_CARDS_METADATA.defaultAggregation;
+      const aggregationMetadata =
+        AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
 
       test.beforeAll(async () => {
         await setupHomepageAggregationCard(page, homePage, {
@@ -594,7 +594,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
       test('Verify open drill-down link', async () => {
         await expect(card).toBeVisible();
-        await homePage.clickDrillDownLink();
+        await homePage.clickDrillDownLink(card);
 
         await scorecardDrillDownPage.expectOnPage('github.open_prs', {
           aggregationId: aggregationMetadata.id,
@@ -613,13 +613,15 @@ test.describe('Scorecard Plugin Tests', () => {
 
     test.describe('Configured aggregation KPI - "statusGrouped" type', () => {
       let card: Locator;
+
       const aggregationMetadata = AGGREGATED_CARDS_METADATA.githubOpenPrsKpi;
+      const aggregatedResponse = githubCustomAggregatedResponse;
 
       test.beforeAll(async () => {
         await setupHomepageAggregationCard(page, homePage, {
           aggregationMetadata,
           route: ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
-          response: githubAggregatedResponse,
+          response: aggregatedResponse,
         });
 
         card = homePage.getCard(aggregationMetadata.id);
@@ -627,9 +629,9 @@ test.describe('Scorecard Plugin Tests', () => {
 
       test('Verify title and description', async () => {
         await expect(card).toBeVisible();
-        await expect(card).toContainText(openPrsKpiMetadataResponse.title);
+        await expect(card).toContainText(aggregatedResponse.metadata.title);
         await expect(card).toContainText(
-          openPrsKpiMetadataResponse.description,
+          aggregatedResponse.metadata.description,
           { timeout: 15000 },
         );
       });
@@ -640,8 +642,12 @@ test.describe('Scorecard Plugin Tests', () => {
           getThresholdsSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             drillDownAggregationId: aggregationMetadata.id,
-            cardTitle: githubAggregatedResponse.metadata.title,
-            cardDescription: githubAggregatedResponse.metadata.description,
+            cardTitle: aggregatedResponse.metadata.title,
+            cardDescription: aggregatedResponse.metadata.description,
+            homepageCalculationHealth: {
+              healthy: aggregatedResponse.result.entitiesConsidered.toString(),
+              total: aggregatedResponse.result.total.toString(),
+            },
           }),
         );
 
@@ -650,7 +656,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
       test('Verify last updated date', async () => {
         const lastUpdatedFormatted = formatLastUpdatedDate(
-          githubAggregatedResponse.result.timestamp,
+          aggregatedResponse.result.timestamp,
           currentLocale,
         );
         await expect(card).toBeVisible();
@@ -658,27 +664,28 @@ test.describe('Scorecard Plugin Tests', () => {
       });
 
       test('Verify threshold', async () => {
-        await homePage.verifyThresholdTooltip(card, 'success', '3', '30%');
-        await homePage.verifyThresholdTooltip(card, 'warning', '5', '50%');
-        await homePage.verifyThresholdTooltip(card, 'error', '2', '20%');
+        await homePage.verifyThresholdTooltip(card, 'success', '2', '25%');
+        await homePage.verifyThresholdTooltip(card, 'warning', '1', '13%');
+        await homePage.verifyThresholdTooltip(card, 'error', '5', '63%');
       });
 
       test('Verify status grouped drill-down link', async () => {
         await expect(card).toBeVisible();
-        await homePage.clickDrillDownLink();
+        await homePage.clickDrillDownLink(card, { healthy: '8', total: '8' });
 
         await scorecardDrillDownPage.expectOnPage('github.open_prs', {
           aggregationId: aggregationMetadata.id,
         });
         await scorecardDrillDownPage.expectPageTitle(
           'github.open_prs',
-          githubAggregatedResponse.metadata.title,
+          aggregatedResponse.metadata.title,
         );
       });
     });
 
     test.describe('Configured aggregation KPI - "average" type', () => {
-      const aggregationMetadata = AGGREGATED_CARDS_METADATA.openPrsWeightedKpi;
+      const aggregationMetadata =
+        AGGREGATED_CARDS_METADATA.githubOpenPrsWeightedKpi;
 
       test.beforeAll(async () => {
         await setupHomepageAggregationCard(page, homePage, {
@@ -739,7 +746,7 @@ test.describe('Scorecard Plugin Tests', () => {
 
         test('Verify open drill-down link', async () => {
           await expect(card).toBeVisible();
-          await homePage.clickDrillDownLink();
+          await homePage.clickDrillDownLink(card);
 
           await scorecardDrillDownPage.expectOnPage('github.open_prs', {
             aggregationId: aggregationMetadata.id,
@@ -810,7 +817,9 @@ test.describe('Scorecard Plugin Tests', () => {
         });
 
         await test.step('Entity drill-down', async () => {
-          await homePage.clickDrillDownLink();
+          await homePage.clickDrillDownLink(
+            homePage.getCard(aggregationMetadata.id),
+          );
           await scorecardDrillDownPage.expectOnPage('github.open_prs', {
             aggregationId: aggregationMetadata.id,
           });
@@ -921,7 +930,9 @@ test.describe('Scorecard Plugin Tests', () => {
         });
 
         await test.step('Entity drill-down', async () => {
-          await homePage.clickDrillDownLink();
+          await homePage.clickDrillDownLink(
+            homePage.getCard(aggregationMetadata.id),
+          );
           await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
             aggregationId: aggregationMetadata.id,
           });
@@ -999,7 +1010,8 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test.describe('Unsupported aggregation type', () => {
-      const aggregationMetadata = AGGREGATED_CARDS_METADATA.openPrsWeightedKpi;
+      const aggregationMetadata =
+        AGGREGATED_CARDS_METADATA.githubOpenPrsWeightedKpi;
 
       test.beforeAll(async () => {
         await setupHomepageAggregationCard(page, homePage, {

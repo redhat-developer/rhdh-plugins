@@ -203,7 +203,7 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
-/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+/** Matches `scorecard.aggregationKPIs.gitHubOpenPrsWeightedKpi` in app-config.yaml */
 export const openPrsWeightedKpiMetadataResponse = {
   title: 'GitHub Open PRs (weighted health)',
   description:
@@ -508,6 +508,31 @@ export const githubAggregatedResponse = {
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entitiesConsidered: 10,
+    calculationErrorCount: 0,
+  },
+};
+
+export const githubCustomAggregatedResponse = {
+  id: 'github.open_prs',
+  status: 'success',
+  metadata: {
+    title: 'GitHub Open PRs KPI',
+    description:
+      'This KPI provides information about GitHub Open PRs grouped by status',
+    type: 'number',
+    history: true,
+    aggregationType: 'statusGrouped',
+  },
+  result: {
+    values: [
+      { count: 2, name: 'success' },
+      { count: 1, name: 'warning' },
+      { count: 5, name: 'error' },
+    ],
+    total: 8,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 8,
     calculationErrorCount: 0,
   },
 };
