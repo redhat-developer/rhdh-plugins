@@ -300,7 +300,10 @@ export const useDcmStyles = makeStyles(theme => ({
     '& .MuiPaper-root': {
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: theme.shape.borderRadius,
-      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+      boxShadow:
+        theme.palette.type === 'dark'
+          ? 'none'
+          : '0 1px 2px rgba(0, 0, 0, 0.06)',
       backgroundColor: theme.palette.background.paper,
     },
   },
