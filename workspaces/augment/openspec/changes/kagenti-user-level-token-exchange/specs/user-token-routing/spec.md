@@ -6,7 +6,7 @@ Route-level extraction and forwarding of user OIDC tokens from configurable requ
 
 ### Requirement: Configurable user token header on RouteContext
 
-The `RouteContext` type SHALL include an optional `userTokenHeader` field containing the header name from which to extract the user's OIDC token. The value SHALL be sourced dynamically from the `KagentiProvider` configuration.
+The `RouteContext` type SHALL include an optional `userTokenHeader` field containing the header name from which to extract the user's OIDC token (e.g., `x-user-oidc-token` or `X-Forwarded-Access-Token`). The value SHALL be sourced dynamically from the `KagentiProvider` configuration.
 
 #### Scenario: RouteContext includes header name
 

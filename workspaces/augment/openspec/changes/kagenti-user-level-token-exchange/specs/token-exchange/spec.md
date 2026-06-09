@@ -9,15 +9,18 @@ RFC 8693 OAuth2 token exchange for per-user Kagenti authorization.
 The system SHALL support an optional `tokenExchange` configuration block nested under `augment.kagenti.auth` with the following fields:
 
 - `enabled` (boolean, default: `false`) — whether to attempt per-user token exchange
-- `audience` (string, default: value of `auth.clientId`) — the `audience` parameter in the RFC 8693 exchange request
+- `audience` (string, default: value of `auth.clientId`) — the `audience` parameter in the RFC 8693 exchange request. Must be a valid Keycloak client ID that is configured to permit token exchange from the requesting client (`auth.clientId`). Supported values:
+  - The Kagenti API client ID (e.g., `kagenti-api`) — the typical production value, targeting the Keycloak client that represents the Kagenti service
+  - The RHDH/Backstage client ID (the value of `auth.clientId`) — the default when no explicit audience is set
+  - Any other Keycloak client ID that has token exchange permissions granted for the requesting client
 - `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token
 
 The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `auth.clientSecret` for the exchange request. No new top-level config keys SHALL be introduced.
 
-#### Scenario: Token exchange defaults when not configured
+#### Scenario: Token exchange disabled or not configured
 
-- **WHEN** no `tokenExchange` block is present in config
-- **THEN** the system SHALL treat token exchange as disabled (`enabled: false`) and use only the service-account token
+- **WHEN** `tokenExchange.enabled` is `false` or no `tokenExchange` block is present in config
+- **THEN** the system SHALL treat token exchange as disabled and use only the service-account token for all Kagenti requests
 
 #### Scenario: Token exchange with explicit config
 
@@ -31,7 +34,7 @@ The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `au
 
 ### Requirement: RFC 8693 token exchange execution
 
-The `TokenExchangeManager` SHALL perform OAuth2 Token Exchange per RFC 8693 by sending a POST to the configured `tokenEndpoint` with:
+The `TokenExchangeManager` SHALL perform OAuth2 Token Exchange per RFC 8693 by sending a POST to the configured `auth.tokenEndpoint` with:
 
 - `grant_type`: `urn:ietf:params:oauth:grant-type:token-exchange`
 - `subject_token`: the user's OIDC access token
@@ -53,7 +56,9 @@ The exchanged token SHALL preserve the user's `sub` claim and add an `act` (acto
 
 ### Requirement: Per-user token caching
 
-The `TokenExchangeManager` SHALL cache exchanged tokens keyed by user identity. Cached tokens SHALL be reused for subsequent requests from the same user until they expire or are invalidated.
+The `TokenExchangeManager` SHALL cache exchanged tokens keyed by user identity. Cached tokens SHALL be reused for subsequent requests from the same user until they expire or are invalidated. When a cached token expires, the system SHALL perform a new token exchange rather than using a refresh token.
+
+> **Deferred:** RFC 8693 responses may include a `refresh_token` that could be used to silently renew exchanged tokens without a full re-exchange. This is deferred as a future enhancement due to the added complexity of per-user refresh token tracking, refresh failure handling, and the fact that Keycloak's token exchange does not always return a refresh token depending on client configuration.
 
 #### Scenario: Cache hit for same user
 
@@ -87,11 +92,6 @@ The `TokenExchangeManager` SHALL support streaming-aware token lifetime manageme
 
 The system SHALL fall back to the existing `KeycloakTokenManager` service-account token whenever per-user token exchange cannot complete. Fallback SHALL occur silently with a warning log — requests SHALL NOT fail due to exchange issues.
 
-#### Scenario: Token exchange disabled
-
-- **WHEN** `tokenExchange.enabled` is `false` or not configured
-- **THEN** the system SHALL use the service-account token for all Kagenti requests
-
 #### Scenario: User OIDC token header absent
 
 - **WHEN** `tokenExchange.enabled` is `true` but the configured header is not present on the request
@@ -102,9 +102,11 @@ The system SHALL fall back to the existing `KeycloakTokenManager` service-accoun
 - **WHEN** the exchange POST to Keycloak fails due to network error or timeout
 - **THEN** the system SHALL log a warning and use the service-account token
 
-#### Scenario: Keycloak returns unsupported_grant_type
+#### Scenario: IdP returns unsupported_grant_type
 
-- **WHEN** Keycloak returns 400 with `error: unsupported_grant_type`
+> **Note:** Modern Keycloak versions enable `token-exchange-standard:v2` by default, making this scenario unlikely in typical deployments. It remains as a defensive fallback for older Keycloak versions, realm/client-level policies that restrict token exchange permissions, or non-Keycloak OIDC providers that do not support RFC 8693.
+
+- **WHEN** the IdP returns 400 with `error: unsupported_grant_type`
 - **THEN** the system SHALL log a warning and use the service-account token
 
 #### Scenario: Exchanged token rejected with 401
