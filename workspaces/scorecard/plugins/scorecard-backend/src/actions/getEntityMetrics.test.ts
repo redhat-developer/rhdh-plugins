@@ -203,7 +203,12 @@ describe('createGetEntityMetricsAction', () => {
       params: { metricIds: ['github.open_prs'] },
     };
     mockPermissions.authorizeConditional.mockResolvedValue([
-      { result: AuthorizeResult.CONDITIONAL, conditions },
+      {
+        result: AuthorizeResult.CONDITIONAL,
+        pluginId: 'scorecard',
+        resourceType: 'scorecard-metric',
+        conditions,
+      },
     ]);
 
     const filteredMetrics = [
