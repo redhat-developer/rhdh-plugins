@@ -144,6 +144,25 @@ describe('MetricProvidersRegistry', () => {
       );
     });
 
+    it('should throw error when provider default thresholds are invalid', () => {
+      class InvalidThresholdFormatProvider extends MockNumberProvider {
+        getMetricThresholds() {
+          return {
+            rules: [{ key: 'error', expression: 'Invalid expression' }],
+          } as any;
+        }
+      }
+
+      const invalidProvider = new InvalidThresholdFormatProvider(
+        'github.invalid_threshold_format',
+        'github',
+      );
+
+      expect(() => registry.register(invalidProvider)).toThrow(
+        'Invalid default thresholds for metric provider \'github.invalid_threshold_format\'; caused by ThresholdConfigFormatError: Invalid threshold expression: "Invalid expression"',
+      );
+    });
+
     describe('batch providers', () => {
       it('should register batch provider with multiple metric IDs', () => {
         expect(() => registry.register(filecheckBatchProvider)).not.toThrow();

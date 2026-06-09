@@ -30,16 +30,10 @@ import {
 export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
   private readonly client: FilecheckClient;
   private readonly filesConfig: FilecheckConfig;
-  private readonly thresholds: ThresholdConfig;
 
-  constructor(
-    client: FilecheckClient,
-    filesConfig: FilecheckConfig,
-    thresholds?: ThresholdConfig,
-  ) {
+  constructor(client: FilecheckClient, filesConfig: FilecheckConfig) {
     this.client = client;
     this.filesConfig = filesConfig;
-    this.thresholds = thresholds ?? DEFAULT_FILECHECK_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
@@ -73,7 +67,7 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return DEFAULT_FILECHECK_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
