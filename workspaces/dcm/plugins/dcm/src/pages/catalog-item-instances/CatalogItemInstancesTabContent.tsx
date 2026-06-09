@@ -260,11 +260,8 @@ export function CatalogItemInstancesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError ?? rehydrateError}
-        onDismissActionError={() => {
-          crud.setDeleteError(null);
-          setRehydrateError(null);
-        }}
+        actionError={rehydrateError}
+        onDismissActionError={() => setRehydrateError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -317,6 +314,8 @@ export function CatalogItemInstancesTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
         resourceLabel="instance"
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
       />
 
       <DcmSuccessSnackbar
