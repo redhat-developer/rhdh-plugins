@@ -10,8 +10,8 @@ backend:
   csp:
     connect-src:
       - "'self'"
-      - "http:"
-      - "https:"
+      - 'http:'
+      - 'https:'
   cors:
     origin: http://localhost:3001
     credentials: true
@@ -24,13 +24,13 @@ backend:
       - DELETE
   database:
     client: better-sqlite3
-    connection: ":memory:"
+    connection: ':memory:'
   # MCP Actions: expose x2a tools to AI clients (Cursor, Claude, etc.)
   actions:
     pluginSources:
-      - "catalog"
-      - "software-catalog-mcp-tool"
-      - "x2a-mcp-extras"
+      - 'catalog'
+      - 'software-catalog-mcp-tool'
+      - 'x2a-mcp-extras'
 proxy:
   skipInvalidProxies: true
   endpoints: {}

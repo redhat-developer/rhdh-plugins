@@ -16,6 +16,7 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi, discoveryApiRef } from '@backstage/core-plugin-api';
+import { navigateTo } from './navigateTo';
 
 /**
  * Matches /x2a/download/* and forwards the wildcard path to /api/x2a/static/*.
@@ -27,7 +28,7 @@ export const DownloadStaticPublicFile = () => {
   useEffect(() => {
     if (!filePath) return;
     discoveryApi.getBaseUrl('x2a').then(baseUrl => {
-      globalThis.location.href = `${baseUrl}/static/${filePath}`;
+      navigateTo(`${baseUrl}/static/${filePath}`);
     });
   }, [discoveryApi, filePath]);
 
