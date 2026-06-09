@@ -15,10 +15,7 @@
  */
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getThresholdsFromConfig,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { type Entity } from '@backstage/catalog-model';
@@ -61,14 +58,10 @@ export class SonarQubeBooleanMetricProvider
     metricId: SonarQubeBooleanMetricId,
   ): SonarQubeBooleanMetricProvider {
     const client = new SonarQubeClient(config, logger);
-
-    const thresholds =
-      getThresholdsFromConfig(
-        config,
-        `scorecard.plugins.sonarqube.${metricId}.thresholds`,
-        'boolean',
-      ) ?? SONARQUBE_BOOLEAN_THRESHOLDS;
-
-    return new SonarQubeBooleanMetricProvider(client, metricId, thresholds);
+    return new SonarQubeBooleanMetricProvider(
+      client,
+      metricId,
+      SONARQUBE_BOOLEAN_THRESHOLDS,
+    );
   }
 }

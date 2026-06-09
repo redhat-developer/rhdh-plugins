@@ -17,7 +17,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, IconButton, Tooltip, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -70,6 +82,8 @@ export function CatalogItemInstancesTabContent() {
   const [rehydratingId, setRehydratingId] = useState<string | null>(null);
   const [rehydrateError, setRehydrateError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [rehydrateConfirmInst, setRehydrateConfirmInst] =
+    useState<CatalogItemInstance | null>(null);
 
   const crud = useCrudTab<CatalogItemInstance, InstanceForm>({
     loadFn: async () => {
@@ -97,7 +111,7 @@ export function CatalogItemInstancesTabContent() {
 
   const { handleOpenDelete, setItems } = crud;
 
-  const handleRehydrate = useCallback(
+  const executeRehydrate = useCallback(
     async (inst: CatalogItemInstance) => {
       const id = inst.uid ?? '';
       if (!id) return;
@@ -116,6 +130,10 @@ export function CatalogItemInstancesTabContent() {
     },
     [catalogApi, setItems],
   );
+
+  const handleRehydrate = useCallback((inst: CatalogItemInstance) => {
+    setRehydrateConfirmInst(inst);
+  }, []);
 
   const catalogItemName = useCallback(
     (id: string) => {
@@ -292,7 +310,7 @@ export function CatalogItemInstancesTabContent() {
             onCancel={crud.handleCloseCreate}
             submitLabel="Create"
             submitting={crud.createSubmitting}
-            disabled={false}
+            disabled={!isInstanceFormValid(crud.createForm)}
           />
         }
       >
@@ -323,6 +341,42 @@ export function CatalogItemInstancesTabContent() {
         message={successMessage}
         onClose={() => setSuccessMessage(null)}
       />
+
+      <Dialog
+        open={Boolean(rehydrateConfirmInst)}
+        onClose={() => setRehydrateConfirmInst(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Rehydrate instance?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Rehydrating{' '}
+            <strong>
+              {rehydrateConfirmInst?.display_name ??
+                rehydrateConfirmInst?.uid ??
+                'this instance'}
+            </strong>{' '}
+            will re-provision the resource and may assign a new resource ID.
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRehydrateConfirmInst(null)}>Cancel</Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={() => {
+              if (rehydrateConfirmInst) {
+                executeRehydrate(rehydrateConfirmInst);
+              }
+              setRehydrateConfirmInst(null);
+            }}
+          >
+            Rehydrate
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

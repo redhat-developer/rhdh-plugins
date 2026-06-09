@@ -81,7 +81,6 @@ The following extensions are available in the plugin:
 - `api:extensions`
 - `api:extensions/dynamic-plugins-info`
 - `page:extensions`
-- `nav-item:extensions`
 
 ## Development
 

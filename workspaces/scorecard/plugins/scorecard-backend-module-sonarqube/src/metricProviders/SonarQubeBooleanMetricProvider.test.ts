@@ -17,8 +17,6 @@
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 
-import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -50,7 +48,7 @@ function entity(projectKey = 'my-project'): Entity {
 
 describe('SonarQubeBooleanMetricProvider', () => {
   describe('getMetricThresholds', () => {
-    it('should return default thresholds when none provided', () => {
+    it('should create provider with default thresholds', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
@@ -58,31 +56,6 @@ describe('SonarQubeBooleanMetricProvider', () => {
       );
       expect(provider.getMetricThresholds()).toBeDefined();
       expect(provider.getMetricThresholds().rules).toHaveLength(2);
-    });
-
-    it('should return custom thresholds when provided', () => {
-      const custom: ThresholdConfig = {
-        rules: [
-          { key: 'ok', expression: '==true', color: '#00ff00', icon: 'ok' },
-        ],
-      };
-      const mockConfiWithCustomThresholds = new ConfigReader({
-        scorecard: {
-          plugins: {
-            sonarqube: {
-              quality_gate: {
-                thresholds: custom,
-              },
-            },
-          },
-        },
-      });
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfiWithCustomThresholds,
-        mockLogger,
-        'quality_gate',
-      );
-      expect(provider.getMetricThresholds()).toEqual(custom);
     });
   });
 

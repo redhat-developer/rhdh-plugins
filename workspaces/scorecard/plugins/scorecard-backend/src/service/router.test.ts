@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConfigReader, type Config } from '@backstage/config';
+import { ConfigReader, Config } from '@backstage/config';
 import {
   mockErrorHandler,
   mockServices,
@@ -50,8 +50,8 @@ import {
 } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 import { AggregationsService } from './aggregations/AggregationService';
-import type { DatabaseMetricValues } from '../database/DatabaseMetricValues';
-import type { DbAggregatedMetric } from '../database/types';
+import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { DbAggregatedMetric } from '../database/types';
 
 jest.mock('../utils/getEntitiesOwnedByUser', () => ({
   getEntitiesOwnedByUser: jest.fn(),
@@ -69,6 +69,7 @@ import * as getEntitiesOwnedByUserModule from '../utils/getEntitiesOwnedByUser';
 import * as permissionUtilsModule from '../permissions/permissionUtils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { AggregatedMetricMapper } from './mappers';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 function createTestAggregationsService(
   database: DatabaseMetricValues,
@@ -103,6 +104,7 @@ describe('createRouter', () => {
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
   let aggregationsService: AggregationsService;
+  let thresholdResolver: ThresholdResolver;
   let mockLogger: ReturnType<typeof mockServices.logger.mock>;
   let httpAuthMock: ServiceMock<
     import('@backstage/backend-plugin-api').HttpAuthService
@@ -115,6 +117,10 @@ describe('createRouter', () => {
 
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
+    thresholdResolver = new ThresholdResolver(
+      new ConfigReader({}),
+      metricProvidersRegistry.listProviders(),
+    );
     const catalog = catalogServiceMock.mock();
     mockLogger = mockServices.logger.mock();
     catalogMetricService = new CatalogMetricService({
@@ -123,6 +129,7 @@ describe('createRouter', () => {
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
       logger: mockLogger,
+      thresholdResolver,
     });
 
     aggregationsService = createTestAggregationsService(
@@ -153,6 +160,7 @@ describe('createRouter', () => {
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
       logger: mockServices.logger.mock(),
+      thresholdResolver,
     });
     app = express();
     app.use(router);
@@ -620,6 +628,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       aggregationApp = express();
       aggregationApp.use(router);
@@ -846,6 +855,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       const batchApp = express();
       batchApp.use(batchAggregationRouter);
@@ -966,6 +976,7 @@ describe('createRouter', () => {
         registry: metricRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       readAggregatedMetricByEntityRefsSpyAgId = jest
@@ -1005,6 +1016,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       aggregationsApp = express();
       aggregationsApp.use(router);
@@ -1091,6 +1103,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       const batchApp = express();
       batchApp.use(batchRouter);
@@ -1138,6 +1151,7 @@ describe('createRouter', () => {
         registry: metricRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       const getSpy = jest
@@ -1159,6 +1173,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1202,6 +1217,7 @@ describe('createRouter', () => {
         registry: metricRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       const getSpy = jest
@@ -1223,6 +1239,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1274,6 +1291,7 @@ describe('createRouter', () => {
         registry: metaRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       const aggregationsMetaService = createTestAggregationsService(
@@ -1291,6 +1309,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       metaApp = express();
       metaApp.use(router);
@@ -1336,6 +1355,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
       const batchMetaApp = express();
       batchMetaApp.use(router);
@@ -1360,6 +1380,7 @@ describe('createRouter', () => {
         registry: metaRegistry,
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       const aggregationsSvcNoKpi = createTestAggregationsService(
@@ -1377,6 +1398,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       const svcApp = express();
@@ -1466,6 +1488,7 @@ describe('createRouter', () => {
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
+        thresholdResolver,
       });
 
       drillDownApp = express();

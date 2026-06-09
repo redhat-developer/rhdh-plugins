@@ -32,13 +32,8 @@ import {
 
 export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   protected readonly openSSFClient: OpenSSFClient;
-  protected readonly thresholds: ThresholdConfig;
 
-  constructor(
-    readonly config: OpenSSFMetricConfig,
-    thresholds: ThresholdConfig,
-  ) {
-    this.thresholds = thresholds;
+  constructor(readonly config: OpenSSFMetricConfig) {
     this.config = config;
     this.openSSFClient = new OpenSSFClient();
   }
@@ -81,7 +76,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return OPENSSF_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -112,7 +107,5 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
  * @returns Array of OpenSSF metric providers
  */
 export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
-  return OPENSSF_METRICS.map(
-    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS),
-  );
+  return OPENSSF_METRICS.map(config => new OpenSSFMetricProvider(config));
 }

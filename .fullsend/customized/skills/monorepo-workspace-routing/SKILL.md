@@ -57,11 +57,14 @@ that override or supplement the root-level project instructions.
 
 ## Step 4: Install dependencies
 
+The sandbox image has yarn pre-installed. Install dependencies with lifecycle
+scripts disabled to avoid postinstall recursion.
+
 ```bash
-yarn install
+YARN_ENABLE_SCRIPTS=false yarn install --immutable
 ```
 
-This ensures workspace-specific tools (e.g., `openspec`) are available.
+After install, workspace-specific tools become available (e.g., `yarn openspec:validate`).
 
 ## Rules
 
