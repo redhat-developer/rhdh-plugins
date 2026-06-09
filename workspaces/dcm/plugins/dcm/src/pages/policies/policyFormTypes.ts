@@ -34,9 +34,13 @@ export type PolicyForm = {
 const policySchema = yup.object({
   display_name: yup
     .string()
+    .trim()
     .required('Display name is required')
     .min(1, 'Display name cannot be empty')
     .max(255, 'Display name must be at most 255 characters'),
+  description: yup
+    .string()
+    .max(255, 'Description must be at most 255 characters'),
   policy_type: yup
     .string()
     .required('Policy type is required')
@@ -44,10 +48,13 @@ const policySchema = yup.object({
   priority: yup
     .number()
     .typeError('Priority must be a number')
+    .required('Priority is required')
+    .integer('Priority must be a whole number')
     .min(1, 'Priority must be at least 1')
     .max(1000, 'Priority must be at most 1000'),
   rego_code: yup
     .string()
+    .trim()
     .required('Rego code is required')
     .min(1, 'Rego code cannot be empty'),
 });
