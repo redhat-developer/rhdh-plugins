@@ -15,6 +15,9 @@
  */
 import { PermissionsService } from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
+import { NotAllowedError } from '@backstage/errors';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from '../service/CatalogMetricService';
 import { authorizeConditional } from '../permissions/permissionUtils';
@@ -75,6 +78,21 @@ export const createGetEntityMetricsAction = ({
         }),
     },
     action: async ({ input, credentials }) => {
+      const entityAccessDecision = await permissions.authorize(
+        [
+          {
+            permission: catalogEntityReadPermission,
+            resourceRef: input.entityRef,
+          },
+        ],
+        { credentials },
+      );
+      if (entityAccessDecision[0].result !== AuthorizeResult.ALLOW) {
+        throw new NotAllowedError(
+          `Access to "${input.entityRef}" entity metrics denied`,
+        );
+      }
+
       const { conditions } = await authorizeConditional(
         credentials,
         permissions,

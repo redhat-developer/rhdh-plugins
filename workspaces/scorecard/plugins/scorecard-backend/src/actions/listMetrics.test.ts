@@ -87,4 +87,49 @@ describe('createListMetricsAction', () => {
       }),
     ).rejects.toThrow(NotAllowedError);
   });
+
+  it('should filter metrics when permission is conditional', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+
+    const conditions = {
+      rule: 'HAS_METRIC_ID',
+      resourceType: 'scorecard-metric',
+      params: { metricIds: ['github.open_prs'] },
+    };
+    mockPermissions.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.CONDITIONAL, conditions },
+    ]);
+
+    const allMetrics = [
+      {
+        id: 'github.open_prs',
+        title: 'Open PRs',
+        description: 'Number of open pull requests',
+        type: 'number' as const,
+      },
+      {
+        id: 'sonarqube.coverage',
+        title: 'Code Coverage',
+        description: 'Test coverage percentage',
+        type: 'number' as const,
+      },
+    ];
+    (mockRegistry.listMetrics as jest.Mock).mockReturnValue(allMetrics);
+
+    createListMetricsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      metricProvidersRegistry: mockRegistry,
+    });
+
+    const result = await mockActionsRegistry.invoke({
+      id: 'test:list-metrics',
+      input: {},
+    });
+
+    expect(result.output).toEqual({
+      metrics: [allMetrics[0]],
+    });
+  });
 });

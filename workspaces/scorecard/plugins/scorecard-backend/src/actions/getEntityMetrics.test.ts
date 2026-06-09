@@ -32,6 +32,9 @@ describe('createGetEntityMetricsAction', () => {
   it('should return metrics for an entity with metrics', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
     mockPermissions.authorizeConditional.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
     ]);
@@ -83,6 +86,9 @@ describe('createGetEntityMetricsAction', () => {
   it('should return NotFoundError for a non-existent entity', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
     mockPermissions.authorizeConditional.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
     ]);
@@ -110,6 +116,9 @@ describe('createGetEntityMetricsAction', () => {
   it('should return empty metrics for an entity with no metrics', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
     mockPermissions.authorizeConditional.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
     ]);
@@ -132,9 +141,37 @@ describe('createGetEntityMetricsAction', () => {
     expect(result.output).toEqual({ metrics: [] });
   });
 
-  it('should throw NotAllowedError when permission is denied', async () => {
+  it('should throw NotAllowedError when catalog entity access is denied', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.DENY },
+    ]);
+
+    createGetEntityMetricsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      catalogMetricService: mockCatalogMetricService,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:get-entity-metrics',
+        input: { entityRef: 'component:default/my-service' },
+      }),
+    ).rejects.toThrow(NotAllowedError);
+
+    expect(
+      mockCatalogMetricService.getLatestEntityMetrics,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('should throw NotAllowedError when scorecard metric permission is denied', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
     mockPermissions.authorizeConditional.mockResolvedValue([
       { result: AuthorizeResult.DENY },
     ]);
@@ -151,5 +188,65 @@ describe('createGetEntityMetricsAction', () => {
         input: { entityRef: 'component:default/my-service' },
       }),
     ).rejects.toThrow(NotAllowedError);
+  });
+
+  it('should pass conditions to getLatestEntityMetrics when permission is conditional', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+
+    const conditions = {
+      rule: 'HAS_METRIC_ID',
+      resourceType: 'scorecard-metric',
+      params: { metricIds: ['github.open_prs'] },
+    };
+    mockPermissions.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.CONDITIONAL, conditions },
+    ]);
+
+    const filteredMetrics = [
+      {
+        id: 'github.open_prs',
+        status: 'success',
+        metadata: {
+          title: 'Open PRs',
+          description: 'Number of open pull requests',
+          type: 'number',
+        },
+        result: {
+          value: 3,
+          timestamp: '2026-01-01T00:00:00.000Z',
+          thresholdResult: {
+            status: 'success',
+            evaluation: 'pass',
+          },
+        },
+      },
+    ];
+    (
+      mockCatalogMetricService.getLatestEntityMetrics as jest.Mock
+    ).mockResolvedValue(filteredMetrics);
+
+    createGetEntityMetricsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      catalogMetricService: mockCatalogMetricService,
+    });
+
+    const result = await mockActionsRegistry.invoke({
+      id: 'test:get-entity-metrics',
+      input: { entityRef: 'component:default/my-service' },
+    });
+
+    expect(result.output).toEqual({ metrics: filteredMetrics });
+    expect(
+      mockCatalogMetricService.getLatestEntityMetrics,
+    ).toHaveBeenCalledWith(
+      'component:default/my-service',
+      undefined,
+      conditions,
+    );
   });
 });
