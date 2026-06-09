@@ -52,11 +52,39 @@ const policySchema = yup.object({
     .min(1, 'Rego code cannot be empty'),
 });
 
-export const { validate: validatePolicyForm, isValid: isPolicyFormValid } =
+const { validate: validatePolicyFormScalar, isValid: isPolicyScalarValid } =
   createYupValidator<PolicyForm>(policySchema, f => ({
     ...f,
     priority: f.priority === '' ? undefined : Number(f.priority),
   }));
+
+export { validatePolicyFormScalar as validatePolicyForm };
+
+/**
+ * Validates structural Rego requirements independently of Yup.
+ * Returns an error string when the code is non-empty but violates a rule,
+ * or undefined when the code is valid (or empty — empty is caught by Yup).
+ */
+const REGO_PACKAGE_RE = /^package\s+\S+/;
+
+export function validateRegoCode(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const hasPackage = trimmed
+    .split('\n')
+    .some(line => REGO_PACKAGE_RE.test(line.trimStart()));
+  if (!hasPackage) {
+    return 'Must contain a package declaration — e.g. "package dcm.placement"';
+  }
+  if (!/\bselected_provider\b/.test(trimmed)) {
+    return 'Must reference selected_provider — e.g. selected_provider := "my-provider"';
+  }
+  return undefined;
+}
+
+export function isPolicyFormValid(f: PolicyForm): boolean {
+  return isPolicyScalarValid(f) && validateRegoCode(f.rego_code) === undefined;
+}
 
 export function emptyPolicyForm(): PolicyForm {
   return {

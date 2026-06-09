@@ -25,8 +25,20 @@ import {
   Switch,
   TextField,
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import type { PolicyType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { PolicyForm, validatePolicyForm } from '../policyFormTypes';
+import {
+  PolicyForm,
+  validatePolicyForm,
+  validateRegoCode,
+} from '../policyFormTypes';
+
+const useStyles = makeStyles(() => ({
+  regoInput: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+  },
+}));
 
 type TouchedMap = Partial<Record<keyof PolicyForm, boolean>>;
 
@@ -43,6 +55,7 @@ export function PolicyFormFields({
   touched,
   setTouched,
 }: PolicyFormFieldsProps) {
+  const classes = useStyles();
   const errors = validatePolicyForm(form);
 
   const touch = (field: keyof PolicyForm) =>
@@ -50,6 +63,11 @@ export function PolicyFormFields({
 
   const err = (field: keyof PolicyForm) =>
     touched[field] ? errors[field] : undefined;
+
+  // Rego structural errors are computed directly — not through Yup — to
+  // avoid a Yup v1 quirk where custom .test() results are dropped from
+  // err.inner when the total number of schema errors is exactly one.
+  const regoErr = validateRegoCode(form.rego_code);
 
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
@@ -129,10 +147,10 @@ export function PolicyFormFields({
       <TextField
         label="Rego code *"
         helperText={
-          err('rego_code') ??
+          regoErr ??
           'OPA Rego evaluated by the Placement Manager. Must assign selected_provider to the name of a registered provider.'
         }
-        error={Boolean(err('rego_code'))}
+        error={Boolean(regoErr)}
         value={form.rego_code}
         onChange={e =>
           setForm(prev => ({ ...prev, rego_code: e.target.value }))
@@ -145,6 +163,7 @@ export function PolicyFormFields({
         placeholder={
           'package dcm.placement\n\n# Replace "my-provider-name" with the name of a registered provider.\n# The Placement Manager requires selected_provider to be set.\nselected_provider := "my-provider-name"'
         }
+        inputProps={{ className: classes.regoInput }}
       />
 
       <FormControlLabel
