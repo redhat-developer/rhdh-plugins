@@ -118,7 +118,7 @@ const bulkImportTranslationIt = createTranslationMessages({
       'Impossibile estrarre la richiesta pull. Un nuovo YAML è stato generato di seguito.',
     'previewFile.invalidEntityYaml':
       "L'entità YAML nella tua richiesta pull non è valida (file vuoto oppure mancano apiVersion, kind o metadata.name). Un nuovo YAML è stato generato di seguito.",
-    'previewFile.keyValuePlaceholder': 'key1: value2; key2: value2',
+    'previewFile.keyValuePlaceholder': 'chiave1: valore1; chiave2: valore2',
     'previewFile.prCreationUnsuccessful':
       'La creazione della pull request non è andata a buon fine per alcuni repository. Fai clic su "Modifica" per visualizzare il motivo.',
     'previewFile.preview': 'Anteprima',
