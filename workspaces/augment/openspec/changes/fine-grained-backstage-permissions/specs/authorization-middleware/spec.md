@@ -1,6 +1,15 @@
 # Spec: authorization-middleware
 
-Two-tier authorization abstraction with fine-grained permission check and backward-compatible fallback to `augment.admin`.
+Augment-specific authorization middleware that integrates Backstage's permission framework with the plugin's domain model (agents, tools, lifecycle stages, ownership). This is NOT a reimplementation of RBAC policy evaluation — the RBAC plugin handles that. This middleware provides:
+
+1. **Two-tier fallback logic** — check fine-grained permission first, fall back to `augment.admin` for backward compatibility during migration. This is augment-specific business logic that the RBAC plugin cannot provide, since the fallback semantics (which coarse permission to check, when to check it) are domain decisions.
+2. **Conditional evaluation against augment resource types** — `matchesAgentConditions` and `matchesToolConditions` evaluate Backstage CONDITIONAL results against augment's domain objects (agents/tools with `createdBy`, lifecycle stages). The RBAC plugin evaluates policies; these utilities evaluate the resulting conditions against augment-specific resource shapes.
+3. **RouteContext integration** — exposing authorization functions on the route context so handlers can call them without importing permission utilities directly.
+
+### Relationship to existing permissions
+
+- **`augment.access`** remains unchanged — it is a plugin-level visibility gate (can the user access the augment plugin at all?) and is orthogonal to fine-grained lifecycle permissions.
+- **`augment.admin`** continues to gate admin-only routes (config, documents, vector stores, models, evaluations, workflows, dev spaces) that are not covered by the fine-grained permissions. For agent/tool lifecycle operations, it serves as a backward-compatible fallback: existing deployments that only have `augment.admin` policies continue to work without reconfiguration. Deployers who adopt fine-grained permissions can remove the `augment.admin` grant for lifecycle operations — the fallback is a migration aid, not a permanent override.
 
 ## ADDED Requirements
 
@@ -74,3 +83,28 @@ The system SHALL provide `matchesAgentConditions(resource, conditions)` and `mat
 
 - **WHEN** `matchesAgentConditions` is called with an agent resource and a set of conditions
 - **THEN** it SHALL evaluate all conditions against the agent's properties and return a boolean result
+
+### Requirement: Audit logging for authorization decisions
+
+The `authorizeLifecycleAction` and `authorizeBasicWithFallback` functions SHALL emit a structured audit log entry for every authorization decision. Each entry SHALL include:
+
+- `user` — the requesting user's entity ref
+- `action` — the permission ID evaluated (e.g., `augment.agent.approve`)
+- `resource` — the resource identifier (agent/tool ID), if applicable
+- `outcome` — `allow` or `deny`
+- `grantedVia` — `permission` (fine-grained permission allowed), `fallback` (`augment.admin` fallback allowed), or `denied` (both denied)
+
+#### Scenario: Audit log on fine-grained allow
+
+- **WHEN** `authorizeLifecycleAction` grants access via the fine-grained permission
+- **THEN** an audit log entry SHALL be emitted with `grantedVia: permission`
+
+#### Scenario: Audit log on fallback allow
+
+- **WHEN** `authorizeLifecycleAction` grants access via the `augment.admin` fallback
+- **THEN** an audit log entry SHALL be emitted with `grantedVia: fallback`
+
+#### Scenario: Audit log on deny
+
+- **WHEN** `authorizeLifecycleAction` denies access
+- **THEN** an audit log entry SHALL be emitted with `grantedVia: denied`

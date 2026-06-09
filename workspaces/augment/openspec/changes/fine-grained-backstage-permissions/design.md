@@ -17,6 +17,7 @@ These permissions are independent of AgenticProvider authorization. Kagenti's pe
 - Maintain full backward compatibility — existing `augment.access` + `augment.admin` policies continue to work unchanged
 - Support conditional permission rules for ownership checks, self-approval prevention, and lifecycle stage gating
 - Keep self-approval prevention as defense-in-depth (permission rule supplements hard-coded check)
+- Emit structured audit log entries for all authorization decisions — recording the user, action, resource, outcome (allow/deny), and whether the `augment.admin` fallback was used. The authorization middleware is the single point through which all permission decisions flow, making it the natural place for audit logging.
 
 **Non-Goals:**
 
@@ -38,7 +39,9 @@ Define `augment-agent` and `augment-tool` as distinct resource types rather than
 
 `authorizeLifecycleAction` checks the fine-grained permission first. If DENY (the default when no policy exists), it falls back to checking `augment.admin`. This means deployments that haven't configured fine-grained policies get identical behavior to today.
 
-**Alternative considered:** Requiring all deployments to update their RBAC policies. Rejected because it would break every existing augment deployment on upgrade.
+**Why backward compatibility matters for a "new" plugin:** Although the augment plugin is still in active development, there are external consumers already running it with RBAC policies configured around `augment.access` + `augment.admin`. From their perspective, a new drop that requires policy reconfiguration to maintain existing access is a cross-release breaking change. The fallback ensures these deployments continue to work on upgrade, while giving them the option to adopt fine-grained policies incrementally.
+
+**Alternative considered:** Requiring all deployments to update their RBAC policies. Rejected because it would break existing augment deployments on upgrade — deployers would need to add fine-grained policy entries before the upgrade or lose access to lifecycle operations.
 
 **Alternative considered:** OR-combining fine-grained and admin in a single policy evaluation. Rejected because Backstage's permission framework evaluates permissions individually — the fallback must be explicit in code.
 
