@@ -20,6 +20,14 @@ import {
 } from '@backstage/plugin-home';
 
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  TranslatableCardTitleProps,
+  useHomePageCardTitle,
+} from '../utils/useHomePageCardTitle';
+
+/** @public */
+export type FeaturedDocsCardComponentProps = FeaturedDocsCardProps &
+  TranslatableCardTitleProps;
 
 /**
  * Overrides `FeaturedDocsCard` from the home plugin, but overrides the
@@ -30,12 +38,16 @@ import { useTranslation } from '../hooks/useTranslation';
  *
  * @public
  */
-export const FeaturedDocsCard = (props: FeaturedDocsCardProps) => {
+export const FeaturedDocsCard = (props: FeaturedDocsCardComponentProps) => {
   const { t } = useTranslation();
+  const { titleKey: _titleKey, title: _title, ...cardProps } = props;
+  const title = useHomePageCardTitle('featuredDocs.title', props);
+
   return (
     <PluginHomeFeaturedDocsCard
+      title={title}
       subLinkText={` ${t('featuredDocs.learnMore')}`}
-      {...props}
+      {...cardProps}
     />
   );
 };

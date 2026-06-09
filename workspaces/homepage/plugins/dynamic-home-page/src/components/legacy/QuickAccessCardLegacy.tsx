@@ -23,6 +23,7 @@ import {
   type QuickAccessCardProps,
 } from '../QuickAccessCard';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../../translations/utils';
 
 const QuickAccessInfoCard = styled(InfoCard)({
   '& div > div > div > div > p': {
@@ -34,11 +35,12 @@ const QuickAccessInfoCard = styled(InfoCard)({
 export const QuickAccessCard = (props: QuickAccessCardProps) => {
   const { t } = useTranslation();
 
+  const title =
+    getTranslatedTextWithFallback(t, props.titleKey, props.title) ??
+    t('quickAccess.title');
+
   return (
-    <QuickAccessInfoCard
-      title={props.title ?? t('quickAccess.title')}
-      noPadding
-    >
+    <QuickAccessInfoCard title={title} noPadding>
       <QuickAccessCardContent path={props.path} />
     </QuickAccessInfoCard>
   );

@@ -29,6 +29,7 @@ import { QuickAccessIcon } from './QuickAccessIcon';
 /** @public */
 export interface QuickAccessCardProps {
   title?: string;
+  titleKey?: string;
   path?: string;
 }
 

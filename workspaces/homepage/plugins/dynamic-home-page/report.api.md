@@ -145,11 +145,6 @@ export interface HomePageCardMountPointConfig {
 }
 
 // @public (undocumented)
-export const JokeCard: ComponentType<{
-  defaultCategory?: 'any' | 'programming';
-}>;
-
-// @public (undocumented)
 export interface Layout {
   // (undocumented)
   h?: number;
@@ -223,6 +218,8 @@ export interface QuickAccessCardProps {
   path?: string;
   // (undocumented)
   title?: string;
+  // (undocumented)
+  titleKey?: string;
 }
 
 // @public (undocumented)

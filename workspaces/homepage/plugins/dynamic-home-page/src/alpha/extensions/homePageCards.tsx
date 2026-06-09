@@ -18,6 +18,7 @@ import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
 import { homepageMessages } from '../../translations/ref';
+import { createTranslatedCardRenderer } from '../../utils/translatedCardRenderer';
 
 const defaultCardLayout = {
   width: {
@@ -63,6 +64,7 @@ export const entitySectionWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('../../components/EntitySection/EntitySection').then(m => ({
         Content: m.EntitySectionContent,
+        Renderer: createTranslatedCardRenderer('entities.title'),
       })),
   },
 });
@@ -80,6 +82,7 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('../../components/TemplateSection/TemplateSection').then(m => ({
         Content: m.TemplateSectionContent,
+        Renderer: createTranslatedCardRenderer('templates.title'),
       })),
   },
 });
@@ -97,6 +100,9 @@ export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('../../components/QuickAccessCard').then(m => ({
         Content: m.QuickAccessCardContent,
+        Renderer: createTranslatedCardRenderer('quickAccess.title', {
+          quickAccessStyle: true,
+        }),
       })),
   },
 });
@@ -128,15 +134,14 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
 });
 
 /**
- * Renders a legacy plugin-home CardExtension directly, skipping the NFS
- * CardExtension InfoCard shell. Used when upstream only exports full cards
- * (not Content) from the public API.
+ * Renders upstream home cards that include their own InfoCard shell.
+ * @alpha
  */
-const legacyHomeCardRenderer = ({
+const upstreamHomeCardRenderer = ({
   Content,
 }: {
   Content: React.ComponentType;
-}) => compatWrapper(<Content />);
+}) => <Content />;
 
 /**
  * NFS widget: FeaturedDocsCard (migrated from mountPoint home.page/cards).
@@ -146,11 +151,12 @@ export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
   name: 'featured-docs-card',
   params: {
     name: 'Featured docs',
+    title: homepageMessages.featuredDocs.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/FeaturedDocsCard').then(m => ({
         Content: m.FeaturedDocsCard,
-        Renderer: legacyHomeCardRenderer,
+        Renderer: upstreamHomeCardRenderer,
       })),
   },
 });
@@ -164,7 +170,14 @@ export const catalogStarredWidget = homePlugin
   .override({
     params: {
       name: 'CatalogStarred',
-      title: 'Starred catalog entities',
+      title: homepageMessages.starredEntities.title,
+      components: () =>
+        import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+          m => ({
+            Content: m.CatalogStarredEntitiesCard,
+            Renderer: upstreamHomeCardRenderer,
+          }),
+        ),
     },
   });
 
@@ -187,11 +200,14 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Recently visited',
+    title: homepageMessages.recentlyVisited.title,
     components: () =>
-      import('@backstage/plugin-home').then(m => ({
-        Content: m.HomePageRecentlyVisited,
-        Renderer: legacyHomeCardRenderer,
-      })),
+      import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+        m => ({
+          Content: m.RecentlyVisitedCard,
+          Renderer: upstreamHomeCardRenderer,
+        }),
+      ),
   },
 });
 
@@ -204,10 +220,13 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Top visited',
+    title: homepageMessages.topVisited.title,
     components: () =>
-      import('@backstage/plugin-home').then(m => ({
-        Content: m.HomePageTopVisited,
-        Renderer: legacyHomeCardRenderer,
-      })),
+      import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+        m => ({
+          Content: m.TopVisitedCard,
+          Renderer: upstreamHomeCardRenderer,
+        }),
+      ),
   },
 });

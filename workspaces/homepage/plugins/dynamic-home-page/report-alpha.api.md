@@ -22,7 +22,11 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'quickAccess.title': string;
     readonly 'quickAccess.error': string;
     readonly 'quickAccess.fetchError': string;
+    readonly 'featuredDocs.title': string;
     readonly 'featuredDocs.learnMore': string;
+    readonly 'starredEntities.title': string;
+    readonly 'recentlyVisited.title': string;
+    readonly 'topVisited.title': string;
     readonly 'templates.title': string;
     readonly 'templates.error': string;
     readonly 'templates.empty': string;
