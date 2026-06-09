@@ -51,6 +51,18 @@ Friction points and improvements discovered during monorepo onboarding.
 - [ ] Git hooks (husky) need yarn in PATH — solved with /tmp/workspace/bin/yarn wrapper in setup script. Validate this works in CI too
 - [ ] yarn install takes ~10-15 min in sandbox for boost workspace (monorepo overhead) — consider pre-installing deps in custom image for faster runs
 
+## DNS / networking (investigated 2026-06-09)
+
+See `HANDOFF-local-sandbox-dns.md` for full technical writeup.
+
+- [ ] **DNS is intentionally broken inside sandboxes.** All network must go through the L7 transparent proxy at `10.200.0.1:3128`. The inner sandbox netns (`10.200.0.2`) has no route to the Podman DNS (`10.89.0.1`). This is by design — OpenShell#364 was closed wontfix.
+- [ ] `yarn install` fails locally because Yarn resolves DNS via `getaddrinfo` before connecting. The transparent proxy intercepts TCP, not DNS.
+- [ ] Same architecture in CI (GitHub Actions) — Podman + OpenShell 0.0.54. yarn install works in CI because Node.js `undici`/`fetch` gets intercepted by the transparent proxy before DNS is needed.
+- [x] Test workaround: `httpProxy`/`httpsProxy` in `.yarnrc.yml` pointing to `http://10.200.0.1:3128` — **WORKS**. Proxy accepts explicit CONNECT from `node`/`yarn`. Smoke test: `yarn add is-odd` completed in 497ms. `sandbox-yarn-setup.sh` updated to inject proxy config.
+- [ ] Full test: run `yarn install` on rhdh-plugins monorepo via sandbox with proxy config (smoke test only covered a single package)
+- [ ] Watch [NVIDIA/OpenShell#1107](https://github.com/NVIDIA/OpenShell/issues/1107) — proposes `/etc/hosts` injection for policy-allowed hostnames at sandbox creation. Would fix this cleanly.
+- [ ] Consider filing new OpenShell issue: `/etc/resolv.conf` points to unreachable nameserver — tools should fail fast (empty resolv.conf) instead of timing out on unreachable `10.89.0.1`
+
 ## Upstream (fullsend-ai/fullsend)
 
 - [ ] Feature request filed: [fullsend-ai/fullsend#1937](https://github.com/fullsend-ai/fullsend/issues/1937) — native `working_dir` field in harness schema
