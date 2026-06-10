@@ -33,6 +33,7 @@ import {
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -437,6 +438,16 @@ export async function createNotebooksRouter(
 
       if (!query) {
         handleError(logger, res, 'query is required');
+        return;
+      }
+
+      // Validate query length (RHIDP-13062)
+      if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+        handleError(
+          logger,
+          res,
+          `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
+        );
         return;
       }
 

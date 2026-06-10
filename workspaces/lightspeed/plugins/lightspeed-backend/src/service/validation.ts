@@ -16,7 +16,12 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
-import { ALLOWED_PROXY_PREFIXES } from './constant';
+import {
+  ALLOWED_PROXY_PREFIXES,
+  MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_QUERY_LENGTH,
+  MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
+} from './constant';
 import { QueryRequestBody } from './types';
 
 export function isAllowedProxyPath(path: string): boolean {
@@ -48,6 +53,41 @@ export const validateCompletionsRequest = (
     return res
       .status(400)
       .json({ error: 'query is required and must be a non-empty string' });
+  }
+
+  // Validate query length (RHIDP-13062)
+  if (reqData.query.length > MAX_QUERY_LENGTH) {
+    return res.status(400).json({
+      error: `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
+    });
+  }
+
+  // Validate attachments if present (RHIDP-13062)
+  if (reqData.attachments && Array.isArray(reqData.attachments)) {
+    let totalSize = 0;
+
+    for (let i = 0; i < reqData.attachments.length; i++) {
+      const attachment = reqData.attachments[i];
+
+      // Calculate attachment size (content is base64 or plain text)
+      const attachmentSize = attachment.content
+        ? Buffer.byteLength(attachment.content, 'utf8')
+        : 0;
+
+      if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
+        return res.status(400).json({
+          error: `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`,
+        });
+      }
+
+      totalSize += attachmentSize;
+    }
+
+    if (totalSize > MAX_TOTAL_ATTACHMENTS_SIZE_BYTES) {
+      return res.status(400).json({
+        error: `Total attachments size exceeds maximum of ${MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)}MB`,
+      });
+    }
   }
 
   return next();

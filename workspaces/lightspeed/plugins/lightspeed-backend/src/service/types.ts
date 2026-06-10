@@ -54,6 +54,12 @@ export interface QueryRequestBody {
 
   // System prompt to override the default value
   system_prompt?: string;
+
+  // Attachments array (file content sent with the query)
+  attachments?: Array<{
+    name: string;
+    content: string;
+  }>;
 }
 
 // default number of message history being loaded
