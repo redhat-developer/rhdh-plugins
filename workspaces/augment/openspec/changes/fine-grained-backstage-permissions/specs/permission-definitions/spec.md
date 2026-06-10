@@ -2,11 +2,12 @@
 
 Fine-grained permission constants, resource types, and permission rule definitions for augment agent and tool governance.
 
-### Scope: Why agents and tools first
+### Scope
 
-This spec defines fine-grained permissions for **agent and tool lifecycle operations** because these are the authorization decisions with the most nuanced requirements — ownership scoping, self-approval prevention, lifecycle stage gating, and filtered visibility. These are currently enforced via inline checks (`checkIsAdmin`, `createdBy` comparisons) that bypass the Backstage permission framework entirely.
+This spec defines two tiers of fine-grained permissions:
 
-Other admin-only operations (config CRUD, document management, vector stores, models, evaluations, workflows, dev spaces) remain gated by the existing `augment.admin` permission. These are genuinely admin-only operations without ownership or conditional logic — the coarse gate is appropriate and adding fine-grained permissions for them today would increase surface area without clear demand. They are candidates for future fine-grained permissions if deployer requirements emerge (e.g., separating "can manage documents" from "can manage evaluations").
+1. **Resource-based permissions** for agents and tools — these have the most nuanced authorization requirements (ownership scoping, self-approval prevention, lifecycle stage gating, filtered visibility) and support conditional rules (`IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`).
+2. **Basic permissions** for infrastructure resources (vector stores, documents, MCP connections, prompts, models) — these are currently admin-only operations without ownership or lifecycle logic. Defining permissions for them now enables deployers to grant targeted access (e.g., "this team can manage vector stores but not MCP connections") instead of the all-or-nothing `augment.admin`. These can be upgraded to resource-based permissions later if ownership tracking is added.
 
 ## ADDED Requirements
 
@@ -83,9 +84,33 @@ The system SHALL define `augment.kagenti.admin` as a basic permission with actio
 - **WHEN** the `augment-common` package is loaded
 - **THEN** `augment.kagenti.admin` SHALL be a basic permission with action `update`
 
+### Requirement: Infrastructure resource permissions
+
+The system SHALL define the following basic permissions (no resource type) for infrastructure operations that are currently gated by `augment.admin`:
+
+| Permission ID                | Action | Gates                                                       |
+| ---------------------------- | ------ | ----------------------------------------------------------- |
+| `augment.vectorstore.manage` | update | Vector store CRUD (create, connect, disconnect, delete)     |
+| `augment.document.manage`    | update | Document upload and deletion within vector stores           |
+| `augment.mcp.manage`         | update | MCP connection testing, tool creation, deletion, and builds |
+| `augment.prompt.manage`      | update | System prompt generation and configuration                  |
+| `augment.model.manage`       | update | Model listing, testing, and selection configuration         |
+
+These are basic permissions without conditional rules. Each gates a category of admin operations, enabling deployers to grant targeted access without granting full `augment.admin`.
+
+#### Scenario: All infrastructure permissions defined
+
+- **WHEN** the `augment-common` package is loaded
+- **THEN** all 5 infrastructure permissions SHALL be defined as basic permissions with action `update`
+
+#### Scenario: Infrastructure permissions independent of augment.admin
+
+- **WHEN** a user has `augment.vectorstore.manage` but not `augment.admin`
+- **THEN** the user SHALL be able to manage vector stores but not other admin operations
+
 ### Requirement: Existing permissions preserved
 
-The existing `augmentAccessPermission` (`augment.access`) and `augmentAdminPermission` (`augment.admin`) SHALL remain unchanged. All 16 new permissions SHALL be added to the `augmentPermissions` array alongside the existing ones.
+The existing `augmentAccessPermission` (`augment.access`) and `augmentAdminPermission` (`augment.admin`) SHALL remain unchanged. All 21 new permissions SHALL be added to the `augmentPermissions` array alongside the existing ones. `augment.admin` continues to gate routes not yet covered by fine-grained permissions (evaluations, workflows, dev spaces) and serves as an opt-in fallback for fine-grained operations when `permissions.legacyAdminFallback` is enabled.
 
 #### Scenario: Backward-compatible exports
 
