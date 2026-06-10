@@ -72,6 +72,7 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
+      kind: 'component',
       'metadata.annotations.backstage.io/source-location':
         CATALOG_FILTER_EXISTS,
     };
