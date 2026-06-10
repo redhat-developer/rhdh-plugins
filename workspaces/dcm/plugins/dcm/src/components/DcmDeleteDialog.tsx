@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-import { Button, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { DcmFormDialog } from './DcmFormDialog';
+
+const useStyles = makeStyles(theme => ({
+  deleteButton: {
+    backgroundColor: theme.palette.error.main,
+    color: theme.palette.error.contrastText,
+    '&:hover': { backgroundColor: theme.palette.error.dark },
+    '&.Mui-disabled': { opacity: 0.6 },
+  },
+}));
 
 type Props = Readonly<{
   open: boolean;
@@ -23,6 +33,10 @@ type Props = Readonly<{
   onConfirm: () => void;
   resourceName: string;
   resourceLabel?: string;
+  /** When set, renders an error banner inside the dialog. */
+  error?: string | null;
+  /** When true, disables both buttons and shows a spinner on Delete. */
+  isSubmitting?: boolean;
 }>;
 
 /**
@@ -34,18 +48,38 @@ export function DcmDeleteDialog({
   onConfirm,
   resourceName,
   resourceLabel = 'item',
+  error,
+  isSubmitting = false,
 }: Props) {
+  const classes = useStyles();
   return (
     <DcmFormDialog
       open={open}
       onClose={onClose}
       title={`Delete ${resourceLabel}`}
+      error={error}
+      submitting={isSubmitting}
       actions={
         <>
-          <Button variant="contained" color="secondary" onClick={onConfirm}>
+          <Button
+            variant="contained"
+            className={classes.deleteButton}
+            disabled={isSubmitting}
+            onClick={onConfirm}
+            startIcon={
+              isSubmitting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
+          >
             Delete
           </Button>
-          <Button variant="outlined" color="primary" onClick={onClose}>
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isSubmitting}
+            onClick={onClose}
+          >
             Cancel
           </Button>
         </>

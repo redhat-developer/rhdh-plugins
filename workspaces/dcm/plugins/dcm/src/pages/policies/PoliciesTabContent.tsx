@@ -332,11 +332,8 @@ export function PoliciesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError ?? toggleError}
-        onDismissActionError={() => {
-          crud.setDeleteError(null);
-          setToggleError(null);
-        }}
+        actionError={toggleError}
+        onDismissActionError={() => setToggleError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -387,6 +384,8 @@ export function PoliciesTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.id ?? ''
         }
         resourceLabel="policy"
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
       />
     </>
   );

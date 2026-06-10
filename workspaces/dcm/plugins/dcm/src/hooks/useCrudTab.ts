@@ -141,6 +141,7 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   // ── Delete dialog ──────────────────────────────────────────────────────────
   deleteOpen: boolean;
   deletingItem: T | null;
+  deleteSubmitting: boolean;
   deleteError: string | null;
   setDeleteError: React.Dispatch<React.SetStateAction<string | null>>;
   handleOpenDelete: (item: T) => void;
@@ -216,6 +217,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── Delete dialog ────────────────────────────────────────────────────────
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<T | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Keep latest mutable values in refs so stable callbacks can read them.
@@ -230,6 +232,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   editingIdRef.current = editingId;
   const editSubmittingRef = useRef(editSubmitting);
   editSubmittingRef.current = editSubmitting;
+
+  const deleteSubmittingRef = useRef(deleteSubmitting);
+  deleteSubmittingRef.current = deleteSubmitting;
 
   const deletingItemRef = useRef(deletingItem);
   deletingItemRef.current = deletingItem;
@@ -373,6 +378,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   }, []);
 
   const handleCloseDelete = useCallback(() => {
+    if (deleteSubmittingRef.current) return;
     setDeleteOpen(false);
     setDeletingItem(null);
     setDeleteError(null);
@@ -383,16 +389,19 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     const item = deletingItemRef.current;
     if (!deleteFn || !item) return;
     const id = gId(item);
+    setDeleteSubmitting(true);
+    setDeleteError(null);
     deleteFn(id)
       .then(() => {
         setItems(removeItemById(id, gId));
         setDeleteOpen(false);
         setDeletingItem(null);
+        setDeleteSubmitting(false);
       })
       .catch(err => {
         setDeleteError(extractApiError(err));
-        setDeleteOpen(false);
-        setDeletingItem(null);
+        setDeleteSubmitting(false);
+        // dialog stays open so the user can see the error
       });
   }, []);
 
@@ -442,6 +451,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     // Delete
     deleteOpen,
     deletingItem,
+    deleteSubmitting,
     deleteError,
     setDeleteError,
     handleOpenDelete,

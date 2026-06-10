@@ -296,8 +296,8 @@ export function ProvidersTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError}
-        onDismissActionError={() => crud.setDeleteError(null)}
+        actionError={null}
+        onDismissActionError={undefined}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -351,6 +351,8 @@ export function ProvidersTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.name ?? ''
         }
         resourceLabel="provider"
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
       />
     </>
   );
