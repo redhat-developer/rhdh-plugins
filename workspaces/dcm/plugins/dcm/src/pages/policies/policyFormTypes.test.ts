@@ -20,6 +20,7 @@ import {
   isPolicyFormValid,
   policyToForm,
   validatePolicyForm,
+  validateRegoCode,
 } from './policyFormTypes';
 
 describe('validatePolicyForm', () => {
@@ -71,10 +72,62 @@ describe('isPolicyFormValid', () => {
         description: '',
         policy_type: 'GLOBAL',
         priority: '500',
-        rego_code: 'package dcm',
+        rego_code: 'package dcm.placement\nselected_provider := "p1"',
         enabled: true,
       }),
     ).toBe(true);
+  });
+
+  it('returns false when rego_code has no package declaration', () => {
+    expect(
+      isPolicyFormValid({
+        display_name: 'My Policy',
+        description: '',
+        policy_type: 'GLOBAL',
+        priority: '500',
+        rego_code: 'selected_provider := "p1"',
+        enabled: true,
+      }),
+    ).toBe(false);
+  });
+
+  it('returns false when rego_code has no selected_provider', () => {
+    expect(
+      isPolicyFormValid({
+        display_name: 'My Policy',
+        description: '',
+        policy_type: 'GLOBAL',
+        priority: '500',
+        rego_code: 'package dcm.placement',
+        enabled: true,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('validateRegoCode', () => {
+  it('returns undefined for empty string', () => {
+    expect(validateRegoCode('')).toBeUndefined();
+  });
+
+  it('returns undefined for valid Rego', () => {
+    expect(
+      validateRegoCode('package dcm.placement\nselected_provider := "p1"'),
+    ).toBeUndefined();
+  });
+
+  it('flags missing package declaration', () => {
+    expect(validateRegoCode('selected_provider := "p1"')).toMatch(/package/);
+  });
+
+  it('flags missing selected_provider', () => {
+    expect(validateRegoCode('package dcm.placement')).toMatch(
+      /selected_provider/,
+    );
+  });
+
+  it('flags Jinja-style non-Rego input', () => {
+    expect(validateRegoCode('{{ THIS IS A VALID REGO }}')).toMatch(/package/);
   });
 });
 

@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 2.7.8
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+- Updated dependencies [6699550]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.8
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
 ## 2.7.7
 
 ### Patch Changes

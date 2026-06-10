@@ -44,6 +44,7 @@ import { validateAggregationIdParam } from '../middlewares/validateAggregationId
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateDatasourceQueryParams } from '../middlewares/validateDatasourceQueryParams';
 import { AggregationsService } from './aggregations/AggregationService';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 export type ScorecardRouterOptions = {
   service: {
@@ -55,6 +56,7 @@ export type ScorecardRouterOptions = {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   logger: LoggerService;
+  thresholdResolver: ThresholdResolver;
 };
 
 export async function createRouter({
@@ -64,6 +66,7 @@ export async function createRouter({
   httpAuth,
   permissions,
   logger,
+  thresholdResolver,
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -180,7 +183,7 @@ export async function createRouter({
         await checkEntityAccess(entityRef, req, permissions, httpAuth);
       }
 
-      const thresholds = provider.getMetricThresholds();
+      const thresholds = thresholdResolver.resolveProviderThresholds(provider);
 
       logger.warn(
         `Deprecated Scorecard API: GET /metrics/${metricId}/catalog/aggregations is deprecated; use GET /aggregations/:aggregationId (e.g. when the aggregation id matches the metric id, GET /aggregations/${metricId}).`,
@@ -302,7 +305,7 @@ export async function createRouter({
         );
       }
 
-      const thresholds = provider.getMetricThresholds();
+      const thresholds = thresholdResolver.resolveProviderThresholds(provider);
 
       res.json(
         await aggregationsService.getAggregatedMetricByEntityRefs({

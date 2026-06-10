@@ -24,6 +24,7 @@ import {
   SchedulerService,
 } from '@backstage/backend-plugin-api';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 export interface SchedulerTask {
   start(): Promise<void>;
@@ -38,4 +39,5 @@ export interface SchedulerOptions {
   database: DatabaseMetricValues;
   metricProvidersRegistry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
+  thresholdResolver: ThresholdResolver;
 }

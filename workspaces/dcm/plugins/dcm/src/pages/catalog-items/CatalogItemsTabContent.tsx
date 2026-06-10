@@ -248,7 +248,7 @@ export function CatalogItemsTabContent() {
     <Drawer
       anchor="right"
       open={open}
-      onClose={submitting ? undefined : onClose}
+      onClose={submitting || Boolean(error) ? undefined : onClose}
     >
       <Box className={classes.drawer}>
         <Box className={classes.drawerHeader}>

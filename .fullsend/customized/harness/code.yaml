@@ -7,10 +7,16 @@
 #
 # The agent NEVER pushes or creates PRs (disallowedTools enforces this).
 # Only the post-script, running on the runner with PUSH_TOKEN, can write.
+#
+# Customizations over upstream code.yaml:
+#   - image: rhdh custom image with yarn/corepack pre-installed
+#   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
+#   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
+#   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
-image: ghcr.io/fullsend-ai/fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/code.yaml
 
 pre_script: scripts/pre-code.sh
@@ -28,6 +34,10 @@ host_files:
   - src: ${GCP_OIDC_TOKEN_FILE}
     dest: /tmp/workspace/.gcp-oidc-token
     optional: true
+  - src: env/rhdh-toolchain.env
+    dest: /tmp/workspace/.env.d/rhdh-toolchain.env
+  - src: env/yarn-proxy.env
+    dest: /tmp/workspace/.env.d/yarn-proxy.env
 
 skills:
   - skills/code-implementation
