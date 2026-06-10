@@ -5515,7 +5515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/hash@npm:^0.9.2":
+"@emotion/hash@npm:^0.9.1, @emotion/hash@npm:^0.9.2":
   version: 0.9.2
   resolution: "@emotion/hash@npm:0.9.2"
   checksum: 10c0/0dc254561a3cc0a06a10bbce7f6a997883fd240c8c1928b93713f803a2e9153a257a488537012efe89dbe1246f2abfe2add62cdb3471a13d67137fcb808e81c2
@@ -6258,14 +6258,13 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.17.0"
     "@changesets/cli": "npm:^2.27.1"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
     jest: "npm:^30.3.0"
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
-    playwright: "npm:^1.56.1"
     prettier: "npm:^2.3.2"
     typescript: "npm:~5.8.0"
   languageName: unknown
@@ -7845,6 +7844,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/styles@npm:5.18.0":
+  version: 5.18.0
+  resolution: "@mui/styles@npm:5.18.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@emotion/hash": "npm:^0.9.1"
+    "@mui/private-theming": "npm:^5.17.1"
+    "@mui/types": "npm:~7.2.15"
+    "@mui/utils": "npm:^5.17.1"
+    clsx: "npm:^2.1.0"
+    csstype: "npm:^3.1.3"
+    hoist-non-react-statics: "npm:^3.3.2"
+    jss: "npm:^10.10.0"
+    jss-plugin-camel-case: "npm:^10.10.0"
+    jss-plugin-default-unit: "npm:^10.10.0"
+    jss-plugin-global: "npm:^10.10.0"
+    jss-plugin-nested: "npm:^10.10.0"
+    jss-plugin-props-sort: "npm:^10.10.0"
+    jss-plugin-rule-value-function: "npm:^10.10.0"
+    jss-plugin-vendor-prefixer: "npm:^10.10.0"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/dbf9f95cb1c035b5080448f8b9ab9414a394ddc787d94be69213a926ac3e0d5ad763b6e73ab369e524db7f2c46ef9e88bf31c1a6b3798630ebf5d64cd5576434
+  languageName: node
+  linkType: hard
+
 "@mui/styles@npm:^6.1.7":
   version: 6.5.0
   resolution: "@mui/styles@npm:6.5.0"
@@ -9061,14 +9091,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.58.2":
-  version: 1.58.2
-  resolution: "@playwright/test@npm:1.58.2"
+"@playwright/test@npm:1.60.0":
+  version: 1.60.0
+  resolution: "@playwright/test@npm:1.60.0"
   dependencies:
-    playwright: "npm:1.58.2"
+    playwright: "npm:1.60.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/2164c03ad97c3653ff02e8818a71f3b2bbc344ac07924c9d8e31cd57505d6d37596015a41f51396b3ed8de6840f59143eaa9c21bf65515963da20740119811da
+  checksum: 10c0/86b06e6437933e741c7cd43f362024e857e7bc28a55fcbb0553ef55e01a2a403c64f4786868de8af86a6e303fe99e98a18a42ba19489f43ae122e457f9e2d189
   languageName: node
   linkType: hard
 
@@ -11518,9 +11548,10 @@ __metadata:
     "@backstage/theme": "npm:^0.7.2"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
+    "@mui/styles": "npm:5.18.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.5"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -11536,25 +11567,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.0"
-  dependencies:
-    "@mui/icons-material": "npm:^5.17.1"
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.0
-    "@backstage/theme": ^0.7.0
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/9ccc7f5360089f5efe98e85eeb68af061e75306b09f2386605306c8b362b67f79855592f90e7ddb63c051dd585dd3bab7d8e5ff300f9f8cc6370ccef18aea983
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.3":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0, @red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.3":
+  version: 0.14.7
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.7"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
@@ -11566,7 +11581,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/0ee4af21b78919b27e77db527f22b5f7b424a003186f245807cd876333d92ff621f55d8feb07b6deaf8f0867581357761b6488c06eb7d5a016b8060d268dbeee
+  checksum: 10c0/6b8f066fb2b4884478888574860127b235bb54ec1ae11599ac7423d0cc8a598a172b87d3e0df0756f50d338731de802fbfaaa452dd7796f5de49ff741122510b
   languageName: node
   linkType: hard
 
@@ -16107,14 +16122,13 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@backstage/ui": "npm:^0.13.1"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@playwright/test": "npm:1.58.2"
+    "@mui/styles": "npm:5.18.0"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.17.1"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -16168,11 +16182,9 @@ __metadata:
     "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.34"
     "@backstage/plugin-user-settings": "npm:^0.9.1"
     "@backstage/ui": "npm:^0.13.1"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.5"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
@@ -29347,27 +29359,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright-core@npm:1.58.2"
+"playwright-core@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright-core@npm:1.60.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/5aa15b2b764e6ffe738293a09081a6f7023847a0dbf4cd05fe10eed2e25450d321baf7482f938f2d2eb330291e197fa23e57b29a5b552b89927ceb791266225b
+  checksum: 10c0/99ccd43923b6e9355e0723b7fe221e6326efd4687f8dafff951313662aea11db51f542a9c2122c704c445fb9baae1c9ec9fa6f895126bbddd9fe92313f6942c9
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2, playwright@npm:^1.56.1":
-  version: 1.58.2
-  resolution: "playwright@npm:1.58.2"
+"playwright@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright@npm:1.60.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.58.2"
+    playwright-core: "npm:1.60.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/d060d9b7cc124bd8b5dffebaab5e84f6b34654a553758fe7b19cc598dfbee93f6ecfbdc1832b40a6380ae04eade86ef3285ba03aa0b136799e83402246dc0727
+  checksum: 10c0/714ad76d85b4865d7e43c0012f9039800c1485373388973ed39d79339cee5ad467052d1e2f1eaeca107a1cb6e65342186a8578a4c3504853d84c3a691250d5db
   languageName: node
   linkType: hard
 

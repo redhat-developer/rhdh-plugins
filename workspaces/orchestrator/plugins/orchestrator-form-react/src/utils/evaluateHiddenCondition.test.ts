@@ -124,6 +124,69 @@ describe('evaluateHiddenCondition', () => {
       };
       expect(evaluateHiddenCondition(condition, nestedFormData)).toBe(true);
     });
+
+    it('should hide when list is non-empty (isNotEmptyList)', () => {
+      const condition: HiddenConditionObject = {
+        when: 'items',
+        isNotEmptyList: true,
+      };
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: ['a'],
+        }),
+      ).toBe(true);
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: [],
+        }),
+      ).toBe(false);
+    });
+
+    it('should hide when list does not contain value (notContains)', () => {
+      const condition: HiddenConditionObject = {
+        when: 'items',
+        notContains: 'x',
+      };
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: ['a', 'b'],
+        }),
+      ).toBe(true);
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: ['a', 'x'],
+        }),
+      ).toBe(false);
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: 'not-a-list',
+        }),
+      ).toBe(false);
+    });
+
+    it('should AND multiple operators in one condition object', () => {
+      const condition: HiddenConditionObject = {
+        when: 'items',
+        isNotEmptyList: true,
+        notContains: 'x',
+      };
+
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: ['a', 'b'],
+        }),
+      ).toBe(true);
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: [],
+        }),
+      ).toBe(false);
+      expect(
+        evaluateHiddenCondition(condition, {
+          items: ['x'],
+        }),
+      ).toBe(false);
+    });
   });
 
   describe('composite conditions', () => {

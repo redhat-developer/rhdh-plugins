@@ -16,51 +16,12 @@
 
 import type { Request, Response, NextFunction } from 'express';
 
-import {
-  isAllowedProxyPath,
-  validateCompletionsRequest,
-} from './validation';
+import { validateCompletionsRequest } from './validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from './constant';
-
-describe('isAllowedProxyPath', () => {
-  it.each(['/v1/models', '/v1/shields', '/v2/conversations', '/v1/feedback'])(
-    'should allow exact match for %s',
-    path => {
-      expect(isAllowedProxyPath(path)).toBe(true);
-    },
-  );
-
-  it.each([
-    ['/v2/conversations/conv-123', '/v2/conversations'],
-    ['/v1/feedback/status', '/v1/feedback'],
-  ])('should allow sub-path %s under prefix %s', path => {
-    expect(isAllowedProxyPath(path)).toBe(true);
-  });
-
-  it.each([
-    '/v1/admin',
-    '/internal/config',
-    '/metrics',
-    '/v3/something',
-    '/debug',
-    '',
-  ])('should reject arbitrary path %s', path => {
-    expect(isAllowedProxyPath(path)).toBe(false);
-  });
-
-  it.each([
-    '/v1/models-secret',
-    '/v1/shieldsadmin',
-    '/v2/conversationsextra',
-    '/v1/feedbackextra',
-  ])('should reject prefix false match %s', path => {
-    expect(isAllowedProxyPath(path)).toBe(false);
-  });
-});
 
 describe('validateCompletionsRequest', () => {
   let mockReq: Partial<Request>;

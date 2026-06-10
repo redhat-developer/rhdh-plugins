@@ -97,8 +97,6 @@ export const EXTENSIONS_API_VERSION = 'extensions.backstage.io/v1alpha1';
 // @public (undocumented)
 export enum ExtensionsAnnotation {
   // (undocumented)
-  CERTIFIED_BY = 'extensions.backstage.io/certified-by',
-  // (undocumented)
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }
 

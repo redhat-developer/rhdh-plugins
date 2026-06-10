@@ -15,7 +15,7 @@
  */
 
 import { Locator, Page, expect } from '@playwright/test';
-import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/homepageWidgetTitles';
+import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/aggregations';
 import {
   ScorecardMessages,
   getEntityCount,
@@ -63,9 +63,7 @@ export class HomePage {
       cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
     } else if (cardName === 'Scorecard: Jira open blocking') {
       cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
-    } else if (
-      cardName === AGGREGATED_CARDS_WIDGET_TITLES.withOpenPrsWeightedKpi
-    ) {
+    } else if (cardName === AGGREGATED_CARDS_WIDGET_TITLES.openPrsWeightedKpi) {
       cardPattern =
         /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardOpenPrsWeightedKpi/i;
     } else {
@@ -131,10 +129,13 @@ export class HomePage {
   }
 
   /**
-   * Clicks the homepage KPI drill-down link (healthy/total subheader).
+   * Clicks the homepage KPI drill-down link (healthy/total subheader) within a card.
    * Defaults to 10/10 (plain “10 entities” link). Pass overrides when mock `result.total` differs.
    */
-  async clickDrillDownLink(options?: { healthy?: string; total?: string }) {
+  async clickDrillDownLink(
+    card: Locator,
+    options?: { healthy?: string; total?: string },
+  ) {
     const healthy = options?.healthy ?? '10';
     const total = options?.total ?? '10';
     const name = getHomepageEntityCalculationHealthText(
@@ -142,7 +143,6 @@ export class HomePage {
       healthy,
       total,
     );
-    // Multiple homepage scorecards can share the same health string; target the first match.
-    await this.page.getByRole('link', { name }).first().click();
+    await card.getByRole('link', { name }).click();
   }
 }

@@ -143,6 +143,29 @@ describe('lightspeed router tests', () => {
     return (await startTestBackend({ features })).server;
   }
 
+  async function startBackendServerWithThrowingPermissions(
+    config?: Record<PropertyKey, unknown>,
+  ) {
+    const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] =
+      [
+        lightspeedPlugin,
+        mockServices.rootLogger.factory(),
+        mockServices.rootConfig.factory({
+          data: { ...BASE_CONFIG, ...(config || {}) },
+        }),
+        mockServices.httpAuth.factory({
+          defaultCredentials: mockCredentials.user(mockUserId),
+        }),
+        mockServices.permissions.mock({
+          authorize: async () => {
+            throw new Error('Permission service unavailable');
+          },
+        }).factory,
+        mockServices.userInfo.factory(),
+      ];
+    return (await startTestBackend({ features })).server;
+  }
+
   describe('GET /health', () => {
     it('returns ok', async () => {
       const backendServer = await startBackendServer();
@@ -169,6 +192,53 @@ describe('lightspeed router tests', () => {
       expect(responseData.models.length).toBe(2);
       expect(responseData.models[0].identifier).toBeDefined();
       expect(responseData.models[1].identifier).toBeDefined();
+    });
+  });
+
+  describe('GET /v1/shields', () => {
+    it('should load available shields without injecting user_id', async () => {
+      const upstreamUrls: URL[] = [];
+      rcs.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/shields`, ({ request: req }) => {
+          upstreamUrls.push(new URL(req.url));
+          return HttpResponse.json({
+            shields: [
+              {
+                identifier: 'topic-detection-shield',
+                provider_resource_id: 'topic-detection',
+                type: 'shield',
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/shields',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        shields: [
+          {
+            identifier: 'topic-detection-shield',
+            provider_resource_id: 'topic-detection',
+            type: 'shield',
+          },
+        ],
+      });
+      expect(upstreamUrls).toHaveLength(1);
+      expect(upstreamUrls[0].searchParams.get('user_id')).toBeNull();
+    });
+
+    it('should fail with unauthorized error while loading shields', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/shields',
+      );
+
+      expect(response.statusCode).toEqual(403);
     });
   });
 
@@ -206,6 +276,15 @@ describe('lightspeed router tests', () => {
       expect(
         responseData.conversations[1].last_message_timestamp,
       ).toBeDefined();
+    });
+
+    it('should fail with unauthorized error while loading conversations list', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v2/conversations',
+      );
+
+      expect(response.statusCode).toEqual(403);
     });
   });
 
@@ -247,7 +326,9 @@ describe('lightspeed router tests', () => {
         });
 
       expect(response.statusCode).toEqual(404);
-      expect(response.body.error).toContain('not found');
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
     });
 
     it('should handle upstream server errors properly', async () => {
@@ -258,7 +339,13 @@ describe('lightspeed router tests', () => {
           return new HttpResponse(
             JSON.stringify({
               error: {
-                message: 'Internal server error',
+                message:
+                  'Model gpt-4-0613 failed with OpenAI API error: rate limit exceeded for organization org-abc123',
+              },
+              detail: {
+                cause: 'OpenAIError: Rate limit reached',
+                provider: 'openai',
+                model_id: 'gpt-4-0613',
               },
             }),
             {
@@ -279,6 +366,12 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toContain(
         'Error from lightspeed-core server',
       );
+      // Verify internal details are NOT exposed
+      expect(response.body.error).not.toContain('gpt-4');
+      expect(response.body.error).not.toContain('OpenAI');
+      expect(response.body.error).not.toContain('org-abc123');
+      expect(response.body.error).not.toContain('openai');
+      expect(response.body.error).not.toContain('rate limit');
     });
   });
 
@@ -407,7 +500,12 @@ describe('lightspeed router tests', () => {
           return new HttpResponse(
             JSON.stringify({
               error: {
-                message: 'Internal server error',
+                message:
+                  'Database connection failed at /app/db/postgres.py:142',
+              },
+              detail: {
+                cause: 'PostgreSQL connection timeout',
+                trace_id: 'req_xyz789',
               },
             }),
             {
@@ -432,6 +530,11 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toContain(
         'Error from lightspeed-core server',
       );
+      // Verify internal details are NOT exposed
+      expect(response.body.error).not.toContain('Database');
+      expect(response.body.error).not.toContain('postgres.py');
+      expect(response.body.error).not.toContain('PostgreSQL');
+      expect(response.body.error).not.toContain('req_xyz789');
     });
   });
 
@@ -748,8 +851,153 @@ describe('lightspeed router tests', () => {
     });
   });
 
-  describe('proxy path allowlist', () => {
-    it('should return 404 for non-allowlisted path /v1/admin', async () => {
+  describe('GET /notebook-conversation-ids', () => {
+    it('returns conversation IDs for the authenticated user', async () => {
+      rcs.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
+          return HttpResponse.json({
+            data: [
+              {
+                id: 'vs-1',
+                name: 'session-1',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: 'conv-abc',
+                },
+              },
+              {
+                id: 'vs-2',
+                name: 'session-2',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: 'conv-def',
+                },
+              },
+              {
+                id: 'vs-3',
+                name: 'other-user-session',
+                metadata: {
+                  user_id: 'user:default/other',
+                  conversation_id: 'conv-other',
+                },
+              },
+              {
+                id: 'vs-4',
+                name: 'no-conv-id',
+                metadata: {
+                  user_id: mockUserId,
+                  conversation_id: null,
+                },
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/notebook-conversation-ids',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body.conversation_ids).toEqual(['conv-abc', 'conv-def']);
+    });
+
+    it('returns empty array when user has no notebook sessions', async () => {
+      rcs.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
+          return HttpResponse.json({
+            data: [
+              {
+                id: 'vs-1',
+                name: 'other-session',
+                metadata: {
+                  user_id: 'user:default/other',
+                  conversation_id: 'conv-other',
+                },
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/notebook-conversation-ids',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body.conversation_ids).toEqual([]);
+    });
+  });
+
+  // Regression guard: /v1/query intentionally runs validation before
+  // authorization so malformed requests are rejected cheaply without a
+  // permission-service round-trip. These tests arm the auth layer with DENY
+  // and send invalid bodies — getting 400 (not 403) proves validation still
+  // executes first regardless of permission state.
+  describe('POST /v1/query validation-before-auth ordering', () => {
+    it('returns 400 for missing provider even when permission is denied', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          conversation_id: mockConversationId,
+          query: 'hello',
+        });
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toBe(
+        'provider is required and must be a non-empty string',
+      );
+    });
+
+    it('returns 400 for missing model even when permission is denied', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          conversation_id: mockConversationId,
+          provider: 'test-server',
+        });
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toBe(
+        'model is required and must be a non-empty string',
+      );
+    });
+
+    it('returns 400 for missing query even when permission is denied', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          conversation_id: mockConversationId,
+          provider: 'test-server',
+        });
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toBe(
+        'query is required and must be a non-empty string',
+      );
+    });
+  });
+
+  // Locks in the 500 contract when the permission service itself fails
+  // (e.g. network error) as opposed to a deliberate DENY. Ensures the
+  // middleware responds with a generic error rather than leaking internals.
+  describe('unexpected authorization failure', () => {
+    it('returns 500 when permission service throws on a proxy route', async () => {
+      const backendServer = await startBackendServerWithThrowingPermissions();
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v2/conversations',
+      );
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toBe('Internal authorization error');
+    });
+  });
+
+  describe('unregistered paths', () => {
+    it('should return 404 for unregistered path /v1/admin', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
         '/api/lightspeed/v1/admin',
@@ -760,7 +1008,7 @@ describe('lightspeed router tests', () => {
       });
     });
 
-    it('should return 404 for non-allowlisted path /internal/config', async () => {
+    it('should return 404 for unregistered path /internal/config', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
         '/api/lightspeed/internal/config',
@@ -782,14 +1030,30 @@ describe('lightspeed router tests', () => {
       });
     });
 
+    it.each([
+      '/api/lightspeed/v1/models-secret',
+      '/api/lightspeed/v1/shieldsadmin',
+      '/api/lightspeed/v2/conversationsextra',
+      '/api/lightspeed/v1/feedbackextra',
+    ])('should return 404 for prefix-adjacent path %s', async path => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(path);
+
+      expect(response.statusCode).toEqual(404);
+      expect(response.body).toEqual({
+        error: 'Requested path is not available',
+      });
+    });
+
     it('should reject dot-segment path traversal attempts', async () => {
       const backendServer = await startBackendServer();
-      // Express normalizes /v1/models/../admin to /v1/admin before
-      // the request reaches our middleware, so the allowlist rejects it.
       const response = await request(backendServer).get(
         '/api/lightspeed/v1/models/../admin',
       );
       expect(response.statusCode).toEqual(404);
+      expect(response.body).toEqual({
+        error: 'Requested path is not available',
+      });
     });
   });
 

@@ -48,7 +48,7 @@ export interface MetricProvider<T extends MetricType = MetricType> {
    */
   getMetric(): Metric<T>;
   /**
-   * Get the metric thresholds for the metric provider
+   * Get the default metric thresholds for the metric provider
    * @public
    */
   getMetricThresholds(): ThresholdConfig;

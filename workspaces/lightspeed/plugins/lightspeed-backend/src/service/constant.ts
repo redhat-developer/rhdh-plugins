@@ -95,28 +95,6 @@ export const HTTP_STATUS_CONFLICT = 409; // Conflict
 export const HTTP_STATUS_INTERNAL_ERROR = 500; // Internal server error
 
 /**
- * Proxy path security - only these LCORE path prefixes may be proxied
- * Avoids authenticated users hitting arbitrary LCORE endpoints
- * /v1/feedback is here to cover the /feedback/status case as
- * the exact /v1/feedback has its own handler
- */
-export const ALLOWED_PROXY_PREFIXES = [
-  '/v1/models',
-  '/v1/shields',
-  '/v2/conversations',
-  '/v1/feedback',
-];
-
-/**
- * Paths that bypass the proxy middleware and are handled by dedicated route handlers
- */
-export const PROXY_PASSTHROUGH_PATHS = [
-  '/v1/query',
-  '/v1/query/interrupt',
-  '/v1/feedback',
-];
-
-/**
  * SSRF Protection - Blocked hostnames for security
  * These hostnames are commonly used for Server-Side Request Forgery attacks
  * @reserved Reserved for future URL file type support
@@ -224,3 +202,8 @@ export const HTML_BLOCK_TAGS = new Set([
 export const HTML_IGNORED_TAGS = new Set(['script', 'style']);
 
 export const POLL_INTERVAL_MS = 1000; // 1 second
+
+export const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
+
+// default number of message history being loaded
+export const DEFAULT_HISTORY_LENGTH = 10;

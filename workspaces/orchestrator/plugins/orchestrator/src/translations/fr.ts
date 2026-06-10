@@ -202,7 +202,14 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Le flux de travail est actuellement interrompu ou en état d'erreur. Son exécution maintenant peut échouer ou produire des résultats inattendus.",
     'workflow.progress': 'Avancement du flux de travail',
     'workflow.status.available': 'Disponible',
-    'workflow.status.unavailable': 'Non disponible',
+    'samlSso.title': 'Session GitHub SAML SSO expirée',
+    'samlSso.reauthorizeButton': 'Réautoriser SSO',
+    'samlSso.body':
+      'Votre session GitHub SAML SSO a expiré. Votre organisation nécessite une session SAML active pour accéder à ses ressources.',
+    'samlSso.reauthorizeHint':
+      "Cliquez sur 'Réautoriser SSO' pour vous réauthentifier auprès du fournisseur d'identité de votre organisation.",
+    'samlSso.fallbackHint':
+      "Veuillez vous déconnecter et vous reconnecter depuis Paramètres > Fournisseurs d'authentification pour rétablir votre session SAML.",
   },
 });
 

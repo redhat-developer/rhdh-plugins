@@ -17,18 +17,11 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import {
-  ALLOWED_PROXY_PREFIXES,
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from './constant';
 import { QueryRequestBody } from './types';
-
-export function isAllowedProxyPath(path: string): boolean {
-  return ALLOWED_PROXY_PREFIXES.some(
-    prefix => path === prefix || path.startsWith(`${prefix}/`),
-  );
-}
 
 export const validateCompletionsRequest = (
   req: Request,

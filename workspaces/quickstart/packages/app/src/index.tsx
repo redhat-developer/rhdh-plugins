@@ -14,21 +14,40 @@
  * limitations under the License.
  */
 import '@backstage/cli/asset-types';
+import { sidebarConfig } from '@backstage/core-components';
 import 'material-icons/iconfont/outlined.css';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import '@backstage/ui/css/styles.css';
 
 // TODO: Remove once @red-hat-developer-hub/backstage-plugin-global-header
-// publishes a version with built-in drawer support (width: auto + margin-right
-// on the AppBar). Tracked by the GlobalHeader.tsx change in the global-header
-// workspace.
+// publishes built-in above-sidebar layout (see global-header packages/app-legacy).
+const { drawerWidthOpen, drawerWidthClosed } = sidebarConfig;
+
 const style = document.createElement('style');
 style.textContent = `
   #global-header {
     width: auto;
     margin-right: var(--docked-drawer-width, 0px);
-    transition: margin-right 225ms cubic-bezier(0, 0, 0.2, 1);
+    transition:
+      margin-left 0.1s ease-out,
+      margin-right 225ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  /* Branding lives in the sidebar; avoid duplicate header logo. */
+  [data-testid='global-header-company-logo'] {
+    display: none;
+  }
+  /* Keep the header over main content only — not above the sidebar logo column. */
+  @media (min-width: 600px) {
+    #global-header {
+      margin-left: ${drawerWidthOpen}px;
+      width: calc(100% - ${drawerWidthOpen}px);
+    }
+    body:has([data-testid='sidebar-root'] [class*='BackstageSidebar-drawer']:not([class*='drawerOpen']))
+      #global-header {
+      margin-left: ${drawerWidthClosed}px;
+      width: calc(100% - ${drawerWidthClosed}px);
+    }
   }
 `;
 document.head.appendChild(style);

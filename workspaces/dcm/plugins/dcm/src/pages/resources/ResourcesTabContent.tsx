@@ -54,6 +54,10 @@ export function ResourcesTabContent() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
   const filtered = useMemo(() => {
     if (!search.trim()) return instances;
     const q = search.toLowerCase();

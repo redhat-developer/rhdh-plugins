@@ -40,10 +40,10 @@ import {
 } from '@backstage/plugin-permission-common';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
-import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
 import { isMetricCalculationError } from '../utils/metricCalculationError';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -51,6 +51,7 @@ type CatalogMetricServiceOptions = {
   registry: MetricProvidersRegistry;
   database: DatabaseMetricValues;
   logger: LoggerService;
+  thresholdResolver: ThresholdResolver;
 };
 
 export class CatalogMetricService {
@@ -74,6 +75,7 @@ export class CatalogMetricService {
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
+  private readonly thresholdResolver: ThresholdResolver;
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -84,6 +86,7 @@ export class CatalogMetricService {
     this.registry = options.registry;
     this.database = options.database;
     this.logger = options.logger;
+    this.thresholdResolver = options.thresholdResolver;
   }
 
   /**
@@ -129,7 +132,10 @@ export class CatalogMetricService {
         const metric = this.registry.getMetric(metric_id);
 
         try {
-          thresholds = mergeEntityAndProviderThresholds(entity, provider);
+          thresholds = this.thresholdResolver.resolveEntityThresholds(
+            entity,
+            provider,
+          );
 
           if (value === null) {
             thresholdError =

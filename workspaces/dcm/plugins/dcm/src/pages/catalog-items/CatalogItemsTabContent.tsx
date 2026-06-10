@@ -248,7 +248,7 @@ export function CatalogItemsTabContent() {
     <Drawer
       anchor="right"
       open={open}
-      onClose={submitting ? undefined : onClose}
+      onClose={submitting || Boolean(error) ? undefined : onClose}
     >
       <Box className={classes.drawer}>
         <Box className={classes.drawerHeader}>
@@ -319,8 +319,8 @@ export function CatalogItemsTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError}
-        onDismissActionError={() => crud.setDeleteError(null)}
+        actionError={null}
+        onDismissActionError={undefined}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -390,6 +390,8 @@ export function CatalogItemsTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
         resourceLabel="catalog item"
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
       />
     </>
   );
