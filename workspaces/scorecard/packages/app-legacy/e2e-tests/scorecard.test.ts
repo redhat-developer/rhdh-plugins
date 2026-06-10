@@ -831,17 +831,19 @@ test.describe('Scorecard Plugin Tests', () => {
 
     test.describe('Drill down logic', () => {
       test('GitHub scorecard: tooltips, entity drill-down, and metric sort', async () => {
-        const aggregationMetadata = AGGREGATED_CARDS_METADATA.githubOpenPrsKpi;
+        const aggregationMetadata =
+          AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
+        const metricId = aggregationMetadata.metricId;
 
         await mockScorecardEntitiesDrillDownWithSort(
           page,
           githubEntitiesDrillDownResponse,
-          'github.open_prs',
+          metricId,
         );
 
         await setupHomepageAggregationCard(page, homePage, {
           aggregationMetadata,
-          route: ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
+          route: ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE,
           response: githubAggregatedResponse,
         });
 
@@ -877,24 +879,27 @@ test.describe('Scorecard Plugin Tests', () => {
         });
 
         await test.step('Entity drill-down', async () => {
+          const title = evaluateMessage(
+            translations.metric[metricId].title,
+            metricId,
+          );
+          const description = evaluateMessage(
+            translations.metric[metricId].description,
+            metricId,
+          );
+
           await homePage.clickDrillDownLink(
             homePage.getCard(aggregationMetadata.id),
           );
-          await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+          await scorecardDrillDownPage.expectOnPage(metricId, {
             aggregationId: aggregationMetadata.id,
           });
-          await scorecardDrillDownPage.expectPageTitle(
-            'github.open_prs',
-            githubAggregatedResponse.metadata.title,
-          );
-          await scorecardDrillDownPage.expectDrillDownCardSnapshot(
-            'github.open_prs',
-            {
-              aggregationId: aggregationMetadata.id,
-              cardTitle: githubAggregatedResponse.metadata.title,
-              cardDescription: githubAggregatedResponse.metadata.description,
-            },
-          );
+          await scorecardDrillDownPage.expectPageTitle(metricId, title);
+          await scorecardDrillDownPage.expectDrillDownCardSnapshot(metricId, {
+            aggregationId: aggregationMetadata.id,
+            cardTitle: title,
+            cardDescription: description,
+          });
           await scorecardDrillDownPage.expectNoDrillDownCalculationErrorWarningIcon();
           await scorecardDrillDownPage.expectTableHeadersVisible();
           const rows5Label = getEntitiesTableFooterRowsLabel(translations, 5);
