@@ -16,10 +16,5 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Validate config
         # See https://docs.renovatebot.com/config-validation/
-        # GITHUB_COM_TOKEN avoids unauthenticated rate limits when the
-        # validator resolves the remote presets referenced in renovate.json.
-        # https://docs.renovatebot.com/getting-started/running/#githubcom-token-for-changelogs-and-tools
-        env:
-          GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx --yes --package renovate -- renovate-config-validator --strict .github/renovate.json
