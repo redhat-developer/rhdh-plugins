@@ -2,7 +2,7 @@
 
 ## Context
 
-The augment plugin currently enforces 12+ authorization decisions via custom inline guards in route handlers — `checkIsAdmin`, `createdBy` comparisons, lifecycle stage checks, and self-approval prevention. These bypass Backstage's permission framework entirely. Only two coarse permissions exist (`augment.access` for read, `augment.admin` for admin operations), making fine-grained RBAC impossible.
+The augment plugin currently enforces 12+ authorization decisions via custom inline guards in route handlers — `checkIsAdmin`, `createdBy` comparisons, lifecycle stage checks, and self-approval prevention. These bypass Backstage's permission framework entirely. Only two coarse permissions exist (`augment.access` for read, `augment.admin` for admin operations), making fine-grained RBAC impossible. Additionally, all infrastructure operations (vector stores, documents, MCP connections, prompts, models) are gated by the single `augment.admin` permission, preventing deployers from granting targeted access to specific resource categories.
 
 Backstage provides a permission framework (`@backstage/plugin-permission-node`) supporting basic permissions, resource-based permissions with conditional rules, and policy evaluation via the permission backend. The `extensions-backend` plugin in this workspace already follows this pattern and serves as a reference implementation.
 
@@ -13,15 +13,15 @@ These permissions are independent of AgenticProvider authorization. Kagenti's pe
 **Goals:**
 
 - Replace all 12+ inline authorization decisions with Backstage permission framework calls
-- Enable deployers to configure fine-grained RBAC policies for agent and tool lifecycle operations
-- Maintain full backward compatibility — existing `augment.access` + `augment.admin` policies continue to work unchanged
+- Enable deployers to configure fine-grained RBAC policies for agent and tool lifecycle operations and targeted access to infrastructure resources (vector stores, documents, MCP connections, prompts, models)
+- Provide an opt-in legacy fallback (`permissions.legacyAdminFallback`) so existing deployments using `augment.access` + `augment.admin` can migrate incrementally
 - Support conditional permission rules for ownership checks, self-approval prevention, and lifecycle stage gating
 - Keep self-approval prevention as defense-in-depth (permission rule supplements hard-coded check)
 - Emit structured audit log entries for all authorization decisions — recording the user, action, resource, outcome (allow/deny), and whether the `augment.admin` fallback was used. The authorization middleware is the single point through which all permission decisions flow, making it the natural place for audit logging.
 
 **Non-Goals:**
 
-- Modifying `augment.access` or `augment.admin` behavior or semantics
+- Modifying `augment.access` or `augment.admin` behavior or semantics (though `augment.admin` is no longer the default gate for lifecycle/infrastructure operations)
 - Adding permissions for AgenticProvider-level operations (Kagenti API calls, OpenAI API calls)
 - Frontend permission checks (backend-only enforcement)
 - Custom permission policy plugins (works with standard Backstage RBAC)
@@ -35,13 +35,13 @@ Define `augment-agent` and `augment-tool` as distinct resource types rather than
 
 **Alternative considered:** Single `augment-resource` type with a discriminator field. Rejected because it conflates two domain objects that are independently routed and independently targetable by policy.
 
-### Decision 2: Two-tier authorization with backward-compatible fallback
+### Decision 2: Opt-in legacy fallback to `augment.admin`
 
-`authorizeLifecycleAction` checks the fine-grained permission first. If DENY (the default when no policy exists), it falls back to checking `augment.admin`. This means deployments that haven't configured fine-grained policies get identical behavior to today.
+When `permissions.legacyAdminFallback` is enabled in the plugin config, `authorizeLifecycleAction` checks the fine-grained permission first. If DENY, it falls back to checking `augment.admin`. When the config flag is absent or false (the default), only fine-grained permissions are evaluated — no fallback occurs.
 
-**Why backward compatibility matters for a "new" plugin:** Although the augment plugin is still in active development, there are external consumers already running it with RBAC policies configured around `augment.access` + `augment.admin`. From their perspective, a new drop that requires policy reconfiguration to maintain existing access is a cross-release breaking change. The fallback ensures these deployments continue to work on upgrade, while giving them the option to adopt fine-grained policies incrementally.
+**Why opt-in rather than default-on:** The augment plugin is in dev preview, which means no backward compatibility guarantees. Making the fallback default-on risks the "temporary becomes permanent" problem — once deployments rely on `augment.admin` as a catch-all, removing the fallback later becomes the very breaking change it was meant to prevent. Opt-in gives existing consumers a migration path (enable the flag, then incrementally adopt fine-grained policies, then disable the flag) without baking the fallback into every deployment's baseline.
 
-**Alternative considered:** Requiring all deployments to update their RBAC policies. Rejected because it would break existing augment deployments on upgrade — deployers would need to add fine-grained policy entries before the upgrade or lose access to lifecycle operations.
+**Alternative considered:** Default-on fallback for all deployments. Rejected because it creates invisible load-bearing behavior that becomes difficult to remove — every release the fallback ships as default makes removal harder, not easier. Dev preview is the right time to establish the clean model.
 
 **Alternative considered:** OR-combining fine-grained and admin in a single policy evaluation. Rejected because Backstage's permission framework evaluates permissions individually — the fallback must be explicit in code.
 
@@ -63,7 +63,7 @@ Permission rules (`IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`) follow th
 
 ## Risks / Trade-offs
 
-- **Policy migration complexity** → Deployers who want fine-grained control must write new RBAC policies. Mitigated by the fallback mechanism — no action required to maintain current behavior.
+- **Policy migration complexity** → Deployers must configure fine-grained RBAC policies. Existing deployments can enable `permissions.legacyAdminFallback` to preserve current `augment.admin` behavior during migration.
 - **Conditional evaluation overhead** → Resource-based permissions require loading the resource to evaluate conditions. Mitigated by keeping list operations as basic permissions and only using resource-based permissions for mutation routes where the resource is already loaded.
 - **Rule mismatch on upgrade** → If a deployer configures a fine-grained policy with a `HAS_LIFECYCLE_STAGE` condition referencing a stage name that changes, the rule silently denies. Mitigated by documenting stage names as part of the permission contract.
 - **Defense-in-depth dual check** → The self-approval hard-coded check and `IS_NOT_CREATOR` rule are redundant by design. If one is relaxed without updating the other, behavior may be confusing. Mitigated by documenting this clearly.
