@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck
 
+## 0.1.10
+
+### Patch Changes
+
+- d37da53: **BREAKING**: Restrict filecheck metric collection to Component catalog entities by adding a kind: component catalog filter.
+
 ## 0.1.9
 
 ### Patch Changes

@@ -310,6 +310,8 @@ export function ProvidersTabContent() {
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel="Providers"
+        onRefresh={crud.reload}
+        refreshing={crud.refreshing}
       />
 
       {formDialog({

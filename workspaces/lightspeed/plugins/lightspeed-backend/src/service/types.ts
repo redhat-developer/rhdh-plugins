@@ -23,6 +23,10 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 
+import type { userPermissionAuthorization } from './permission';
+
+export type Authorizer = ReturnType<typeof userPermissionAuthorization>;
+
 /**
  * @public
  * The lightspeed backend router options
@@ -55,6 +59,3 @@ export interface QueryRequestBody {
   // System prompt to override the default value
   system_prompt?: string;
 }
-
-// default number of message history being loaded
-export const DEFAULT_HISTORY_LENGTH = 10;

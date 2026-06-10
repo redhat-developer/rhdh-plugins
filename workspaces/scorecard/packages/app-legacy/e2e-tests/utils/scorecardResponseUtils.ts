@@ -203,7 +203,7 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
-/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+/** Matches `scorecard.aggregationKPIs.gitHubOpenPrsWeightedKpi` in app-config.yaml */
 export const openPrsWeightedKpiMetadataResponse = {
   title: 'GitHub Open PRs (weighted health)',
   description:
@@ -232,12 +232,35 @@ export const openPrsWeightedAggregatedResponse = {
       { count: 1, name: 'critical', score: 0 },
     ],
     total: 10,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     averageScore: 51.5,
     averageWeightedSum: 515,
     averageMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const gitHubWeightedPartiallyAggregatedResponse = {
+  ...openPrsWeightedAggregatedResponse,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    ...openPrsWeightedAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success', score: 100 },
+      { count: 4, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
+    ],
+    total: 8,
+    entitiesConsidered: 6,
+    calculationErrorCount: 2,
+    averageScore: 46.7,
+    averageWeightedSum: 466.67,
   },
 };
 
@@ -509,6 +532,42 @@ export const githubAggregatedResponse = {
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entitiesConsidered: 10,
     calculationErrorCount: 0,
+  },
+};
+
+export const githubCustomAggregatedResponse = {
+  ...githubAggregatedResponse,
+  metadata: {
+    ...githubAggregatedResponse.metadata,
+    title: 'GitHub Open PRs KPI',
+    description:
+      'This KPI provides information about GitHub Open PRs grouped by status',
+  },
+  result: {
+    ...githubAggregatedResponse.result,
+    values: [
+      { count: 2, name: 'success' },
+      { count: 1, name: 'warning' },
+      { count: 5, name: 'error' },
+    ],
+    total: 8,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 8,
+    calculationErrorCount: 0,
+  },
+};
+
+export const gitHubPartiallyAggregatedResponse = {
+  ...githubCustomAggregatedResponse,
+  result: {
+    ...githubCustomAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success' },
+      { count: 3, name: 'warning' },
+      { count: 1, name: 'error' },
+    ],
+    calculationErrorCount: 3,
   },
 };
 

@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { handleLCSFetchError, sanitizeLCSError } from './utils';
+import { DEFAULT_HISTORY_LENGTH } from './constant';
+import {
+  handleLCSFetchError,
+  rewriteLightspeedProxyPath,
+  sanitizeLCSError,
+} from './utils';
 
 describe('sanitizeLCSError', () => {
   const mockLogger = {
@@ -164,5 +169,57 @@ describe('handleLCSFetchError', () => {
       error: 'Error from lightspeed-core server while sending feedback',
     });
     expect(mockLogger.error).toHaveBeenCalled();
+  });
+});
+
+const userRef = 'user:default/test-user';
+
+describe('rewriteLightspeedProxyPath', () => {
+  it.each(['/v1/models', '/v1/shields'])(
+    'returns path unchanged for skip endpoint %s',
+    path => {
+      expect(rewriteLightspeedProxyPath(path, userRef)).toBe(path);
+    },
+  );
+
+  it('appends user_id to a path without query params', () => {
+    const result = rewriteLightspeedProxyPath('/v2/conversations', userRef);
+    expect(result).toBe(
+      `/v2/conversations?user_id=${encodeURIComponent(userRef)}`,
+    );
+  });
+
+  it('appends user_id with & when query params already exist', () => {
+    const result = rewriteLightspeedProxyPath(
+      '/v2/conversations?foo=bar',
+      userRef,
+    );
+    expect(result).toBe(
+      `/v2/conversations?foo=bar&user_id=${encodeURIComponent(userRef)}`,
+    );
+  });
+
+  it('appends history_length when conversation_id is in the path', () => {
+    const result = rewriteLightspeedProxyPath(
+      '/v2/conversations/conversation_id_123',
+      userRef,
+    );
+    expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
+    expect(result).toContain(`history_length=${DEFAULT_HISTORY_LENGTH}`);
+  });
+
+  it('does not append history_length when already present', () => {
+    const result = rewriteLightspeedProxyPath(
+      '/v2/conversations/conversation_id_123?history_length=5',
+      userRef,
+    );
+    expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
+    expect(result).not.toContain(`history_length=${DEFAULT_HISTORY_LENGTH}`);
+  });
+
+  it('does not append history_length when no conversation_id in path', () => {
+    const result = rewriteLightspeedProxyPath('/v1/feedback', userRef);
+    expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
+    expect(result).not.toContain('history_length');
   });
 });
