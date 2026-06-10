@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
-import { validateCompletionsRequest } from './validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from './constant';
+import { validateCompletionsRequest } from './validation';
 
 describe('validateCompletionsRequest', () => {
   let mockReq: Partial<Request>;
