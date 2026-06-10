@@ -284,6 +284,32 @@ describe('useCrudTab', () => {
       expect(loadFn).toHaveBeenCalledTimes(2);
     });
 
+    it('sets refreshing=true and loading=false during a manual reload', async () => {
+      let resolveSecond!: (items: Item[]) => void;
+      const loadFn = jest
+        .fn()
+        .mockResolvedValueOnce([...ITEMS])
+        .mockImplementationOnce(
+          () =>
+            new Promise(r => {
+              resolveSecond = r;
+            }),
+        );
+
+      const { result } = renderHook(() =>
+        useCrudTab<Item, Form>(makeOptions({ loadFn })),
+      );
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      act(() => result.current.reload());
+
+      expect(result.current.refreshing).toBe(true);
+      expect(result.current.loading).toBe(false);
+
+      act(() => resolveSecond([...ITEMS]));
+      await waitFor(() => expect(result.current.refreshing).toBe(false));
+    });
+
     it('clears loadError on successful reload', async () => {
       let callCount = 0;
       const loadFn = jest.fn().mockImplementation(() => {

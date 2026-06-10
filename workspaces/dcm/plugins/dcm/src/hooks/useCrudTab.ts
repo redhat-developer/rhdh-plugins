@@ -251,6 +251,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
       .catch(err => {
         setLoadError(extractApiError(err));
         setItems([]);
+        hasLoadedRef.current = false;
       })
       .finally(() => {
         setLoading(false);
