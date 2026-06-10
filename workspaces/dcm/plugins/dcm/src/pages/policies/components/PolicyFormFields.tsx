@@ -89,11 +89,15 @@ export function PolicyFormFields({
 
       <TextField
         label="Description"
-        helperText="Optional — describe the purpose of this policy"
+        helperText={
+          err('description') ?? 'Optional — describe the purpose of this policy'
+        }
+        error={Boolean(err('description'))}
         value={form.description}
         onChange={e =>
           setForm(prev => ({ ...prev, description: e.target.value }))
         }
+        onBlur={() => touch('description')}
         fullWidth
         variant="outlined"
         size="small"
@@ -129,19 +133,29 @@ export function PolicyFormFields({
       </FormControl>
 
       <TextField
-        label="Priority"
+        label="Priority *"
         helperText={
-          err('priority') ?? '1 (highest) – 1000 (lowest), default 500'
+          err('priority') ??
+          '1 (highest) – 1000 (lowest), default 500 — must be unique per policy type'
         }
         error={Boolean(err('priority'))}
         value={form.priority}
-        onChange={e => setForm(prev => ({ ...prev, priority: e.target.value }))}
+        onChange={e => {
+          if (/^\d*$/.test(e.target.value)) {
+            setForm(prev => ({ ...prev, priority: e.target.value }));
+          }
+        }}
+        onKeyDown={e => {
+          if (e.key === '.' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+          }
+        }}
         onBlur={() => touch('priority')}
         fullWidth
         variant="outlined"
         size="small"
         type="number"
-        inputProps={{ min: 1, max: 1000 }}
+        inputProps={{ min: 1, max: 1000, step: 1 }}
       />
 
       <TextField

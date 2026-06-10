@@ -119,7 +119,7 @@ export function PoliciesTabContent() {
       setTogglingIds(addTogglingId(id));
       try {
         const updated = await policyApi.updatePolicy(id, {
-          enabled: !p.enabled,
+          enabled: !(p.enabled ?? true),
         });
         setItems(replacePolicyById(id, updated));
       } catch (err) {
@@ -172,7 +172,7 @@ export function PoliciesTabContent() {
         title: 'Enabled',
         field: 'enabled',
         render: p => {
-          const isEnabled = p.enabled === true;
+          const isEnabled = p.enabled ?? true;
           return (
             <Chip
               label={isEnabled ? 'Yes' : 'No'}
@@ -204,7 +204,7 @@ export function PoliciesTabContent() {
         render: p => {
           const id = p.id ?? '';
           const isToggling = togglingIds.has(id);
-          const isEnabled = p.enabled !== false;
+          const isEnabled = p.enabled ?? true;
           return (
             <Box className={classes.actionsCellBox}>
               <Tooltip
