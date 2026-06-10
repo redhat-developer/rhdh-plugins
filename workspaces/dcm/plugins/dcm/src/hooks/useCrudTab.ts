@@ -229,6 +229,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const editSubmittingRef = useRef(editSubmitting);
   editSubmittingRef.current = editSubmitting;
 
+  const deleteSubmittingRef = useRef(deleteSubmitting);
+  deleteSubmittingRef.current = deleteSubmitting;
+
   const deletingItemRef = useRef(deletingItem);
   deletingItemRef.current = deletingItem;
 
@@ -360,6 +363,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   }, []);
 
   const handleCloseDelete = useCallback(() => {
+    if (deleteSubmittingRef.current) return;
     setDeleteOpen(false);
     setDeletingItem(null);
     setDeleteError(null);
