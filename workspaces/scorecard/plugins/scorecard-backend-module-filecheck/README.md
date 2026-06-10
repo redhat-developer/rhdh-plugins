@@ -75,7 +75,7 @@ If no files are configured, no metrics are registered and the module has no effe
 
 ### Entity Requirements
 
-Entities must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
+Only **Component** entities are checked. They must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
 
 ```yaml
 # catalog-info.yaml

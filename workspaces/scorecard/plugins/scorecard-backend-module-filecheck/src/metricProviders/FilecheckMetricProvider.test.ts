@@ -274,6 +274,7 @@ describe('FilecheckMetricProvider', () => {
 
     it('should return correct catalog filter', () => {
       expect(provider?.getCatalogFilter()).toEqual({
+        kind: 'component',
         'metadata.annotations.backstage.io/source-location': expect.any(Symbol),
       });
     });
