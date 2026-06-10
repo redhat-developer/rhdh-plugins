@@ -20,7 +20,14 @@ import {
   InfoCard,
   Progress,
 } from '@backstage/core-components';
-import { Box, Button } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+} from '@material-ui/core';
+import SyncIcon from '@material-ui/icons/Sync';
 import { Dispatch, SetStateAction } from 'react';
 import MuiAlert from '@material-ui/lab/Alert';
 import type { BoxProps } from '@material-ui/core/Box';
@@ -67,6 +74,12 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
 
   // ── Card header ──────────────────────────────────────────────────────────
   entityLabel: string;
+
+  // ── Refresh ──────────────────────────────────────────────────────────────
+  /** When provided, a refresh icon button is shown next to the search field. */
+  onRefresh?: () => void;
+  /** When true, the refresh button shows a spinner instead of the sync icon. */
+  refreshing?: boolean;
 }>;
 
 function ActionErrorAlert({
@@ -127,6 +140,8 @@ export function DcmCrudTabLayout<T extends object>({
   onPrimaryAction,
   illustrationSrc,
   entityLabel,
+  onRefresh,
+  refreshing,
 }: DcmCrudTabLayoutProps<T>) {
   const classes = useDcmStyles();
 
@@ -183,11 +198,31 @@ export function DcmCrudTabLayout<T extends object>({
       <InfoCard
         title={`${entityLabel} (${filtered.length})`}
         action={
-          <DcmSearchCardAction
-            value={search}
-            setValue={onSearchChange}
-            classes={classes}
-          />
+          <Box display="flex" alignItems="center">
+            <DcmSearchCardAction
+              value={search}
+              setValue={onSearchChange}
+              classes={classes}
+            />
+            {onRefresh && (
+              <Tooltip title="Refresh">
+                <span>
+                  <IconButton
+                    size="small"
+                    aria-label="Refresh"
+                    onClick={onRefresh}
+                    disabled={refreshing}
+                  >
+                    {refreshing ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <SyncIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+          </Box>
         }
         className={classes.dataCard}
         titleTypographyProps={{ className: classes.cardTitle }}

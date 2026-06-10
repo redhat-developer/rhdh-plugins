@@ -144,8 +144,8 @@ export const OPENSSF_METRICS: OpenSSFMetricConfig[] = [
 
 export const OPENSSF_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'error', expression: '<2' },
-    { key: 'warning', expression: '2-7' },
     { key: 'success', expression: '>7' },
+    { key: 'warning', expression: '2-7' },
+    { key: 'error', expression: '<2' },
   ],
 };

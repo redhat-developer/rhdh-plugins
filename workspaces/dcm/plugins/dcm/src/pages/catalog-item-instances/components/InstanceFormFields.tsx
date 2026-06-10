@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Box,
   Divider,
@@ -24,6 +24,7 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  Switch,
   TextField,
   Typography,
 } from '@material-ui/core';
@@ -43,6 +44,7 @@ import {
   buildUserValueRows,
   InstanceForm,
   validateInstanceForm,
+  validateUserValues,
 } from '../instanceFormTypes';
 import type { UserValueRow } from '../instanceFormTypes';
 
@@ -59,6 +61,7 @@ export type InstanceFormFieldsProps = Readonly<{
 
 function fieldHelperText(row: UserValueRow): string {
   const parts: string[] = [`path: ${row.path}`];
+  if (row.required) parts.push('required');
   if (row.schemaType) parts.push(`type: ${row.schemaType}`);
   if (row.schemaMin !== undefined) parts.push(`min: ${row.schemaMin}`);
   if (row.schemaMax !== undefined) parts.push(`max: ${row.schemaMax}`);
@@ -74,6 +77,13 @@ export function InstanceFormFields({
 }: InstanceFormFieldsProps) {
   const classes = useStyles();
   const errors = useMemo(() => validateInstanceForm(form), [form]);
+  const userValueErrors = useMemo(
+    () => validateUserValues(form.user_values),
+    [form.user_values],
+  );
+  const [userValuesTouched, setUserValuesTouched] = useState<
+    Record<number, boolean>
+  >({});
   const selectedItem = catalogItems.find(ci => ci.uid === form.catalog_item_id);
 
   const handleCatalogItemChange = (id: string) => {
@@ -84,6 +94,7 @@ export function InstanceFormFields({
       user_values: buildUserValueRows(item),
     }));
     setTouched(prev => ({ ...prev, catalog_item_id: true }));
+    setUserValuesTouched({});
   };
 
   const setUserValue = (index: number, value: string) =>
@@ -92,6 +103,9 @@ export function InstanceFormFields({
       updated[index] = { ...updated[index], value };
       return { ...prev, user_values: updated };
     });
+
+  const touchUserValue = (index: number) =>
+    setUserValuesTouched(prev => ({ ...prev, [index]: true }));
 
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
@@ -189,7 +203,12 @@ export function InstanceFormFields({
             </Typography>
           </Typography>
           {form.user_values.map((row, i) => {
-            const helperText = fieldHelperText(row);
+            const isTouched = Boolean(userValuesTouched[i]);
+            const fieldError = isTouched ? userValueErrors[i] : undefined;
+            const label = row.required
+              ? `${row.displayName} *`
+              : row.displayName;
+            const helperText = fieldError ?? fieldHelperText(row);
 
             /* Enum field → Select */
             if (row.enumValues && row.enumValues.length > 0) {
@@ -199,12 +218,17 @@ export function InstanceFormFields({
                   variant="outlined"
                   size="small"
                   fullWidth
+                  error={Boolean(fieldError)}
                 >
-                  <InputLabel shrink>{row.displayName}</InputLabel>
+                  <InputLabel shrink>{label}</InputLabel>
                   <Select
                     value={row.value}
-                    onChange={e => setUserValue(i, e.target.value as string)}
-                    input={<OutlinedInput notched label={row.displayName} />}
+                    onChange={e => {
+                      setUserValue(i, e.target.value as string);
+                      touchUserValue(i);
+                    }}
+                    onBlur={() => touchUserValue(i)}
+                    input={<OutlinedInput notched label={label} />}
                   >
                     {row.enumValues.map(v => (
                       <MenuItem key={v} value={v}>
@@ -217,21 +241,25 @@ export function InstanceFormFields({
               );
             }
 
+            const schemaType = row.schemaType?.toLowerCase();
+
             /* Integer / number field → numeric text input */
-            if (row.schemaType === 'integer' || row.schemaType === 'number') {
+            if (schemaType === 'integer' || schemaType === 'number') {
               return (
                 <TextField
                   key={row.path}
-                  label={row.displayName}
+                  label={label}
                   helperText={helperText}
+                  error={Boolean(fieldError)}
                   value={row.value}
                   onChange={e => setUserValue(i, e.target.value)}
+                  onBlur={() => touchUserValue(i)}
                   fullWidth
                   variant="outlined"
                   size="small"
                   type="number"
                   inputProps={{
-                    step: row.schemaType === 'integer' ? 1 : 'any',
+                    step: schemaType === 'integer' ? 1 : 'any',
                     min: row.schemaMin,
                     max: row.schemaMax,
                   }}
@@ -239,14 +267,41 @@ export function InstanceFormFields({
               );
             }
 
+            /* Boolean field → Switch (label left, switch right) */
+            if (schemaType === 'boolean') {
+              return (
+                <Box
+                  key={row.path}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Box>
+                    <Typography variant="body2">{row.displayName}</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {helperText}
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={row.value === 'true'}
+                    onChange={e => setUserValue(i, String(e.target.checked))}
+                    color="primary"
+                    size="small"
+                  />
+                </Box>
+              );
+            }
+
             /* Default → plain text */
             return (
               <TextField
                 key={row.path}
-                label={row.displayName}
+                label={label}
                 helperText={helperText}
+                error={Boolean(fieldError)}
                 value={row.value}
                 onChange={e => setUserValue(i, e.target.value)}
+                onBlur={() => touchUserValue(i)}
                 fullWidth
                 variant="outlined"
                 size="small"

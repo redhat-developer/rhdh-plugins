@@ -242,6 +242,7 @@ export function ProvidersTabContent() {
     submitLabel: string;
     submitting: boolean;
     error: string | null;
+    isEditMode?: boolean;
   };
 
   const formDialog = ({
@@ -256,6 +257,7 @@ export function ProvidersTabContent() {
     submitLabel,
     submitting,
     error,
+    isEditMode,
   }: ProviderDialogProps) => (
     <DcmFormDialog
       open={open}
@@ -279,6 +281,7 @@ export function ProvidersTabContent() {
         serviceTypes={serviceTypes}
         touched={touched}
         setTouched={setTouched}
+        isEditMode={isEditMode}
       />
     </DcmFormDialog>
   );
@@ -293,8 +296,8 @@ export function ProvidersTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError}
-        onDismissActionError={() => crud.setDeleteError(null)}
+        actionError={null}
+        onDismissActionError={undefined}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
@@ -307,6 +310,8 @@ export function ProvidersTabContent() {
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel="Providers"
+        onRefresh={crud.reload}
+        refreshing={crud.refreshing}
       />
 
       {formDialog({
@@ -335,6 +340,7 @@ export function ProvidersTabContent() {
         submitLabel: 'Save',
         submitting: crud.editSubmitting,
         error: crud.editError,
+        isEditMode: true,
       })}
 
       <DcmDeleteDialog
@@ -345,6 +351,8 @@ export function ProvidersTabContent() {
           crud.deletingItem?.display_name ?? crud.deletingItem?.name ?? ''
         }
         resourceLabel="provider"
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
       />
     </>
   );

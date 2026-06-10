@@ -219,6 +219,9 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
     'notebook.view.title': 'Unbenanntes Notizbuch',
     'notebook.view.upload.action': 'Ressource hochladen',
+    'notebook.view.processing.description':
+      'Ihre Dateien werden indexiert. Sie können Fragen stellen, sobald die Verarbeitung abgeschlossen ist.',
+    'notebook.view.processing.heading': 'Ressourcen werden verarbeitet...',
     'notebook.view.upload.heading':
       'Laden Sie eine Ressource hoch, um zu beginnen',
     'notebooks.actions.delete': 'Löschen',

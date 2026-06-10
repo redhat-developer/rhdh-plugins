@@ -44,18 +44,15 @@ const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
  */
 export class DependabotMetricProvider implements MetricProvider<'number'> {
   private readonly dependabotClient: DependabotClient;
-  private readonly thresholds: ThresholdConfig;
   private readonly severity: DependabotSeverity;
 
   constructor(
     config: Config,
     logger: LoggerService,
     severity: DependabotSeverity,
-    thresholds?: ThresholdConfig,
   ) {
     this.severity = severity;
     this.dependabotClient = new DependabotClient(config, logger);
-    this.thresholds = thresholds ?? DEPENDABOT_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
@@ -82,7 +79,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return DEPENDABOT_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {

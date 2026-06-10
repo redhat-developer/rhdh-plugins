@@ -17,7 +17,6 @@ import { DependabotMetricProvider } from './DependabotMetricProvider';
 import { DependabotSeverity, DEPENDABOT_SEVERITIES } from './DependabotConfig';
 import { Config } from '@backstage/config';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 /**
@@ -27,9 +26,8 @@ export function createDependabotMetricProvider(
   config: Config,
   logger: LoggerService,
   severity: DependabotSeverity,
-  thresholds?: ThresholdConfig,
 ): MetricProvider<'number'> {
-  return new DependabotMetricProvider(config, logger, severity, thresholds);
+  return new DependabotMetricProvider(config, logger, severity);
 }
 
 /**
@@ -38,9 +36,8 @@ export function createDependabotMetricProvider(
 export function createDependabotMetricProviders(
   config: Config,
   logger: LoggerService,
-  thresholds?: ThresholdConfig,
 ): MetricProvider<'number'>[] {
   return DEPENDABOT_SEVERITIES.map(severity =>
-    createDependabotMetricProvider(config, logger, severity, thresholds),
+    createDependabotMetricProvider(config, logger, severity),
   );
 }

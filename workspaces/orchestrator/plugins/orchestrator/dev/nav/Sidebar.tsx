@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { compatWrapper } from '@backstage/core-compat-api';
 import {
   Sidebar,
   SidebarGroup,
@@ -27,26 +26,39 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 
 import { SidebarLogo } from './SidebarLogo';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) =>
-      compatWrapper(
+    component: ({ navItems }) => {
+      const nav = navItems.withComponent(item => (
+        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+      ));
+
+      return (
         <Sidebar>
           <SidebarLogo />
           <SidebarGroup label="Menu">
+            {nav.take('page:catalog')}
+            {nav.take('page:orchestrator')}
             <SidebarScrollWrapper>
-              {items.map((item, index) => (
-                <SidebarItem {...item} key={index} />
-              ))}
+              {nav.rest({ sortBy: 'title' })}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            {nav.take('page:user-settings')}
+          </SidebarGroup>
           <SidebarLanguageSwitcher />
           <SidebarSignOutButton />
-        </Sidebar>,
-      ),
+        </Sidebar>
+      );
+    },
   },
 });

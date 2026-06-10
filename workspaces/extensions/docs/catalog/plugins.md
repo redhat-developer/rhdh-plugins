@@ -229,14 +229,6 @@ spec:
 
 ## Annotations
 
-### Certification
-
-```yaml
-metadata:
-  annotations:
-    extensions.backstage.io/certified-by: Company name
-```
-
 ### Support type for Core and Community plugins
 
 ```yaml
