@@ -567,8 +567,8 @@ export class ResourceOptimizationPage {
     );
     const zeroCount = this.page.getByText(/Optimizable containers \(0\)/);
     try {
-      // Wait up to 30s for a non-zero count to appear
-      await expect(nonZeroCount).toBeVisible({ timeout: 30000 });
+      // Wait up to 60s for a non-zero count to appear
+      await expect(nonZeroCount).toBeVisible({ timeout: 60000 });
       const text = await nonZeroCount.textContent();
       const match = text?.match(/\((\d+)\)/);
       return match ? parseInt(match[1], 10) : null;

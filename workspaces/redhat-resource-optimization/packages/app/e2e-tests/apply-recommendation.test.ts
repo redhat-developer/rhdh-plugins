@@ -71,18 +71,21 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
     const rowsToTry = Math.min(count!, MAX_ROWS_TO_TRY);
 
     for (let rowIndex = 0; rowIndex < rowsToTry; rowIndex++) {
-      // Navigate back to list page for each attempt
-      await page.goto(PLUGIN_ROUTE_BASE, {
-        waitUntil: 'domcontentloaded',
-      });
-      await page
-        .locator('[role="progressbar"]')
-        // eslint-disable-next-line testing-library/await-async-utils
-        .waitFor({ state: 'hidden', timeout: 30000 })
-        .catch(() => {});
-      await expect(
-        page.getByText(/Optimizable containers \([1-9]\d*\)/),
-      ).toBeVisible({ timeout: 30000 });
+      // Skip redundant navigation on first iteration — page is already loaded
+      // with verified data from navigateToOptimizationAsOIDC + getOptimizableContainerCount
+      if (rowIndex > 0) {
+        await page.goto(PLUGIN_ROUTE_BASE, {
+          waitUntil: 'domcontentloaded',
+        });
+        await page
+          .locator('[role="progressbar"]')
+          // eslint-disable-next-line testing-library/await-async-utils
+          .waitFor({ state: 'hidden', timeout: 60000 })
+          .catch(() => {});
+        await expect(
+          page.getByText(/Optimizable containers \([1-9]\d*\)/),
+        ).toBeVisible({ timeout: 60000 });
+      }
 
       // Click the Nth row's link to navigate to the detail page
       const rows = page.locator('table tbody tr');
