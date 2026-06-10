@@ -119,7 +119,7 @@ export function PoliciesTabContent() {
       setTogglingIds(addTogglingId(id));
       try {
         const updated = await policyApi.updatePolicy(id, {
-          enabled: !p.enabled,
+          enabled: !(p.enabled ?? true),
         });
         setItems(replacePolicyById(id, updated));
       } catch (err) {
