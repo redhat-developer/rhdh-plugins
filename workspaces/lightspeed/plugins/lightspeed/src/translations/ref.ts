@@ -67,6 +67,9 @@ export const lightspeedMessages = {
   'notebook.view.documents.add': 'Add',
   'notebook.view.upload.heading': 'Upload a resource to get started',
   'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.processing.heading': 'Processing resources...',
+  'notebook.view.processing.description':
+    'Your files are being indexed. You can start asking questions once processing is complete.',
   'notebook.view.input.placeholder': 'Ask about your documents...',
   'notebook.view.input.disabledTooltip':
     'Select at least one loaded resource to start chatting',

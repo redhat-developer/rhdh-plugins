@@ -15,15 +15,10 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import type { ScorecardMessages } from './translationUtils';
-
-function metricCopy(translations: ScorecardMessages, key: string): string {
-  const metric = translations.metric as unknown as Record<
-    string,
-    string | undefined
-  >;
-  return metric[key] ?? key;
-}
+import {
+  getMetricTranslation,
+  type ScorecardMessages,
+} from './translationUtils';
 
 /** Interpolate `{{key}}` placeholders in a translation template string. */
 function interpolate(template: string, vars: Record<string, string>): string {
@@ -57,7 +52,7 @@ function expectedAverageCenterTooltipBreakdownLine(
 ): string {
   const n = Number.parseInt(count, 10);
   const templateKey = averageCenterTooltipBreakdownTemplateKey(locale, n);
-  const template = metricCopy(translations, templateKey);
+  const template = getMetricTranslation(translations, templateKey);
   const status =
     statusKey in translations.thresholds
       ? translations.thresholds[statusKey]
@@ -83,14 +78,16 @@ export async function verifyAverageDonutCenterTooltip(
 ): Promise<void> {
   await card.getByTestId('average-card-center-percent-hit-area').hover();
   await expect(
-    page.getByText(metricCopy(translations, 'averageCenterTooltipTotalLabel'), {
-      exact: true,
-    }),
+    page.getByText(
+      getMetricTranslation(translations, 'averageCenterTooltipTotalLabel'),
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
-    page.getByText(metricCopy(translations, 'averageCenterTooltipMaxLabel'), {
-      exact: true,
-    }),
+    page.getByText(
+      getMetricTranslation(translations, 'averageCenterTooltipMaxLabel'),
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
     page.getByText(String(weightedSum), { exact: true }),

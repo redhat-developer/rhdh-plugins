@@ -99,6 +99,8 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   items: T[];
   setItems: React.Dispatch<React.SetStateAction<T[]>>;
   loading: boolean;
+  /** True only during a manual reload after the first successful load. The table stays visible. */
+  refreshing: boolean;
   loadError: string | null;
   reload: () => void;
 
@@ -139,6 +141,7 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   // ── Delete dialog ──────────────────────────────────────────────────────────
   deleteOpen: boolean;
   deletingItem: T | null;
+  deleteSubmitting: boolean;
   deleteError: string | null;
   setDeleteError: React.Dispatch<React.SetStateAction<string | null>>;
   handleOpenDelete: (item: T) => void;
@@ -181,7 +184,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── List ─────────────────────────────────────────────────────────────────
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   // ── Search + pagination ──────────────────────────────────────────────────
   const [search, setSearch] = useState('');
@@ -212,6 +217,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── Delete dialog ────────────────────────────────────────────────────────
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<T | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Keep latest mutable values in refs so stable callbacks can read them.
@@ -227,21 +233,35 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const editSubmittingRef = useRef(editSubmitting);
   editSubmittingRef.current = editSubmitting;
 
+  const deleteSubmittingRef = useRef(deleteSubmitting);
+  deleteSubmittingRef.current = deleteSubmitting;
+
   const deletingItemRef = useRef(deletingItem);
   deletingItemRef.current = deletingItem;
 
   // ── Load ─────────────────────────────────────────────────────────────────
   const reload = useCallback(() => {
-    setLoading(true);
+    if (hasLoadedRef.current) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setLoadError(null);
     optsRef.current
       .loadFn()
-      .then(setItems)
+      .then(result => {
+        setItems(result);
+        hasLoadedRef.current = true;
+      })
       .catch(err => {
         setLoadError(extractApiError(err));
         setItems([]);
+        hasLoadedRef.current = false;
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   }, []); // stable — reads via ref
 
   useEffect(() => {
@@ -358,6 +378,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   }, []);
 
   const handleCloseDelete = useCallback(() => {
+    if (deleteSubmittingRef.current) return;
     setDeleteOpen(false);
     setDeletingItem(null);
     setDeleteError(null);
@@ -368,16 +389,19 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     const item = deletingItemRef.current;
     if (!deleteFn || !item) return;
     const id = gId(item);
+    setDeleteSubmitting(true);
+    setDeleteError(null);
     deleteFn(id)
       .then(() => {
         setItems(removeItemById(id, gId));
         setDeleteOpen(false);
         setDeletingItem(null);
+        setDeleteSubmitting(false);
       })
       .catch(err => {
         setDeleteError(extractApiError(err));
-        setDeleteOpen(false);
-        setDeletingItem(null);
+        setDeleteSubmitting(false);
+        // dialog stays open so the user can see the error
       });
   }, []);
 
@@ -386,6 +410,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     items,
     setItems,
     loading,
+    refreshing,
     loadError,
     reload,
 
@@ -426,6 +451,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     // Delete
     deleteOpen,
     deletingItem,
+    deleteSubmitting,
     deleteError,
     setDeleteError,
     handleOpenDelete,

@@ -44,7 +44,7 @@ metadata:
 
 ### Thresholds
 
-All OpenSSF metrics use fixed thresholds: **Error** &lt;2, **Warning** 2–7, **Success** &gt;7. Not configurable. See [threshold docs](../scorecard-backend/docs/thresholds.md).
+All OpenSSF metrics use default thresholds: **Error** &lt;2, **Warning** 2–7, **Success** &gt;7. You can configure custom thresholds, see [threshold docs](../scorecard-backend/docs/thresholds.md).
 
 ## Metrics
 

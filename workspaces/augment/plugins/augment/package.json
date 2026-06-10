@@ -65,7 +65,7 @@
     "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^",
     "@xyflow/react": "^12.10.2",
     "driver.js": "^1.4.0",
-    "katex": "^0.16.0",
+    "katex": "^0.17.0",
     "motion": "^12.38.0",
     "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^16.1.0",

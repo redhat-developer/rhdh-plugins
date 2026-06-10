@@ -35,6 +35,11 @@ export class MockEntityBuilder {
     return this;
   }
 
+  withAnnotations(annotations: Record<string, string>): this {
+    this.metadata = { ...this.metadata, annotations };
+    return this;
+  }
+
   withSpec(spec: Entity['spec']): this {
     this.spec = spec;
     return this;

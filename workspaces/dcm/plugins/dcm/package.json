@@ -43,6 +43,7 @@
     "@material-ui/lab": "4.0.0-alpha.61",
     "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^",
     "js-yaml": "^4.1.1",
+    "react-syntax-highlighter": "^15.4.5",
     "react-use": "^17.2.4",
     "yup": "^1.7.1"
   },
@@ -60,6 +61,7 @@
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
     "@types/js-yaml": "^4.0.9",
+    "@types/react-syntax-highlighter": "^15",
     "msw": "^1.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0",

@@ -51,7 +51,8 @@ Validation **does not** require full coverage when:
 
 ### 1. Provider Default Thresholds
 
-Metric providers can define default thresholds that apply to all entities using that metric.
+Metric providers must define default thresholds that apply to all entities using that metric in `getMetricThresholds`.
+Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use in your metric provider.
 
 **Example Provider Implementation:**
 
@@ -73,45 +74,10 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults through app configuration (`app-config.yaml`). Your metric provider needs to support configuration-based thresholds.
-Duplicated threshold keys are not allowed (throws `ConfigFormatError`).
+You can override provider defaults with your custom thresholds through app configuration (`app-config.yaml`) under `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+follow the format `<myDatasource>.<myMetric>`. Batch providers that specify `<myDatasource>` as the `providerId` currently only allow to override global provider thresholds that apply to all metrics the provider defines.
 
-**Provider Implementation:**
-
-```typescript
-import {
-  MetricProvider,
-  validateThresholdsForMetric,
-  getThresholdsFromConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-
-export class MyMetricProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
-
-  private constructor(thresholds?: ThresholdConfig) {
-    // Use configured thresholds or fall back to defaults
-    this.thresholds = thresholds ?? this.getDefaultThresholds();
-  }
-
-  static fromConfig(config: Config): MyMetricProvider {
-    const configPath = 'scorecard.plugins.myDatasource.myMetric.thresholds';
-    // Validates structure, colors/icons, expressions, and number interval coverage (when applicable)
-    const configuredThresholds = getThresholdsFromConfig(
-      config,
-      configPath,
-      'number',
-    );
-
-    return new MyMetricProvider(configuredThresholds);
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-}
-```
-
-You can also call **`validateThresholdsForMetric(configuredThresholds, 'number')`** directly if you already have a config object (not reading from `Config`).
+Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
 
@@ -132,6 +98,22 @@ scorecard:
       myOtherMetric: ...
 ```
 
+**Example App Configuration for batch provider:**
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      thresholds:
+        rules:
+          - key: success
+            expression: '<10'
+          - key: warning
+            expression: '<=20'
+          - key: error
+            expression: '>20'
+```
+
 ### 3. Entity Annotation Overrides
 
 Override thresholds for specific entities using annotations in the entity's metadata:
@@ -149,6 +131,8 @@ metadata:
 spec:
   type: service
 ```
+
+You can only override existing threshold severity keys for provider. This means you can not specify new custom severity keys in entity annotations, they must be first configured for provider in app configuration.
 
 #### Annotation Format Reference
 
@@ -254,12 +238,12 @@ Example:
 
 ```yaml
 rules:
-  - key: error
-    expression: '>100'
-  - key: warning
-    expression: '80-100' # between 80 and 100 (inclusive)
   - key: success
     expression: '<80'
+  - key: warning
+    expression: '80-100' # between 80 and 100 (inclusive)
+  - key: error
+    expression: '>100'
 ```
 
 ### Boolean Metric
@@ -419,7 +403,7 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: Validate expressions loaded from config in custom providers using **`validateThresholdsForMetric`** or **`getThresholdsFromConfig`** from `@red-hat-developer-hub/backstage-plugin-scorecard-node`. Invalid expressions or gap configurations fail at validation time; unchecked configs may error at evaluation time.
+4. **Error handling**: Thresholds from providers and custom thresholds from configuration are validated on startup (using [validateThresholdsForMetric](../../scorecard-node/src/utils/thresholds/validateThresholds.ts) from `@red-hat-developer-hub/backstage-plugin-scorecard-node`). Threshold errors caused by invalid providers or invalid configuration cause startup failures. Annotation-based threshold errors are reported in the UI at evaluation time.
 
 ### Best Practices
 

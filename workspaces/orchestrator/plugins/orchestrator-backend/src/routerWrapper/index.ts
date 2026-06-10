@@ -24,7 +24,6 @@ import type {
   UrlReaderService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 
 import express from 'express';
@@ -38,7 +37,6 @@ export interface RouterOptions {
   logger: LoggerService;
   auditor: AuditorService;
   discovery: DiscoveryService;
-  catalogApi: CatalogApi;
   urlReader: UrlReaderService;
   scheduler: SchedulerService;
   permissions: PermissionsService;
@@ -70,7 +68,6 @@ export async function createRouter(
     logger: args.logger,
     auditor: args.auditor,
     discovery: args.discovery,
-    catalogApi: args.catalogApi,
     urlReader: args.urlReader,
     scheduler: args.scheduler,
     permissions: args.permissions,

@@ -214,6 +214,9 @@ const lightspeedTranslationJa = createTranslationMessages({
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
     'notebook.view.title': '無題のノートブック',
     'notebook.view.upload.action': 'リソースをアップロード',
+    'notebook.view.processing.description':
+      'ファイルをインデックスしています。処理が完了すると質問を開始できます。',
+    'notebook.view.processing.heading': 'リソースを処理中...',
     'notebook.view.upload.heading':
       'リソースをアップロードして開始してください',
     'notebooks.actions.delete': '削除',

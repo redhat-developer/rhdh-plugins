@@ -39,6 +39,7 @@ export type ProviderFormFieldsProps = Readonly<{
   serviceTypes: ServiceType[];
   touched: TouchedMap;
   setTouched: React.Dispatch<React.SetStateAction<TouchedMap>>;
+  isEditMode?: boolean;
 }>;
 
 export function ProviderFormFields({
@@ -47,6 +48,7 @@ export function ProviderFormFields({
   serviceTypes,
   touched,
   setTouched,
+  isEditMode,
 }: ProviderFormFieldsProps) {
   const errors = validateProviderForm(form);
 
@@ -61,8 +63,10 @@ export function ProviderFormFields({
       <TextField
         label="Name *"
         helperText={
-          err('name') ??
-          'Unique slug identifier — only lowercase letters, numbers, and hyphens'
+          isEditMode
+            ? 'Provider name cannot be changed after creation'
+            : err('name') ??
+              'Unique slug identifier — only lowercase letters, numbers, and hyphens'
         }
         error={Boolean(err('name'))}
         value={form.name}
@@ -72,6 +76,7 @@ export function ProviderFormFields({
         variant="outlined"
         size="small"
         placeholder="e.g. my-k8s-provider"
+        disabled={isEditMode}
       />
 
       <TextField
