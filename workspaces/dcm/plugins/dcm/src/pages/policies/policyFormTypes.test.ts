@@ -39,8 +39,18 @@ describe('validatePolicyForm', () => {
     expect(errors.display_name).toBeDefined();
   });
 
+  it('rejects whitespace-only display_name', () => {
+    const errors = validatePolicyForm({ ...valid(), display_name: '   ' });
+    expect(errors.display_name).toBeDefined();
+  });
+
   it('requires rego_code', () => {
     const errors = validatePolicyForm({ ...valid(), rego_code: '' });
+    expect(errors.rego_code).toBeDefined();
+  });
+
+  it('rejects whitespace-only rego_code', () => {
+    const errors = validatePolicyForm({ ...valid(), rego_code: '   ' });
     expect(errors.rego_code).toBeDefined();
   });
 
@@ -53,6 +63,23 @@ describe('validatePolicyForm', () => {
 
     const ok = validatePolicyForm({ ...valid(), priority: '500' });
     expect(ok.priority).toBeUndefined();
+
+    const decimal = validatePolicyForm({ ...valid(), priority: '500.5' });
+    expect(decimal.priority).toBeDefined();
+
+    const empty = validatePolicyForm({ ...valid(), priority: '' });
+    expect(empty.priority).toBeDefined();
+  });
+
+  it('rejects description longer than 255 characters', () => {
+    const errors = validatePolicyForm({
+      ...valid(),
+      description: 'a'.repeat(256),
+    });
+    expect(errors.description).toBeDefined();
+
+    const ok = validatePolicyForm({ ...valid(), description: 'a'.repeat(255) });
+    expect(ok.description).toBeUndefined();
   });
 
   it('accepts only GLOBAL or USER as policy_type', () => {
