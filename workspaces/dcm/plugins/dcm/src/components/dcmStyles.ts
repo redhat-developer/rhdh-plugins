@@ -15,6 +15,7 @@
  */
 
 import { makeStyles } from '@material-ui/core/styles';
+import { isDarkMode } from './dcmTheme';
 
 /**
  * Single shared style hook for the DCM plugin.
@@ -300,10 +301,7 @@ export const useDcmStyles = makeStyles(theme => ({
     '& .MuiPaper-root': {
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: theme.shape.borderRadius,
-      boxShadow:
-        theme.palette.type === 'dark'
-          ? 'none'
-          : '0 1px 2px rgba(0, 0, 0, 0.06)',
+      boxShadow: isDarkMode(theme) ? 'none' : '0 1px 2px rgba(0, 0, 0, 0.06)',
       backgroundColor: theme.palette.background.paper,
     },
   },
