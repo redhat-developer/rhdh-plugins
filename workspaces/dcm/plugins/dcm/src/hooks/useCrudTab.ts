@@ -99,6 +99,8 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   items: T[];
   setItems: React.Dispatch<React.SetStateAction<T[]>>;
   loading: boolean;
+  /** True only during a manual reload after the first successful load. The table stays visible. */
+  refreshing: boolean;
   loadError: string | null;
   reload: () => void;
 
@@ -181,7 +183,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── List ─────────────────────────────────────────────────────────────────
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   // ── Search + pagination ──────────────────────────────────────────────────
   const [search, setSearch] = useState('');
@@ -232,16 +236,27 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
 
   // ── Load ─────────────────────────────────────────────────────────────────
   const reload = useCallback(() => {
-    setLoading(true);
+    if (hasLoadedRef.current) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setLoadError(null);
     optsRef.current
       .loadFn()
-      .then(setItems)
+      .then(result => {
+        setItems(result);
+        hasLoadedRef.current = true;
+      })
       .catch(err => {
         setLoadError(extractApiError(err));
         setItems([]);
+        hasLoadedRef.current = false;
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   }, []); // stable — reads via ref
 
   useEffect(() => {
@@ -386,6 +401,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     items,
     setItems,
     loading,
+    refreshing,
     loadError,
     reload,
 
