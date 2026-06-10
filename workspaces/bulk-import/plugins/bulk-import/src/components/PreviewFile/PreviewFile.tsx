@@ -80,9 +80,12 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
 
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
-            onClick={() =>
-              errorMessage.showRepositoryLink ? null : openDrawer(data)
-            }
+            onClick={e => {
+              if (!errorMessage.showRepositoryLink) {
+                e.preventDefault();
+                openDrawer(data);
+              }
+            }}
             data-testid="edit-pull-request"
           >
             {errorMessage.showRepositoryLink ? (
@@ -107,7 +110,10 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           <Link
             to=""
             style={{ marginLeft: '4px' }}
-            onClick={() => openDrawer(data)}
+            onClick={e => {
+              e.preventDefault();
+              openDrawer(data);
+            }}
             data-testid={
               Object.keys(data?.selectedRepositories || []).length > 1
                 ? 'preview-files'
