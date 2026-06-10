@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 import {
   createFrontendModule,
   createFrontendPlugin,
@@ -25,6 +26,12 @@ import ExtensionsIcon from '@mui/icons-material/ShoppingBasketOutlined';
 import { dynamicPluginsInfoApi, extensionApi } from './apis';
 import { allRoutes, rootRouteRef } from '../routes';
 import { extensionsTranslations } from './translations';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
 
 export * from './translations';
 
