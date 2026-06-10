@@ -13,7 +13,7 @@ The system SHALL support an optional `tokenExchange` configuration block nested 
   - The Kagenti API client ID (e.g., `kagenti-api`) — the typical production value, targeting the Keycloak client that represents the Kagenti service
   - The RHDH/Backstage client ID (the value of `auth.clientId`) — the default when no explicit audience is set
   - Any other Keycloak client ID that has token exchange permissions granted for the requesting client
-- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token
+- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token when frontend API holder discovery is not available (fallback path)
 
 The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `auth.clientSecret` for the exchange request. No new top-level config keys SHALL be introduced.
 
@@ -92,9 +92,9 @@ The `TokenExchangeManager` SHALL support streaming-aware token lifetime manageme
 
 The system SHALL fall back to the existing `KeycloakTokenManager` service-account token whenever per-user token exchange cannot complete. Fallback SHALL occur silently with a warning log — requests SHALL NOT fail due to exchange issues.
 
-#### Scenario: User OIDC token header absent
+#### Scenario: No user OIDC token from any source
 
-- **WHEN** `tokenExchange.enabled` is `true` but the configured header is not present on the request
+- **WHEN** `tokenExchange.enabled` is `true` but no OIDC token was provided by the frontend and the configured header is not present on the request
 - **THEN** the system SHALL use the service-account token and log a debug message
 
 #### Scenario: Exchange call fails with network error
