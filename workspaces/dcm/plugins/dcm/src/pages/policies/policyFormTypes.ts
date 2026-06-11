@@ -83,9 +83,6 @@ export function validateRegoCode(value: string): string | undefined {
   if (!hasPackage) {
     return 'Must contain a package declaration — e.g. "package dcm.placement"';
   }
-  if (!/\bselected_provider\b/.test(trimmed)) {
-    return 'Must reference selected_provider — e.g. selected_provider := "my-provider"';
-  }
   return undefined;
 }
 
