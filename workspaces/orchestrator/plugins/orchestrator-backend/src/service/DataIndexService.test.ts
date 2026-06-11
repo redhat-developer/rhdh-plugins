@@ -22,6 +22,7 @@ import {
   FieldFilter,
   FieldFilterOperatorEnum,
   LogicalFilter,
+  NestedFilter,
   NodeInstance,
   ProcessInstance,
   TypeKind,
@@ -901,6 +902,115 @@ describe('fetchInstances', () => {
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
+  });
+
+  describe('grouping nested filters by field', () => {
+    const targetEntityNestedFilter: NestedFilter = {
+      field: 'variables',
+      nested: {
+        field: 'targetEntity',
+        operator: FieldFilterOperatorEnum.Eq,
+        value: 'component:default/my-app',
+      },
+    };
+
+    const initiatorEntityNestedFilter: NestedFilter = {
+      field: 'variables',
+      nested: {
+        field: 'initiatorEntity',
+        operator: FieldFilterOperatorEnum.Eq,
+        value: 'user:default/jdoe',
+      },
+    };
+
+    it('combines multiple nested filters for the same field before building the GraphQL filter', async () => {
+      mockClient.query
+        .mockResolvedValueOnce(
+          mockOperationResult(mockProcessInstanceArguments),
+        )
+        .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
+
+      const filter: LogicalFilter = {
+        operator: 'AND',
+        filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
+      };
+
+      await dataIndexService.fetchInstances({ filter });
+
+      expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+        mockProcessInstanceIntrospection,
+        'ProcessInstance',
+        {
+          operator: 'AND',
+          filters: [
+            {
+              field: 'variables',
+              nested: [
+                targetEntityNestedFilter.nested,
+                initiatorEntityNestedFilter.nested,
+              ],
+            },
+          ],
+        },
+      );
+
+      const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+      expect(createdFilter.clause).toMatch(
+        /^and: \{variables: \{targetEntity: \{equal: \$clauseVariable[a-f0-9]+\}, initiatorEntity: \{equal: \$clauseVariable[a-f0-9]+\}\}\}$/,
+      );
+      expect(createdFilter.clauseVariable).toHaveLength(2);
+      expect(createdFilter.clauseVariable[0].formattedValue).toBe(
+        'component:default/my-app',
+      );
+      expect(createdFilter.clauseVariable[1].formattedValue).toBe(
+        'user:default/jdoe',
+      );
+    });
+
+    it('leaves a single nested filter unchanged when only one exists for the field', async () => {
+      mockClient.query
+        .mockResolvedValueOnce(
+          mockOperationResult(mockProcessInstanceArguments),
+        )
+        .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
+
+      const filter: LogicalFilter = {
+        operator: 'AND',
+        filters: [targetEntityNestedFilter],
+      };
+
+      await dataIndexService.fetchInstances({ filter });
+
+      expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+        mockProcessInstanceIntrospection,
+        'ProcessInstance',
+        filter,
+      );
+    });
+
+    it('does not combine filters that target different fields', async () => {
+      mockClient.query
+        .mockResolvedValueOnce(
+          mockOperationResult(mockProcessInstanceArguments),
+        )
+        .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
+
+      const filter: LogicalFilter = {
+        operator: 'AND',
+        filters: [targetEntityNestedFilter, procId1Filter],
+      };
+
+      await dataIndexService.fetchInstances({ filter });
+
+      expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+        mockProcessInstanceIntrospection,
+        'ProcessInstance',
+        {
+          operator: 'AND',
+          filters: [targetEntityNestedFilter, procId1Filter],
+        },
+      );
+    });
   });
 });
 

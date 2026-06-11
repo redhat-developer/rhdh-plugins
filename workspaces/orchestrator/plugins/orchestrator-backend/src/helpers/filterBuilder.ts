@@ -96,17 +96,29 @@ function handleNestedFilter(
   type: ProcessType,
   filter: NestedFilter,
 ): FilterClause {
-  const subClauses = buildFilterCondition(
-    introspection,
-    type,
-    filter.nested,
-    true,
-  );
-
-  const filterClause: FilterClause = {
-    clauseVariable: subClauses.clauseVariable,
-    clause: `${filter.field}: {${subClauses.clause}}`,
-  };
+  // check if the nested param is an array or an object
+  // this makes sure that we can handle the case where there are multiple filters for the same field
+  let filterClause: FilterClause;
+  if (Array.isArray(filter.nested)) {
+    const subClauses = filter.nested.map(n =>
+      buildFilterCondition(introspection, type, n, true),
+    );
+    filterClause = {
+      clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
+      clause: `${filter.field}: {${subClauses.map(cl => cl.clause).join(', ')}}`,
+    };
+  } else {
+    const subClauses = buildFilterCondition(
+      introspection,
+      type,
+      filter.nested,
+      true,
+    );
+    filterClause = {
+      clauseVariable: subClauses.clauseVariable,
+      clause: `${filter.field}: {${subClauses.clause}}`,
+    };
+  }
 
   return filterClause;
 }

@@ -15,9 +15,11 @@
  */
 
 import {
+  FieldFilter,
   FieldFilterOperatorEnum,
   Filter,
   IntrospectionField,
+  NestedFilter,
   ProcessInstanceStatusDTO,
   TypeKind,
   TypeName,
@@ -116,7 +118,7 @@ describe('column filters', () => {
     field: string,
     operator: FieldFilterOperatorEnum,
     value: any,
-  ): Filter => ({
+  ): FieldFilter => ({
     field,
     operator,
     value,
@@ -730,6 +732,85 @@ describe('column filters', () => {
     ];
 
     idTestCases.forEach(
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+        expectedVariableTypes,
+      }) => {
+        it(`${name}`, () => {
+          const result = buildFilterCondition(
+            introspectionFields,
+            'ProcessInstance',
+            filter,
+          );
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult as string;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
+          });
+          expect(formattedClause).toBe(result.clause);
+        });
+      },
+    );
+  });
+  describe('nested filter testcases', () => {
+    const variablesIntrospection = [
+      createIntrospectionField('variables', TypeName.String),
+    ];
+
+    const nestedFilterTestCases: FilterTestCase[] = [
+      {
+        name: 'returns correct filter for a single nested field filter',
+        introspectionFields: variablesIntrospection,
+        filter: {
+          field: 'variables',
+          nested: createFieldFilter(
+            'targetEntity',
+            FieldFilterOperatorEnum.Eq,
+            'component:default/my-app',
+          ),
+        },
+        expectedResult: 'variables: {targetEntity: {equal: $variable1}}',
+        expectedFormattedValue: ['component:default/my-app'],
+      },
+      {
+        name: 'combines multiple nested field filters for the same parent field',
+        introspectionFields: variablesIntrospection,
+        filter: {
+          field: 'variables',
+          nested: [
+            createFieldFilter(
+              'targetEntity',
+              FieldFilterOperatorEnum.Eq,
+              'component:default/my-app',
+            ),
+            createFieldFilter(
+              'initiatorEntity',
+              FieldFilterOperatorEnum.Eq,
+              'user:default/jdoe',
+            ),
+          ],
+        } as unknown as NestedFilter,
+        expectedResult:
+          'variables: {targetEntity: {equal: $variable1}, initiatorEntity: {equal: $variable2}}',
+        expectedFormattedValue: [
+          'component:default/my-app',
+          'user:default/jdoe',
+        ],
+      },
+    ];
+
+    nestedFilterTestCases.forEach(
       ({
         name,
         introspectionFields,
