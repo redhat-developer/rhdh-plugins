@@ -169,7 +169,7 @@ describe('LightspeedPage', () => {
     const { result } = renderHook(() => useTranslation());
 
     expect(
-      result.current.t('conversation.delete.confirm.title', {
+      result.current.t('conversation.delete.confirm.title' as any, {
         chatName: 'test',
       }),
     ).toBe('Delete "test"?');

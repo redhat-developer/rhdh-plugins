@@ -541,8 +541,8 @@ const useStyles = makeStyles(theme => ({
       marginRight: 0,
     },
     '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--md)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--md)',
+      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
     },
     '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
       {
@@ -564,8 +564,8 @@ const useStyles = makeStyles(theme => ({
         },
       },
     '& .pf-chatbot__heading-container': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--md)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--md)',
+      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
     },
     '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
       '--pf-v6-c-menu__group-title--PaddingInlineStart':
