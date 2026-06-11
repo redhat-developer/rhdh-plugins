@@ -1702,7 +1702,6 @@ export const LightspeedChat = ({
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
-          attachButtonPosition="start"
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}

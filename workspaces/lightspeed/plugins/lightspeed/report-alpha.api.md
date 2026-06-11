@@ -396,6 +396,8 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'mcp.settings.status.oneTool': string;
     readonly 'mcp.settings.status.manyTools': string;
     readonly 'mcp.settings.status.unknown': string;
+    readonly 'mcp.settings.status.autoManaged': string;
+    readonly 'mcp.settings.modalDescriptionDcr': string;
     readonly 'mcp.settings.toggleServerAriaLabel': string;
     readonly 'mcp.settings.editServerAriaLabel': string;
     readonly 'mcp.settings.configureServerTitle': string;

@@ -15,6 +15,7 @@
  */
 
 import type {
+  AuthService,
   DatabaseService,
   HttpAuthService,
   LoggerService,
@@ -38,6 +39,7 @@ export type RouterOptions = {
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   permissions: PermissionsService;
+  auth: AuthService;
 };
 
 /**
