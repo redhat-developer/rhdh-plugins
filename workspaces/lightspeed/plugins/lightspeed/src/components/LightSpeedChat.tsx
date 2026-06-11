@@ -341,8 +341,10 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(1.5),
   },
   footer: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+    '&.pf-chatbot__footer': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',

@@ -17,13 +17,13 @@
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { Button } from '@patternfly/react-core';
 
 import { useDeleteConversation } from '../hooks';
 import { useTranslation } from '../hooks/useTranslation';
@@ -106,20 +106,13 @@ export const DeleteModal = ({
       )}
       <DialogActions sx={{ justifyContent: 'left', p: 2.5, gap: 1 }}>
         <Button
-          variant="contained"
-          color="error"
-          sx={{ textTransform: 'none', borderRadius: 999 }}
+          variant="danger"
           onClick={handleDeleteConversation}
-          disabled={isPending}
+          isDisabled={isPending}
         >
           {t('conversation.delete.confirm.action')}
         </Button>
-        <Button
-          key="cancel"
-          variant="outlined"
-          sx={{ textTransform: 'none', borderRadius: 999 }}
-          onClick={onClose}
-        >
+        <Button variant="link" onClick={onClose}>
           {t('common.cancel')}
         </Button>
       </DialogActions>
