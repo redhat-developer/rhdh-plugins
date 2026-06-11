@@ -654,6 +654,23 @@ export async function createRouter(
         // Pipe the response back to the original response
         if (fetchResponse.body) {
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+
+          // Handle stream errors (RHIDP-13064)
+          nodeStream.on('error', error => {
+            logger.error(
+              `Upstream stream error while processing query: ${error}`,
+            );
+            if (!response.headersSent) {
+              response.status(500).json({ error: 'Stream error occurred' });
+            }
+          });
+
+          // Handle client disconnection (RHIDP-13064)
+          response.on('error', error => {
+            logger.warn(`Client disconnected while processing query: ${error}`);
+            nodeStream.destroy();
+          });
+
           nodeStream.pipe(response);
         }
       } catch (error) {

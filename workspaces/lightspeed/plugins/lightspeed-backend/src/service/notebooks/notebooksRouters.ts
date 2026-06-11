@@ -522,9 +522,47 @@ export async function createNotebooksRouter(
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          body
-            .pipe(createResponsesApiTransform(session, sessionId, userId))
-            .pipe(res);
+          const transformStream = createResponsesApiTransform(
+            session,
+            sessionId,
+            userId,
+          );
+
+          // Handle stream errors (RHIDP-13064)
+          body.on('error', error => {
+            logger.error(
+              `Upstream stream error while processing notebook query: ${error}`,
+            );
+            if (!res.headersSent) {
+              res
+                .status(500)
+                .json({ status: 'error', error: 'Stream error occurred' });
+            }
+            transformStream.destroy();
+          });
+
+          transformStream.on('error', error => {
+            logger.error(
+              `Transform stream error while processing notebook query: ${error}`,
+            );
+            if (!res.headersSent) {
+              res.status(500).json({
+                status: 'error',
+                error: 'Processing error occurred',
+              });
+            }
+          });
+
+          // Handle client disconnection (RHIDP-13064)
+          res.on('error', error => {
+            logger.warn(
+              `Client disconnected while processing notebook query: ${error}`,
+            );
+            body.destroy();
+            transformStream.destroy();
+          });
+
+          body.pipe(transformStream).pipe(res);
         }
         break;
       }
