@@ -139,9 +139,6 @@ flag_management:
     - name: repo-tools
       paths:
         - workspaces/repo-tools/
-    - name: sandbox
-      paths:
-        - workspaces/sandbox/
     - name: scorecard
       paths:
         - workspaces/scorecard/
