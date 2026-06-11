@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard': major
+'@red-hat-developer-hub/backstage-plugin-scorecard': minor
 ---
 
 Add blueprint architecture for grouped scorecard layouts
