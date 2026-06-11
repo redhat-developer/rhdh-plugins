@@ -293,15 +293,13 @@ export class DataIndexService {
 
     // For nested filters, there might be more than one filter for the same field
     // so we need to group them by the field and then combine the nested filters into an array
-    const processedFilters = filter
-      ? processFilters(filter as unknown as Filter[])
-      : undefined;
+    const processedFilters = filter ? processFilters(filter) : undefined;
 
     const filterCondition = processedFilters
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
           type,
-          processedFilters as unknown as Filter | undefined,
+          processedFilters as Filter | undefined,
         )
       : undefined;
 
