@@ -117,7 +117,7 @@ import {
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
-import { CollapsedHistoryStrip, PencilIcon } from './CollapsedHistoryStrip';
+import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
@@ -515,10 +515,10 @@ const useStyles = makeStyles(theme => ({
         transition: 'none !important',
       },
   },
-  // TODO: These PatternFly drawer overrides are needed because PF Chatbot doesn't
-  // provide clean APIs for custom expand/collapse icons and positioning.
-  // Remove once PatternFly supports these features.
-  // See: https://github.com/patternfly/chatbot/issues/834
+  // TODO: These PF Chatbot overrides are fragile (version-specific class names).
+  // Remove once the upstream issues are addressed:
+  // - https://github.com/patternfly/chatbot/issues/834 (custom close/collapse icon & positioning)
+  // - https://github.com/patternfly/chatbot/issues/848 (sidebar padding & spacing customization)
   fullscreenChatLayout: {
     display: 'flex',
     flexDirection: 'row',
@@ -538,14 +538,17 @@ const useStyles = makeStyles(theme => ({
       {
         display: 'none',
       },
+    // TODO(#834): Remove close button overrides once PF supports custom icon/positioning
     '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
       marginTop: 0,
       marginRight: 0,
     },
+    // TODO(#848): Remove drawer head padding overrides once PF exposes drawerHeadProps
     '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
       paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
       paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
     },
+    // TODO(#834): Remove icon replacement hack once PF supports drawerCloseButtonProps.icon
     '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
       {
         display: 'none',
@@ -565,10 +568,12 @@ const useStyles = makeStyles(theme => ({
           backgroundColor: 'currentColor',
         },
       },
+    // TODO(#848): Remove heading padding overrides once PF exposes drawerHeadProps
     '& .pf-chatbot__heading-container': {
       paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
       paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
     },
+    // TODO(#848): Remove menu item padding overrides once PF exposes menuItemPaddingInline
     '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
       '--pf-v6-c-menu__group-title--PaddingInlineStart':
         'var(--pf-t--global--spacer--md)',
@@ -582,6 +587,7 @@ const useStyles = makeStyles(theme => ({
       '--pf-v6-c-menu__item--PaddingInlineEnd':
         'var(--pf-t--global--spacer--md)',
     },
+    // TODO(#848): Remove menu toggle hover hack once PF supports menuToggleVisibility
     '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
       {
         opacity: 0,
@@ -1227,6 +1233,13 @@ export const LightspeedChat = ({
     [conversations, notebookConversationIds],
   );
 
+  const deleteChatName = useMemo(
+    () =>
+      conversations.find(c => c.conversation_id === targetConversationId)
+        ?.topic_summary ?? '',
+    [conversations, targetConversationId],
+  );
+
   const categorizedMessages = useMemo(
     () =>
       getCategorizeMessages(
@@ -1861,13 +1874,7 @@ export const LightspeedChat = ({
         <DeleteModal
           isOpen={isDeleteModalOpen}
           conversationId={targetConversationId}
-          chatName={(() => {
-            const name =
-              conversations.find(
-                c => c.conversation_id === targetConversationId,
-              )?.topic_summary ?? '';
-            return name.length > 100 ? `${name.slice(0, 100)}...` : name;
-          })()}
+          chatName={deleteChatName}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConversation}
         />
@@ -2068,7 +2075,7 @@ export const LightspeedChat = ({
               onNewChat={onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
-                icon: isFullscreenMode ? <PencilIcon /> : <PlusIcon />,
+                icon: <PenIcon />,
                 isDisabled: newChatCreated,
               }}
               handleTextInputChange={handleFilter}
