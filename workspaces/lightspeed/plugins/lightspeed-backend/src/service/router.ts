@@ -105,7 +105,8 @@ export async function createRouter(
   const { logger, config, database, httpAuth, userInfo, permissions } = options;
 
   const router = Router();
-  router.use(express.json());
+  // Set explicit body size limit to accommodate attachments (up to 50MB total)
+  router.use(express.json({ limit: '60mb' }));
 
   const port =
     config.getOptionalNumber('lightspeed.servicePort') ??

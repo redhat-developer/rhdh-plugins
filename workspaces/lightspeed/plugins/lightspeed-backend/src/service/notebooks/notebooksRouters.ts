@@ -68,7 +68,8 @@ export async function createNotebooksRouter(
 ): Promise<Router> {
   const { logger, config, httpAuth, userInfo, permissions } = options;
   const notebooksRouter = Router();
-  notebooksRouter.use(express.json());
+  // Set explicit body size limit for query endpoint requests
+  notebooksRouter.use(express.json({ limit: '60mb' }));
 
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
