@@ -2,6 +2,7 @@
   "name": "@internal/install-dynamic-plugins",
   "version": "0.0.0",
   "private": true,
+  "description": "Internal workspace root — not published. The publishable package is @red-hat-developer-hub/cli-module-install-dynamic-plugins, located at ./packages/install-dynamic-plugins.",
   "engines": {
     "node": "22 || 24"
   },
