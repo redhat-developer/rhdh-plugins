@@ -40,7 +40,17 @@ export const homepageMessages = {
     error: 'Unknown error',
   },
   featuredDocs: {
+    title: 'Featured Docs',
     learnMore: ' Learn more',
+  },
+  starredEntities: {
+    title: 'Starred catalog entities',
+  },
+  recentlyVisited: {
+    title: 'Recently Visited',
+  },
+  topVisited: {
+    title: 'Top Visited',
   },
   templates: {
     title: 'Explore Templates',

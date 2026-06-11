@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { PropsWithChildren } from 'react';
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+const generateClassName = createGenerateClassName({
+  seed: 'homepage',
 });
 
-export * from './plugin';
+export const HomePageStylesProvider = ({ children }: PropsWithChildren) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);

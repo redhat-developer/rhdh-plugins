@@ -28,6 +28,8 @@ import {
 } from '@backstage/plugin-home';
 import { useTheme } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
+
+import { cardWrapperSx } from '../../styles/cardWrapperSx';
 import { HomePageCardConfig } from '../../types';
 import { useContainerQuery } from '../../hooks/useContainerQuery';
 
@@ -91,6 +93,7 @@ export const CustomizableGridLayout = ({
                 ? 'rgba(20, 20, 20, 0.95) !important'
                 : 'rgba(40, 40, 40, 0.93) !important',
           },
+          '[class*="widgetWrapper"]': cardWrapperSx,
         }}
       />
       <div

@@ -14,35 +14,24 @@
  * limitations under the License.
  */
 
-import { MarkdownContent } from '@backstage/core-components';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../translations/utils';
 
-import Box from '@mui/material/Box';
-
-/**
- * @public
- */
-export interface MarkdownProps {
+export interface TranslatableCardTitleProps {
   title?: string;
-  content?: string;
+  titleKey?: string;
 }
 
-/**
- * @public
- */
-export const Markdown = (props: MarkdownProps) => {
+export function useHomePageCardTitle(
+  defaultTitleKey: string,
+  props: TranslatableCardTitleProps,
+): string {
+  const { t } = useTranslation();
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: '100%',
-      }}
-    >
-      {props.title ? <h1>{props.title}</h1> : null}
-      <Box sx={{ overflow: 'auto' }}>
-        <MarkdownContent dialect="gfm" content={props.content ?? ''} />
-      </Box>
-    </Box>
+    getTranslatedTextWithFallback(
+      t,
+      props.titleKey ?? defaultTitleKey,
+      props.title,
+    ) ?? t(defaultTitleKey as keyof typeof t)
   );
-};
+}
