@@ -27,6 +27,7 @@
     "@backstage/frontend-plugin-api": "^0.15.1",
     "@backstage/integration-react": "^1.2.16",
     "@backstage/plugin-app-react": "^0.2.1",
+    "@backstage/plugin-auth": "^0.1.7",
     "@backstage/plugin-catalog": "^2.0.1",
     "@backstage/plugin-scaffolder": "^1.36.1",
     "@backstage/plugin-search": "^1.7.0",

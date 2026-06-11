@@ -44,6 +44,8 @@ export interface McpServerResponse {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  /** Authentication mode — `'dcr'` means tokens are minted automatically. */
+  auth?: string;
 }
 
 /**
