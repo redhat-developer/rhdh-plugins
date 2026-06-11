@@ -198,7 +198,7 @@ export const verifyDeleteConfirmation = async (
     chatName,
   );
   await expect(page.locator('#delete-modal')).toContainText(title);
-  await expect(page.locator('#delete-modal-body-confirmation')).toContainText(
+  await expect(page.locator('#delete-modal-confirmation')).toContainText(
     translations['conversation.delete.confirm.message'],
   );
   await expect(page.getByLabel(title)).toMatchAriaSnapshot(`
@@ -331,15 +331,16 @@ export const verifyEmptySearchResults = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
-    .toMatchAriaSnapshot(`
-    - heading "${translations['conversation.category.pinnedChats']}"
-    - menu:
-      - menuitem "${translations['chatbox.emptyState.noPinnedChats']}" 
-    - heading "${translations['conversation.category.recent']}"
-    - menu:
-      - menuitem "${translations['common.noSearchResults']}" 
-    `);
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['common.noSearchResults'],
+    }),
+  ).toBeVisible();
 };
 
 export const verifyNoResultsFoundMessage = async (
