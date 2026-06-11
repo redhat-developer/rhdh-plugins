@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.14.1
+
+### Patch Changes
+
+- e234b36: Updated dependency `@scalprum/react-core` to `0.11.3`.
+  Updated dependency `react-router-dom` to `6.30.4`.
+
 ## 1.14.0
 
 ### Minor Changes
