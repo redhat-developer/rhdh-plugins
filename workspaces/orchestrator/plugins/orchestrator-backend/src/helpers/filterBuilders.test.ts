@@ -19,6 +19,7 @@ import {
   FieldFilterOperatorEnum,
   Filter,
   IntrospectionField,
+  LogicalFilter,
   NestedFilter,
   ProcessInstanceStatusDTO,
   TypeKind,
@@ -29,6 +30,7 @@ import { FilterClause } from '../types/filterClause';
 import {
   buildFilterCondition,
   isOperatorAllowedForField,
+  processFilters,
 } from './filterBuilder';
 
 describe('isOperatorAllowedForField', () => {
@@ -841,5 +843,78 @@ describe('column filters', () => {
         });
       },
     );
+  });
+});
+
+describe('processFilters', () => {
+  const targetEntityNestedFilter: NestedFilter = {
+    field: 'variables',
+    nested: {
+      field: 'targetEntity',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'component:default/my-app',
+    },
+  };
+
+  const initiatorEntityNestedFilter: NestedFilter = {
+    field: 'variables',
+    nested: {
+      field: 'initiatorEntity',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'user:default/jdoe',
+    },
+  };
+
+  const procId1Filter: FieldFilter = {
+    field: 'processId',
+    operator: FieldFilterOperatorEnum.Eq,
+    value: 'processId1',
+  };
+
+  it('combines multiple nested filters for the same field', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
+    };
+
+    const result = processFilters(filter as unknown as Filter[]);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          field: 'variables',
+          nested: [
+            targetEntityNestedFilter.nested,
+            initiatorEntityNestedFilter.nested,
+          ],
+        },
+      ],
+    });
+  });
+
+  it('leaves a single nested filter unchanged when only one exists for the field', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter],
+    };
+
+    const result = processFilters(filter as unknown as Filter[]);
+
+    expect(result).toEqual(filter);
+  });
+
+  it('does not combine filters that target different fields', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, procId1Filter],
+    };
+
+    const result = processFilters(filter as unknown as Filter[]);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, procId1Filter],
+    });
   });
 });

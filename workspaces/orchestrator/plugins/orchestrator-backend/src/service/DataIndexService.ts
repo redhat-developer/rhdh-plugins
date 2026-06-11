@@ -30,7 +30,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
-import { buildFilterCondition } from '../helpers/filterBuilder';
+import { buildFilterCondition, processFilters } from '../helpers/filterBuilder';
 import {
   buildGraphQlQuery,
   buildQueryParamVariable,
@@ -293,38 +293,15 @@ export class DataIndexService {
 
     // For nested filters, there might be more than one filter for the same field
     // so we need to group them by the field and then combine the nested filters into an array
-    if (filter && 'filters' in filter) {
-      const grouped = filter.filters.reduce<Record<string, Filter[]>>(
-        (acc, item) => {
-          if ('field' in item) {
-            (acc[item.field] ??= []).push(item);
-          }
-          return acc;
-        },
-        {},
-      );
+    const processedFilters = filter
+      ? processFilters(filter as unknown as Filter[])
+      : undefined;
 
-      const newFilters: Filter[] = [];
-
-      for (const [field, filtersForField] of Object.entries(grouped)) {
-        if (filtersForField.length > 1) {
-          const nested = filtersForField
-            .filter((f): f is NestedFilter => 'nested' in f)
-            .map(f => f.nested);
-          newFilters.push({ field, nested } as unknown as NestedFilter);
-        } else {
-          newFilters.push(filtersForField[0]);
-        }
-      }
-
-      filter.filters = newFilters;
-    }
-
-    const filterCondition = filter
+    const filterCondition = processedFilters
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
           type,
-          filter,
+          processedFilters as unknown as Filter | undefined,
         )
       : undefined;
 
