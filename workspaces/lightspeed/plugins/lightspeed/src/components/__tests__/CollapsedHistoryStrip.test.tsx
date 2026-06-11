@@ -137,10 +137,10 @@ describe('PencilIcon', () => {
     expect(svg).toHaveClass('custom-class');
   });
 
-  it('should have correct inline size style', () => {
+  it('should have pf-v6-svg class for consistent sizing', () => {
     const { container } = render(<PencilIcon />);
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveStyle({ width: '16px', height: '16px' });
+    expect(svg).toHaveClass('pf-v6-svg');
   });
 });
