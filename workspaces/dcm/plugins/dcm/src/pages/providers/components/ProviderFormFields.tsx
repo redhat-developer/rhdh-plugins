@@ -30,6 +30,7 @@ import {
   ProviderForm,
   validateProviderForm,
 } from '../providerFormTypes';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 type TouchedMap = Partial<Record<keyof ProviderForm, boolean>>;
 
@@ -50,7 +51,8 @@ export function ProviderFormFields({
   setTouched,
   isEditMode,
 }: ProviderFormFieldsProps) {
-  const errors = validateProviderForm(form);
+  const { t } = useTranslation();
+  const errors = validateProviderForm(form, t);
 
   const touch = (field: keyof ProviderForm) =>
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -61,12 +63,11 @@ export function ProviderFormFields({
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
       <TextField
-        label="Name *"
+        label={t('providers.form.nameLabel')}
         helperText={
           isEditMode
-            ? 'Provider name cannot be changed after creation'
-            : err('name') ??
-              'Unique slug identifier — only lowercase letters, numbers, and hyphens'
+            ? t('providers.form.nameHelperEditMode')
+            : err('name') ?? t('providers.form.nameHelper')
         }
         error={Boolean(err('name'))}
         value={form.name}
@@ -75,16 +76,13 @@ export function ProviderFormFields({
         fullWidth
         variant="outlined"
         size="small"
-        placeholder="e.g. my-k8s-provider"
+        placeholder={t('providers.form.namePlaceholder')}
         disabled={isEditMode}
       />
 
       <TextField
-        label="Endpoint *"
-        helperText={
-          err('endpoint') ??
-          'Full URL of the provider API (e.g. https://api.example.com)'
-        }
+        label={t('providers.form.endpointLabel')}
+        helperText={err('endpoint') ?? t('providers.form.endpointHelper')}
         error={Boolean(err('endpoint'))}
         value={form.endpoint}
         onChange={e => setForm(prev => ({ ...prev, endpoint: e.target.value }))}
@@ -92,7 +90,7 @@ export function ProviderFormFields({
         fullWidth
         variant="outlined"
         size="small"
-        placeholder="https://api.example.com"
+        placeholder={t('providers.form.endpointPlaceholder')}
       />
 
       <FormControl
@@ -101,7 +99,7 @@ export function ProviderFormFields({
         fullWidth
         error={Boolean(err('service_type'))}
       >
-        <InputLabel shrink>Service type *</InputLabel>
+        <InputLabel shrink>{t('providers.form.serviceTypeLabel')}</InputLabel>
         <Select
           value={form.service_type}
           onChange={e => {
@@ -113,13 +111,18 @@ export function ProviderFormFields({
           }}
           onBlur={() => touch('service_type')}
           displayEmpty
-          input={<OutlinedInput notched label="Service type *" />}
+          input={
+            <OutlinedInput
+              notched
+              label={t('providers.form.serviceTypeLabel')}
+            />
+          }
         >
           <MenuItem value="" disabled>
             <em>
               {serviceTypes.length === 0
-                ? 'No service types available'
-                : 'Select a service type\u2026'}
+                ? t('providers.form.serviceTypeEmpty')
+                : t('providers.form.serviceTypeSelect')}
             </em>
           </MenuItem>
           {serviceTypes.map(st => (
@@ -131,16 +134,15 @@ export function ProviderFormFields({
         <FormHelperText>
           {err('service_type') ??
             (serviceTypes.length === 0
-              ? 'Create a service type first in the Service types tab'
-              : 'Select from registered service types')}
+              ? t('providers.form.serviceTypeHelperNoTypes')
+              : t('providers.form.serviceTypeHelperDefault'))}
         </FormHelperText>
       </FormControl>
 
       <TextField
-        label="Schema version *"
+        label={t('providers.form.schemaVersionLabel')}
         helperText={
-          err('schema_version') ??
-          'e.g. v1, v1alpha1, v2beta2 — only v<number>[alpha|beta][number]'
+          err('schema_version') ?? t('providers.form.schemaVersionHelper')
         }
         error={Boolean(err('schema_version'))}
         value={form.schema_version}
@@ -154,11 +156,11 @@ export function ProviderFormFields({
       />
 
       <FormControl variant="outlined" size="small" fullWidth>
-        <InputLabel>Operations</InputLabel>
+        <InputLabel>{t('providers.form.operationsLabel')}</InputLabel>
         <Select
           multiple
           value={form.operations}
-          label="Operations"
+          label={t('providers.form.operationsLabel')}
           onChange={e =>
             setForm(prev => ({
               ...prev,
@@ -172,9 +174,7 @@ export function ProviderFormFields({
             </MenuItem>
           ))}
         </Select>
-        <FormHelperText>
-          Select the operations this provider supports
-        </FormHelperText>
+        <FormHelperText>{t('providers.form.operationsHelper')}</FormHelperText>
       </FormControl>
     </Box>
   );

@@ -67,6 +67,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const useSchemaEditorStyles = makeStyles(theme => ({
   schemaLabel: {
@@ -142,7 +143,7 @@ type SchemaButtonProps = Readonly<{
   fieldError?: string;
 }>;
 
-function validateSchemaJson(raw: string): string {
+function validateSchemaJsonRaw(raw: string): 'object' | 'syntax' | '' {
   const trimmed = raw.trim();
   if (!trimmed) return '';
   try {
@@ -152,11 +153,11 @@ function validateSchemaJson(raw: string): string {
       parsed === null ||
       Array.isArray(parsed)
     ) {
-      return 'Must be a JSON object, not an array or primitive';
+      return 'object';
     }
     return '';
   } catch {
-    return 'Invalid JSON syntax';
+    return 'syntax';
   }
 }
 
@@ -170,14 +171,21 @@ function prettyPrintIfValid(raw: string): string {
 
 function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
   const classes = useSchemaEditorStyles();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const jsonError = useMemo(() => validateSchemaJson(draft), [draft]);
-  const applyDisabled = draft.trim() !== '' && Boolean(jsonError);
-  const hasError = Boolean(draft.trim() && jsonError);
+  const jsonErrorCode = useMemo(() => validateSchemaJsonRaw(draft), [draft]);
+  let jsonError = '';
+  if (jsonErrorCode === 'object') {
+    jsonError = t('catalogItems.form.schemaMustBeObject');
+  } else if (jsonErrorCode === 'syntax') {
+    jsonError = t('catalogItems.form.schemaInvalidJson');
+  }
+  const applyDisabled = draft.trim() !== '' && Boolean(jsonErrorCode);
+  const hasError = Boolean(draft.trim() && jsonErrorCode);
 
   const handleOpen = () => {
     setDraft(value ? prettyPrintIfValid(value) : '');
@@ -229,7 +237,7 @@ function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
           color="textSecondary"
           className={classes.schemaLabel}
         >
-          Validation schema
+          {t('catalogItems.form.schemaLabel')}
         </Typography>
         <Box display="flex" alignItems="center" gridGap={6}>
           <Button
@@ -239,7 +247,9 @@ function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
             onClick={handleOpen}
             color={fieldError ? 'secondary' : 'primary'}
           >
-            {value ? 'Edit JSON' : 'Add JSON'}
+            {value
+              ? t('catalogItems.form.schemaEditButton')
+              : t('catalogItems.form.schemaAddButton')}
           </Button>
         </Box>
         {fieldError && (
@@ -250,7 +260,7 @@ function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
       </Box>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Validation schema</DialogTitle>
+        <DialogTitle>{t('catalogItems.form.schemaDialogTitle')}</DialogTitle>
         <DialogContent className={classes.dialogContent}>
           <Box
             className={`${classes.editorWrapper} ${
@@ -286,18 +296,20 @@ function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
             className={classes.editorHelperText}
           >
             {(draft.trim() && jsonError) ||
-              'JSON Schema object — e.g. {"type":"integer","minimum":0}'}
+              t('catalogItems.form.schemaDialogHelper')}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose}>
+            {t('catalogItems.form.schemaDialogCancel')}
+          </Button>
           <Button
             onClick={handleApply}
             color="primary"
             variant="contained"
             disabled={applyDisabled}
           >
-            Apply
+            {t('catalogItems.form.schemaDialogApply')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -317,11 +329,14 @@ import type { FieldRow, FieldRowErrors } from '../catalogItemFormTypes';
 type ScalarFields = Omit<CatalogItemForm, 'fields'>;
 type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
 
-function serviceTypeHelperText(isEditMode: boolean, count: number): string {
-  if (isEditMode) return 'Service type cannot be changed after creation';
-  if (count === 0)
-    return 'No service types available — create one in the Service types tab';
-  return 'Select the service type this item is based on';
+function serviceTypeHelperText(
+  isEditMode: boolean,
+  count: number,
+  t: (key: string) => string,
+): string {
+  if (isEditMode) return t('catalogItems.form.serviceTypeHelperEdit');
+  if (count === 0) return t('catalogItems.form.serviceTypeHelperNoTypes');
+  return t('catalogItems.form.serviceTypeHelperDefault');
 }
 
 export type CatalogItemFormFieldsProps = Readonly<{
@@ -345,10 +360,11 @@ export function CatalogItemFormFields({
   isEditMode,
 }: CatalogItemFormFieldsProps) {
   const classes = useStyles();
-  const errors = useMemo(() => validateCatalogItemForm(form), [form]);
+  const { t } = useTranslation();
+  const errors = useMemo(() => validateCatalogItemForm(form, t), [form, t]);
   const fieldRowErrors = useMemo(
-    () => validateFieldRows(form.fields),
-    [form.fields],
+    () => validateFieldRows(form.fields, t),
+    [form.fields, t],
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState('');
@@ -401,9 +417,7 @@ export function CatalogItemFormFields({
         setImportError('');
       })
       .catch(() => {
-        setImportError(
-          'Failed to import file — check that it is valid JSON or YAML.',
-        );
+        setImportError(t('catalogItems.form.importError'));
       });
     e.target.value = '';
   };
@@ -421,14 +435,14 @@ export function CatalogItemFormFields({
             hidden
             onChange={handleImportFile}
           />
-          <Tooltip title="Fill the form from a JSON or YAML catalog item definition">
+          <Tooltip title={t('catalogItems.form.importTooltip')}>
             <Button
               size="small"
               startIcon={<PublishIcon />}
               onClick={() => fileInputRef.current?.click()}
               className={classes.importButton}
             >
-              Import from file
+              {t('catalogItems.form.importButton')}
             </Button>
           </Tooltip>
         </Box>
@@ -444,11 +458,11 @@ export function CatalogItemFormFields({
       </Box>
 
       <TextField
-        label="Display name *"
+        label={t('catalogItems.form.displayNameLabel')}
         helperText={
           touched.display_name && errors.display_name
             ? errors.display_name
-            : 'Human-readable name for this catalog item (max 63 characters)'
+            : t('catalogItems.form.displayNameHelper')
         }
         error={Boolean(touched.display_name && errors.display_name)}
         value={form.display_name}
@@ -460,11 +474,11 @@ export function CatalogItemFormFields({
       />
 
       <TextField
-        label="API version *"
+        label={t('catalogItems.form.apiVersionLabel')}
         helperText={
           touched.api_version && errors.api_version
             ? errors.api_version
-            : 'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1'
+            : t('catalogItems.form.apiVersionHelper')
         }
         error={Boolean(touched.api_version && errors.api_version)}
         value={form.api_version}
@@ -486,7 +500,9 @@ export function CatalogItemFormFields({
             errors.service_type,
         )}
       >
-        <InputLabel shrink>Service type *</InputLabel>
+        <InputLabel shrink>
+          {t('catalogItems.form.serviceTypeLabel')}
+        </InputLabel>
         <Select
           value={form.service_type}
           onChange={e => {
@@ -497,7 +513,12 @@ export function CatalogItemFormFields({
             setTouched(prev => ({ ...prev, service_type: true }));
           }}
           displayEmpty
-          input={<OutlinedInput notched label="Service type *" />}
+          input={
+            <OutlinedInput
+              notched
+              label={t('catalogItems.form.serviceTypeLabel')}
+            />
+          }
         >
           <MenuItem value="">
             <em>None</em>
@@ -513,24 +534,20 @@ export function CatalogItemFormFields({
           (touched.service_type || submitAttempted) &&
           errors.service_type
             ? errors.service_type
-            : serviceTypeHelperText(isEditMode, serviceTypes.length)}
+            : serviceTypeHelperText(isEditMode, serviceTypes.length, t)}
         </FormHelperText>
       </FormControl>
 
       <Divider />
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2">
-          Fields *{' '}
+          {t('catalogItems.form.fieldsLabel')}{' '}
           <Typography variant="caption" color="textSecondary">
-            (at least one required)
+            {t('catalogItems.form.fieldsCaption')}
           </Typography>
         </Typography>
         <Tooltip
-          title={
-            canAddField
-              ? ''
-              : 'Fill in the path of the last field before adding a new one'
-          }
+          title={canAddField ? '' : t('catalogItems.form.fieldAddTooltip')}
         >
           <Box component="span" display="inline-block">
             <Button
@@ -540,7 +557,7 @@ export function CatalogItemFormFields({
               color="primary"
               disabled={!canAddField}
             >
-              Add field
+              {t('catalogItems.form.fieldAddButton')}
             </Button>
           </Box>
         </Tooltip>
@@ -548,7 +565,7 @@ export function CatalogItemFormFields({
 
       {showFieldsError && (
         <Typography variant="caption" color="error">
-          Add at least one field with a non-empty path.
+          {t('catalogItems.form.fieldsErrorEmpty')}
         </Typography>
       )}
 
@@ -566,8 +583,10 @@ export function CatalogItemFormFields({
             <Box display="flex" alignItems="flex-start" gridGap={8}>
               <Box flex={2}>
                 <TextField
-                  label="Path *"
-                  helperText={rowErrors.path ?? 'e.g. config.replicas'}
+                  label={t('catalogItems.form.fieldPathLabel')}
+                  helperText={
+                    rowErrors.path ?? t('catalogItems.form.fieldPathHelper')
+                  }
                   error={Boolean(rowErrors.path)}
                   value={row.path}
                   onChange={e => setField(i, 'path', e.target.value)}
@@ -578,7 +597,7 @@ export function CatalogItemFormFields({
               </Box>
               <Box flex={2}>
                 <TextField
-                  label="Display name"
+                  label={t('catalogItems.form.fieldDisplayNameLabel')}
                   value={row.display_name}
                   onChange={e => setField(i, 'display_name', e.target.value)}
                   fullWidth
@@ -600,12 +619,16 @@ export function CatalogItemFormFields({
                       color="primary"
                     />
                   }
-                  label={<Typography variant="caption">Editable</Typography>}
+                  label={
+                    <Typography variant="caption">
+                      {t('catalogItems.form.fieldEditableLabel')}
+                    </Typography>
+                  }
                 />
               </Box>
               <IconButton
                 size="small"
-                aria-label="Remove field"
+                aria-label={t('catalogItems.form.fieldRemoveAriaLabel')}
                 onClick={() => removeField(i)}
                 className={classes.fieldRowDelete}
               >
@@ -617,10 +640,10 @@ export function CatalogItemFormFields({
             <Box display="flex" alignItems="flex-start" gridGap={8}>
               <Box flex={1}>
                 <TextField
-                  label="Default value"
+                  label={t('catalogItems.form.fieldDefaultValueLabel')}
                   helperText={
                     rowErrors.default_value ??
-                    'Any JSON value — e.g. 42, "hello", true, [1,2]'
+                    t('catalogItems.form.fieldDefaultValueHelper')
                   }
                   error={Boolean(rowErrors.default_value)}
                   value={row.default_value}

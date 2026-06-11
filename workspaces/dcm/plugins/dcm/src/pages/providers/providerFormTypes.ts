@@ -35,36 +35,78 @@ export const KNOWN_OPERATIONS = [
   'patch',
 ] as const;
 
-const providerSchema = yup.object({
-  name: yup
-    .string()
-    .required('Name is required')
-    .matches(
-      /^[a-z][a-z0-9-]*$/,
-      'Only lowercase letters, numbers, and hyphens are allowed (must start with a letter)',
-    ),
-  endpoint: yup
-    .string()
-    .required('Endpoint is required')
-    .matches(
-      /^https?:\/\/[^\s]+$/,
-      'Must start with http:// or https:// (e.g. http://my-service:8081/api)',
-    ),
-  service_type: yup
-    .string()
-    .required('Service type is required')
-    .min(1, 'Please select a service type from the list'),
-  schema_version: yup
-    .string()
-    .required('Schema version is required')
-    .matches(
-      /^v\d+(?:(?:alpha|beta)\d*)?$/,
-      'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1, v2beta2',
-    ),
-});
+type TFunction = (key: string, ...args: any[]) => string;
 
-export const { validate: validateProviderForm, isValid: isProviderFormValid } =
-  createYupValidator<ProviderForm>(providerSchema);
+function buildProviderSchema(t?: TFunction) {
+  const m = (key: string, fallback: string) => (t ? t(key) : fallback);
+  return yup.object({
+    name: yup
+      .string()
+      .required(m('validation.provider.nameRequired', 'Name is required'))
+      .matches(
+        /^[a-z][a-z0-9-]*$/,
+        m(
+          'validation.provider.namePattern',
+          'Only lowercase letters, numbers, and hyphens are allowed (must start with a letter)',
+        ),
+      ),
+    endpoint: yup
+      .string()
+      .required(
+        m('validation.provider.endpointRequired', 'Endpoint is required'),
+      )
+      .matches(
+        /^https?:\/\/[^\s]+$/,
+        m(
+          'validation.provider.endpointPattern',
+          'Must start with http:// or https:// (e.g. http://my-service:8081/api)',
+        ),
+      ),
+    service_type: yup
+      .string()
+      .required(
+        m(
+          'validation.provider.serviceTypeRequired',
+          'Service type is required',
+        ),
+      )
+      .min(
+        1,
+        m(
+          'validation.provider.serviceTypeMin',
+          'Please select a service type from the list',
+        ),
+      ),
+    schema_version: yup
+      .string()
+      .required(
+        m(
+          'validation.provider.schemaVersionRequired',
+          'Schema version is required',
+        ),
+      )
+      .matches(
+        /^v\d+(?:(?:alpha|beta)\d*)?$/,
+        m(
+          'validation.provider.schemaVersionPattern',
+          'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1, v2beta2',
+        ),
+      ),
+  });
+}
+
+export function validateProviderForm(
+  form: ProviderForm,
+  t?: TFunction,
+): Partial<Record<keyof ProviderForm, string>> {
+  const { validate } = createYupValidator<ProviderForm>(buildProviderSchema(t));
+  return validate(form);
+}
+
+export function isProviderFormValid(form: ProviderForm): boolean {
+  const { isValid } = createYupValidator<ProviderForm>(buildProviderSchema());
+  return isValid(form);
+}
 
 export function emptyProviderForm(): ProviderForm {
   return {
