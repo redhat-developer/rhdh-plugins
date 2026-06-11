@@ -141,7 +141,8 @@ export class SonataFlowService {
      */
     const groupedData = instances.reduce<Record<string, ProcessInstance[]>>(
       (acc, item) => {
-        (acc[`${item.processId}-${item.version}`] ??= []).push(item);
+        acc[`${item.processId}-${item.version}`] ??= [];
+        acc[`${item.processId}-${item.version}`].push(item);
         return acc;
       },
       {},
