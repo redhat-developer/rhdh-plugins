@@ -20,12 +20,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha, darken } from '@mui/material/styles';
 
 import { ScorecardLayoutProps } from '../../alpha/blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
@@ -41,22 +36,6 @@ import {
 } from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const statusTileBg: Record<string, string> = {
-  success: '#e8f5e9',
-  warning: '#fff3e0',
-  error: '#fce4ec',
-};
-
-const statusTileText: Record<string, string> = {
-  success: '#2e7d32',
-  warning: '#e65100',
-  error: '#c62828',
-};
-
-function getEvaluation(metric: MetricResult): string {
-  return metric.result?.thresholdResult?.evaluation ?? 'error';
-}
-
 function MetricTile({
   metric,
   label,
@@ -65,7 +44,6 @@ function MetricTile({
   label: string;
 }) {
   const theme = useTheme();
-  const evaluation = getEvaluation(metric);
   const hasError = metric.status === 'error' || metric.result?.value === null;
 
   const statusConfig = getStatusConfig({
@@ -76,12 +54,13 @@ function MetricTile({
   });
 
   const resolvedColor = resolveStatusColor(theme, statusConfig.color);
+
   const bg = hasError
-    ? '#fce4ec'
-    : statusTileBg[evaluation] ?? `${resolvedColor}18`;
+    ? alpha(theme.palette.error.main, 0.08)
+    : alpha(resolvedColor, 0.08);
   const textColor = hasError
-    ? '#c62828'
-    : statusTileText[evaluation] ?? resolvedColor;
+    ? darken(theme.palette.error.main, 0.3)
+    : darken(resolvedColor, 0.3);
 
   const displayValue = hasError ? '—' : metric.result?.value ?? '—';
 
@@ -127,71 +106,28 @@ function GroupCard({
   description?: string;
   metrics: MetricResult[];
 }) {
-  const metricCount = metrics.length;
-
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: 2,
-        border: '1px solid',
-        borderColor: 'divider',
-      }}
-    >
-      <CardContent sx={{ '&:last-child': { pb: 2 } }}>
-        <Box
-          display="flex"
-          alignItems="flex-start"
-          justifyContent="space-between"
-        >
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              {title}
-            </Typography>
-            {metricCount > 0 && (
-              <Typography
-                variant="body2"
-                sx={{ color: 'warning.main', fontWeight: 600 }}
-              >
-                {metricCount} {metricCount === 1 ? 'metric' : 'metrics'}
-              </Typography>
-            )}
-          </Box>
-          <Box>
-            <Tooltip title={description || title}>
-              <IconButton size="small">
-                <InfoOutlinedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <IconButton size="small">
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 1.5 }} />
+    <Card variant="outlined">
+      <CardContent>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+          {title}
+        </Typography>
 
         {description && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {description}
           </Typography>
         )}
 
-        {metrics.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No metric data available yet
-          </Typography>
-        ) : (
-          <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={1}>
-            {metrics.map(metric => (
-              <MetricTile
-                key={metric.id}
-                metric={metric}
-                label={metric.metadata.title}
-              />
-            ))}
-          </Box>
-        )}
+        <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={1}>
+          {metrics.map(metric => (
+            <MetricTile
+              key={metric.id}
+              metric={metric}
+              label={metric.metadata.title}
+            />
+          ))}
+        </Box>
       </CardContent>
     </Card>
   );
@@ -218,22 +154,22 @@ export const ScorecardEntityContentGridView = ({
     return <EntityScorecardContent />;
   }
 
+  const groupedMetricIds = new Set<string>();
   const groupedMetrics = new Map<string, MetricResult[]>();
-  const ungroupedMetrics: MetricResult[] = [];
 
   scorecards.forEach(metric => {
-    let wasGrouped = false;
     Object.entries(groups).forEach(([groupKey, groupConfig]) => {
       if (groupConfig.metrics.includes(metric.id)) {
         if (!groupedMetrics.has(groupKey)) {
           groupedMetrics.set(groupKey, []);
         }
         groupedMetrics.get(groupKey)!.push(metric);
-        wasGrouped = true;
+        groupedMetricIds.add(metric.id);
       }
     });
-    if (!wasGrouped) ungroupedMetrics.push(metric);
   });
+
+  const ungroupedMetrics = scorecards.filter(m => !groupedMetricIds.has(m.id));
 
   return (
     <Box
@@ -241,74 +177,70 @@ export const ScorecardEntityContentGridView = ({
       gridTemplateColumns="repeat(auto-fill, minmax(340px, 1fr))"
       gap={2.5}
     >
-      {/* show groups if they are configured for entity tab */}
-      {false &&
-        Object.entries(groups).map(([groupKey, groupConfig]) => {
-          const metricsInGroup = groupedMetrics.get(groupKey) || [];
+      {Object.entries(groups).map(([groupKey, groupConfig]) => {
+        const metricsInGroup = groupedMetrics.get(groupKey) || [];
 
-          const metricsWithLabels = metricsInGroup.map(m => ({
-            ...m,
-            metadata: {
-              ...m.metadata,
-              title: resolveMetricTranslation(
-                t,
-                m.id,
-                'title',
-                m.metadata.title,
-              ),
-            },
-          }));
+        if (metricsInGroup.length === 0) {
+          return null;
+        }
 
-          return (
-            <GroupCard
-              key={groupKey}
-              title={groupConfig.title}
-              description={groupConfig.description}
-              metrics={metricsWithLabels}
-            />
-          );
-        })}
+        const metricsWithLabels = metricsInGroup.map(m => ({
+          ...m,
+          metadata: {
+            ...m.metadata,
+            title: resolveMetricTranslation(t, m.id, 'title', m.metadata.title),
+          },
+        }));
 
-      {scorecards.length > 0 &&
-        scorecards.map((metric: MetricResult) => {
-          const isMetricDataError =
-            metric.status === 'error' || metric.result?.value === null;
-          const isThresholdError =
-            metric.result?.thresholdResult?.status === 'error';
-          const statusConfig = getStatusConfig({
-            evaluation: metric.result?.thresholdResult?.evaluation,
-            thresholdStatus: metric.result?.thresholdResult?.status,
-            metricStatus: metric.status,
-            thresholdRules: metric.result?.thresholdResult?.definition?.rules,
-          });
+        return (
+          <GroupCard
+            key={groupKey}
+            title={groupConfig.title}
+            description={groupConfig.description}
+            metrics={metricsWithLabels}
+          />
+        );
+      })}
 
-          return (
-            <Scorecard
-              key={metric.id}
-              cardTitle={resolveMetricTranslation(
-                t,
-                metric.id,
-                'title',
-                metric.metadata.title,
-              )}
-              description={resolveMetricTranslation(
-                t,
-                metric.id,
-                'description',
-                metric.metadata.description,
-              )}
-              statusColor={statusConfig.color}
-              statusIcon={statusConfig.icon ?? ''}
-              value={metric.result?.value}
-              metricType={metric.metadata.type}
-              thresholds={metric.result?.thresholdResult}
-              isMetricDataError={isMetricDataError}
-              metricDataError={metric?.error}
-              isThresholdError={isThresholdError}
-              thresholdError={metric.result?.thresholdResult?.error}
-            />
-          );
-        })}
+      {ungroupedMetrics.map((metric: MetricResult) => {
+        const metricDataError =
+          metric.status === 'error' || metric.result?.value === null;
+        const thresholdErrorState =
+          metric.result?.thresholdResult?.status === 'error';
+        const statusConfig = getStatusConfig({
+          evaluation: metric.result?.thresholdResult?.evaluation,
+          thresholdStatus: metric.result?.thresholdResult?.status,
+          metricStatus: metric.status,
+          thresholdRules: metric.result?.thresholdResult?.definition?.rules,
+        });
+
+        return (
+          <Scorecard
+            key={metric.id}
+            cardTitle={resolveMetricTranslation(
+              t,
+              metric.id,
+              'title',
+              metric.metadata.title,
+            )}
+            description={resolveMetricTranslation(
+              t,
+              metric.id,
+              'description',
+              metric.metadata.description,
+            )}
+            statusColor={statusConfig.color}
+            statusIcon={statusConfig.icon ?? ''}
+            value={metric.result?.value}
+            metricType={metric.metadata.type}
+            thresholds={metric.result?.thresholdResult}
+            isMetricDataError={metricDataError}
+            metricDataError={metric?.error}
+            isThresholdError={thresholdErrorState}
+            thresholdError={metric.result?.thresholdResult?.error}
+          />
+        );
+      })}
     </Box>
   );
 };
