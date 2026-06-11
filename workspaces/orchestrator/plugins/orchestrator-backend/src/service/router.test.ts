@@ -375,7 +375,6 @@ describe('Router Authorization Tests', () => {
       }),
       workflowLogsProvidersRegistry: { getProvider: jest.fn() } as any,
       discovery: mockServices.discovery.mock(),
-      catalogApi: {} as any,
       urlReader: mockServices.urlReader.mock(),
     });
 
