@@ -23,6 +23,7 @@ import { EmptyStatePanel } from './EmptyStatePanel';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 import { CardLoading } from '../Common/CardLoading';
+import { ScorecardStylesProvider } from '../ScorecardStylesProvider';
 
 /** Coerces unknown/missing values to a finite number for safe UI math (NaN → 0). */
 function toSafeFiniteNumber(value: unknown): number {
@@ -129,7 +130,9 @@ export const ScorecardHomepageCardWithProvider = (props: {
   showSubheader?: boolean;
   showInfo?: boolean;
 }) => (
-  <ScorecardQueryProvider>
-    <ScorecardHomepageCard {...props} />
-  </ScorecardQueryProvider>
+  <ScorecardStylesProvider>
+    <ScorecardQueryProvider>
+      <ScorecardHomepageCard {...props} />
+    </ScorecardQueryProvider>
+  </ScorecardStylesProvider>
 );

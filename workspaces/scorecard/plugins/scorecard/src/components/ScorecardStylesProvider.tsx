@@ -14,5 +14,20 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+import type { ReactNode } from 'react';
+
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
+
+const generateClassName = createGenerateClassName({
+  seed: 'scorecard',
+});
+
+export const ScorecardStylesProvider = ({
+  children,
+}: {
+  readonly children: ReactNode;
+}) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);
