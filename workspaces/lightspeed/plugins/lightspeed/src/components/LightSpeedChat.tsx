@@ -71,10 +71,13 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import {
+  PenIcon,
   PlusIcon,
   SearchIcon,
   SortAmountDownAltIcon,
   SortAmountDownIcon,
+  ThumbtackIcon,
+  TrashIcon,
 } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -534,8 +537,12 @@ const useStyles = makeStyles(theme => ({
         display: 'none',
       },
     '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-      marginTop: -48,
-      marginRight: -24,
+      marginTop: 0,
+      marginRight: 0,
+    },
+    '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
+      paddingInlineStart: 'var(--pf-t--global--spacer--md)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--md)',
     },
     '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
       {
@@ -556,8 +563,22 @@ const useStyles = makeStyles(theme => ({
           backgroundColor: 'currentColor',
         },
       },
+    '& .pf-chatbot__heading-container': {
+      paddingInlineStart: 'var(--pf-t--global--spacer--md)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--md)',
+    },
+    '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
+      '--pf-v6-c-menu__group-title--PaddingInlineStart':
+        'var(--pf-t--global--spacer--md)',
+      '--pf-v6-c-menu__group-title--PaddingInlineEnd':
+        'var(--pf-t--global--spacer--md)',
+    },
     '& .pf-chatbot__menu-item': {
       cursor: 'pointer',
+      '--pf-v6-c-menu__item--PaddingInlineStart':
+        'var(--pf-t--global--spacer--md)',
+      '--pf-v6-c-menu__item--PaddingInlineEnd':
+        'var(--pf-t--global--spacer--md)',
     },
     '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
       {
@@ -1139,6 +1160,7 @@ export const LightspeedChat = ({
           <>
             <DropdownItem
               isDisabled={!hasUpdateAccess}
+              icon={<PenIcon />}
               onClick={() =>
                 openChatRenameModal(conversationSummary.conversation_id)
               }
@@ -1149,6 +1171,7 @@ export const LightspeedChat = ({
               <>
                 {isChatFavorite ? (
                   <DropdownItem
+                    icon={<ThumbtackIcon />}
                     onClick={() =>
                       unpinChat(conversationSummary.conversation_id)
                     }
@@ -1157,6 +1180,7 @@ export const LightspeedChat = ({
                   </DropdownItem>
                 ) : (
                   <DropdownItem
+                    icon={<ThumbtackIcon />}
                     onClick={() => pinChat(conversationSummary.conversation_id)}
                   >
                     {t('conversation.addToPinnedChats')}
@@ -1166,6 +1190,7 @@ export const LightspeedChat = ({
             )}
             <DropdownItem
               isDisabled={!hasDeleteAccess}
+              icon={<TrashIcon />}
               onClick={() =>
                 openDeleteModal(conversationSummary.conversation_id)
               }
@@ -1249,6 +1274,10 @@ export const LightspeedChat = ({
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
+                    style: {
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    },
                   },
                 },
               ];
@@ -1271,6 +1300,10 @@ export const LightspeedChat = ({
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
+                    style: {
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    },
                   },
                 },
               ];
@@ -1826,6 +1859,13 @@ export const LightspeedChat = ({
         <DeleteModal
           isOpen={isDeleteModalOpen}
           conversationId={targetConversationId}
+          chatName={(() => {
+            const name =
+              conversations.find(
+                c => c.conversation_id === targetConversationId,
+              )?.topic_summary ?? '';
+            return name.length > 100 ? `${name.slice(0, 100)}...` : name;
+          })()}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConversation}
         />
@@ -2023,10 +2063,11 @@ export const LightspeedChat = ({
               activeItemId={viewConversationId}
               onSelectActiveItem={onSelectActiveItem}
               conversations={filterConversations(filterValue)}
-              onNewChat={newChatCreated ? undefined : onNewChat}
+              onNewChat={onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
                 icon: isFullscreenMode ? <PencilIcon /> : <PlusIcon />,
+                isDisabled: newChatCreated,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}

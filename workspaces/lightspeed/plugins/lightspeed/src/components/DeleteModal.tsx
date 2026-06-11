@@ -31,11 +31,13 @@ import { useTranslation } from '../hooks/useTranslation';
 export const DeleteModal = ({
   isOpen,
   conversationId,
+  chatName,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean;
   conversationId: string;
+  chatName?: string;
   onClose: () => void;
   onConfirm: () => void;
 }) => {
@@ -66,19 +68,18 @@ export const DeleteModal = ({
       onClose={onClose}
       aria-labelledby="delete-modal"
       aria-describedby="delete-modal-confiramtion"
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 4 },
+      }}
     >
       <DialogTitle sx={{ p: '16px 20px', fontStyle: 'inherit' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 5 }}>
           <Typography component="span" sx={{ fontWeight: 'bold' }}>
-            {t('conversation.delete.confirm.title')}
+            {t('conversation.delete.confirm.title' as any, {
+              chatName: chatName || '',
+            })}
           </Typography>
-
           <IconButton
             aria-label="close"
             onClick={onClose}
@@ -86,8 +87,8 @@ export const DeleteModal = ({
             size="large"
             sx={{
               position: 'absolute',
-              right: 1,
-              top: 1,
+              right: 8,
+              top: 8,
               color: 'text.primary',
             }}
           >
@@ -99,22 +100,26 @@ export const DeleteModal = ({
         {t('conversation.delete.confirm.message')}
       </DialogContent>
       {isError && (
-        <Box maxWidth="650px" marginLeft="20px" marginRight="20px">
+        <Box sx={{ maxWidth: 650, mx: 2.5 }}>
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
-      <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
+      <DialogActions sx={{ justifyContent: 'left', p: 2.5, gap: 1 }}>
         <Button
-          key="confirm"
           variant="contained"
           color="error"
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={handleDeleteConversation}
-          style={{ marginRight: '16px' }}
           disabled={isPending}
         >
           {t('conversation.delete.confirm.action')}
         </Button>
-        <Button key="cancel" variant="outlined" onClick={onClose}>
+        <Button
+          key="cancel"
+          variant="outlined"
+          sx={{ textTransform: 'none', borderRadius: 999 }}
+          onClick={onClose}
+        >
           {t('common.cancel')}
         </Button>
       </DialogActions>

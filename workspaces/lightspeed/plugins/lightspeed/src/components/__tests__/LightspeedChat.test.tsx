@@ -315,7 +315,7 @@ describe('LightspeedChat', () => {
     await waitFor(() => {
       expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
 
-      expect(screen.queryByText('New chat')).not.toBeInTheDocument();
+      expect(screen.getByText('New chat').closest('button')).toBeDisabled();
       expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});
     });
   });
