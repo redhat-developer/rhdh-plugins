@@ -428,17 +428,18 @@ function nonSecureRandomAlphaNumeric() {
 
 // For nested filters, there might be more than one filter for the same field
 // so we need to group them by the field and then combine the nested filters into an array
-export function processFilters(filter: Filter[]): Filter[] {
-  if (filter && 'filters' in filter) {
-    const grouped = (filter.filters as Filter[]).reduce<
-      Record<string, Filter[]>
-    >((acc: Record<string, Filter[]>, item: Filter) => {
-      if ('field' in item) {
-        acc[item.field] ??= [];
-        acc[item.field].push(item);
-      }
-      return acc;
-    }, {});
+export function processFilters(filter: Filter): Filter {
+  if (isLogicalFilter(filter)) {
+    const grouped = filter.filters.reduce<Record<string, Filter[]>>(
+      (acc, item) => {
+        if ('field' in item) {
+          acc[item.field] ??= [];
+          acc[item.field].push(item);
+        }
+        return acc;
+      },
+      {},
+    );
 
     const newFilters: Filter[] = [];
 

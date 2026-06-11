@@ -877,7 +877,7 @@ describe('processFilters', () => {
       filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
     };
 
-    const result = processFilters(filter as unknown as Filter[]);
+    const result = processFilters(filter);
 
     expect(result).toEqual({
       operator: 'AND',
@@ -899,7 +899,7 @@ describe('processFilters', () => {
       filters: [targetEntityNestedFilter],
     };
 
-    const result = processFilters(filter as unknown as Filter[]);
+    const result = processFilters(filter);
 
     expect(result).toEqual(filter);
   });
@@ -910,7 +910,7 @@ describe('processFilters', () => {
       filters: [targetEntityNestedFilter, procId1Filter],
     };
 
-    const result = processFilters(filter as unknown as Filter[]);
+    const result = processFilters(filter);
 
     expect(result).toEqual({
       operator: 'AND',
