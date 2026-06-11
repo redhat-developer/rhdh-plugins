@@ -53,10 +53,10 @@ backend:
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 # integrations: {}
-integrations:
-  github:
-    - host: github.com
-      token: ${GITHUB_TOKEN}
+# integrations:
+#   github:
+#     - host: github.com
+#       token: ${GITHUB_TOKEN}
 
 proxy:
   reviveConsumedRequestBodies: true
