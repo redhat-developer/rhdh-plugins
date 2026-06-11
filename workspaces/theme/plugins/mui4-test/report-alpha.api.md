@@ -32,7 +32,6 @@ const plugin: OverridableFrontendPlugin<
         path?: string | undefined;
       };
       output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
@@ -41,6 +40,7 @@ const plugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             string,
             'core.title',
