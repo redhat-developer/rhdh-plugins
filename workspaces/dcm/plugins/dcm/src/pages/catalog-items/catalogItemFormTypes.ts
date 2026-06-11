@@ -21,6 +21,7 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
 import { pickNumericBound } from '../../utils/schemaUtils';
+import { type TFunction, makeTranslator } from '../../utils/formUtils';
 
 export type FieldRow = {
   /** Stable client-side identifier used as React list key. Never sent to the API. */
@@ -42,24 +43,59 @@ export type CatalogItemForm = {
   fields: FieldRow[];
 };
 
-const catalogItemSchema = yup.object({
-  display_name: yup
-    .string()
-    .required('Display name is required')
-    .min(1, 'Display name cannot be empty')
-    .max(63, 'Display name must be at most 63 characters'),
-  api_version: yup
-    .string()
-    .required('API version is required')
-    .matches(
-      /^v\d+(?:(?:alpha|beta)\d*)?$/,
-      'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1',
-    ),
-  service_type: yup.string().required('Service type is required'),
-});
+function buildCatalogItemSchema(t?: TFunction) {
+  const m = makeTranslator(t);
+  return yup.object({
+    display_name: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.displayNameRequired',
+          'Display name is required',
+        ),
+      )
+      .min(
+        1,
+        m(
+          'validation.catalogItem.displayNameEmpty',
+          'Display name cannot be empty',
+        ),
+      )
+      .max(
+        63,
+        m(
+          'validation.catalogItem.displayNameMax',
+          'Display name must be at most 63 characters',
+        ),
+      ),
+    api_version: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.apiVersionRequired',
+          'API version is required',
+        ),
+      )
+      .matches(
+        /^v\d+(?:(?:alpha|beta)\d*)?$/,
+        m(
+          'validation.catalogItem.apiVersionPattern',
+          'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
+        ),
+      ),
+    service_type: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.serviceTypeRequired',
+          'Service type is required',
+        ),
+      ),
+  });
+}
 
 const { validate: validateScalar } = createYupValidator<CatalogItemForm>(
-  catalogItemSchema,
+  buildCatalogItemSchema(),
   f => ({
     display_name: f.display_name,
     api_version: f.api_version,
@@ -69,8 +105,18 @@ const { validate: validateScalar } = createYupValidator<CatalogItemForm>(
 
 export function validateCatalogItemForm(
   f: CatalogItemForm,
+  t?: TFunction,
 ): Partial<Record<keyof CatalogItemForm, string>> {
-  return validateScalar(f);
+  if (!t) return validateScalar(f);
+  const { validate } = createYupValidator<CatalogItemForm>(
+    buildCatalogItemSchema(t),
+    ff => ({
+      display_name: ff.display_name,
+      api_version: ff.api_version,
+      service_type: ff.service_type,
+    }),
+  );
+  return validate(f);
 }
 
 export function hasValidFields(f: CatalogItemForm): boolean {
@@ -100,7 +146,10 @@ function looksLikeJson(s: string): boolean {
 
 export function validateFieldRows(
   fields: FieldRow[],
+  t?: TFunction,
 ): Record<number, FieldRowErrors> {
+  const m = makeTranslator(t);
+
   const result: Record<number, FieldRowErrors> = {};
   const seenPaths = new Map<string, number>();
 
@@ -110,7 +159,10 @@ export function validateFieldRows(
 
     if (trimmedPath !== '') {
       if (seenPaths.has(trimmedPath)) {
-        rowErrors.path = 'Duplicate path — paths must be unique';
+        rowErrors.path = m(
+          'validation.catalogItem.duplicatePath',
+          'Duplicate path \u2014 paths must be unique',
+        );
       } else {
         seenPaths.set(trimmedPath, i);
       }
@@ -121,8 +173,10 @@ export function validateFieldRows(
       try {
         JSON.parse(defaultTrimmed);
       } catch {
-        rowErrors.default_value =
-          'Invalid JSON — fix the syntax or use a plain string value';
+        rowErrors.default_value = m(
+          'validation.catalogItem.invalidJson',
+          'Invalid JSON \u2014 fix the syntax or use a plain string value',
+        );
       }
     }
 
@@ -137,8 +191,10 @@ export function validateFieldRows(
           parsed === null ||
           Array.isArray(parsed)
         ) {
-          rowErrors.validation_schema =
-            'Must be a JSON object — e.g. {"type":"integer"}';
+          rowErrors.validation_schema = m(
+            'validation.catalogItem.schemaMustBeObject',
+            'Must be a JSON object \u2014 e.g. {"type":"integer"}',
+          );
         } else {
           schemaMin = pickNumericBound(parsed, 'minimum', 'min');
           schemaMax = pickNumericBound(parsed, 'maximum', 'max');
@@ -147,11 +203,18 @@ export function validateFieldRows(
             schemaMax !== undefined &&
             schemaMin > schemaMax
           ) {
-            rowErrors.validation_schema = `minimum (${schemaMin}) must not exceed maximum (${schemaMax})`;
+            rowErrors.validation_schema = m(
+              'validation.catalogItem.schemaMinMaxConflict',
+              `minimum (${schemaMin}) must not exceed maximum (${schemaMax})`,
+              { min: schemaMin, max: schemaMax },
+            );
           }
         }
       } catch {
-        rowErrors.validation_schema = 'Invalid JSON syntax';
+        rowErrors.validation_schema = m(
+          'validation.catalogItem.schemaInvalidJson',
+          'Invalid JSON syntax',
+        );
       }
     }
 
@@ -163,9 +226,17 @@ export function validateFieldRows(
       Number.isFinite(defaultNum)
     ) {
       if (schemaMin !== undefined && defaultNum < schemaMin) {
-        rowErrors.default_value = `Default value (${defaultNum}) is below the schema minimum (${schemaMin})`;
+        rowErrors.default_value = m(
+          'validation.catalogItem.defaultBelowMin',
+          `Default value (${defaultNum}) is below the schema minimum (${schemaMin})`,
+          { value: defaultNum, min: schemaMin },
+        );
       } else if (schemaMax !== undefined && defaultNum > schemaMax) {
-        rowErrors.default_value = `Default value (${defaultNum}) exceeds the schema maximum (${schemaMax})`;
+        rowErrors.default_value = m(
+          'validation.catalogItem.defaultAboveMax',
+          `Default value (${defaultNum}) exceeds the schema maximum (${schemaMax})`,
+          { value: defaultNum, max: schemaMax },
+        );
       }
     }
 

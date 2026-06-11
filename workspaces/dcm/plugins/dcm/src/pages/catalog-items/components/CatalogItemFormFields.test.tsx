@@ -23,6 +23,11 @@ import {
 } from './CatalogItemFormFields';
 import { emptyCatalogItemForm, CatalogItemForm } from '../catalogItemFormTypes';
 
+jest.mock('../../../hooks/useTranslation', () => {
+  const mod = require('../../../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 type ScalarFields = Omit<CatalogItemForm, 'fields'>;
 type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
 
