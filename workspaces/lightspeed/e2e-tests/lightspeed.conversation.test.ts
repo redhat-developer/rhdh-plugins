@@ -250,7 +250,7 @@ test.describe('Lightspeed conversation', () => {
         await verifyChatRenamed(sharedPage, testChatName);
         await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
-        await verifyDeleteConfirmation(sharedPage, translations);
+        await verifyDeleteConfirmation(sharedPage, translations, testChatName);
         await cancelChatDeletion(sharedPage, translations);
         await verifyChatRenamed(sharedPage, testChatName);
 
