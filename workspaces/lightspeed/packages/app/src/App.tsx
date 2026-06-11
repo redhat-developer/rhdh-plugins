@@ -20,6 +20,7 @@ import {
   lightspeedFABModule,
   lightspeedTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
@@ -29,6 +30,7 @@ export default createApp({
     appDrawerModule,
     lightspeedFABModule,
     lightspeedTranslationsModule,
+    rhdhThemeModule,
     signInModule,
     navModule,
   ],
