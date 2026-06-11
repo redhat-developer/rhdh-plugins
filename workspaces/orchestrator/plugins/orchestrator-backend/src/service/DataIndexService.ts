@@ -299,7 +299,7 @@ export class DataIndexService {
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
           type,
-          processedFilters as Filter | undefined,
+          processedFilters,
         )
       : undefined;
 
