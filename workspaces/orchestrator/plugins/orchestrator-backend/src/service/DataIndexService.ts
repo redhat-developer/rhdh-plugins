@@ -290,6 +290,36 @@ export class DataIndexService {
         ? `processId: {in: ${JSON.stringify(definitionIds)}}`
         : undefined;
     const type = 'ProcessInstance';
+
+    // For nested filters, there might be more than one filter for the same field
+    // so we need to group them by the field and then combine the nested filters into an array
+    if (filter && 'filters' in filter) {
+      const grouped = filter.filters.reduce<Record<string, Filter[]>>(
+        (acc, item) => {
+          if ('field' in item) {
+            (acc[item.field] ??= []).push(item);
+          }
+          return acc;
+        },
+        {},
+      );
+
+      const newFilters: Filter[] = [];
+
+      for (const [field, filtersForField] of Object.entries(grouped)) {
+        if (filtersForField.length > 1) {
+          const nested = filtersForField
+            .filter((f): f is NestedFilter => 'nested' in f)
+            .map(f => f.nested);
+          newFilters.push({ field, nested } as unknown as NestedFilter);
+        } else {
+          newFilters.push(filtersForField[0]);
+        }
+      }
+
+      filter.filters = newFilters;
+    }
+
     const filterCondition = filter
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
