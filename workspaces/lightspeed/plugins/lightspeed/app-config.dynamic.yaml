@@ -6,7 +6,7 @@ dynamicPlugins:
           module: Alpha
           ref: lightspeedTranslationRef
       dynamicRoutes:
-        - path: /lightspeed
+        - path: /intelligent-assistant
           importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener

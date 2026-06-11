@@ -29,7 +29,7 @@ describe('LightspeedIcon', () => {
 
     const img = screen.getByRole('img');
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('alt', 'lightspeed icon');
+    expect(img).toHaveAttribute('alt', 'intelligent assistant icon');
     expect(img).toHaveStyle({ height: '25px' });
   });
 });

@@ -82,7 +82,7 @@ const notebooksApi = ApiBlueprint.make({
 
 const lightspeedPage = PageBlueprint.make({
   params: {
-    path: '/lightspeed',
+    path: '/intelligent-assistant',
     routeRef: nfsRootRouteRef,
     noHeader: true,
     loader: () => import('../components/Router').then(m => <m.Router />),

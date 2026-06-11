@@ -131,7 +131,11 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/lightspeed" element={<LightspeedPage />} />
+    <Route path="/intelligent-assistant" element={<LightspeedPage />} />
+    <Route
+      path="/lightspeed"
+      element={<Navigate to="/intelligent-assistant" replace />}
+    />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );

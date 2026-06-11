@@ -174,7 +174,7 @@ describe('LightspeedPage', () => {
       }),
     ).toBe('Delete "test"?');
     expect(result.current.t('conversation.delete.confirm.message')).toBe(
-      "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback.",
+      "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your activity.",
     );
   });
 
@@ -233,7 +233,7 @@ describe('LightspeedPage', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+        "The intelligent assistant requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
       ),
     ).toBeInTheDocument();
   });

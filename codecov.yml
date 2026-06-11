@@ -4,7 +4,7 @@
 # Feature umbrella: RHDHPLAN-851
 # Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
 #
-# Each workspace uploads coverage with its own flag (e.g., lightspeed,
+# Each workspace uploads coverage with its own flag (e.g., intelligent-assistant,
 # orchestrator). individual_flags scope each flag to its workspace path
 # so the Flags page shows per-workspace coverage correctly.
 
@@ -124,7 +124,7 @@ flag_management:
     - name: konflux
       paths:
         - workspaces/konflux/
-    - name: lightspeed
+    - name: intelligent-assistant
       paths:
         - workspaces/lightspeed/
     - name: mcp-integrations

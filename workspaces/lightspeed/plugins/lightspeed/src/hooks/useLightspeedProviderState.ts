@@ -30,7 +30,7 @@ import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';
 
-const LIGHTSPEED_PATH = '/lightspeed';
+const LIGHTSPEED_PATH = '/intelligent-assistant';
 
 function lightspeedRoutePath(conversationId?: string): string {
   return conversationId
