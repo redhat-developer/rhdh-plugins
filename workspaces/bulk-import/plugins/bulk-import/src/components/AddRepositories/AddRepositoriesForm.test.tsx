@@ -60,17 +60,6 @@ jest.mock('../DrawerContext', () => ({
   useDrawer: jest.fn(),
 }));
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  makeStyles: () => () => {
-    return {
-      body: 'body',
-      approvalTool: 'approvaltool',
-      approvalToolTooltip: 'approvalToolTooltip',
-    };
-  },
-}));
-
 jest.mock('@backstage/core-components', () => ({
   ...jest.requireActual('@backstage/core-components'),
   CodeSnippet: ({ text }: { text: string }) => (
