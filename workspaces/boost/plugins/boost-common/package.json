@@ -14,7 +14,10 @@
   "backstage": {
     "role": "common-library",
     "pluginId": "boost",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-common"
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-common",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost-common"
+    ]
   },
   "sideEffects": false,
   "scripts": {
