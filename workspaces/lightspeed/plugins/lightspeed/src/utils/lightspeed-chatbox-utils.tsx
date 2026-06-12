@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PushPinIcon from '@mui/icons-material/PushPin';
 import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
 import { Spinner } from '@patternfly/react-core';
+import { ThumbtackIcon } from '@patternfly/react-icons';
 
 import {
   BaseMessage,
@@ -321,8 +321,8 @@ export const getCategorizeMessages = (
       categorizedMessages[pinnedChatsKey].push({
         ...message,
         icon: (
-          <PushPinIcon
-            sx={{
+          <ThumbtackIcon
+            style={{
               width: '1rem',
               height: '1rem',
               display: 'flex',
