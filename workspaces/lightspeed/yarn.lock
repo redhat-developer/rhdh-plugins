@@ -8571,13 +8571,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.1.0, @patternfly/react-icons@npm:^6.3.1, @patternfly/react-icons@npm:^6.4.0":
+"@patternfly/react-icons@npm:^6.1.0, @patternfly/react-icons@npm:^6.4.0":
   version: 6.4.0
   resolution: "@patternfly/react-icons@npm:6.4.0"
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
   checksum: 10c0/2072babe83bad4de05e71b27c1180886912c99f24de8e5358cad06e9410a9643171b5dcda69d7e5c36f1010a2457ec9fdbb89cc9d54d92e63ede82de12c543cb
+  languageName: node
+  linkType: hard
+
+"@patternfly/react-icons@npm:^6.5.0":
+  version: 6.5.1
+  resolution: "@patternfly/react-icons@npm:6.5.1"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: 10c0/32af8ca4be0fad74a056aec5bcd4f4748166a35016de958758041e6afa21dd65fb7349dd22ea78c92fe7a150c1433d08b4a59f5851d162695f6a05cc99a53a45
   languageName: node
   linkType: hard
 
@@ -11247,7 +11257,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@patternfly/chatbot": "npm:6.6.0"
     "@patternfly/react-core": "npm:6.4.3"
-    "@patternfly/react-icons": "npm:^6.3.1"
+    "@patternfly/react-icons": "npm:^6.5.0"
     "@patternfly/react-table": "npm:^6.4.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.0.5"
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"

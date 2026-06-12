@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
+import {
+  ChatbotFootnote,
+  Conversation,
+  SourcesCardProps,
+} from '@patternfly/chatbot';
 import { Spinner } from '@patternfly/react-core';
+import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 import { ThumbtackIcon } from '@patternfly/react-icons';
 
 import {
@@ -34,6 +39,20 @@ export const getFootnoteProps = (
     t?.('footer.accuracy.label') ||
     'Always review AI generated content prior to use.',
 });
+
+export const ChatbotFootnoteWithIcon = ({ label }: { label: string }) => (
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
+    }}
+  >
+    <RhUiAiInfoIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+    <ChatbotFootnote label={label} />
+  </div>
+);
 
 export const getTimestampVariablesString = (v: number) => {
   if (v < 10) {

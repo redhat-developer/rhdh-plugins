@@ -109,7 +109,7 @@ describe('LightspeedFAB', () => {
     expect(mockToggleChatbot).toHaveBeenCalledTimes(1);
   });
 
-  it('should show close icon when chatbot is active', () => {
+  it('should show chevron-down icon when chatbot is active', () => {
     renderWithContext(
       createContextValue({
         isChatbotActive: true,
@@ -117,7 +117,7 @@ describe('LightspeedFAB', () => {
       }),
     );
 
-    expect(screen.getByTestId('CloseIcon')).toBeInTheDocument();
+    expect(screen.getByTestId('lightspeed-fab-open-icon')).toBeInTheDocument();
   });
 
   it('should show LightspeedFABIcon when chatbot is not active', () => {

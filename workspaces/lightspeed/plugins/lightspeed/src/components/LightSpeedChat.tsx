@@ -43,7 +43,6 @@ import {
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
-  ChatbotFootnote,
   ChatbotHeader,
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
@@ -79,6 +78,7 @@ import {
   ThumbtackIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
+import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -107,10 +107,10 @@ import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext'
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import logo from '../images/logo.svg';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
+  ChatbotFootnoteWithIcon,
   getCategorizeMessages,
   getFootnoteProps,
   SortOption,
@@ -190,12 +190,6 @@ const useStyles = makeStyles(theme => ({
   },
   headerTitle: {
     justifyContent: 'left !important',
-    '& h1': {
-      fontSize: '32px !important',
-      fontWeight: '700 !important',
-      lineHeight: '36.4px !important',
-      fontFamily: '"Red Hat Display", sans-serif !important',
-    },
   },
   headerDivider: {
     paddingTop: 8,
@@ -1795,7 +1789,7 @@ export const LightspeedChat = ({
           onAttachRejected={onAttachRejected}
           placeholder={t('chatbox.message.placeholder')}
         />
-        <ChatbotFootnote {...getFootnoteProps(t)} />
+        <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
       </ChatbotFooter>
     </>
   );
@@ -1930,13 +1924,17 @@ export const LightspeedChat = ({
             )}
             {isFullscreenMode && (
               <>
-                <img
-                  src={logo as any}
-                  alt={t('icon.lightspeed.alt')}
+                <RhUiAiExperienceIcon
+                  style={{ width: '24px', height: '24px' }}
+                  aria-label={t('icon.lightspeed.alt')}
                   className={classes.headerLogo}
                 />
                 <ChatbotHeaderTitle className={classes.headerTitle}>
-                  <Title headingLevel="h1" size="3xl">
+                  <Title
+                    headingLevel="h1"
+                    size="2xl"
+                    style={{ fontWeight: 700 }}
+                  >
                     {t('chatbox.header.title')}
                   </Title>
                 </ChatbotHeaderTitle>
