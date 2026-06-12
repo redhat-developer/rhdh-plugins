@@ -59,13 +59,21 @@ export const LightspeedFAB = () => {
         placement="left"
       >
         <Fab
-          color="primary"
+          color="inherit"
           variant="circular"
           size="large"
           onClick={toggleChatbot}
           aria-label={
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
+          sx={theme => ({
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            border: `1px solid ${theme.palette.divider}`,
+            '&:hover': {
+              backgroundColor: theme.palette.background.paper,
+            },
+          })}
         >
           {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
         </Fab>

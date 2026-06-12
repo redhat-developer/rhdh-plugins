@@ -71,6 +71,11 @@ export const LightspeedFAB = () => {
           }
           sx={theme => ({
             backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            border: `1px solid ${theme.palette.divider}`,
+            '&:hover': {
+              backgroundColor: theme.palette.background.paper,
+            },
           })}
         >
           {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
