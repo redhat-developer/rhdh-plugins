@@ -19,12 +19,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import { styled } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {
@@ -74,23 +75,56 @@ type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
 
 const SAVED_TOKEN_MASK = '********************';
 
-const useStyles = makeStyles(theme => ({
-  '@global': {
-    '.pf-v6-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-    '.pf-v5-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-  },
-  root: {
+const PREFIX = 'McpServersSettings';
+const classes = {
+  root: `${PREFIX}-root`,
+  headerRow: `${PREFIX}-headerRow`,
+  selectedCount: `${PREFIX}-selectedCount`,
+  title: `${PREFIX}-title`,
+  closeButton: `${PREFIX}-closeButton`,
+  nameHeaderButton: `${PREFIX}-nameHeaderButton`,
+  nameHeaderText: `${PREFIX}-nameHeaderText`,
+  nameCell: `${PREFIX}-nameCell`,
+  statusHeader: `${PREFIX}-statusHeader`,
+  statusColumnCell: `${PREFIX}-statusColumnCell`,
+  rowName: `${PREFIX}-rowName`,
+  nameValue: `${PREFIX}-nameValue`,
+  statusCell: `${PREFIX}-statusCell`,
+  statusValue: `${PREFIX}-statusValue`,
+  statusOk: `${PREFIX}-statusOk`,
+  statusToken: `${PREFIX}-statusToken`,
+  statusWarn: `${PREFIX}-statusWarn`,
+  statusDisabled: `${PREFIX}-statusDisabled`,
+  actionButton: `${PREFIX}-actionButton`,
+  modalDescription: `${PREFIX}-modalDescription`,
+  modalContent: `${PREFIX}-modalContent`,
+  modalCustomCloseButton: `${PREFIX}-modalCustomCloseButton`,
+  modalHeading: `${PREFIX}-modalHeading`,
+  tokenRow: `${PREFIX}-tokenRow`,
+  tokenClearButton: `${PREFIX}-tokenClearButton`,
+  tokenHelper: `${PREFIX}-tokenHelper`,
+  tokenInput: `${PREFIX}-tokenInput`,
+  tokenInputSuccess: `${PREFIX}-tokenInputSuccess`,
+  tokenInputError: `${PREFIX}-tokenInputError`,
+  modalActions: `${PREFIX}-modalActions`,
+  modalActionButton: `${PREFIX}-modalActionButton`,
+  modalCancelButton: `${PREFIX}-modalCancelButton`,
+  forgetTokenButton: `${PREFIX}-forgetTokenButton`,
+  configureModal: `${PREFIX}-configureModal`,
+  toggleCell: `${PREFIX}-toggleCell`,
+  table: `${PREFIX}-table`,
+  alert: `${PREFIX}-alert`,
+};
+
+const StyledRoot = styled('div')(({ theme }) => ({
+  [`&.${classes.root}`]: {
     padding: 0,
     height: '100%',
     minHeight: '100%',
     width: '100%',
     overflow: 'auto',
   },
-  headerRow: {
+  [`& .${classes.headerRow}`]: {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
@@ -99,20 +133,20 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(2),
   },
-  selectedCount: {
+  [`& .${classes.selectedCount}`]: {
     color: theme.palette.text.secondary,
     marginTop: theme.spacing(0.5),
     fontSize: '0.75rem',
   },
-  title: {
+  [`& .${classes.title}`]: {
     fontSize: '1.125rem',
   },
-  closeButton: {
+  [`& .${classes.closeButton}`]: {
     marginTop: -theme.spacing(1),
     marginRight: -theme.spacing(1),
     color: theme.palette.text.primary,
   },
-  nameHeaderButton: {
+  [`& .${classes.nameHeaderButton}`]: {
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
@@ -126,72 +160,72 @@ const useStyles = makeStyles(theme => ({
     display: 'inline-flex',
     alignItems: 'center',
   },
-  nameHeaderText: {
+  [`& .${classes.nameHeaderText}`]: {
     paddingLeft: '7px',
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
     fontWeight: 600,
   },
-  nameCell: {
+  [`& .${classes.nameCell}`]: {
     paddingLeft: '8px !important',
   },
-  statusHeader: {
+  [`& .${classes.statusHeader}`]: {
     paddingLeft: '0 !important',
   },
-  statusColumnCell: {
+  [`& .${classes.statusColumnCell}`]: {
     paddingLeft: '0 !important',
   },
-  rowName: {
+  [`& .${classes.rowName}`]: {
     fontSize: '1rem',
     fontWeight: 500,
     whiteSpace: 'nowrap',
   },
-  nameValue: {
+  [`& .${classes.nameValue}`]: {
     fontSize: '0.875rem',
     fontWeight: 500,
   },
-  statusCell: {
+  [`& .${classes.statusCell}`]: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
     whiteSpace: 'nowrap',
   },
-  statusValue: {
+  [`& .${classes.statusValue}`]: {
     fontSize: '0.875rem',
   },
-  statusOk: {
+  [`& .${classes.statusOk}`]: {
     color: '#147878',
   },
-  statusToken: {
+  [`& .${classes.statusToken}`]: {
     color: '#147878',
   },
-  statusWarn: {
+  [`& .${classes.statusWarn}`]: {
     color: '#B1380B',
   },
-  statusDisabled: {
+  [`& .${classes.statusDisabled}`]: {
     color: theme.palette.text.secondary,
   },
-  actionButton: {
+  [`& .${classes.actionButton}`]: {
     color: theme.palette.text.secondary,
   },
-  modalDescription: {
+  [`& .${classes.modalDescription}`]: {
     color: theme.palette.text.secondary,
     fontSize: '0.875rem',
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-  modalContent: {
+  [`& .${classes.modalContent}`]: {
     position: 'relative',
     padding: theme.spacing(3, 0, 3, 3),
     marginRight: theme.spacing(3),
   },
-  modalCustomCloseButton: {
+  [`& .${classes.modalCustomCloseButton}`]: {
     position: 'absolute',
     top: theme.spacing(2),
     right: theme.spacing(-0.5),
     color: theme.palette.text.primary,
   },
-  modalHeading: {
+  [`& .${classes.modalHeading}`]: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.75),
@@ -205,10 +239,10 @@ const useStyles = makeStyles(theme => ({
       fontWeight: 500,
     },
   },
-  tokenRow: {
+  [`& .${classes.tokenRow}`]: {
     position: 'relative',
   },
-  tokenClearButton: {
+  [`& .${classes.tokenClearButton}`]: {
     position: 'absolute',
     right: theme.spacing(1),
     top: '50%',
@@ -216,12 +250,12 @@ const useStyles = makeStyles(theme => ({
     zIndex: 1,
     color: theme.palette.action.active,
   },
-  tokenHelper: {
+  [`& .${classes.tokenHelper}`]: {
     color: theme.palette.text.secondary,
     fontSize: '0.75rem',
     marginTop: theme.spacing(0.5),
   },
-  tokenInput: {
+  [`& .${classes.tokenInput}`]: {
     marginTop: '1rem !important',
     '& .MuiOutlinedInput-root': {
       height: '3.5rem',
@@ -233,7 +267,7 @@ const useStyles = makeStyles(theme => ({
       fontSize: '0.875rem',
     },
   },
-  tokenInputSuccess: {
+  [`& .${classes.tokenInputSuccess}`]: {
     '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
       borderColor: '#3E8635',
       borderWidth: 1,
@@ -248,7 +282,7 @@ const useStyles = makeStyles(theme => ({
       color: '#3E8635',
     },
   },
-  tokenInputError: {
+  [`& .${classes.tokenInputError}`]: {
     '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
       borderColor: '#C9190B',
       borderWidth: 1,
@@ -263,18 +297,18 @@ const useStyles = makeStyles(theme => ({
       color: '#C9190B',
     },
   },
-  modalActions: {
+  [`& .${classes.modalActions}`]: {
     marginTop: theme.spacing(3),
     display: 'flex',
     gap: theme.spacing(1),
   },
-  modalActionButton: {
+  [`& .${classes.modalActionButton}`]: {
     fontSize: '1rem',
   },
-  modalCancelButton: {
+  [`& .${classes.modalCancelButton}`]: {
     fontSize: '1rem',
   },
-  forgetTokenButton: {
+  [`& .${classes.forgetTokenButton}`]: {
     fontSize: '1rem',
     border: '1px solid #B1380B',
     borderRadius: '1.25rem',
@@ -288,7 +322,7 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'rgba(201, 25, 11, 0.08)',
     },
   },
-  configureModal: {
+  [`& .${classes.configureModal}`]: {
     '& .pf-v6-c-modal-box': {
       width: '608px',
       maxWidth: '608px',
@@ -311,10 +345,10 @@ const useStyles = makeStyles(theme => ({
       fontSize: '1.25rem !important',
     },
   },
-  toggleCell: {
+  [`& .${classes.toggleCell}`]: {
     paddingRight: '0 !important',
   },
-  table: {
+  [`& .${classes.table}`]: {
     width: '100%',
     '& th': {
       borderBottom: 0,
@@ -331,7 +365,7 @@ const useStyles = makeStyles(theme => ({
       verticalAlign: 'middle',
     },
   },
-  alert: {
+  [`& .${classes.alert}`]: {
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),
     marginBottom: theme.spacing(2),
@@ -408,7 +442,6 @@ export const McpServersSettings = ({
   onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
@@ -821,10 +854,16 @@ export const McpServersSettings = ({
   };
 
   return (
-    <div
+    <StyledRoot
       className={classes.root}
       style={backgroundColor ? { backgroundColor } : undefined}
     >
+      <GlobalStyles
+        styles={{
+          '.pf-v6-c-backdrop': { zIndex: '1400 !important' },
+          '.pf-v5-c-backdrop': { zIndex: '1400 !important' },
+        }}
+      />
       <div className={classes.headerRow}>
         <div>
           <Title headingLevel="h2" size="xl" className={classes.title}>
@@ -1114,6 +1153,6 @@ export const McpServersSettings = ({
           </div>
         </div>
       </Modal>
-    </div>
+    </StyledRoot>
   );
 };

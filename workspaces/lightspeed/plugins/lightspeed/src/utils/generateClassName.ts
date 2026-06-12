@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-import { createGenerateClassName as createGenerateClassNameV4 } from '@material-ui/core/styles';
 import { createGenerateClassName } from '@mui/styles';
 
 export const generateClassName = createGenerateClassName({
-  seed: 'lightspeed',
-});
-
-export const generateClassNameV4 = createGenerateClassNameV4({
   seed: 'lightspeed',
 });

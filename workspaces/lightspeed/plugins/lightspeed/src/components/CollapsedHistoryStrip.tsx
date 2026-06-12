@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import { Button, Tooltip } from '@patternfly/react-core';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -39,51 +39,51 @@ export const PencilIcon = ({ className }: IconProps) => (
   </svg>
 );
 
-const useStyles = makeStyles(theme => ({
-  strip: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: theme.spacing(1.5),
-    gap: theme.spacing(1.5),
-    borderRight: '1px solid var(--pf-t--global--border--color--default)',
-    width: 48,
-    minWidth: 48,
-    flexShrink: 0,
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-    height: '100%',
-  },
-  iconButton: {
-    padding: '8px !important',
-    minWidth: 0,
-    lineHeight: 1,
-    borderRadius: '8px !important',
-    border: '1px solid var(--pf-t--global--border--color--default) !important',
-    color: 'var(--pf-t--global--icon--color--regular)',
-    '& svg': {
-      width: 18,
-      height: 18,
-    },
-    '&:hover': {
-      color: 'var(--pf-t--global--icon--color--hover) !important',
-      backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--hover) !important',
-    },
-  },
-  newChatIconButton: {
-    padding: '8px !important',
-    minWidth: 0,
-    lineHeight: 1,
-    borderRadius: '8px !important',
-    border: '1px solid var(--pf-t--global--border--color--default) !important',
-    color: 'var(--pf-t--global--color--brand--default)',
-    '&:hover': {
-      color: 'var(--pf-t--global--color--brand--hover) !important',
-      backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--hover) !important',
-    },
-  },
+const StripRoot = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingTop: theme.spacing(1.5),
+  gap: theme.spacing(1.5),
+  borderRight: '1px solid var(--pf-t--global--border--color--default)',
+  width: 48,
+  minWidth: 48,
+  flexShrink: 0,
+  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+  height: '100%',
 }));
+
+const StyledIconButton = styled(Button)({
+  padding: '8px !important',
+  minWidth: 0,
+  lineHeight: 1,
+  borderRadius: '8px !important',
+  border: '1px solid var(--pf-t--global--border--color--default) !important',
+  color: 'var(--pf-t--global--icon--color--regular)',
+  '& svg': {
+    width: 18,
+    height: 18,
+  },
+  '&:hover': {
+    color: 'var(--pf-t--global--icon--color--hover) !important',
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover) !important',
+  },
+});
+
+const StyledNewChatButton = styled(Button)({
+  padding: '8px !important',
+  minWidth: 0,
+  lineHeight: 1,
+  borderRadius: '8px !important',
+  border: '1px solid var(--pf-t--global--border--color--default) !important',
+  color: 'var(--pf-t--global--color--brand--default)',
+  '&:hover': {
+    color: 'var(--pf-t--global--color--brand--hover) !important',
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover) !important',
+  },
+});
 
 type CollapsedHistoryStripProps = {
   onExpand: () => void;
@@ -96,32 +96,29 @@ export const CollapsedHistoryStrip = ({
   onNewChat,
   newChatDisabled = false,
 }: CollapsedHistoryStripProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
-    <div className={classes.strip}>
+    <StripRoot>
       <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
-        <Button
+        <StyledIconButton
           variant="plain"
-          className={classes.iconButton}
           onClick={onExpand}
           aria-label={t('tooltip.expandHistoryPanel')}
         >
           <SidebarExpandIcon />
-        </Button>
+        </StyledIconButton>
       </Tooltip>
       <Tooltip content={t('tooltip.quickNewChat')} position="right">
-        <Button
+        <StyledNewChatButton
           variant="plain"
-          className={classes.newChatIconButton}
           onClick={onNewChat}
           aria-label={t('tooltip.quickNewChat')}
           isDisabled={newChatDisabled}
         >
           <PencilIcon />
-        </Button>
+        </StyledNewChatButton>
       </Tooltip>
-    </div>
+    </StripRoot>
   );
 };
