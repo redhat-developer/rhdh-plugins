@@ -38,7 +38,7 @@ import { performGuestLogin } from './fixtures/auth';
  */
 
 const EXTENSIONS_PATH = '/extensions';
-const PLUGIN_SEARCH_TERM = 'resource optimization';
+const PLUGIN_SEARCH_TERM = 'cost management';
 
 /**
  * Detect which sidebar layout the installed plugin exposes.
@@ -101,7 +101,7 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
     await searchForPlugin(page);
 
     await expect(
-      page.getByRole('heading', { name: /resource optimization/i }).first(),
+      page.getByRole('heading', { name: /cost management/i }).first(),
     ).toBeVisible({ timeout: 15000 });
   });
 
@@ -116,9 +116,12 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
     await readMore.click();
 
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('body')).toContainText(/resource optimization/i, {
-      timeout: 15000,
-    });
+    await expect(page.locator('body')).toContainText(
+      /cost management|resource optimization/i,
+      {
+        timeout: 15000,
+      },
+    );
   });
 
   test('FLPATH-2460: ROS plugin can be installed from marketplace', async ({
@@ -181,22 +184,22 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
     await page.waitForTimeout(2000);
 
     const pageContent = page.locator('body');
-    const hasRosPlugin = await pageContent
-      .filter({ hasText: /resource optimization|cost.management/i })
-      .isVisible({ timeout: 10000 })
+    const hasPlugin = await pageContent
+      .filter({ hasText: /cost.management|resource.optimization/i })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
 
-    if (hasRosPlugin) {
+    if (hasPlugin) {
       await expect(
         pageContent.filter({
-          hasText: /resource optimization|cost.management/i,
+          hasText: /cost.management|resource.optimization/i,
         }),
       ).toBeVisible();
     } else {
       test.info().annotations.push({
         type: 'info',
         description:
-          'ROS plugin not yet visible in Installed packages — may require pod restart',
+          'Plugin not yet visible in Installed packages — may require pod restart to appear',
       });
     }
   });
@@ -318,7 +321,7 @@ test.describe('Extensions Marketplace: Plugin Installation @marketplace', () => 
     // Verify the page loaded — not a 404 or error page
     await expect(page).not.toHaveURL(/.*error.*/);
     const heading = page.getByRole('heading', {
-      name: /resource optimization/i,
+      name: /cost management|resource optimization/i,
     });
     const hasHeading = await heading
       .isVisible({ timeout: 15000 })
