@@ -315,7 +315,7 @@ describe('LightspeedChat', () => {
     await waitFor(() => {
       expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
 
-      expect(screen.queryByText('New chat')).not.toBeInTheDocument();
+      expect(screen.getByText('New chat').closest('button')).toBeDisabled();
       expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});
     });
   });
@@ -1095,7 +1095,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show PencilIcon in new chat button in fullscreen mode', async () => {
+    it('should show PenIcon in new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {
