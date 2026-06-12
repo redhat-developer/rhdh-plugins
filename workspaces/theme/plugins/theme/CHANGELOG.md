@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.8
+
+### Patch Changes
+
+- 6a1b1f0: Replace Material UI v4 imports with MUI v5 and add workspace ESLint restrictions to prevent v4 regressions.
+
 ## 0.14.7
 
 ### Patch Changes
