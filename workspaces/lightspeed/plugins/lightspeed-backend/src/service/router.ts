@@ -654,7 +654,7 @@ export async function createRouter(
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
 
           // Handle stream errors (RHIDP-13064)
-          nodeStream.on('error', error => {
+          nodeStream.on('error', (error: Error) => {
             logger.error(
               `Upstream stream error while processing query: ${error}`,
             );
@@ -664,7 +664,7 @@ export async function createRouter(
           });
 
           // Handle client disconnection (RHIDP-13064)
-          response.on('error', error => {
+          response.on('error', (error: Error) => {
             logger.warn(`Client disconnected while processing query: ${error}`);
             nodeStream.destroy();
           });
