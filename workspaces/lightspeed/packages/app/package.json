@@ -36,6 +36,7 @@
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.5",
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.7",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.30.4",
