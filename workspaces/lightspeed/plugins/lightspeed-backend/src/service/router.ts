@@ -627,6 +627,8 @@ export async function createRouter(
           userEntityRef,
         );
 
+        const abortController = new AbortController();
+
         const fetchResponse = await fetch(
           `${lightspeedCoreBaseUrl}/v1/streaming_query?${userQueryParam}`,
           {
@@ -636,6 +638,7 @@ export async function createRouter(
               'MCP-HEADERS': mcpHeadersValue,
             },
             body: requestBody,
+            signal: abortController.signal,
           },
         );
 
@@ -653,7 +656,6 @@ export async function createRouter(
         if (fetchResponse.body) {
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
 
-          // Handle stream errors (RHIDP-13064)
           nodeStream.on('error', (error: Error) => {
             logger.error(
               `Upstream stream error while processing query: ${error}`,
@@ -661,12 +663,13 @@ export async function createRouter(
             if (!response.headersSent) {
               response.status(500).json({ error: 'Stream error occurred' });
             }
+            abortController.abort();
           });
 
-          // Handle client disconnection (RHIDP-13064)
           response.on('error', (error: Error) => {
             logger.warn(`Client disconnected while processing query: ${error}`);
             nodeStream.destroy();
+            abortController.abort();
           });
 
           nodeStream.pipe(response);
