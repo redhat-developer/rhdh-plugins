@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.10.0
+
+### Patch Changes
+
+- 68be3de: Improve chat history sidebar UI: add icons to chat action menu, fix sidebar icon alignment, improve delete modal styling with rounded corners and chat name in title, keep New Chat button always visible but disabled, and update empty state messages.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.10.0
+
 ## 2.9.1
 
 ### Patch Changes
