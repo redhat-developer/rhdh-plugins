@@ -28,6 +28,10 @@
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.9.1",
+    "@backstage/plugin-permission-common": "^0.9.9"
+  },
   "devDependencies": {
     "@backstage/cli": "^0.34.5"
   },
