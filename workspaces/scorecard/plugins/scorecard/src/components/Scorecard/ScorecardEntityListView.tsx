@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityScorecardContent } from './EntityScorecardContent';
 
-export { EntityScorecardContent };
-export { ScorecardEntityContentGridView } from './ScorecardEntityContentGridView';
-export { ScorecardEntityListView } from './ScorecardEntityListView';
-export { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
+export const ScorecardEntityListView = () => {
+  return <div>ScorecardEntityListView</div>;
+};
