@@ -529,7 +529,7 @@ export async function createNotebooksRouter(
           );
 
           // Handle stream errors (RHIDP-13064)
-          body.on('error', error => {
+          body.on('error', (error: Error) => {
             logger.error(
               `Upstream stream error while processing notebook query: ${error}`,
             );
@@ -541,7 +541,7 @@ export async function createNotebooksRouter(
             transformStream.destroy();
           });
 
-          transformStream.on('error', error => {
+          transformStream.on('error', (error: Error) => {
             logger.error(
               `Transform stream error while processing notebook query: ${error}`,
             );
@@ -554,7 +554,7 @@ export async function createNotebooksRouter(
           });
 
           // Handle client disconnection (RHIDP-13064)
-          res.on('error', error => {
+          res.on('error', (error: Error) => {
             logger.warn(
               `Client disconnected while processing notebook query: ${error}`,
             );
