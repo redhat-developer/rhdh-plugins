@@ -233,7 +233,9 @@ export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps> =
       name: 'CatalogStarredEntitiesCard',
       component: {
         lazy: () =>
-          import('@backstage/plugin-home').then(m => m.HomePageStarredEntities),
+          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+            m => m.CatalogStarredEntitiesCard,
+          ),
       },
     }),
   );
@@ -247,7 +249,9 @@ export const RecentlyVisitedCard: ComponentType<VisitedByTypeProps> =
       name: 'RecentlyVisitedCard',
       component: {
         lazy: () =>
-          import('@backstage/plugin-home').then(m => m.HomePageRecentlyVisited),
+          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+            m => m.RecentlyVisitedCard,
+          ),
       },
     }),
   );
@@ -261,7 +265,9 @@ export const TopVisitedCard: ComponentType<VisitedByTypeProps> =
       name: 'TopVisitedCard',
       component: {
         lazy: () =>
-          import('@backstage/plugin-home').then(m => m.HomePageTopVisited),
+          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+            m => m.TopVisitedCard,
+          ),
       },
     }),
   );
@@ -279,21 +285,6 @@ export const FeaturedDocsCard: ComponentType<FeaturedDocsCardProps> =
       },
     }),
   );
-
-/**
- * @public
- */
-export const JokeCard: ComponentType<{
-  defaultCategory?: 'any' | 'programming';
-}> = dynamicHomePagePlugin.provide(
-  createComponentExtension({
-    name: 'JokeCard',
-    component: {
-      lazy: () =>
-        import('@backstage/plugin-home').then(m => m.HomePageRandomJoke),
-    },
-  }),
-);
 
 /**
  * @public

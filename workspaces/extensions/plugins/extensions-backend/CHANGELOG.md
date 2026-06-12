@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-extensions-backend
 
+## 0.18.0
+
+### Minor Changes
+
+- 53a5d1d: bump to 1.51.1
+
+### Patch Changes
+
+- Updated dependencies [763507e]
+- Updated dependencies [53a5d1d]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.0
+
 ## 0.17.1
 
 ### Patch Changes

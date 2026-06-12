@@ -81,7 +81,6 @@ import {
   RecentlyVisitedCard,
   TopVisitedCard,
   FeaturedDocsCard,
-  JokeCard,
   WorldClock,
   HomePageCardMountPoint,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
@@ -221,6 +220,7 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: EntitySection,
     config: {
       id: 'rhdh-entity-section',
+      titleKey: 'entities.title',
       priority: 201,
       layouts: layouts.entity,
     },
@@ -229,6 +229,7 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: TemplateSection,
     config: {
       id: 'rhdh-template-section',
+      titleKey: 'templates.title',
       priority: 200,
       layouts: layouts.template,
     },
@@ -239,7 +240,7 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     config: {
       priority: 202,
       id: 'quickaccess-card',
-      title: 'Quick Access Card',
+      titleKey: 'quickAccess.title',
       layouts: layouts.quickAccessCard,
     },
   },
@@ -321,35 +322,28 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: CatalogStarredEntitiesCard,
     config: {
       id: 'catalog-starred-entities-card',
-      title: 'Starred catalog entities',
+      titleKey: 'starredEntities.title',
     },
   },
   {
     Component: RecentlyVisitedCard as ComponentType,
     config: {
       id: 'recently-visited-card',
-      title: 'Recently visited',
+      titleKey: 'recentlyVisited.title',
     },
   },
   {
     Component: TopVisitedCard as ComponentType,
     config: {
       id: 'top-visited-card',
-      title: 'Top visited',
+      titleKey: 'topVisited.title',
     },
   },
   {
     Component: FeaturedDocsCard as ComponentType,
     config: {
       id: 'featured-docs-card',
-      title: 'Featured docs',
-    },
-  },
-  {
-    Component: JokeCard,
-    config: {
-      id: 'joke-card',
-      title: 'Random joke',
+      titleKey: 'featuredDocs.title',
     },
   },
   {

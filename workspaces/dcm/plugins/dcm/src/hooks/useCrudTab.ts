@@ -90,6 +90,12 @@ export interface UseCrudTabOptions<T, F extends Record<string, unknown>> {
    * Each table should use a unique key (e.g. `'providers'`, `'policies'`).
    */
   storageKey?: string;
+  /** Message shown in the success snackbar after a successful create. */
+  createSuccessMessage?: string;
+  /** Message shown in the success snackbar after a successful edit. */
+  editSuccessMessage?: string;
+  /** Message shown in the success snackbar after a successful delete. */
+  deleteSuccessMessage?: string;
 }
 
 type TouchedMap<F> = Partial<Record<keyof F, boolean>>;
@@ -147,6 +153,10 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   handleOpenDelete: (item: T) => void;
   handleCloseDelete: () => void;
   handleDeleteConfirm: () => void;
+
+  // ── Success snackbar ───────────────────────────────────────────────────────
+  successMessage: string | null;
+  clearSuccessMessage: () => void;
 }
 
 /**
@@ -220,6 +230,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // ── Success snackbar ─────────────────────────────────────────────────────
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   // Keep latest mutable values in refs so stable callbacks can read them.
   const createFormRef = useRef(createForm);
   createFormRef.current = createForm;
@@ -284,6 +297,19 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
 
+  // Clamp the current page when items are removed (e.g. after a delete) and
+  // the page index points beyond the last valid page.
+  useEffect(() => {
+    if (page === 0) return;
+    const lastValidPage = Math.max(
+      0,
+      Math.ceil(filtered.length / pageSize) - 1,
+    );
+    if (page > lastValidPage) {
+      setPage(lastValidPage);
+    }
+  }, [filtered.length, page, pageSize]);
+
   const onPageChange = useCallback(
     (p: number, ps: number) => {
       setPage(p);
@@ -329,6 +355,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         setCreateOpen(false);
         setCreateForm(ef());
         setCreateTouched({});
+        setSuccessMessage(optsRef.current.createSuccessMessage ?? null);
       })
       .catch(err => setCreateError(extractApiError(err)))
       .finally(() => setCreateSubmitting(false));
@@ -365,6 +392,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         setEditOpen(false);
         setEditingId(null);
         setEditTouched({});
+        setSuccessMessage(optsRef.current.editSuccessMessage ?? null);
       })
       .catch(err => setEditError(extractApiError(err)))
       .finally(() => setEditSubmitting(false));
@@ -397,6 +425,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         setDeleteOpen(false);
         setDeletingItem(null);
         setDeleteSubmitting(false);
+        setSuccessMessage(optsRef.current.deleteSuccessMessage ?? null);
       })
       .catch(err => {
         setDeleteError(extractApiError(err));
@@ -404,6 +433,8 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         // dialog stays open so the user can see the error
       });
   }, []);
+
+  const clearSuccessMessage = useCallback(() => setSuccessMessage(null), []);
 
   return {
     // List
@@ -457,5 +488,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     handleOpenDelete,
     handleCloseDelete,
     handleDeleteConfirm,
+
+    // Success snackbar
+    successMessage,
+    clearSuccessMessage,
   };
 }

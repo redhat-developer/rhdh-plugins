@@ -8,6 +8,15 @@
       "gitTag": "@red-hat-developer-hub/backstage-plugin-openshift-image-registry@1.18.0",
       "reason": "No longer maintained",
       "archivedDate": "2026-04-01"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-sandbox",
+      "version": "0.1.0",
+      "workspace": "sandbox",
+      "plugin": "sandbox",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-sandbox@0.1.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-06-10"
     }
   ]
 }

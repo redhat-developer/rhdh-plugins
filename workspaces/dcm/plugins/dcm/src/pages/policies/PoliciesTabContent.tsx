@@ -56,6 +56,7 @@ import { policyManagerApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
@@ -108,6 +109,9 @@ export function PoliciesTabContent() {
     isValid: isPolicyFormValid,
     itemToForm: policyToForm,
     storageKey: 'policies',
+    createSuccessMessage: 'Policy created successfully.',
+    editSuccessMessage: 'Policy updated successfully.',
+    deleteSuccessMessage: 'Policy deleted successfully.',
   });
 
   const { setItems, handleOpenEdit, handleOpenDelete } = crud;
@@ -386,6 +390,11 @@ export function PoliciesTabContent() {
         resourceLabel="policy"
         error={crud.deleteError}
         isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );

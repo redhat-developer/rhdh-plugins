@@ -26,7 +26,7 @@ import {
 
 import { ErrorBoundary } from '@backstage/core-components';
 
-import { makeStyles } from 'tss-react/mui';
+import Box from '@mui/material/Box';
 
 import 'react-grid-layout/css/styles.css';
 
@@ -70,17 +70,15 @@ const defaultProps: ResponsiveProps = {
   compactType: null,
 };
 
-const useStyles = makeStyles()({
-  cardWrapper: {
-    '& > div[class*="MuiCard-root"]': {
-      width: '100%',
-      height: '100%',
-    },
-    '& div[class*="MuiCardContent-root"]': {
-      overflow: 'auto',
-    },
+const cardWrapperSx = {
+  '& > div[class*="MuiCard-root"]': {
+    width: '100%',
+    height: '100%',
   },
-});
+  '& div[class*="MuiCardContent-root"]': {
+    overflow: 'auto',
+  },
+};
 
 export interface DefaultWidgetsReadOnlyGridProps {
   defaultWidgets: VisibleDefaultWidget[];
@@ -91,7 +89,6 @@ export const DefaultWidgetsReadOnlyGrid = ({
   defaultWidgets,
   mountPoints,
 }: DefaultWidgetsReadOnlyGridProps) => {
-  const { classes } = useStyles();
   const [measureRef, measureRect] = useMeasure<HTMLDivElement>();
 
   const mountPointsByRef = useMemo(() => {
@@ -175,19 +172,19 @@ export const DefaultWidgetsReadOnlyGrid = ({
 
   const children = useMemo(() => {
     return cards.map(card => (
-      <div
+      <Box
         key={card.id}
         data-cardid={card.id}
         data-testid={`home-page card ${card.id}`}
         data-layout={JSON.stringify(card.layouts)}
-        className={classes.cardWrapper}
+        sx={cardWrapperSx}
       >
         <ErrorBoundary>
           <card.Component {...card.props} />
         </ErrorBoundary>
-      </div>
+      </Box>
     ));
-  }, [cards, classes.cardWrapper]);
+  }, [cards]);
 
   return (
     <div style={{ margin: -gridGap }}>
