@@ -37,6 +37,8 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
   name: 'entity-content-scorecard',
   config: {
     schema: {
+      // Allows flexible filtering: { kind: 'Component', type: 'service' }
+      // or just { type: 'service' } for all services.
       allowedFilters: schema =>
         schema
           .array(
