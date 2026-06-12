@@ -471,12 +471,15 @@ export async function createNotebooksRouter(
       };
 
       for (let retries = 0; retries <= MAX_QUERY_RETRIES; retries++) {
+        const abortController = new AbortController();
+
         const response = await fetch(
           `${lightspeedBaseUrl}/v1/responses?user_id=${encodeURIComponent(userId)}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lightspeedRequest),
+            signal: abortController.signal,
           },
         );
 
@@ -528,7 +531,6 @@ export async function createNotebooksRouter(
             userId,
           );
 
-          // Handle stream errors (RHIDP-13064)
           body.on('error', (error: Error) => {
             logger.error(
               `Upstream stream error while processing notebook query: ${error}`,
@@ -538,6 +540,7 @@ export async function createNotebooksRouter(
                 .status(500)
                 .json({ status: 'error', error: 'Stream error occurred' });
             }
+            abortController.abort();
             transformStream.destroy();
           });
 
@@ -551,15 +554,16 @@ export async function createNotebooksRouter(
                 error: 'Processing error occurred',
               });
             }
+            body.destroy();
+            abortController.abort();
           });
 
-          // Handle client disconnection (RHIDP-13064)
           res.on('error', (error: Error) => {
             logger.warn(
               `Client disconnected while processing notebook query: ${error}`,
             );
+            abortController.abort();
             body.destroy();
-            transformStream.destroy();
           });
 
           body.pipe(transformStream).pipe(res);
