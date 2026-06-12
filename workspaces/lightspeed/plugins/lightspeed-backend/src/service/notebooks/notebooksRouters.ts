@@ -459,12 +459,15 @@ export async function createNotebooksRouter(
       };
 
       for (let retries = 0; retries <= MAX_QUERY_RETRIES; retries++) {
+        const abortController = new AbortController();
+
         const response = await fetch(
           `${lightspeedBaseUrl}/v1/responses?user_id=${encodeURIComponent(userId)}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lightspeedRequest),
+            signal: abortController.signal,
           },
         );
 
@@ -510,11 +513,49 @@ export async function createNotebooksRouter(
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          body
-            .pipe(createResponsesApiTransform(session, sessionId, userId))
-            .pipe(res);
+          const transformStream = createResponsesApiTransform(
+            session,
+            sessionId,
+            userId,
+          );
+
+          body.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing notebook query: ${error}`,
+            );
+            if (!res.headersSent) {
+              res
+                .status(500)
+                .json({ status: 'error', error: 'Stream error occurred' });
+            }
+            abortController.abort();
+            transformStream.destroy();
+          });
+
+          transformStream.on('error', (error: Error) => {
+            logger.error(
+              `Transform stream error while processing notebook query: ${error}`,
+            );
+            if (!res.headersSent) {
+              res.status(500).json({
+                status: 'error',
+                error: 'Processing error occurred',
+              });
+            }
+            body.destroy();
+            abortController.abort();
+          });
+
+          res.on('error', (error: Error) => {
+            logger.warn(
+              `Client disconnected while processing notebook query: ${error}`,
+            );
+            abortController.abort();
+            body.destroy();
+          });
+
+          body.pipe(transformStream).pipe(res);
         }
-        console.log('response1234', response.body);
         break;
       }
     }),
