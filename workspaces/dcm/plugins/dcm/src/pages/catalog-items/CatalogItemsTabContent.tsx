@@ -77,6 +77,7 @@ import type {
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
@@ -123,6 +124,9 @@ export function CatalogItemsTabContent() {
     isValid: isCatalogItemFormValid,
     itemToForm: catalogItemToForm,
     storageKey: 'catalog-items',
+    createSuccessMessage: 'Catalog item created successfully.',
+    editSuccessMessage: 'Catalog item updated successfully.',
+    deleteSuccessMessage: 'Catalog item deleted successfully.',
   });
 
   const columns = useMemo<TableColumn<CatalogItem>[]>(
@@ -392,6 +396,11 @@ export function CatalogItemsTabContent() {
         resourceLabel="catalog item"
         error={crud.deleteError}
         isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );

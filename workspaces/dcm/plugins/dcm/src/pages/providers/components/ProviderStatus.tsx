@@ -24,12 +24,12 @@ import {
 } from '@backstage/core-components';
 import { Box, makeStyles, Typography } from '@material-ui/core';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   chip: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid rgba(0,0,0,0.2)',
+    border: `1px solid ${theme.palette.divider}`,
     borderRadius: 16,
     padding: '2px 10px 2px 6px',
     gap: 4,
@@ -43,7 +43,7 @@ const useStyles = makeStyles({
       height: '0.875rem !important',
     },
   },
-});
+}));
 
 /**
  * Maps a provider `health_status` string to a Backstage Status component.

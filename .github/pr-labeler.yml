@@ -70,10 +70,6 @@ workspace/repo-tools:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/repo-tools/**']
 
-workspace/sandbox:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/sandbox/**']
-
 workspace/scorecard:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/scorecard/**']

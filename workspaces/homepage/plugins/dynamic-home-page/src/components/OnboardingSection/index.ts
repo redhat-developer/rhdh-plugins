@@ -13,5 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { OnboardingSection } from './OnboardingSection';
-export { OnboardingSection as default } from './OnboardingSection';
+export { OnboardingSectionContent } from './OnboardingSection';
+export { OnboardingSection } from '../legacy/HomePageLegacyCards';
+export { OnboardingSection as default } from '../legacy/HomePageLegacyCards';

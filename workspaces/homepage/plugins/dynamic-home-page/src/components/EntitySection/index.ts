@@ -13,5 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { EntitySection } from './EntitySection';
-export { EntitySection as default } from './EntitySection';
+export { EntitySectionContent } from './EntitySection';
+export { EntitySection } from '../legacy/HomePageLegacyCards';
+export { EntitySection as default } from '../legacy/HomePageLegacyCards';

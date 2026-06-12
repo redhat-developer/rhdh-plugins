@@ -51,7 +51,7 @@ SyntaxHighlighter.registerLanguage('json', json);
 
 const useStyles = makeStyles(theme => ({
   fieldRow: {
-    background: 'rgba(0,0,0,0.03)',
+    background: theme.palette.action.hover,
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(1.25, 1.5),
   },

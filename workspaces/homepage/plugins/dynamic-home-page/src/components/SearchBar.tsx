@@ -19,26 +19,26 @@ import { useNavigate } from 'react-router-dom';
 
 import { SearchBarBase } from '@backstage/plugin-search-react';
 
-import { makeStyles } from 'tss-react/mui';
+import { styled } from '@mui/material/styles';
 
 import { useTranslation } from '../hooks/useTranslation';
 
-const useStyles = makeStyles()(theme => ({
-  searchBar: {
-    '&&': {
-      backgroundColor: theme.palette.mode === 'dark' ? '#36373A' : '#FFFFFF',
-      boxShadow: 'none',
-      border: `1px solid ${
-        theme.palette.mode === 'dark' ? '#57585a' : '#E4E4E4'
-      }`,
-      borderRadius: '50px',
-      margin: 0,
-    },
+const StyledSearchBar = styled(SearchBarBase)(({ theme }) => ({
+  '&&': {
+    backgroundColor: theme.palette.mode === 'dark' ? '#36373A' : '#FFFFFF',
+    boxShadow: 'none',
+    border: `1px solid ${
+      theme.palette.mode === 'dark' ? '#57585a' : '#E4E4E4'
+    }`,
+    borderRadius: '50px',
+    margin: 0,
+    overflow: 'hidden',
   },
-  notchedOutline: {
-    '&&': {
-      borderStyle: 'none',
-    },
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '50px',
+  },
+  '& .MuiOutlinedInput-notchedOutline, & fieldset': {
+    border: 'none',
   },
 }));
 
@@ -54,7 +54,6 @@ export interface SearchBarProps {
  * @public
  */
 export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
-  const { classes } = useStyles();
   const { t } = useTranslation();
   const [value, setValue] = useState('');
   const ref = useRef<HTMLInputElement | null>(null);
@@ -73,20 +72,13 @@ export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
   }, [navigate, path, queryParam]);
 
   return (
-    <SearchBarBase
+    <StyledSearchBar
       placeholder={t('search.placeholder')}
       value={value}
       onChange={setValue}
       onSubmit={handleSubmit}
+      margin="none"
       inputProps={{ ref }}
-      classes={{
-        root: classes.searchBar,
-      }}
-      InputProps={{
-        classes: {
-          notchedOutline: classes.notchedOutline,
-        },
-      }}
     />
   );
 };

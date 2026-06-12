@@ -40,7 +40,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'attach.menu.description': 'Adjuntar un archivo JSON, YAML o TXT',
     'attach.menu.title': 'Adjuntar',
     'button.newChat': 'Nuevo chat',
-    'chatbox.emptyState.noPinnedChats': 'No hay chats fijados',
+    'chatbox.emptyState.noPinnedChats': 'Fija chats para mantenerlos arriba',
     'chatbox.emptyState.noRecentChats': 'No hay chats recientes',
     'chatbox.emptyState.noResults.body':
       'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
@@ -70,8 +70,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.delete': 'Eliminar',
     'conversation.delete.confirm.action': 'Eliminar',
     'conversation.delete.confirm.message':
-      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de la actividad de Lightspeed.',
-    'conversation.delete.confirm.title': '¿Eliminar chat?',
+      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios.',
+    'conversation.delete.confirm.title': '¿Eliminar "{{chatName}}"?',
     'conversation.removeFromPinnedChats': 'Quitar fijación',
     'conversation.rename': 'Cambiar el nombre',
     'conversation.rename.confirm.action': 'Cambiar el nombre',

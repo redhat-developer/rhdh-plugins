@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 7.3.6
+
+### Patch Changes
+
+- 985b994: Updated dependency `@openapitools/openapi-generator-cli` to `2.34.0`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.6
+
 ## 7.3.5
 
 ### Patch Changes
