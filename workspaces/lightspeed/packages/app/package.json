@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "private": true,
   "bundled": true,
   "repository": {
@@ -38,7 +38,7 @@
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
-    "react-router": "^6.30.2",
+    "react-router": "^6.30.4",
     "react-router-dom": "^6.30.2"
   },
   "devDependencies": {

@@ -25,10 +25,10 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const bulkImportTranslationRef: TranslationRef<
   'plugin.bulk-import',
   {
+    readonly 'table.headers.name': string;
     readonly 'table.headers.group': string;
     readonly 'table.headers.status': string;
     readonly 'table.headers.url': string;
-    readonly 'table.headers.name': string;
     readonly 'table.headers.organization': string;
     readonly 'table.headers.repoUrl': string;
     readonly 'table.headers.organizationGroup': string;
@@ -61,6 +61,7 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'status.missingConfigurations': string;
     readonly 'status.failedCreatingPR': string;
     readonly 'status.pullRequestRejected': string;
+    readonly 'repositories.pr': string;
     readonly 'repositories.addedRepositories': string;
     readonly 'repositories.importedEntities': string;
     readonly 'repositories.addedRepositoriesCount': string;
@@ -89,7 +90,6 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'repositories.errorOccured': string;
     readonly 'repositories.editCatalogInfoTooltip': string;
     readonly 'repositories.viewCatalogInfoTooltip': string;
-    readonly 'repositories.pr': string;
     readonly 'sidebar.bulkImport': string;
     readonly 'permissions.title': string;
     readonly 'permissions.addRepositoriesMessage': string;
@@ -144,8 +144,8 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'common.select': string;
     readonly 'common.filter': string;
     readonly 'common.view': string;
-    readonly 'common.add': string;
     readonly 'common.import': string;
+    readonly 'common.add': string;
     readonly 'common.cancel': string;
     readonly 'common.close': string;
     readonly 'common.delete': string;

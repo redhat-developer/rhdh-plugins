@@ -16,57 +16,44 @@
 
 import type { ReactNode } from 'react';
 
-import {
-  CodeSnippet,
-  InfoCard,
-  WarningPanel,
-} from '@backstage/core-components';
+import { CodeSnippet, WarningPanel } from '@backstage/core-components';
 import { ComponentAccordion, HomePageToolkit } from '@backstage/plugin-home';
 
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles } from 'tss-react/mui';
 
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
 import { useTranslation } from '../hooks/useTranslation';
 import { QuickAccessIcon } from './QuickAccessIcon';
 
-const useStyles = makeStyles()({
-  center: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    '& div > div > div > div > p': {
-      textTransform: 'uppercase',
-    },
-  },
-});
-
-/**
- * @public
- */
+/** @public */
 export interface QuickAccessCardProps {
   title?: string;
+  titleKey?: string;
   path?: string;
 }
 
-/**
- * @public
- */
-export const QuickAccessCard = (props: QuickAccessCardProps) => {
-  const { classes } = useStyles();
+/** @public */
+export const QuickAccessCardContent = ({
+  path,
+}: Pick<QuickAccessCardProps, 'path'>) => {
   const { t } = useTranslation();
-  const { data, error, isLoading } = useQuickAccessLinks(props.path);
+  const { data, error, isLoading } = useQuickAccessLinks(path);
 
   let content: ReactNode;
 
   if (isLoading) {
     content = (
-      <div className={classes.center}>
+      <Box
+        sx={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <CircularProgress />
-      </div>
+      </Box>
     );
   } else if (!data) {
     content = (
@@ -88,9 +75,6 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
               ...link,
               icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
             }))}
-            // Component creation is allowed inside component props only
-            // if prop name starts with `render`.
-            // We accept it here since the upstream package use `Renderer` instead.
             Renderer={(
               renderProps, // NOSONAR
             ) => (
@@ -102,13 +86,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
     );
   }
 
-  return (
-    <InfoCard
-      title={props.title ?? t('quickAccess.title')}
-      noPadding
-      className={classes.title}
-    >
-      {content}
-    </InfoCard>
-  );
+  return content;
 };
+
+export { QuickAccessCard } from './legacy/QuickAccessCardLegacy';

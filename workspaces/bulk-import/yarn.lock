@@ -11144,7 +11144,6 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@backstage/ui": "npm:^0.13.2"
-    "@material-ui/core": "npm:^4.12.4"
     "@mui/icons-material": "npm:^5.15.17"
     "@mui/material": "npm:^5.12.2"
     "@mui/styles": "npm:5.18.0"
@@ -11167,6 +11166,7 @@ __metadata:
     prettier: "npm:3.8.3"
     react: "npm:16.13.1 || ^17.0.0 || ^18.0.0"
     react-use: "npm:^17.2.4"
+    tss-react: "npm:^4.9.18"
     yaml: "npm:^2.0.0"
     yup: "npm:^1.4.0"
   peerDependencies:
@@ -16413,7 +16413,6 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@backstage/ui": "npm:^0.13.2"
-    "@material-ui/core": "npm:^4.12.4"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:5.18.0"

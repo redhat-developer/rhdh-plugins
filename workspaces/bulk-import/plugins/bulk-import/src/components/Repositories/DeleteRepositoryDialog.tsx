@@ -28,8 +28,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
-import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -37,23 +35,6 @@ import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData, ImportFlow } from '../../types';
-
-const useStyles = makeStyles(() =>
-  createStyles({
-    dialogContainer: {
-      height: '70%',
-    },
-    dialogTitle: {
-      padding: '16px 20px',
-    },
-    warningIcon: {
-      alignContent: 'center',
-      marginTop: '7px',
-      marginBottom: '-5px',
-      color: '#F0AB00',
-    },
-  }),
-);
 
 const DeleteRepositoryDialog = ({
   open,
@@ -65,7 +46,6 @@ const DeleteRepositoryDialog = ({
   closeDialog: () => void;
 }) => {
   const { t } = useTranslation();
-  const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const deleteRepository = (deleteRepo: AddRepositoryData) => {
     return bulkImportApi.deleteImportAction(
@@ -103,12 +83,12 @@ const DeleteRepositoryDialog = ({
       maxWidth="md"
       open={open}
       onClose={closeDialog}
-      className={classes.dialogContainer}
+      sx={{ height: '70%' }}
     >
       <DialogTitle
         id="delete-repository"
         title={t('repositories.deleteRepository')}
-        className={classes.dialogTitle}
+        sx={{ padding: '16px 20px' }}
       >
         <Box
           sx={{
@@ -118,7 +98,15 @@ const DeleteRepositoryDialog = ({
           }}
         >
           <Typography component="span" style={{ fontWeight: 'bold' }}>
-            <WarningIcon className={classes.warningIcon} color="warning" />{' '}
+            <WarningIcon
+              sx={{
+                alignContent: 'center',
+                marginTop: '7px',
+                marginBottom: '-5px',
+                color: '#F0AB00',
+              }}
+              color="warning"
+            />{' '}
             {t('repositories.removeRepositoryQuestion' as any, {
               repoName: repository.repoName || '',
               repositoryText: gitlabConfigured

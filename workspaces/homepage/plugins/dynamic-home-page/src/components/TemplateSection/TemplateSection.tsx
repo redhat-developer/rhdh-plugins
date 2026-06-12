@@ -25,7 +25,6 @@ import {
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
 import CardContent from '@mui/material/CardContent';
 import { styled } from '@mui/material/styles';
@@ -37,6 +36,7 @@ import { ViewMoreLink } from './ViewMoreLink';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
 import { containerGridItemSx } from '../../utils/GridItem';
+import { sectionContentContainerSx } from '../../styles/sectionCardSx';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -47,7 +47,7 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   borderRadius: 4,
 }));
 
-export const TemplateSection = () => {
+export const TemplateSectionContent = () => {
   const { t } = useTranslation();
   const {
     data: templates,
@@ -161,48 +161,18 @@ export const TemplateSection = () => {
   }
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        padding: '24px',
-        border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
-        containerType: 'inline-size',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Typography
-        variant="h3"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          fontWeight: '500',
-          fontSize: '1.5rem',
-          flexShrink: 0,
-        }}
-      >
-        {t('templates.title')}
-      </Typography>
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          mt: 1,
-        }}
-      >
-        {content}
-        {templates?.items && templates?.items.length > 0 && (
-          <Box sx={{ pt: 2 }}>
-            <ViewMoreLink to={catalogTemplatesLink} underline="always">
-              <Trans
-                message="templates.viewAll"
-                params={{ count: templates?.totalItems?.toString() || '' }}
-              />
-            </ViewMoreLink>
-          </Box>
-        )}
-      </Box>
-    </Card>
+    <Box sx={sectionContentContainerSx}>
+      {content}
+      {templates?.items && templates?.items.length > 0 && (
+        <Box sx={{ pt: 2 }}>
+          <ViewMoreLink to={catalogTemplatesLink} underline="always">
+            <Trans
+              message="templates.viewAll"
+              params={{ count: templates?.totalItems?.toString() || '' }}
+            />
+          </ViewMoreLink>
+        </Box>
+      )}
+    </Box>
   );
 };

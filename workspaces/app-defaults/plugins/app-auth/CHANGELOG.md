@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 0.0.3
+
+### Patch Changes
+
+- c446456: Supports the upstream Keycloak and PingFederate auth providers in the sign-in page.
+
 ## 0.0.2
 
 ### Patch Changes

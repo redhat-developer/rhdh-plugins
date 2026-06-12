@@ -250,7 +250,7 @@ test.describe('Lightspeed conversation', () => {
         await verifyChatRenamed(sharedPage, testChatName);
         await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
-        await verifyDeleteConfirmation(sharedPage, translations);
+        await verifyDeleteConfirmation(sharedPage, translations, testChatName);
         await cancelChatDeletion(sharedPage, translations);
         await verifyChatRenamed(sharedPage, testChatName);
 
@@ -336,6 +336,9 @@ test.describe('Lightspeed conversation', () => {
     test('Verify thinking section is displayed in bot response', async () => {
       await mockChatHistoryWithRedactedThinking(sharedPage);
       await sharedPage.reload();
+      await sharedPage.waitForSelector('.pf-chatbot__message--bot', {
+        timeout: 10000,
+      });
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
       await expect(botMessage).toBeVisible();
       await expect(

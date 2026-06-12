@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from 'tss-react/mui';
+import Box from '@mui/material/Box';
 
 /**
  * @public
@@ -24,35 +24,28 @@ export interface PlaceholderProps {
   debugContent?: string;
 }
 
-const useStyles = makeStyles()({
-  centerDebugContent: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // Make card content scrollable (so that cards don't overlap)
-  showBorder: {
-    border: '1px solid gray',
-    width: '100%',
-    height: '100%',
-  },
-});
-
 /**
  * @public
  */
 export const Placeholder = (props: PlaceholderProps) => {
-  const { classes } = useStyles();
-  const className = [
-    props.debugContent ? classes.centerDebugContent : undefined,
-    props.showBorder ? classes.showBorder : undefined,
-  ]
-    .filter(Boolean)
-    .join(' ');
   return (
-    <div data-testid="placeholder" className={className}>
+    <Box
+      data-testid="placeholder"
+      sx={{
+        ...(props.debugContent && {
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }),
+        ...(props.showBorder && {
+          border: '1px solid gray',
+          width: '100%',
+          height: '100%',
+        }),
+      }}
+    >
       {props.debugContent}
-    </div>
+    </Box>
   );
 };

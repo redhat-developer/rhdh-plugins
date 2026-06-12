@@ -45,6 +45,7 @@ import { catalogApiRef, providersApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
@@ -88,6 +89,9 @@ export function ProvidersTabContent() {
     isValid: isProviderFormValid,
     itemToForm: providerToForm,
     storageKey: 'providers',
+    createSuccessMessage: 'Provider registered successfully.',
+    editSuccessMessage: 'Provider updated successfully.',
+    deleteSuccessMessage: 'Provider deleted successfully.',
   });
 
   const columns = useMemo<TableColumn<Provider>[]>(
@@ -353,6 +357,11 @@ export function ProvidersTabContent() {
         resourceLabel="provider"
         error={crud.deleteError}
         isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );
