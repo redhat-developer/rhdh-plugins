@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.10.0
+
+### Minor Changes
+
+- df49416: bugfix - Notebooks routes 404 passthrough error resolved
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.10.0
+
 ## 2.9.1
 
 ### Patch Changes

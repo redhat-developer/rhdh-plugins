@@ -1,5 +1,12 @@
 # backend
 
+## 0.0.60
+
+### Patch Changes
+
+- Updated dependencies [df49416]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.10.0
+
 ## 0.0.59
 
 ### Patch Changes
