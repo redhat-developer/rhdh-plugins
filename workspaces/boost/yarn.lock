@@ -3704,7 +3704,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common"
   dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.1"
     "@backstage/cli": "npm:^0.34.5"
+    "@backstage/plugin-permission-common": "npm:^0.9.9"
   languageName: unknown
   linkType: soft
 

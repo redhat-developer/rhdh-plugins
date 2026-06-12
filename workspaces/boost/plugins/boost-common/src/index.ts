@@ -20,3 +20,59 @@
  * @public
  */
 export const BOOST_PLUGIN_ID = 'boost';
+
+export type {
+  AgenticProvider,
+  ProviderDescriptor,
+  ProviderCapabilities,
+  NormalizedStreamEvent,
+  ConversationSummary,
+  ConversationDetails,
+  InputItem,
+} from './types';
+
+export { boostAiProviderServiceRef } from './services';
+
+export type { BoostAgentPermission, BoostToolPermission } from './permissions';
+
+export {
+  // Resource types
+  RESOURCE_TYPE_BOOST_AGENT,
+  RESOURCE_TYPE_BOOST_TOOL,
+  // Agent lifecycle permissions
+  boostAgentListPermission,
+  boostAgentRegisterPermission,
+  boostAgentPromotePermission,
+  boostAgentApprovePermission,
+  boostAgentDemotePermission,
+  boostAgentPublishPermission,
+  boostAgentUnpublishPermission,
+  boostAgentWithdrawPermission,
+  boostAgentDeletePermission,
+  boostAgentConfigurePermission,
+  // Tool lifecycle permissions
+  boostToolPromotePermission,
+  boostToolApprovePermission,
+  boostToolDemotePermission,
+  boostToolPublishPermission,
+  boostToolUnpublishPermission,
+  // Infrastructure permission
+  boostKagentiAdminPermission,
+  // Functional permissions
+  boostChatReadPermission,
+  boostChatCreatePermission,
+  boostDocumentsManagePermission,
+  boostMcpManagePermission,
+  boostConfigManagePermission,
+  // Access and admin
+  boostAccessPermission,
+  boostAdminPermission,
+  // Conditional rule names
+  BOOST_RULE_IS_OWNER,
+  BOOST_RULE_IS_NOT_CREATOR,
+  BOOST_RULE_HAS_LIFECYCLE_STAGE,
+  // Aggregated lists
+  boostResourcePermissions,
+  boostFunctionalPermissions,
+  boostPermissions,
+} from './permissions';
