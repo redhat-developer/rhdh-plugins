@@ -96,17 +96,29 @@ function handleNestedFilter(
   type: ProcessType,
   filter: NestedFilter,
 ): FilterClause {
-  const subClauses = buildFilterCondition(
-    introspection,
-    type,
-    filter.nested,
-    true,
-  );
-
-  const filterClause: FilterClause = {
-    clauseVariable: subClauses.clauseVariable,
-    clause: `${filter.field}: {${subClauses.clause}}`,
-  };
+  // check if the nested param is an array or an object
+  // this makes sure that we can handle the case where there are multiple filters for the same field
+  let filterClause: FilterClause;
+  if (Array.isArray(filter.nested)) {
+    const subClauses = filter.nested.map(n =>
+      buildFilterCondition(introspection, type, n, true),
+    );
+    filterClause = {
+      clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
+      clause: `${filter.field}: {${subClauses.map(cl => cl.clause).join(', ')}}`,
+    };
+  } else {
+    const subClauses = buildFilterCondition(
+      introspection,
+      type,
+      filter.nested,
+      true,
+    );
+    filterClause = {
+      clauseVariable: subClauses.clauseVariable,
+      clause: `${filter.field}: {${subClauses.clause}}`,
+    };
+  }
 
   return filterClause;
 }
@@ -412,4 +424,38 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
 // Not used for any secrets or anything
 function nonSecureRandomAlphaNumeric() {
   return randomBytes(8).toString('hex');
+}
+
+// For nested filters, there might be more than one filter for the same field
+// so we need to group them by the field and then combine the nested filters into an array
+export function processFilters(filter: Filter): Filter {
+  if (isLogicalFilter(filter)) {
+    const grouped = filter.filters.reduce<Record<string, Filter[]>>(
+      (acc, item) => {
+        if ('field' in item) {
+          acc[item.field] ??= [];
+          acc[item.field].push(item);
+        }
+        return acc;
+      },
+      {},
+    );
+
+    const newFilters: Filter[] = [];
+
+    for (const [field, filtersForField] of Object.entries(grouped)) {
+      if (filtersForField.length > 1) {
+        const nested = filtersForField
+          .filter((f): f is NestedFilter => 'nested' in f)
+          .map(f => f.nested);
+        newFilters.push({ field, nested } as unknown as NestedFilter);
+      } else {
+        newFilters.push(filtersForField[0]);
+      }
+    }
+
+    filter.filters = newFilters;
+  }
+
+  return filter;
 }

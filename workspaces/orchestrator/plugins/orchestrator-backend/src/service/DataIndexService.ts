@@ -30,7 +30,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
-import { buildFilterCondition } from '../helpers/filterBuilder';
+import { buildFilterCondition, processFilters } from '../helpers/filterBuilder';
 import {
   buildGraphQlQuery,
   buildQueryParamVariable,
@@ -290,11 +290,16 @@ export class DataIndexService {
         ? `processId: {in: ${JSON.stringify(definitionIds)}}`
         : undefined;
     const type = 'ProcessInstance';
-    const filterCondition = filter
+
+    // For nested filters, there might be more than one filter for the same field
+    // so we need to group them by the field and then combine the nested filters into an array
+    const processedFilters = filter ? processFilters(filter) : undefined;
+
+    const filterCondition = processedFilters
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
           type,
-          filter,
+          processedFilters,
         )
       : undefined;
 
