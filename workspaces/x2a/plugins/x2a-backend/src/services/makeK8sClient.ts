@@ -58,7 +58,6 @@ export const makeK8sClient = async (
         logger.info(`Setting KUBECONFIG to ${kubeconfigPath}`);
       }
     }
-
     kc.loadFromDefault();
     logger.info(
       `Loaded Kubernetes configuration from ${process.env.KUBECONFIG || 'default location'}`,
@@ -76,6 +75,18 @@ export const makeK8sClient = async (
         'Unable to load Kubernetes configuration. Please ensure KUBECONFIG is set or running in a cluster.',
       );
     }
+  }
+
+  // Workaround: the @kubernetes/client-node library's HTTPS agent mechanism
+  // (applySecurityAuthentication) doesn't work in RHDH dynamic plugin context,
+  // and NODE_TLS_REJECT_UNAUTHORIZED env var is filtered by the task runner (turbo).
+  // Set it here so Node.js TLS layer skips server cert verification.
+  const cluster = kc.getCurrentCluster();
+  if (cluster?.skipTLSVerify && !process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    logger.warn(
+      'TLS verification disabled (insecure-skip-tls-verify is set in kubeconfig)',
+    );
   }
 
   // Dynamic import of API classes to avoid ESM issues
