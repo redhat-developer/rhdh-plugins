@@ -25,12 +25,10 @@ import type {
   LightspeedDrawerContextType,
   LightspeedEmbeddedNotebooksTarget,
 } from '../components/LightspeedDrawerContext';
-import { LIGHTSPEED_APP_DRAWER_ID } from '../const';
+import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
 import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';
-
-const LIGHTSPEED_PATH = '/intelligent-assistant';
 
 function lightspeedRoutePath(conversationId?: string): string {
   return conversationId

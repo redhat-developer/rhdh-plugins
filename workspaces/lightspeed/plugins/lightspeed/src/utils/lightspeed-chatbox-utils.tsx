@@ -19,8 +19,8 @@ import {
   SourcesCardProps,
 } from '@patternfly/chatbot';
 import { Spinner } from '@patternfly/react-core';
-import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 import { ThumbtackIcon } from '@patternfly/react-icons';
+import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 
 import {
   BaseMessage,

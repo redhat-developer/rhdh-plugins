@@ -82,6 +82,7 @@ import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
+  LIGHTSPEED_PATH,
   supportedFileTypes,
   TEMP_CONVERSATION_ID,
   UNTITLED_NOTEBOOK_NAME,
@@ -630,9 +631,9 @@ export const LightspeedChat = ({
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
     configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-  const notebooksRouteMatch = useMatch('/intelligent-assistant/notebooks');
+  const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
-    '/intelligent-assistant/notebooks/:notebookId',
+    `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
   );
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
   const isOnNotebookRoute = Boolean(
@@ -653,8 +654,8 @@ export const LightspeedChat = ({
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const location = useLocation();
   const isNotebooksFullscreenPath =
-    location.pathname === '/intelligent-assistant/notebooks' ||
-    location.pathname.startsWith('/intelligent-assistant/notebooks/');
+    location.pathname === `${LIGHTSPEED_PATH}/notebooks` ||
+    location.pathname.startsWith(`${LIGHTSPEED_PATH}/notebooks/`);
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
@@ -666,7 +667,7 @@ export const LightspeedChat = ({
       return 1;
     }
     const p = location.pathname;
-    if (p.startsWith('/intelligent-assistant/conversation/')) {
+    if (p.startsWith(`${LIGHTSPEED_PATH}/conversation/`)) {
       return 0;
     }
     if (shellViewTab === 1) {
@@ -702,7 +703,7 @@ export const LightspeedChat = ({
     if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
       setActiveNotebook(routeNotebook);
     } else if (routeNotebookId && routeNotebookError) {
-      navigate('/intelligent-assistant/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
     } else if (!routeNotebookId && notebooksRouteMatch) {
       setActiveNotebook(null);
     }
@@ -757,10 +758,10 @@ export const LightspeedChat = ({
       return;
     }
     const isBaseLightspeedChatRoute =
-      location.pathname === '/intelligent-assistant' ||
-      location.pathname === '/intelligent-assistant/';
+      location.pathname === LIGHTSPEED_PATH ||
+      location.pathname === `${LIGHTSPEED_PATH}/`;
     if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
-      navigate('/intelligent-assistant/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
       return;
     }
     setActiveTab(0);
@@ -778,15 +779,15 @@ export const LightspeedChat = ({
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
     if (nextTab === 1) {
-      navigate('/intelligent-assistant/notebooks');
+      navigate(`${LIGHTSPEED_PATH}/notebooks`);
       if (notebooksPermissionResolved) {
         refetchNotebooks();
       }
     } else {
       navigate(
         routeConversationId
-          ? `/intelligent-assistant/conversation/${routeConversationId}`
-          : '/intelligent-assistant',
+          ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
+          : LIGHTSPEED_PATH,
       );
     }
   };
@@ -816,14 +817,14 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          navigate(`/intelligent-assistant/notebooks/${session.session_id}`);
+          navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
         },
       },
     );
   }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
-    navigate('/intelligent-assistant/notebooks');
+    navigate(`${LIGHTSPEED_PATH}/notebooks`);
     refetchNotebooks();
   }, [navigate, refetchNotebooks]);
 
@@ -2161,9 +2162,7 @@ export const LightspeedChat = ({
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
               onSelectNotebook={(notebook: NotebookSession) => {
-                navigate(
-                  `/intelligent-assistant/notebooks/${notebook.session_id}`,
-                );
+                navigate(`${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`);
               }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
