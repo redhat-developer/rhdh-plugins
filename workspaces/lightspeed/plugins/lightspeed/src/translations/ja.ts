@@ -48,7 +48,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'chatbox.fileUpload.failed': 'ファイルのアップロードに失敗しました',
     'chatbox.fileUpload.infoText':
       'サポートされているファイルの種類は、.txt、.yaml、.json です。最大ファイルサイズは 25 MB です。',
-    'chatbox.header.title': 'Developer Hub Intelligent Assistant',
+    'chatbox.header.title': 'Developer Hub インテリジェントアシスタント',
     'chatbox.message.placeholder': 'メッセージを送信',
     'chatbox.provider.other': 'その他',
     'chatbox.search.placeholder': '検索',
@@ -70,7 +70,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.delete.confirm.action': '削除',
     'conversation.delete.confirm.message':
       'このチャットはここに表示されなくなります。アクティビティ からのプロンプト、回答、フィードバックなど、関連アクティビティーも削除されます。',
-    'conversation.delete.confirm.title': 'チャットを削除しますか?',
+    'conversation.delete.confirm.title': '"{{chatName}}" を削除しますか?',
     'conversation.removeFromPinnedChats': '固定解除',
     'conversation.rename': '名前の変更',
     'conversation.rename.confirm.action': '名前の変更',

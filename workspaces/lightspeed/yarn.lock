@@ -8571,17 +8571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.1.0, @patternfly/react-icons@npm:^6.4.0":
-  version: 6.4.0
-  resolution: "@patternfly/react-icons@npm:6.4.0"
-  peerDependencies:
-    react: ^17 || ^18 || ^19
-    react-dom: ^17 || ^18 || ^19
-  checksum: 10c0/2072babe83bad4de05e71b27c1180886912c99f24de8e5358cad06e9410a9643171b5dcda69d7e5c36f1010a2457ec9fdbb89cc9d54d92e63ede82de12c543cb
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-icons@npm:^6.5.0":
+"@patternfly/react-icons@npm:^6.1.0, @patternfly/react-icons@npm:^6.4.0, @patternfly/react-icons@npm:^6.5.0":
   version: 6.5.1
   resolution: "@patternfly/react-icons@npm:6.5.1"
   peerDependencies:

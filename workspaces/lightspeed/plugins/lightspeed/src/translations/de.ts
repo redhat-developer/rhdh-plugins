@@ -48,7 +48,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
     'chatbox.fileUpload.infoText':
       'Unterstützte Dateitypen: .txt, .yaml und .json. Die maximale Dateigröße beträgt 25 MB.',
-    'chatbox.header.title': 'Developer Hub Intelligent Assistant',
+    'chatbox.header.title': 'Developer Hub Intelligenter Assistent',
     'chatbox.message.placeholder':
       'Senden Sie eine Nachricht, und laden Sie optional eine JSON-, YAML- oder TXT-Datei hoch ...',
     'chatbox.provider.other': 'Andere',
@@ -71,7 +71,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.delete.confirm.action': 'Löschen',
     'conversation.delete.confirm.message':
       'Dieser Chat wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
-    'conversation.delete.confirm.title': 'Chat löschen?',
+    'conversation.delete.confirm.title': 'Chat "{{chatName}}" löschen?',
     'conversation.removeFromPinnedChats': 'Lösen',
     'conversation.rename': 'Umbenennen',
     'conversation.rename.confirm.action': 'Umbenennen',

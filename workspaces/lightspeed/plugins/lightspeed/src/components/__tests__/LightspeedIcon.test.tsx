@@ -51,6 +51,6 @@ describe('LightspeedFABOpenIcon', () => {
 
     const svg = screen.getByTestId('lightspeed-fab-open-icon');
     expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute('aria-label', 'Close');
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 });
