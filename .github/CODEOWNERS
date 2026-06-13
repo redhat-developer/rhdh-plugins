@@ -25,6 +25,7 @@
 /workspaces/global-floating-action-button           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
 /workspaces/global-header                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
 /workspaces/homepage                                @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
+/workspaces/install-dynamic-plugins                 @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-install
 /workspaces/lightspeed                              @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @karthikjeeyar @rohitkrai03 @yangcao77
 /workspaces/mcp-integrations                        @redhat-developer/rhdh-plugins-maintainers @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
 /workspaces/orchestrator                            @redhat-developer/rhdh-plugins-maintainers @lholmquist @lokanandaprabhu @redhat-developer/rhdh-plugins @karthikjeeyar @christoph-jerolimov
