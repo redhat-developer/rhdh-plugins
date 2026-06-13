@@ -23,6 +23,7 @@ import {
   StatusRunning,
 } from '@backstage/core-components';
 import { Box, makeStyles, Typography } from '@material-ui/core';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   chip: {
@@ -58,11 +59,12 @@ const useStyles = makeStyles(theme => ({
  */
 export function ProviderStatus({ value }: Readonly<{ value?: string }>) {
   const classes = useStyles();
+  const { t } = useTranslation();
 
   if (!value) {
     return (
       <Typography variant="caption" color="textSecondary">
-        —
+        {t('common.emDash')}
       </Typography>
     );
   }

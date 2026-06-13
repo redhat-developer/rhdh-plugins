@@ -17,6 +17,7 @@
 import { Button, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { DcmFormDialog } from './DcmFormDialog';
+import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   deleteButton: {
@@ -52,11 +53,12 @@ export function DcmDeleteDialog({
   isSubmitting = false,
 }: Props) {
   const classes = useStyles();
+  const { t } = useTranslation();
   return (
     <DcmFormDialog
       open={open}
       onClose={onClose}
-      title={`Delete ${resourceLabel}`}
+      title={(t as any)('deleteDialog.title', { resourceLabel })}
       error={error}
       submitting={isSubmitting}
       actions={
@@ -72,7 +74,7 @@ export function DcmDeleteDialog({
               ) : undefined
             }
           >
-            Delete
+            {t('deleteDialog.confirmButton')}
           </Button>
           <Button
             variant="outlined"
@@ -80,14 +82,13 @@ export function DcmDeleteDialog({
             disabled={isSubmitting}
             onClick={onClose}
           >
-            Cancel
+            {t('deleteDialog.cancelButton')}
           </Button>
         </>
       }
     >
       <Typography variant="body1">
-        Are you sure you want to delete <strong>{resourceName}</strong>? This
-        action cannot be undone.
+        {(t as any)('deleteDialog.body', { resourceName })}
       </Typography>
     </DcmFormDialog>
   );

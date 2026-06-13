@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Router } from './Router';
-export { dcmPlugin, DcmPage } from './plugin';
-export {
-  catalogApiRef,
-  policyManagerApiRef,
-  providersApiRef,
-  resourcesApiRef,
-} from './apis';
-export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
-export { RhdhLogoFull } from './components/RhdhLogoFull';
-export { RhdhLogoIcon } from './components/RhdhLogoIcon';
-export { dcmTranslations, dcmTranslationRef } from './translations';
+
+import {
+  createTranslationResource,
+  type TranslationResource,
+} from '@backstage/core-plugin-api/alpha';
+import { dcmTranslationRef } from './ref';
+
+/**
+ * Translation resource for the DCM plugin.
+ * @public
+ */
+export const dcmTranslations: TranslationResource = createTranslationResource({
+  ref: dcmTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
+  },
+});
+
+export { dcmTranslationRef };

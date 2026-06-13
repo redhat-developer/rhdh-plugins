@@ -23,6 +23,11 @@ import {
 } from './ProviderFormFields';
 import { emptyProviderForm, ProviderForm } from '../providerFormTypes';
 
+jest.mock('../../../hooks/useTranslation', () => {
+  const mod = require('../../../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 type TouchedMap = Partial<Record<keyof ProviderForm, boolean>>;
 
 function Wrapper(
