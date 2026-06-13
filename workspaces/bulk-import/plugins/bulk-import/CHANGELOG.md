@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.7
+
+### Patch Changes
+
+- 172d39f: Fixed approval tool selection resetting to GitHub when clicking Preview file by preventing unintended router navigation that stripped the approvalTool query parameter from the URL.
+- a85170e: Replace Material UI v4 imports with MUI v5 and migrate makeStyles to sx prop to prevent style collisions.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.7
+
 ## 7.3.6
 
 ### Patch Changes
