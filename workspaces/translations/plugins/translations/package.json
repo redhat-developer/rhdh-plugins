@@ -27,6 +27,7 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/translations/plugins/translations"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "translations",
@@ -54,6 +55,7 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "i18next": "^22.4.15",
+    "i18next-pseudo": "^2.2.1",
     "zen-observable": "^0.10.0"
   },
   "peerDependencies": {
@@ -61,6 +63,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.0",
+    "@backstage/config": "^1.3.7",
     "@backstage/core-app-api": "^1.19.6",
     "@backstage/dev-utils": "^1.1.21",
     "@backstage/test-utils": "^1.7.16",
