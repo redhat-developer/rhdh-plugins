@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.8.3
+
+### Patch Changes
+
+- f5e1232: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes
