@@ -33,6 +33,7 @@ import {
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -67,7 +68,8 @@ export async function createNotebooksRouter(
 ): Promise<Router> {
   const { logger, config, httpAuth, userInfo, permissions } = options;
   const notebooksRouter = Router();
-  notebooksRouter.use(express.json());
+  // Set explicit body size limit for query endpoint requests
+  notebooksRouter.use(express.json({ limit: '60mb' }));
 
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
@@ -439,6 +441,16 @@ export async function createNotebooksRouter(
 
       if (!query) {
         handleError(logger, res, 'query is required');
+        return;
+      }
+
+      // Validate query length (RHIDP-13062)
+      if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+        handleError(
+          logger,
+          res,
+          `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
+        );
         return;
       }
 
