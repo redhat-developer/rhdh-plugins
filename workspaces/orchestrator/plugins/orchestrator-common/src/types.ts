@@ -105,6 +105,8 @@ export interface WorkflowOverview {
   description?: string;
   isAvailable?: boolean;
   version?: string;
+  successRatio?: number;
+  runsLastMonth?: number;
 }
 
 export interface WorkflowInfo {

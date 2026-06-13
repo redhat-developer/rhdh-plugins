@@ -724,6 +724,18 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'version'?: string;
+    /**
+     * Ratio of completed runs to total runs
+     * @type {number}
+     * @memberof WorkflowOverviewDTO
+     */
+    'successRatio'?: number;
+    /**
+     * Number of runs in the last 30 days
+     * @type {number}
+     * @memberof WorkflowOverviewDTO
+     */
+    'runsLastMonth'?: number;
 }
 
 

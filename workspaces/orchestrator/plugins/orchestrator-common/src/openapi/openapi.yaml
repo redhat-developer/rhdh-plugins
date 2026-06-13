@@ -455,6 +455,12 @@ components:
         version:
           type: string
           description: Workflow definition version
+        successRatio:
+          type: number
+          description: Ratio of completed runs to total runs
+        runsLastMonth:
+          type: integer
+          description: Number of runs in the last 30 days
       required:
         - workflowId
         - format

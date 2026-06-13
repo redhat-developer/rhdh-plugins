@@ -52,6 +52,8 @@ export function mapToWorkflowOverviewDTO(
     lastTriggeredMs: overview.lastTriggeredMs,
     isAvailable: overview.isAvailable,
     version: overview.version,
+    successRatio: overview.successRatio,
+    runsLastMonth: overview.runsLastMonth,
   };
 }
 
