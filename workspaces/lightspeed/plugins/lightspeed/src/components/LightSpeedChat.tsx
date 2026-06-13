@@ -43,7 +43,6 @@ import {
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
-  ChatbotFootnote,
   ChatbotHeader,
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
@@ -79,9 +78,11 @@ import {
   ThumbtackIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
+import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
+  LIGHTSPEED_PATH,
   supportedFileTypes,
   TEMP_CONVERSATION_ID,
   UNTITLED_NOTEBOOK_NAME,
@@ -107,10 +108,10 @@ import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext'
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import logo from '../images/logo.svg';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
+  ChatbotFootnoteWithIcon,
   getCategorizeMessages,
   getFootnoteProps,
   SortOption,
@@ -190,12 +191,6 @@ const useStyles = makeStyles(theme => ({
   },
   headerTitle: {
     justifyContent: 'left !important',
-    '& h1': {
-      fontSize: '32px !important',
-      fontWeight: '700 !important',
-      lineHeight: '36.4px !important',
-      fontFamily: '"Red Hat Display", sans-serif !important',
-    },
   },
   headerDivider: {
     paddingTop: 8,
@@ -636,8 +631,10 @@ export const LightspeedChat = ({
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
     configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-  const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
-  const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
+  const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
+  const notebookViewRouteMatch = useMatch(
+    `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
+  );
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
   const isOnNotebookRoute = Boolean(
     notebooksRouteMatch || notebookViewRouteMatch,
@@ -657,8 +654,8 @@ export const LightspeedChat = ({
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const location = useLocation();
   const isNotebooksFullscreenPath =
-    location.pathname === '/lightspeed/notebooks' ||
-    location.pathname.startsWith('/lightspeed/notebooks/');
+    location.pathname === `${LIGHTSPEED_PATH}/notebooks` ||
+    location.pathname.startsWith(`${LIGHTSPEED_PATH}/notebooks/`);
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
@@ -670,7 +667,7 @@ export const LightspeedChat = ({
       return 1;
     }
     const p = location.pathname;
-    if (p.startsWith('/lightspeed/conversation/')) {
+    if (p.startsWith(`${LIGHTSPEED_PATH}/conversation/`)) {
       return 0;
     }
     if (shellViewTab === 1) {
@@ -706,7 +703,7 @@ export const LightspeedChat = ({
     if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
       setActiveNotebook(routeNotebook);
     } else if (routeNotebookId && routeNotebookError) {
-      navigate('/lightspeed/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
     } else if (!routeNotebookId && notebooksRouteMatch) {
       setActiveNotebook(null);
     }
@@ -750,7 +747,7 @@ export const LightspeedChat = ({
     useState<boolean>(!isMobile && isFullscreenMode);
 
   // Fullscreen: URL drives Chat vs Notebooks, but shellViewTab must win when entering
-  // fullscreen from overlay/docked on Notebooks while navigation still lands on /lightspeed.
+  // fullscreen from overlay/docked on Notebooks while navigation still lands on /intelligent-assistant.
   useLayoutEffect(() => {
     if (!isFullscreenMode) {
       return;
@@ -761,10 +758,10 @@ export const LightspeedChat = ({
       return;
     }
     const isBaseLightspeedChatRoute =
-      location.pathname === '/lightspeed' ||
-      location.pathname === '/lightspeed/';
+      location.pathname === LIGHTSPEED_PATH ||
+      location.pathname === `${LIGHTSPEED_PATH}/`;
     if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
-      navigate('/lightspeed/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
       return;
     }
     setActiveTab(0);
@@ -782,15 +779,15 @@ export const LightspeedChat = ({
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
     if (nextTab === 1) {
-      navigate('/lightspeed/notebooks');
+      navigate(`${LIGHTSPEED_PATH}/notebooks`);
       if (notebooksPermissionResolved) {
         refetchNotebooks();
       }
     } else {
       navigate(
         routeConversationId
-          ? `/lightspeed/conversation/${routeConversationId}`
-          : '/lightspeed',
+          ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
+          : LIGHTSPEED_PATH,
       );
     }
   };
@@ -820,14 +817,14 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          navigate(`/lightspeed/notebooks/${session.session_id}`);
+          navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
         },
       },
     );
   }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
-    navigate('/lightspeed/notebooks');
+    navigate(`${LIGHTSPEED_PATH}/notebooks`);
     refetchNotebooks();
   }, [navigate, refetchNotebooks]);
 
@@ -1793,7 +1790,7 @@ export const LightspeedChat = ({
           onAttachRejected={onAttachRejected}
           placeholder={t('chatbox.message.placeholder')}
         />
-        <ChatbotFootnote {...getFootnoteProps(t)} />
+        <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
       </ChatbotFooter>
     </>
   );
@@ -1928,13 +1925,17 @@ export const LightspeedChat = ({
             )}
             {isFullscreenMode && (
               <>
-                <img
-                  src={logo as any}
-                  alt={t('icon.lightspeed.alt')}
+                <RhUiAiExperienceIcon
+                  style={{ width: '24px', height: '24px' }}
+                  aria-label={t('icon.lightspeed.alt')}
                   className={classes.headerLogo}
                 />
                 <ChatbotHeaderTitle className={classes.headerTitle}>
-                  <Title headingLevel="h1" size="3xl">
+                  <Title
+                    headingLevel="h1"
+                    size="2xl"
+                    style={{ fontWeight: 700 }}
+                  >
                     {t('chatbox.header.title')}
                   </Title>
                 </ChatbotHeaderTitle>
@@ -2161,7 +2162,7 @@ export const LightspeedChat = ({
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
               onSelectNotebook={(notebook: NotebookSession) => {
-                navigate(`/lightspeed/notebooks/${notebook.session_id}`);
+                navigate(`${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`);
               }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}

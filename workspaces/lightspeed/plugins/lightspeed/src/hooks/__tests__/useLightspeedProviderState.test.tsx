@@ -109,14 +109,14 @@ function HookHarness() {
       <button
         type="button"
         data-testid="go-lightspeed-base"
-        onClick={() => navigate('/lightspeed')}
+        onClick={() => navigate('/intelligent-assistant')}
       >
         Go lightspeed base
       </button>
       <button
         type="button"
         data-testid="go-notebooks"
-        onClick={() => navigate('/lightspeed/notebooks')}
+        onClick={() => navigate('/intelligent-assistant/notebooks')}
       >
         Go notebooks
       </button>
@@ -265,7 +265,7 @@ describe('useLightspeedProviderState', () => {
       expect(mockOpenDrawer).toHaveBeenCalledWith(LIGHTSPEED_APP_DRAWER_ID);
     });
 
-    it('opens chatbot in persisted fullscreen (embedded) by navigating to /lightspeed', async () => {
+    it('opens chatbot in persisted fullscreen (embedded) by navigating to /intelligent-assistant', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
       renderWithRouter(['/catalog']);
@@ -333,14 +333,14 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('navigates to /lightspeed/notebooks when setDisplayMode(embedded, undefined, notebooks)', async () => {
+    it('navigates to /intelligent-assistant/notebooks when setDisplayMode(embedded, undefined, notebooks)', async () => {
       renderWithRouter(['/catalog']);
 
       screen.getByTestId('set-embedded-notebooks').click();
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/notebooks',
+          '/intelligent-assistant/notebooks',
         );
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.embedded,
@@ -355,12 +355,12 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/notebooks/sess-1',
+          '/intelligent-assistant/notebooks/sess-1',
         );
       });
     });
 
-    it('navigates to /lightspeed/notebooks when setDisplayMode(embedded) if shellViewTab is 1', async () => {
+    it('navigates to /intelligent-assistant/notebooks when setDisplayMode(embedded) if shellViewTab is 1', async () => {
       renderWithRouter(['/catalog']);
 
       screen.getByTestId('set-shell-notebooks-tab').click();
@@ -368,19 +368,21 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/notebooks',
+          '/intelligent-assistant/notebooks',
         );
       });
     });
 
-    it('navigates to /lightspeed when setDisplayMode(embedded) if shellViewTab is 0', async () => {
+    it('navigates to /intelligent-assistant when setDisplayMode(embedded) if shellViewTab is 0', async () => {
       renderWithRouter(['/catalog']);
 
       screen.getByTestId('set-shell-chat-tab').click();
       screen.getByTestId('set-embedded-plain').click();
 
       await waitFor(() => {
-        expect(screen.getByTestId('pathname')).toHaveTextContent('/lightspeed');
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/intelligent-assistant',
+        );
       });
     });
 
@@ -392,7 +394,7 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/notebooks',
+          '/intelligent-assistant/notebooks',
         );
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.embedded,
@@ -409,11 +411,11 @@ describe('useLightspeedProviderState', () => {
     });
   });
 
-  describe('/lightspeed route handling', () => {
-    it('sets embedded mode when on /lightspeed route', async () => {
+  describe('/intelligent-assistant route handling', () => {
+    it('sets embedded mode when on /intelligent-assistant route', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
 
-      renderWithRouter(['/lightspeed']);
+      renderWithRouter(['/intelligent-assistant']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -423,10 +425,10 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('forces embedded UI when on /lightspeed even if persisted mode is docked', async () => {
+    it('forces embedded UI when on /intelligent-assistant even if persisted mode is docked', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.docked;
 
-      renderWithRouter(['/lightspeed']);
+      renderWithRouter(['/intelligent-assistant']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -438,7 +440,7 @@ describe('useLightspeedProviderState', () => {
     it('keeps display mode when navigating between Lightspeed sub-routes (e.g. Chat ↔ Notebooks)', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
-      renderWithRouter(['/lightspeed']);
+      renderWithRouter(['/intelligent-assistant']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -450,7 +452,7 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/notebooks',
+          '/intelligent-assistant/notebooks',
         );
       });
 
@@ -461,7 +463,9 @@ describe('useLightspeedProviderState', () => {
       screen.getByTestId('go-lightspeed-base').click();
 
       await waitFor(() => {
-        expect(screen.getByTestId('pathname')).toHaveTextContent('/lightspeed');
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/intelligent-assistant',
+        );
       });
 
       expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -469,10 +473,10 @@ describe('useLightspeedProviderState', () => {
       );
     });
 
-    it('restores persisted docked mode after navigating away from /lightspeed', async () => {
+    it('restores persisted docked mode after navigating away from /intelligent-assistant', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.docked;
 
-      renderWithRouter(['/lightspeed']);
+      renderWithRouter(['/intelligent-assistant']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -489,10 +493,10 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('uses overlay when leaving /lightspeed while fullscreen preference is persisted', async () => {
+    it('uses overlay when leaving /intelligent-assistant while fullscreen preference is persisted', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
-      renderWithRouter(['/lightspeed']);
+      renderWithRouter(['/intelligent-assistant']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -510,10 +514,10 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('keeps currentConversationId after leaving /lightspeed/conversation/:id', async () => {
+    it('keeps currentConversationId after leaving /intelligent-assistant/conversation/:id', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
 
-      renderWithRouter(['/lightspeed/conversation/active-thread']);
+      renderWithRouter(['/intelligent-assistant/conversation/active-thread']);
 
       await waitFor(() => {
         expect(screen.getByTestId('conversation-id')).toHaveTextContent(
@@ -530,10 +534,10 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('clears currentConversationId when navigating to /lightspeed without conversation segment', async () => {
+    it('clears currentConversationId when navigating to /intelligent-assistant without conversation segment', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
 
-      renderWithRouter(['/lightspeed/conversation/active-thread']);
+      renderWithRouter(['/intelligent-assistant/conversation/active-thread']);
 
       await waitFor(() => {
         expect(screen.getByTestId('conversation-id')).toHaveTextContent(
@@ -551,7 +555,7 @@ describe('useLightspeedProviderState', () => {
     it('navigates to /catalog when switching from fullscreen route to overlay', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
-      renderWithRouter(['/lightspeed/conversation/stream-done']);
+      renderWithRouter(['/intelligent-assistant/conversation/stream-done']);
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
@@ -569,14 +573,14 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('does not navigate to /lightspeed when late stream sets id after overlay switch', async () => {
+    it('does not navigate to /intelligent-assistant when late stream sets id after overlay switch', async () => {
       displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
 
-      renderWithRouter(['/lightspeed/conversation/before-switch']);
+      renderWithRouter(['/intelligent-assistant/conversation/before-switch']);
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent(
-          '/lightspeed/conversation/before-switch',
+          '/intelligent-assistant/conversation/before-switch',
         );
       });
 

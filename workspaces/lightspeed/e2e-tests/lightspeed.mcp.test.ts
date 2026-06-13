@@ -56,7 +56,7 @@ import {
   LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
 } from './utils/lightspeedE2eSetup';
 
-test.describe('Lightspeed MCP', () => {
+test.describe('Intelligent assistant MCP', () => {
   let translations: LightspeedMessages;
   let sharedPage: Page;
 

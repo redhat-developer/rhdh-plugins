@@ -48,8 +48,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'chatbox.fileUpload.failed': 'Caricamento del file non riuscito',
     'chatbox.fileUpload.infoText':
       'I tipi di file supportati sono: .txt, .yaml e .json. La dimensione massima del file è 25 MB.',
-    'chatbox.header.title': 'Sviluppatore Lightspeed',
-    'chatbox.message.placeholder': 'Inserisci un prompt per Lightspeed',
+    'chatbox.header.title': 'Developer Hub Assistente Intelligente',
+    'chatbox.message.placeholder': 'Invia un messaggio',
     'chatbox.provider.other': 'Altro',
     'chatbox.search.placeholder': 'Ricerca',
     'chatbox.welcome.description': 'come posso aiutarti oggi?',
@@ -69,7 +69,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.delete': 'Elimina',
     'conversation.delete.confirm.action': 'Elimina',
     'conversation.delete.confirm.message':
-      'Questa chat non sarà più visibile qui. Verranno eliminate anche le attività correlate, come prompt, risposte e feedback.',
+      'Questa chat non sarà più visibile qui. Dalla tua attività verranno eliminate anche le attività correlate, come prompt, risposte e feedback.',
     'conversation.delete.confirm.title': 'Eliminare "{{chatName}}"?',
     'conversation.removeFromPinnedChats': 'Sblocca',
     'conversation.rename': 'Rinomina',
@@ -113,16 +113,17 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Tipo di file non supportato. I tipi supportati sono: .txt, .yaml e .json.',
     'footer.accuracy.label':
       "Esaminare sempre i contenuti generati dall'intelligenza artificiale prima di utilizzarli.",
-    'icon.lightspeed.alt': 'icona di lightspeed',
+    'icon.lightspeed.alt': "icona dell'assistente intelligente",
     'icon.permissionRequired.alt': 'icona di autorizzazione richiesta',
     'lcore.loadError.description':
-      'Il backend Lightspeed non ha restituito un elenco di modelli. Verifica che il servizio sia in esecuzione e raggiungibile, quindi riprova.',
+      "Il backend dell'assistente intelligente non ha restituito un elenco di modelli. Verifica che il servizio sia in esecuzione e raggiungibile, quindi riprova.",
     'lcore.loadError.title': 'Impossibile caricare i modelli',
-    'lcore.notConfigured.backendDocs': 'Configurazione backend Lightspeed',
+    'lcore.notConfigured.backendDocs':
+      "Configurazione backend dell'assistente intelligente",
     'lcore.notConfigured.description':
-      "Lightspeed richiede un LLM registrato. Contattare l'amministratore della piattaforma dell'organizzazione per completare la configurazione.",
+      "L'assistente intelligente richiede un LLM registrato. Contattare l'amministratore della piattaforma dell'organizzazione per completare la configurazione.",
     'lcore.notConfigured.developerLightspeedDocs':
-      'Configurazione di Developer Lightspeed',
+      'Configurazione di Developer Hub Intelligent Assistant',
     'lcore.notConfigured.title': 'Collega un LLM per iniziare',
     'mcp.settings.closeAriaLabel': 'Chiudi impostazioni MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
@@ -134,7 +135,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'mcp.settings.enterToken': 'Inserisci il tuo token',
     'mcp.settings.loading': 'Caricamento dei server MCP...',
     'mcp.settings.modalDescription':
-      'Le credenziali sono crittografate a riposo e associate al tuo profilo. Lightspeed opererà con esattamente le tue autorizzazioni.',
+      "Le credenziali sono crittografate a riposo e associate al tuo profilo. L'assistente intelligente opererà con esattamente le tue autorizzazioni.",
     'mcp.settings.name': 'Nome',
     'mcp.settings.noneAvailable': 'Nessun server MCP disponibile.',
     'mcp.settings.personalAccessToken': 'Token di accesso personale',
@@ -227,7 +228,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.card.openAria': 'Apri il taccuino {{name}}',
     'notebooks.delete.action': 'Elimina',
     'notebooks.delete.message':
-      'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività Lightspeed.',
+      'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività.',
     'notebooks.delete.title': 'Eliminare {{name}}?',
     'notebooks.delete.toast': 'Quaderno eliminato!',
     'notebooks.documents': 'Documenti',
@@ -252,13 +253,13 @@ const lightspeedTranslationIt = createTranslationMessages({
     'notebooks.updated.yesterday': 'Aggiornato 1 giorno fa',
     'page.subtitle':
       "Assistente allo sviluppo basato sull'intelligenza artificiale",
-    'page.title': 'Lightspeed',
+    'page.title': 'Assistente intelligente',
     'permission.notebooks.goBack': 'Torna indietro',
     'permission.required.description':
       "Per visualizzare <subject/>, contattare l'amministratore per ottenere l'autorizzazione <permissions/>.",
     'permission.required.title': 'Autorizzazioni mancanti',
-    'permission.subject.notebooks': 'i quaderni Lightspeed',
-    'permission.subject.plugin': 'il plugin Lightspeed',
+    'permission.subject.notebooks': "i quaderni dell'assistente intelligente",
+    'permission.subject.plugin': "il plugin dell'assistente intelligente",
     'prompts.codeOptimization.message':
       'Puoi suggerirmi metodi comuni per ottimizzare il codice e ottenere prestazioni migliori?',
     'prompts.codeOptimization.title': 'Suggerimenti per ottimizzare il codice',
@@ -315,7 +316,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'sort.label': 'Ordina conversazioni',
     'sort.newest': 'Data (più recente prima)',
     'sort.oldest': 'Data (meno recente prima)',
-    'tabs.ariaLabel': 'Viste di Lightspeed',
+    'tabs.ariaLabel': "Viste dell'assistente intelligente",
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Quaderni',
     'tabs.notebooks.devPreview': 'Anteprima per sviluppatori',
@@ -339,8 +340,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'tooltip.close': 'Chiudi',
     'tooltip.collapseHistoryPanel': 'Comprimi cronologia chat',
     'tooltip.expandHistoryPanel': 'Espandi cronologia chat',
-    'tooltip.fab.close': 'Chiudi Lightspeed',
-    'tooltip.fab.open': 'Apri Lightspeed',
+    'tooltip.fab.close': 'Chiudi assistente intelligente',
+    'tooltip.fab.open': 'Apri assistente intelligente',
     'tooltip.microphone.active': 'Non ascoltare più',
     'tooltip.microphone.inactive': 'Usa il microfono',
     'tooltip.quickNewChat': 'Nuova chat',

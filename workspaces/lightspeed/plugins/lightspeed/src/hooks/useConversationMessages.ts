@@ -18,13 +18,15 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
+import { useTheme } from '@mui/material/styles';
 import { MessageProps } from '@patternfly/chatbot';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
-import botAvatar from '../images/bot-avatar.svg';
+import botAvatarDark from '../images/bot-avatar-dark.svg';
+import botAvatarLight from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
 import {
   Attachment,
@@ -171,6 +173,9 @@ export const useConversationMessages = (
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
   onRequestIdReady?: (request_id: string) => void,
 ): UseConversationMessagesReturn => {
+  const theme = useTheme();
+  const botAvatar =
+    theme.palette.mode === 'dark' ? botAvatarDark : botAvatarLight;
   const { mutateAsync: defaultCreateMessage } = useCreateConversationMessage();
   const createMessage = createMessageOverride ?? defaultCreateMessage;
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
@@ -837,6 +842,7 @@ export const useConversationMessages = (
 
     [
       avatar,
+      botAvatar,
       userName,
       onComplete,
       onStart,

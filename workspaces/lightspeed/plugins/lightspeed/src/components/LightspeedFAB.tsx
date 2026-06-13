@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import Close from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,7 +22,7 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
-import { LightspeedFABIcon } from './LightspeedIcon';
+import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
 
 /**
  * @public
@@ -60,25 +59,23 @@ export const LightspeedFAB = () => {
         placement="left"
       >
         <Fab
-          color="primary"
+          color="inherit"
           variant="circular"
-          size="small"
+          size="large"
           onClick={toggleChatbot}
           aria-label={
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
           sx={theme => ({
-            borderRadius: '100% !important',
-            opacity: '1 !important',
-            backgroundColor: `${theme.palette?.primary?.main ?? '#1976d2'} !important`,
-            color: `${theme.palette?.primary?.contrastText ?? '#fff'} !important`,
-            boxShadow: `${
-              theme.shadows?.[6] ??
-              '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)'
-            } !important`,
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            border: `1px solid ${theme.palette.divider}`,
+            '&:hover': {
+              backgroundColor: theme.palette.background.paper,
+            },
           })}
         >
-          {isChatbotActive ? <Close fontSize="small" /> : <LightspeedFABIcon />}
+          {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
         </Fab>
       </Tooltip>
     </Box>
