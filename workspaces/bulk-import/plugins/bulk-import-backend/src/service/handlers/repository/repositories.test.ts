@@ -19,10 +19,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import {
-  CATALOG_API_LOCATIONS_LOCAL_ADDR,
-  LOCAL_ADDR,
-} from '../../../../__fixtures__/handlers';
+import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
 import {
   addHandlersForGHTokenAppErrors,
   setupTest,
@@ -220,25 +217,35 @@ describe('repositories', () => {
       });
 
       it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-hello-world',
-                    target:
-                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'hello-world',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
                 },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'animated-happiness',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
+                },
+              },
+            },
+          ],
+          totalItems: 2,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -256,15 +263,6 @@ describe('repositories', () => {
             {
               defaultBranch: 'master',
               errors: [],
-              id: 'octocat/animated-happiness',
-              lastUpdate: '2011-01-26T19:14:43Z',
-              name: 'animated-happiness',
-              organization: 'octocat',
-              url: 'http://localhost:8765/octocat/animated-happiness',
-            },
-            {
-              defaultBranch: 'master',
-              errors: [],
               id: 'my-user/Lorem-Ipsum',
               lastUpdate: '2011-01-26T19:14:43Z',
               name: 'Lorem-Ipsum',
@@ -272,46 +270,40 @@ describe('repositories', () => {
               url: 'http://localhost:8765/my-user/Lorem-Ipsum',
             },
           ],
-          totalCount: 2,
+          totalCount: 1,
         });
       });
 
       it('returns empty array when all repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-animated-happiness',
-                    target:
-                      'http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'animated-happiness',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
                 },
-                {
-                  data: {
-                    id: 'imported-hello-world',
-                    target:
-                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
+              },
+            },
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'lorem-ipsum',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
                 },
-                {
-                  data: {
-                    id: 'imported-lorem-ipsum',
-                    target:
-                      'http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+          ],
+          totalItems: 2,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -331,25 +323,24 @@ describe('repositories', () => {
       });
 
       it('returns all repos even though a non-root catalog location exists', async () => {
-        const { server, mockCatalogClient } = useTestData();
-
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-animated-happiness-sub',
-                    target:
-                      'http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
-                    type: 'url',
-                  },
+        const { mockCatalogClient } = useTestData();
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Component',
+              metadata: {
+                name: 'animated-happiness-nested',
+                annotations: {
+                  'backstage.io/managed-by-location':
+                    'url:http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
                 },
-              ]),
-            ),
-          ),
-        );
+              },
+            },
+          ],
+          totalItems: 1,
+          pageInfo: {},
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,

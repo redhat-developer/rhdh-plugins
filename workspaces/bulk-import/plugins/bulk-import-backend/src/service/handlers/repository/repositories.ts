@@ -59,13 +59,9 @@ export async function findAllRepositories(
 
   const [alreadyImportedRepositories, allRepositoriesResponse] =
     await Promise.all([
-      deps.catalogHttpClient.listCatalogUrlLocations(),
+      deps.catalogHttpClient.listCatalogComponentManagedByUrlLocations(),
       deps.gitApiService.getRepositoriesFromIntegrations(search, userTokens),
     ]);
-
-  const alreadyImportedRepositoriesLocationTargets = new Set(
-    alreadyImportedRepositories.uniqueCatalogUrlLocations.keys(),
-  );
 
   const { repositories: allRepositories, errors } = allRepositoriesResponse;
 
@@ -76,8 +72,7 @@ export async function findAllRepositories(
       repo.default_branch,
     );
 
-    let alreadyImported =
-      alreadyImportedRepositoriesLocationTargets.has(catalogUrl);
+    let alreadyImported = alreadyImportedRepositories.has(catalogUrl);
 
     if (!alreadyImported) {
       // Workaround: when a GitHub repository is imported via Backstage, the
@@ -87,7 +82,7 @@ export async function findAllRepositories(
       // format was persisted, the '/tree/' variant is also checked here.
       // This branch can be removed once catalog locations are consistently
       // stored using the same '/blob/' format as getCatalogUrl returns.
-      alreadyImported = alreadyImportedRepositoriesLocationTargets.has(
+      alreadyImported = alreadyImportedRepositories.has(
         catalogUrl.replace('/blob/', '/tree/'),
       );
     }
