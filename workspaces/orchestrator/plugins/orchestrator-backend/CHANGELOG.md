@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.10.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- d908e3e: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.0
+
 ## 8.9.4
 
 ### Patch Changes
