@@ -19,8 +19,8 @@ import { createPermission } from '@backstage/plugin-permission-common';
 /** This permission is used to access the lightspeed read conversations endpoint
  * @public
  */
-export const lightspeedChatReadPermission = createPermission({
-  name: 'intelligent-assistant.chat.read',
+export const lightspeedConversationsAccessPermission = createPermission({
+  name: 'intelligent-assistant.conversations.access',
   attributes: {
     action: 'read',
   },
@@ -92,7 +92,7 @@ export const lightspeedNotebooksUsePermission = createPermission({
  * @public
  */
 export const lightspeedPermissions = [
-  lightspeedChatReadPermission,
+  lightspeedConversationsAccessPermission,
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
   lightspeedChatUpdatePermission,

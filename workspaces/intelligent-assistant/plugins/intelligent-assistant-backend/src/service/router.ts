@@ -30,7 +30,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
-  lightspeedChatReadPermission,
+  lightspeedConversationsAccessPermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
@@ -601,25 +601,25 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(lightspeedConversationsAccessPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(lightspeedConversationsAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(lightspeedConversationsAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(lightspeedConversationsAccessPermission),
     apiProxy,
   );
   router.delete(
@@ -631,7 +631,7 @@ export async function createRouter(
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(lightspeedConversationsAccessPermission),
     apiProxy,
   );
 
