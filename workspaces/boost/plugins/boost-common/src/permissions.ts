@@ -67,7 +67,7 @@ export const boostAgentRegisterPermission = createPermission({
 });
 
 /**
- * Permission to submit a draft agent for review (draft -> pending).
+ * Permission to submit a draft agent for review (draft -\> pending).
  * Conditional rules: IS_OWNER, HAS_LIFECYCLE_STAGE
  * @public
  */
@@ -81,7 +81,7 @@ export const boostAgentPromotePermission: ResourcePermission<'boost-agent'> =
   });
 
 /**
- * Permission to approve a pending agent (pending -> published).
+ * Permission to approve a pending agent (pending -\> published).
  * Conditional rules: IS_NOT_CREATOR, HAS_LIFECYCLE_STAGE
  * @public
  */
