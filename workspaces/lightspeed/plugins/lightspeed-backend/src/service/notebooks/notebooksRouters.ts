@@ -526,7 +526,6 @@ export async function createNotebooksRouter(
             .pipe(createResponsesApiTransform(session, sessionId, userId))
             .pipe(res);
         }
-        console.log('response1234', response.body);
         break;
       }
     }),
