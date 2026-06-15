@@ -22,6 +22,10 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  UserSettingsSignInAvatar,
+  Settings as SidebarSettings,
+} from '@backstage/plugin-user-settings';
 import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@mui/icons-material/Menu';
 
@@ -41,6 +45,10 @@ export const SidebarContent = NavContentBlueprint.make({
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
+          <SidebarDivider />
+          <SidebarGroup label="Settings" icon={<UserSettingsSignInAvatar />}>
+            <SidebarSettings />
+          </SidebarGroup>
         </Sidebar>
       );
     },
