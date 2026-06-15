@@ -162,9 +162,6 @@ const useStyles = makeStyles(theme => ({
   statusOk: {
     color: '#147878',
   },
-  statusToken: {
-    color: '#147878',
-  },
   statusWarn: {
     color: '#B1380B',
   },
@@ -173,6 +170,13 @@ const useStyles = makeStyles(theme => ({
   },
   actionButton: {
     color: theme.palette.text.secondary,
+    opacity: 0,
+    transition: 'opacity 0.15s ease-in-out',
+  },
+  tableRow: {
+    '&:hover $actionButton, &:focus-within $actionButton': {
+      opacity: 1,
+    },
   },
   modalDescription: {
     color: theme.palette.text.secondary,
@@ -316,6 +320,12 @@ const useStyles = makeStyles(theme => ({
   },
   table: {
     width: '100%',
+    backgroundColor: 'transparent',
+    '--pf-v6-c-table--BackgroundColor': 'transparent',
+    '--pf-v5-c-table--BackgroundColor': 'transparent',
+    '& table, & thead, & tbody, & tr, & th, & td': {
+      backgroundColor: 'transparent !important',
+    },
     '& th': {
       borderBottom: 0,
       fontSize: '0.75rem',
@@ -904,14 +914,12 @@ export const McpServersSettings = ({
             let statusClass = classes.statusWarn;
             if (displayStatus === 'ok') {
               statusClass = classes.statusOk;
-            } else if (displayStatus === 'tokenRequired') {
-              statusClass = classes.statusToken;
             } else if (displayStatus === 'disabled') {
               statusClass = classes.statusDisabled;
             }
 
             return (
-              <Tr key={server.id}>
+              <Tr key={server.id} className={classes.tableRow}>
                 <Td width={10} className={classes.toggleCell}>
                   {(() => {
                     const isUnavailable =

@@ -31,6 +31,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -237,6 +238,10 @@ describe('LightspeedChat', () => {
     } as Partial<ReturnType<typeof useConversations>> as ReturnType<
       typeof useConversations
     >);
+    mockUseNotebookSessions.mockReturnValue({
+      data: [],
+      refetch: jest.fn(),
+    });
     mockUseLightspeedDrawerContext.mockReturnValue({
       isChatbotActive: false,
       toggleChatbot: jest.fn(),
@@ -556,7 +561,7 @@ describe('LightspeedChat', () => {
     it('should open settings dropdown when clicking the settings button', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       expect(settingsButton).toBeInTheDocument();
 
       await userEvent.click(settingsButton);
@@ -570,7 +575,7 @@ describe('LightspeedChat', () => {
     it('should show all display mode options in the dropdown', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -584,7 +589,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with default when clicking Overlay option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -602,7 +607,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with docked when clicking Dock to window option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -620,7 +625,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with embedded when clicking Fullscreen option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -660,7 +665,9 @@ describe('LightspeedChat', () => {
         expect(screen.getByText('My Notebooks')).toBeInTheDocument();
       });
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = within(
+        screen.getByRole('region', { name: 'Chatbot' }),
+      ).getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -696,7 +703,7 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
       expect(
@@ -729,7 +736,7 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
       expect(
@@ -761,7 +768,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -795,7 +802,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -829,7 +836,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
