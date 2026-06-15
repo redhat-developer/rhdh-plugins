@@ -18,12 +18,12 @@ import { usePermission } from '@backstage/plugin-permission-react';
 
 import {
   lightspeedChatCreatePermission,
-  lightspeedChatReadPermission,
+  lightspeedConversationsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 export const useLightspeedViewPermission = () => {
   const canReadChats = usePermission({
-    permission: lightspeedChatReadPermission,
+    permission: lightspeedConversationsAccessPermission,
   });
 
   const canCreateChats = usePermission({
