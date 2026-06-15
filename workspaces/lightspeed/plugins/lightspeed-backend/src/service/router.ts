@@ -662,10 +662,10 @@ export async function createRouter(
             logger.error(
               `Upstream stream error while processing query: ${error}`,
             );
-            if (!response.headersSent) {
-              response.status(500).json({ error: 'Stream error occurred' });
-            } else {
+            if (response.headersSent) {
               response.destroy();
+            } else {
+              response.status(500).json({ error: 'Stream error occurred' });
             }
             abortController.abort();
           });

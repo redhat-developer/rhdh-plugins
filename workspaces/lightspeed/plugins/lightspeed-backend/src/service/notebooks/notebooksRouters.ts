@@ -535,12 +535,12 @@ export async function createNotebooksRouter(
             logger.error(
               `Upstream stream error while processing notebook query: ${error}`,
             );
-            if (!res.headersSent) {
+            if (res.headersSent) {
+              res.destroy();
+            } else {
               res
                 .status(500)
                 .json({ status: 'error', error: 'Stream error occurred' });
-            } else {
-              res.destroy();
             }
             abortController.abort();
             transformStream.destroy();
@@ -550,13 +550,13 @@ export async function createNotebooksRouter(
             logger.error(
               `Transform stream error while processing notebook query: ${error}`,
             );
-            if (!res.headersSent) {
+            if (res.headersSent) {
+              res.destroy();
+            } else {
               res.status(500).json({
                 status: 'error',
                 error: 'Processing error occurred',
               });
-            } else {
-              res.destroy();
             }
             body.destroy();
             abortController.abort();
