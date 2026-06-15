@@ -51,12 +51,13 @@ Other Backstage plugins must be able to consume the active AI provider via Backs
 - **AND** it can call `chat()`, `chatStream()`, and any declared optional capabilities
 - **AND** if the active provider is hot-swapped, the consuming plugin receives the new provider on next request
 
-#### Scenario: Service ref declared in boost-common
+#### Scenario: Service ref declared in boost-node
 
 - **WHEN** the `boostAiProviderServiceRef` is created via `createServiceRef` from `@backstage/backend-plugin-api`
-- **THEN** it is exported from the `boost-common` package (not `boost-backend`)
-- **AND** its type parameter is the `AgenticProvider` interface
+- **THEN** it is exported from the `boost-node` package (`backstage.role: node-library`), not `boost-common` or `boost-backend`
+- **AND** its type parameter is the `AgenticProvider` interface (imported from `boost-common`)
 - **AND** its ID follows the pattern `boost.ai-provider`
+- **AND** `boost-common` (`backstage.role: common-library`) has no dependency on `@backstage/backend-plugin-api` — keeping it safe for browser bundling
 
 ### Requirement: Shared Types in Common Package
 

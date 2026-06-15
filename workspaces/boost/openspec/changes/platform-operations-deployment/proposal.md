@@ -15,7 +15,8 @@ Boost ships as a set of modular RHDH dynamic plugins (OCI) and Backstage static 
 | Package                           | Purpose                                                           |
 | --------------------------------- | ----------------------------------------------------------------- |
 | `boost-frontend`                  | Chat UI, agent gallery, admin panels, composable extensions       |
-| `boost-common`                    | Shared types, permissions, service refs                           |
+| `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)   |
+| `boost-node`                      | Service refs, extension points (`node-library` role)              |
 | `boost-backend`                   | Core routes, services, middleware, cross-cutting entity providers |
 | `boost-backend-module-llamastack` | Llama Stack agentic provider                                      |
 | `boost-backend-module-kagenti`    | Kagenti agentic provider                                          |

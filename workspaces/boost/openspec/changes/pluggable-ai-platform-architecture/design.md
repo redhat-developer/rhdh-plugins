@@ -22,20 +22,44 @@ Boost implements the provider abstraction as modular RHDH dynamic plugins from t
 
 ## Decisions
 
-### Decision 1: serviceRef lives in boost-common
+### Decision 1: serviceRef lives in boost-node, types live in boost-common
 
-The `boostAiProviderServiceRef` is exported from `boost-common` alongside the `AgenticProvider` interface types. This allows both backend consumers and frontend type consumers to reference the interface from a single package without depending on the full backend.
+The `boostAiProviderServiceRef` is exported from `boost-node` (`backstage.role: node-library`), not `boost-common`. The `AgenticProvider` interface types remain in `boost-common` (`backstage.role: common-library`).
+
+This follows the Backstage convention established by the catalog plugin family:
+
+| Package                 | Role             | Contains                                    |
+| ----------------------- | ---------------- | ------------------------------------------- |
+| `plugin-catalog-common` | `common-library` | Types, permissions — no backend API imports |
+| `plugin-catalog-node`   | `node-library`   | `catalogServiceRef`, extension points       |
+
+A `common-library` package must be safe for browser bundling. `createServiceRef` is a runtime value from `@backstage/backend-plugin-api` — importing it into a `common-library` package forces the bundler to pull in the entire backend API, which fails in browser environments. Backstage's CLI enforces this role boundary.
 
 ```typescript
-// plugins/boost-common/src/services.ts
+// plugins/boost-node/src/services.ts
 import { createServiceRef } from '@backstage/backend-plugin-api';
-import type { AgenticProvider } from './types';
+import type { AgenticProvider } from '@boost/plugin-boost-common';
 
 export const boostAiProviderServiceRef = createServiceRef<AgenticProvider>({
   id: 'boost.ai-provider',
   scope: 'plugin',
 });
 ```
+
+The dependency graph:
+
+```
+boost-common (common-library)  ←──  boost-node (node-library)  ←──  boost-backend
+     │                                        ↑
+     │                                   boost-backend-module-llamastack
+     │                                   boost-backend-module-kagenti
+     ↓
+boost-frontend (imports types only)
+```
+
+`boost-common` exports: `AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, `NormalizedStreamEvent`, conversation types, permission definitions.
+
+`boost-node` exports: `boostAiProviderServiceRef`, `boostProviderExtensionPoint`, and re-exports types from `boost-common` for backend convenience.
 
 The core `boost-backend` plugin registers the default factory via `createServiceFactory` that resolves to the `ProviderManager`'s active provider.
 
@@ -82,9 +106,9 @@ const hasNamespaceScoping = capabilities?.namespaceScoping === true;
 
 ### Decision 5: Provider-specific types stay in their modules
 
-Provider-specific types (e.g., Kagenti-specific interfaces) live in their respective provider modules. Only shared interfaces (`AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, conversation types, `NormalizedStreamEvent`) live in `boost-common`.
+Provider-specific types (e.g., Kagenti-specific interfaces) live in their respective provider modules. Only shared interfaces (`AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, conversation types, `NormalizedStreamEvent`) live in `boost-common`. The `boostAiProviderServiceRef` and `boostProviderExtensionPoint` live in `boost-node`.
 
 ## Risks
 
 - **Cache key collisions:** Mitigated by using `cache.withOptions()` which namespace-scopes keys per plugin/module.
-- **Provider module interdependency:** Provider modules must not import from each other. Shared utilities live in `boost-common` or standalone packages. Boost enforces this from the start.
+- **Provider module interdependency:** Provider modules must not import from each other. Shared utilities live in `boost-common` or `boost-node`, and standalone packages. Boost enforces this from the start.
