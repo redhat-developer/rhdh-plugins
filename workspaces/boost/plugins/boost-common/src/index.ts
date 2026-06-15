@@ -15,8 +15,98 @@
  */
 
 /**
+ * Common types, permissions, and constants for the boost plugin.
+ *
+ * @packageDocumentation
+ */
+
+/**
  * The plugin ID for the boost plugin.
  *
  * @public
  */
 export const BOOST_PLUGIN_ID = 'boost';
+
+// Shared types — provider abstraction, conversation, streaming
+export type {
+  // Provider abstraction
+  AgenticProvider,
+  ProviderDescriptor,
+  ProviderCapabilities,
+  ProviderConfigField,
+  AgenticProviderStatus,
+  ProviderStatus,
+  // Chat
+  ChatRequest,
+  ChatResponse,
+  ResponseUsage,
+  // Conversation types
+  ConversationSummary,
+  ConversationDetails,
+  InputItem,
+  // Normalized streaming events (union + individual)
+  NormalizedStreamEvent,
+  StreamStartedEvent,
+  StreamTextDeltaEvent,
+  StreamTextDoneEvent,
+  StreamReasoningDeltaEvent,
+  StreamReasoningDoneEvent,
+  StreamToolDiscoveryEvent,
+  StreamToolStartedEvent,
+  StreamToolDeltaEvent,
+  StreamToolCompletedEvent,
+  StreamToolFailedEvent,
+  StreamToolApprovalEvent,
+  StreamRagResultsEvent,
+  StreamAgentHandoffEvent,
+  StreamFormRequestEvent,
+  StreamFormField,
+  StreamFormDescriptor,
+  StreamAuthRequiredEvent,
+  StreamSecretDemand,
+  StreamArtifactEvent,
+  StreamCitationReference,
+  StreamCitationEvent,
+  StreamCompletedEvent,
+  StreamErrorEvent,
+} from './types';
+
+// Permissions — resource types, permission constants, rules, aggregations
+export {
+  // Resource types
+  RESOURCE_TYPE_BOOST_AGENT,
+  RESOURCE_TYPE_BOOST_TOOL,
+  // Agent permissions (10)
+  boostAgentListPermission,
+  boostAgentRegisterPermission,
+  boostAgentPromotePermission,
+  boostAgentApprovePermission,
+  boostAgentDemotePermission,
+  boostAgentPublishPermission,
+  boostAgentUnpublishPermission,
+  boostAgentWithdrawPermission,
+  boostAgentDeletePermission,
+  boostAgentConfigurePermission,
+  // Tool permissions (5)
+  boostToolPromotePermission,
+  boostToolApprovePermission,
+  boostToolDemotePermission,
+  boostToolPublishPermission,
+  boostToolUnpublishPermission,
+  // Kagenti infra (1)
+  boostKagentiAdminPermission,
+  // Functional permissions (5)
+  boostChatReadPermission,
+  boostChatCreatePermission,
+  boostDocumentsManagePermission,
+  boostMcpManagePermission,
+  boostConfigManagePermission,
+  // Conditional rule names
+  BOOST_RULE_IS_OWNER,
+  BOOST_RULE_IS_NOT_CREATOR,
+  BOOST_RULE_HAS_LIFECYCLE_STAGE,
+  // Aggregations
+  boostResourcePermissions,
+  boostFunctionalPermissions,
+  boostPermissions,
+} from './permissions';
