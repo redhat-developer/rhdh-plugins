@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
   },
   copiedIcon: {
     fontSize: 14,
-    color: '#28a745',
+    color: theme.palette.success.main,
   },
   failedIcon: {
     fontSize: 14,

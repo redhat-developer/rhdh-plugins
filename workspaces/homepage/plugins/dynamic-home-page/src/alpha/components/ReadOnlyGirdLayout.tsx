@@ -32,7 +32,7 @@ import {
 
 import { ErrorBoundary } from '@backstage/core-components';
 
-import { makeStyles } from 'tss-react/mui';
+import Box from '@mui/material/Box';
 
 // Removes the doubled scrollbar
 import 'react-grid-layout/css/styles.css';
@@ -79,19 +79,7 @@ const defaultProps: ResponsiveProps = {
   compactType: null,
 };
 
-const useStyles = makeStyles()({
-  // Make card content scrollable (so that cards don't overlap)
-  cardWrapper: {
-    '& > div[class*="MuiCard-root"]': {
-      width: '100%',
-      height: '100%',
-    },
-    '& div[class*="MuiCardContent-root"]': {
-      overflow: 'auto',
-    },
-  },
-});
-
+import { cardWrapperSx } from '../../styles/cardWrapperSx';
 /**
  * Props for the read-only grid layout.
  * @alpha
@@ -109,7 +97,6 @@ export interface ReadOnlyGridLayoutProps {
 export const ReadOnlyGridLayout = ({
   homepageCards,
 }: ReadOnlyGridLayoutProps) => {
-  const { classes } = useStyles();
   const [measureRef, measureRect] = useMeasure<HTMLDivElement>();
 
   const cards = useMemo<Card[]>(() => {
@@ -181,12 +168,12 @@ export const ReadOnlyGridLayout = ({
 
   const children = useMemo(() => {
     return cards.map(card => (
-      <div
+      <Box
         key={card.id}
         data-cardid={card.id}
         data-testid={`home-page card ${card.id}`}
         data-layout={JSON.stringify(card.layouts)}
-        className={classes.cardWrapper}
+        sx={cardWrapperSx}
       >
         <ErrorBoundary>
           {typeof card.Component === 'function' ? (
@@ -195,9 +182,9 @@ export const ReadOnlyGridLayout = ({
             card.Component
           )}
         </ErrorBoundary>
-      </div>
+      </Box>
     ));
-  }, [cards, classes.cardWrapper]);
+  }, [cards]);
 
   return (
     <div style={{ margin: -gridGap }}>

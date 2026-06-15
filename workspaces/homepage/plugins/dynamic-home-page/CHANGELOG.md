@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.14.0
+
+### Minor Changes
+
+- 1aa10e7: Backsatge version bump to v1.51.0
+
+### Patch Changes
+
+- f55172d: Replace Material UI v4 with MUI v5 and scope JSS class names to prevent style collisions.
+  Fix double border issue in the widgets
+- Updated dependencies [1aa10e7]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.2.0
+
 ## 1.13.4
 
 ### Patch Changes

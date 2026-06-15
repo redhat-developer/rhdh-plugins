@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.9.1
+
+### Patch Changes
+
+- 2714194: Security: Sanitize LCS error responses to prevent information disclosure
+- d49a228: add middleware for identity resolution
+- e142be3: refactor permission handling and update proxy passthrough
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.1
+
 ## 2.9.0
 
 ### Patch Changes

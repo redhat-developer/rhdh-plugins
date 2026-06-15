@@ -40,7 +40,7 @@ const lightspeedTranslationIt = createTranslationMessages({
     'attach.menu.description': 'Allega un file JSON, YAML o TXT',
     'attach.menu.title': 'Allega',
     'button.newChat': 'Nuova chat',
-    'chatbox.emptyState.noPinnedChats': 'Nessuna chat bloccata',
+    'chatbox.emptyState.noPinnedChats': 'Fissa le chat per mantenerle in alto',
     'chatbox.emptyState.noRecentChats': 'Nessuna chat recente',
     'chatbox.emptyState.noResults.body':
       "Modificare la query di ricerca e riprovare. Controllare l'ortografia o provare un termine più generico.",
@@ -69,8 +69,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.delete': 'Elimina',
     'conversation.delete.confirm.action': 'Elimina',
     'conversation.delete.confirm.message':
-      'Questa chat non sarà più visibile qui. Dalla tua attività Lightspeed verranno eliminate anche le attività correlate, come prompt, risposte e feedback.',
-    'conversation.delete.confirm.title': 'Eliminare la chat?',
+      'Questa chat non sarà più visibile qui. Verranno eliminate anche le attività correlate, come prompt, risposte e feedback.',
+    'conversation.delete.confirm.title': 'Eliminare "{{chatName}}"?',
     'conversation.removeFromPinnedChats': 'Sblocca',
     'conversation.rename': 'Rinomina',
     'conversation.rename.confirm.action': 'Rinomina',

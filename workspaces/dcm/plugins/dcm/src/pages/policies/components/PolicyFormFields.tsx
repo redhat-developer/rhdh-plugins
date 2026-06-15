@@ -161,8 +161,7 @@ export function PolicyFormFields({
       <TextField
         label="Rego code *"
         helperText={
-          regoErr ??
-          'OPA Rego evaluated by the Placement Manager. Must assign selected_provider to the name of a registered provider.'
+          regoErr ?? 'OPA Rego policy evaluated by the Placement Manager.'
         }
         error={Boolean(regoErr)}
         value={form.rego_code}
@@ -174,9 +173,7 @@ export function PolicyFormFields({
         variant="outlined"
         multiline
         rows={8}
-        placeholder={
-          'package dcm.placement\n\n# Replace "my-provider-name" with the name of a registered provider.\n# The Placement Manager requires selected_provider to be set.\nselected_provider := "my-provider-name"'
-        }
+        placeholder="package dcm.placement"
         inputProps={{ className: classes.regoInput }}
       />
 

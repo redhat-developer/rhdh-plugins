@@ -49,6 +49,7 @@ import {
   useContainerQuery,
   type ContainerSize,
 } from '../../hooks/useContainerQuery';
+import { sectionContentContainerSx } from '../../styles/sectionCardSx';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -59,7 +60,7 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   borderRadius: 4,
 }));
 
-export const EntitySection = () => {
+export const EntitySectionContent = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { displayName, loading: profileLoading } = useUserProfile();
@@ -285,46 +286,15 @@ export const EntitySection = () => {
   }
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        padding: '24px',
-        border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
-        containerType: 'inline-size',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Typography
-        variant="h3"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          fontWeight: '500',
-          fontSize: '1.5rem',
-          flexShrink: 0,
-        }}
-      >
-        {t('entities.title')}
-      </Typography>
-      <Box
-        ref={containerRef}
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          mt: 1,
-        }}
-      >
-        {content}
-        {entities?.length > 0 && (
-          <Box sx={{ pt: 2 }}>
-            <ViewMoreLink to="/catalog">
-              {t('entities.browseTheCatalog')}
-            </ViewMoreLink>
-          </Box>
-        )}
-      </Box>
-    </Card>
+    <Box ref={containerRef} sx={sectionContentContainerSx}>
+      {content}
+      {entities?.length > 0 && (
+        <Box sx={{ pt: 2 }}>
+          <ViewMoreLink to="/catalog">
+            {t('entities.browseTheCatalog')}
+          </ViewMoreLink>
+        </Box>
+      )}
+    </Box>
   );
 };

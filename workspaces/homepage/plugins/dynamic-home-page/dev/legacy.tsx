@@ -43,7 +43,6 @@ import {
   DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
-  JokeCard,
   Markdown,
   MarkdownCard,
   Placeholder,
@@ -176,13 +175,6 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'FeaturedDocsCard',
       title: 'Featured docs card',
-    },
-  },
-  {
-    Component: JokeCard,
-    config: {
-      id: 'JokeCard',
-      title: 'Joke card',
     },
   },
 ];
@@ -720,17 +712,6 @@ createDevApp()
       mountPoints: [
         {
           Component: TopVisitedCard as ComponentType,
-        },
-      ],
-    }),
-  )
-  .addPage(
-    createPage({
-      navTitle: 'JokeCard',
-      pageTitle: 'JokeCard',
-      mountPoints: [
-        {
-          Component: JokeCard,
         },
       ],
     }),
