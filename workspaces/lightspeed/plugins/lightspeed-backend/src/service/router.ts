@@ -36,6 +36,7 @@ import { Readable } from 'node:stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -105,8 +106,7 @@ export async function createRouter(
   const { logger, config, database, httpAuth, userInfo, permissions } = options;
 
   const router = Router();
-  // Set explicit body size limit to accommodate attachments (up to 50MB total)
-  router.use(express.json({ limit: '60mb' }));
+  router.use(express.json());
 
   const port =
     config.getOptionalNumber('lightspeed.servicePort') ??
@@ -589,6 +589,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     validateCompletionsRequest,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {

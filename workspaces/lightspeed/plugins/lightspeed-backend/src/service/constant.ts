@@ -27,11 +27,12 @@ export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
 
 /**
- * Input validation limits for query endpoint (RHIDP-13062)
+ * Input validation limits for query endpoints
  */
 export const MAX_QUERY_LENGTH = 32000; // 32K characters (reasonable for LLM context)
 export const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024; // 20MB (matches notebooks limit)
 export const MAX_TOTAL_ATTACHMENTS_SIZE_BYTES = 50 * 1024 * 1024; // 50MB total
+export const EXPRESS_JSON_BODY_LIMIT = '60mb';
 
 export const NOTEBOOKS_SYSTEM_PROMPT = `
 You are a helpful, analytical Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.

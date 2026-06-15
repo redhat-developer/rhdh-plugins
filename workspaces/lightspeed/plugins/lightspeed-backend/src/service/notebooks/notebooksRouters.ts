@@ -31,6 +31,7 @@ import { Readable, Transform } from 'stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
   MAX_QUERY_LENGTH,
@@ -68,8 +69,7 @@ export async function createNotebooksRouter(
 ): Promise<Router> {
   const { logger, config, httpAuth, userInfo, permissions } = options;
   const notebooksRouter = Router();
-  // Set explicit body size limit for query endpoint requests
-  notebooksRouter.use(express.json({ limit: '60mb' }));
+  notebooksRouter.use(express.json());
 
   const lightSpeedPort =
     config.getOptionalNumber('lightspeed.servicePort') ??
@@ -435,6 +435,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { query } = req.body;
@@ -444,7 +445,6 @@ export async function createNotebooksRouter(
         return;
       }
 
-      // Validate query length (RHIDP-13062)
       if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
         handleError(
           logger,

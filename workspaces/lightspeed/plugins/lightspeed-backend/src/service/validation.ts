@@ -48,14 +48,12 @@ export const validateCompletionsRequest = (
       .json({ error: 'query is required and must be a non-empty string' });
   }
 
-  // Validate query length (RHIDP-13062)
   if (reqData.query.length > MAX_QUERY_LENGTH) {
     return res.status(400).json({
       error: `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
     });
   }
 
-  // Validate attachments if present (RHIDP-13062)
   if (reqData.attachments && Array.isArray(reqData.attachments)) {
     let totalSize = 0;
 

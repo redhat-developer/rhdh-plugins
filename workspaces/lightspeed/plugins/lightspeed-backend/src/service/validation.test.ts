@@ -118,7 +118,7 @@ describe('validateCompletionsRequest', () => {
     });
   });
 
-  describe('query length validation (RHIDP-13062)', () => {
+  describe('query length validation', () => {
     it('should reject query exceeding MAX_QUERY_LENGTH', () => {
       const longQuery = 'a'.repeat(MAX_QUERY_LENGTH + 1);
       mockReq.body = {
@@ -159,7 +159,7 @@ describe('validateCompletionsRequest', () => {
     });
   });
 
-  describe('attachment validation (RHIDP-13062)', () => {
+  describe('attachment validation', () => {
     it('should pass with no attachments', () => {
       mockReq.body = {
         model: 'gpt-4',
