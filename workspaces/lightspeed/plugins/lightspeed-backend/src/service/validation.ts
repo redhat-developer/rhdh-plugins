@@ -23,6 +23,30 @@ import {
 } from './constant';
 import { QueryRequestBody } from './types';
 
+function validateAttachments(
+  attachments: Array<{ name: string; content?: string }>,
+): string | null {
+  let totalSize = 0;
+
+  for (const attachment of attachments) {
+    const attachmentSize = attachment.content
+      ? Buffer.byteLength(attachment.content, 'utf8')
+      : 0;
+
+    if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
+      return `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+    }
+
+    totalSize += attachmentSize;
+  }
+
+  if (totalSize > MAX_TOTAL_ATTACHMENTS_SIZE_BYTES) {
+    return `Total attachments size exceeds maximum of ${MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)}MB`;
+  }
+
+  return null;
+}
+
 export const validateCompletionsRequest = (
   req: Request,
   res: Response,
@@ -55,29 +79,9 @@ export const validateCompletionsRequest = (
   }
 
   if (reqData.attachments && Array.isArray(reqData.attachments)) {
-    let totalSize = 0;
-
-    for (let i = 0; i < reqData.attachments.length; i++) {
-      const attachment = reqData.attachments[i];
-
-      // Calculate attachment size (content is base64 or plain text)
-      const attachmentSize = attachment.content
-        ? Buffer.byteLength(attachment.content, 'utf8')
-        : 0;
-
-      if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
-        return res.status(400).json({
-          error: `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`,
-        });
-      }
-
-      totalSize += attachmentSize;
-    }
-
-    if (totalSize > MAX_TOTAL_ATTACHMENTS_SIZE_BYTES) {
-      return res.status(400).json({
-        error: `Total attachments size exceeds maximum of ${MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)}MB`,
-      });
+    const attachmentError = validateAttachments(reqData.attachments);
+    if (attachmentError) {
+      return res.status(400).json({ error: attachmentError });
     }
   }
 

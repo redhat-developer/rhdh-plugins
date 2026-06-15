@@ -433,6 +433,14 @@ export async function createNotebooksRouter(
     }),
   );
 
+  const validateNotebooksQuery = (query: unknown): string | null => {
+    if (!query) return 'query is required';
+    if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+      return `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`;
+    }
+    return null;
+  };
+
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
@@ -440,17 +448,9 @@ export async function createNotebooksRouter(
       const { sessionId } = req.params;
       const { query } = req.body;
 
-      if (!query) {
-        handleError(logger, res, 'query is required');
-        return;
-      }
-
-      if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
-        handleError(
-          logger,
-          res,
-          `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
-        );
+      const queryError = validateNotebooksQuery(query);
+      if (queryError) {
+        handleError(logger, res, queryError);
         return;
       }
 

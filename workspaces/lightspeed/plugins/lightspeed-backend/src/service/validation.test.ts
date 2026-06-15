@@ -30,6 +30,13 @@ describe('validateCompletionsRequest', () => {
   let jsonMock: jest.Mock;
   let statusMock: jest.Mock;
 
+  const callValidate = () =>
+    validateCompletionsRequest(
+      mockReq as Request,
+      mockRes as Response,
+      mockNext,
+    );
+
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
@@ -49,11 +56,7 @@ describe('validateCompletionsRequest', () => {
         query: 'test query',
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -68,11 +71,7 @@ describe('validateCompletionsRequest', () => {
         query: 'test query',
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -87,11 +86,7 @@ describe('validateCompletionsRequest', () => {
         provider: 'openai',
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -107,11 +102,7 @@ describe('validateCompletionsRequest', () => {
         query: 'test query',
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -127,11 +118,7 @@ describe('validateCompletionsRequest', () => {
         query: longQuery,
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -148,11 +135,7 @@ describe('validateCompletionsRequest', () => {
         query: maxQuery,
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -167,11 +150,7 @@ describe('validateCompletionsRequest', () => {
         query: 'test query',
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -188,11 +167,7 @@ describe('validateCompletionsRequest', () => {
         ],
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -208,11 +183,7 @@ describe('validateCompletionsRequest', () => {
         attachments: [{ name: 'large-file.txt', content: largeContent }],
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -239,11 +210,7 @@ describe('validateCompletionsRequest', () => {
         ],
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
@@ -263,11 +230,7 @@ describe('validateCompletionsRequest', () => {
         ],
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -281,11 +244,7 @@ describe('validateCompletionsRequest', () => {
         attachments: [{ name: 'file.txt' }],
       };
 
-      validateCompletionsRequest(
-        mockReq as Request,
-        mockRes as Response,
-        mockNext,
-      );
+      callValidate();
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
