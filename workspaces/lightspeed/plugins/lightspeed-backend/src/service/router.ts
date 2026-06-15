@@ -664,14 +664,18 @@ export async function createRouter(
             );
             if (!response.headersSent) {
               response.status(500).json({ error: 'Stream error occurred' });
+            } else {
+              response.destroy();
             }
             abortController.abort();
           });
 
-          response.on('error', (error: Error) => {
-            logger.warn(`Client disconnected while processing query: ${error}`);
-            nodeStream.destroy();
-            abortController.abort();
+          response.on('close', () => {
+            if (!response.writableFinished) {
+              logger.warn('Client disconnected while processing query');
+              nodeStream.destroy();
+              abortController.abort();
+            }
           });
 
           nodeStream.pipe(response);

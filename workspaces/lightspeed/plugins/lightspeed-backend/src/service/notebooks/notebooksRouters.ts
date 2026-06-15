@@ -539,6 +539,8 @@ export async function createNotebooksRouter(
               res
                 .status(500)
                 .json({ status: 'error', error: 'Stream error occurred' });
+            } else {
+              res.destroy();
             }
             abortController.abort();
             transformStream.destroy();
@@ -553,17 +555,21 @@ export async function createNotebooksRouter(
                 status: 'error',
                 error: 'Processing error occurred',
               });
+            } else {
+              res.destroy();
             }
             body.destroy();
             abortController.abort();
           });
 
-          res.on('error', (error: Error) => {
-            logger.warn(
-              `Client disconnected while processing notebook query: ${error}`,
-            );
-            abortController.abort();
-            body.destroy();
+          res.on('close', () => {
+            if (!res.writableFinished) {
+              logger.warn(
+                'Client disconnected while processing notebook query',
+              );
+              abortController.abort();
+              body.destroy();
+            }
           });
 
           body.pipe(transformStream).pipe(res);
