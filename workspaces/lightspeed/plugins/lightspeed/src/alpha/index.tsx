@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { useEffect, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import {
   ApiBlueprint,
   configApiRef,
@@ -37,7 +40,11 @@ import { LightspeedApiClient } from '../api/LightspeedApiClient';
 import { notebooksApiRef } from '../api/notebooksApi';
 import { NotebooksApiClient } from '../api/NotebooksApiClient';
 import { LightspeedChatContainer } from '../components/LightspeedChatContainer';
-import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
+import {
+  LIGHTSPEED_APP_DRAWER_ID,
+  LIGHTSPEED_LEGACY_PATH,
+  LIGHTSPEED_PATH,
+} from '../const';
 import { lightspeedTranslations } from '../translations';
 import { LightspeedFAB } from './LightspeedFAB';
 import { LightspeedProvider } from './LightspeedProvider';
@@ -98,6 +105,38 @@ const lightspeedDrawer = AppDrawerContentBlueprint.make({
     defaultWidth: 400,
     priority: 100,
   },
+});
+
+const LightspeedLegacyRedirect = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (location.pathname.startsWith(LIGHTSPEED_LEGACY_PATH)) {
+      const newPath = location.pathname.replace(
+        LIGHTSPEED_LEGACY_PATH,
+        LIGHTSPEED_PATH,
+      );
+      navigate(newPath + location.search + location.hash, {
+        replace: true,
+      });
+    }
+  }, [location, navigate]);
+  return <>{children}</>;
+};
+
+const lightspeedRedirect = AppRootWrapperBlueprint.make({
+  name: 'lightspeed-redirect',
+  params: {
+    component: LightspeedLegacyRedirect,
+  },
+});
+
+/**
+ *  @alpha
+ */
+export const lightspeedRedirectModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [lightspeedRedirect],
 });
 
 /**
