@@ -21,8 +21,11 @@ const lightspeedPlugin: BackendFeature;
 export default lightspeedPlugin;
 
 // @public
+export type McpServerAuth = 'dcr';
+
+// @public
 export interface McpServerResponse {
-  auth?: string;
+  auth?: McpServerAuth;
   // (undocumented)
   enabled: boolean;
   // (undocumented)

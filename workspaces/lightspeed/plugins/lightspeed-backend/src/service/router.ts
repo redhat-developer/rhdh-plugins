@@ -45,6 +45,7 @@ import {
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
+  McpServerAuth,
   McpServerResponse,
   McpServerStatus,
   McpValidationResult,
@@ -79,8 +80,6 @@ import { validateCompletionsRequest } from './validation';
  *    app-config.  If neither exists, the server is omitted from MCP-HEADERS.
  *    Users can also set their own tokens via the Lightspeed UI.
  */
-type McpServerAuth = 'dcr';
-
 interface StaticMcpServer {
   name: string;
   token?: string;
@@ -107,8 +106,7 @@ async function buildMcpHeaders(
   store: McpUserSettingsStore,
   userEntityRef: string,
   options?: {
-    authService?: AuthService;
-    credentials?: BackstageCredentials;
+    dcrAuth?: { authService: AuthService; credentials: BackstageCredentials };
     logger?: LoggerService;
   },
 ): Promise<string> {
@@ -122,18 +120,19 @@ async function buildMcpHeaders(
     if (!enabled) continue;
 
     if (server.auth === 'dcr') {
-      if (server.token && options?.logger) {
-        options.logger.warn(
-          `MCP server '${server.name}' has both auth: dcr and a static token; ` +
-            `the static token is ignored when auth is dcr`,
-        );
-      }
-      if (options?.authService && options?.credentials) {
-        const { token } = await options.authService.getPluginRequestToken({
-          onBehalfOf: options.credentials,
-          targetPluginId: 'mcp-actions',
-        });
-        headers[server.name] = { Authorization: `${token}` };
+      if (options?.dcrAuth) {
+        try {
+          const { token } =
+            await options.dcrAuth.authService.getPluginRequestToken({
+              onBehalfOf: options.dcrAuth.credentials,
+              targetPluginId: 'mcp-actions',
+            });
+          headers[server.name] = { Authorization: `${token}` };
+        } catch (err) {
+          options?.logger?.error(
+            `Failed to mint DCR token for MCP server '${server.name}': ${err}`,
+          );
+        }
       } else {
         options?.logger?.warn(
           `MCP server '${server.name}' has auth: dcr but AuthService is not available; skipping`,
@@ -417,11 +416,21 @@ export async function createRouter(
 
         let effectiveToken: string | undefined;
         if (server.auth === 'dcr') {
-          const { token: dcrToken } = await auth.getPluginRequestToken({
-            onBehalfOf: credentials,
-            targetPluginId: 'mcp-actions',
-          });
-          effectiveToken = dcrToken;
+          try {
+            const { token: dcrToken } = await auth.getPluginRequestToken({
+              onBehalfOf: credentials,
+              targetPluginId: 'mcp-actions',
+            });
+            effectiveToken = dcrToken;
+          } catch (err) {
+            logger.error(
+              `Failed to mint DCR token for server '${name}': ${err}`,
+            );
+            res.status(502).json({
+              error: `Failed to mint authentication token for DCR server '${name}' — check Backstage auth configuration`,
+            });
+            return;
+          }
         } else {
           const setting = await settingsStore.get(name, userEntityRef);
           effectiveToken = setting?.token || server.token;
@@ -748,7 +757,7 @@ export async function createRouter(
           staticServers,
           settingsStore,
           userEntityRef,
-          { authService: auth, credentials, logger },
+          { dcrAuth: { authService: auth, credentials }, logger },
         );
 
         const abortController = new AbortController();
