@@ -569,6 +569,7 @@ export async function createNotebooksRouter(
               );
               abortController.abort();
               body.destroy();
+              transformStream.destroy();
             }
           });
 
