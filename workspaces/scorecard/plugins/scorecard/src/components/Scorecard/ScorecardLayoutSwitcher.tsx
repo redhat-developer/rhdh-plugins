@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type ReactElement, useState } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -40,6 +40,10 @@ export const ScorecardLayoutSwitcher = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  useEffect(() => {
+    if (selectedIndex >= layouts.length) setSelectedIndex(0);
+  }, [layouts.length, selectedIndex]);
+
   if (layouts.length === 0) return null;
 
   const selected = layouts[selectedIndex] ?? layouts[0];
@@ -63,8 +67,8 @@ export const ScorecardLayoutSwitcher = ({
             }}
           >
             {layouts.map((layout, i) => (
-              <ToggleButton key={layout.title} value={i}>
-                {layoutIcons[layout.title] ?? null}
+              <ToggleButton key={`${layout.title}-${i}`} value={i}>
+                {layoutIcons[layout.title] ?? layout.title}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>

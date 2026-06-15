@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 import { EntityScorecardContent } from './EntityScorecardContent';
+import { ScorecardEntityContentGridView } from './ScorecardEntityContentGridView';
+import { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
 
-export { EntityScorecardContent };
-export { ScorecardEntityContentGridView } from './ScorecardEntityContentGridView';
-export { ScorecardEntityListView } from './ScorecardEntityListView';
-export { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
+export {
+  EntityScorecardContent,
+  ScorecardEntityContentGridView,
+  ScorecardLayoutSwitcher,
+};

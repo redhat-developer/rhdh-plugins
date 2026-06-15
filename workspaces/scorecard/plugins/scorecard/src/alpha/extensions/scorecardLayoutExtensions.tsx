@@ -38,6 +38,7 @@ export const scorecardEntityLayoutGrid =
  * List view layout extension for the Scorecard entity tab.
  *
  * Extension ID: scorecard-layout:catalog/scorecard-entity-layout-list
+ * In UI Epic RHIDP-13950, this will be replaced with ScorecardEntityListView
  * @alpha
  */
 export const scorecardEntityLayoutList =
@@ -46,8 +47,8 @@ export const scorecardEntityLayoutList =
     params: {
       title: 'List',
       loader: () =>
-        import('../../components/Scorecard/ScorecardEntityListView').then(
-          m => m.ScorecardEntityListView,
-        ),
+        import(
+          '../../components/Scorecard/ScorecardEntityContentGridView'
+        ).then(m => m.ScorecardEntityContentGridView),
     },
   });
