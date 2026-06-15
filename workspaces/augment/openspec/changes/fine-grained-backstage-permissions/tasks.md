@@ -26,7 +26,7 @@
 
 ## 4. Agent Route Refactoring
 
-- [ ] 4.1 Replace GET /agents visibility filtering with `augment.agent.list` basic permission check in `plugins/augment-backend/src/routes/agentRoutes.ts`
+- [ ] 4.1 Replace GET /agents visibility filtering with `augment.agent.list` resource-based permission check (3-tier: ALLOW=all, DENY=none, CONDITIONAL=filtered) in `plugins/augment-backend/src/routes/agentRoutes.ts`
 - [ ] 4.2 Replace PUT register `requireAdminAccess` with `augment.agent.register` + fallback
 - [ ] 4.3 Replace PUT promote (draft→pending) inline guards with `augment.agent.promote` + IS_OWNER + HAS_LIFECYCLE_STAGE(draft)
 - [ ] 4.4 Replace PUT promote (pending→published) self-approval check with `augment.agent.approve` + IS_NOT_CREATOR (retain hard-coded check as defense-in-depth)
@@ -46,9 +46,9 @@
 
 ## 6. Plugin Wiring
 
-- [ ] 6.1 Register all 16 new permissions via `permissionsRegistry.addPermissions` in `plugins/augment-backend/src/plugin.ts`
+- [ ] 6.1 Register both resource types via `permissionsRegistry.addResourceType` and all 16 new permissions via `permissionsRegistry.addPermissions` in `plugins/augment-backend/src/plugin.ts`
 - [ ] 6.2 Add `@backstage/plugin-permission-node` dependency to `plugins/augment-backend/package.json`
-- [ ] 6.3 Create `permissionIntegrationRouter` via `createPermissionIntegrationRouter` with both resource types and all rules, mount on router in `plugins/augment-backend/src/router.ts`
+- [ ] 6.3 Register both resource types via `permissionsRegistry.addResourceType` with their associated rules in `plugins/augment-backend/src/plugin.ts` (using `PermissionsRegistryService`, not the deprecated `createPermissionIntegrationRouter`)
 - [ ] 6.4 Thread `authorizeLifecycleAction` and `authorizeBasicWithFallback` into `RouteContext` in `plugins/augment-backend/src/router.ts`
 
 ## 7. Verification

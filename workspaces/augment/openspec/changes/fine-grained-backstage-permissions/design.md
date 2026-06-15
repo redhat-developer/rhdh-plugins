@@ -14,10 +14,9 @@ These permissions are independent of AgenticProvider authorization. Kagenti's pe
 
 - Replace all 12+ inline authorization decisions with Backstage permission framework calls
 - Enable deployers to configure fine-grained RBAC policies for agent and tool lifecycle operations and targeted access to infrastructure resources (vector stores, documents, MCP connections, prompts, models)
-- Provide an opt-in legacy fallback (`permissions.legacyAdminFallback`) so existing deployments using `augment.access` + `augment.admin` can migrate incrementally
+- Provide an opt-in legacy fallback (`augment.permissions.legacyAdminFallback`) so existing deployments using `augment.access` + `augment.admin` can migrate incrementally
 - Support conditional permission rules for ownership checks, self-approval prevention, and lifecycle stage gating
 - Keep self-approval prevention as defense-in-depth (permission rule supplements hard-coded check)
-- Emit structured audit log entries for all authorization decisions — recording the user, action, resource, outcome (allow/deny), and whether the `augment.admin` fallback was used. The authorization middleware is the single point through which all permission decisions flow, making it the natural place for audit logging.
 
 **Non-Goals:**
 
@@ -37,7 +36,7 @@ Define `augment-agent` and `augment-tool` as distinct resource types rather than
 
 ### Decision 2: Opt-in legacy fallback to `augment.admin`
 
-When `permissions.legacyAdminFallback` is enabled in the plugin config, `authorizeLifecycleAction` checks the fine-grained permission first. If DENY, it falls back to checking `augment.admin`. When the config flag is absent or false (the default), only fine-grained permissions are evaluated — no fallback occurs.
+When `augment.permissions.legacyAdminFallback` is enabled in the plugin config, `authorizeLifecycleAction` checks the fine-grained permission first. If DENY, it falls back to checking `augment.admin`. When the config flag is absent or false (the default), only fine-grained permissions are evaluated — no fallback occurs.
 
 **Why opt-in rather than default-on:** The augment plugin is in dev preview, which means no backward compatibility guarantees. Making the fallback default-on risks the "temporary becomes permanent" problem — once deployments rely on `augment.admin` as a catch-all, removing the fallback later becomes the very breaking change it was meant to prevent. Opt-in gives existing consumers a migration path (enable the flag, then incrementally adopt fine-grained policies, then disable the flag) without baking the fallback into every deployment's baseline.
 
@@ -51,11 +50,11 @@ The `IS_NOT_CREATOR` permission rule enables RBAC-level self-approval prevention
 
 **Alternative considered:** Removing the hard-coded check entirely and relying solely on the permission rule. Rejected because a misconfigured RBAC policy could silently disable self-approval prevention — defense-in-depth is safer for a governance control.
 
-### Decision 4: Visibility filtering via basic permission
+### Decision 4: Visibility filtering via resource-based permission with 3-tier evaluation
 
-`augment.agent.list` is a basic (non-resource) permission that controls visibility: ALLOW shows all agents, DENY filters to published + user's own agents. This avoids evaluating resource-based conditions against every agent in the list.
+`augment.agent.list` is a resource-based permission with resource type `augment-agent`, supporting 3-tier evaluation: ALLOW shows all agents, DENY shows no agents, CONDITIONAL applies the returned conditions as filters against each agent in the list (e.g., `IS_OWNER` returns only the user's own agents, `HAS_LIFECYCLE_STAGE(published)` returns only published agents). This aligns with the orchestrator plugin's existing CONDITIONAL policy patterns and gives deployers full flexibility over visibility rules via RBAC configuration.
 
-**Alternative considered:** Resource-based permission evaluated per-agent in list responses. Rejected due to performance — evaluating conditional rules against potentially hundreds of agents per list request is expensive and unnecessary when the distinction is binary (admin vs. filtered view).
+**Alternative considered:** Basic (non-resource) permission with binary ALLOW/DENY where DENY hardcodes a "published + own" filter. Rejected because (a) DENY-means-filtered is non-standard permission semantics — deployers expect DENY to mean no access, (b) the hardcoded filter cannot be customized per-deployment, and (c) the performance cost of evaluating conditions per-agent is comparable to the hardcoded filter iteration we'd be doing anyway.
 
 ### Decision 5: Permission rules modeled on extensions-backend pattern
 
@@ -63,7 +62,7 @@ Permission rules (`IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`) follow th
 
 ## Risks / Trade-offs
 
-- **Policy migration complexity** → Deployers must configure fine-grained RBAC policies. Existing deployments can enable `permissions.legacyAdminFallback` to preserve current `augment.admin` behavior during migration.
+- **Policy migration complexity** → Deployers must configure fine-grained RBAC policies. Existing deployments can enable `augment.permissions.legacyAdminFallback` to preserve current `augment.admin` behavior during migration.
 - **Conditional evaluation overhead** → Resource-based permissions require loading the resource to evaluate conditions. Mitigated by keeping list operations as basic permissions and only using resource-based permissions for mutation routes where the resource is already loaded.
 - **Rule mismatch on upgrade** → If a deployer configures a fine-grained policy with a `HAS_LIFECYCLE_STAGE` condition referencing a stage name that changes, the rule silently denies. Mitigated by documenting stage names as part of the permission contract.
 - **Defense-in-depth dual check** → The self-approval hard-coded check and `IS_NOT_CREATOR` rule are redundant by design. If one is relaxed without updating the other, behavior may be confusing. Mitigated by documenting this clearly.

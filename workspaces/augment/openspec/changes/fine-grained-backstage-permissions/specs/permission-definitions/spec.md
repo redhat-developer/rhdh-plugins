@@ -33,30 +33,32 @@ The system SHALL define a resource type constant `RESOURCE_TYPE_AUGMENT_TOOL` wi
 
 The system SHALL define the following agent permissions using `createPermission` with resource type `augment-agent`:
 
-| Permission ID             | Action                         |
-| ------------------------- | ------------------------------ |
-| `augment.agent.list`      | read (basic, no resource type) |
-| `augment.agent.register`  | create                         |
-| `augment.agent.promote`   | update                         |
-| `augment.agent.approve`   | update                         |
-| `augment.agent.demote`    | update                         |
-| `augment.agent.publish`   | update                         |
-| `augment.agent.unpublish` | update                         |
-| `augment.agent.withdraw`  | update                         |
-| `augment.agent.delete`    | delete                         |
-| `augment.agent.configure` | update                         |
+| Permission ID             | Action                           |
+| ------------------------- | -------------------------------- |
+| `augment.agent.list`      | read                             |
+| `augment.agent.register`  | create (basic, no resource type) |
+| `augment.agent.promote`   | update                           |
+| `augment.agent.approve`   | update                           |
+| `augment.agent.demote`    | update                           |
+| `augment.agent.publish`   | update                           |
+| `augment.agent.unpublish` | update                           |
+| `augment.agent.withdraw`  | update                           |
+| `augment.agent.delete`    | delete                           |
+| `augment.agent.configure` | update                           |
 
-The `augment.agent.list` permission SHALL be a basic permission (no resource type) for performance reasons.
+The `augment.agent.list` permission SHALL be a resource-based permission with resource type `augment-agent`, supporting 3-tier evaluation (ALLOW/DENY/CONDITIONAL). This enables deployers to configure visibility rules via RBAC policies — e.g., `IS_OWNER` to show only the user's agents, `HAS_LIFECYCLE_STAGE(published)` to show only published agents, or combinations thereof.
+
+The `augment.agent.register` permission SHALL be a basic permission (no resource type) because `create` permissions gate the ability to create a resource that does not yet exist — there is no resource to attach a resource type to at evaluation time, and `usePermission` in the frontend cannot resolve a resource ref for a not-yet-created entity.
 
 #### Scenario: All agent permissions defined
 
 - **WHEN** the `augment-common` package is loaded
 - **THEN** all 10 agent permissions SHALL be defined with correct action types and resource types
 
-#### Scenario: Agent list is basic permission
+#### Scenario: Agent list supports 3-tier evaluation
 
 - **WHEN** `augment.agent.list` is evaluated
-- **THEN** it SHALL be a basic permission without a resource type, returning ALLOW or DENY without conditional evaluation
+- **THEN** ALLOW SHALL return all agents, DENY SHALL return no agents, and CONDITIONAL SHALL apply the returned conditions as filters against each agent in the list
 
 ### Requirement: Tool permissions
 
@@ -110,7 +112,7 @@ These are basic permissions without conditional rules. Each gates a category of 
 
 ### Requirement: Existing permissions preserved
 
-The existing `augmentAccessPermission` (`augment.access`) and `augmentAdminPermission` (`augment.admin`) SHALL remain unchanged. All 21 new permissions SHALL be added to the `augmentPermissions` array alongside the existing ones. `augment.admin` continues to gate routes not yet covered by fine-grained permissions (evaluations, workflows, dev spaces) and serves as an opt-in fallback for fine-grained operations when `permissions.legacyAdminFallback` is enabled.
+The existing `augmentAccessPermission` (`augment.access`) and `augmentAdminPermission` (`augment.admin`) SHALL remain unchanged. All 21 new permissions SHALL be added to the `augmentPermissions` array alongside the existing ones. `augment.admin` continues to gate routes not yet covered by fine-grained permissions (evaluations, workflows, dev spaces) and serves as an opt-in fallback for fine-grained operations when `augment.permissions.legacyAdminFallback` is enabled.
 
 #### Scenario: Backward-compatible exports
 
@@ -165,5 +167,5 @@ The permission rules SHALL use `createPermissionRule` and `createPermissionResou
 
 #### Scenario: Rule API compatibility
 
-- **WHEN** the permission integration router is created with the augment rules
-- **THEN** the rules SHALL be compatible with `createPermissionIntegrationRouter` from `@backstage/plugin-permission-node`
+- **WHEN** the augment resource types are registered via `permissionsRegistry.addResourceType`
+- **THEN** the rules SHALL be compatible with `PermissionsRegistryService` from `@backstage/plugin-permission-node`
