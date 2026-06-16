@@ -35,10 +35,10 @@ type TransValues = Record<string, React.ReactNode>;
 export function Trans({
   message,
   values,
-}: {
+}: Readonly<{
   message: string;
   values?: TransValues;
-}) {
+}>) {
   const { t } = useTranslation();
   const template = (t as any)(message) as string;
 
@@ -47,7 +47,7 @@ export function Trans({
   const parts: React.ReactNode[] = template
     .split(/(\{\{\w+\}\})/)
     .map((part: string, i: number) => {
-      const match = part.match(/^\{\{(\w+)\}\}$/);
+      const match = /^\{\{(\w+)\}\}$/.exec(part);
       const node = match ? values[match[1]] ?? part : part || null;
       // eslint-disable-next-line react/no-array-index-key
       return <React.Fragment key={i}>{node}</React.Fragment>;

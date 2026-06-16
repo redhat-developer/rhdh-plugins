@@ -70,7 +70,7 @@ export const MockTrans = ({
   const template = mockT(message);
   if (!values) return template;
   return template.split(/(\{\{\w+\}\})/).map((part: string) => {
-    const match = part.match(/^\{\{(\w+)\}\}$/);
+    const match = /^\{\{(\w+)\}\}$/.exec(part);
     return match ? values[match[1]] ?? part : part || null;
   });
 };
