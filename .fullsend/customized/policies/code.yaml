@@ -3,7 +3,9 @@ version: 1
 
 # Sandbox policy for the code agent.
 #
-# Based on upstream code policy (baseline 2025-06-05) with additions:
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
+# Based on upstream code policy with additions:
 #   - repo.yarnpkg.com endpoint in package_registries (corepack downloads
 #     yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
 #   - corepack binary in package_registries
