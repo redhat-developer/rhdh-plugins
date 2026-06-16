@@ -26,7 +26,7 @@ export const DEFAULT_LIGHTSPEED_SERVICE_HOST = '127.0.0.1'; // Lightspeed core s
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
 export const NOTEBOOKS_SYSTEM_PROMPT = `
-You are a helpful, analytical Senior Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
+You are a helpful, analytical Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
 
 ### QUERY TYPES - IMPORTANT
 * **Meta Queries ONLY:** ONLY when the user asks specifically about YOU as an assistant (e.g., "who are you", "what can you do", "hello"), respond naturally without requiring documents.
