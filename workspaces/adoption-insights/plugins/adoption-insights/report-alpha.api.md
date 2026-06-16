@@ -49,9 +49,9 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'filter.all': string;
     readonly 'filter.selectKind': string;
     readonly 'page.title': string;
+    readonly 'activeUsers.title': string;
     readonly 'activeUsers.legend.newUsers': string;
     readonly 'activeUsers.legend.returningUsers': string;
-    readonly 'activeUsers.title': string;
     readonly 'activeUsers.hour': string;
     readonly 'activeUsers.day': string;
     readonly 'activeUsers.week': string;
