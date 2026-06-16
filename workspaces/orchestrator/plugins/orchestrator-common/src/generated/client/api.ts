@@ -736,6 +736,24 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'runsLastMonth'?: number;
+    /**
+     * Number of completed workflow runs
+     * @type {number}
+     * @memberof WorkflowOverviewDTO
+     */
+    'successCount'?: number;
+    /**
+     * Number of failed workflow runs
+     * @type {number}
+     * @memberof WorkflowOverviewDTO
+     */
+    'errorCount'?: number;
+    /**
+     * Total number of workflow runs
+     * @type {number}
+     * @memberof WorkflowOverviewDTO
+     */
+    'totalCount'?: number;
 }
 
 

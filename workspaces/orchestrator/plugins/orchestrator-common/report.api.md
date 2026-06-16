@@ -1724,6 +1724,8 @@ export interface WorkflowOverview {
   // (undocumented)
   description?: string;
   // (undocumented)
+  errorCount?: number;
+  // (undocumented)
   format: WorkflowFormat;
   // (undocumented)
   isAvailable?: boolean;
@@ -1738,7 +1740,11 @@ export interface WorkflowOverview {
   // (undocumented)
   runsLastMonth?: number;
   // (undocumented)
+  successCount?: number;
+  // (undocumented)
   successRatio?: number;
+  // (undocumented)
+  totalCount?: number;
   // (undocumented)
   version?: string;
   // (undocumented)
@@ -2509,32 +2515,35 @@ export interface WorkflowRunStatusDTO {
 // src/types.d.ts:60:5 - (ae-undocumented) Missing documentation for "version".
 // src/types.d.ts:61:5 - (ae-undocumented) Missing documentation for "successRatio".
 // src/types.d.ts:62:5 - (ae-undocumented) Missing documentation for "runsLastMonth".
-// src/types.d.ts:64:1 - (ae-undocumented) Missing documentation for "WorkflowInfo".
-// src/types.d.ts:65:5 - (ae-undocumented) Missing documentation for "id".
-// src/types.d.ts:66:5 - (ae-undocumented) Missing documentation for "type".
-// src/types.d.ts:67:5 - (ae-undocumented) Missing documentation for "name".
-// src/types.d.ts:68:5 - (ae-undocumented) Missing documentation for "version".
-// src/types.d.ts:69:5 - (ae-undocumented) Missing documentation for "annotations".
-// src/types.d.ts:70:5 - (ae-undocumented) Missing documentation for "description".
-// src/types.d.ts:71:5 - (ae-undocumented) Missing documentation for "inputSchema".
-// src/types.d.ts:72:5 - (ae-undocumented) Missing documentation for "endpoint".
-// src/types.d.ts:73:5 - (ae-undocumented) Missing documentation for "serviceUrl".
-// src/types.d.ts:74:5 - (ae-undocumented) Missing documentation for "roles".
-// src/types.d.ts:75:5 - (ae-undocumented) Missing documentation for "source".
-// src/types.d.ts:76:5 - (ae-undocumented) Missing documentation for "metadata".
-// src/types.d.ts:77:5 - (ae-undocumented) Missing documentation for "nodes".
-// src/types.d.ts:79:1 - (ae-undocumented) Missing documentation for "Node".
-// src/types.d.ts:80:5 - (ae-undocumented) Missing documentation for "id".
-// src/types.d.ts:81:5 - (ae-undocumented) Missing documentation for "type".
-// src/types.d.ts:82:5 - (ae-undocumented) Missing documentation for "name".
-// src/types.d.ts:83:5 - (ae-undocumented) Missing documentation for "uniqueId".
-// src/types.d.ts:84:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
-// src/types.d.ts:86:1 - (ae-undocumented) Missing documentation for "WorkflowLogEntry".
-// src/types.d.ts:87:5 - (ae-undocumented) Missing documentation for "id".
-// src/types.d.ts:88:5 - (ae-undocumented) Missing documentation for "log".
-// src/types.d.ts:90:1 - (ae-undocumented) Missing documentation for "WorkflowInstanceLogsDTO".
-// src/types.d.ts:91:5 - (ae-undocumented) Missing documentation for "instanceId".
-// src/types.d.ts:92:5 - (ae-undocumented) Missing documentation for "logs".
+// src/types.d.ts:63:5 - (ae-undocumented) Missing documentation for "successCount".
+// src/types.d.ts:64:5 - (ae-undocumented) Missing documentation for "errorCount".
+// src/types.d.ts:65:5 - (ae-undocumented) Missing documentation for "totalCount".
+// src/types.d.ts:67:1 - (ae-undocumented) Missing documentation for "WorkflowInfo".
+// src/types.d.ts:68:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:69:5 - (ae-undocumented) Missing documentation for "type".
+// src/types.d.ts:70:5 - (ae-undocumented) Missing documentation for "name".
+// src/types.d.ts:71:5 - (ae-undocumented) Missing documentation for "version".
+// src/types.d.ts:72:5 - (ae-undocumented) Missing documentation for "annotations".
+// src/types.d.ts:73:5 - (ae-undocumented) Missing documentation for "description".
+// src/types.d.ts:74:5 - (ae-undocumented) Missing documentation for "inputSchema".
+// src/types.d.ts:75:5 - (ae-undocumented) Missing documentation for "endpoint".
+// src/types.d.ts:76:5 - (ae-undocumented) Missing documentation for "serviceUrl".
+// src/types.d.ts:77:5 - (ae-undocumented) Missing documentation for "roles".
+// src/types.d.ts:78:5 - (ae-undocumented) Missing documentation for "source".
+// src/types.d.ts:79:5 - (ae-undocumented) Missing documentation for "metadata".
+// src/types.d.ts:80:5 - (ae-undocumented) Missing documentation for "nodes".
+// src/types.d.ts:82:1 - (ae-undocumented) Missing documentation for "Node".
+// src/types.d.ts:83:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:84:5 - (ae-undocumented) Missing documentation for "type".
+// src/types.d.ts:85:5 - (ae-undocumented) Missing documentation for "name".
+// src/types.d.ts:86:5 - (ae-undocumented) Missing documentation for "uniqueId".
+// src/types.d.ts:87:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
+// src/types.d.ts:89:1 - (ae-undocumented) Missing documentation for "WorkflowLogEntry".
+// src/types.d.ts:90:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:91:5 - (ae-undocumented) Missing documentation for "log".
+// src/types.d.ts:93:1 - (ae-undocumented) Missing documentation for "WorkflowInstanceLogsDTO".
+// src/types.d.ts:94:5 - (ae-undocumented) Missing documentation for "instanceId".
+// src/types.d.ts:95:5 - (ae-undocumented) Missing documentation for "logs".
 // src/utils/StringUtils.d.ts:1:1 - (ae-undocumented) Missing documentation for "Capitalized".
 // src/utils/StringUtils.d.ts:2:22 - (ae-undocumented) Missing documentation for "capitalize".
 // src/utils/StringUtils.d.ts:3:22 - (ae-undocumented) Missing documentation for "ellipsis".

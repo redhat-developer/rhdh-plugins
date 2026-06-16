@@ -169,6 +169,9 @@ export class SonataFlowService {
         const successCount = items.filter(
           item => item.state === ProcessInstanceState.Completed,
         ).length;
+        const errorCount = items.filter(
+          item => item.state === ProcessInstanceState.Error,
+        ).length;
         const runsLastMonth = items.filter(
           item =>
             item.start &&
@@ -177,6 +180,9 @@ export class SonataFlowService {
         );
         return {
           processIdVersion,
+          successCount,
+          errorCount,
+          totalCount: items.length,
           successRatio: successCount / items.length,
           runsLastMonth: runsLastMonth.length,
         };
@@ -202,6 +208,9 @@ export class SonataFlowService {
         if (stats) {
           overview.successRatio = stats.successRatio;
           overview.runsLastMonth = stats.runsLastMonth;
+          overview.successCount = stats.successCount;
+          overview.errorCount = stats.errorCount;
+          overview.totalCount = stats.totalCount;
         }
         return overview;
       });

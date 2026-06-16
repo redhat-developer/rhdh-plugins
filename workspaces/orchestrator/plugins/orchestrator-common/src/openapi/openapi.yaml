@@ -461,6 +461,15 @@ components:
         runsLastMonth:
           type: integer
           description: Number of runs in the last 30 days
+        successCount:
+          type: integer
+          description: Number of completed workflow runs
+        errorCount:
+          type: integer
+          description: Number of failed workflow runs
+        totalCount:
+          type: integer
+          description: Total number of workflow runs
       required:
         - workflowId
         - format

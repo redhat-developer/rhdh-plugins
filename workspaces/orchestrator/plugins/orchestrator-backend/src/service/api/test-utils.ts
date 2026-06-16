@@ -38,6 +38,11 @@ interface WorkflowOverviewParams {
   lastTriggeredMs?: number;
   lastRunStatus?: ProcessInstanceStateValues;
   description?: string;
+  successRatio?: number;
+  runsLastMonth?: number;
+  successCount?: number;
+  errorCount?: number;
+  totalCount?: number;
 }
 export function generateTestWorkflowOverview(
   params: WorkflowOverviewParams,
@@ -50,6 +55,11 @@ export function generateTestWorkflowOverview(
       params.lastTriggeredMs ?? Date.parse('2024-02-09T10:34:56Z'),
     lastRunStatus: params.lastRunStatus ?? ProcessInstanceState.Completed,
     description: params.description ?? 'Test Workflow Description',
+    successRatio: params.successRatio,
+    runsLastMonth: params.runsLastMonth,
+    successCount: params.successCount,
+    errorCount: params.errorCount,
+    totalCount: params.totalCount,
   };
 }
 
