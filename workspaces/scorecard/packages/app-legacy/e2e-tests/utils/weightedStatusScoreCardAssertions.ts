@@ -28,22 +28,22 @@ function interpolate(template: string, vars: Record<string, string>): string {
   );
 }
 
-function averageCenterTooltipBreakdownTemplateKey(
+function weightedStatusScoreCenterTooltipBreakdownTemplateKey(
   locale: string,
   count: number,
 ):
-  | 'averageCenterTooltipBreakdownRow_one'
-  | 'averageCenterTooltipBreakdownRow_other' {
+  | 'weightedStatusScoreCenterTooltipBreakdownRow_one'
+  | 'weightedStatusScoreCenterTooltipBreakdownRow_other' {
   if (Number.isNaN(count)) {
-    return 'averageCenterTooltipBreakdownRow_other';
+    return 'weightedStatusScoreCenterTooltipBreakdownRow_other';
   }
   const category = new Intl.PluralRules(locale).select(count);
   return category === 'one'
-    ? 'averageCenterTooltipBreakdownRow_one'
-    : 'averageCenterTooltipBreakdownRow_other';
+    ? 'weightedStatusScoreCenterTooltipBreakdownRow_one'
+    : 'weightedStatusScoreCenterTooltipBreakdownRow_other';
 }
 
-function expectedAverageCenterTooltipBreakdownLine(
+function expectedWeightedStatusScoreCenterTooltipBreakdownLine(
   translations: ScorecardMessages,
   locale: string,
   statusKey: string,
@@ -51,7 +51,10 @@ function expectedAverageCenterTooltipBreakdownLine(
   score: string,
 ): string {
   const n = Number.parseInt(count, 10);
-  const templateKey = averageCenterTooltipBreakdownTemplateKey(locale, n);
+  const templateKey = weightedStatusScoreCenterTooltipBreakdownTemplateKey(
+    locale,
+    n,
+  );
   const template = getMetricTranslation(translations, templateKey);
   const status =
     statusKey in translations.thresholds
@@ -60,32 +63,40 @@ function expectedAverageCenterTooltipBreakdownLine(
   return interpolate(template, { status, count, score });
 }
 
-export async function expectAverageCardCenterPercent(
+export async function expectWeightedStatusScoreCardCenterPercent(
   card: Locator,
   percentLabel: string,
 ): Promise<void> {
-  await expect(card.getByTestId('average-card-center-percent')).toHaveText(
-    percentLabel,
-  );
+  await expect(
+    card.getByTestId('weighted-status-score-card-center-percent'),
+  ).toHaveText(percentLabel);
 }
 
-export async function verifyAverageDonutCenterTooltip(
+export async function verifyWeightedStatusScoreDonutCenterTooltip(
   page: Page,
   card: Locator,
   translations: ScorecardMessages,
   weightedSum: number,
   maxPossible: number,
 ): Promise<void> {
-  await card.getByTestId('average-card-center-percent-hit-area').hover();
+  await card
+    .getByTestId('weighted-status-score-card-center-percent-hit-area')
+    .hover();
   await expect(
     page.getByText(
-      getMetricTranslation(translations, 'averageCenterTooltipTotalLabel'),
+      getMetricTranslation(
+        translations,
+        'weightedStatusScoreCenterTooltipTotalLabel',
+      ),
       { exact: true },
     ),
   ).toBeVisible();
   await expect(
     page.getByText(
-      getMetricTranslation(translations, 'averageCenterTooltipMaxLabel'),
+      getMetricTranslation(
+        translations,
+        'weightedStatusScoreCenterTooltipMaxLabel',
+      ),
       { exact: true },
     ),
   ).toBeVisible();
@@ -112,15 +123,17 @@ const OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN: Array<{
 /**
  * Per-status lines under total/max in the center donut tooltip (replaces old side-legend tooltips).
  */
-export async function verifyAverageCenterTooltipBreakdownRows(
+export async function verifyWeightedStatusScoreCenterTooltipBreakdownRows(
   page: Page,
   card: Locator,
   translations: ScorecardMessages,
   locale: string,
 ): Promise<void> {
-  await card.getByTestId('average-card-center-percent-hit-area').hover();
+  await card
+    .getByTestId('weighted-status-score-card-center-percent-hit-area')
+    .hover();
   for (const row of OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN) {
-    const line = expectedAverageCenterTooltipBreakdownLine(
+    const line = expectedWeightedStatusScoreCenterTooltipBreakdownLine(
       translations,
       locale,
       row.statusKey,

@@ -1187,14 +1187,14 @@ describe('createRouter', () => {
       );
     });
 
-    it('should use KPI type average when configured', async () => {
+    it('should use KPI type weightedStatusScore when configured', async () => {
       const kpiConfig = new ConfigReader({
         scorecard: {
           aggregationKPIs: {
             avgKpi: {
               title: 'Weighted health KPI',
-              description: 'Weighted average',
-              type: 'average',
+              description: 'Weighted status score',
+              type: 'weightedStatusScore',
               metricId: 'github.open_prs',
               options: {
                 statusScores: {

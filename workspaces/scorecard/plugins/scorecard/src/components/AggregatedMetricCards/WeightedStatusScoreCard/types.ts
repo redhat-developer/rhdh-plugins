@@ -15,13 +15,13 @@
  */
 
 import {
-  AggregatedMetricAverageResult,
+  WeightedStatusScoreAggregationResult,
   AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type AverageCardComponentProps = {
+export type WeightedStatusScoreCardComponentProps = {
   scorecard: Omit<AggregatedMetricResult, 'result'> & {
-    result: AggregatedMetricAverageResult;
+    result: WeightedStatusScoreAggregationResult;
   };
   cardTitle: string;
   description: string;
