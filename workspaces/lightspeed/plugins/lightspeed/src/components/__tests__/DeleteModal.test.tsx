@@ -67,7 +67,7 @@ describe('DeleteModal', () => {
     expect(screen.getByText(`Delete "${chatName}"?`)).toBeInTheDocument();
     expect(
       screen.getByText(
-        "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback.",
+        "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your activity.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();

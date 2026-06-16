@@ -23,9 +23,9 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
  */
 export const lightspeedMessages = {
   // Page titles and headers
-  'page.title': 'Lightspeed',
+  'page.title': 'Intelligent assistant',
   'page.subtitle': 'AI-powered development assistant',
-  'tabs.ariaLabel': 'Lightspeed views',
+  'tabs.ariaLabel': 'Intelligent assistant views',
   'tabs.chat': 'Chat',
   'tabs.notebooks': 'Notebooks',
   'tabs.notebooks.devPreview': 'Developer preview',
@@ -46,7 +46,7 @@ export const lightspeedMessages = {
   'notebooks.rename.action': 'Submit',
   'notebooks.delete.title': 'Delete {{name}}?',
   'notebooks.delete.message':
-    "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+    "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your activity.",
   'notebooks.delete.action': 'Delete',
   'notebooks.delete.toast': 'Notebook deleted!',
   'notebooks.updated.today': 'Updated today',
@@ -156,7 +156,7 @@ export const lightspeedMessages = {
   // Conversation history
   'conversation.delete.confirm.title': 'Delete "{{chatName}}"?',
   'conversation.delete.confirm.message':
-    "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback.",
+    "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your activity.",
   'conversation.delete.confirm.action': 'Delete',
   'conversation.rename.confirm.title': 'Rename chat?',
   'conversation.rename.confirm.action': 'Rename',
@@ -166,20 +166,20 @@ export const lightspeedMessages = {
   'permission.required.title': 'Missing permissions',
   'permission.required.description':
     'To view <subject/>, contact your administrator to give the <permissions/> permission.',
-  'permission.subject.plugin': 'the Lightspeed plugin',
-  'permission.subject.notebooks': 'the Lightspeed notebooks',
+  'permission.subject.plugin': 'the intelligent assistant plugin',
+  'permission.subject.notebooks': 'the intelligent assistant notebooks',
   'permission.notebooks.goBack': 'Go back',
 
   // LCORE / LLM (no models registered)
   'lcore.notConfigured.title': 'Connect an LLM to get started',
   'lcore.notConfigured.description':
-    "Lightspeed requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
+    "The intelligent assistant requires a registered LLM. Contact your organization's platform administrator to complete the setup.",
   'lcore.notConfigured.developerLightspeedDocs':
-    'Configuring Developer Lightspeed',
-  'lcore.notConfigured.backendDocs': 'Lightspeed Backend Setup',
+    'Configuring Developer Hub Intelligent Assistant',
+  'lcore.notConfigured.backendDocs': 'Intelligent Assistant Backend Setup',
   'lcore.loadError.title': 'Could not load models',
   'lcore.loadError.description':
-    'The Lightspeed backend did not return a model list. Check that the service is running and reachable, then try again.',
+    'The intelligent assistant backend did not return a model list. Check that the service is running and reachable, then try again.',
 
   // Disclaimers
   'disclaimer.withValidation':
@@ -202,7 +202,7 @@ export const lightspeedMessages = {
   'menu.newConversation': 'New Chat',
 
   // Chat-specific UI elements
-  'chatbox.header.title': 'Developer Lightspeed',
+  'chatbox.header.title': 'Developer Hub Intelligent Assistant',
   'chatbox.search.placeholder': 'Search',
   'chatbox.provider.other': 'Other',
   'chatbox.emptyState.noPinnedChats': 'Pin chats to keep them on top',
@@ -212,7 +212,7 @@ export const lightspeedMessages = {
     'Adjust your search query and try again. Check your spelling or try a more general term.',
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
-  'chatbox.message.placeholder': 'Enter a prompt for Lightspeed',
+  'chatbox.message.placeholder': 'Send a message',
   'chatbox.fileUpload.failed': 'File upload failed',
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',
@@ -265,8 +265,8 @@ export const lightspeedMessages = {
   'tooltip.backToBottom': 'Back to bottom',
   'tooltip.settings': 'Chatbot options',
   'tooltip.close': 'Close',
-  'tooltip.fab.open': 'Open Lightspeed',
-  'tooltip.fab.close': 'Close Lightspeed',
+  'tooltip.fab.open': 'Open intelligent assistant',
+  'tooltip.fab.close': 'Close intelligent assistant',
 
   // Attach menu
   'attach.menu.title': 'Attach',
@@ -277,7 +277,7 @@ export const lightspeedMessages = {
   'modal.title.edit': 'Edit attachment',
 
   // Alt texts for icons
-  'icon.lightspeed.alt': 'lightspeed icon',
+  'icon.lightspeed.alt': 'intelligent assistant icon',
   'icon.permissionRequired.alt': 'permission required icon',
 
   // Message utilities
@@ -351,7 +351,7 @@ export const lightspeedMessages = {
   'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
   'mcp.settings.closeConfigureModalAriaLabel': 'Close configure modal',
   'mcp.settings.modalDescription':
-    'Credentials are encrypted at rest and scoped to your profile. Lightspeed will operate with your exact permissions.',
+    'Credentials are encrypted at rest and scoped to your profile. The intelligent assistant will operate with your exact permissions.',
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
   'mcp.settings.usingAdminCredential':
@@ -399,7 +399,7 @@ export const lightspeedMessages = {
 };
 
 /**
- * Translation Reference for Developer Lightspeed
+ * Translation Reference for Developer Hub Intelligent Assistant
  * @alpha
  **/
 export const lightspeedTranslationRef = createTranslationRef({

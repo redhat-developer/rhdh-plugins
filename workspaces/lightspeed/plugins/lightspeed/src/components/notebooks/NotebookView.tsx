@@ -22,7 +22,6 @@ import { makeStyles, Typography } from '@material-ui/core';
 import {
   ChatbotContent,
   ChatbotFooter,
-  ChatbotFootnote,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -58,6 +57,7 @@ import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage'
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
+import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -775,7 +775,7 @@ export const NotebookView = ({
                       placeholder={t('notebook.view.input.placeholder')}
                     />
                   )}
-                  <ChatbotFootnote label={t('footer.accuracy.label')} />
+                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
             </div>

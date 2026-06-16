@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route, useLocation } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -59,6 +59,15 @@ import {
   LightspeedDrawerProvider,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { RbacPage } from '@backstage-community/plugin-rbac';
+
+const LightspeedRedirect = () => {
+  const location = useLocation();
+  const newPath = location.pathname.replace(
+    '/lightspeed',
+    '/intelligent-assistant',
+  );
+  return <Navigate to={newPath + location.search + location.hash} replace />;
+};
 
 const githubProvider = {
   id: 'github-auth-provider',
@@ -131,7 +140,8 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/lightspeed" element={<LightspeedPage />} />
+    <Route path="/intelligent-assistant" element={<LightspeedPage />} />
+    <Route path="/lightspeed" element={<LightspeedRedirect />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );

@@ -30,7 +30,7 @@ import { RenameNotebookModalPage } from './RenameNotebookModalPage';
 export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
 
 /**
- * Developer Lightspeed **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
+ * Developer Hub Intelligent Assistant **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
