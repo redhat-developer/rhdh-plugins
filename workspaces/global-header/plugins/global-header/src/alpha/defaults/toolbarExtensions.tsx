@@ -45,13 +45,13 @@ const SelfServiceButton = () => (
   />
 );
 
-/** @alpha */
+/** @public */
 export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
   name: 'company-logo',
   params: { component: CompanyLogoWrapper, priority: 200 },
 });
 
-/** @alpha */
+/** @public */
 export const searchExtension = GlobalHeaderComponentBlueprint.make({
   name: 'search',
   params: {
@@ -61,13 +61,13 @@ export const searchExtension = GlobalHeaderComponentBlueprint.make({
   },
 });
 
-/** @alpha */
+/** @public */
 export const spacerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'spacer',
   params: { component: Spacer, priority: 99, layout: { flexGrow: 0 } },
 });
 
-/** @alpha */
+/** @public */
 export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'self-service-button',
   params: {
@@ -76,38 +76,38 @@ export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   },
 });
 
-/** @alpha */
+/** @public */
 export const starredDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'starred-dropdown',
   params: { component: StarredDropdown, priority: 85 },
 });
 
-/** @alpha */
+/** @public */
 export const applicationLauncherDropdownExtension =
   GlobalHeaderComponentBlueprint.make({
     name: 'app-launcher-dropdown',
     params: { component: ApplicationLauncherDropdown, priority: 82 },
   });
 
-/** @alpha */
+/** @public */
 export const helpDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'help-dropdown',
   params: { component: HelpDropdown, priority: 80 },
 });
 
-/** @alpha */
+/** @public */
 export const notificationButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'notification-button',
   params: { component: NotificationButton, priority: 70 },
 });
 
-/** @alpha */
+/** @public */
 export const dividerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'divider',
   params: { component: Divider, priority: 50 },
 });
 
-/** @alpha */
+/** @public */
 export const profileDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'profile-dropdown',
   params: { component: ProfileDropdown, priority: 10 },

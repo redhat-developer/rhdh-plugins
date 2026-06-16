@@ -13,10 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
- */
-
-export * from '../translations';
+export { globalHeaderTranslationsModule as default } from './index';

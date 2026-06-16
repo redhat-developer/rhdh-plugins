@@ -27,7 +27,7 @@ import { GlobalHeaderDropdownContent } from './GlobalHeaderDropdownContent';
 /**
  * Props for {@link GlobalHeaderDropdown}.
  *
- * @alpha
+ * @public
  */
 export interface GlobalHeaderDropdownProps {
   /** Extension target name that items are collected from (e.g. `'help'`, `'create'`). */
@@ -57,7 +57,7 @@ export interface GlobalHeaderDropdownProps {
  * by section, sorts by priority, and renders them inside a
  * `HeaderDropdownComponent`.
  *
- * @alpha
+ * @public
  */
 export const GlobalHeaderDropdown = ({
   target,

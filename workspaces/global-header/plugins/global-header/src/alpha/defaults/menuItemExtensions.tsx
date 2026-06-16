@@ -35,7 +35,7 @@ import { MyProfileMenuItem } from '../components/MyProfileMenuItem';
 // Profile dropdown items
 // ---------------------------------------------------------------------------
 
-/** @alpha */
+/** @public */
 export const settingsMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'settings',
   params: {
@@ -48,7 +48,7 @@ export const settingsMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   },
 });
 
-/** @alpha */
+/** @public */
 export const myProfileMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-profile',
   params: {
@@ -58,7 +58,7 @@ export const myProfileMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   },
 });
 
-/** @alpha */
+/** @public */
 export const logoutMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'logout',
   params: {
@@ -72,7 +72,7 @@ export const logoutMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
 // Help dropdown items
 // ---------------------------------------------------------------------------
 
-/** @alpha */
+/** @public */
 export const supportButtonMenuItemExtension =
   GlobalHeaderMenuItemBlueprint.make({
     name: 'support-button',
@@ -87,7 +87,7 @@ export const supportButtonMenuItemExtension =
 // App launcher dropdown items
 // ---------------------------------------------------------------------------
 
-/** @alpha */
+/** @public */
 export const appLauncherDevHubMenuItemExtension =
   GlobalHeaderMenuItemBlueprint.make({
     name: 'app-launcher-devhub',
@@ -102,7 +102,7 @@ export const appLauncherDevHubMenuItemExtension =
     },
   });
 
-/** @alpha */
+/** @public */
 export const appLauncherRhdhLocalMenuItemExtension =
   GlobalHeaderMenuItemBlueprint.make({
     name: 'app-launcher-rhdh-local',
