@@ -206,6 +206,63 @@ component_management:
 
 This is **not implemented yet** — all components currently use the same target (auto).
 
+## Known Limitations
+
+### Multi-Level Workspace Coverage Skew
+
+Some workspaces contain packages with different support levels, which causes **coverage skew** in component metrics:
+
+**Affected workspaces (4 out of 70):**
+
+- `backstage`: 43% GA (12 packages) + 57% non-GA (16 packages)
+- `homepage`: 17% GA (1 package) + 83% TP (5 packages)
+- `analytics`: 50% GA (1 package) + 50% Community (1 package)
+- `roadie-backstage-plugins`: 50% GA (1 package) + 50% Community (1 package)
+
+**How skew happens:**
+
+Codecov components aggregate coverage by **path**, not by individual package. When `workspaces/backstage/` is included in the `ga-plugins` component, coverage from **all 28 packages** (both GA and non-GA) contributes to the GA component metric.
+
+**Example scenario:**
+
+```
+Actual coverage:
+- backstage GA packages (12):        85% coverage
+- backstage TP packages (8):         60% coverage
+- backstage Community packages (7):  40% coverage
+- backstage Dev-Preview packages (1): 20% coverage
+
+Component shows:
+- ga-plugins component: ~65% coverage (weighted average of all 28 packages)
+```
+
+**Impact:**
+
+- ✅ **For visibility and trends**: Components still provide useful information about relative coverage across support levels
+- ✅ **For baseline tracking**: Component trends over time remain valid (skew is consistent)
+- ⚠️ **For enforcement**: Component coverage does **not** represent precise coverage of only GA packages
+
+**When this matters:**
+
+If you need **precise GA coverage metrics** for enforcement (e.g., "GA plugins must have 80% coverage"), use individual **workspace flags** instead of components:
+
+- Use flag `lightspeed` (100% GA) for accurate GA coverage
+- Avoid relying on `ga-plugins` component for workspaces with mixed support levels
+
+**Workaround:**
+
+When checking GA coverage on the dashboard, mentally exclude or manually filter out the 4 multi-level workspaces and focus on pure GA workspaces (66 out of 70) for accurate metrics.
+
+**Future solution:**
+
+If precise enforcement becomes necessary, we can:
+
+1. Switch to per-package paths for multi-level workspaces (~28 packages)
+2. Use Codecov's dashboard filtering features (if available)
+3. Split multi-level workspaces by support level (major refactor, not recommended)
+
+This limitation is **accepted** for now as the benefits (visibility, trends, baseline) outweigh the drawbacks. We can revisit if enforcement requirements change.
+
 ## Related Documentation
 
 - [Codecov YAML Reference](https://docs.codecov.com/docs/codecov-yaml)
