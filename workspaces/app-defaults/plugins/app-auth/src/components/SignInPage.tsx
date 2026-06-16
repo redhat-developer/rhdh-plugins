@@ -39,7 +39,9 @@ import Typography from '@mui/material/Typography';
 
 import {
   auth0AuthApiRef,
+  keycloakAuthApiRef,
   oidcAuthApiRef,
+  pingfederateAuthApiRef,
   samlAuthApiRef,
 } from '../AuthApiRefs';
 import { signInTranslationRef } from '../translations/signIn';
@@ -130,6 +132,24 @@ const createProviders = (t: (key: string, params?: any) => string) =>
         title: t('signIn.providers.oidc.title'),
         message: t('signIn.providers.oidc.message'),
         apiRef: oidcAuthApiRef,
+      },
+    ],
+    [
+      'keycloak',
+      {
+        id: 'keycloak-auth-provider',
+        title: t('signIn.providers.keycloak.title'),
+        message: t('signIn.providers.keycloak.message'),
+        apiRef: keycloakAuthApiRef,
+      },
+    ],
+    [
+      'pingfederate',
+      {
+        id: 'pingfederate-auth-provider',
+        title: t('signIn.providers.pingfederate.title'),
+        message: t('signIn.providers.pingfederate.message'),
+        apiRef: pingfederateAuthApiRef,
       },
     ],
     [

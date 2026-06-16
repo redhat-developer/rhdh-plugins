@@ -219,7 +219,7 @@ export class SessionService {
       }
     }
 
-    // Delete all vector store files (same pattern as documentService.deleteDocument)
+    // Delete all vector store files
     try {
       const filesResponse =
         await this.client.vectorStores.files.list(sessionId);
@@ -249,7 +249,7 @@ export class SessionService {
       );
     }
 
-    // Delete the vector store itself
+    // Delete the vector store
     await this.client.vectorStores.delete(sessionId);
     this.logger.info(`Session ${sessionId} deleted`);
   }

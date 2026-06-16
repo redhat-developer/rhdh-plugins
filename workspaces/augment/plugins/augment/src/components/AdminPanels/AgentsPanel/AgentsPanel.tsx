@@ -40,6 +40,9 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import HubIcon from '@mui/icons-material/Hub';
+import BuildIcon from '@mui/icons-material/Build';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 import { useEffectiveConfig } from '../../../hooks/useEffectiveConfig';
 import {
@@ -51,9 +54,12 @@ import {
 import { SELECT_MENU_PROPS } from '../shared/selectMenuProps';
 import {
   type AgentFormData,
+  type PublishAsRole,
   createDefaultAgent,
   agentFromConfig,
+  agentToConfig,
   validateAgents,
+  deriveAgentRole,
   buildAgentContext,
 } from './agentValidation';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
@@ -68,7 +74,19 @@ const DEFAULT_MAX_TURNS = 10;
 const MIN_TURNS = 1;
 const MAX_TURNS = 50;
 
-export const AgentsPanel = () => {
+export interface AgentsPanelProps {
+  focusAgentKey?: string;
+  autoCreate?: boolean;
+  createType?: 'single' | 'multi' | null;
+  onSaved?: () => void;
+}
+
+export const AgentsPanel = ({
+  focusAgentKey,
+  autoCreate,
+  createType,
+  onSaved,
+}: AgentsPanelProps = {}) => {
   const theme = useTheme();
   const {
     config: effectiveConfig,
@@ -122,6 +140,8 @@ export const AgentsPanel = () => {
 
   // ── Effects ────────────────────────────────────────────────────────────
 
+  const isSingleAgentMode = createType === 'single' && autoCreate;
+
   useEffect(
     () => () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -131,27 +151,59 @@ export const AgentsPanel = () => {
 
   useEffect(() => {
     if (!effectiveConfig || initialized) return;
-    const rawAgents =
-      (effectiveConfig.agents as Record<string, Record<string, unknown>>) || {};
-    const parsed: Record<string, AgentFormData> = {};
-    for (const [key, cfg] of Object.entries(rawAgents))
-      parsed[key] = agentFromConfig(cfg);
-    setAgents(parsed);
-    setDefaultAgentKey((effectiveConfig.defaultAgent as string) || '');
+    if (isSingleAgentMode) {
+      setAgents({});
+      setDefaultAgentKey('');
+    } else {
+      const rawAgents =
+        (effectiveConfig.agents as Record<string, Record<string, unknown>>) ||
+        {};
+      const parsed: Record<string, AgentFormData> = {};
+      for (const [key, cfg] of Object.entries(rawAgents))
+        parsed[key] = agentFromConfig(cfg);
+      setAgents(parsed);
+      setDefaultAgentKey((effectiveConfig.defaultAgent as string) || '');
+    }
     setMaxTurns((effectiveConfig.maxAgentTurns as number) || DEFAULT_MAX_TURNS);
     setInitialized(true);
-  }, [effectiveConfig, initialized]);
+  }, [effectiveConfig, initialized, isSingleAgentMode]);
 
-  // Auto-select first agent when agents change or become empty
+  // Auto-select focused agent or first agent when agents load
+  const focusAppliedRef = useRef(false);
+  useEffect(() => {
+    focusAppliedRef.current = false;
+  }, [focusAgentKey]);
   useEffect(() => {
     if (!initialized) return;
     const keys = Object.keys(agents);
     if (keys.length === 0) {
       setSelectedAgentKey(null);
-    } else {
-      setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
+      return;
     }
-  }, [initialized, agents]);
+    if (focusAgentKey && agents[focusAgentKey] && !focusAppliedRef.current) {
+      focusAppliedRef.current = true;
+      setSelectedAgentKey(focusAgentKey);
+      return;
+    }
+    setSelectedAgentKey(prev => (!prev || !agents[prev] ? keys[0] : prev));
+  }, [initialized, agents, focusAgentKey]);
+
+  const autoCreateAppliedRef = useRef(false);
+  useEffect(() => {
+    if (autoCreate && initialized && !autoCreateAppliedRef.current) {
+      autoCreateAppliedRef.current = true;
+      if (isSingleAgentMode) {
+        const key = 'agent';
+        const agent = createDefaultAgent();
+        agent.name = 'Agent';
+        setAgents({ [key]: agent });
+        setDefaultAgentKey(key);
+        setSelectedAgentKey(key);
+      } else {
+        setCreateModalOpen(true);
+      }
+    }
+  }, [autoCreate, initialized, isSingleAgentMode]);
 
   // ── Memos ──────────────────────────────────────────────────────────────
 
@@ -162,13 +214,21 @@ export const AgentsPanel = () => {
       (effectiveConfig.mcpServers as Array<{ id: string; name: string }>) || [];
     return servers.map(s => ({ id: s.id, name: s.name || s.id }));
   }, [effectiveConfig]);
+  const selectedAgent = selectedAgentKey
+    ? (agents[selectedAgentKey] ?? null)
+    : null;
+  const selectedAgentRole: PublishAsRole = useMemo(
+    () =>
+      selectedAgentKey
+        ? deriveAgentRole(selectedAgentKey, agents)
+        : 'standalone',
+    [selectedAgentKey, agents],
+  );
+  const showConnections = selectedAgentRole !== 'standalone';
   const validation = useMemo(
     () => validateAgents(agents, defaultAgentKey),
     [agents, defaultAgentKey],
   );
-  const selectedAgent = selectedAgentKey
-    ? (agents[selectedAgentKey] ?? null)
-    : null;
 
   const topologyEdges = useMemo(() => {
     const edges: Array<{
@@ -184,6 +244,14 @@ export const AgentsPanel = () => {
         if (agents[t]) edges.push({ from: key, to: t, type: 'subtask' });
     }
     return edges;
+  }, [agents, agentKeys]);
+
+  const agentRoles = useMemo(() => {
+    const roles: Record<string, PublishAsRole> = {};
+    for (const key of agentKeys) {
+      roles[key] = deriveAgentRole(key, agents);
+    }
+    return roles;
   }, [agents, agentKeys]);
 
   const edgeCounts = useMemo(() => {
@@ -265,38 +333,16 @@ export const AgentsPanel = () => {
     setSaveError(null);
     setSaveSuccess(false);
     try {
-      const payload: Record<string, Record<string, unknown>> = {};
+      const newAgents: Record<string, Record<string, unknown>> = {};
       for (const [key, agent] of Object.entries(agents)) {
-        const entry: Record<string, unknown> = {
-          name: agent.name,
-          instructions: agent.instructions,
-        };
-        if (agent.handoffDescription)
-          entry.handoffDescription = agent.handoffDescription;
-        if (agent.model) entry.model = agent.model;
-        if (agent.handoffs.length > 0) entry.handoffs = agent.handoffs;
-        if (agent.asTools.length > 0) entry.asTools = agent.asTools;
-        if (agent.mcpServers.length > 0) entry.mcpServers = agent.mcpServers;
-        if (agent.enableRAG) entry.enableRAG = true;
-        if (agent.vectorStoreIds.length > 0)
-          entry.vectorStoreIds = agent.vectorStoreIds;
-        if (agent.enableWebSearch) entry.enableWebSearch = true;
-        if (agent.enableCodeInterpreter) entry.enableCodeInterpreter = true;
-        if (agent.toolChoice) entry.toolChoice = agent.toolChoice;
-        if (agent.temperature !== undefined)
-          entry.temperature = agent.temperature;
-        if (agent.maxOutputTokens !== undefined)
-          entry.maxOutputTokens = agent.maxOutputTokens;
-        if (agent.maxToolCalls !== undefined)
-          entry.maxToolCalls = agent.maxToolCalls;
-        if (agent.guardrails && agent.guardrails.length > 0)
-          entry.guardrails = agent.guardrails;
-        if (agent.reasoning) entry.reasoning = agent.reasoning;
-        if (agent.resetToolChoice !== undefined)
-          entry.resetToolChoice = agent.resetToolChoice;
-        if (agent.nestHandoffHistory !== undefined)
-          entry.nestHandoffHistory = agent.nestHandoffHistory;
-        payload[key] = entry;
+        newAgents[key] = agentToConfig(agent);
+      }
+      let payload = newAgents;
+      if (isSingleAgentMode && effectiveConfig) {
+        const existing =
+          (effectiveConfig.agents as Record<string, Record<string, unknown>>) ||
+          {};
+        payload = { ...existing, ...newAgents };
       }
       for (const step of [
         { label: 'agents', fn: () => saveAgents(payload) },
@@ -312,10 +358,14 @@ export const AgentsPanel = () => {
         }
       }
       setSaveSuccess(true);
-      saveTimerRef.current = setTimeout(
-        () => setSaveSuccess(false),
-        SAVE_SUCCESS_TIMEOUT_MS,
-      );
+      if (onSaved) {
+        onSaved();
+      } else {
+        saveTimerRef.current = setTimeout(
+          () => setSaveSuccess(false),
+          SAVE_SUCCESS_TIMEOUT_MS,
+        );
+      }
     } catch (err) {
       let msg = 'Failed to save agent config';
       if (err instanceof Error) msg = err.message;
@@ -337,6 +387,9 @@ export const AgentsPanel = () => {
     saveAgents,
     saveDefaultAgent,
     saveMaxTurns,
+    onSaved,
+    isSingleAgentMode,
+    effectiveConfig,
   ]);
 
   const executeReset = useCallback(async () => {
@@ -424,6 +477,7 @@ export const AgentsPanel = () => {
     >
       {/* ── Top bar ───────────────────────────────────────────────────── */}
       <Box
+        data-tour="orch-toolbar"
         sx={{
           px: 2,
           py: 1,
@@ -435,7 +489,7 @@ export const AgentsPanel = () => {
           flexWrap: 'wrap',
         }}
       >
-        {agentKeys.length > 1 && (
+        {!isSingleAgentMode && agentKeys.length > 1 && (
           <>
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel sx={{ fontSize: '0.8rem' }}>
@@ -476,7 +530,7 @@ export const AgentsPanel = () => {
 
         <Box sx={{ flex: 1 }} />
 
-        {agentsSource === 'database' && (
+        {!isSingleAgentMode && agentsSource === 'database' && (
           <Button
             size="small"
             color="warning"
@@ -487,15 +541,17 @@ export const AgentsPanel = () => {
             Reset
           </Button>
         )}
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-          onClick={() => setCreateModalOpen(true)}
-          sx={{ textTransform: 'none', fontSize: '0.8rem' }}
-        >
-          New Agent
-        </Button>
+        {!isSingleAgentMode && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+            onClick={() => setCreateModalOpen(true)}
+            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+          >
+            New Agent
+          </Button>
+        )}
         <Button
           variant="contained"
           size="small"
@@ -535,7 +591,7 @@ export const AgentsPanel = () => {
       )}
 
       {/* ── Main content ──────────────────────────────────────────────── */}
-      {agentKeys.length === 0 ? (
+      {!isSingleAgentMode && agentKeys.length === 0 ? (
         <Box
           sx={{
             flex: 1,
@@ -582,33 +638,37 @@ export const AgentsPanel = () => {
         <Box
           sx={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'hidden' }}
         >
-          {/* ── Left panel: Agent list + Topology ──────────────────────── */}
-          <Box
-            sx={{
-              width: LEFT_PANEL_WIDTH,
-              flexShrink: 0,
-              borderRight: `1px solid ${theme.palette.divider}`,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
-            <Box sx={{ flex: 1, overflow: 'auto', py: 0.5 }}>
-              {agentKeys.map(key => (
-                <AgentListItem
-                  key={key}
-                  agentKey={key}
-                  agent={agents[key]}
-                  isSelected={key === selectedAgentKey}
-                  isDefault={key === defaultAgentKey}
-                  isSingleAgent={agentKeys.length === 1}
-                  outCount={edgeCounts[key]?.out ?? 0}
-                  inCount={edgeCounts[key]?.in ?? 0}
-                  onSelect={handleSelectAgent}
-                />
-              ))}
+          {/* ── Left panel: Agent list + Topology (hidden in single-agent mode) */}
+          {!isSingleAgentMode && (
+            <Box
+              data-tour="orch-agent-list"
+              sx={{
+                width: LEFT_PANEL_WIDTH,
+                flexShrink: 0,
+                borderRight: `1px solid ${theme.palette.divider}`,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              <Box sx={{ flex: 1, overflow: 'auto', py: 0.5 }}>
+                {agentKeys.map(key => (
+                  <AgentListItem
+                    key={key}
+                    agentKey={key}
+                    agent={agents[key]}
+                    isSelected={key === selectedAgentKey}
+                    isDefault={key === defaultAgentKey}
+                    isSingleAgent={agentKeys.length === 1}
+                    outCount={edgeCounts[key]?.out ?? 0}
+                    inCount={edgeCounts[key]?.in ?? 0}
+                    effectiveRole={agentRoles[key] ?? 'standalone'}
+                    onSelect={handleSelectAgent}
+                  />
+                ))}
+              </Box>
             </Box>
-          </Box>
+          )}
 
           {/* ── Right panel: Agent config form ─────────────────────────── */}
           <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
@@ -622,7 +682,7 @@ export const AgentsPanel = () => {
                 }}
               >
                 {/* Identity — always visible above tabs */}
-                <Box sx={{ flexShrink: 0, mb: 1.5 }}>
+                <Box data-tour="orch-identity" sx={{ flexShrink: 0, mb: 1.5 }}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -653,48 +713,98 @@ export const AgentsPanel = () => {
                     {agentsSource === 'database' && (
                       <Chip label="Modified" size="small" color="info" />
                     )}
-                    <Tooltip title="Delete agent">
-                      <IconButton
+                    {!isSingleAgentMode && (
+                      <Tooltip title="Delete agent">
+                        <IconButton
+                          size="small"
+                          aria-label="Delete agent"
+                          onClick={() => handleRemoveAgent(selectedAgentKey)}
+                          sx={{
+                            color: theme.palette.error.main,
+                            opacity: 0.35,
+                            '&:hover': { opacity: 1 },
+                          }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                  {!isSingleAgentMode && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Chip
                         size="small"
-                        aria-label="Delete agent"
-                        onClick={() => handleRemoveAgent(selectedAgentKey)}
+                        icon={(() => {
+                          if (selectedAgentRole === 'router')
+                            return <HubIcon sx={{ fontSize: 14 }} />;
+                          if (selectedAgentRole === 'specialist')
+                            return <BuildIcon sx={{ fontSize: 14 }} />;
+                          return <RocketLaunchIcon sx={{ fontSize: 14 }} />;
+                        })()}
+                        label={
+                          selectedAgentRole.charAt(0).toUpperCase() +
+                          selectedAgentRole.slice(1)
+                        }
+                        color={(() => {
+                          if (selectedAgentRole === 'router') return 'primary';
+                          if (selectedAgentRole === 'specialist')
+                            return 'default';
+                          return 'success';
+                        })()}
+                        variant="outlined"
+                        sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+                      />
+                      <Typography
                         sx={{
-                          color: theme.palette.error.main,
-                          opacity: 0.35,
-                          '&:hover': { opacity: 1 },
+                          fontSize: '0.75rem',
+                          color: theme.palette.text.secondary,
                         }}
                       >
-                        <DeleteIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <TextField
-                    value={selectedAgent.handoffDescription}
-                    onChange={e =>
-                      updateAgent(
-                        selectedAgentKey,
-                        'handoffDescription',
-                        e.target.value,
-                      )
-                    }
-                    variant="standard"
-                    fullWidth
-                    placeholder="Add a description \u2014 other agents read this when deciding to route here"
-                    InputProps={{
-                      sx: {
-                        fontSize: '0.8rem',
-                        color: theme.palette.text.secondary,
-                        borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
-                        '&:hover': {
-                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                        {selectedAgentRole === 'router' &&
+                          'Visible in gallery — routes to other agents'}
+                        {selectedAgentRole === 'specialist' &&
+                          'Hidden — only reachable via handoffs'}
+                        {selectedAgentRole === 'standalone' &&
+                          'Visible in gallery — independent agent'}
+                      </Typography>
+                    </Box>
+                  )}
+                  {showConnections && (
+                    <TextField
+                      value={selectedAgent.handoffDescription}
+                      onChange={e =>
+                        updateAgent(
+                          selectedAgentKey,
+                          'handoffDescription',
+                          e.target.value,
+                        )
+                      }
+                      variant="standard"
+                      fullWidth
+                      placeholder="Add a description \u2014 other agents read this when deciding to route here"
+                      InputProps={{
+                        sx: {
+                          fontSize: '0.8rem',
+                          color: theme.palette.text.secondary,
+                          borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.25)}`,
+                          '&:hover': {
+                            borderBottom: `1px dashed ${alpha(theme.palette.text.secondary, 0.5)}`,
+                          },
+                          '&.Mui-focused': {
+                            borderBottom: `1px solid ${theme.palette.primary.main}`,
+                          },
                         },
-                        '&.Mui-focused': {
-                          borderBottom: `1px solid ${theme.palette.primary.main}`,
-                        },
-                      },
-                      disableUnderline: true,
-                    }}
-                  />
+                        disableUnderline: true,
+                      }}
+                    />
+                  )}
                 </Box>
 
                 {/* Validation — always visible above tabs */}
@@ -734,6 +844,7 @@ export const AgentsPanel = () => {
 
                 {/* Tabs */}
                 <Box
+                  data-tour="orch-tabs"
                   sx={{
                     borderBottom: 1,
                     borderColor: 'divider',
@@ -755,794 +866,858 @@ export const AgentsPanel = () => {
                       },
                     }}
                   >
-                    <Tab label="Capabilities" />
-                    <Tab label="Connections" />
-                    <Tab label="Advanced" />
-                    <Tab label="Instructions" />
+                    <Tab
+                      label="Capabilities"
+                      data-tour="orch-tab-capabilities"
+                    />
+                    {showConnections && (
+                      <Tab
+                        label="Connections"
+                        data-tour="orch-tab-connections"
+                      />
+                    )}
+                    <Tab label="Advanced" data-tour="orch-tab-advanced" />
+                    <Tab
+                      label="Instructions"
+                      data-tour="orch-tab-instructions"
+                    />
                   </Tabs>
                 </Box>
 
                 {/* Tab content — this area scrolls independently */}
-                <Box sx={{ flex: 1, overflow: 'auto', pt: 2 }}>
-                  {/* Tab: Capabilities */}
-                  {activeTab === 0 && (
-                    <Box>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          gap: 2,
-                          mb: 2,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            flex: 1,
-                            minWidth: 200,
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Autocomplete
-                            freeSolo
-                            options={modelOptions}
-                            value={selectedAgent.model || ''}
-                            onInputChange={(_e, newValue) =>
-                              updateAgent(selectedAgentKey, 'model', newValue)
-                            }
-                            getOptionLabel={opt =>
-                              typeof opt === 'string' ? opt : ''
-                            }
-                            loading={modelsLoading}
-                            renderInput={params => (
-                              <TextField
-                                {...params}
-                                label="Model Override"
-                                size="small"
-                                placeholder="Leave empty for global model"
-                                helperText="Select from available models or leave empty for global default"
-                                InputProps={{
-                                  ...params.InputProps,
-                                  endAdornment: (
-                                    <>
-                                      {modelsLoading ? (
-                                        <CircularProgress size={16} />
-                                      ) : null}
-                                      {params.InputProps.endAdornment}
-                                    </>
-                                  ),
-                                }}
-                              />
-                            )}
-                            sx={{ flex: 1 }}
-                          />
-                          <Tooltip title="Refresh model list">
-                            <IconButton
-                              size="small"
-                              onClick={refreshModels}
-                              disabled={modelsLoading}
-                              sx={{ mt: 0.5 }}
-                            >
-                              <RefreshIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                        {availableMcpServers.length > 0 && (
-                          <FormControl
-                            size="small"
-                            sx={{ flex: 1, minWidth: 200 }}
+                {(() => {
+                  const connectionsTab = showConnections ? 1 : -1;
+                  const advancedTab = showConnections ? 2 : 1;
+                  const instructionsTab = showConnections ? 3 : 2;
+                  return (
+                    <Box sx={{ flex: 1, overflow: 'auto', pt: 2 }}>
+                      {/* Tab: Capabilities */}
+                      {activeTab === 0 && (
+                        <Box data-tour="orch-capabilities">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: 2,
+                              mb: 2,
+                              flexWrap: 'wrap',
+                            }}
                           >
-                            <InputLabel>MCP Servers</InputLabel>
-                            <Select
-                              multiple
-                              value={selectedAgent.mcpServers}
-                              label="MCP Servers"
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'mcpServers',
-                                  e.target.value as string[],
-                                )
-                              }
-                              MenuProps={SELECT_MENU_PROPS}
-                              renderValue={vals => (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  {(vals as string[]).map(v => (
-                                    <Chip
-                                      key={v}
-                                      label={
-                                        availableMcpServers.find(
-                                          s => s.id === v,
-                                        )?.name || v
-                                      }
-                                      size="small"
-                                      sx={{
-                                        height: 22,
-                                        fontSize: '0.75rem',
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            >
-                              {availableMcpServers.map(s => (
-                                <MenuItem key={s.id} value={s.id}>
-                                  {s.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        )}
-                      </Box>
-                      <Typography
-                        sx={{
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.06em',
-                          color: theme.palette.text.secondary,
-                          mb: 1.5,
-                        }}
-                      >
-                        Built-in Tools
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 1,
-                        }}
-                      >
-                        <FormControlLabel
-                          control={
-                            <ToggleSwitch
-                              checked={selectedAgent.enableRAG}
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'enableRAG',
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography sx={{ fontSize: '0.8rem' }}>
-                                Knowledge Base
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.secondary,
-                                }}
-                              >
-                                Search uploaded documents for context
-                              </Typography>
-                            </Box>
-                          }
-                        />
-                        {selectedAgent.enableRAG && vectorStores.length > 0 && (
-                          <FormControl
-                            size="small"
-                            sx={{ ml: 4, mt: 0.5, mb: 0.5 }}
-                          >
-                            <InputLabel
-                              sx={{ fontSize: '0.8rem' }}
-                              id={`vs-label-${selectedAgentKey}`}
-                            >
-                              Vector Stores
-                            </InputLabel>
-                            <Select
-                              multiple
-                              labelId={`vs-label-${selectedAgentKey}`}
-                              value={selectedAgent.vectorStoreIds}
-                              label="Vector Stores"
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'vectorStoreIds',
-                                  e.target.value as string[],
-                                )
-                              }
-                              MenuProps={SELECT_MENU_PROPS}
-                              renderValue={vals => (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  {(vals as string[]).map(v => (
-                                    <Chip
-                                      key={v}
-                                      label={
-                                        vectorStores.find(s => s.id === v)
-                                          ?.name || v
-                                      }
-                                      size="small"
-                                      sx={{
-                                        height: 22,
-                                        fontSize: '0.75rem',
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            >
-                              {vectorStores.map(s => (
-                                <MenuItem key={s.id} value={s.id}>
-                                  {s.name || s.id}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                            <Typography
+                            <Box
                               sx={{
-                                fontSize: '0.65rem',
-                                color: theme.palette.text.secondary,
-                                mt: 0.5,
-                                ml: 0.5,
+                                flex: 1,
+                                minWidth: 200,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 0.5,
                               }}
                             >
-                              Leave empty to use global vector stores
-                            </Typography>
-                          </FormControl>
-                        )}
-                        <FormControlLabel
-                          control={
-                            <ToggleSwitch
-                              checked={selectedAgent.enableWebSearch}
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'enableWebSearch',
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography sx={{ fontSize: '0.8rem' }}>
-                                Web Search
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.secondary,
-                                }}
-                              >
-                                Search the web for current information
-                              </Typography>
+                              <Autocomplete
+                                freeSolo
+                                options={modelOptions}
+                                value={selectedAgent.model || ''}
+                                onInputChange={(_e, newValue) =>
+                                  updateAgent(
+                                    selectedAgentKey,
+                                    'model',
+                                    newValue,
+                                  )
+                                }
+                                getOptionLabel={opt =>
+                                  typeof opt === 'string' ? opt : ''
+                                }
+                                loading={modelsLoading}
+                                renderInput={params => (
+                                  <TextField
+                                    {...params}
+                                    label="Model Override"
+                                    size="small"
+                                    placeholder="Leave empty for global model"
+                                    helperText="Select from available models or leave empty for global default"
+                                    InputProps={{
+                                      ...params.InputProps,
+                                      endAdornment: (
+                                        <>
+                                          {modelsLoading ? (
+                                            <CircularProgress size={16} />
+                                          ) : null}
+                                          {params.InputProps.endAdornment}
+                                        </>
+                                      ),
+                                    }}
+                                  />
+                                )}
+                                sx={{ flex: 1 }}
+                              />
+                              <Tooltip title="Refresh model list">
+                                <IconButton
+                                  size="small"
+                                  onClick={refreshModels}
+                                  disabled={modelsLoading}
+                                  sx={{ mt: 0.5 }}
+                                >
+                                  <RefreshIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
                             </Box>
-                          }
-                        />
-                        <FormControlLabel
-                          control={
-                            <ToggleSwitch
-                              checked={selectedAgent.enableCodeInterpreter}
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'enableCodeInterpreter',
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography sx={{ fontSize: '0.8rem' }}>
-                                Code Interpreter
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.secondary,
-                                }}
+                            {availableMcpServers.length > 0 && (
+                              <FormControl
+                                size="small"
+                                sx={{ flex: 1, minWidth: 200 }}
                               >
-                                Execute code to answer questions
-                              </Typography>
-                            </Box>
-                          }
-                        />
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* Tab: Connections */}
-                  {activeTab === 1 && (
-                    <Box>
-                      {agentKeys.length <= 1 ? (
-                        <Box sx={{ py: 4, textAlign: 'center' }}>
+                                <InputLabel>MCP Servers</InputLabel>
+                                <Select
+                                  multiple
+                                  value={selectedAgent.mcpServers}
+                                  label="MCP Servers"
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'mcpServers',
+                                      e.target.value as string[],
+                                    )
+                                  }
+                                  MenuProps={SELECT_MENU_PROPS}
+                                  renderValue={vals => (
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      {(vals as string[]).map(v => (
+                                        <Chip
+                                          key={v}
+                                          label={
+                                            availableMcpServers.find(
+                                              s => s.id === v,
+                                            )?.name || v
+                                          }
+                                          size="small"
+                                          sx={{
+                                            height: 22,
+                                            fontSize: '0.75rem',
+                                          }}
+                                        />
+                                      ))}
+                                    </Box>
+                                  )}
+                                >
+                                  {availableMcpServers.map(s => (
+                                    <MenuItem key={s.id} value={s.id}>
+                                      {s.name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            )}
+                          </Box>
                           <Typography
-                            variant="body2"
-                            sx={{ color: theme.palette.text.secondary, mb: 1 }}
-                          >
-                            No other agents to connect to yet.
-                          </Typography>
-                          <Typography
-                            variant="caption"
                             sx={{
-                              color: theme.palette.text.disabled,
-                              lineHeight: 1.6,
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.06em',
+                              color: theme.palette.text.secondary,
+                              mb: 1.5,
                             }}
                           >
-                            Create additional agents to enable handoffs
-                            (transfer conversation control) and delegation (run
-                            as sub-tasks).
+                            Built-in Tools
                           </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 1,
+                            }}
+                          >
+                            <FormControlLabel
+                              control={
+                                <ToggleSwitch
+                                  checked={selectedAgent.enableRAG}
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'enableRAG',
+                                      e.target.checked,
+                                    )
+                                  }
+                                />
+                              }
+                              label={
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.8rem' }}>
+                                    Knowledge Base
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    Search uploaded documents for context
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                            {selectedAgent.enableRAG &&
+                              vectorStores.length > 0 && (
+                                <FormControl
+                                  size="small"
+                                  sx={{ ml: 4, mt: 0.5, mb: 0.5 }}
+                                >
+                                  <InputLabel
+                                    sx={{ fontSize: '0.8rem' }}
+                                    id={`vs-label-${selectedAgentKey}`}
+                                  >
+                                    Vector Stores
+                                  </InputLabel>
+                                  <Select
+                                    multiple
+                                    labelId={`vs-label-${selectedAgentKey}`}
+                                    value={selectedAgent.vectorStoreIds}
+                                    label="Vector Stores"
+                                    onChange={e =>
+                                      updateAgent(
+                                        selectedAgentKey,
+                                        'vectorStoreIds',
+                                        e.target.value as string[],
+                                      )
+                                    }
+                                    MenuProps={SELECT_MENU_PROPS}
+                                    renderValue={vals => (
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          flexWrap: 'wrap',
+                                          gap: 0.5,
+                                        }}
+                                      >
+                                        {(vals as string[]).map(v => (
+                                          <Chip
+                                            key={v}
+                                            label={
+                                              vectorStores.find(s => s.id === v)
+                                                ?.name || v
+                                            }
+                                            size="small"
+                                            sx={{
+                                              height: 22,
+                                              fontSize: '0.75rem',
+                                            }}
+                                          />
+                                        ))}
+                                      </Box>
+                                    )}
+                                  >
+                                    {vectorStores.map(s => (
+                                      <MenuItem key={s.id} value={s.id}>
+                                        {s.name || s.id}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.65rem',
+                                      color: theme.palette.text.secondary,
+                                      mt: 0.5,
+                                      ml: 0.5,
+                                    }}
+                                  >
+                                    Leave empty to use global vector stores
+                                  </Typography>
+                                </FormControl>
+                              )}
+                            <FormControlLabel
+                              control={
+                                <ToggleSwitch
+                                  checked={selectedAgent.enableWebSearch}
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'enableWebSearch',
+                                      e.target.checked,
+                                    )
+                                  }
+                                />
+                              }
+                              label={
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.8rem' }}>
+                                    Web Search
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    Search the web for current information
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                            <FormControlLabel
+                              control={
+                                <ToggleSwitch
+                                  checked={selectedAgent.enableCodeInterpreter}
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'enableCodeInterpreter',
+                                      e.target.checked,
+                                    )
+                                  }
+                                />
+                              }
+                              label={
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.8rem' }}>
+                                    Code Interpreter
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    Execute code to answer questions
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                          </Box>
+                          <Alert
+                            severity="info"
+                            variant="outlined"
+                            sx={{ mt: 3, fontSize: '0.8rem' }}
+                          >
+                            Global models, MCP servers, and RAG settings are
+                            managed in <strong>Platform Config</strong> from the
+                            sidebar.
+                          </Alert>
                         </Box>
-                      ) : (
-                        <>
-                          <FormControl fullWidth size="small" sx={{ mb: 0.5 }}>
-                            <InputLabel>Can Transfer To</InputLabel>
-                            <Select
-                              multiple
-                              value={selectedAgent.handoffs}
-                              label="Can Transfer To"
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'handoffs',
-                                  e.target.value as string[],
-                                )
-                              }
-                              MenuProps={SELECT_MENU_PROPS}
-                              renderValue={vals => (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  {(vals as string[]).map(v => (
-                                    <Chip
-                                      key={v}
-                                      label={agents[v]?.name || v}
-                                      size="small"
-                                      sx={{
-                                        height: 22,
-                                        fontSize: '0.75rem',
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            >
-                              {agentKeys
-                                .filter(k => k !== selectedAgentKey)
-                                .map(k => (
-                                  <MenuItem key={k} value={k}>
-                                    {agents[k].name || k}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              display: 'block',
-                              mb: 2.5,
-                              color: theme.palette.text.secondary,
-                              fontSize: '0.7rem',
-                            }}
-                          >
-                            Target agent takes over the conversation. This agent
-                            stops responding.
-                          </Typography>
+                      )}
 
-                          <FormControl fullWidth size="small" sx={{ mb: 0.5 }}>
-                            <InputLabel>Can Delegate To</InputLabel>
-                            <Select
-                              multiple
-                              value={selectedAgent.asTools}
-                              label="Can Delegate To"
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'asTools',
-                                  e.target.value as string[],
-                                )
-                              }
-                              MenuProps={SELECT_MENU_PROPS}
-                              renderValue={vals => (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  {(vals as string[]).map(v => (
-                                    <Chip
-                                      key={v}
-                                      label={agents[v]?.name || v}
-                                      size="small"
-                                      sx={{
-                                        height: 22,
-                                        fontSize: '0.75rem',
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            >
-                              {agentKeys
-                                .filter(k => k !== selectedAgentKey)
-                                .map(k => (
-                                  <MenuItem key={k} value={k}>
-                                    {agents[k].name || k}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              display: 'block',
-                              mb: 2.5,
-                              color: theme.palette.text.secondary,
-                              fontSize: '0.7rem',
-                            }}
-                          >
-                            Sub-agent runs in the background and returns
-                            results. This agent stays in control.
-                          </Typography>
-
-                          {/* Topology for this agent */}
-                          {topologyEdges.length > 0 && (
-                            <Box sx={{ mt: 1 }}>
+                      {/* Tab: Connections (team mode only) */}
+                      {activeTab === connectionsTab && (
+                        <Box data-tour="orch-connections">
+                          {agentKeys.length <= 1 ? (
+                            <Box sx={{ py: 4, textAlign: 'center' }}>
                               <Typography
+                                variant="body2"
                                 sx={{
-                                  fontSize: '0.7rem',
-                                  fontWeight: 600,
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.06em',
                                   color: theme.palette.text.secondary,
                                   mb: 1,
                                 }}
                               >
-                                Agent Topology
+                                No other agents to connect to yet.
                               </Typography>
-                              <Box
+                              <Typography
+                                variant="caption"
                                 sx={{
-                                  p: 1.5,
-                                  borderRadius: 1,
-                                  backgroundColor: alpha(
-                                    theme.palette.background.default,
-                                    0.5,
-                                  ),
-                                  fontFamily: 'monospace',
-                                  fontSize: '0.7rem',
-                                  lineHeight: 1.8,
-                                  color: theme.palette.text.secondary,
+                                  color: theme.palette.text.disabled,
+                                  lineHeight: 1.6,
                                 }}
                               >
-                                {topologyEdges.map(edge => {
-                                  const isCurrent =
-                                    edge.from === selectedAgentKey ||
-                                    edge.to === selectedAgentKey;
-                                  return (
+                                Create additional agents to enable handoffs
+                                (transfer conversation control) and delegation
+                                (run as sub-tasks).
+                              </Typography>
+                            </Box>
+                          ) : (
+                            <>
+                              <FormControl
+                                fullWidth
+                                size="small"
+                                sx={{ mb: 0.5 }}
+                              >
+                                <InputLabel>Can Transfer To</InputLabel>
+                                <Select
+                                  multiple
+                                  value={selectedAgent.handoffs}
+                                  label="Can Transfer To"
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'handoffs',
+                                      e.target.value as string[],
+                                    )
+                                  }
+                                  MenuProps={SELECT_MENU_PROPS}
+                                  renderValue={vals => (
                                     <Box
-                                      key={`${edge.from}-${edge.to}-${edge.type}`}
                                       sx={{
-                                        fontWeight: isCurrent ? 600 : 400,
-                                        color: isCurrent
-                                          ? theme.palette.text.primary
-                                          : undefined,
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 0.5,
                                       }}
                                     >
-                                      {agents[edge.from]?.name || edge.from}{' '}
-                                      {edge.type === 'handoff'
-                                        ? '\u2192'
-                                        : '\u21E2'}{' '}
-                                      {agents[edge.to]?.name || edge.to}
-                                      <Typography
-                                        component="span"
-                                        sx={{
-                                          fontSize: '0.6rem',
-                                          ml: 0.5,
-                                          color:
-                                            edge.type === 'handoff'
-                                              ? theme.palette.info.main
-                                              : theme.palette.secondary.main,
-                                        }}
-                                      >
-                                        {edge.type === 'handoff'
-                                          ? 'transfers'
-                                          : 'delegates'}
-                                      </Typography>
+                                      {(vals as string[]).map(v => (
+                                        <Chip
+                                          key={v}
+                                          label={agents[v]?.name || v}
+                                          size="small"
+                                          sx={{
+                                            height: 22,
+                                            fontSize: '0.75rem',
+                                          }}
+                                        />
+                                      ))}
                                     </Box>
-                                  );
-                                })}
-                              </Box>
-                            </Box>
+                                  )}
+                                >
+                                  {agentKeys
+                                    .filter(k => k !== selectedAgentKey)
+                                    .map(k => (
+                                      <MenuItem key={k} value={k}>
+                                        {agents[k].name || k}
+                                      </MenuItem>
+                                    ))}
+                                </Select>
+                              </FormControl>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  mb: 2.5,
+                                  color: theme.palette.text.secondary,
+                                  fontSize: '0.7rem',
+                                }}
+                              >
+                                Target agent takes over the conversation. This
+                                agent stops responding.
+                              </Typography>
+
+                              <FormControl
+                                fullWidth
+                                size="small"
+                                sx={{ mb: 0.5 }}
+                              >
+                                <InputLabel>Can Delegate To</InputLabel>
+                                <Select
+                                  multiple
+                                  value={selectedAgent.asTools}
+                                  label="Can Delegate To"
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'asTools',
+                                      e.target.value as string[],
+                                    )
+                                  }
+                                  MenuProps={SELECT_MENU_PROPS}
+                                  renderValue={vals => (
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      {(vals as string[]).map(v => (
+                                        <Chip
+                                          key={v}
+                                          label={agents[v]?.name || v}
+                                          size="small"
+                                          sx={{
+                                            height: 22,
+                                            fontSize: '0.75rem',
+                                          }}
+                                        />
+                                      ))}
+                                    </Box>
+                                  )}
+                                >
+                                  {agentKeys
+                                    .filter(k => k !== selectedAgentKey)
+                                    .map(k => (
+                                      <MenuItem key={k} value={k}>
+                                        {agents[k].name || k}
+                                      </MenuItem>
+                                    ))}
+                                </Select>
+                              </FormControl>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  mb: 2.5,
+                                  color: theme.palette.text.secondary,
+                                  fontSize: '0.7rem',
+                                }}
+                              >
+                                Sub-agent runs in the background and returns
+                                results. This agent stays in control.
+                              </Typography>
+
+                              {/* Topology for this agent */}
+                              {topologyEdges.length > 0 && (
+                                <Box sx={{ mt: 1 }}>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      fontWeight: 600,
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.06em',
+                                      color: theme.palette.text.secondary,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    Agent Topology
+                                  </Typography>
+                                  <Box
+                                    sx={{
+                                      p: 1.5,
+                                      borderRadius: 1,
+                                      backgroundColor: alpha(
+                                        theme.palette.background.default,
+                                        0.5,
+                                      ),
+                                      fontFamily: 'monospace',
+                                      fontSize: '0.7rem',
+                                      lineHeight: 1.8,
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    {topologyEdges.map(edge => {
+                                      const isCurrent =
+                                        edge.from === selectedAgentKey ||
+                                        edge.to === selectedAgentKey;
+                                      return (
+                                        <Box
+                                          key={`${edge.from}-${edge.to}-${edge.type}`}
+                                          sx={{
+                                            fontWeight: isCurrent ? 600 : 400,
+                                            color: isCurrent
+                                              ? theme.palette.text.primary
+                                              : undefined,
+                                          }}
+                                        >
+                                          {agents[edge.from]?.name || edge.from}{' '}
+                                          {edge.type === 'handoff'
+                                            ? '\u2192'
+                                            : '\u21E2'}{' '}
+                                          {agents[edge.to]?.name || edge.to}
+                                          <Typography
+                                            component="span"
+                                            sx={{
+                                              fontSize: '0.6rem',
+                                              ml: 0.5,
+                                              color:
+                                                edge.type === 'handoff'
+                                                  ? theme.palette.info.main
+                                                  : theme.palette.secondary
+                                                      .main,
+                                            }}
+                                          >
+                                            {edge.type === 'handoff'
+                                              ? 'transfers'
+                                              : 'delegates'}
+                                          </Typography>
+                                        </Box>
+                                      );
+                                    })}
+                                  </Box>
+                                </Box>
+                              )}
+                            </>
                           )}
-                        </>
+                        </Box>
+                      )}
+
+                      {/* Tab: Advanced */}
+                      {activeTab === advancedTab && (
+                        <Box data-tour="orch-advanced">
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: '1fr 1fr 1fr',
+                              },
+                              gap: 2,
+                            }}
+                          >
+                            <FormControl fullWidth size="small">
+                              <InputLabel>Tool Choice</InputLabel>
+                              <Select
+                                value={selectedAgent.toolChoice ?? ''}
+                                label="Tool Choice"
+                                onChange={e =>
+                                  updateAgent(
+                                    selectedAgentKey,
+                                    'toolChoice',
+                                    (e.target.value as string) || undefined,
+                                  )
+                                }
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
+                                <MenuItem value="">
+                                  <Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ fontWeight: 500 }}
+                                    >
+                                      <em>Default</em>
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      Inherit from platform settings
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                                <MenuItem value="auto">
+                                  <Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ fontWeight: 500 }}
+                                    >
+                                      auto
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      Model decides when to call tools
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                                <MenuItem value="required">
+                                  <Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ fontWeight: 500 }}
+                                    >
+                                      required
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      Always call tools
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                                <MenuItem value="none">
+                                  <Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ fontWeight: 500 }}
+                                    >
+                                      none
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      Never call tools
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                              </Select>
+                            </FormControl>
+                            <FormControl fullWidth size="small">
+                              <InputLabel>Reasoning</InputLabel>
+                              <Select
+                                value={selectedAgent.reasoning?.effort ?? ''}
+                                label="Reasoning"
+                                onChange={e => {
+                                  const v = e.target.value as string;
+                                  updateAgent(
+                                    selectedAgentKey,
+                                    'reasoning',
+                                    v
+                                      ? {
+                                          effort: v as
+                                            | 'low'
+                                            | 'medium'
+                                            | 'high',
+                                        }
+                                      : undefined,
+                                  );
+                                }}
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
+                                <MenuItem value="">
+                                  <em>Default</em>
+                                </MenuItem>
+                                <MenuItem value="low">Low</MenuItem>
+                                <MenuItem value="medium">Medium</MenuItem>
+                                <MenuItem value="high">High</MenuItem>
+                              </Select>
+                            </FormControl>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Temperature"
+                              value={selectedAgent.temperature ?? ''}
+                              fullWidth
+                              onChange={e => {
+                                const v = parseFloat(e.target.value);
+                                updateAgent(
+                                  selectedAgentKey,
+                                  'temperature',
+                                  e.target.value === '' || isNaN(v)
+                                    ? undefined
+                                    : v,
+                                );
+                              }}
+                              inputProps={{ min: 0, max: 2, step: 0.1 }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Max Output Tokens"
+                              value={selectedAgent.maxOutputTokens ?? ''}
+                              fullWidth
+                              onChange={e => {
+                                const v = parseInt(e.target.value, 10);
+                                updateAgent(
+                                  selectedAgentKey,
+                                  'maxOutputTokens',
+                                  e.target.value === '' || isNaN(v)
+                                    ? undefined
+                                    : v,
+                                );
+                              }}
+                              inputProps={{ min: 1 }}
+                            />
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Max Tool Calls"
+                              value={selectedAgent.maxToolCalls ?? ''}
+                              fullWidth
+                              onChange={e => {
+                                const v = parseInt(e.target.value, 10);
+                                updateAgent(
+                                  selectedAgentKey,
+                                  'maxToolCalls',
+                                  e.target.value === '' || isNaN(v)
+                                    ? undefined
+                                    : v,
+                                );
+                              }}
+                              inputProps={{ min: 1 }}
+                            />
+                            <TextField
+                              size="small"
+                              label="Guardrails"
+                              value={(selectedAgent.guardrails ?? []).join(
+                                ', ',
+                              )}
+                              fullWidth
+                              onChange={e => {
+                                const v = e.target.value;
+                                updateAgent(
+                                  selectedAgentKey,
+                                  'guardrails',
+                                  v
+                                    ? v
+                                        .split(',')
+                                        .map(s => s.trim())
+                                        .filter(Boolean)
+                                    : undefined,
+                                );
+                              }}
+                              placeholder="shield-id-1, shield-id-2"
+                            />
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 3, mt: 2.5 }}>
+                            <FormControlLabel
+                              control={
+                                <ToggleSwitch
+                                  checked={
+                                    selectedAgent.resetToolChoice ?? false
+                                  }
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'resetToolChoice',
+                                      e.target.checked || undefined,
+                                    )
+                                  }
+                                />
+                              }
+                              label={
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.8rem' }}>
+                                    Reset Tool Choice After Use
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    After a tool call, reset to &quot;auto&quot;
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                            <FormControlLabel
+                              control={
+                                <ToggleSwitch
+                                  checked={
+                                    selectedAgent.nestHandoffHistory ?? false
+                                  }
+                                  onChange={e =>
+                                    updateAgent(
+                                      selectedAgentKey,
+                                      'nestHandoffHistory',
+                                      e.target.checked || undefined,
+                                    )
+                                  }
+                                />
+                              }
+                              label={
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.8rem' }}>
+                                    Summarize History on Handoff
+                                  </Typography>
+                                  <Typography
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: theme.palette.text.secondary,
+                                    }}
+                                  >
+                                    Compress conversation on transfer
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                          </Box>
+                        </Box>
+                      )}
+
+                      {/* Tab: Instructions */}
+                      {activeTab === instructionsTab && (
+                        <Box data-tour="orch-instructions">
+                          <InstructionsTab
+                            agent={selectedAgent}
+                            agents={agents}
+                            availableMcpServers={availableMcpServers}
+                            modelOptions={modelOptions}
+                            modelsLoading={modelsLoading}
+                            effectiveModel={
+                              selectedAgent.model ||
+                              (effectiveConfig?.model as string) ||
+                              ''
+                            }
+                            generating={generating}
+                            generateError={generateError}
+                            onUpdateInstructions={handleUpdateInstructions}
+                            onGenerate={handleGenerateForTab}
+                            onRefreshModels={refreshModels}
+                          />
+                        </Box>
                       )}
                     </Box>
-                  )}
-
-                  {/* Tab: Advanced */}
-                  {activeTab === 2 && (
-                    <Box>
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
-                          gap: 2,
-                        }}
-                      >
-                        <FormControl fullWidth size="small">
-                          <InputLabel>Tool Choice</InputLabel>
-                          <Select
-                            value={selectedAgent.toolChoice ?? ''}
-                            label="Tool Choice"
-                            onChange={e =>
-                              updateAgent(
-                                selectedAgentKey,
-                                'toolChoice',
-                                (e.target.value as string) || undefined,
-                              )
-                            }
-                            MenuProps={SELECT_MENU_PROPS}
-                          >
-                            <MenuItem value="">
-                              <Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ fontWeight: 500 }}
-                                >
-                                  <em>Default</em>
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="textSecondary"
-                                >
-                                  Inherit from platform settings
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                            <MenuItem value="auto">
-                              <Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ fontWeight: 500 }}
-                                >
-                                  auto
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="textSecondary"
-                                >
-                                  Model decides when to call tools
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                            <MenuItem value="required">
-                              <Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ fontWeight: 500 }}
-                                >
-                                  required
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="textSecondary"
-                                >
-                                  Always call tools
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                            <MenuItem value="none">
-                              <Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ fontWeight: 500 }}
-                                >
-                                  none
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="textSecondary"
-                                >
-                                  Never call tools
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                          </Select>
-                        </FormControl>
-                        <FormControl fullWidth size="small">
-                          <InputLabel>Reasoning</InputLabel>
-                          <Select
-                            value={selectedAgent.reasoning?.effort ?? ''}
-                            label="Reasoning"
-                            onChange={e => {
-                              const v = e.target.value as string;
-                              updateAgent(
-                                selectedAgentKey,
-                                'reasoning',
-                                v
-                                  ? { effort: v as 'low' | 'medium' | 'high' }
-                                  : undefined,
-                              );
-                            }}
-                            MenuProps={SELECT_MENU_PROPS}
-                          >
-                            <MenuItem value="">
-                              <em>Default</em>
-                            </MenuItem>
-                            <MenuItem value="low">Low</MenuItem>
-                            <MenuItem value="medium">Medium</MenuItem>
-                            <MenuItem value="high">High</MenuItem>
-                          </Select>
-                        </FormControl>
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Temperature"
-                          value={selectedAgent.temperature ?? ''}
-                          fullWidth
-                          onChange={e => {
-                            const v = parseFloat(e.target.value);
-                            updateAgent(
-                              selectedAgentKey,
-                              'temperature',
-                              e.target.value === '' || isNaN(v) ? undefined : v,
-                            );
-                          }}
-                          inputProps={{ min: 0, max: 2, step: 0.1 }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Max Output Tokens"
-                          value={selectedAgent.maxOutputTokens ?? ''}
-                          fullWidth
-                          onChange={e => {
-                            const v = parseInt(e.target.value, 10);
-                            updateAgent(
-                              selectedAgentKey,
-                              'maxOutputTokens',
-                              e.target.value === '' || isNaN(v) ? undefined : v,
-                            );
-                          }}
-                          inputProps={{ min: 1 }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          label="Max Tool Calls"
-                          value={selectedAgent.maxToolCalls ?? ''}
-                          fullWidth
-                          onChange={e => {
-                            const v = parseInt(e.target.value, 10);
-                            updateAgent(
-                              selectedAgentKey,
-                              'maxToolCalls',
-                              e.target.value === '' || isNaN(v) ? undefined : v,
-                            );
-                          }}
-                          inputProps={{ min: 1 }}
-                        />
-                        <TextField
-                          size="small"
-                          label="Guardrails"
-                          value={(selectedAgent.guardrails ?? []).join(', ')}
-                          fullWidth
-                          onChange={e => {
-                            const v = e.target.value;
-                            updateAgent(
-                              selectedAgentKey,
-                              'guardrails',
-                              v
-                                ? v
-                                    .split(',')
-                                    .map(s => s.trim())
-                                    .filter(Boolean)
-                                : undefined,
-                            );
-                          }}
-                          placeholder="shield-id-1, shield-id-2"
-                        />
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 3, mt: 2.5 }}>
-                        <FormControlLabel
-                          control={
-                            <ToggleSwitch
-                              checked={selectedAgent.resetToolChoice ?? false}
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'resetToolChoice',
-                                  e.target.checked || undefined,
-                                )
-                              }
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography sx={{ fontSize: '0.8rem' }}>
-                                Reset Tool Choice After Use
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.secondary,
-                                }}
-                              >
-                                After a tool call, reset to &quot;auto&quot;
-                              </Typography>
-                            </Box>
-                          }
-                        />
-                        <FormControlLabel
-                          control={
-                            <ToggleSwitch
-                              checked={
-                                selectedAgent.nestHandoffHistory ?? false
-                              }
-                              onChange={e =>
-                                updateAgent(
-                                  selectedAgentKey,
-                                  'nestHandoffHistory',
-                                  e.target.checked || undefined,
-                                )
-                              }
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography sx={{ fontSize: '0.8rem' }}>
-                                Summarize History on Handoff
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: theme.palette.text.secondary,
-                                }}
-                              >
-                                Compress conversation on transfer
-                              </Typography>
-                            </Box>
-                          }
-                        />
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* Tab: Instructions */}
-                  {activeTab === 3 && (
-                    <InstructionsTab
-                      agent={selectedAgent}
-                      agents={agents}
-                      availableMcpServers={availableMcpServers}
-                      modelOptions={modelOptions}
-                      modelsLoading={modelsLoading}
-                      effectiveModel={
-                        selectedAgent.model ||
-                        (effectiveConfig?.model as string) ||
-                        ''
-                      }
-                      generating={generating}
-                      generateError={generateError}
-                      onUpdateInstructions={handleUpdateInstructions}
-                      onGenerate={handleGenerateForTab}
-                      onRefreshModels={refreshModels}
-                    />
-                  )}
-                </Box>
+                  );
+                })()}
               </Box>
             ) : (
               <Box

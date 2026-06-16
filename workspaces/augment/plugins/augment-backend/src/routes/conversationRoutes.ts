@@ -62,10 +62,32 @@ const VALID_ORDER_VALUES = new Set(['asc', 'desc']);
  * Registers conversation CRUD and history endpoints.
  */
 export function registerConversationRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError, missingConversations } =
-    ctx;
+  const {
+    router,
+    logger,
+    provider,
+    sendRouteError,
+    missingConversations,
+    getUserRef,
+    sessions,
+  } = ctx;
 
   const withRoute = createWithRoute(logger, sendRouteError);
+
+  async function verifyConversationOwnership(
+    conversationId: string,
+    req: import('express').Request,
+  ): Promise<void> {
+    if (!sessions) return;
+    const userRef = await getUserRef(req);
+    const ownerSession = await sessions.findSessionByConversation(
+      conversationId,
+      userRef,
+    );
+    if (!ownerSession) {
+      throw new InputError('Conversation not found or access denied');
+    }
+  }
 
   router.post(
     '/conversations/create',
@@ -96,6 +118,7 @@ export function registerConversationRoutes(ctx: RouteContext): void {
           throw new InputError('conversationId path parameter is required');
         }
         if (missingConversations(res)) return;
+        await verifyConversationOwnership(conversationId, req);
         const getChain = provider.conversations!.getByResponseChain.bind(
           provider.conversations,
         );
@@ -124,6 +147,7 @@ export function registerConversationRoutes(ctx: RouteContext): void {
           throw new InputError('conversationId path parameter is required');
         }
         if (missingConversations(res)) return;
+        await verifyConversationOwnership(conversationId, req);
         const messages =
           await provider.conversations!.getProcessedMessages(conversationId);
         logger.info(

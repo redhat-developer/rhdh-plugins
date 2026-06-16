@@ -17,6 +17,7 @@ import { InputError } from '@backstage/errors';
 import {
   DEFAULT_BRANDING,
   isProviderScopedKey,
+  deriveRoleFromTopology,
 } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ProviderType } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AdminConfigService } from '../services/AdminConfigService';
@@ -24,6 +25,9 @@ import { validateAdminConfigValue } from '../services/utils/configValidation';
 import { loadBrandingOverrides } from '../providers/llamastack/BrandingConfigLoader';
 import { createWithRoute } from './routeWrapper';
 import type { AdminRouteDeps } from './adminRouteTypes';
+import { AuditLogger } from '../services/AuditLogger';
+
+const REDACTED_KEYS = new Set(['devSpacesToken']);
 
 export function registerAdminConfigRoutes(
   router: import('express').Router,
@@ -32,7 +36,6 @@ export function registerAdminConfigRoutes(
   const {
     adminConfig,
     config,
-    provider,
     logger,
     sendRouteError,
     getUserRef,
@@ -40,6 +43,7 @@ export function registerAdminConfigRoutes(
   } = deps;
 
   const withRoute = createWithRoute(logger, sendRouteError);
+  const audit = new AuditLogger(logger);
 
   router.get(
     '/admin/config',
@@ -65,7 +69,7 @@ export function registerAdminConfigRoutes(
       async (req, res) => {
         const validKey = AdminConfigService.validateKey(req.params.key);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
         if (isProviderScopedKey(validKey)) {
           const value = await adminConfig.getScopedValue(
@@ -105,10 +109,12 @@ export function registerAdminConfigRoutes(
           });
           return;
         }
+        const redacted = REDACTED_KEYS.has(validKey);
         res.json({
           success: true,
-          entry,
+          entry: redacted ? { ...entry, configValue: '**REDACTED**' } : entry,
           source: 'database',
+          ...(redacted && { redacted: true }),
           timestamp: new Date().toISOString(),
         });
       },
@@ -131,7 +137,7 @@ export function registerAdminConfigRoutes(
 
         const userRef = await getUserRef(req);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
         if (validKey === 'agents') {
           try {
@@ -164,17 +170,96 @@ export function registerAdminConfigRoutes(
           await adminConfig.set(validKey, value, userRef);
         }
 
+        audit.log({
+          action: 'config.update',
+          actor: userRef,
+          target: validKey,
+          outcome: 'success',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { providerId },
+        });
+
         onConfigChanged?.();
+
+        // Auto-register chatAgents entries for agents that can be published
+        // (router or standalone). New agents start as 'pending' so they go
+        // through the review queue. Specialists are hidden.
+        if (validKey === 'agents' && value && typeof value === 'object') {
+          try {
+            const agentMap = value as Record<
+              string,
+              { handoffs?: string[]; asTools?: string[] }
+            >;
+
+            const existing = await adminConfig.get('chatAgents');
+            const configs: import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[] =
+              Array.isArray(existing)
+                ? [
+                    ...(existing as import('@red-hat-developer-hub/backstage-plugin-augment-common').ChatAgentConfig[]),
+                  ]
+                : [];
+            const existingIds = new Set(configs.map(c => c.agentId));
+            let added = 0;
+
+            for (const [agentKey, agentCfg] of Object.entries(agentMap)) {
+              if (!agentCfg || typeof agentCfg !== 'object') continue;
+
+              const role = deriveRoleFromTopology(agentKey, agentMap);
+              if (role === 'specialist') continue;
+              if (existingIds.has(agentKey)) continue;
+
+              configs.push({
+                agentId: agentKey,
+                published: false,
+                visible: false,
+                featured: false,
+                lifecycleStage: 'pending',
+                version: 1,
+                promotedAt: new Date().toISOString(),
+                promotedBy: userRef,
+              });
+              added++;
+            }
+
+            // Remove chatAgents entries for agents whose role is now specialist
+            // or that no longer exist in the agents map.
+            const agentKeys = new Set(Object.keys(agentMap));
+            const before = configs.length;
+            const cleaned = configs.filter(c => {
+              if (!agentKeys.has(c.agentId)) return false;
+              const cfg = agentMap[c.agentId];
+              if (!cfg || typeof cfg !== 'object') return false;
+              return (
+                deriveRoleFromTopology(c.agentId, agentMap) !== 'specialist'
+              );
+            });
+            const removed = before - cleaned.length;
+
+            if (added > 0 || removed > 0) {
+              const final = removed > 0 ? cleaned : configs;
+              await adminConfig.set('chatAgents', final, userRef);
+              const parts: string[] = [];
+              if (added > 0) parts.push(`registered ${added} new`);
+              if (removed > 0)
+                parts.push(`removed ${removed} chatAgent entries`);
+              logger.info(
+                `[AdminConfig] chatAgent entries: ${parts.join(', ')}`,
+              );
+            }
+          } catch (err) {
+            logger.warn(`Failed to auto-manage chatAgent entries: ${err}`);
+          }
+        }
 
         const warnings: string[] = [];
 
         if (
           validKey === 'model' &&
           typeof value === 'string' &&
-          provider.listModels
+          deps.provider.listModels
         ) {
           try {
-            const models = await provider.listModels();
+            const models = await deps.provider.listModels();
             const found = models.some(m => m.id === value.trim());
             if (!found) {
               warnings.push(
@@ -230,8 +315,9 @@ export function registerAdminConfigRoutes(
       async (req, res) => {
         const validKey = AdminConfigService.validateKey(req.params.key);
         const providerId =
-          (req.query.provider as string | undefined) ?? provider.id;
+          (req.query.provider as string | undefined) ?? deps.provider.id;
 
+        const userRef = await getUserRef(req);
         let deleted: boolean;
         if (isProviderScopedKey(validKey)) {
           deleted = await adminConfig.deleteScopedValue(
@@ -241,6 +327,15 @@ export function registerAdminConfigRoutes(
         } else {
           deleted = await adminConfig.delete(validKey);
         }
+
+        audit.log({
+          action: 'config.delete',
+          actor: userRef,
+          target: validKey,
+          outcome: deleted ? 'success' : 'failure',
+          sourceIp: AuditLogger.extractIp(req),
+          meta: { providerId },
+        });
 
         onConfigChanged?.();
 
@@ -262,8 +357,8 @@ export function registerAdminConfigRoutes(
       async (_req, res) => {
         let effectiveConfig: Record<string, unknown>;
 
-        if (provider.getEffectiveConfig) {
-          effectiveConfig = await provider.getEffectiveConfig();
+        if (deps.provider.getEffectiveConfig) {
+          effectiveConfig = await deps.provider.getEffectiveConfig();
         } else {
           const ls = config.getOptionalConfig('augment.llamaStack');
           const yamlBranding = loadBrandingOverrides(config, logger);
@@ -292,6 +387,7 @@ export function registerAdminConfigRoutes(
           token: _t,
           skipTlsVerify: _s,
           functions: _f,
+          devSpacesToken: _dst,
           ...safeConfig
         } = effectiveConfig;
 

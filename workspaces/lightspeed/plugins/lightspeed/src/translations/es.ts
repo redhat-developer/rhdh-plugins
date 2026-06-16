@@ -40,7 +40,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'attach.menu.description': 'Adjuntar un archivo JSON, YAML o TXT',
     'attach.menu.title': 'Adjuntar',
     'button.newChat': 'Nuevo chat',
-    'chatbox.emptyState.noPinnedChats': 'No hay chats fijados',
+    'chatbox.emptyState.noPinnedChats': 'Fija chats para mantenerlos arriba',
     'chatbox.emptyState.noRecentChats': 'No hay chats recientes',
     'chatbox.emptyState.noResults.body':
       'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
@@ -48,7 +48,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'chatbox.fileUpload.failed': 'Error al cargar el archivo',
     'chatbox.fileUpload.infoText':
       'Los tipos de archivo admitidos son .txt, .yaml y .json. El tamaño máximo del archivo es de 25 MB.',
-    'chatbox.header.title': 'Developer Lightspeed',
+    'chatbox.header.title': 'Developer Hub Asistente Inteligente',
     'chatbox.message.placeholder':
       'Envíe un mensaje y, de forma opcional, cargue un archivo JSON, YAML o TXT...',
     'chatbox.provider.other': 'Otro',
@@ -70,8 +70,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.delete': 'Eliminar',
     'conversation.delete.confirm.action': 'Eliminar',
     'conversation.delete.confirm.message':
-      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de la actividad de Lightspeed.',
-    'conversation.delete.confirm.title': '¿Eliminar chat?',
+      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como indicaciones, respuestas y comentarios de tu actividad.',
+    'conversation.delete.confirm.title': '¿Eliminar "{{chatName}}"?',
     'conversation.removeFromPinnedChats': 'Quitar fijación',
     'conversation.rename': 'Cambiar el nombre',
     'conversation.rename.confirm.action': 'Cambiar el nombre',
@@ -112,17 +112,17 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Tipo de archivo no compatible. Los tipos de archivo admitidos son .txt, .yaml y .json.',
     'footer.accuracy.label':
       'Revise siempre el contenido generado con IA antes de usarlo.',
-    'icon.lightspeed.alt': 'icono de Lightspeed',
+    'icon.lightspeed.alt': 'icono del asistente inteligente',
     'icon.permissionRequired.alt': 'icono de permiso requerido',
     'lcore.loadError.description':
-      'El backend de Lightspeed no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
+      'El backend del asistente inteligente no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
     'lcore.loadError.title': 'No se pudieron cargar los modelos',
     'lcore.notConfigured.backendDocs':
-      'Configuración del backend de Lightspeed',
+      'Configuración del backend del asistente inteligente',
     'lcore.notConfigured.description':
-      'Lightspeed requiere un LLM registrado. Póngase en contacto con el administrador de la plataforma de su organización para completar la configuración.',
+      'El asistente inteligente requiere un LLM registrado. Póngase en contacto con el administrador de la plataforma de su organización para completar la configuración.',
     'lcore.notConfigured.developerLightspeedDocs':
-      'Configurando Developer Lightspeed',
+      'Configurando Developer Hub Intelligent Assistant',
     'lcore.notConfigured.title': 'Conecte un LLM para empezar',
     'mcp.settings.closeAriaLabel': 'Cerrar configuración de MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
@@ -134,7 +134,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'mcp.settings.enterToken': 'Introduce tu token',
     'mcp.settings.loading': 'Cargando servidores MCP...',
     'mcp.settings.modalDescription':
-      'Las credenciales se almacenan cifradas y se limitan a tu perfil. Lightspeed funcionará con exactamente tus permisos.',
+      'Las credenciales se almacenan cifradas y se limitan a tu perfil. El asistente inteligente funcionará con exactamente tus permisos.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
@@ -217,13 +217,16 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebook.view.sidebar.resize': 'Redimensionar barra lateral',
     'notebook.view.title': 'Cuaderno sin título',
     'notebook.view.upload.action': 'Subir un recurso',
+    'notebook.view.processing.description':
+      'Sus archivos están siendo indexados. Puede comenzar a hacer preguntas una vez que se complete el procesamiento.',
+    'notebook.view.processing.heading': 'Procesando recursos...',
     'notebook.view.upload.heading': 'Sube un recurso para empezar',
     'notebooks.actions.delete': 'Eliminar',
     'notebooks.actions.rename': 'Renombrar',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
     'notebooks.delete.action': 'Eliminar',
     'notebooks.delete.message':
-      'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad de Lightspeed.',
+      'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad.',
     'notebooks.delete.title': '¿Eliminar {{name}}?',
     'notebooks.delete.toast': '¡Cuaderno eliminado!',
     'notebooks.documents': 'Documentos',
@@ -247,13 +250,13 @@ const lightspeedTranslationEs = createTranslationMessages({
     'notebooks.updated.today': 'Actualizado hoy',
     'notebooks.updated.yesterday': 'Actualizado hace 1 día',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
-    'page.title': 'Lightspeed',
+    'page.title': 'Asistente inteligente',
     'permission.notebooks.goBack': 'Volver',
     'permission.required.description':
       'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
     'permission.required.title': 'Permisos faltantes',
-    'permission.subject.notebooks': 'los cuadernos de Lightspeed',
-    'permission.subject.plugin': 'el plugin de Lightspeed',
+    'permission.subject.notebooks': 'los cuadernos del asistente inteligente',
+    'permission.subject.plugin': 'el plugin del asistente inteligente',
     'prompts.codeOptimization.message':
       '¿Puedes sugerir formas comunes de optimizar el código para lograr un mejor rendimiento?',
     'prompts.codeOptimization.title': 'Sugerir optimizaciones de código',
@@ -310,7 +313,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'sort.label': 'Ordenar conversaciones',
     'sort.newest': 'Fecha (la más reciente primero)',
     'sort.oldest': 'Fecha (la más antigua primero)',
-    'tabs.ariaLabel': 'Vistas de Lightspeed',
+    'tabs.ariaLabel': 'Vistas del asistente inteligente',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Cuadernos',
     'tabs.notebooks.devPreview': 'Vista previa para desarrolladores',
@@ -334,8 +337,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.close': 'Cerrar',
     'tooltip.collapseHistoryPanel': 'Colapsar historial de chat',
     'tooltip.expandHistoryPanel': 'Expandir historial de chat',
-    'tooltip.fab.close': 'Cerrar Lightspeed',
-    'tooltip.fab.open': 'Abrir Lightspeed',
+    'tooltip.fab.close': 'Cerrar asistente inteligente',
+    'tooltip.fab.open': 'Abrir asistente inteligente',
     'tooltip.microphone.active': 'Dejar de escuchar',
     'tooltip.microphone.inactive': 'Usar micrófono',
     'tooltip.quickNewChat': 'Nuevo chat',

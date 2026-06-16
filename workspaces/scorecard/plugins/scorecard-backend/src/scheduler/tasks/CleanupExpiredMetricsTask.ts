@@ -19,8 +19,8 @@ import {
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
+import { randomUUID } from 'node:crypto';
 import { CLEANUP_EXPIRED_METRICS_ID } from '../constants';
-import { v4 as uuid } from 'uuid';
 import { daysToMilliseconds } from './utils';
 import type { Config } from '@backstage/config';
 import { SchedulerTask, SchedulerOptions } from '../types';
@@ -63,7 +63,7 @@ export class CleanupExpiredMetricsTask implements SchedulerTask {
       fn: async () => {
         const logger = this.logger.child({
           taskId: CLEANUP_EXPIRED_METRICS_ID,
-          taskInstanceId: uuid(),
+          taskInstanceId: randomUUID(),
         });
 
         try {

@@ -30,7 +30,8 @@ export class HomePageCustomization {
 
   // Locators
   private readonly editButton = () => this.page.getByText('Edit');
-  private readonly saveButton = () => this.page.getByText('Save');
+  private readonly saveButton = () =>
+    this.page.getByText('Save', { exact: true });
   private readonly clearAllButton = () => this.page.getByText('Clear all');
   private readonly restoreDefaultsButton = () =>
     this.page.getByText('Restore defaults');

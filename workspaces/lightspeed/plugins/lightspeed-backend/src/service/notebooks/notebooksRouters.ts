@@ -31,12 +31,18 @@ import { Readable, Transform } from 'stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
 } from '../constant';
+import {
+  createIdentityMiddleware,
+  getIdentity,
+} from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
 import { isValidFileType, parseFileContent } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
@@ -94,19 +100,13 @@ export async function createNotebooksRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  const getUserId = async (req: any): Promise<string> => {
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    return user.userEntityRef;
-  };
-
   const requireNotebooksPermission = async (
     req: any,
     res: any,
     next: any,
   ): Promise<void> => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials } = getIdentity(req);
       await authorizer.authorizeUser(
         lightspeedNotebooksUsePermission,
         credentials,
@@ -120,9 +120,9 @@ export async function createNotebooksRouter(
   const requireSessionOwnership =
     () => async (req: any, res: any, next: any) => {
       try {
+        const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        const userId = await getUserId(req);
-        await sessionService.readSession(sessionId, userId);
+        await sessionService.readSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(
@@ -138,8 +138,8 @@ export async function createNotebooksRouter(
     (handler: (req: any, res: any, userId: string) => Promise<void>) =>
     async (req: any, res: any, next: any) => {
       try {
-        const userId = await getUserId(req);
-        await handler(req, res, userId);
+        const { userEntityRef } = getIdentity(req);
+        await handler(req, res, userEntityRef);
       } catch (error) {
         next(error);
       }
@@ -262,6 +262,10 @@ export async function createNotebooksRouter(
   };
 
   notebooksRouter.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  notebooksRouter.use(
+    '/v1',
+    createIdentityMiddleware(httpAuth, userInfo, logger),
+  );
   notebooksRouter.use('/v1', requireNotebooksPermission);
 
   notebooksRouter.post(
@@ -429,14 +433,24 @@ export async function createNotebooksRouter(
     }),
   );
 
+  const validateNotebooksQuery = (query: unknown): string | null => {
+    if (!query) return 'query is required';
+    if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+      return `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`;
+    }
+    return null;
+  };
+
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { query } = req.body;
 
-      if (!query) {
-        handleError(logger, res, 'query is required');
+      const queryError = validateNotebooksQuery(query);
+      if (queryError) {
+        handleError(logger, res, queryError);
         return;
       }
 
@@ -457,12 +471,15 @@ export async function createNotebooksRouter(
       };
 
       for (let retries = 0; retries <= MAX_QUERY_RETRIES; retries++) {
+        const abortController = new AbortController();
+
         const response = await fetch(
           `${lightspeedBaseUrl}/v1/responses?user_id=${encodeURIComponent(userId)}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lightspeedRequest),
+            signal: abortController.signal,
           },
         );
 
@@ -508,11 +525,56 @@ export async function createNotebooksRouter(
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          body
-            .pipe(createResponsesApiTransform(session, sessionId, userId))
-            .pipe(res);
+          const transformStream = createResponsesApiTransform(
+            session,
+            sessionId,
+            userId,
+          );
+
+          body.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res
+                .status(500)
+                .json({ status: 'error', error: 'Stream error occurred' });
+            }
+            abortController.abort();
+            transformStream.destroy();
+          });
+
+          transformStream.on('error', (error: Error) => {
+            logger.error(
+              `Transform stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res.status(500).json({
+                status: 'error',
+                error: 'Processing error occurred',
+              });
+            }
+            body.destroy();
+            abortController.abort();
+          });
+
+          res.on('close', () => {
+            if (!res.writableFinished) {
+              logger.warn(
+                'Client disconnected while processing notebook query',
+              );
+              abortController.abort();
+              body.destroy();
+              transformStream.destroy();
+            }
+          });
+
+          body.pipe(transformStream).pipe(res);
         }
-        console.log('response1234', response.body);
         break;
       }
     }),

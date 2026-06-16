@@ -4,9 +4,13 @@
 # Feature umbrella: RHDHPLAN-851
 # Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
 #
-# Each workspace uploads coverage with its own flag (e.g., lightspeed,
+# Each workspace uploads coverage with its own flag (e.g., intelligent-assistant,
 # orchestrator). individual_flags scope each flag to its workspace path
 # so the Flags page shows per-workspace coverage correctly.
+#
+# Component management groups workspaces by support level (GA, Tech-Preview,
+# Community, Dev-Preview) for dashboard visualization. Generated from overlay
+# repo metadata using scripts/generate-codecov-components.sh.
 
 codecov:
   require_ci_to_pass: false
@@ -57,17 +61,108 @@ ignore:
   - "**/playwright.config.ts"
   - "**/scripts/**"
   - "**/docs/**"
+  - "workspaces/*/packages/app/**"
+  - "workspaces/*/packages/app-legacy/**"
+  - "workspaces/*/packages/backend/**"
+  - "workspaces/plugins/*-test/**"
+
+component_management:
+  # Note: workspaces with mixed support-level packages appear in multiple components
+  individual_components:
+    # GA Plugins — 17 workspaces
+    - component_id: ga-plugins
+      name: "GA Plugins"
+      paths:
+        - workspaces/adoption-insights/
+        - workspaces/analytics/
+        - workspaces/apiconnect/
+        - workspaces/backstage/
+        - workspaces/dynatrace-dql/
+        - workspaces/global-header/
+        - workspaces/homepage/
+        - workspaces/keycloak/
+        - workspaces/lightspeed/
+        - workspaces/orchestrator/
+        - workspaces/quickstart/
+        - workspaces/rbac/
+        - workspaces/roadie-backstage-plugins/
+        - workspaces/scaffolder-backend-module-kubernetes/
+        - workspaces/scaffolder-backend-module-regex/
+        - workspaces/tech-radar/
+        - workspaces/topology/
+
+    # Tech-Preview Plugins — 8 workspaces
+    - component_id: tech-preview-plugins
+      name: "Tech-Preview Plugins"
+      paths:
+        - workspaces/acr/
+        - workspaces/backstage/
+        - workspaces/bulk-import/
+        - workspaces/cost-management/
+        - workspaces/extensions/
+        - workspaces/homepage/
+        - workspaces/pingidentity/
+        - workspaces/scaffolder-relation-processor/
+
+    # Community Plugins — 39 workspaces
+    - component_id: community-plugins
+      name: "Community Plugins"
+      paths:
+        - workspaces/3scale/
+        - workspaces/acs/
+        - workspaces/adr/
+        - workspaces/analytics/
+        - workspaces/announcements/
+        - workspaces/argocd/
+        - workspaces/azure-devops/
+        - workspaces/backstage/
+        - workspaces/backstage-plugins-for-aws/
+        - workspaces/bookmarks/
+        - workspaces/config-viewer/
+        - workspaces/dynatrace/
+        - workspaces/env-viewer/
+        - workspaces/github/
+        - workspaces/github-notifications/
+        - workspaces/gitlab/
+        - workspaces/icon-viewer/
+        - workspaces/jenkins/
+        - workspaces/jfrog-artifactory/
+        - workspaces/kiali/
+        - workspaces/lighthouse/
+        - workspaces/mcp-chat/
+        - workspaces/mta/
+        - workspaces/multi-source-security-viewer/
+        - workspaces/nexus-repository-manager/
+        - workspaces/npm/
+        - workspaces/pagerduty/
+        - workspaces/quay/
+        - workspaces/roadie-backstage-plugins/
+        - workspaces/scaffolder-backend-module-servicenow/
+        - workspaces/scaffolder-backend-module-sonarqube/
+        - workspaces/servicenow/
+        - workspaces/sonarqube/
+        - workspaces/tech-insights/
+        - workspaces/tekton/
+        - workspaces/theme/
+        - workspaces/todo/
+        - workspaces/translations/
+        - workspaces/x2a/
+
+    # Dev-Preview Plugins — 6 workspaces
+    - component_id: dev-preview-plugins
+      name: "Dev-Preview Plugins"
+      paths:
+        - workspaces/ai-integrations/
+        - workspaces/app-defaults/
+        - workspaces/backstage/
+        - workspaces/konflux/
+        - workspaces/mcp-integrations/
+        - workspaces/scorecard/
 
 flag_management:
   default_rules:
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 100%
-      - type: patch
-        target: auto
-        threshold: 100%
+    statuses: []
   individual_flags:
     - name: adoption-insights
       paths:
@@ -112,9 +207,6 @@ flag_management:
     - name: extensions
       paths:
         - workspaces/extensions/
-    - name: global-floating-action-button
-      paths:
-        - workspaces/global-floating-action-button/
     - name: global-header
       paths:
         - workspaces/global-header/
@@ -124,7 +216,7 @@ flag_management:
     - name: konflux
       paths:
         - workspaces/konflux/
-    - name: lightspeed
+    - name: intelligent-assistant
       paths:
         - workspaces/lightspeed/
     - name: mcp-integrations
@@ -139,9 +231,6 @@ flag_management:
     - name: repo-tools
       paths:
         - workspaces/repo-tools/
-    - name: sandbox
-      paths:
-        - workspaces/sandbox/
     - name: scorecard
       paths:
         - workspaces/scorecard/

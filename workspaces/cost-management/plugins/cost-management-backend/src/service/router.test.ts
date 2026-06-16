@@ -18,7 +18,111 @@ import express from 'express';
 import request from 'supertest';
 import { mockServices } from '@backstage/backend-test-utils';
 
-import { createRouter } from './router';
+import {
+  createRouter,
+  extractStrings,
+  buildClusterProjectPermissions,
+} from './router';
+import type { BasicPermission } from '@backstage/plugin-permission-common';
+
+describe('extractStrings', () => {
+  it('returns values from a fulfilled result', () => {
+    const result: PromiseSettledResult<{
+      data?: { name: string; alias?: string }[];
+    }> = {
+      status: 'fulfilled',
+      value: {
+        data: [
+          { name: 'a', alias: 'x' },
+          { name: 'b' },
+          { name: 'c', alias: 'y' },
+        ],
+      },
+    };
+    const out = extractStrings(result, item => item.alias);
+    expect(out).toEqual(new Set(['x', 'y']));
+  });
+
+  it('returns empty set for rejected result', () => {
+    const result: PromiseSettledResult<{ data?: unknown[] }> = {
+      status: 'rejected',
+      reason: new Error('fail'),
+    };
+    expect(extractStrings(result, () => 'x')).toEqual(new Set());
+  });
+
+  it('returns empty set when data is undefined', () => {
+    const result: PromiseSettledResult<{ data?: unknown[] }> = {
+      status: 'fulfilled',
+      value: {},
+    };
+    expect(extractStrings(result, () => 'x')).toEqual(new Set());
+  });
+
+  it('deduplicates values', () => {
+    const result: PromiseSettledResult<{ data?: { v: string }[] }> = {
+      status: 'fulfilled',
+      value: { data: [{ v: 'a' }, { v: 'a' }, { v: 'b' }] },
+    };
+    expect(extractStrings(result, i => i.v)).toEqual(new Set(['a', 'b']));
+  });
+
+  it('skips falsy values from accessor', () => {
+    const result: PromiseSettledResult<{
+      data?: { v: string | undefined }[];
+    }> = {
+      status: 'fulfilled',
+      value: { data: [{ v: undefined }, { v: '' }, { v: 'ok' }] },
+    };
+    expect(extractStrings(result, i => i.v)).toEqual(new Set(['ok']));
+  });
+});
+
+describe('buildClusterProjectPermissions', () => {
+  const mockClusterFn = (c: string) =>
+    ({ name: `ros/${c}`, type: 'basic', attributes: {} } as BasicPermission);
+  const mockProjectFn = (c: string, p: string) =>
+    ({
+      name: `ros/${c}/${p}`,
+      type: 'basic',
+      attributes: {},
+    } as BasicPermission);
+
+  it('builds cluster + cluster/project combinations', () => {
+    const perms = buildClusterProjectPermissions(
+      new Set(['c1', 'c2']),
+      new Set(['p1']),
+      mockClusterFn,
+      mockProjectFn,
+    );
+    expect(perms.map(p => p.name)).toEqual([
+      'ros/c1',
+      'ros/c1/p1',
+      'ros/c2',
+      'ros/c2/p1',
+    ]);
+  });
+
+  it('returns only cluster perms when projects is empty', () => {
+    const perms = buildClusterProjectPermissions(
+      new Set(['c1']),
+      new Set(),
+      mockClusterFn,
+      mockProjectFn,
+    );
+    expect(perms.map(p => p.name)).toEqual(['ros/c1']);
+  });
+
+  it('returns empty array when clusters is empty', () => {
+    const perms = buildClusterProjectPermissions(
+      new Set(),
+      new Set(['p1']),
+      mockClusterFn,
+      mockProjectFn,
+    );
+    expect(perms).toEqual([]);
+  });
+});
 
 describe('createRouter', () => {
   let app: express.Express;

@@ -31,6 +31,7 @@ export function useStoreDocuments({
   const {
     documents,
     loading: docsLoading,
+    error: docsError,
     refresh: refreshDocs,
   } = useDocuments(selectedStoreId);
 
@@ -60,6 +61,7 @@ export function useStoreDocuments({
   return {
     documents,
     docsLoading,
+    docsError,
     refreshDocs,
     deleteInProgress,
     deleteError,

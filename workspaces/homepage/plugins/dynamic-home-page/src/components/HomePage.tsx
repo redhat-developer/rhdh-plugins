@@ -28,6 +28,7 @@ import { CustomizableGrid } from './CustomizableGrid';
 import { DefaultWidgetsCustomizableGrid } from './DefaultWidgetsCustomizableGrid';
 import { DefaultWidgetsReadOnlyGrid } from './DefaultWidgetsReadOnlyGrid';
 import { Header, HeaderProps } from './Header';
+import { HomePageStylesProvider } from './HomePageStylesProvider';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
 
 export interface HomePageProps extends HeaderProps {
@@ -46,7 +47,7 @@ export const HomePage = ({
   let content: React.ReactNode;
   if (loading) {
     content = <Progress />;
-  } else if (defaultWidgets && defaultWidgets.length > 0) {
+  } else if (defaultWidgets) {
     if (customizable) {
       content = (
         <DefaultWidgetsCustomizableGrid
@@ -54,6 +55,8 @@ export const HomePage = ({
           mountPoints={mountPoints}
         />
       );
+    } else if (defaultWidgets.length === 0) {
+      content = <EmptyState title={t('homePage.empty')} missing="content" />;
     } else {
       content = (
         <DefaultWidgetsReadOnlyGrid
@@ -71,9 +74,11 @@ export const HomePage = ({
   }
 
   return (
-    <Page themeId="home">
-      <Header title={t('header.welcome')} {...otherProps} />
-      <Content>{content}</Content>
-    </Page>
+    <HomePageStylesProvider>
+      <Page themeId="home">
+        <Header title={t('header.welcome')} {...otherProps} />
+        <Content>{content}</Content>
+      </Page>
+    </HomePageStylesProvider>
   );
 };

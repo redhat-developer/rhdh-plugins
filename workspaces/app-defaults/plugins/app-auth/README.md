@@ -1,6 +1,6 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
-RHDH sign-in page (multi-provider) and OIDC / Auth0 / SAML frontend OAuth2 APIs for the **new frontend system**, registered against `pluginId: 'app'`.
+RHDH sign-in page (multi-provider) and OIDC / Keycloak / PingFederate / Auth0 / SAML frontend OAuth2 APIs for the **new frontend system**, registered against `pluginId: 'app'`.
 
 ## Usage
 
@@ -9,4 +9,4 @@ RHDH sign-in page (multi-provider) and OIDC / Auth0 / SAML frontend OAuth2 APIs 
 
 ## Config
 
-Root `signInPage` (string or string[]) selects which providers appear; see `config.d.ts`.
+Root `signInPage` (string or string[]) selects which providers appear; see `config.d.ts`. Provider ids include `oidc`, `keycloak`, and `pingfederate` (OIDC-backed; backend `auth.providers` keys must match).

@@ -15,6 +15,10 @@
  */
 
 import {
+  AuthorizeResult,
+  PolicyDecision,
+} from '@backstage/plugin-permission-common';
+import {
   filterToVisibleLeafIds,
   filterToVisibleLeaves,
   isVisible,
@@ -25,7 +29,7 @@ function makeCtx(partial?: Partial<UserContext>): UserContext {
   return {
     userEntityRef: 'user:default/alice',
     groupEntityRefs: new Set(),
-    permissionDecisions: new Map(),
+    policyDecisions: new Map(),
     ...partial,
   };
 }
@@ -33,68 +37,82 @@ function makeCtx(partial?: Partial<UserContext>): UserContext {
 describe('isVisible', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    permissionDecisions: new Map([
-      ['perm.allowed', 'ALLOW'],
-      ['perm.denied', 'DENY'],
+    policyDecisions: new Map<string, PolicyDecision>([
+      ['perm.allowed', { result: AuthorizeResult.ALLOW }],
+      ['perm.denied', { result: AuthorizeResult.DENY }],
     ]),
   });
 
   it('visible when no visibility block is provided', () => {
-    expect(isVisible(undefined, ctx)).toBe(true);
-  });
-
-  it('visible when visibility block is empty', () => {
     expect(isVisible({}, ctx)).toBe(true);
   });
 
+  it('visible when visibility block is empty', () => {
+    expect(isVisible({ if: {} }, ctx)).toBe(true);
+  });
+
   it('visible when visibility has only empty arrays', () => {
-    expect(isVisible({ users: [], groups: [], permissions: [] }, ctx)).toBe(
+    expect(
+      isVisible({ if: { users: [], groups: [], permissions: [] } }, ctx),
+    ).toBe(true);
+  });
+
+  it('visible when user ref matches', () => {
+    expect(isVisible({ if: { users: ['user:default/alice'] } }, ctx)).toBe(
       true,
     );
   });
 
-  it('visible when user ref matches', () => {
-    expect(isVisible({ users: ['user:default/alice'] }, ctx)).toBe(true);
-  });
-
   it('hidden when only user ref is set and does not match', () => {
-    expect(isVisible({ users: ['user:default/bob'] }, ctx)).toBe(false);
+    expect(isVisible({ if: { users: ['user:default/bob'] } }, ctx)).toBe(false);
   });
 
   it('visible when any group ref in the list matches', () => {
     expect(
       isVisible(
-        { groups: ['group:default/platform', 'group:default/developers'] },
+        {
+          if: {
+            groups: ['group:default/platform', 'group:default/developers'],
+          },
+        },
         ctx,
       ),
     ).toBe(true);
   });
 
   it('hidden when no group ref in the list matches', () => {
-    expect(isVisible({ groups: ['group:default/platform'] }, ctx)).toBe(false);
+    expect(isVisible({ if: { groups: ['group:default/platform'] } }, ctx)).toBe(
+      false,
+    );
   });
 
   it('visible when any referenced permission is ALLOW', () => {
     expect(
-      isVisible({ permissions: ['perm.denied', 'perm.allowed'] }, ctx),
+      isVisible({ if: { permissions: ['perm.denied', 'perm.allowed'] } }, ctx),
     ).toBe(true);
   });
 
   it('hidden when all referenced permissions are DENY', () => {
-    expect(isVisible({ permissions: ['perm.denied'] }, ctx)).toBe(false);
+    expect(isVisible({ if: { permissions: ['perm.denied'] } }, ctx)).toBe(
+      false,
+    );
   });
 
   it('hidden when a permission is missing from decisions (fails closed)', () => {
-    expect(isVisible({ permissions: ['perm.unknown'] }, ctx)).toBe(false);
+    expect(isVisible({ if: { permissions: ['perm.unknown'] } }, ctx)).toBe(
+      false,
+    );
   });
 
   it('visible via OR across fields (permission allows even when user and group miss)', () => {
     expect(
       isVisible(
         {
-          users: ['user:default/bob'],
-          groups: ['group:default/platform'],
-          permissions: ['perm.allowed'],
+          if: {
+            users: ['user:default/bob'],
+            groups: ['group:default/platform'],
+            permissions: ['perm.allowed'],
+          },
         },
         ctx,
       ),
@@ -105,20 +123,196 @@ describe('isVisible', () => {
     expect(
       isVisible(
         {
-          users: ['user:default/bob'],
-          groups: ['group:default/platform'],
-          permissions: ['perm.denied'],
+          if: {
+            users: ['user:default/bob'],
+            groups: ['group:default/platform'],
+            permissions: ['perm.denied'],
+          },
         },
         ctx,
       ),
     ).toBe(false);
+  });
+
+  describe('conditional permissions', () => {
+    const conditionFor = (widgetIds: string[]) => ({
+      rule: 'HAS_WIDGET_ID',
+      resourceType: 'homepage-default-widget',
+      params: { widgetIds },
+    });
+
+    const conditionalDecision = (
+      conditions: PolicyDecision extends infer T
+        ? T extends { conditions: infer C }
+          ? C
+          : never
+        : never,
+    ): PolicyDecision => ({
+      result: AuthorizeResult.CONDITIONAL,
+      pluginId: 'homepage',
+      resourceType: 'homepage-default-widget',
+      conditions,
+    });
+
+    it('visible when CONDITIONAL decision matches widget id', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          ['perm.cond', conditionalDecision(conditionFor(['my-widget']))],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(true);
+    });
+
+    it('hidden when CONDITIONAL decision does not match widget id', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          ['perm.cond', conditionalDecision(conditionFor(['other-widget']))],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
+
+    it('visible when CONDITIONAL uses allOf and all conditions match', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({
+              allOf: [conditionFor(['my-widget', 'other-widget'])],
+            }),
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(true);
+    });
+
+    it('hidden when CONDITIONAL uses allOf and one condition fails', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({
+              allOf: [
+                conditionFor(['my-widget']),
+                conditionFor(['other-widget']),
+              ],
+            }),
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
+
+    it('visible when CONDITIONAL uses anyOf and one condition matches', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({
+              anyOf: [
+                conditionFor(['other-widget']),
+                conditionFor(['my-widget']),
+              ],
+            }),
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(true);
+    });
+
+    it('hidden when CONDITIONAL uses not and the inner condition matches', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({ not: conditionFor(['my-widget']) }),
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
+
+    it('visible when CONDITIONAL uses not and the inner condition does not match', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({ not: conditionFor(['other-widget']) }),
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(true);
+    });
+
+    it('hidden when CONDITIONAL references an unknown rule', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map<string, PolicyDecision>([
+          [
+            'perm.cond',
+            {
+              result: AuthorizeResult.CONDITIONAL,
+              pluginId: 'homepage',
+              resourceType: 'homepage-default-widget',
+              conditions: {
+                rule: 'UNKNOWN_RULE',
+                resourceType: 'homepage-default-widget',
+                params: {},
+              },
+            },
+          ],
+        ]),
+      });
+      expect(
+        isVisible(
+          { id: 'my-widget', if: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
   });
 });
 
 describe('filterToVisibleLeafIds', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    permissionDecisions: new Map([['perm.admin', 'DENY']]),
+    policyDecisions: new Map<string, PolicyDecision>([
+      ['perm.admin', { result: AuthorizeResult.DENY }],
+    ]),
   });
 
   it('returns an empty list for an empty tree', () => {
@@ -226,7 +420,9 @@ describe('filterToVisibleLeafIds', () => {
 describe('filterToVisibleLeaves', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    permissionDecisions: new Map([['perm.admin', 'DENY']]),
+    policyDecisions: new Map<string, PolicyDecision>([
+      ['perm.admin', { result: AuthorizeResult.DENY }],
+    ]),
   });
 
   it('returns full card objects with metadata', () => {

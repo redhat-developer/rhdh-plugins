@@ -41,16 +41,6 @@ jest.mock('react', () => ({
   useState: jest.fn(),
 }));
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  makeStyles: () => () => {
-    return {
-      previewCard: 'previewcard',
-      previewCardContent: 'previewcardcontent',
-    };
-  },
-}));
-
 jest.mock('formik', () => ({
   ...jest.requireActual('formik'),
   useFormikContext: jest.fn(),

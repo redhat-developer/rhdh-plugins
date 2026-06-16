@@ -16,14 +16,14 @@
 
 import { createPermissionResourceRef } from '@backstage/plugin-permission-node';
 import {
-  VisibleDefaultWidget,
+  DefaultWidgetNode,
   RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { HomepageDefaultWidgetFilter } from './rules';
 
 export const homepageDefaultWidgetPermissionResourceRef =
   createPermissionResourceRef<
-    VisibleDefaultWidget,
+    DefaultWidgetNode,
     HomepageDefaultWidgetFilter
   >().with({
     pluginId: 'homepage',

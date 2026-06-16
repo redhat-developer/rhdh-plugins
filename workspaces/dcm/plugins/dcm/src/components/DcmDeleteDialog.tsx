@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-import { Button, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { DcmFormDialog } from './DcmFormDialog';
+import { Trans } from './Trans';
+import { useTranslation } from '../hooks/useTranslation';
+
+const useStyles = makeStyles(theme => ({
+  deleteButton: {
+    backgroundColor: theme.palette.error.main,
+    color: theme.palette.error.contrastText,
+    '&:hover': { backgroundColor: theme.palette.error.dark },
+    '&.Mui-disabled': { opacity: 0.6 },
+  },
+}));
 
 type Props = Readonly<{
   open: boolean;
@@ -23,6 +35,10 @@ type Props = Readonly<{
   onConfirm: () => void;
   resourceName: string;
   resourceLabel?: string;
+  /** When set, renders an error banner inside the dialog. */
+  error?: string | null;
+  /** When true, disables both buttons and shows a spinner on Delete. */
+  isSubmitting?: boolean;
 }>;
 
 /**
@@ -34,26 +50,49 @@ export function DcmDeleteDialog({
   onConfirm,
   resourceName,
   resourceLabel = 'item',
+  error,
+  isSubmitting = false,
 }: Props) {
+  const classes = useStyles();
+  const { t } = useTranslation();
   return (
     <DcmFormDialog
       open={open}
       onClose={onClose}
-      title={`Delete ${resourceLabel}`}
+      title={(t as any)('deleteDialog.title', { resourceLabel })}
+      error={error}
+      submitting={isSubmitting}
       actions={
         <>
-          <Button variant="contained" color="secondary" onClick={onConfirm}>
-            Delete
+          <Button
+            variant="contained"
+            className={classes.deleteButton}
+            disabled={isSubmitting}
+            onClick={onConfirm}
+            startIcon={
+              isSubmitting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
+          >
+            {t('deleteDialog.confirmButton')}
           </Button>
-          <Button variant="outlined" color="primary" onClick={onClose}>
-            Cancel
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isSubmitting}
+            onClick={onClose}
+          >
+            {t('deleteDialog.cancelButton')}
           </Button>
         </>
       }
     >
       <Typography variant="body1">
-        Are you sure you want to delete <strong>{resourceName}</strong>? This
-        action cannot be undone.
+        <Trans
+          message="deleteDialog.body"
+          values={{ resourceName: <strong>{resourceName}</strong> }}
+        />
       </Typography>
     </DcmFormDialog>
   );

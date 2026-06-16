@@ -47,7 +47,8 @@ export function CommandCenterHeader({
 }: CommandCenterHeaderProps) {
   const theme = useTheme();
   const { t } = useTranslation();
-  const panelLabels = useMemo<Record<AdminPanel, string>>(
+
+  const panelLabels = useMemo<Partial<Record<AdminPanel, string>>>(
     () => ({
       platform: t('commandCenter.platform'),
       agents: t('commandCenter.agents'),
@@ -120,7 +121,7 @@ export function CommandCenterHeader({
                 fontWeight: 600,
               }}
             >
-              {panelLabels[adminPanel]}
+              {panelLabels[adminPanel] ?? adminPanel}
             </Typography>
           </Breadcrumbs>
         </Box>

@@ -167,6 +167,9 @@ export default _default;
 // @alpha (undocumented)
 export const lightspeedFABModule: FrontendModule;
 
+// @alpha (undocumented)
+export const lightspeedRedirectModule: FrontendModule;
+
 // @alpha
 export const lightspeedTranslationRef: TranslationRef<
   'plugin.lightspeed',
@@ -234,6 +237,8 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.documents.add': string;
     readonly 'notebook.view.upload.heading': string;
     readonly 'notebook.view.upload.action': string;
+    readonly 'notebook.view.processing.heading': string;
+    readonly 'notebook.view.processing.description': string;
     readonly 'notebook.view.input.placeholder': string;
     readonly 'notebook.view.input.disabledTooltip': string;
     readonly 'notebook.view.sidebar.collapse': string;

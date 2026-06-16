@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.7.9
+
+### Patch Changes
+
+- d86f9c6: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+
+## 2.7.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
+## 2.7.7
+
+### Patch Changes
+
+- 8414dbe: Fixes severity threshold category translation for custom thresholds
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.7
+
 ## 2.7.6
 
 ### Patch Changes

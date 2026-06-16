@@ -30,6 +30,7 @@ import {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  ArtifactKind,
   Telemetry,
   ProjectState,
   DEFAULT_PAGE_ORDER,
@@ -57,6 +58,23 @@ import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
 import { calculateProjectStatus } from './projectStatus';
 
+function enrichModuleWithJobStatus(
+  module: Module,
+  lastJobs: {
+    analyze?: Job;
+    migrate?: Job;
+    publish?: Job;
+  },
+): Module {
+  const { status, errorDetails } = calculateModuleStatus(lastJobs);
+  return {
+    ...module,
+    ...lastJobs,
+    status: module.removedAt ? 'removed' : status,
+    errorDetails: module.removedAt ? undefined : errorDetails,
+  };
+}
+
 export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;
   readonly #projectOps: ProjectOperations;
@@ -77,6 +95,18 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
   }
 
   /**
+   * Attaches attemptCount and firstAttemptAt to a Job object (mutates in place).
+   */
+  private attachAttemptStats(
+    job: Job | undefined,
+    stats: { count: number; firstStartedAt: Date | undefined } | undefined,
+  ): void {
+    if (!job || !stats) return;
+    job.attemptCount = stats.count;
+    job.firstAttemptAt = stats.firstStartedAt;
+  }
+
+  /**
    * Enriches a project with migration plan and status (used by listProjects and getProject).
    */
   private async enrichProject(project: Project): Promise<void> {
@@ -90,15 +120,23 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     const lastInitJob = initJob[0];
 
     project.status = calculateProjectStatus(
-      await this.listModules({ projectId }),
+      await this.listModules({ projectId, includeRemoved: true }),
       lastInitJob,
     );
 
-    project.migrationPlan = lastInitJob?.artifacts?.find(
-      artifact => artifact.type === 'migration_plan',
+    project.migrationPlan = lastInitJob?.artifacts?.find(artifact =>
+      ArtifactKind.from(artifact.type).isMigrationPlan(),
     );
 
     project.initJob = removeSensitiveFromJob(lastInitJob);
+
+    if (project.initJob) {
+      const stats = await this.#jobOps.getPhaseAttemptStats({
+        projectId,
+        phase: 'init',
+      });
+      this.attachAttemptStats(project.initJob, stats);
+    }
   }
 
   // Projects (facade enriches basic objects when needed)
@@ -289,6 +327,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     name: string;
     sourcePath: string;
     projectId: string;
+    technology?: Module['technology'];
   }): Promise<Module> {
     return this.#moduleOps.createModule(module);
   }
@@ -329,20 +368,43 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
       module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
 
-      const { status, errorDetails } = calculateModuleStatus({
+      // Attach attempt stats per phase
+      const phases = ['analyze', 'migrate', 'publish'] as const;
+      await Promise.all(
+        phases.map(async phase => {
+          const job = module[phase];
+          if (job) {
+            const stats = await this.#jobOps.getPhaseAttemptStats({
+              projectId: module.projectId,
+              moduleId: id,
+              phase,
+            });
+            this.attachAttemptStats(job, stats);
+          }
+        }),
+      );
+
+      return enrichModuleWithJobStatus(module, {
         analyze: module.analyze,
         migrate: module.migrate,
         publish: module.publish,
       });
-      module.status = status;
-      module.errorDetails = errorDetails;
     }
 
     return module;
   }
 
-  async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
-    const modules = await this.#moduleOps.listModules({ projectId });
+  async listModules({
+    projectId,
+    includeRemoved,
+  }: {
+    projectId: string;
+    includeRemoved?: boolean;
+  }): Promise<Module[]> {
+    const modules = await this.#moduleOps.listModules({
+      projectId,
+      includeRemoved,
+    });
     // TODO: This can be optimized by using a single query to list all jobs for all modules.
     const lastAnalyzeJobsOfModules = await Promise.all(
       modules.map(module =>
@@ -375,6 +437,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       ),
     );
 
+    const attemptStatsMap = await this.#jobOps.batchPhaseAttemptStats({
+      projectId,
+    });
+
     const response: Array<Module> = modules.map((module, idxModule) => {
       const analyze = removeSensitiveFromJob(
         lastAnalyzeJobsOfModules[idxModule][0],
@@ -385,19 +451,41 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       const publish = removeSensitiveFromJob(
         lastPublishJobsOfModules[idxModule][0],
       );
+
+      const moduleStats = attemptStatsMap.get(module.id);
+      this.attachAttemptStats(analyze, moduleStats?.get('analyze'));
+      this.attachAttemptStats(migrateJob, moduleStats?.get('migrate'));
+      this.attachAttemptStats(publish, moduleStats?.get('publish'));
+
       const lastJobs = { analyze, migrate: migrateJob, publish };
-      return {
-        ...module,
-        ...lastJobs,
-        ...calculateModuleStatus(lastJobs),
-      };
+      return enrichModuleWithJobStatus(module, lastJobs);
     });
 
     return response;
   }
 
+  async updateModule({
+    id,
+    sourcePath,
+    technology,
+  }: {
+    id: string;
+    sourcePath?: string;
+    technology?: Module['technology'];
+  }): Promise<number> {
+    return this.#moduleOps.updateModule({ id, sourcePath, technology });
+  }
+
   async deleteModule({ id }: { id: string }): Promise<number> {
     return this.#moduleOps.deleteModule({ id });
+  }
+
+  async softDeleteModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.softDeleteModule({ id });
+  }
+
+  async restoreModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.restoreModule({ id });
   }
 
   // Jobs

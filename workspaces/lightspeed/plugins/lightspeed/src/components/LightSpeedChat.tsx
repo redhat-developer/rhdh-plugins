@@ -43,7 +43,6 @@ import {
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
-  ChatbotFootnote,
   ChatbotHeader,
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
@@ -71,14 +70,19 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import {
+  PenIcon,
   PlusIcon,
   SearchIcon,
   SortAmountDownAltIcon,
   SortAmountDownIcon,
+  ThumbtackIcon,
+  TrashIcon,
 } from '@patternfly/react-icons';
+import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
+  LIGHTSPEED_PATH,
   supportedFileTypes,
   TEMP_CONVERSATION_ID,
   UNTITLED_NOTEBOOK_NAME,
@@ -104,17 +108,17 @@ import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext'
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
-import logo from '../images/logo.svg';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
+  ChatbotFootnoteWithIcon,
   getCategorizeMessages,
   getFootnoteProps,
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
-import { CollapsedHistoryStrip, PencilIcon } from './CollapsedHistoryStrip';
+import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
@@ -187,12 +191,6 @@ const useStyles = makeStyles(theme => ({
   },
   headerTitle: {
     justifyContent: 'left !important',
-    '& h1': {
-      fontSize: '32px !important',
-      fontWeight: '700 !important',
-      lineHeight: '36.4px !important',
-      fontFamily: '"Red Hat Display", sans-serif !important',
-    },
   },
   headerDivider: {
     paddingTop: 8,
@@ -338,8 +336,10 @@ const useStyles = makeStyles(theme => ({
     paddingRight: theme.spacing(1.5),
   },
   footer: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+    '&.pf-chatbot__footer': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
@@ -510,10 +510,10 @@ const useStyles = makeStyles(theme => ({
         transition: 'none !important',
       },
   },
-  // TODO: These PatternFly drawer overrides are needed because PF Chatbot doesn't
-  // provide clean APIs for custom expand/collapse icons and positioning.
-  // Remove once PatternFly supports these features.
-  // See: https://github.com/patternfly/chatbot/issues/834
+  // TODO: These PF Chatbot overrides are fragile (version-specific class names).
+  // Remove once the upstream issues are addressed:
+  // - https://github.com/patternfly/chatbot/issues/834 (custom close/collapse icon & positioning)
+  // - https://github.com/patternfly/chatbot/issues/848 (sidebar padding & spacing customization)
   fullscreenChatLayout: {
     display: 'flex',
     flexDirection: 'row',
@@ -533,10 +533,17 @@ const useStyles = makeStyles(theme => ({
       {
         display: 'none',
       },
+    // TODO(#834): Remove close button overrides once PF supports custom icon/positioning
     '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-      marginTop: -48,
-      marginRight: -24,
+      marginTop: 0,
+      marginRight: 0,
     },
+    // TODO(#848): Remove drawer head padding overrides once PF exposes drawerHeadProps
+    '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
+      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
+    },
+    // TODO(#834): Remove icon replacement hack once PF supports drawerCloseButtonProps.icon
     '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
       {
         display: 'none',
@@ -556,9 +563,26 @@ const useStyles = makeStyles(theme => ({
           backgroundColor: 'currentColor',
         },
       },
+    // TODO(#848): Remove heading padding overrides once PF exposes drawerHeadProps
+    '& .pf-chatbot__heading-container': {
+      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
+    },
+    // TODO(#848): Remove menu item padding overrides once PF exposes menuItemPaddingInline
+    '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
+      '--pf-v6-c-menu__group-title--PaddingInlineStart':
+        'var(--pf-t--global--spacer--md)',
+      '--pf-v6-c-menu__group-title--PaddingInlineEnd':
+        'var(--pf-t--global--spacer--md)',
+    },
     '& .pf-chatbot__menu-item': {
       cursor: 'pointer',
+      '--pf-v6-c-menu__item--PaddingInlineStart':
+        'var(--pf-t--global--spacer--md)',
+      '--pf-v6-c-menu__item--PaddingInlineEnd':
+        'var(--pf-t--global--spacer--md)',
     },
+    // TODO(#848): Remove menu toggle hover hack once PF supports menuToggleVisibility
     '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
       {
         opacity: 0,
@@ -607,8 +631,10 @@ export const LightspeedChat = ({
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
     configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-  const notebooksRouteMatch = useMatch('/lightspeed/notebooks');
-  const notebookViewRouteMatch = useMatch('/lightspeed/notebooks/:notebookId');
+  const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
+  const notebookViewRouteMatch = useMatch(
+    `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
+  );
   const routeNotebookId = notebookViewRouteMatch?.params?.notebookId;
   const isOnNotebookRoute = Boolean(
     notebooksRouteMatch || notebookViewRouteMatch,
@@ -628,8 +654,8 @@ export const LightspeedChat = ({
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const location = useLocation();
   const isNotebooksFullscreenPath =
-    location.pathname === '/lightspeed/notebooks' ||
-    location.pathname.startsWith('/lightspeed/notebooks/');
+    location.pathname === `${LIGHTSPEED_PATH}/notebooks` ||
+    location.pathname.startsWith(`${LIGHTSPEED_PATH}/notebooks/`);
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
@@ -641,7 +667,7 @@ export const LightspeedChat = ({
       return 1;
     }
     const p = location.pathname;
-    if (p.startsWith('/lightspeed/conversation/')) {
+    if (p.startsWith(`${LIGHTSPEED_PATH}/conversation/`)) {
       return 0;
     }
     if (shellViewTab === 1) {
@@ -677,7 +703,7 @@ export const LightspeedChat = ({
     if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
       setActiveNotebook(routeNotebook);
     } else if (routeNotebookId && routeNotebookError) {
-      navigate('/lightspeed/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
     } else if (!routeNotebookId && notebooksRouteMatch) {
       setActiveNotebook(null);
     }
@@ -721,7 +747,7 @@ export const LightspeedChat = ({
     useState<boolean>(!isMobile && isFullscreenMode);
 
   // Fullscreen: URL drives Chat vs Notebooks, but shellViewTab must win when entering
-  // fullscreen from overlay/docked on Notebooks while navigation still lands on /lightspeed.
+  // fullscreen from overlay/docked on Notebooks while navigation still lands on /intelligent-assistant.
   useLayoutEffect(() => {
     if (!isFullscreenMode) {
       return;
@@ -732,10 +758,10 @@ export const LightspeedChat = ({
       return;
     }
     const isBaseLightspeedChatRoute =
-      location.pathname === '/lightspeed' ||
-      location.pathname === '/lightspeed/';
+      location.pathname === LIGHTSPEED_PATH ||
+      location.pathname === `${LIGHTSPEED_PATH}/`;
     if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
-      navigate('/lightspeed/notebooks', { replace: true });
+      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
       return;
     }
     setActiveTab(0);
@@ -753,15 +779,15 @@ export const LightspeedChat = ({
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
     if (nextTab === 1) {
-      navigate('/lightspeed/notebooks');
+      navigate(`${LIGHTSPEED_PATH}/notebooks`);
       if (notebooksPermissionResolved) {
         refetchNotebooks();
       }
     } else {
       navigate(
         routeConversationId
-          ? `/lightspeed/conversation/${routeConversationId}`
-          : '/lightspeed',
+          ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
+          : LIGHTSPEED_PATH,
       );
     }
   };
@@ -791,14 +817,14 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          navigate(`/lightspeed/notebooks/${session.session_id}`);
+          navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
         },
       },
     );
   }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
-    navigate('/lightspeed/notebooks');
+    navigate(`${LIGHTSPEED_PATH}/notebooks`);
     refetchNotebooks();
   }, [navigate, refetchNotebooks]);
 
@@ -1139,6 +1165,7 @@ export const LightspeedChat = ({
           <>
             <DropdownItem
               isDisabled={!hasUpdateAccess}
+              icon={<PenIcon />}
               onClick={() =>
                 openChatRenameModal(conversationSummary.conversation_id)
               }
@@ -1149,6 +1176,7 @@ export const LightspeedChat = ({
               <>
                 {isChatFavorite ? (
                   <DropdownItem
+                    icon={<ThumbtackIcon />}
                     onClick={() =>
                       unpinChat(conversationSummary.conversation_id)
                     }
@@ -1157,6 +1185,7 @@ export const LightspeedChat = ({
                   </DropdownItem>
                 ) : (
                   <DropdownItem
+                    icon={<ThumbtackIcon />}
                     onClick={() => pinChat(conversationSummary.conversation_id)}
                   >
                     {t('conversation.addToPinnedChats')}
@@ -1166,6 +1195,7 @@ export const LightspeedChat = ({
             )}
             <DropdownItem
               isDisabled={!hasDeleteAccess}
+              icon={<TrashIcon />}
               onClick={() =>
                 openDeleteModal(conversationSummary.conversation_id)
               }
@@ -1198,6 +1228,13 @@ export const LightspeedChat = ({
         c => !notebookConversationIds.has(c.conversation_id),
       ),
     [conversations, notebookConversationIds],
+  );
+
+  const deleteChatName = useMemo(
+    () =>
+      conversations.find(c => c.conversation_id === targetConversationId)
+        ?.topic_summary ?? '',
+    [conversations, targetConversationId],
   );
 
   const categorizedMessages = useMemo(
@@ -1249,6 +1286,10 @@ export const LightspeedChat = ({
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
+                    style: {
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    },
                   },
                 },
               ];
@@ -1271,6 +1312,10 @@ export const LightspeedChat = ({
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
+                    style: {
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    },
                   },
                 },
               ];
@@ -1745,7 +1790,7 @@ export const LightspeedChat = ({
           onAttachRejected={onAttachRejected}
           placeholder={t('chatbox.message.placeholder')}
         />
-        <ChatbotFootnote {...getFootnoteProps(t)} />
+        <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
       </ChatbotFooter>
     </>
   );
@@ -1826,6 +1871,7 @@ export const LightspeedChat = ({
         <DeleteModal
           isOpen={isDeleteModalOpen}
           conversationId={targetConversationId}
+          chatName={deleteChatName}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConversation}
         />
@@ -1879,13 +1925,17 @@ export const LightspeedChat = ({
             )}
             {isFullscreenMode && (
               <>
-                <img
-                  src={logo as any}
-                  alt={t('icon.lightspeed.alt')}
+                <RhUiAiExperienceIcon
+                  style={{ width: '24px', height: '24px' }}
+                  aria-label={t('icon.lightspeed.alt')}
                   className={classes.headerLogo}
                 />
                 <ChatbotHeaderTitle className={classes.headerTitle}>
-                  <Title headingLevel="h1" size="3xl">
+                  <Title
+                    headingLevel="h1"
+                    size="2xl"
+                    style={{ fontWeight: 700 }}
+                  >
                     {t('chatbox.header.title')}
                   </Title>
                 </ChatbotHeaderTitle>
@@ -2023,10 +2073,11 @@ export const LightspeedChat = ({
               activeItemId={viewConversationId}
               onSelectActiveItem={onSelectActiveItem}
               conversations={filterConversations(filterValue)}
-              onNewChat={newChatCreated ? undefined : onNewChat}
+              onNewChat={onNewChat}
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
-                icon: isFullscreenMode ? <PencilIcon /> : <PlusIcon />,
+                icon: <PenIcon />,
+                isDisabled: newChatCreated,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}
@@ -2111,7 +2162,7 @@ export const LightspeedChat = ({
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
               onSelectNotebook={(notebook: NotebookSession) => {
-                navigate(`/lightspeed/notebooks/${notebook.session_id}`);
+                navigate(`${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`);
               }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}

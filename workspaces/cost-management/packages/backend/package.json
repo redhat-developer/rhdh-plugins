@@ -21,8 +21,8 @@
     "build-image": "docker build ../.. -f Dockerfile --tag backstage"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-backend": "5.2.6",
-    "@backstage-community/plugin-rbac-common": "^1.12.2",
+    "@backstage-community/plugin-rbac-backend": "^7.12.4",
+    "@backstage-community/plugin-rbac-common": "^1.26.1",
     "@backstage/backend-defaults": "^0.16.0",
     "@backstage/backend-plugin-api": "^1.8.0",
     "@backstage/catalog-model": "^1.7.7",

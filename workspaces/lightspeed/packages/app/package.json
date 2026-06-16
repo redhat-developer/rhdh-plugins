@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.0.25",
+  "version": "0.0.27",
   "private": true,
   "bundled": true,
   "repository": {
@@ -36,14 +36,15 @@
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.5",
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.7",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
-    "react-router": "^6.30.2",
+    "react-router": "^6.30.4",
     "react-router-dom": "^6.30.2"
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.5.1",
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.60.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",

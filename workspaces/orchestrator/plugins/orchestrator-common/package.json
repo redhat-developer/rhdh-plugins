@@ -55,15 +55,15 @@
     "openapi:check": "./scripts/openapi.sh check"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^1.12.4",
-    "@backstage/plugin-permission-common": "^0.9.7",
+    "@backstage/core-plugin-api": "^1.12.6",
+    "@backstage/plugin-permission-common": "^0.9.9",
     "@backstage/types": "^1.2.2",
     "@serverlessworkflow/sdk-typescript": "^0.8.4",
     "axios": "^1.15.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.0",
+    "@backstage/cli": "^0.36.2",
     "@openapitools/openapi-generator-cli": "2.30.2",
     "@types/js-yaml": "^4.0.0",
     "@types/json-schema": "7.0.15",

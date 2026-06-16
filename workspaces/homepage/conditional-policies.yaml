@@ -1,0 +1,13 @@
+---
+result: CONDITIONAL
+roleEntityRef: role:default/test-if-user-can-read-this-widget
+pluginId: homepage
+resourceType: homepage-default-widget
+permissionMapping:
+  - read
+conditions:
+  rule: HAS_WIDGET_ID
+  resourceType: homepage-default-widget
+  params:
+    widgetIds:
+      - test-if-user-can-read-this-widget

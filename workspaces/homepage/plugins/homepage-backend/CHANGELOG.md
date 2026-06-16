@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- 1aa10e7: Backsatge version bump to v1.51.0
+
+### Patch Changes
+
+- Updated dependencies [1aa10e7]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.2.0
+
+## 0.1.3
+
+### Patch Changes
+
+- ab8323b: Fix conditional permission checks.
+
 ## 0.1.2
 
 ### Patch Changes

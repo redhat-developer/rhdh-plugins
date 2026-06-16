@@ -144,6 +144,12 @@ export const ProjectStatusCell = ({
           label={t('module.summary.cancelled')}
           value={modulesSummary.cancelled}
         />
+        {modulesSummary.removed > 0 && (
+          <TooltipItem
+            label={t('module.summary.removed')}
+            value={modulesSummary.removed}
+          />
+        )}
       </Grid>
     );
   }

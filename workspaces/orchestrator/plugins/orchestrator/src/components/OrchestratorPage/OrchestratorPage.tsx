@@ -16,7 +16,7 @@
 
 import { TabbedLayout } from '@backstage/core-components';
 
-import { Box } from '@material-ui/core';
+import Box from '@mui/material/Box';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';

@@ -21,10 +21,12 @@ import orchestratorPlugin, {
   orchestratorTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
 import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
 
 export default createApp({
   features: [
+    rhdhThemeModule,
     navModule,
     catalogPlugin,
     orchestratorPlugin,

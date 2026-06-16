@@ -23,10 +23,11 @@ import {
 import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import {
-  AuthorizeResult,
   createPermission,
+  PolicyDecision,
+  QueryPermissionRequest,
 } from '@backstage/plugin-permission-common';
-import { PermissionDecision, UserContext } from './types';
+import { UserContext } from './types';
 
 export async function buildUserContext(opts: {
   credentials: BackstageCredentials<BackstageUserPrincipal>;
@@ -39,10 +40,10 @@ export async function buildUserContext(opts: {
     opts;
 
   const userEntityRef = credentials.principal.userEntityRef;
-
   const userEntity = await catalog.getEntityByRef(userEntityRef, {
     credentials,
   });
+
   if (!userEntity) {
     logger.warn(
       `User entity '${userEntityRef}' not found in catalog; group-based visibility will fail closed`,
@@ -54,20 +55,28 @@ export async function buildUserContext(opts: {
       .map(relation => relation.targetRef),
   );
 
-  const permissionDecisions = new Map<string, PermissionDecision>();
+  const policyDecisions = new Map<string, PolicyDecision>();
   if (referencedPermissions.size > 0) {
     const names = [...referencedPermissions];
-    const requests = names.map(name => ({
-      permission: createPermission({ name, attributes: {} }),
-    }));
-    const decisions = await permissions.authorize(requests, { credentials });
-    decisions.forEach((decision, index) => {
-      permissionDecisions.set(
-        names[index],
-        decision.result === AuthorizeResult.ALLOW ? 'ALLOW' : 'DENY',
-      );
+
+    const conditionalPermissionRequests = names.map<QueryPermissionRequest>(
+      name => ({
+        permission: createPermission({
+          name,
+          attributes: { action: 'read' },
+          resourceType: 'homepage-default-widget',
+        }),
+      }),
+    );
+
+    const conditionalDecisions = await permissions.authorizeConditional(
+      conditionalPermissionRequests,
+      { credentials },
+    );
+    conditionalDecisions.forEach((decision, index) => {
+      policyDecisions.set(names[index], decision);
     });
   }
 
-  return { userEntityRef, groupEntityRefs, permissionDecisions };
+  return { userEntityRef, groupEntityRefs, policyDecisions };
 }

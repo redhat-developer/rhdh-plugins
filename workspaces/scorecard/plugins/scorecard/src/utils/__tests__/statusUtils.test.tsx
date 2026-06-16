@@ -15,13 +15,16 @@
  */
 
 import type { Theme } from '@mui/material/styles';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   ScorecardThresholdRuleColors,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { scorecardTranslationRef } from '../../translations';
 import {
   getStatusConfig,
+  getTranslatedStatus,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
 } from '..';
@@ -327,6 +330,37 @@ describe('statusUtils', () => {
         'nonexistent.path',
       );
       expect(color).toBe('#d32f2f');
+    });
+  });
+
+  describe('getTranslatedStatus', () => {
+    type ScorecardT = TranslationFunction<typeof scorecardTranslationRef.T>;
+
+    it('should return translated status when translation exists', () => {
+      const t = ((key: string) =>
+        key === 'thresholds.success'
+          ? 'Success'
+          : key) as any as TranslationFunction<
+        typeof scorecardTranslationRef.T
+      >;
+
+      expect(getTranslatedStatus('success', t)).toBe('Success');
+    });
+
+    it('should fallback to title capitalized status when translation is missing', () => {
+      const t = ((key: string) => key) as any as ScorecardT;
+
+      expect(getTranslatedStatus('critical', t)).toBe('Critical');
+    });
+
+    it('should return empty string for undefined status', () => {
+      const t = ((key: string) => key) as any as ScorecardT;
+      expect(getTranslatedStatus(undefined, t)).toBe('');
+    });
+
+    it('should return empty string for empty status', () => {
+      const t = ((key: string) => key) as any as ScorecardT;
+      expect(getTranslatedStatus('', t)).toBe('');
     });
   });
 });

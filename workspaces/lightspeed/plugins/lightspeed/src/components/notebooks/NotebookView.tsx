@@ -22,7 +22,6 @@ import { makeStyles, Typography } from '@material-ui/core';
 import {
   ChatbotContent,
   ChatbotFooter,
-  ChatbotFootnote,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -58,6 +57,7 @@ import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage'
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
+import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -548,9 +548,9 @@ export const NotebookView = ({
     setToastAlerts(prev => prev.filter(a => a.key !== key));
   };
 
-  const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
   const totalDocumentCount = documents.length + uploadingFileNames.length;
   const hasUploadsInProgress = pendingUploads.length > 0 || isDocumentsFetching;
+  const hasNoDocuments = documents.length === 0;
   const isAddDisabled =
     totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
@@ -588,10 +588,13 @@ export const NotebookView = ({
   );
 
   const renderMainContent = () => {
-    if (!hasDocuments && messages.length === 0) {
+    if (hasNoDocuments && messages.length === 0) {
       return (
         <Typography component="span" className={classes.notebookEmptyUpload}>
-          <UploadResourceScreen onUploadClick={handleOpenUploadModal} />
+          <UploadResourceScreen
+            onUploadClick={handleOpenUploadModal}
+            isProcessing={uploadingFileNames.length > 0}
+          />
         </Typography>
       );
     }
@@ -740,12 +743,12 @@ export const NotebookView = ({
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
-                {!hasDocuments &&
+                {hasNoDocuments &&
                   messages.length === 0 &&
                   renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
-                  {documents.length === 0 ? (
+                  {hasNoDocuments ? (
                     <Tooltip
                       content={t('notebook.view.input.disabledTooltip')}
                       position="top"
@@ -772,7 +775,7 @@ export const NotebookView = ({
                       placeholder={t('notebook.view.input.placeholder')}
                     />
                   )}
-                  <ChatbotFootnote label={t('footer.accuracy.label')} />
+                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
             </div>

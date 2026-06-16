@@ -145,6 +145,57 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'reports removed count in modulesSummary when modules are soft-deleted - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Project with removed modules',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createJob({
+          projectId: project.id,
+          phase: 'init',
+          status: 'success',
+          artifacts: artifactsFromValues(
+            ['http://example.com/plan.md'],
+            'migration_plan',
+          ),
+        });
+        const mod = await service.createModule({
+          name: 'active-module',
+          sourcePath: '/active',
+          projectId: project.id,
+        });
+        const removed = await service.createModule({
+          name: 'removed-module',
+          sourcePath: '/removed',
+          projectId: project.id,
+        });
+        await service.softDeleteModule({ id: removed.id });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'pending',
+        });
+
+        const retrieved = await service.getProject(
+          { projectId: project.id },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(retrieved?.status?.modulesSummary.total).toBe(1);
+        expect(retrieved?.status?.modulesSummary.removed).toBe(1);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
       'returns correct project when multiple exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);

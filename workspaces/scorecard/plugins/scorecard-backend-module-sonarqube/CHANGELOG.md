@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube
 
+## 0.1.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.9
+
+## 0.1.7
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+- Updated dependencies [6699550]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.8
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
+## 0.1.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.7
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.7
+
 ## 0.1.5
 
 ### Patch Changes

@@ -23,7 +23,6 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
 import { useTheme } from '@mui/material/styles';
 
 import OnboardingCard from './OnboardingCard';
@@ -34,8 +33,12 @@ import useGreeting from '../../hooks/useGreeting';
 import { LearningSectionItem } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { containerGridItemSx } from '../../utils/GridItem';
+import {
+  sectionTitleSx,
+  sectionContentContainerSx,
+} from '../../styles/sectionCardSx';
 
-export const OnboardingSection = () => {
+export function useOnboardingSection() {
   const [user, setUser] = useState<string | null>();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
@@ -80,7 +83,13 @@ export const OnboardingSection = () => {
     return name;
   };
 
-  const content = (
+  const greetingLine = !profileLoading ? (
+    <Typography variant="h3" sx={sectionTitleSx}>
+      {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
+    </Typography>
+  ) : null;
+
+  const body = (
     <Box sx={{ mt: 2 }}>
       <Grid container spacing={2}>
         <Grid
@@ -130,41 +139,17 @@ export const OnboardingSection = () => {
     </Box>
   );
 
+  return { greetingLine, body };
+}
+
+/** @public */
+export const OnboardingSectionContent = () => {
+  const { greetingLine, body } = useOnboardingSection();
+
   return (
-    <Card
-      elevation={0}
-      sx={{
-        padding: '24px',
-        border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
-        containerType: 'inline-size',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {!profileLoading && (
-        <Typography
-          variant="h3"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            fontWeight: '500',
-            fontSize: '1.5rem',
-            flexShrink: 0,
-          }}
-        >
-          {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
-        </Typography>
-      )}
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          mt: 1,
-        }}
-      >
-        {content}
-      </Box>
-    </Card>
+    <Box sx={sectionContentContainerSx}>
+      {greetingLine}
+      {body}
+    </Box>
   );
 };

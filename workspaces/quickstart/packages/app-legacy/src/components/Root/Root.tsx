@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 import { PropsWithChildren } from 'react';
-import { makeStyles } from '@material-ui/core';
-import HomeIcon from '@material-ui/icons/Home';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import LibraryBooks from '@material-ui/icons/LibraryBooks';
-import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import CreateComponentIcon from '@mui/icons-material/AddCircleOutline';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import HomeIcon from '@mui/icons-material/Home';
+import LibraryBooks from '@mui/icons-material/LibraryBooks';
+import MenuIcon from '@mui/icons-material/Menu';
+import GroupIcon from '@mui/icons-material/People';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
@@ -28,20 +28,14 @@ import {
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import {
   Sidebar,
-  sidebarConfig,
   SidebarDivider,
   SidebarGroup,
   SidebarItem,
   SidebarPage,
   SidebarScrollWrapper,
   SidebarSpace,
-  useSidebarOpenState,
-  Link,
 } from '@backstage/core-components';
-import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
-import GroupIcon from '@material-ui/icons/People';
 import {
   defaultGlobalHeaderComponentsMountPoints,
   GlobalHeaderComponent,
@@ -55,34 +49,7 @@ import {
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
 import { ApplicationDrawer } from './ApplicationDrawer';
-
-const useSidebarLogoStyles = makeStyles({
-  root: {
-    width: sidebarConfig.drawerWidthClosed,
-    height: 3 * sidebarConfig.logoHeight,
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    marginBottom: -14,
-  },
-  link: {
-    width: sidebarConfig.drawerWidthClosed,
-    marginLeft: 24,
-  },
-});
-
-const SidebarLogo = () => {
-  const classes = useSidebarLogoStyles();
-  const { isOpen } = useSidebarOpenState();
-
-  return (
-    <div className={classes.root}>
-      <Link to="/" underline="none" className={classes.link} aria-label="Home">
-        {isOpen ? <LogoFull /> : <LogoIcon />}
-      </Link>
-    </div>
-  );
-};
+import { SidebarLogo } from './SidebarLogo';
 
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   return (

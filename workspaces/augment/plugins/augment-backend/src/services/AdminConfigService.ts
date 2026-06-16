@@ -41,6 +41,7 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'activeVectorStoreIds',
   'model',
   'baseUrl',
+  'kagentiBaseUrl',
   'toolChoice',
   'enableWebSearch',
   'enableCodeInterpreter',
@@ -57,6 +58,18 @@ const ALLOWED_KEYS: ReadonlySet<AdminConfigKey> = new Set<AdminConfigKey>([
   'agents',
   'defaultAgent',
   'maxAgentTurns',
+  'maxToolCalls',
+  'maxOutputTokens',
+  'temperature',
+  'safetyIdentifier',
+  'chatAgents',
+  'devSpacesApiUrl',
+  'devSpacesToken',
+  'devSpacesNamespace',
+  'workflows',
+  'workflowVersions',
+  'workflowTestSuites',
+  'workflowEvaluations',
 ]);
 
 interface AdminConfigRow {

@@ -75,7 +75,7 @@ If no files are configured, no metrics are registered and the module has no effe
 
 ### Entity Requirements
 
-Entities must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
+Only **Component** entities are checked. They must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
 
 ```yaml
 # catalog-info.yaml
@@ -103,6 +103,25 @@ Each configured file produces one boolean metric.
 ### Threshold Configuration
 
 You can override the default thresholds via `app-config.yaml`. Check out the detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
+
+Example configuration:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    filecheck:
+      thresholds:
+        rules:
+          - key: present
+            expression: '==true'
+            icon: scorecardSuccessStatusIcon
+            color: 'success.main'
+          - key: absent
+            expression: '==false'
+            icon: scorecardErrorStatusIcon
+            color: 'error.main'
+```
 
 ## Schedule Configuration
 

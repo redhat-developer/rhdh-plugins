@@ -61,6 +61,19 @@ describe('CustomTooltip Component', () => {
     expect(screen.getByText('No entities in Test state')).toBeInTheDocument();
   });
 
+  it('should render no-entities message with title capitalized status for custom status', () => {
+    render(
+      <CustomTooltip
+        payload={[{ name: 'critical', value: 0 }]}
+        pieData={[{ name: 'critical', value: 0, color: 'red' }]}
+      />,
+    );
+
+    expect(
+      screen.getByText('No entities in Critical state'),
+    ).toBeInTheDocument();
+  });
+
   it('should render custom content when provided', () => {
     render(
       <CustomTooltip

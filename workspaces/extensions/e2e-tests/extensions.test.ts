@@ -142,35 +142,6 @@ test.describe('Admin > Extensions', () => {
       await extensions.emptyCategoryComboBox();
     });
 
-    test('Verify certified badge in extensions', async ({
-      browser: _browser,
-    }) => {
-      await extensions.selectDropdown(`${translations.search.supportType}`);
-      await extensions.toggleOption(translations.badges.certified);
-      await sharedPage.keyboard.press(`Escape`);
-      await extensionHelper.verifyHeading('Certified Plugin ');
-      await expect(extensions.badge.first()).toBeVisible();
-      await extensions.badge.first().hover();
-      await extensionHelper.verifyHeading('Certified Plugin ');
-      await extensionHelper.clickHeading('Certified Plugin ');
-      await extensionHelper.closeBar('Close');
-      await extensionHelper.clickLink(translations.common.readMore);
-      await extensionHelper.verifyTextInLocator(
-        '',
-        translations.metadata.about,
-        true,
-      );
-      await extensionHelper.verifyHeading(translations.metadata.versions);
-      await extensionHelper.verifyTableHeadingAndRows([
-        translations.table.packageName,
-        translations.table.version,
-        translations.table.role,
-        translations.table.status,
-      ]);
-      await extensionHelper.closeBar('Close');
-      await extensions.resetSupportTypeFilter(translations.badges.certified);
-    });
-
     test('Verify Generally available badge in extensions', async ({
       browser: _browser,
     }) => {

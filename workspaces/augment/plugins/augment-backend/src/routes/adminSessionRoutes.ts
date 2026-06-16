@@ -17,12 +17,20 @@ import { createWithRoute, notFound } from './routeWrapper';
 import { validateSessionId } from './types';
 import type { AdminRouteDeps } from './adminRouteTypes';
 
+function safeJsonParse(value: string): unknown {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function registerAdminSessionRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
 ): void {
   const {
-    provider,
     logger,
     sendRouteError,
     sessions,
@@ -37,9 +45,13 @@ export function registerAdminSessionRoutes(
     withRoute(
       'GET /admin/sessions',
       'Failed to list sessions',
-      async (_req, res) => {
+      async (req, res) => {
         if (missingSessions(res)) return;
-        const list = await sessions!.listAllSessions();
+        const rawLimit = parseInt(String(req.query.limit), 10);
+        const limit = Number.isFinite(rawLimit)
+          ? Math.min(Math.max(1, rawLimit), 500)
+          : undefined;
+        const list = await sessions!.listAllSessions(limit);
         res.json({ sessions: list });
       },
     ),
@@ -60,6 +72,33 @@ export function registerAdminSessionRoutes(
           return;
         }
 
+        // Local message store first — same pattern as user route.
+        // Critical for Kagenti where the remote API has no history endpoint.
+        const localMessages = await sessions!.getMessages(req.params.sessionId);
+
+        if (localMessages.length > 0) {
+          const formatted = localMessages.map(m => ({
+            role: m.role,
+            text: m.content,
+            ...(m.agentName ? { agentName: m.agentName } : {}),
+            ...(m.toolCalls ? { toolCalls: safeJsonParse(m.toolCalls) } : {}),
+            ...(m.ragSources
+              ? { ragSources: safeJsonParse(m.ragSources) }
+              : {}),
+            ...(m.usage ? { usage: safeJsonParse(m.usage) } : {}),
+            ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+            ...(m.citations ? { citations: safeJsonParse(m.citations) } : {}),
+            createdAt: m.createdAt,
+          }));
+          res.json({
+            messages: formatted,
+            sessionCreatedAt: session.createdAt,
+            hasConversationId: !!session.conversationId,
+            source: 'local',
+          });
+          return;
+        }
+
         if (!session.conversationId) {
           res.json({
             messages: [],
@@ -72,9 +111,10 @@ export function registerAdminSessionRoutes(
         if (missingConversations(res)) return;
 
         try {
-          const messages = await provider.conversations!.getProcessedMessages(
-            session.conversationId,
-          );
+          const messages =
+            await deps.provider.conversations!.getProcessedMessages(
+              session.conversationId,
+            );
           if (messages.length === 0) {
             logger.warn(
               `Admin: session ${req.params.sessionId} has conversationId ${session.conversationId} but returned 0 messages — conversation data may have been lost`,
@@ -84,6 +124,7 @@ export function registerAdminSessionRoutes(
             messages,
             sessionCreatedAt: session.createdAt,
             hasConversationId: true,
+            source: 'provider',
           });
         } catch (fetchErr) {
           logger.error(

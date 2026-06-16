@@ -11,7 +11,7 @@
     "build:backend": "yarn workspace backend build",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn tsc:full; yarn build:api-reports:only",
-    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags -a 'plugins/*'",
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "build-image": "yarn workspace backend build-image",
     "tsc": "tsc",
@@ -27,7 +27,7 @@
     "prettier:fix": "prettier --write .",
     "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "node scripts/patch-agents-core.js && cd ../../ && yarn install"
   },
   "workspaces": {
     "packages": [
@@ -45,7 +45,7 @@
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.16.0",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.60.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^3.7.4",

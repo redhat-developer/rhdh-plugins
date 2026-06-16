@@ -44,6 +44,7 @@ import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
 import { DebugHomepageAvailableWidgets } from './components/homepage/DebugHomepageAvailableWidgets';
 import { DebugHomepageDefaultWidgets } from './components/homepage/DebugHomepageDefaultWidgets';
+import { DebugHomepageSavedWidgets } from './components/homepage/DebugHomepageSavedWidgets';
 
 import {
   AlertDisplay,
@@ -80,7 +81,6 @@ import {
   RecentlyVisitedCard,
   TopVisitedCard,
   FeaturedDocsCard,
-  JokeCard,
   WorldClock,
   HomePageCardMountPoint,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
@@ -170,9 +170,9 @@ const createHeadline = ({
   priority,
 }: {
   id: string;
-  title: string;
-  align: string;
-  priority: number;
+  title?: string;
+  align?: string;
+  priority?: number;
 }): HomePageCardMountPoint => ({
   Component: Headline,
   config: {
@@ -220,6 +220,7 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: EntitySection,
     config: {
       id: 'rhdh-entity-section',
+      titleKey: 'entities.title',
       priority: 201,
       layouts: layouts.entity,
     },
@@ -228,6 +229,7 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: TemplateSection,
     config: {
       id: 'rhdh-template-section',
+      titleKey: 'templates.title',
       priority: 200,
       layouts: layouts.template,
     },
@@ -238,11 +240,14 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     config: {
       priority: 202,
       id: 'quickaccess-card',
-      title: 'Quick Access Card',
+      titleKey: 'quickAccess.title',
       layouts: layouts.quickAccessCard,
     },
   },
   // Add extra mount points to verify same components can mount multiple times
+  createHeadline({
+    id: 'headline',
+  }),
   createHeadline({
     id: 'headline-left',
     title: 'Left title',
@@ -317,35 +322,28 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     Component: CatalogStarredEntitiesCard,
     config: {
       id: 'catalog-starred-entities-card',
-      title: 'Starred catalog entities',
+      titleKey: 'starredEntities.title',
     },
   },
   {
     Component: RecentlyVisitedCard as ComponentType,
     config: {
       id: 'recently-visited-card',
-      title: 'Recently visited',
+      titleKey: 'recentlyVisited.title',
     },
   },
   {
     Component: TopVisitedCard as ComponentType,
     config: {
       id: 'top-visited-card',
-      title: 'Top visited',
+      titleKey: 'topVisited.title',
     },
   },
   {
     Component: FeaturedDocsCard as ComponentType,
     config: {
       id: 'featured-docs-card',
-      title: 'Featured docs',
-    },
-  },
-  {
-    Component: JokeCard,
-    config: {
-      id: 'joke-card',
-      title: 'Random joke',
+      titleKey: 'featuredDocs.title',
     },
   },
   {
@@ -453,6 +451,10 @@ const routes = (
     <Route
       path="/debug-default-widgets"
       element={<DebugHomepageDefaultWidgets />}
+    />
+    <Route
+      path="/debug-saved-widgets"
+      element={<DebugHomepageSavedWidgets />}
     />
   </FlatRoutes>
 );

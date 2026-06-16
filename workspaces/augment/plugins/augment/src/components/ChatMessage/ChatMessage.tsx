@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, type HTMLAttributes } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -26,28 +26,34 @@ import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
+import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
 import { BotAvatarIcon } from '../icons';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import TextField from '@mui/material/TextField';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import type { Message, RAGSource } from '../../types';
-import { useBranding } from '../../hooks';
+import { useBranding, useChatViewMode } from '../../hooks';
 import {
   sanitizeResponseText,
   formatResponseText,
   formatRelativeTime,
 } from '../../utils';
+import { getAgentColor } from '../../utils/agentColors';
 import { TokenUsageBadge } from '../TokenUsageBadge';
 import { InlineCode, PreBlock } from '../CodeBlock';
 import { ReasoningDisplay } from '../StreamingMessage/ReasoningDisplay';
 import { ToolCallsSection } from './ToolCallsSection';
+import { ToolCallSummary } from './ToolCallSummary';
+import { ReasoningSummary } from './ReasoningSummary';
 import { RAGSourcesSection } from './RAGSourcesSection';
 import { ErrorCard } from './ErrorCard';
+import { ArtifactRenderer } from '../StreamingMessage/ArtifactRenderer';
+import { CitationRenderer } from '../StreamingMessage/CitationRenderer';
 import {
   getMessageContainerSx,
   getMessageWrapperSx,
@@ -58,8 +64,10 @@ import {
   getTimestampSx,
   getUserTimestampSx,
 } from './styles';
+import { typeScale, iconSize } from '../../theme/tokens';
 import { useMessageEdit } from './useMessageEdit';
 import { MessageActionButtons } from './MessageActionButtons';
+import type { MessageFeedbackData } from './MessageFeedback';
 
 const TIMESTAMP_REFRESH_MS = 30_000;
 
@@ -68,7 +76,7 @@ function OutputValidationWarning({ error }: { error: string }) {
   return (
     <Alert
       severity="warning"
-      sx={{ mt: 1, fontSize: '0.8rem' }}
+      sx={{ mt: 1, fontSize: typeScale.bodySmall.fontSize }}
       action={
         <IconButton
           size="small"
@@ -76,9 +84,9 @@ function OutputValidationWarning({ error }: { error: string }) {
           aria-label={expanded ? 'Hide details' : 'Show details'}
         >
           {expanded ? (
-            <ExpandLessIcon sx={{ fontSize: 16 }} />
+            <ExpandLessIcon sx={{ fontSize: iconSize.sm }} />
           ) : (
-            <ExpandMoreIcon sx={{ fontSize: 16 }} />
+            <ExpandMoreIcon sx={{ fontSize: iconSize.sm }} />
           )}
         </IconButton>
       }
@@ -94,7 +102,7 @@ function OutputValidationWarning({ error }: { error: string }) {
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             fontFamily: 'monospace',
-            fontSize: '0.7rem',
+            fontSize: typeScale.micro.fontSize,
           }}
         >
           {error}
@@ -107,33 +115,38 @@ function OutputValidationWarning({ error }: { error: string }) {
 const REMARK_PLUGINS = [remarkGfm, remarkMath];
 const REHYPE_PLUGINS = [rehypeKatex];
 
-const ScrollableTable = (props: React.HTMLAttributes<HTMLTableElement>) => (
+const ScrollableTable = (props: HTMLAttributes<HTMLTableElement>) => (
   <div className="table-scroll-wrapper">
     <table {...props} />
   </div>
 );
 
 const MARKDOWN_COMPONENTS = {
-  code: InlineCode as never,
-  pre: PreBlock as never,
-  table: ScrollableTable as never,
+  code: InlineCode as Components['code'],
+  pre: PreBlock as Components['pre'],
+  table: ScrollableTable as Components['table'],
 };
 
 interface ChatMessageProps {
   message: Message;
   onRegenerate?: () => void;
   onEditMessage?: (messageId: string, newText: string) => void;
+  onFeedback?: (data: MessageFeedbackData) => void;
+  onInspect?: (message: Message) => void;
   isLastAssistantMessage?: boolean;
 }
 
-export const ChatMessage = React.memo(function ChatMessage({
+export const ChatMessage = memo(function ChatMessage({
   message,
   onRegenerate,
   onEditMessage,
+  onFeedback,
+  onInspect,
   isLastAssistantMessage,
 }: ChatMessageProps) {
   const theme = useTheme();
   const { branding } = useBranding();
+  const { isDev } = useChatViewMode();
   const [copied, setCopied] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -172,8 +185,23 @@ export const ChatMessage = React.memo(function ChatMessage({
   // Don't render empty assistant messages (e.g., when tool call is pending approval)
   const hasTextContent = message.text && message.text.trim().length > 0;
 
-  // Early return for empty assistant messages (must be after all hooks)
-  if (!message.isUser && !hasTextContent && !hasToolCalls && !hasRAGSources) {
+  const hasArtifacts = !!(message.artifacts && message.artifacts.length > 0);
+  const hasCitations = !!(message.citations && message.citations.length > 0);
+  const hasReasoning = !!(
+    message.reasoning ||
+    (message.reasoningSummaries && message.reasoningSummaries.length > 0)
+  );
+
+  // Early return for truly empty assistant messages (must be after all hooks)
+  if (
+    !message.isUser &&
+    !hasTextContent &&
+    !hasToolCalls &&
+    !hasRAGSources &&
+    !hasArtifacts &&
+    !hasCitations &&
+    !hasReasoning
+  ) {
     return null;
   }
 
@@ -201,7 +229,7 @@ export const ChatMessage = React.memo(function ChatMessage({
           sx={getAvatarSx(theme, message.isUser)}
         >
           {message.isUser ? (
-            <PersonIcon sx={{ fontSize: 18 }} />
+            <PersonIcon sx={{ fontSize: iconSize.md }} />
           ) : (
             <BotAvatarIcon botAvatarUrl={branding.botAvatarUrl} />
           )}
@@ -210,29 +238,31 @@ export const ChatMessage = React.memo(function ChatMessage({
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Message Label */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            {!message.isUser &&
+              message.agentName &&
+              (() => {
+                const agentColor = getAgentColor(
+                  message.agentName!,
+                  theme.palette.mode,
+                );
+                return (
+                  <Box
+                    sx={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: '50%',
+                      backgroundColor: agentColor.fg,
+                      flexShrink: 0,
+                    }}
+                  />
+                );
+              })()}
             <Typography
               variant="caption"
               sx={getMessageLabelSx(theme, message.isUser)}
             >
               {message.isUser ? 'You' : message.agentName || branding.appName}
             </Typography>
-            {!message.isUser && message.agentName && (
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.6rem',
-                  px: 0.75,
-                  py: 0.1,
-                  borderRadius: 0.5,
-                  backgroundColor: `${theme.palette.primary.main}14`,
-                  color: theme.palette.primary.main,
-                  fontWeight: 600,
-                  lineHeight: 1.4,
-                }}
-              >
-                Agent
-              </Typography>
-            )}
           </Box>
 
           {/* Handoff path breadcrumb (multi-agent multi-hop) */}
@@ -244,7 +274,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                 aria-label={`Handoff path: ${message.handoffPath.filter(Boolean).join(' to ')}`}
                 sx={{
                   display: 'block',
-                  fontSize: '0.6875rem',
+                  fontSize: typeScale.micro.fontSize,
                   color: theme.palette.text.disabled,
                   mt: -0.25,
                   mb: 0.5,
@@ -275,7 +305,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                     size="small"
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        fontSize: '0.9rem',
+                        fontSize: typeScale.body.fontSize,
                         borderRadius: 2,
                       },
                     }}
@@ -292,7 +322,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                       onClick={handleCancelEdit}
                       aria-label="Cancel edit"
                     >
-                      <CloseIcon sx={{ fontSize: 16 }} />
+                      <CloseIcon sx={{ fontSize: iconSize.sm }} />
                     </IconButton>
                     <IconButton
                       size="small"
@@ -303,7 +333,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                       }
                       color="primary"
                     >
-                      <SendIcon sx={{ fontSize: 16 }} />
+                      <SendIcon sx={{ fontSize: iconSize.sm }} />
                     </IconButton>
                   </Box>
                 </Box>
@@ -311,9 +341,8 @@ export const ChatMessage = React.memo(function ChatMessage({
                 <>
                   {/* Reasoning / thinking (persisted from streaming or loaded from history) */}
                   {!message.isUser &&
-                    (message.reasoning ||
-                      (message.reasoningSummaries &&
-                        message.reasoningSummaries.length > 0)) && (
+                    hasReasoning &&
+                    (isDev ? (
                       <ReasoningDisplay
                         reasoning={
                           message.reasoning ||
@@ -326,7 +355,17 @@ export const ChatMessage = React.memo(function ChatMessage({
                         theme={theme}
                         branding={branding}
                       />
-                    )}
+                    ) : (
+                      <ReasoningSummary
+                        reasoning={
+                          message.reasoning ||
+                          (message.reasoningSummaries ?? [])
+                            .map(r => r.text)
+                            .join('\n\n')
+                        }
+                        reasoningDuration={message.reasoningDuration}
+                      />
+                    ))}
 
                   {/* Error card for differentiated error display */}
                   {isError && hasTextContent && (
@@ -356,13 +395,56 @@ export const ChatMessage = React.memo(function ChatMessage({
                     </Box>
                   )}
 
-                  {hasToolCalls && (
-                    <ToolCallsSection toolCalls={message.toolCalls!} />
-                  )}
+                  {hasToolCalls &&
+                    (isDev ? (
+                      <ToolCallsSection toolCalls={message.toolCalls!} />
+                    ) : (
+                      <ToolCallSummary toolCalls={message.toolCalls!} />
+                    ))}
 
-                  {hasRAGSources && (
-                    <RAGSourcesSection ragSources={ragSources} />
-                  )}
+                  {hasRAGSources &&
+                    (isDev ? (
+                      <RAGSourcesSection ragSources={ragSources} />
+                    ) : (
+                      <Box
+                        sx={{
+                          mt: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: typeScale.micro.fontSize,
+                          }}
+                        >
+                          Searched {ragSources.length} source
+                          {ragSources.length > 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+                    ))}
+
+                  {/* Artifacts from A2A agents */}
+                  {!message.isUser &&
+                    message.artifacts &&
+                    message.artifacts.length > 0 && (
+                      <ArtifactRenderer
+                        artifacts={message.artifacts.map(a => ({
+                          ...a,
+                          lastChunk: true,
+                        }))}
+                      />
+                    )}
+
+                  {/* Citations from A2A agents */}
+                  {!message.isUser &&
+                    message.citations &&
+                    message.citations.length > 0 && (
+                      <CitationRenderer citations={message.citations} />
+                    )}
 
                   {/* Output Validation Error */}
                   {!message.isUser && message.outputValidationError && (
@@ -389,17 +471,45 @@ export const ChatMessage = React.memo(function ChatMessage({
                 <Typography variant="caption" sx={getTimestampSx(theme)}>
                   {formatRelativeTime(message.timestamp)}
                 </Typography>
-                {message.usage && <TokenUsageBadge usage={message.usage} />}
+                {isDev && message.usage && (
+                  <TokenUsageBadge usage={message.usage} />
+                )}
               </Box>
 
-              <MessageActionButtons
-                isHovered={isHovered}
-                copied={copied}
-                onCopy={handleCopy}
-                onRegenerate={onRegenerate}
-                isLastAssistantMessage={isLastAssistantMessage}
-                theme={theme}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                {isDev && onInspect && (
+                  <Tooltip title="Inspect message" arrow placement="top">
+                    <IconButton
+                      size="small"
+                      onClick={() => onInspect(message)}
+                      aria-label="Inspect message"
+                      sx={{
+                        opacity: isHovered ? 0.6 : 0,
+                        transition: 'opacity 0.2s',
+                        p: 0.3,
+                        color: theme.palette.text.secondary,
+                        '&:focus': { opacity: 0.6 },
+                        '&:hover': {
+                          opacity: 1,
+                          color: theme.palette.warning.main,
+                        },
+                      }}
+                    >
+                      <BugReportOutlinedIcon sx={{ fontSize: iconSize.xs }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <MessageActionButtons
+                  messageId={message.id}
+                  isHovered={isHovered}
+                  copied={copied}
+                  onCopy={handleCopy}
+                  onRegenerate={onRegenerate}
+                  onFeedback={onFeedback}
+                  isLastAssistantMessage={isLastAssistantMessage}
+                  theme={theme}
+                />
+              </Box>
             </Box>
           )}
         </Box>
@@ -440,7 +550,7 @@ export const ChatMessage = React.memo(function ChatMessage({
                   },
                 }}
               >
-                <EditIcon sx={{ fontSize: 13 }} />
+                <EditIcon sx={{ fontSize: iconSize.xs }} />
               </IconButton>
             </Tooltip>
           )}

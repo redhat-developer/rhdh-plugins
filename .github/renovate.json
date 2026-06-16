@@ -54,10 +54,8 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-homepage-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-theme-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-marketplace-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-adoption-insights-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-orchestrator-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-cost-management-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-quickstart-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-mcp-integrations-presets",
@@ -67,13 +65,13 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-translations-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-header-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-lightspeed-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-floating-action-button-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-extensions-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-x2a-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-konflux-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-dcm-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-app-defaults-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-augment-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-augment-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-boost-presets"
       ]
     },
     {

@@ -366,6 +366,87 @@ export class JobOperations {
     return this.getJob({ id });
   }
 
+  /**
+   * Returns attempt count and first-attempt timestamp for a single
+   * (projectId, moduleId, phase) combination.
+   */
+  async getPhaseAttemptStats({
+    projectId,
+    moduleId,
+    phase,
+  }: {
+    projectId: string;
+    moduleId?: string | null;
+    phase: MigrationPhase;
+  }): Promise<{ count: number; firstStartedAt: Date | undefined }> {
+    const row = await this.#dbClient('jobs')
+      .where('project_id', projectId)
+      .modify(qb => {
+        if (moduleId) {
+          qb.where('module_id', moduleId);
+        } else if (Phase.from(phase).isProjectPhase()) {
+          qb.whereNull('module_id');
+        }
+      })
+      .where('phase', phase)
+      .select(
+        this.#dbClient.raw('COUNT(*) as count'),
+        this.#dbClient.raw('MIN(started_at) as first_started_at'),
+      )
+      .first();
+
+    const count = Number(row?.count ?? 0);
+    const firstStartedAt = row?.first_started_at
+      ? new Date(row.first_started_at as string | Date)
+      : undefined;
+
+    return { count, firstStartedAt };
+  }
+
+  /**
+   * Batch-fetches attempt stats for every (module_id, phase) pair in a
+   * project. Returns a nested map: moduleId -> phase -> stats.
+   * One SQL query regardless of the number of modules.
+   */
+  async batchPhaseAttemptStats({
+    projectId,
+  }: {
+    projectId: string;
+  }): Promise<
+    Map<
+      string,
+      Map<string, { count: number; firstStartedAt: Date | undefined }>
+    >
+  > {
+    const rows: Array<Record<string, unknown>> = await this.#dbClient('jobs')
+      .where('project_id', projectId)
+      .whereNotNull('module_id')
+      .groupBy('module_id', 'phase')
+      .select(
+        'module_id',
+        'phase',
+        this.#dbClient.raw('COUNT(*) as count'),
+        this.#dbClient.raw('MIN(started_at) as first_started_at'),
+      );
+
+    const result = new Map<
+      string,
+      Map<string, { count: number; firstStartedAt: Date | undefined }>
+    >();
+    for (const row of rows) {
+      const modId = row.module_id as string;
+      const phase = row.phase as string;
+      if (!result.has(modId)) {
+        result.set(modId, new Map());
+      }
+      result.get(modId)!.set(phase, {
+        count: Number(row.count),
+        firstStartedAt: new Date(row.first_started_at as string | Date),
+      });
+    }
+    return result;
+  }
+
   async deleteJob({ id }: { id: string }): Promise<number> {
     this.#logger.info(`deleteJob called for id: ${id}`);
 

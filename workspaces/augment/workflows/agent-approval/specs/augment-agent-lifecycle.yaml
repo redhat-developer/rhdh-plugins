@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Augment Agent Lifecycle API
+  description: >
+    Subset of the RHDH Augment plugin backend API used by the SonataFlow
+    agent-approval workflow. Only the promote and demote endpoints are
+    exposed here for workflow automation.
+  version: 1.0.0
+servers:
+  - url: '{augmentBackendUrl}'
+    description: RHDH Augment backend (injected at deploy time)
+    variables:
+      augmentBackendUrl:
+        default: http://backstage-backend.backstage.svc.cluster.local:7007/api/augment
+paths:
+  /agents/{agentId}/promote:
+    put:
+      operationId: promoteAgent
+      summary: Promote an agent to the next lifecycle stage
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetStage:
+                  type: string
+                  enum: [draft, review, staging, production, retired]
+      responses:
+        '200':
+          description: Agent promoted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  agentId:
+                    type: string
+                  lifecycleStage:
+                    type: string
+                  version:
+                    type: integer
+  /agents/{agentId}/demote:
+    put:
+      operationId: demoteAgent
+      summary: Demote an agent to a previous lifecycle stage
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetStage:
+                  type: string
+                  enum: [draft, review, staging, production, retired]
+                reason:
+                  type: string
+                  description: Rejection reason (for review -> draft transitions)
+      responses:
+        '200':
+          description: Agent demoted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  agentId:
+                    type: string
+                  lifecycleStage:
+                    type: string

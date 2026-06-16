@@ -1,5 +1,30 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.14.0
+
+### Minor Changes
+
+- 1aa10e7: Backsatge version bump to v1.51.0
+
+### Patch Changes
+
+- f55172d: Replace Material UI v4 with MUI v5 and scope JSS class names to prevent style collisions.
+  Fix double border issue in the widgets
+- Updated dependencies [1aa10e7]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.2.0
+
+## 1.13.4
+
+### Patch Changes
+
+- ab8323b: Fix issue that defaul widget props are ignored when customization is enabled.
+
+## 1.13.3
+
+### Patch Changes
+
+- cab7be4: When default widgets are configured, but no widgets (an empty array) is returned show an empty state. Rename the translations from cards to widgets and remove the mount point hint from the error messages. (Some translations will be improved with the next translations update.)
+
 ## 1.13.2
 
 ### Patch Changes

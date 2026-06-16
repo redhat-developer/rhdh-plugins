@@ -161,6 +161,156 @@ describe('PhaseDetails', () => {
     });
   });
 
+  describe('telemetry-based duration', () => {
+    it('uses telemetry timestamps for duration when available', async () => {
+      const phase: Job = {
+        id: 'job-1',
+        projectId: 'proj-1',
+        phase: 'migrate',
+        status: 'success',
+        k8sJobName: 'k8s-job-1',
+        startedAt: new Date('2024-01-01T12:00:00Z'),
+        finishedAt: new Date('2024-01-01T12:29:00Z'),
+        telemetry: {
+          summary: 'ok',
+          phase: 'migrate',
+          startedAt: new Date('2024-01-01T12:22:00Z'),
+          endedAt: new Date('2024-01-01T12:29:00Z'),
+        },
+      };
+
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="migrate"
+            moduleId="mod-1"
+          />,
+        );
+      });
+
+      const durationField = screen.getByTestId('item-field-Duration');
+      expect(durationField.textContent).toContain('7m 0s');
+      expect(durationField.textContent).not.toContain('29m');
+    });
+  });
+
+  describe('attempt count', () => {
+    it('shows attempt count when attemptCount is set', async () => {
+      const phase: Job = {
+        id: 'job-1',
+        projectId: 'proj-1',
+        phase: 'analyze',
+        status: 'success',
+        k8sJobName: 'k8s-job-1',
+        startedAt: new Date('2024-01-01T12:00:00Z'),
+        finishedAt: new Date('2024-01-01T12:02:30Z'),
+        attemptCount: 3,
+      };
+
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
+
+      const attemptsField = screen.getByTestId('item-field-Attempts');
+      expect(attemptsField.textContent).toContain('3');
+    });
+
+    it('shows "1" when attemptCount is not set but phase exists', async () => {
+      const phase: Job = {
+        id: 'job-1',
+        projectId: 'proj-1',
+        phase: 'analyze',
+        status: 'success',
+        k8sJobName: 'k8s-job-1',
+        startedAt: new Date('2024-01-01T12:00:00Z'),
+        finishedAt: new Date('2024-01-01T12:02:30Z'),
+      };
+
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
+
+      const attemptsField = screen.getByTestId('item-field-Attempts');
+      expect(attemptsField.textContent).toContain('1');
+    });
+
+    it('shows total elapsed as separate field when attemptCount > 1 and firstAttemptAt is set', async () => {
+      const phase: Job = {
+        id: 'job-1',
+        projectId: 'proj-1',
+        phase: 'migrate',
+        status: 'success',
+        k8sJobName: 'k8s-job-1',
+        startedAt: new Date('2024-01-01T12:20:00Z'),
+        finishedAt: new Date('2024-01-01T12:30:00Z'),
+        attemptCount: 3,
+        firstAttemptAt: new Date('2024-01-01T12:00:00Z'),
+      };
+
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="migrate"
+            moduleId="mod-1"
+          />,
+        );
+      });
+
+      const attemptsField = screen.getByTestId('item-field-Attempts');
+      expect(attemptsField.textContent).toContain('3');
+
+      const totalElapsedField = screen.getByTestId('item-field-Total Elapsed');
+      expect(totalElapsedField.textContent).toContain('30m 0s');
+    });
+
+    it('shows "-" for total elapsed when attemptCount is 1', async () => {
+      const phase: Job = {
+        id: 'job-1',
+        projectId: 'proj-1',
+        phase: 'analyze',
+        status: 'success',
+        k8sJobName: 'k8s-job-1',
+        startedAt: new Date('2024-01-01T12:00:00Z'),
+        finishedAt: new Date('2024-01-01T12:02:30Z'),
+        attemptCount: 1,
+        firstAttemptAt: new Date('2024-01-01T12:00:00Z'),
+      };
+
+      await act(async () => {
+        render(
+          <PhaseDetails
+            phase={phase}
+            projectId="proj-1"
+            phaseName="analyze"
+            moduleId="mod-1"
+          />,
+        );
+      });
+
+      const totalElapsedField = screen.getByTestId('item-field-Total Elapsed');
+      expect(totalElapsedField.textContent).toContain('-');
+      expect(totalElapsedField.textContent).not.toMatch(/\d+[smhd]/);
+    });
+  });
+
   describe('log streaming', () => {
     it('fetches module log with streaming: true and displays a single-chunk line', async () => {
       mockModulesModuleIdLogGet.mockResolvedValue(

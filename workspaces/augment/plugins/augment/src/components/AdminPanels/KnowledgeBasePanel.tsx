@@ -64,7 +64,7 @@ const VectorRagContent = () => {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <CircularProgress size={24} />
-        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Loading vector stores...
         </Typography>
       </Box>
@@ -174,7 +174,7 @@ const VectorRagContent = () => {
 
 export const KnowledgeBasePanel = () => {
   return (
-    <Box sx={{ px: 3, py: 1.5, maxWidth: 900, mx: 'auto' }}>
+    <Box sx={{ width: '100%', minWidth: 0 }}>
       <VectorRagContent />
     </Box>
   );

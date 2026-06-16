@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Responses API Provider
- *
- * Implements AgenticProvider by composing the existing service classes.
- * This is a composition wrapper — no business logic is duplicated.
- * All provider-specific logic lives in the existing services.
- */
-
 import type {
   LoggerService,
   RootConfigService,
@@ -39,24 +31,27 @@ import type {
   ChatRequest,
   ChatResponse,
 } from '../types';
-import {
-  DEFAULT_EMBEDDING_DIMENSION,
-  DEFAULT_EMBEDDING_MODEL,
-  DEFAULT_CHUNK_SIZE,
-  DEFAULT_MODEL,
-} from '../../constants';
 import { ResponsesApiCoordinator } from './ResponsesApiCoordinator';
 import { SafetyService } from './SafetyService';
 import { EvaluationService } from './EvaluationService';
 import { normalizeLlamaStackEvent } from './StreamEventNormalizer';
-import type { PromptCapabilities } from '@red-hat-developer-hub/backstage-plugin-augment-common';
-import { buildMetaPrompt } from './promptGeneration';
+import {
+  type PromptCapabilities,
+  type ChatAgent,
+  deriveRoleFromTopology,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import {
   buildConversationsCapability,
   buildRagCapability,
   buildSafetyCapability,
   buildEvaluationCapability,
 } from './CapabilityBuilders';
+import {
+  listModels as modelOpsListModels,
+  testModel as modelOpsTestModel,
+  generateSystemPrompt as modelOpsGenPrompt,
+} from './ProviderModelOps';
+import type { ModelsCache } from './ProviderModelOps';
 
 export class ResponsesApiProvider implements AgenticProvider {
   readonly id = 'llamastack';
@@ -72,11 +67,7 @@ export class ResponsesApiProvider implements AgenticProvider {
   private _safety?: SafetyCapability;
   private _evaluation?: EvaluationCapability;
 
-  private _modelsCache: {
-    data: Array<{ id: string; owned_by?: string; model_type?: string }>;
-    expiresAt: number;
-  } | null = null;
-  private static readonly MODELS_CACHE_TTL_MS = 60_000;
+  private _modelsCache: { current: ModelsCache | null } = { current: null };
 
   constructor(options: {
     logger: LoggerService;
@@ -100,9 +91,10 @@ export class ResponsesApiProvider implements AgenticProvider {
     });
   }
 
-  // ===========================================================================
-  // Lifecycle
-  // ===========================================================================
+  async shutdown(): Promise<void> {
+    this.logger.info('Shutting down Responses API provider');
+    await this.orchestrator.shutdown();
+  }
 
   async initialize(): Promise<void> {
     this.logger.info('Initializing Responses API provider');
@@ -116,156 +108,33 @@ export class ResponsesApiProvider implements AgenticProvider {
     await this.orchestrator.postInitialize();
   }
 
-  /**
-   * Invalidate the runtime config cache so admin changes take
-   * effect immediately on the next request.
-   */
   invalidateRuntimeConfig(): void {
     this.orchestrator.invalidateRuntimeConfig();
   }
 
   async getEffectiveConfig(): Promise<Record<string, unknown>> {
     const resolver = this.orchestrator.getResolver();
-    if (!resolver) {
-      return {};
-    }
+    if (!resolver) return {};
     const config = await resolver.resolve();
-    const result: Record<string, unknown> = { ...config };
-    return result;
+    return { ...config };
   }
 
   async listModels(): Promise<
     Array<{ id: string; owned_by?: string; model_type?: string }>
   > {
-    if (this._modelsCache && Date.now() < this._modelsCache.expiresAt) {
-      return this._modelsCache.data;
-    }
-
-    const client = this.orchestrator.getClientManager().getExistingClient();
-    const response = await client.request<{
-      data: Array<{
-        id: string;
-        object?: string;
-        owned_by?: string;
-        model_type?: string;
-        custom_metadata?: Record<string, unknown>;
-      }>;
-    }>('/v1/models', { method: 'GET' });
-
-    const models = (response.data || [])
-      .filter(m => typeof m.id === 'string' && m.id.length > 0)
-      .map(m => {
-        const modelType =
-          m.model_type ?? (m.custom_metadata?.model_type as string | undefined);
-        return {
-          id: m.id,
-          ...(m.owned_by ? { owned_by: m.owned_by } : {}),
-          ...(modelType ? { model_type: modelType } : {}),
-        };
-      });
-
-    this._modelsCache = {
-      data: models,
-      expiresAt: Date.now() + ResponsesApiProvider.MODELS_CACHE_TTL_MS,
-    };
-
-    return models;
+    return modelOpsListModels(this.orchestrator, this._modelsCache);
   }
 
-  async testModel(modelOverride?: string): Promise<{
+  async testModel(
+    modelOverride?: string,
+    _baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
     error?: string;
   }> {
-    let models: Array<{ id: string }>;
-    try {
-      models = await this.listAvailableModels();
-    } catch (err) {
-      return {
-        connected: false,
-        modelFound: false,
-        canGenerate: false,
-        error: err instanceof Error ? err.message : 'Connection failed',
-      };
-    }
-
-    const resolver = this.orchestrator.getResolver();
-    const config = resolver ? await resolver.resolve() : null;
-    const targetModel = modelOverride || config?.model;
-
-    if (!targetModel) {
-      return {
-        connected: true,
-        modelFound: false,
-        canGenerate: false,
-        error: 'No model configured',
-      };
-    }
-
-    const modelFound = models.some(m => m.id === targetModel);
-    if (!modelFound) {
-      return {
-        connected: true,
-        modelFound: false,
-        canGenerate: false,
-        error: `Model "${targetModel}" not found on server`,
-      };
-    }
-
-    const inferenceResult = await this.runMinimalInference(targetModel);
-    return {
-      connected: true,
-      modelFound: true,
-      canGenerate: inferenceResult.canGenerate,
-      ...(inferenceResult.error ? { error: inferenceResult.error } : {}),
-    };
-  }
-
-  private async listAvailableModels(): Promise<Array<{ id: string }>> {
-    const client = this.orchestrator.getClientManager().getExistingClient();
-    const response = await client.request<{
-      data: Array<{ id: string }>;
-    }>('/v1/models', { method: 'GET' });
-    return response.data || [];
-  }
-
-  private async runMinimalInference(model: string): Promise<{
-    canGenerate: boolean;
-    error?: string;
-  }> {
-    const client = this.orchestrator.getClientManager().getExistingClient();
-    try {
-      const response = await client.request<{
-        output: Array<{
-          type: string;
-          content?: Array<{ type: string; text?: string }>;
-        }>;
-        usage?: { output_tokens?: number };
-      }>('/v1/responses', {
-        method: 'POST',
-        body: JSON.stringify({ input: 'Hi', model, store: false }),
-      });
-
-      const outputTokens = response.usage?.output_tokens ?? 0;
-      const hasText = response.output?.some(
-        item =>
-          item.type === 'message' &&
-          item.content?.some(b => b.type === 'output_text' && b.text),
-      );
-
-      return {
-        canGenerate: hasText || outputTokens > 0,
-        ...(!hasText && outputTokens === 0
-          ? { error: 'Model returned 0 output tokens' }
-          : {}),
-      };
-    } catch (err) {
-      return {
-        canGenerate: false,
-        error: err instanceof Error ? err.message : 'Inference failed',
-      };
-    }
+    return modelOpsTestModel(this.orchestrator, modelOverride);
   }
 
   async generateSystemPrompt(
@@ -273,67 +142,15 @@ export class ResponsesApiProvider implements AgenticProvider {
     modelOverride?: string,
     capabilities?: PromptCapabilities,
   ): Promise<string> {
-    const resolver = this.orchestrator.getResolver();
-    const config = resolver ? await resolver.resolve() : null;
-
-    const { instructions, input } = buildMetaPrompt(
+    return modelOpsGenPrompt(
+      this.orchestrator,
       description,
-      config ?? {
-        model: 'unknown',
-        baseUrl: '',
-        systemPrompt: '',
-        vectorStoreIds: [],
-        vectorStoreName: 'default-vector-store',
-        embeddingModel: DEFAULT_EMBEDDING_MODEL,
-        embeddingDimension: DEFAULT_EMBEDDING_DIMENSION,
-        chunkingStrategy: 'auto',
-        maxChunkSizeTokens: DEFAULT_CHUNK_SIZE,
-        chunkOverlapTokens: 50,
-        enableWebSearch: false,
-        enableCodeInterpreter: false,
-        skipTlsVerify: false,
-        zdrMode: false,
-        verboseStreamLogging: false,
-      },
+      modelOverride,
       capabilities,
+      this.logger,
     );
-
-    const client = this.orchestrator.getClientManager().getExistingClient();
-    const model = modelOverride || config?.model || DEFAULT_MODEL;
-
-    const response = await client.request<{
-      output: Array<{
-        type: string;
-        content?: Array<{ type: string; text?: string }>;
-      }>;
-    }>('/v1/responses', {
-      method: 'POST',
-      body: JSON.stringify({
-        input,
-        instructions,
-        model,
-        store: false,
-      }),
-    });
-
-    for (const item of response.output) {
-      if (item.type === 'message' && item.content) {
-        for (const block of item.content) {
-          if (block.type === 'output_text' && block.text) {
-            return block.text.trim();
-          }
-        }
-      }
-    }
-
-    throw new Error('LLM returned no text in the response');
   }
 
-  /**
-   * Refresh safety/evaluation dynamic overrides from the current EffectiveConfig.
-   * Call this once per request (before safety/eval checks) so admin panel
-   * changes take effect without a restart.
-   */
   async refreshDynamicConfig(): Promise<void> {
     const resolver = this.orchestrator.getResolver();
     if (!resolver) return;
@@ -361,17 +178,45 @@ export class ResponsesApiProvider implements AgenticProvider {
     }
   }
 
-  // ===========================================================================
-  // Status
-  // ===========================================================================
-
   async getStatus(): Promise<AgenticProviderStatus> {
     return this.orchestrator.getStatus();
   }
 
-  // ===========================================================================
-  // Chat
-  // ===========================================================================
+  async listAgents(): Promise<ChatAgent[]> {
+    const snapshot = await this.orchestrator
+      .getAgentGraphManager()
+      ?.getSnapshot();
+    if (!snapshot?.agents?.size) return [];
+
+    const topologyMap: Record<
+      string,
+      { handoffs?: string[]; asTools?: string[] }
+    > = {};
+    for (const [key, resolved] of snapshot.agents) {
+      topologyMap[key] = {
+        handoffs: resolved.config.handoffs,
+        asTools: resolved.config.asTools,
+      };
+    }
+
+    const agents: ChatAgent[] = [];
+    for (const [key, resolved] of snapshot.agents) {
+      const role = deriveRoleFromTopology(key, topologyMap);
+      if (role === 'specialist') continue;
+      agents.push({
+        id: key,
+        name: resolved.config.name ?? key,
+        description: resolved.config.instructions?.slice(0, 200),
+        status: 'config',
+        isDefault: key === snapshot.defaultAgentKey,
+        providerType: 'llamastack',
+        framework: 'llamastack',
+        source: 'orchestration',
+        agentRole: role,
+      });
+    }
+    return agents;
+  }
 
   async chat(request: ChatRequest): Promise<ChatResponse> {
     return this.orchestrator.chat(request);
@@ -392,12 +237,17 @@ export class ResponsesApiProvider implements AgenticProvider {
         try {
           parsed = JSON.parse(rawEventJson);
         } catch {
-          /* non-JSON event */
+          /* non-JSON */
         }
 
         if (parsed?.type === 'stream.agent.handoff') {
           currentAgentName = parsed.toAgent as string;
-          onEvent(parsed as unknown as NormalizedStreamEvent);
+          onEvent({
+            type: 'stream.agent.handoff',
+            fromAgent: parsed.fromAgent as string | undefined,
+            toAgent: currentAgentName,
+            reason: parsed.reason as string | undefined,
+          } as NormalizedStreamEvent);
           return;
         }
 
@@ -406,31 +256,26 @@ export class ResponsesApiProvider implements AgenticProvider {
           return;
         }
 
-        // Runner-emitted events are already normalized (stream.* namespace).
-        // Pass them through directly — the normalizer only handles
-        // LlamaStack-native events (response.*) and would drop these.
         if (
           parsed &&
           typeof parsed.type === 'string' &&
           parsed.type.startsWith('stream.')
         ) {
-          const event = parsed as unknown as NormalizedStreamEvent;
+          const event = parsed as { type: string } & Record<string, unknown>;
           if (event.type === 'stream.started' && event.responseId) {
-            streamResponseId = event.responseId;
+            streamResponseId = event.responseId as string;
           }
           if (event.type === 'stream.completed' && currentAgentName) {
             event.agentName = currentAgentName;
           }
           if (event.type === 'stream.tool.approval') {
-            const approvalEvent = event as unknown as Record<string, unknown>;
-            if (!approvalEvent.responseId && streamResponseId) {
-              approvalEvent.responseId = streamResponseId;
-            }
+            if (!event.responseId && streamResponseId)
+              event.responseId = streamResponseId;
             this.logger.info(
-              `[HITL] Emitting stream.tool.approval: callId=${approvalEvent.callId}, name=${approvalEvent.name}, serverLabel=${approvalEvent.serverLabel}, responseId=${approvalEvent.responseId}`,
+              `[HITL] Emitting stream.tool.approval: callId=${event.callId}, name=${event.name}, serverLabel=${event.serverLabel}, responseId=${event.responseId}`,
             );
           }
-          onEvent(event);
+          onEvent(event as NormalizedStreamEvent);
           return;
         }
 
@@ -441,30 +286,22 @@ export class ResponsesApiProvider implements AgenticProvider {
           if (event.type === 'stream.started' && event.responseId) {
             streamResponseId = event.responseId;
           }
-
           if (event.type === 'stream.tool.approval') {
-            if (!event.responseId && streamResponseId) {
+            if (!event.responseId && streamResponseId)
               event.responseId = streamResponseId;
-            }
             this.logger.info(
               `[HITL] Emitting stream.tool.approval: callId=${event.callId}, name=${event.name}, serverLabel=${event.serverLabel}, responseId=${event.responseId}`,
             );
           }
-
           if (event.type === 'stream.completed' && currentAgentName) {
             event.agentName = currentAgentName;
           }
-
           onEvent(event);
         }
       },
       signal,
     );
   }
-
-  // ===========================================================================
-  // Optional Capabilities
-  // ===========================================================================
 
   get conversations(): ConversationCapability {
     if (this._conversations) return this._conversations;

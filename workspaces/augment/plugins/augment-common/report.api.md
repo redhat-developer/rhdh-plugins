@@ -28,6 +28,7 @@ export type AdminConfigKey =
   | 'activeVectorStoreIds'
   | 'model'
   | 'baseUrl'
+  | 'kagentiBaseUrl'
   | 'toolChoice'
   | 'enableWebSearch'
   | 'enableCodeInterpreter'
@@ -47,7 +48,132 @@ export type AdminConfigKey =
   | 'maxToolCalls'
   | 'maxOutputTokens'
   | 'temperature'
-  | 'safetyIdentifier';
+  | 'safetyIdentifier'
+  | 'chatAgents'
+  | 'chatTools'
+  | 'devSpacesApiUrl'
+  | 'devSpacesToken'
+  | 'devSpacesNamespace'
+  | 'workflows'
+  | 'workflowVersions'
+  | 'workflowTestSuites'
+  | 'workflowEvaluations';
+
+// @public
+export interface AgentFunctionDef {
+  // (undocumented)
+  description: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  parameters: Record<string, unknown>;
+}
+
+// @public
+export type AgentLifecycleAction =
+  | 'submit'
+  | 'approve'
+  | 'reject'
+  | 'publish'
+  | 'unpublish'
+  | 'archive'
+  | 'reactivate'
+  | 'withdraw'
+  | 'request-unpublish'
+  | 'approve-unpublish'
+  | 'reject-unpublish';
+
+// @public
+export type AgentLifecycleStage =
+  | 'draft'
+  | 'pending'
+  | 'published'
+  | 'archived';
+
+// @public
+export interface AgentLifecycleTransition {
+  // (undocumented)
+  action: AgentLifecycleAction;
+  // (undocumented)
+  from: AgentLifecycleStage;
+  // (undocumented)
+  label: string;
+  // (undocumented)
+  to: AgentLifecycleStage;
+}
+
+// @public
+export interface AgentNodeData {
+  // (undocumented)
+  agentKey: string;
+  // (undocumented)
+  enableCodeInterpreter?: boolean;
+  // (undocumented)
+  enabled?: boolean;
+  // (undocumented)
+  enableRAG?: boolean;
+  // (undocumented)
+  enableWebSearch?: boolean;
+  // (undocumented)
+  functions?: AgentFunctionDef[];
+  // (undocumented)
+  guardrails?: string[];
+  // (undocumented)
+  handoffDescription?: string;
+  // (undocumented)
+  handoffInputFilter?: string;
+  // (undocumented)
+  handoffInputSchema?: Record<string, unknown>;
+  // (undocumented)
+  instructions: string;
+  // (undocumented)
+  maxOutputTokens?: number;
+  // (undocumented)
+  maxToolCalls?: number;
+  // (undocumented)
+  mcpServers?: string[];
+  // (undocumented)
+  model?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  nestHandoffHistory?: boolean;
+  // (undocumented)
+  outputSchema?: Record<string, unknown>;
+  // (undocumented)
+  promptRef?: {
+    id: string;
+    version?: number;
+    variables?: Record<string, string>;
+  };
+  // (undocumented)
+  reasoning?: {
+    effort?: string;
+  };
+  // (undocumented)
+  resetToolChoice?: boolean;
+  // (undocumented)
+  temperature?: number;
+  // (undocumented)
+  toolChoice?: string;
+  // (undocumented)
+  toolUseBehavior?: string;
+  // (undocumented)
+  truncation?: string;
+  // (undocumented)
+  vectorStoreIds?: string[];
+}
+
+// @public
+export type AgentRole = 'router' | 'specialist' | 'standalone';
+
+// @public
+export interface AgentTopologyNode {
+  // (undocumented)
+  asTools?: string[];
+  // (undocumented)
+  handoffs?: string[];
+}
 
 // @public
 export const augmentAccessPermission: BasicPermission;
@@ -76,6 +202,9 @@ export interface AugmentStatus {
       available: boolean;
       reason?: string;
     };
+    agentCatalog?: boolean;
+    agentSelection?: boolean;
+    agentCards?: boolean;
   };
   configurationErrors: string[];
   isAdmin?: boolean;
@@ -124,7 +253,65 @@ export interface BrandingConfig {
 }
 
 // @public
-export type BuiltInProviderType = 'llamastack' | 'googleadk';
+export type BuiltInProviderType = 'llamastack' | 'googleadk' | 'kagenti';
+
+// @public
+export interface ChatAgent {
+  agentRole?: AgentRole;
+  avatarUrl?: string;
+  chatEndpoint?: string;
+  createdAt?: string;
+  createdBy?: string;
+  description?: string;
+  framework?: string;
+  governanceRegistered?: boolean;
+  id: string;
+  isDefault?: boolean;
+  lifecycleStage?: AgentLifecycleStage;
+  name: string;
+  namespace?: string;
+  pendingAction?: 'publish' | 'unpublish';
+  promotedAt?: string;
+  promotedBy?: string;
+  protocols?: string[];
+  providerType: string;
+  published?: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+  source?: string;
+  starters?: string[];
+  status: string;
+  version?: number;
+}
+
+// @public
+export interface ChatAgentConfig {
+  accentColor?: string;
+  agentId: string;
+  approvalWorkflowInstanceId?: string;
+  avatarUrl?: string;
+  chatEndpoint?: string;
+  conversationStarters?: string[];
+  createdAt?: string;
+  createdBy?: string;
+  description?: string;
+  displayName?: string;
+  featured: boolean;
+  greeting?: string;
+  lifecycleStage?: AgentLifecycleStage;
+  namespace?: string;
+  order?: number;
+  pendingAction?: 'publish' | 'unpublish';
+  promotedAt?: string;
+  promotedBy?: string;
+  published: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+  version?: number;
+  visible: boolean;
+}
 
 // @public
 export interface ChatMessage {
@@ -161,6 +348,32 @@ export interface ChatResponse {
 }
 
 // @public
+export interface ChatToolConfig {
+  createdAt?: string;
+  createdBy?: string;
+  lifecycleStage?: AgentLifecycleStage;
+  promotedAt?: string;
+  promotedBy?: string;
+  published: boolean;
+  toolId: string;
+  version?: number;
+  visible: boolean;
+}
+
+// @public
+export interface ClassifyNodeData {
+  // (undocumented)
+  classifications: Array<{
+    label: string;
+    description: string;
+  }>;
+  // (undocumented)
+  instructions?: string;
+  // (undocumented)
+  model?: string;
+}
+
+// @public
 export interface ConversationSummary {
   conversationId?: string;
   createdAt: Date;
@@ -171,8 +384,117 @@ export interface ConversationSummary {
   status: 'completed' | 'failed' | 'in_progress';
 }
 
+// Warning: (ae-missing-release-tag) "createDefaultWorkflow" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function createDefaultWorkflow(
+  id: string,
+  name: string,
+  createdBy?: string,
+): WorkflowDefinition;
+
 // @public
 export const DEFAULT_BRANDING: BrandingConfig;
+
+// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
+// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
+// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
+//
+// @public
+export function deriveRoleFromTopology(
+  agentKey: string,
+  allAgents: Record<string, AgentTopologyNode | null | undefined>,
+): AgentRole;
+
+// @public
+export interface DevSpacesCreateWorkspaceRequest {
+  // (undocumented)
+  cpu_limit?: string;
+  // (undocumented)
+  git_repo: string;
+  // (undocumented)
+  memory_limit?: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public
+export interface DevSpacesCreateWorkspaceResponse {
+  // (undocumented)
+  created_at?: string;
+  // (undocumented)
+  message?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  phase: string;
+  // (undocumented)
+  url?: string;
+}
+
+// @public
+export interface DevSpacesDeleteWorkspaceRequest {
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public
+export interface DevSpacesHealthResponse {
+  // (undocumented)
+  apiUrl?: string;
+  // (undocumented)
+  configured: boolean;
+  // (undocumented)
+  message: string;
+  // (undocumented)
+  ok: boolean;
+  // (undocumented)
+  responseTimeMs?: number;
+}
+
+// @public
+export interface DevSpacesListWorkspacesResponse {
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  workspaces: DevSpacesWorkspace[];
+}
+
+// @public
+export interface DevSpacesStopWorkspaceRequest {
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public
+export interface DevSpacesWorkspace {
+  // (undocumented)
+  cpu_limit?: string;
+  // (undocumented)
+  created_at?: string;
+  // (undocumented)
+  git_repo?: string;
+  // (undocumented)
+  memory_limit?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  phase: string;
+  // (undocumented)
+  started_at?: string;
+  // (undocumented)
+  stopped_at?: string;
+  // (undocumented)
+  url?: string;
+}
 
 // @public
 export interface DocumentInfo {
@@ -188,6 +510,32 @@ export interface DocumentInfo {
   status: 'completed' | 'in_progress' | 'failed' | 'cancelled';
   // (undocumented)
   uploadedAt: string;
+}
+
+// @public
+export interface EndNodeData {
+  // (undocumented)
+  outputExpression?: string;
+}
+
+// @public
+export interface EvaluationCriterion {
+  // (undocumented)
+  graderPrompt?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  pattern?: string;
+  // (undocumented)
+  scoringFunction?: string;
+  // (undocumented)
+  threshold?: number;
+  // (undocumented)
+  type: 'exact_match' | 'contains' | 'regex' | 'llm_graded' | 'custom';
+  // (undocumented)
+  weight: number;
 }
 
 // @public
@@ -216,6 +564,21 @@ export enum FileFormat {
 }
 
 // @public
+export interface FileSearchNodeData {
+  // (undocumented)
+  maxResults?: number;
+  // (undocumented)
+  scoreThreshold?: number;
+  // (undocumented)
+  vectorStoreIds?: string[];
+}
+
+// @public
+export function getAvailableTransitions(
+  stage: AgentLifecycleStage,
+): AgentLifecycleTransition[];
+
+// @public
 export const GLOBAL_CONFIG_KEYS: readonly [
   'systemPrompt',
   'branding',
@@ -226,21 +589,828 @@ export const GLOBAL_CONFIG_KEYS: readonly [
   'agents',
   'defaultAgent',
   'maxAgentTurns',
+  'devSpacesApiUrl',
 ];
 
 // @public
 export type GlobalConfigKey = (typeof GLOBAL_CONFIG_KEYS)[number];
 
 // @public
+export interface GuardrailNodeData {
+  // (undocumented)
+  customRules?: GuardrailRule[];
+  // (undocumented)
+  fallbackMessage?: string;
+  // (undocumented)
+  guardType: 'input' | 'output';
+  // (undocumented)
+  onFailure: 'block' | 'warn' | 'fallback';
+  // (undocumented)
+  shieldIds?: string[];
+}
+
+// @public
+export interface GuardrailRule {
+  // (undocumented)
+  graderPrompt?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  keywords?: string[];
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  pattern?: string;
+  // (undocumented)
+  type: 'regex' | 'keyword_block' | 'llm_grader';
+}
+
+// @public
 export interface InputTokensDetails {
   cached_tokens?: number;
 }
 
+// Warning: (ae-missing-release-tag) "isAgentNodeData" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function isAgentNodeData(data: WorkflowNodeData): data is AgentNodeData;
+
 // @public
 export function isGlobalConfigKey(key: string): key is GlobalConfigKey;
 
+// Warning: (ae-missing-release-tag) "isGuardrailNodeData" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function isGuardrailNodeData(
+  data: WorkflowNodeData,
+): data is GuardrailNodeData;
+
+// Warning: (ae-missing-release-tag) "isLogicNodeData" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function isLogicNodeData(data: WorkflowNodeData): data is LogicNodeData;
+
 // @public
 export function isProviderScopedKey(key: string): key is ProviderScopedKey;
+
+// Warning: (ae-missing-release-tag) "isToolNodeData" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function isToolNodeData(data: WorkflowNodeData): data is ToolNodeData;
+
+// Warning: (ae-missing-release-tag) "isUserInteractionNodeData" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export function isUserInteractionNodeData(
+  data: WorkflowNodeData,
+): data is UserInteractionNodeData;
+
+// @public
+export function isValidTransition(
+  from: AgentLifecycleStage,
+  to: AgentLifecycleStage,
+): boolean;
+
+// @public (undocumented)
+export interface KagentiAgentCard {
+  // (undocumented)
+  defaultInputModes?: string[];
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  skills: KagentiAgentCardSkill[];
+  // (undocumented)
+  streaming: boolean;
+  // (undocumented)
+  url: string;
+  // (undocumented)
+  version: string;
+}
+
+// @public (undocumented)
+export interface KagentiAgentCardSkill {
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  examples?: string[];
+  // (undocumented)
+  id?: string;
+  // (undocumented)
+  name?: string;
+}
+
+// @public (undocumented)
+export interface KagentiAgentDetail {
+  // (undocumented)
+  metadata: Record<string, unknown>;
+  // (undocumented)
+  readyStatus?: string;
+  // (undocumented)
+  service?: Record<string, unknown>;
+  // (undocumented)
+  spec: Record<string, unknown>;
+  // (undocumented)
+  status: Record<string, unknown>;
+  // (undocumented)
+  workloadType?: string;
+}
+
+// @public (undocumented)
+export interface KagentiAgentSummary {
+  // (undocumented)
+  createdAt?: string;
+  // (undocumented)
+  description: string;
+  // (undocumented)
+  labels: KagentiResourceLabels;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  status: string;
+  // (undocumented)
+  workloadType?: string;
+}
+
+// @public
+export interface KagentiAuthConfig {
+  // (undocumented)
+  client_id?: string;
+  // (undocumented)
+  enabled: boolean;
+  // (undocumented)
+  keycloak_url?: string;
+  // (undocumented)
+  realm?: string;
+  // (undocumented)
+  redirect_uri?: string;
+}
+
+// @public (undocumented)
+export interface KagentiBuildInfo {
+  // (undocumented)
+  agentConfig?: KagentiResourceConfigFromBuild;
+  // (undocumented)
+  buildMessage?: string;
+  // (undocumented)
+  buildReason?: string;
+  // (undocumented)
+  buildRegistered: boolean;
+  // (undocumented)
+  buildRunCompletionTime?: string;
+  // (undocumented)
+  buildRunFailureMessage?: string;
+  // (undocumented)
+  buildRunName?: string;
+  // (undocumented)
+  buildRunOutputDigest?: string;
+  // (undocumented)
+  buildRunOutputImage?: string;
+  // (undocumented)
+  buildRunPhase?: string;
+  // (undocumented)
+  buildRunStartTime?: string;
+  // (undocumented)
+  contextDir: string;
+  // (undocumented)
+  gitRevision: string;
+  // (undocumented)
+  gitUrl: string;
+  // (undocumented)
+  hasBuildRun: boolean;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  outputImage: string;
+  // (undocumented)
+  strategy: string;
+  // (undocumented)
+  toolConfig?: KagentiResourceConfigFromBuild;
+}
+
+// @public (undocumented)
+export interface KagentiBuildListItem {
+  // (undocumented)
+  contextDir?: string;
+  // (undocumented)
+  creationTimestamp?: string;
+  // (undocumented)
+  gitRevision?: string;
+  // (undocumented)
+  gitUrl?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  outputImage?: string;
+  // (undocumented)
+  registered: boolean;
+  // (undocumented)
+  resourceType?: string;
+  // (undocumented)
+  strategy?: string;
+}
+
+// @public (undocumented)
+export interface KagentiBuildStrategy {
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  name: string;
+}
+
+// @public (undocumented)
+export interface KagentiConfigMapKeyRef {
+  // (undocumented)
+  key: string;
+  // (undocumented)
+  name: string;
+}
+
+// @public (undocumented)
+export interface KagentiCreateAgentRequest {
+  // (undocumented)
+  authBridgeEnabled?: boolean;
+  // (undocumented)
+  containerImage?: string;
+  // (undocumented)
+  createHttpRoute?: boolean;
+  // (undocumented)
+  deploymentMethod?: 'source' | 'image';
+  // (undocumented)
+  envVars?: KagentiEnvVar[];
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  gitBranch?: string;
+  // (undocumented)
+  gitPath?: string;
+  // (undocumented)
+  gitUrl?: string;
+  // (undocumented)
+  imagePullSecret?: string;
+  // (undocumented)
+  imageTag?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  registrySecret?: string;
+  // (undocumented)
+  registryUrl?: string;
+  // (undocumented)
+  servicePorts?: KagentiServicePort[];
+  // (undocumented)
+  shipwrightConfig?: KagentiShipwrightConfig;
+  // (undocumented)
+  spireEnabled?: boolean;
+  // (undocumented)
+  startCommand?: string;
+  // (undocumented)
+  workloadType?: 'deployment' | 'statefulset' | 'job';
+}
+
+// @public (undocumented)
+export interface KagentiCreateAgentResponse {
+  // (undocumented)
+  message: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  success: boolean;
+}
+
+// @public (undocumented)
+export interface KagentiCreateIntegrationRequest {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public (undocumented)
+export interface KagentiCreateKeyRequest {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  agentName: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public (undocumented)
+export interface KagentiCreateTeamRequest {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public (undocumented)
+export interface KagentiCreateToolRequest {
+  // (undocumented)
+  authBridgeEnabled?: boolean;
+  // (undocumented)
+  containerImage?: string;
+  // (undocumented)
+  contextDir?: string;
+  // (undocumented)
+  createHttpRoute?: boolean;
+  // (undocumented)
+  deploymentMethod?: 'image' | 'source';
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  envVars?: KagentiEnvVar[];
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  gitRevision?: string;
+  // (undocumented)
+  gitUrl?: string;
+  // (undocumented)
+  imagePullSecret?: string;
+  // (undocumented)
+  imageTag?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  persistentStorage?: KagentiPersistentStorageConfig;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  registrySecret?: string;
+  // (undocumented)
+  registryUrl?: string;
+  // (undocumented)
+  servicePorts?: KagentiServicePort[];
+  // (undocumented)
+  shipwrightConfig?: KagentiShipwrightConfig;
+  // (undocumented)
+  spireEnabled?: boolean;
+  // (undocumented)
+  workloadType?: 'deployment' | 'statefulset';
+}
+
+// @public (undocumented)
+export interface KagentiCreateToolResponse {
+  // (undocumented)
+  message: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  success: boolean;
+}
+
+// @public (undocumented)
+export interface KagentiDashboardConfig {
+  // (undocumented)
+  domainName?: string;
+  // (undocumented)
+  keycloakConsole?: string;
+  // (undocumented)
+  mcpInspector?: string;
+  // (undocumented)
+  mcpProxy?: string;
+  // (undocumented)
+  network?: string;
+  // (undocumented)
+  traces?: string;
+}
+
+// @public (undocumented)
+export interface KagentiEnvVar {
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  value?: string;
+  // (undocumented)
+  valueFrom?: KagentiEnvVarSource;
+}
+
+// @public (undocumented)
+export interface KagentiEnvVarSource {
+  // (undocumented)
+  configMapKeyRef?: KagentiConfigMapKeyRef;
+  // (undocumented)
+  secretKeyRef?: KagentiSecretKeyRef;
+}
+
+// @public (undocumented)
+export interface KagentiFeatureFlags {
+  // (undocumented)
+  integrations: boolean;
+  // (undocumented)
+  sandbox: boolean;
+  // (undocumented)
+  triggers: boolean;
+}
+
+// @public (undocumented)
+export interface KagentiFinalizeAgentBuildRequest {
+  // (undocumented)
+  authBridgeEnabled?: boolean;
+  // (undocumented)
+  createHttpRoute?: boolean;
+  // (undocumented)
+  envVars?: KagentiEnvVar[];
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  imagePullSecret?: string;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  servicePorts?: KagentiServicePort[];
+}
+
+// @public (undocumented)
+export interface KagentiFinalizeToolBuildRequest {
+  // (undocumented)
+  authBridgeEnabled?: boolean;
+  // (undocumented)
+  createHttpRoute?: boolean;
+  // (undocumented)
+  envVars?: KagentiEnvVar[];
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  imagePullSecret?: string;
+  // (undocumented)
+  persistentStorage?: KagentiPersistentStorageConfig;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  servicePorts?: KagentiServicePort[];
+  // (undocumented)
+  spireEnabled?: boolean;
+  // (undocumented)
+  workloadType?: string;
+}
+
+// @public (undocumented)
+export interface KagentiIntegration {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  conditions?: Array<{
+    type: string;
+    status: string;
+    message?: string;
+  }>;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+}
+
+// @public (undocumented)
+export interface KagentiLlmKey {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  agent?: string;
+  // (undocumented)
+  alias?: string;
+  // (undocumented)
+  namespace?: string;
+}
+
+// @public (undocumented)
+export interface KagentiLlmTeam {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  teamId: string;
+}
+
+// @public (undocumented)
+export interface KagentiMcpInvokeResponse {
+  // (undocumented)
+  result: unknown;
+}
+
+// @public (undocumented)
+export interface KagentiMcpToolSchema {
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  input_schema?: Record<string, unknown>;
+  // (undocumented)
+  name: string;
+}
+
+// @public (undocumented)
+export interface KagentiMigratableAgent {
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  has_deployment: boolean;
+  // (undocumented)
+  labels: KagentiResourceLabels;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  status: string;
+}
+
+// @public (undocumented)
+export interface KagentiMigrateAgentResponse {
+  // (undocumented)
+  agent_crd_deleted: boolean;
+  // (undocumented)
+  deployment_created: boolean;
+  // (undocumented)
+  message: string;
+  // (undocumented)
+  migrated: boolean;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  service_created: boolean;
+  // (undocumented)
+  success: boolean;
+}
+
+// @public (undocumented)
+export interface KagentiMigrateAllResponse {
+  // (undocumented)
+  delete_old: boolean;
+  // (undocumented)
+  dry_run: boolean;
+  // (undocumented)
+  failed: unknown[];
+  // (undocumented)
+  migrated: unknown[];
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  skipped: unknown[];
+  // (undocumented)
+  total: number;
+}
+
+// @public (undocumented)
+export interface KagentiPersistentStorageConfig {
+  // (undocumented)
+  enabled: boolean;
+  // (undocumented)
+  size: string;
+}
+
+// @public (undocumented)
+export interface KagentiResourceConfigFromBuild {
+  // (undocumented)
+  createHttpRoute?: boolean;
+  // (undocumented)
+  envVars?: KagentiEnvVar[];
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  registrySecret?: string;
+  // (undocumented)
+  servicePorts?: KagentiServicePort[];
+}
+
+// @public (undocumented)
+export interface KagentiResourceLabels {
+  // (undocumented)
+  framework?: string;
+  // (undocumented)
+  protocol?: string | string[];
+  // (undocumented)
+  type?: string;
+}
+
+// @public (undocumented)
+export interface KagentiRouteStatus {
+  [key: string]: unknown;
+  // (undocumented)
+  hasRoute: boolean;
+  url?: string;
+}
+
+// @public (undocumented)
+export interface KagentiSandboxAgentInfo {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  sessionCount?: number;
+}
+
+// @public (undocumented)
+export interface KagentiSandboxCreateRequest {
+  // (undocumented)
+  [key: string]: unknown;
+}
+
+// @public (undocumented)
+export interface KagentiSandboxSession {
+  // (undocumented)
+  agentName?: string;
+  // (undocumented)
+  contextId: string;
+  // (undocumented)
+  createdAt?: string;
+  // (undocumented)
+  status: string;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  updatedAt?: string;
+  // (undocumented)
+  visibility?: 'private' | 'namespace';
+}
+
+// @public (undocumented)
+export interface KagentiSecretKeyRef {
+  // (undocumented)
+  key: string;
+  // (undocumented)
+  name: string;
+}
+
+// @public (undocumented)
+export interface KagentiServicePort {
+  // (undocumented)
+  name?: string;
+  // (undocumented)
+  port: number;
+  // (undocumented)
+  protocol?: string;
+  // (undocumented)
+  targetPort?: number;
+}
+
+// @public (undocumented)
+export interface KagentiSessionTokenUsage {
+  // (undocumented)
+  contextId: string;
+  // (undocumented)
+  models?: Array<{
+    model: string;
+    tokens: number;
+    cost?: number;
+  }>;
+  // (undocumented)
+  totalCost?: number;
+  // (undocumented)
+  totalTokens?: number;
+}
+
+// @public (undocumented)
+export interface KagentiShipwrightConfig {
+  // (undocumented)
+  buildArgs?: string[];
+  // (undocumented)
+  buildStrategy?: string;
+  // (undocumented)
+  buildTimeout?: string;
+  // (undocumented)
+  dockerfile?: string;
+}
+
+// @public (undocumented)
+export interface KagentiSidecar {
+  // (undocumented)
+  config?: Record<string, unknown>;
+  // (undocumented)
+  enabled: boolean;
+  // (undocumented)
+  sidecarType: string;
+}
+
+// @public (undocumented)
+export interface KagentiToolDetail {
+  // (undocumented)
+  metadata: Record<string, unknown>;
+  // (undocumented)
+  service?: Record<string, unknown>;
+  // (undocumented)
+  spec: Record<string, unknown>;
+  // (undocumented)
+  status: Record<string, unknown>;
+  // (undocumented)
+  workloadType?: string;
+}
+
+// @public (undocumented)
+export interface KagentiToolSummary {
+  // (undocumented)
+  createdAt?: string;
+  // (undocumented)
+  description: string;
+  // (undocumented)
+  labels: KagentiResourceLabels;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  status: string;
+  // (undocumented)
+  workloadType?: string;
+}
+
+// @public (undocumented)
+export interface KagentiTriggerBuildRunResponse {
+  // (undocumented)
+  buildName: string;
+  // (undocumented)
+  buildRunName: string;
+  // (undocumented)
+  message?: string;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  success: boolean;
+}
+
+// @public (undocumented)
+export interface KagentiTriggerRequest {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  namespace: string;
+  // (undocumented)
+  schedule?: string;
+  // (undocumented)
+  skill?: string;
+  // (undocumented)
+  ttl_hours?: number;
+  // (undocumented)
+  type: 'cron' | 'webhook' | 'alert';
+}
+
+// @public
+export const LEGACY_STAGE_MAP: Record<string, AgentLifecycleStage>;
+
+// @public
+export const LIFECYCLE_STAGE_ORDER: readonly AgentLifecycleStage[];
+
+// @public
+export const LIFECYCLE_TRANSITIONS: readonly AgentLifecycleTransition[];
+
+// @public
+export interface LogicNodeData {
+  // (undocumented)
+  cases?: Array<{
+    label: string;
+    condition: string;
+  }>;
+  // (undocumented)
+  condition: string;
+  // (undocumented)
+  kind: LogicNodeKind;
+  // (undocumented)
+  maxIterations?: number;
+}
+
+// @public
+export type LogicNodeKind = 'if_else' | 'while_loop' | 'switch';
+
+// @public
+export interface McpNodeData {
+  // (undocumented)
+  allowedTools?: string[];
+  // (undocumented)
+  headers?: Record<string, string>;
+  // (undocumented)
+  requireApproval?: 'always' | 'never' | 'auto';
+  // (undocumented)
+  serverLabel: string;
+  // (undocumented)
+  serverUrl: string;
+}
 
 // @public (undocumented)
 export interface MCPServerStatus {
@@ -268,6 +1438,43 @@ export interface MCPToolInfo {
 }
 
 // @public
+export interface NodeExecutionRecord {
+  // (undocumented)
+  completedAt?: string;
+  // (undocumented)
+  durationMs?: number;
+  // (undocumented)
+  error?: string;
+  // (undocumented)
+  input?: unknown;
+  // (undocumented)
+  nodeId: string;
+  // (undocumented)
+  nodeName: string;
+  // (undocumented)
+  nodeType: WorkflowNodeType;
+  // (undocumented)
+  output?: unknown;
+  // (undocumented)
+  startedAt: string;
+  // (undocumented)
+  status: 'running' | 'completed' | 'failed' | 'skipped';
+  // (undocumented)
+  tokenUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+}
+
+// @public
+export interface NodePosition {
+  // (undocumented)
+  x: number;
+  // (undocumented)
+  y: number;
+}
+
+// @public
 export type NormalizedStreamEvent =
   | StreamStartedEvent
   | StreamTextDeltaEvent
@@ -283,8 +1490,23 @@ export type NormalizedStreamEvent =
   | StreamBackendToolExecutingEvent
   | StreamRagResultsEvent
   | StreamAgentHandoffEvent
+  | StreamFormRequestEvent
+  | StreamAuthRequiredEvent
+  | StreamArtifactEvent
+  | StreamCitationEvent
   | StreamCompletedEvent
   | StreamErrorEvent;
+
+// @public
+export function normalizeLifecycleStage(
+  stage: string | undefined,
+): AgentLifecycleStage;
+
+// @public
+export interface NoteNodeData {
+  // (undocumented)
+  text: string;
+}
 
 // @public
 export interface OutputTokensDetails {
@@ -323,6 +1545,7 @@ export interface PromptCapabilities {
 
 // @public
 export interface PromptCard {
+  agentId?: string;
   comingSoon?: boolean;
   comingSoonLabel?: string;
   description?: string;
@@ -346,6 +1569,7 @@ export interface PromptGroup {
 export const PROVIDER_SCOPED_KEYS: readonly [
   'model',
   'baseUrl',
+  'kagentiBaseUrl',
   'toolChoice',
   'enableWebSearch',
   'enableCodeInterpreter',
@@ -367,18 +1591,25 @@ export const PROVIDER_SCOPED_KEYS: readonly [
 
 // @public
 export interface ProviderCapabilities {
+  readonly agentLifecycle: boolean;
   // (undocumented)
   readonly chat: boolean;
+  readonly contextHydration: boolean;
   // (undocumented)
   readonly conversations: boolean;
+  readonly devSpaces: boolean;
   // (undocumented)
   readonly evaluation: boolean;
   // (undocumented)
   readonly mcpTools: boolean;
+  readonly providerRoutes: boolean;
   // (undocumented)
   readonly rag: boolean;
   // (undocumented)
   readonly safety: boolean;
+  readonly toolLifecycle: boolean;
+  // (undocumented)
+  readonly tools: boolean;
 }
 
 // @public
@@ -389,6 +1620,7 @@ export interface ProviderConfigField {
   readonly options?: readonly string[];
   readonly placeholder?: string;
   readonly required: boolean;
+  readonly sensitive?: boolean;
   readonly type: 'string' | 'boolean' | 'number' | 'select';
 }
 
@@ -521,14 +1753,63 @@ export function scopedConfigKey(provider: ProviderType, key: string): string;
 export type SecurityMode = 'none' | 'plugin-only' | 'full';
 
 // @public
+export interface SetStateNodeData {
+  // (undocumented)
+  assignments: Record<string, string>;
+}
+
+// @public
+export interface StartNodeData {
+  // (undocumented)
+  inputDescription?: string;
+  // (undocumented)
+  inputSchema?: Record<string, unknown>;
+}
+
+// @public
 export interface StreamAgentHandoffEvent {
   // (undocumented)
-  fromAgent: string;
+  fromAgent?: string;
   reason?: string;
   // (undocumented)
   toAgent: string;
   // (undocumented)
   type: 'stream.agent.handoff';
+}
+
+// @public
+export interface StreamArtifactEvent {
+  // (undocumented)
+  append?: boolean;
+  // (undocumented)
+  artifactId: string;
+  // (undocumented)
+  content: string;
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  lastChunk?: boolean;
+  // (undocumented)
+  name?: string;
+  // (undocumented)
+  type: 'stream.artifact';
+}
+
+// @public
+export interface StreamAuthRequiredEvent {
+  // (undocumented)
+  authType: 'oauth' | 'secret';
+  // (undocumented)
+  demands?: {
+    secrets?: StreamSecretDemand[];
+    [key: string]: unknown;
+  };
+  // (undocumented)
+  taskId?: string;
+  // (undocumented)
+  type: 'stream.auth.required';
+  // (undocumented)
+  url?: string;
 }
 
 // @public
@@ -539,6 +1820,26 @@ export interface StreamBackendToolExecutingEvent {
   tools: string[];
   // (undocumented)
   type: 'stream.backend_tool.executing';
+}
+
+// @public
+export interface StreamCitationEvent {
+  // (undocumented)
+  citations: StreamCitationReference[];
+  // (undocumented)
+  type: 'stream.citation';
+}
+
+// @public
+export interface StreamCitationReference {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  snippet?: string;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  url?: string;
 }
 
 // @public
@@ -558,9 +1859,60 @@ export interface StreamErrorEvent {
   // (undocumented)
   code?: string;
   // (undocumented)
+  context?: Record<string, unknown>;
+  // (undocumented)
   error: string;
   // (undocumented)
+  title?: string;
+  // (undocumented)
   type: 'stream.error';
+}
+
+// @public
+export interface StreamFormDescriptor {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  fields?: StreamFormField[];
+  // (undocumented)
+  title?: string;
+}
+
+// @public
+export interface StreamFormField {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  defaultValue?: unknown;
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  label?: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  options?: Array<{
+    label: string;
+    value: string;
+  }>;
+  // (undocumented)
+  required?: boolean;
+  // (undocumented)
+  type?: string;
+}
+
+// @public
+export interface StreamFormRequestEvent {
+  // (undocumented)
+  contextId?: string;
+  // (undocumented)
+  form: StreamFormDescriptor;
+  // (undocumented)
+  taskId?: string;
+  // (undocumented)
+  type: 'stream.form.request';
 }
 
 // @public
@@ -596,6 +1948,16 @@ export interface StreamReasoningDoneEvent {
   text: string;
   // (undocumented)
   type: 'stream.reasoning.done';
+}
+
+// @public
+export interface StreamSecretDemand {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  description?: string;
+  // (undocumented)
+  name: string;
 }
 
 // @public
@@ -721,6 +2083,31 @@ export interface SyncResult {
 }
 
 // @public
+export interface TestCaseResult {
+  // (undocumented)
+  actualAgent?: string;
+  // (undocumented)
+  actualOutput: string;
+  // (undocumented)
+  criterionResults: Array<{
+    criterionId: string;
+    passed: boolean;
+    score: number;
+    details?: string;
+  }>;
+  // (undocumented)
+  durationMs: number;
+  // (undocumented)
+  passed: boolean;
+  // (undocumented)
+  score: number;
+  // (undocumented)
+  testCaseId: string;
+  // (undocumented)
+  trace: WorkflowRunTrace;
+}
+
+// @public
 export interface ToolCallInfo {
   // (undocumented)
   arguments: string;
@@ -747,6 +2134,40 @@ export interface ToolCapabilityInfo {
 }
 
 // @public
+export interface ToolNodeData {
+  // (undocumented)
+  functionDef?: AgentFunctionDef;
+  // (undocumented)
+  kind: ToolNodeKind;
+  // (undocumented)
+  label: string;
+  // (undocumented)
+  mcpServerId?: string;
+  // (undocumented)
+  mcpToolFilter?: string[];
+  // (undocumented)
+  requireApproval?: boolean;
+  // (undocumented)
+  vectorStoreIds?: string[];
+}
+
+// @public
+export type ToolNodeKind =
+  | 'mcp_server'
+  | 'file_search'
+  | 'web_search'
+  | 'code_interpreter'
+  | 'custom_function';
+
+// @public
+export interface TransformNodeData {
+  // (undocumented)
+  expression: string;
+  // (undocumented)
+  outputVariable?: string;
+}
+
+// @public
 export interface UploadResult {
   // (undocumented)
   fileId: string;
@@ -754,6 +2175,36 @@ export interface UploadResult {
   fileName: string;
   // (undocumented)
   status: string;
+}
+
+// @public
+export interface UserInteractionField {
+  // (undocumented)
+  defaultValue?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  label: string;
+  // (undocumented)
+  options?: string[];
+  // (undocumented)
+  required?: boolean;
+  // (undocumented)
+  type: 'text' | 'select' | 'boolean' | 'number';
+}
+
+// @public
+export interface UserInteractionNodeData {
+  // (undocumented)
+  defaultAction?: 'approve' | 'reject' | 'skip';
+  // (undocumented)
+  formFields?: UserInteractionField[];
+  // (undocumented)
+  interactionType: 'approval_gate' | 'form_input' | 'confirmation';
+  // (undocumented)
+  prompt: string;
+  // (undocumented)
+  timeoutSeconds?: number;
 }
 
 // @public
@@ -801,13 +2252,31 @@ export interface VectorStoreInfo {
   // (undocumented)
   createdAt: number;
   // (undocumented)
+  embeddingDimension?: number;
+  // (undocumented)
+  embeddingModel?: string;
+  // (undocumented)
   fileCount: number;
+  // (undocumented)
+  fileCounts?: {
+    completed: number;
+    inProgress: number;
+    failed: number;
+    cancelled: number;
+    total: number;
+  };
   // (undocumented)
   id: string;
   // (undocumented)
+  lastActiveAt?: number;
+  // (undocumented)
   name: string;
   // (undocumented)
+  providerType?: string;
+  // (undocumented)
   status: string;
+  // (undocumented)
+  usageBytes?: number;
 }
 
 // @public
@@ -850,11 +2319,245 @@ export interface Workflow {
   steps: WorkflowStep[];
 }
 
+// Warning: (ae-missing-release-tag) "WORKFLOW_TEMPLATES" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const WORKFLOW_TEMPLATES: WorkflowDefinition[];
+
+// @public
+export interface WorkflowDefinition {
+  // (undocumented)
+  createdAt: string;
+  // (undocumented)
+  createdBy?: string;
+  // (undocumented)
+  description: string;
+  // (undocumented)
+  edges: WorkflowEdge[];
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  nodes: WorkflowNode[];
+  // (undocumented)
+  settings: WorkflowSettings;
+  // (undocumented)
+  status: WorkflowStatus;
+  // (undocumented)
+  tags?: string[];
+  // (undocumented)
+  updatedAt: string;
+  // (undocumented)
+  updatedBy?: string;
+  // (undocumented)
+  version: number;
+}
+
+// @public
+export interface WorkflowEdge {
+  // (undocumented)
+  condition?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  label?: string;
+  // (undocumented)
+  source: string;
+  // (undocumented)
+  sourceHandle?: string;
+  // (undocumented)
+  target: string;
+  // (undocumented)
+  targetHandle?: string;
+  // (undocumented)
+  type?: WorkflowEdgeType;
+}
+
+// @public
+export type WorkflowEdgeType =
+  | 'handoff'
+  | 'tool_binding'
+  | 'guardrail_binding'
+  | 'sequence'
+  | 'conditional';
+
+// @public
+export interface WorkflowEvaluationResult {
+  // (undocumented)
+  evaluationId: string;
+  // (undocumented)
+  overallScore: number;
+  // (undocumented)
+  passRate: number;
+  // (undocumented)
+  ranAt: string;
+  // (undocumented)
+  ranBy?: string;
+  // (undocumented)
+  testCaseResults: TestCaseResult[];
+  // (undocumented)
+  totalDurationMs: number;
+  // (undocumented)
+  workflowId: string;
+  // (undocumented)
+  workflowVersion: number;
+}
+
+// @public
+export interface WorkflowNode {
+  // (undocumented)
+  data: WorkflowNodeData;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  label?: string;
+  // (undocumented)
+  position: NodePosition;
+  // (undocumented)
+  type: WorkflowNodeType;
+}
+
+// @public
+export type WorkflowNodeData =
+  | StartNodeData
+  | AgentNodeData
+  | ToolNodeData
+  | GuardrailNodeData
+  | LogicNodeData
+  | UserInteractionNodeData
+  | ClassifyNodeData
+  | EndNodeData
+  | NoteNodeData
+  | TransformNodeData
+  | SetStateNodeData
+  | FileSearchNodeData
+  | McpNodeData;
+
+// @public
+export type WorkflowNodeType =
+  | 'start'
+  | 'agent'
+  | 'tool'
+  | 'guardrail'
+  | 'logic'
+  | 'user_interaction'
+  | 'classify'
+  | 'end'
+  | 'note'
+  | 'transform'
+  | 'set_state'
+  | 'file_search'
+  | 'mcp';
+
+// @public
+export type WorkflowRunStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'interrupted'
+  | 'cancelled';
+
+// @public
+export interface WorkflowRunTrace {
+  // (undocumented)
+  completedAt?: string;
+  // (undocumented)
+  error?: string;
+  // (undocumented)
+  nodeExecutions: NodeExecutionRecord[];
+  // (undocumented)
+  runId: string;
+  // (undocumented)
+  startedAt: string;
+  // (undocumented)
+  status: WorkflowRunStatus;
+  // (undocumented)
+  totalDurationMs?: number;
+  // (undocumented)
+  totalTokenUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+  // (undocumented)
+  workflowId: string;
+  // (undocumented)
+  workflowVersion: number;
+}
+
+// @public
+export interface WorkflowSettings {
+  // (undocumented)
+  conversationPersistence?: boolean;
+  // (undocumented)
+  defaultModel?: string;
+  // (undocumented)
+  globalGuardrails?: string[];
+  // (undocumented)
+  maxTurns?: number;
+  // (undocumented)
+  timeoutSeconds?: number;
+  // (undocumented)
+  tracingEnabled?: boolean;
+}
+
+// @public
+export type WorkflowStatus = 'draft' | 'published' | 'archived';
+
 // @public
 export interface WorkflowStep {
   description?: string;
   prompt: string;
   title: string;
+}
+
+// @public
+export interface WorkflowTestCase {
+  // (undocumented)
+  criteria?: EvaluationCriterion[];
+  // (undocumented)
+  expectedAgent?: string;
+  // (undocumented)
+  expectedOutput?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  input: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  tags?: string[];
+}
+
+// @public
+export interface WorkflowTestSuite {
+  // (undocumented)
+  createdAt: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  testCases: WorkflowTestCase[];
+  // (undocumented)
+  updatedAt: string;
+  // (undocumented)
+  workflowId: string;
+}
+
+// @public
+export interface WorkflowVersion {
+  // (undocumented)
+  changelog?: string;
+  // (undocumented)
+  definition: WorkflowDefinition;
+  // (undocumented)
+  publishedAt: string;
+  // (undocumented)
+  publishedBy: string;
+  // (undocumented)
+  version: number;
 }
 
 // (No @packageDocumentation comment for this package)

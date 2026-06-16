@@ -236,6 +236,52 @@ describe('mapSchemaToData', () => {
     expect(result).toEqual(expectedResult);
   });
 
+  it('should include conditionally hidden schema fields not present in form data when includeHiddenFields is true', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        inputs: {
+          type: 'object',
+          title: 'Step 1',
+          properties: {
+            field1: {
+              type: 'string',
+              title: 'Field 1',
+            },
+            conditionalDetail: {
+              type: 'string',
+              title: 'Field 3',
+              'ui:hidden': {
+                anyOf: [{ when: 'field1', isNot: 'show' }],
+              },
+            } as JSONSchema7,
+          },
+        },
+      },
+    };
+
+    const data = {
+      inputs: {
+        field1: 'hide',
+      },
+    };
+
+    expect(generateReviewTableData(schema, data)).toEqual({
+      'Step 1': {
+        'Field 1': 'hide',
+      },
+    });
+
+    expect(
+      generateReviewTableData(schema, data, { includeHiddenFields: true }),
+    ).toEqual({
+      'Step 1': {
+        'Field 1': 'hide',
+        'Field 3': undefined,
+      },
+    });
+  });
+
   it('should exclude nested hidden fields from review table', () => {
     const schema: JSONSchema7 = {
       type: 'object',
