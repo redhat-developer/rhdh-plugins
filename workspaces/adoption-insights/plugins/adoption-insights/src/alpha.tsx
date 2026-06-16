@@ -21,7 +21,6 @@ import {
   fetchApiRef,
   ApiBlueprint,
   PageBlueprint,
-  NavItemBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
@@ -33,18 +32,12 @@ const adoptionInsightsPage = PageBlueprint.make({
   params: {
     path: '/adoption-insights',
     routeRef: rootRouteRef,
+    title: 'Adoption Insights',
+    icon: <MUIAdoptionInsightsIcon />,
     loader: () =>
       import('./components/AdoptionInsightsPage').then(m => (
         <m.AdoptionInsightsPage />
       )),
-  },
-});
-
-const adoptionInsightsNavItem = NavItemBlueprint.make({
-  params: {
-    routeRef: rootRouteRef,
-    title: 'Adoption Insights',
-    icon: MUIAdoptionInsightsIcon,
   },
 });
 
@@ -72,11 +65,7 @@ const adoptionInsightsTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'adoption-insights',
-  extensions: [
-    adoptionInsightsPage,
-    adoptionInsightsNavItem,
-    adoptionInsightsApi,
-  ],
+  extensions: [adoptionInsightsPage, adoptionInsightsApi],
   routes: { root: rootRouteRef },
 });
 
