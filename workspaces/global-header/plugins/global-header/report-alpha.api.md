@@ -17,7 +17,7 @@ import type { ReactNode } from 'react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const appLauncherDevHubMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'app-launcher-devhub';
@@ -50,7 +50,7 @@ export const appLauncherDevHubMenuItemExtension: OverridableExtensionDefinition<
   params: MenuItemParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const appLauncherRhdhLocalMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'app-launcher-rhdh-local';
@@ -83,7 +83,7 @@ export const appLauncherRhdhLocalMenuItemExtension: OverridableExtensionDefiniti
   params: MenuItemParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const applicationLauncherDropdownExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'app-launcher-dropdown';
@@ -102,7 +102,7 @@ export const applicationLauncherDropdownExtension: OverridableExtensionDefinitio
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const companyLogoExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'company-logo';
@@ -121,7 +121,7 @@ export const companyLogoExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha
+// @public
 export const defaultMenuItemExtensions: (
   | OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -311,7 +311,7 @@ export const defaultMenuItemExtensions: (
     }>
 )[];
 
-// @alpha
+// @public
 export const defaultToolbarExtensions: (
   | OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -485,7 +485,7 @@ export const defaultToolbarExtensions: (
     }>
 )[];
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const dividerExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'divider';
@@ -504,7 +504,7 @@ export const dividerExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha
+// @public
 export const GlobalHeaderComponentBlueprint: ExtensionBlueprint<{
   kind: 'gh-component';
   params: ToolbarComponentParams;
@@ -529,7 +529,7 @@ export const GlobalHeaderComponentBlueprint: ExtensionBlueprint<{
   };
 }>;
 
-// @alpha
+// @public
 export interface GlobalHeaderComponentData {
   // (undocumented)
   component: ComponentType<any>;
@@ -538,19 +538,19 @@ export interface GlobalHeaderComponentData {
   priority?: number;
 }
 
-// @alpha
+// @public
 export const globalHeaderComponentDataRef: ConfigurableExtensionDataRef<
   GlobalHeaderComponentData,
   'global-header.component',
   {}
 >;
 
-// @alpha
+// @public
 export const GlobalHeaderDropdown: (
   input: GlobalHeaderDropdownProps,
 ) => JSX_2.Element | null;
 
-// @alpha
+// @public
 export interface GlobalHeaderDropdownProps {
   buttonContent: ReactNode;
   buttonProps?: ComponentProps<typeof Button>;
@@ -566,12 +566,12 @@ export const GlobalHeaderIconButton: (
   input: HeaderIconButtonProps,
 ) => JSX_2.Element;
 
-// @alpha
+// @public
 export const GlobalHeaderMenuItem: (
   input: GlobalHeaderMenuItemProps,
 ) => JSX_2.Element;
 
-// @alpha
+// @public
 export const GlobalHeaderMenuItemBlueprint: ExtensionBlueprint<{
   kind: 'gh-menu-item';
   params: MenuItemParams;
@@ -610,7 +610,7 @@ export const GlobalHeaderMenuItemBlueprint: ExtensionBlueprint<{
   };
 }>;
 
-// @alpha
+// @public
 export interface GlobalHeaderMenuItemData {
   component?: ComponentType<any>;
   icon?: string;
@@ -630,14 +630,14 @@ export interface GlobalHeaderMenuItemData {
   type?: 'component' | 'data';
 }
 
-// @alpha
+// @public
 export const globalHeaderMenuItemDataRef: ConfigurableExtensionDataRef<
   GlobalHeaderMenuItemData,
   'global-header.menu-item',
   {}
 >;
 
-// @alpha
+// @public
 export interface GlobalHeaderMenuItemProps {
   icon?: string;
   onClick?: () => void;
@@ -649,10 +649,10 @@ export interface GlobalHeaderMenuItemProps {
   tooltip?: string;
 }
 
-// @alpha
+// @public
 export const globalHeaderModule: FrontendModule;
 
-// @alpha
+// @public
 const globalHeaderPlugin: OverridableFrontendPlugin<
   {},
   {},
@@ -1061,7 +1061,7 @@ export const globalHeaderTranslationRef: TranslationRef<
 // @public
 export const globalHeaderTranslations: TranslationResource<'plugin.global-header'>;
 
-// @alpha
+// @public
 export const globalHeaderTranslationsModule: FrontendModule;
 
 // @public (undocumented)
@@ -1084,7 +1084,7 @@ export interface HeaderIconButtonProps {
   tooltip?: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const helpDropdownExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'help-dropdown';
@@ -1103,7 +1103,7 @@ export const helpDropdownExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const logoutMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'logout';
@@ -1136,7 +1136,7 @@ export const logoutMenuItemExtension: OverridableExtensionDefinition<{
   params: MenuItemParams;
 }>;
 
-// @alpha
+// @public
 export interface MenuItemParams {
   // (undocumented)
   component?: ComponentType<any>;
@@ -1163,7 +1163,7 @@ export interface MenuItemParams {
   titleKey?: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const myProfileMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'my-profile';
@@ -1196,7 +1196,7 @@ export const myProfileMenuItemExtension: OverridableExtensionDefinition<{
   params: MenuItemParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const notificationButtonExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'notification-button';
@@ -1215,7 +1215,7 @@ export const notificationButtonExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const profileDropdownExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'profile-dropdown';
@@ -1234,7 +1234,7 @@ export const profileDropdownExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const searchExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'search';
@@ -1253,7 +1253,7 @@ export const searchExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const selfServiceButtonExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'self-service-button';
@@ -1272,7 +1272,7 @@ export const selfServiceButtonExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const settingsMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'settings';
@@ -1305,7 +1305,7 @@ export const settingsMenuItemExtension: OverridableExtensionDefinition<{
   params: MenuItemParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const spacerExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'spacer';
@@ -1324,7 +1324,7 @@ export const spacerExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const starredDropdownExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
   name: 'starred-dropdown';
@@ -1343,7 +1343,7 @@ export const starredDropdownExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const supportButtonMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
   name: 'support-button';
@@ -1376,7 +1376,7 @@ export const supportButtonMenuItemExtension: OverridableExtensionDefinition<{
   params: MenuItemParams;
 }>;
 
-// @alpha
+// @public
 export interface ToolbarComponentParams {
   // (undocumented)
   component?: ComponentType<any>;
@@ -1397,13 +1397,11 @@ export interface ToolbarComponentParams {
   tooltip?: string;
 }
 
-// @alpha
+// @public
 export function useGlobalHeaderComponents(): GlobalHeaderComponentData[];
 
-// @alpha
+// @public
 export function useGlobalHeaderMenuItems(
   target: string,
 ): GlobalHeaderMenuItemData[];
-
-// (No @packageDocumentation comment for this package)
 ```

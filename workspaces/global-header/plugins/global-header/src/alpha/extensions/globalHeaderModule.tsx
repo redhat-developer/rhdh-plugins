@@ -119,7 +119,7 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
  * marked `internal: true`, restricting attachments to extensions from the
  * `app` plugin.
  *
- * @alpha
+ * @public
  */
 export const globalHeaderModule = createFrontendModule({
   pluginId: 'app',

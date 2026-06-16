@@ -23,7 +23,7 @@ import { MenuItemLink } from '../../components/MenuItemLink/MenuItemLink';
 /**
  * Props for {@link GlobalHeaderMenuItem}.
  *
- * @alpha
+ * @public
  */
 export interface GlobalHeaderMenuItemProps {
   /** Navigation URL. When absent the item renders as a plain action button. */
@@ -64,7 +64,7 @@ export interface GlobalHeaderMenuItemProps {
  * );
  * ```
  *
- * @alpha
+ * @public
  */
 export const GlobalHeaderMenuItem = ({
   to,
