@@ -182,12 +182,12 @@ describe('AggregatedMetricMapper', () => {
       });
     });
 
-    it('should wrap a average-shaped result and aggregationType from config', () => {
+    it('should wrap a weightedStatusScore-shaped result and aggregationType from config', () => {
       const aggregationConfig: AggregationConfig = {
         id: 'avg.kpi',
-        type: aggregationTypes.average,
-        title: 'Avg KPI',
-        description: 'Average KPI',
+        type: aggregationTypes.weightedStatusScore,
+        title: 'Weighted Status Score KPI',
+        description: 'Weighted status score KPI',
         metricId: 'test.metric',
       } as AggregationConfig;
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
@@ -201,16 +201,18 @@ describe('AggregatedMetricMapper', () => {
             { name: 'error', count: 2, score: 0 },
           ],
           thresholds,
-          averageScore: 50,
-          averageWeightedSum: 500,
-          averageMaxPossible: 1000,
+          weightedStatusScore: 50,
+          weightedStatusSum: 500,
+          weightedStatusMaxPossible: 1000,
           aggregationChartDisplayColor: 'warning.main',
         } as any,
         aggregationConfig,
       );
 
-      expect(result.metadata.aggregationType).toBe(aggregationTypes.average);
-      expect((result.result as any).averageScore).toBe(50);
+      expect(result.metadata.aggregationType).toBe(
+        aggregationTypes.weightedStatusScore,
+      );
+      expect((result.result as any).weightedStatusScore).toBe(50);
     });
   });
 });
