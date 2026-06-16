@@ -20,10 +20,6 @@ import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetr
 import { CLEANUP_EXPIRED_METRICS_ID } from '../constants';
 import { daysToMilliseconds } from './utils';
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'test-uuid-1234'),
-}));
-
 jest.mock('./utils', () => ({
   daysToMilliseconds: jest.fn((days: number) => days * 24 * 60 * 60 * 1000),
 }));
