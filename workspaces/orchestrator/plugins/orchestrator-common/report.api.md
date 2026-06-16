@@ -2054,8 +2054,8 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:335:1 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
 // src/generated/client/api.d.ts:502:1 - (ae-undocumented) Missing documentation for "ProcessInstanceStatusDTO".
 // src/generated/client/api.d.ts:594:1 - (ae-undocumented) Missing documentation for "WorkflowFormatDTO".
-// src/generated/client/api.d.ts:892:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
-// src/generated/client/api.d.ts:898:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
+// src/generated/client/api.d.ts:855:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
+// src/generated/client/api.d.ts:861:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
 // src/generated/client/api.d.ts:932:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:933:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:933:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
