@@ -20,6 +20,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import CheckIcon from '@material-ui/icons/Check';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   copyButton: {
@@ -42,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 /** Icon button that copies text to the clipboard and shows a brief checkmark. */
 export function CopyButton({ text }: Readonly<{ text: string }>) {
   const classes = useStyles();
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
 
@@ -58,9 +60,9 @@ export function CopyButton({ text }: Readonly<{ text: string }>) {
       });
   };
 
-  let tooltipTitle = 'Copy';
-  if (copied) tooltipTitle = 'Copied!';
-  else if (copyFailed) tooltipTitle = 'Copy failed';
+  let tooltipTitle = t('copyButton.copy');
+  if (copied) tooltipTitle = t('copyButton.copied');
+  else if (copyFailed) tooltipTitle = t('copyButton.failed');
 
   let icon = <FileCopyOutlinedIcon className={classes.copyIcon} />;
   if (copied) icon = <CheckIcon className={classes.copiedIcon} />;
@@ -72,7 +74,7 @@ export function CopyButton({ text }: Readonly<{ text: string }>) {
       <IconButton
         size="small"
         onClick={handleCopy}
-        aria-label="Copy to clipboard"
+        aria-label={t('copyButton.ariaLabel')}
         className={classes.copyButton}
       >
         {icon}

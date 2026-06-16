@@ -57,6 +57,10 @@ ignore:
   - "**/playwright.config.ts"
   - "**/scripts/**"
   - "**/docs/**"
+  - "workspaces/*/packages/app/**"
+  - "workspaces/*/packages/app-legacy/**"
+  - "workspaces/*/packages/backend/**"
+  - "workspaces/plugins/*-test/**"
 
 flag_management:
   default_rules:

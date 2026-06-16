@@ -47,6 +47,7 @@ import {
   validateUserValues,
 } from '../instanceFormTypes';
 import type { UserValueRow } from '../instanceFormTypes';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 type ScalarFields = Omit<InstanceForm, 'user_values'>;
 type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
@@ -76,10 +77,11 @@ export function InstanceFormFields({
   setTouched,
 }: InstanceFormFieldsProps) {
   const classes = useStyles();
-  const errors = useMemo(() => validateInstanceForm(form), [form]);
+  const { t } = useTranslation();
+  const errors = useMemo(() => validateInstanceForm(form, t), [form, t]);
   const userValueErrors = useMemo(
-    () => validateUserValues(form.user_values),
-    [form.user_values],
+    () => validateUserValues(form.user_values, t),
+    [form.user_values, t],
   );
   const [userValuesTouched, setUserValuesTouched] = useState<
     Record<number, boolean>
@@ -110,11 +112,11 @@ export function InstanceFormFields({
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
       <TextField
-        label="Display name *"
+        label={t('instances.form.displayNameLabel')}
         helperText={
           touched.display_name && errors.display_name
             ? errors.display_name
-            : 'Human-readable name for this provisioned instance (max 63 characters)'
+            : t('instances.form.displayNameHelper')
         }
         error={Boolean(touched.display_name && errors.display_name)}
         value={form.display_name}
@@ -134,15 +136,20 @@ export function InstanceFormFields({
         fullWidth
         error={Boolean(touched.catalog_item_id && errors.catalog_item_id)}
       >
-        <InputLabel shrink>Catalog item *</InputLabel>
+        <InputLabel shrink>{t('instances.form.catalogItemLabel')}</InputLabel>
         <Select
           value={form.catalog_item_id}
           onChange={e => handleCatalogItemChange(e.target.value as string)}
           displayEmpty
-          input={<OutlinedInput notched label="Catalog item *" />}
+          input={
+            <OutlinedInput
+              notched
+              label={t('instances.form.catalogItemLabel')}
+            />
+          }
         >
           <MenuItem value="">
-            <em>Select a catalog item…</em>
+            <em>{t('instances.form.catalogItemSelect')}</em>
           </MenuItem>
           {catalogItems.map(ci => (
             <MenuItem key={ci.uid} value={ci.uid ?? ''}>
@@ -164,18 +171,18 @@ export function InstanceFormFields({
             if (touched.catalog_item_id && errors.catalog_item_id)
               return errors.catalog_item_id;
             if (catalogItems.length === 0)
-              return 'No catalog items available — create one in the Catalog items tab';
-            return 'Choose the catalog item to provision an instance from';
+              return t('instances.form.catalogItemHelperNoItems');
+            return t('instances.form.catalogItemHelperDefault');
           })()}
         </FormHelperText>
       </FormControl>
 
       <TextField
-        label="API version *"
+        label={t('instances.form.apiVersionLabel')}
         helperText={
           touched.api_version && errors.api_version
             ? errors.api_version
-            : 'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1'
+            : t('instances.form.apiVersionHelper')
         }
         error={Boolean(touched.api_version && errors.api_version)}
         value={form.api_version}
@@ -193,13 +200,13 @@ export function InstanceFormFields({
         <>
           <Divider />
           <Typography variant="subtitle2">
-            Field values
+            {t('instances.form.fieldValuesSection')}
             <Typography
               variant="caption"
               color="textSecondary"
               className={classes.fieldValuesSectionHint}
             >
-              (editable fields defined by this catalog item)
+              {t('instances.form.fieldValuesSectionHint')}
             </Typography>
           </Typography>
           {form.user_values.map((row, i) => {
@@ -313,7 +320,7 @@ export function InstanceFormFields({
 
       {selectedItem && form.user_values.length === 0 && (
         <Typography variant="caption" color="textSecondary">
-          This catalog item has no editable fields.
+          {t('instances.form.noEditableFields')}
         </Typography>
       )}
     </Box>

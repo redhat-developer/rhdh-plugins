@@ -20,6 +20,11 @@ import type { Policy } from '@red-hat-developer-hub/backstage-plugin-dcm-common'
 import { policyManagerApiRef } from '../../apis';
 import { PoliciesTabContent } from './PoliciesTabContent';
 
+jest.mock('../../hooks/useTranslation', () => {
+  const mod = require('../../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 const MOCK_POLICY: Policy = {
   id: 'policy-1',
   display_name: 'Test Policy',
