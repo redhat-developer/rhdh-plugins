@@ -3,7 +3,6 @@
 #
 # Feature umbrella: RHDHPLAN-851
 # Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
-# Epic: RHIDP-13497 — Plugin Testing by Support Level
 #
 # Each workspace uploads coverage with its own flag (e.g., lightspeed,
 # orchestrator). individual_flags scope each flag to its workspace path
