@@ -65,13 +65,7 @@ ignore:
 flag_management:
   default_rules:
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 100%
-      - type: patch
-        target: auto
-        threshold: 100%
+    statuses: []
   individual_flags:
     - name: adoption-insights
       paths:
