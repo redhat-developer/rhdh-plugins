@@ -30,10 +30,6 @@ workspace/extensions:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/extensions/**']
 
-workspace/global-floating-action-button:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/global-floating-action-button/**']
-
 workspace/global-header:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/global-header/**']

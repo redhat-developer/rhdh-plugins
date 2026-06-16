@@ -110,9 +110,6 @@ flag_management:
     - name: extensions
       paths:
         - workspaces/extensions/
-    - name: global-floating-action-button
-      paths:
-        - workspaces/global-floating-action-button/
     - name: global-header
       paths:
         - workspaces/global-header/
