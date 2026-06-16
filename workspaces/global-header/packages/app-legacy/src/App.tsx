@@ -58,7 +58,7 @@ import { NotificationsPage } from '@backstage/plugin-notifications';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { globalHeaderTranslations } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import { globalHeaderTranslations } from '@red-hat-developer-hub/backstage-plugin-global-header/legacy';
 import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import Logout from '@mui/icons-material/LogoutOutlined';

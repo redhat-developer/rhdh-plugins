@@ -6,12 +6,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.ts",
+    "./legacy": "./src/legacy.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.ts"
+      ],
+      "legacy": [
+        "src/legacy.ts"
       ],
       "package.json": [
         "package.json"
@@ -102,5 +106,12 @@
     "dist",
     "config.d.ts"
   ],
-  "configSchema": "config.d.ts"
+  "configSchema": "config.d.ts",
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-global-header",
+    "exposedModules": {
+      "PluginRoot": "./src/legacy.ts",
+      "Alpha": "./src/index.ts"
+    }
+  }
 }
