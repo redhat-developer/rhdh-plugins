@@ -54,8 +54,7 @@ export const dcmMessages = {
     title: 'Delete {{resourceLabel}}',
     confirmButton: 'Delete',
     cancelButton: 'Cancel',
-    bodyBefore: 'Are you sure you want to delete ',
-    bodyAfter: '? This action cannot be undone.',
+    body: 'Are you sure you want to delete {{resourceName}}? This action cannot be undone.',
   },
   providers: {
     emptyTitle: 'No providers registered',

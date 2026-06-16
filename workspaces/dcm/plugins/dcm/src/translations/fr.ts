@@ -48,8 +48,8 @@ const dcmTranslationFr: TranslationMessages<
     'deleteDialog.title': 'Supprimer {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Supprimer',
     'deleteDialog.cancelButton': 'Annuler',
-    'deleteDialog.bodyBefore': '\u00cates-vous s\u00fbr de vouloir supprimer ',
-    'deleteDialog.bodyAfter': '\u00a0? Cette action est irr\u00e9versible.',
+    'deleteDialog.body':
+      '\u00cates-vous s\u00fbr de vouloir supprimer {{resourceName}}\u00a0? Cette action est irr\u00e9versible.',
     'providers.emptyTitle': 'Aucun fournisseur enregistr\u00e9',
     'providers.emptyDescription':
       'Enregistrez un fournisseur de services pour permettre \u00e0 DCM de provisionner des ressources sur une infrastructure externe (p.\u00a0ex. OpenShift, AWS).',

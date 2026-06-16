@@ -48,8 +48,8 @@ const dcmTranslationIt: TranslationMessages<
     'deleteDialog.title': 'Elimina {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Elimina',
     'deleteDialog.cancelButton': 'Annulla',
-    'deleteDialog.bodyBefore': 'Eliminare ',
-    'deleteDialog.bodyAfter': '? Questa azione non pu\u00f2 essere annullata.',
+    'deleteDialog.body':
+      'Eliminare {{resourceName}}? Questa azione non pu\u00f2 essere annullata.',
     'providers.emptyTitle': 'Nessun provider registrato',
     'providers.emptyDescription':
       'Registra un provider di servizi per consentire a DCM di effettuare il provisioning di risorse su infrastrutture esterne (p.\u00a0es. OpenShift, AWS).',

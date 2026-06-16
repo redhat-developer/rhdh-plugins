@@ -48,8 +48,8 @@ const dcmTranslationEs: TranslationMessages<
     'deleteDialog.title': 'Eliminar {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Eliminar',
     'deleteDialog.cancelButton': 'Cancelar',
-    'deleteDialog.bodyBefore': '\u00bfEst\u00e1 seguro de que desea eliminar ',
-    'deleteDialog.bodyAfter': '? Esta acci\u00f3n no se puede deshacer.',
+    'deleteDialog.body':
+      '\u00bfEst\u00e1 seguro de que desea eliminar {{resourceName}}? Esta acci\u00f3n no se puede deshacer.',
     'providers.emptyTitle': 'No hay proveedores registrados',
     'providers.emptyDescription':
       'Registre un proveedor de servicios para que DCM pueda aprovisionar recursos en infraestructura externa (p.\u00a0ej. OpenShift, AWS).',

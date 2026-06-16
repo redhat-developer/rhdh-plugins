@@ -48,9 +48,8 @@ const dcmTranslationDe: TranslationMessages<
     'deleteDialog.title': '{{resourceLabel}} l\u00f6schen',
     'deleteDialog.confirmButton': 'L\u00f6schen',
     'deleteDialog.cancelButton': 'Abbrechen',
-    'deleteDialog.bodyBefore': 'M\u00f6chten Sie ',
-    'deleteDialog.bodyAfter':
-      ' wirklich l\u00f6schen? Diese Aktion kann nicht r\u00fcckg\u00e4ngig gemacht werden.',
+    'deleteDialog.body':
+      'M\u00f6chten Sie {{resourceName}} wirklich l\u00f6schen? Diese Aktion kann nicht r\u00fcckg\u00e4ngig gemacht werden.',
     'providers.emptyTitle': 'Keine Anbieter registriert',
     'providers.emptyDescription':
       'Registrieren Sie einen Dienstanbieter, damit DCM Ressourcen auf externer Infrastruktur bereitstellen kann (z.\u00a0B. OpenShift, AWS).',

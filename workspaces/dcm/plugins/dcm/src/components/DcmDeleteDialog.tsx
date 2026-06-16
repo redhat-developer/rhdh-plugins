@@ -17,6 +17,7 @@
 import { Button, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { DcmFormDialog } from './DcmFormDialog';
+import { Trans } from './Trans';
 import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
@@ -88,9 +89,10 @@ export function DcmDeleteDialog({
       }
     >
       <Typography variant="body1">
-        {t('deleteDialog.bodyBefore')}
-        <strong>{resourceName}</strong>
-        {t('deleteDialog.bodyAfter')}
+        <Trans
+          message="deleteDialog.body"
+          values={{ resourceName: <strong>{resourceName}</strong> }}
+        />
       </Typography>
     </DcmFormDialog>
   );

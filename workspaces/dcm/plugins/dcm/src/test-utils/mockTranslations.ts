@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import React from 'react';
 import { dcmMessages } from '../translations/ref';
 
 /** Flatten the nested dcmMessages object into { 'a.b.c': 'English text' }. */
@@ -61,8 +62,15 @@ export const mockUseTranslation = () => ({ t: mockT });
 
 export const MockTrans = ({
   message,
-  params,
+  values,
 }: {
   message: string;
-  params?: Record<string, string | number>;
-}) => mockT(message, params);
+  values?: Record<string, React.ReactNode>;
+}): React.ReactNode => {
+  const template = mockT(message);
+  if (!values) return template;
+  return template.split(/(\{\{\w+\}\})/).map((part: string) => {
+    const match = part.match(/^\{\{(\w+)\}\}$/);
+    return match ? values[match[1]] ?? part : part || null;
+  });
+};

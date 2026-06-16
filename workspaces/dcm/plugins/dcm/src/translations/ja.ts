@@ -51,9 +51,8 @@ const dcmTranslationJa: TranslationMessages<
     'deleteDialog.title': '{{resourceLabel}}\u3092\u524a\u9664',
     'deleteDialog.confirmButton': '\u524a\u9664',
     'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',
-    'deleteDialog.bodyBefore': '',
-    'deleteDialog.bodyAfter':
-      '\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f\u3053\u306e\u64cd\u4f5c\u306f\u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',
+    'deleteDialog.body':
+      '{{resourceName}}\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f\u3053\u306e\u64cd\u4f5c\u306f\u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',
     'providers.emptyTitle':
       '\u767b\u9332\u6e08\u307f\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u306a\u3057',
     'providers.emptyDescription':
