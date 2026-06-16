@@ -13,6 +13,8 @@ import type { ResourcesApi } from '@red-hat-developer-hub/backstage-plugin-dcm-c
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { Theme } from '@material-ui/core/styles';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const catalogApiRef: ApiRef<CatalogApi>;
@@ -34,6 +36,15 @@ export const dcmPlugin: BackstagePlugin<
   {},
   {}
 >;
+
+// @public
+export const dcmTranslationRef: TranslationRef<
+  'plugin.dcm',
+  Record<string, string>
+>;
+
+// @public
+export const dcmTranslations: TranslationResource;
 
 // @public
 export function isDarkMode(theme: Theme): boolean;

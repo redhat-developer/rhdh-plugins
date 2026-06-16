@@ -57,17 +57,15 @@ ignore:
   - "**/playwright.config.ts"
   - "**/scripts/**"
   - "**/docs/**"
+  - "workspaces/*/packages/app/**"
+  - "workspaces/*/packages/app-legacy/**"
+  - "workspaces/*/packages/backend/**"
+  - "workspaces/plugins/*-test/**"
 
 flag_management:
   default_rules:
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 100%
-      - type: patch
-        target: auto
-        threshold: 100%
+    statuses: []
   individual_flags:
     - name: adoption-insights
       paths:
@@ -112,9 +110,6 @@ flag_management:
     - name: extensions
       paths:
         - workspaces/extensions/
-    - name: global-floating-action-button
-      paths:
-        - workspaces/global-floating-action-button/
     - name: global-header
       paths:
         - workspaces/global-header/
