@@ -428,34 +428,40 @@ function nonSecureRandomAlphaNumeric() {
 
 // For nested filters, there might be more than one filter for the same field
 // so we need to group them by the field and then combine the nested filters into an array
-export function processFilters(filter: Filter): Filter {
-  if (isLogicalFilter(filter)) {
-    const grouped = filter.filters.reduce<Record<string, Filter[]>>(
-      (acc, item) => {
-        if ('field' in item) {
-          acc[item.field] ??= [];
-          acc[item.field].push(item);
-        }
-        return acc;
-      },
-      {},
-    );
+export function groupNestedFilters(node: Filter): Filter {
+  if (!isLogicalFilter(node)) return node;
 
-    const newFilters: Filter[] = [];
+  const processed = node.filters.map(groupNestedFilters);
+  const grouped = new Map<string, Filter[]>();
+  const entries: Array<
+    { kind: 'single'; filter: Filter } | { kind: 'group'; field: string }
+  > = [];
 
-    for (const [field, filtersForField] of Object.entries(grouped)) {
-      if (filtersForField.length > 1) {
-        const nested = filtersForField
-          .filter((f): f is NestedFilter => 'nested' in f)
-          .map(f => f.nested);
-        newFilters.push({ field, nested } as unknown as NestedFilter);
-      } else {
-        newFilters.push(filtersForField[0]);
-      }
+  for (const filter of processed) {
+    if (!('field' in filter)) {
+      entries.push({ kind: 'single', filter });
+      continue;
     }
 
-    filter.filters = newFilters;
+    if (!grouped.has(filter.field)) {
+      grouped.set(filter.field, []);
+      entries.push({ kind: 'group', field: filter.field });
+    }
+    grouped.get(filter.field)!.push(filter);
   }
 
-  return filter;
+  const newFilters = entries.map(entry => {
+    if (entry.kind === 'single') return entry.filter;
+
+    const filters = grouped.get(entry.field)!;
+    if (filters.length === 1) return filters[0];
+
+    const nested = filters
+      .filter((f): f is NestedFilter => 'nested' in f)
+      .map(f => f.nested);
+
+    return { field: entry.field, nested } as unknown as NestedFilter;
+  });
+
+  return { ...node, filters: newFilters };
 }

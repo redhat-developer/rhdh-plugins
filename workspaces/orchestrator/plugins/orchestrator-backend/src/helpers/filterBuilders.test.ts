@@ -29,8 +29,8 @@ import {
 import { FilterClause } from '../types/filterClause';
 import {
   buildFilterCondition,
+  groupNestedFilters,
   isOperatorAllowedForField,
-  processFilters,
 } from './filterBuilder';
 
 describe('isOperatorAllowedForField', () => {
@@ -846,7 +846,7 @@ describe('column filters', () => {
   });
 });
 
-describe('processFilters', () => {
+describe('groupNestedFilters', () => {
   const targetEntityNestedFilter: NestedFilter = {
     field: 'variables',
     nested: {
@@ -871,13 +871,20 @@ describe('processFilters', () => {
     value: 'processId1',
   };
 
+  it('returns non-logical filters unchanged', () => {
+    expect(groupNestedFilters(targetEntityNestedFilter)).toEqual(
+      targetEntityNestedFilter,
+    );
+    expect(groupNestedFilters(procId1Filter)).toEqual(procId1Filter);
+  });
+
   it('combines multiple nested filters for the same field', () => {
     const filter: LogicalFilter = {
       operator: 'AND',
       filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
     };
 
-    const result = processFilters(filter);
+    const result = groupNestedFilters(filter);
 
     expect(result).toEqual({
       operator: 'AND',
@@ -899,7 +906,7 @@ describe('processFilters', () => {
       filters: [targetEntityNestedFilter],
     };
 
-    const result = processFilters(filter);
+    const result = groupNestedFilters(filter);
 
     expect(result).toEqual(filter);
   });
@@ -910,11 +917,72 @@ describe('processFilters', () => {
       filters: [targetEntityNestedFilter, procId1Filter],
     };
 
-    const result = processFilters(filter);
+    const result = groupNestedFilters(filter);
 
     expect(result).toEqual({
       operator: 'AND',
       filters: [targetEntityNestedFilter, procId1Filter],
+    });
+  });
+
+  it('combines non-adjacent nested filters for the same field while preserving order', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [
+        targetEntityNestedFilter,
+        procId1Filter,
+        initiatorEntityNestedFilter,
+      ],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          field: 'variables',
+          nested: [
+            targetEntityNestedFilter.nested,
+            initiatorEntityNestedFilter.nested,
+          ],
+        },
+        procId1Filter,
+      ],
+    });
+  });
+
+  it('recursively groups nested filters inside child logical filters', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [
+        {
+          operator: 'OR',
+          filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
+        },
+        procId1Filter,
+      ],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          operator: 'OR',
+          filters: [
+            {
+              field: 'variables',
+              nested: [
+                targetEntityNestedFilter.nested,
+                initiatorEntityNestedFilter.nested,
+              ],
+            },
+          ],
+        },
+        procId1Filter,
+      ],
     });
   });
 });

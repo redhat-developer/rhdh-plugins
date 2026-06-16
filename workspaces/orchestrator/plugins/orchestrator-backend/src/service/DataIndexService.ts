@@ -30,7 +30,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
-import { buildFilterCondition, processFilters } from '../helpers/filterBuilder';
+import {
+  buildFilterCondition,
+  groupNestedFilters,
+} from '../helpers/filterBuilder';
 import {
   buildGraphQlQuery,
   buildQueryParamVariable,
@@ -293,7 +296,7 @@ export class DataIndexService {
 
     // For nested filters, there might be more than one filter for the same field
     // so we need to group them by the field and then combine the nested filters into an array
-    const processedFilters = filter ? processFilters(filter) : undefined;
+    const processedFilters = filter ? groupNestedFilters(filter) : undefined;
 
     const filterCondition = processedFilters
       ? buildFilterCondition(

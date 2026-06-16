@@ -868,12 +868,12 @@ function setupInternalRoutes(
         const credentials = await httpAuth.credentials(req);
         const initiatorEntity = (await userInfo.getUserInfo(credentials))
           .userEntityRef;
-        const isUserAuthorizedForInstanceAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
-          await isUserAuthorizedForInstanceAdminViewPermission(
-            req,
-            permissions,
-            httpAuth,
-          );
+        const isUserAuthorizedForInstanceAdminView: boolean = false; // This permission will let user see ALL instances (including ones others created)
+        // await isUserAuthorizedForInstanceAdminViewPermission(
+        //   req,
+        //   permissions,
+        //   httpAuth,
+        // );
 
         const requestFilters = getRequestFilters(req);
 
