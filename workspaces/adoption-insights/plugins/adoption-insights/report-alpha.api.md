@@ -11,7 +11,6 @@ import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
-import { IconComponent } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
@@ -25,6 +24,7 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const adoptionInsightsTranslationRef: TranslationRef<
   'plugin.adoption-insights',
   {
+    readonly 'page.title': string;
     readonly 'header.title': string;
     readonly 'header.dateRange.title': string;
     readonly 'header.dateRange.dateRange': string;
@@ -38,27 +38,16 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'header.dateRange.defaultLabel': string;
     readonly 'header.dateRange.startDate': string;
     readonly 'header.dateRange.endDate': string;
-    readonly 'table.headers.name': string;
-    readonly 'table.headers.kind': string;
-    readonly 'table.headers.lastUsed': string;
-    readonly 'table.headers.views': string;
-    readonly 'table.headers.executions': string;
-    readonly 'table.headers.trend': string;
-    readonly 'table.headers.entity': string;
-    readonly 'table.pagination.topN': string;
-    readonly 'filter.all': string;
-    readonly 'filter.selectKind': string;
-    readonly 'page.title': string;
-    readonly 'activeUsers.title': string;
-    readonly 'activeUsers.legend.newUsers': string;
-    readonly 'activeUsers.legend.returningUsers': string;
     readonly 'activeUsers.hour': string;
     readonly 'activeUsers.day': string;
     readonly 'activeUsers.week': string;
     readonly 'activeUsers.month': string;
+    readonly 'activeUsers.title': string;
     readonly 'activeUsers.averagePrefix': string;
     readonly 'activeUsers.averageText': string;
     readonly 'activeUsers.averageSuffix': string;
+    readonly 'activeUsers.legend.newUsers': string;
+    readonly 'activeUsers.legend.returningUsers': string;
     readonly 'templates.title': string;
     readonly 'templates.topNTitle': string;
     readonly 'templates.allTitle': string;
@@ -71,11 +60,11 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'techDocs.title': string;
     readonly 'techDocs.topNTitle': string;
     readonly 'techDocs.allTitle': string;
-    readonly 'searches.title': string;
     readonly 'searches.hour': string;
     readonly 'searches.day': string;
     readonly 'searches.week': string;
     readonly 'searches.month': string;
+    readonly 'searches.title': string;
     readonly 'searches.averagePrefix': string;
     readonly 'searches.averageText': string;
     readonly 'searches.averageSuffix': string;
@@ -87,6 +76,16 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'users.licensedNotLoggedIn': string;
     readonly 'users.ofTotal': string;
     readonly 'users.tooltip': string;
+    readonly 'table.headers.name': string;
+    readonly 'table.headers.kind': string;
+    readonly 'table.headers.lastUsed': string;
+    readonly 'table.headers.views': string;
+    readonly 'table.headers.executions': string;
+    readonly 'table.headers.trend': string;
+    readonly 'table.headers.entity': string;
+    readonly 'table.pagination.topN': string;
+    readonly 'filter.all': string;
+    readonly 'filter.selectKind': string;
     readonly 'common.today': string;
     readonly 'common.noResults': string;
     readonly 'common.readMore': string;
@@ -131,27 +130,6 @@ const _default: OverridableFrontendPlugin<
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
     }>;
-    'nav-item:adoption-insights': OverridableExtensionDefinition<{
-      kind: 'nav-item';
-      name: undefined;
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<
-        {
-          title: string;
-          icon: IconComponent;
-          routeRef: RouteRef_2<undefined>;
-        },
-        'core.nav-item.target',
-        {}
-      >;
-      inputs: {};
-      params: {
-        title: string;
-        icon: IconComponent;
-        routeRef: RouteRef_2<undefined>;
-      };
-    }>;
     'page:adoption-insights': OverridableExtensionDefinition<{
       kind: 'page';
       name: undefined;
@@ -160,8 +138,8 @@ const _default: OverridableFrontendPlugin<
         title: string | undefined;
       };
       configInput: {
-        title?: string | undefined;
         path?: string | undefined;
+        title?: string | undefined;
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
