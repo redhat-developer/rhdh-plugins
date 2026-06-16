@@ -756,8 +756,13 @@ describe('SonataFlowService', () => {
       expect(result?.[0]).toMatchObject({
         workflowId: 'workflow-a',
         version: '1.0',
-        successRatio: 0.75,
-        runsLastMonth: 3,
+        workflowRunStats: {
+          successRatio: 0.75,
+          runsLastMonth: 3,
+          successCount: 3,
+          errorCount: 1,
+          totalCount: 4,
+        },
       });
     });
 
@@ -808,12 +813,22 @@ describe('SonataFlowService', () => {
 
       expect(result).toHaveLength(2);
       expect(result?.find(o => o.workflowId === 'workflow-a')).toMatchObject({
-        successRatio: 0.5,
-        runsLastMonth: 2,
+        workflowRunStats: {
+          successRatio: 0.5,
+          runsLastMonth: 2,
+          successCount: 1,
+          errorCount: 1,
+          totalCount: 2,
+        },
       });
       expect(result?.find(o => o.workflowId === 'workflow-b')).toMatchObject({
-        successRatio: 1,
-        runsLastMonth: 2,
+        workflowRunStats: {
+          successRatio: 1,
+          runsLastMonth: 2,
+          successCount: 2,
+          errorCount: 0,
+          totalCount: 2,
+        },
       });
     });
 
@@ -840,8 +855,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
       expect(result).toHaveLength(1);
-      expect(result?.[0].successRatio).toBeUndefined();
-      expect(result?.[0].runsLastMonth).toBeUndefined();
+      expect(result?.[0].workflowRunStats).toBeUndefined();
     });
 
     it('excludes workflow infos without source', async () => {

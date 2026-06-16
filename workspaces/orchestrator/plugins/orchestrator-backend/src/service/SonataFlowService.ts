@@ -206,11 +206,13 @@ export class SonataFlowService {
             `${overview.workflowId}-${overview.version}`,
         );
         if (stats) {
-          overview.successRatio = stats.successRatio;
-          overview.runsLastMonth = stats.runsLastMonth;
-          overview.successCount = stats.successCount;
-          overview.errorCount = stats.errorCount;
-          overview.totalCount = stats.totalCount;
+          overview.workflowRunStats = {
+            successRatio: stats.successRatio,
+            runsLastMonth: stats.runsLastMonth,
+            successCount: stats.successCount,
+            errorCount: stats.errorCount,
+            totalCount: stats.totalCount,
+          };
         }
         return overview;
       });
@@ -479,7 +481,7 @@ export class SonataFlowService {
       lastTriggered = new Date(pInstance.start);
       lastRunStatus = pInstance.state;
     }
-
+    // TODO: add successCount, errorCount, totalCount
     return {
       workflowId: definition.id,
       name: definition.name,

@@ -82,20 +82,24 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
 
   it('maps workflow run count fields', () => {
     const overview: WorkflowOverview = generateTestWorkflowOverview({
+      workflowRunStats: {
+        successCount: 8,
+        errorCount: 2,
+        totalCount: 10,
+        successRatio: 0.8,
+        runsLastMonth: 10,
+      },
+    });
+
+    const result = mapToWorkflowOverviewDTO(overview);
+
+    expect(result.workflowRunStats).toEqual({
       successCount: 8,
       errorCount: 2,
       totalCount: 10,
       successRatio: 0.8,
       runsLastMonth: 10,
     });
-
-    const result = mapToWorkflowOverviewDTO(overview);
-
-    expect(result.successCount).toBe(8);
-    expect(result.errorCount).toBe(2);
-    expect(result.totalCount).toBe(10);
-    expect(result.successRatio).toBe(0.8);
-    expect(result.runsLastMonth).toBe(10);
   });
 });
 describe('scenarios to verify mapToProcessInstanceDTO', () => {

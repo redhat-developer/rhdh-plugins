@@ -94,6 +94,14 @@ export interface WorkflowExecutionResponse {
   id: string;
 }
 
+export interface WorkflowRunStats {
+  successRatio?: number;
+  runsLastMonth?: number;
+  successCount?: number;
+  errorCount?: number;
+  totalCount?: number;
+}
+
 export interface WorkflowOverview {
   workflowId: string;
   format: WorkflowFormat;
@@ -105,11 +113,7 @@ export interface WorkflowOverview {
   description?: string;
   isAvailable?: boolean;
   version?: string;
-  successRatio?: number;
-  runsLastMonth?: number;
-  successCount?: number;
-  errorCount?: number;
-  totalCount?: number;
+  workflowRunStats?: WorkflowRunStats;
 }
 
 export interface WorkflowInfo {

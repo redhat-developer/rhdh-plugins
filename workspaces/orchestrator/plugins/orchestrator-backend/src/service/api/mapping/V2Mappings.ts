@@ -52,11 +52,7 @@ export function mapToWorkflowOverviewDTO(
     lastTriggeredMs: overview.lastTriggeredMs,
     isAvailable: overview.isAvailable,
     version: overview.version,
-    successRatio: overview.successRatio,
-    runsLastMonth: overview.runsLastMonth,
-    successCount: overview.successCount,
-    errorCount: overview.errorCount,
-    totalCount: overview.totalCount,
+    workflowRunStats: overview.workflowRunStats,
   };
 }
 
