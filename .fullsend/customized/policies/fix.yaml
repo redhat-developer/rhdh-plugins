@@ -3,7 +3,9 @@ version: 1
 
 # Sandbox policy for the fix agent.
 #
-# Based on the upstream fix policy (baseline 2025-06-05) with additions:
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
+# Based on upstream fix policy with additions:
 #   - repo.yarnpkg.com endpoint in package_registries (corepack downloads
 #     yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
 #   - pnpm binary in package_registries (present in sandbox image)
