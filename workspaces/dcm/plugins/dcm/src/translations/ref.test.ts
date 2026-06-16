@@ -27,7 +27,7 @@ function flattenMessages(
 ): Record<string, string> {
   const flattened: Record<string, string> = {};
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       const value = obj[key];
       const newKey = prefix ? `${prefix}.${key}` : key;
       if (
