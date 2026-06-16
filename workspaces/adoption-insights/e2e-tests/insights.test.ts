@@ -171,6 +171,12 @@ test('Top plugins shows data', async () => {
 });
 
 test('Rest of the panels have no data', async () => {
+  await expect(
+    page
+      .getByRole('main')
+      .getByRole('heading', { name: translations.header.title }),
+  ).toBeVisible({ timeout: 30000 });
+
   const titles = [
     translations.templates.title,
     translations.catalogEntities.title,
@@ -180,7 +186,7 @@ test('Rest of the panels have no data', async () => {
   for (const title of titles) {
     const panel = getPanel(page, title);
     await expect(panel).toContainText(translations.common.noResults, {
-      timeout: 15000,
+      timeout: 60000,
     });
   }
 });

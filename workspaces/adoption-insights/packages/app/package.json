@@ -29,6 +29,7 @@
     "@backstage/plugin-app-visualizer": "^0.2.1",
     "@backstage/plugin-catalog": "^2.0.1",
     "@backstage/plugin-search": "^1.7.0",
+    "@backstage/plugin-techdocs": "^1.11.4",
     "@backstage/plugin-user-settings": "^0.9.1",
     "@backstage/ui": "^0.13.2",
     "@mui/icons-material": "^5.18.0",

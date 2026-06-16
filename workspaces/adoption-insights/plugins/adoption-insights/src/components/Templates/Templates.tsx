@@ -130,7 +130,7 @@ const Templates = () => {
                   colSpan={TEMPLATE_TABLE_HEADERS.length}
                   align="center"
                 >
-                  <CircularProgress />
+                  <CircularProgress aria-label={t('common.loading')} />
                 </TableCell>
               </TableRow>
             ) : (

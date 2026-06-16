@@ -119,6 +119,7 @@ export const adoptionInsightsMessages = {
     readMore: 'Read more',
     exportCSV: 'Export CSV',
     downloading: 'Downloading...',
+    loading: 'Loading',
     today: 'Today',
     yesterday: 'Yesterday',
     numberOfSearches: 'Number of searches',
