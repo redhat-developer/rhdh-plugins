@@ -1013,6 +1013,33 @@ describe('lightspeed router tests', () => {
     });
   });
 
+  describe('POST /v1/query stream error handling', () => {
+    it('returns 500 when upstream stream errors', async () => {
+      const backendServer = await startBackendServer();
+      rcs.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query`, () => {
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.error(new Error('Connection reset'));
+            },
+          });
+          return new HttpResponse(stream, {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }),
+      );
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: 'Hello',
+        });
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain('Stream error occurred');
+    });
+  });
+
   // Locks in the 500 contract when the permission service itself fails
   // (e.g. network error) as opposed to a deliberate DENY. Ensures the
   // middleware responds with a generic error rather than leaking internals.
