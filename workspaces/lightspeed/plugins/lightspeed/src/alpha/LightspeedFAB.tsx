@@ -14,73 +14,10 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
-import Tooltip from '@mui/material/Tooltip';
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-
-import {
-  LightspeedFABIcon,
-  LightspeedFABOpenIcon,
-} from '../components/LightspeedIcon';
-import { DOCKED_CONTENT_OFFSET } from '../const';
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
-import { useTranslation } from '../hooks/useTranslation';
+import { LightspeedFABContent } from '../components/LightspeedFABContent';
 
 /**
  * @alpha
  * Lightspeed Floating action button to open/close the lightspeed chatbot
  */
-export const LightspeedFAB = () => {
-  const { t } = useTranslation();
-  const { isChatbotActive, toggleChatbot, displayMode } =
-    useLightspeedDrawerContext();
-
-  if (displayMode === ChatbotDisplayMode.embedded) {
-    return null;
-  }
-
-  return (
-    <Box
-      sx={theme => ({
-        bottom: `calc(${theme.spacing(2)} + 1.5em)`,
-        right: `calc(${theme.spacing(2)} + 1.5em)`,
-        alignItems: 'end',
-        zIndex: 200,
-        display: 'flex',
-        position: 'fixed',
-        'body.docked-drawer-open &': {
-          transition: 'margin-right 0.3s ease',
-          marginRight: DOCKED_CONTENT_OFFSET,
-        },
-      })}
-      id="lightspeed-fab"
-      data-testid="lightspeed-fab"
-    >
-      <Tooltip
-        title={isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')}
-        placement="left"
-      >
-        <Fab
-          color="inherit"
-          variant="circular"
-          size="large"
-          onClick={toggleChatbot}
-          aria-label={
-            isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
-          }
-          sx={theme => ({
-            backgroundColor: theme.palette.background.default,
-            color: theme.palette.text.primary,
-            border: `1px solid ${theme.palette.divider}`,
-            '&:hover': {
-              backgroundColor: theme.palette.background.paper,
-            },
-          })}
-        >
-          {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
-        </Fab>
-      </Tooltip>
-    </Box>
-  );
-};
+export const LightspeedFAB = LightspeedFABContent;
