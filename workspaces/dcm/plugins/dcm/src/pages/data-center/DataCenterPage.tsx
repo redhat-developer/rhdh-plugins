@@ -36,6 +36,7 @@ import {
   resourcesRouteRef,
 } from '../../routes';
 import { isDarkMode } from '../../components/dcmTheme';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => {
   const isDark = isDarkMode(theme);
@@ -63,13 +64,14 @@ const useStyles = makeStyles(theme => {
 
 export const DataCenterPage = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
   return (
     <Page themeId="tool">
       <Header
-        pageTitleOverride="Data Center"
+        pageTitleOverride={t('page.title')}
         title={
           <Typography variant="h3" className={classes.pageTitle}>
-            Data Center
+            {t('page.title')}
           </Typography>
         }
       />
@@ -77,31 +79,37 @@ export const DataCenterPage = () => {
       <Content>
         <Box className={classes.tabbedLayout}>
           <TabbedLayout>
-            <TabbedLayout.Route path="/" title="Providers">
+            <TabbedLayout.Route path="/" title={t('page.tabs.providers')}>
               <ProvidersTabContent />
             </TabbedLayout.Route>
-            <TabbedLayout.Route path={policiesRouteRef.path} title="Policies">
+            <TabbedLayout.Route
+              path={policiesRouteRef.path}
+              title={t('page.tabs.policies')}
+            >
               <PoliciesTabContent />
             </TabbedLayout.Route>
             <TabbedLayout.Route
               path={serviceTypesRouteRef.path}
-              title="Service types"
+              title={t('page.tabs.serviceTypes')}
             >
               <ServiceTypesTabContent />
             </TabbedLayout.Route>
             <TabbedLayout.Route
               path={catalogItemsRouteRef.path}
-              title="Catalog items"
+              title={t('page.tabs.catalogItems')}
             >
               <CatalogItemsTabContent />
             </TabbedLayout.Route>
             <TabbedLayout.Route
               path={catalogItemInstancesRouteRef.path}
-              title="Instances"
+              title={t('page.tabs.instances')}
             >
               <CatalogItemInstancesTabContent />
             </TabbedLayout.Route>
-            <TabbedLayout.Route path={resourcesRouteRef.path} title="Resources">
+            <TabbedLayout.Route
+              path={resourcesRouteRef.path}
+              title={t('page.tabs.resources')}
+            >
               <ResourcesTabContent />
             </TabbedLayout.Route>
           </TabbedLayout>
