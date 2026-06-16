@@ -40,6 +40,7 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'catalogEntities.topNTitle': '{{count}} entidades principales del catálogo',
     'common.csvFilename': 'active_users',
     'common.downloading': 'Descargando...',
+    'common.loading': 'Cargando',
     'common.exportCSV': 'Exportar CSV',
     'common.filteredBy': 'filtrado por',
     'common.invalidDateFormat': 'Formato de fecha no válido',

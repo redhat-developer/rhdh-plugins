@@ -91,6 +91,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.readMore': string;
     readonly 'common.exportCSV': string;
     readonly 'common.downloading': string;
+    readonly 'common.loading': string;
     readonly 'common.yesterday': string;
     readonly 'common.numberOfSearches': string;
     readonly 'common.filteredBy': string;

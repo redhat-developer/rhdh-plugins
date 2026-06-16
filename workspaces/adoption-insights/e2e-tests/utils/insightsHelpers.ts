@@ -20,6 +20,8 @@ import { Page, expect } from '@playwright/test';
  */
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
   fr: 'Français',
   it: 'Italiano',
   ja: '日本語',
@@ -109,7 +111,6 @@ export async function switchToLocale(
   const baseLocale = locale.split('-')[0];
   if (baseLocale !== 'en') {
     const displayName = getLocaleDisplayName(locale);
-    // Wait for the Settings link to be visible before clicking
     const settingsLink = page.getByRole('link', { name: 'Settings' });
     await settingsLink.waitFor({ state: 'visible', timeout: 10000 });
     await settingsLink.click();
