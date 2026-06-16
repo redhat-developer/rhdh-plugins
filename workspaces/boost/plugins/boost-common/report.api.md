@@ -90,6 +90,20 @@ export const boostAgentDemotePermission: ResourcePermission<'boost-agent'>;
 export const boostAgentListPermission: BasicPermission;
 
 // @public
+export const boostAgentPermissions: readonly [
+  BasicPermission,
+  BasicPermission,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  BasicPermission,
+];
+
+// @public
 export const boostAgentPromotePermission: ResourcePermission<'boost-agent'>;
 
 // @public
@@ -126,6 +140,9 @@ export const boostFunctionalPermissions: readonly [
 ];
 
 // @public
+export const boostInfraPermissions: readonly [BasicPermission];
+
+// @public
 export const boostKagentiAdminPermission: BasicPermission;
 
 // @public
@@ -157,23 +174,12 @@ export const boostPermissions: readonly [
 ];
 
 // @public
-export const boostResourcePermissions: readonly [
-  BasicPermission,
-  BasicPermission,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  BasicPermission,
+export const boostToolPermissions: readonly [
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
-  BasicPermission,
 ];
 
 // @public

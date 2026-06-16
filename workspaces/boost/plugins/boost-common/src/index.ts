@@ -106,7 +106,9 @@ export {
   BOOST_RULE_IS_NOT_CREATOR,
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
   // Aggregations
-  boostResourcePermissions,
+  boostAgentPermissions,
+  boostToolPermissions,
+  boostInfraPermissions,
   boostFunctionalPermissions,
   boostPermissions,
 } from './permissions';

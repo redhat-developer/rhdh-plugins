@@ -18,7 +18,9 @@ import {
   BOOST_PLUGIN_ID,
   RESOURCE_TYPE_BOOST_AGENT,
   RESOURCE_TYPE_BOOST_TOOL,
-  boostResourcePermissions,
+  boostAgentPermissions,
+  boostToolPermissions,
+  boostInfraPermissions,
   boostFunctionalPermissions,
   boostPermissions,
   boostAgentListPermission,
@@ -73,8 +75,16 @@ describe('boost-common', () => {
   });
 
   describe('permissions', () => {
-    it('exports exactly 16 resource permissions', () => {
-      expect(boostResourcePermissions).toHaveLength(16);
+    it('exports exactly 10 agent permissions', () => {
+      expect(boostAgentPermissions).toHaveLength(10);
+    });
+
+    it('exports exactly 5 tool permissions', () => {
+      expect(boostToolPermissions).toHaveLength(5);
+    });
+
+    it('exports exactly 1 infra permission', () => {
+      expect(boostInfraPermissions).toHaveLength(1);
     });
 
     it('exports exactly 5 functional permissions', () => {

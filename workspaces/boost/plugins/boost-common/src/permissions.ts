@@ -354,12 +354,11 @@ export const BOOST_RULE_HAS_LIFECYCLE_STAGE = 'HAS_LIFECYCLE_STAGE';
 // =============================================================================
 
 /**
- * All 16 resource permissions (10 agent + 5 tool + 1 kagenti-infra).
+ * All 10 agent permissions (3 basic + 7 resource-scoped).
  *
  * @public
  */
-export const boostResourcePermissions = [
-  // Agent permissions (10)
+export const boostAgentPermissions = [
   boostAgentListPermission,
   boostAgentRegisterPermission,
   boostAgentPromotePermission,
@@ -370,13 +369,27 @@ export const boostResourcePermissions = [
   boostAgentWithdrawPermission,
   boostAgentDeletePermission,
   boostAgentConfigurePermission,
-  // Tool permissions (5)
+] as const;
+
+/**
+ * All 5 tool permissions (all resource-scoped).
+ *
+ * @public
+ */
+export const boostToolPermissions = [
   boostToolPromotePermission,
   boostToolApprovePermission,
   boostToolDemotePermission,
   boostToolPublishPermission,
   boostToolUnpublishPermission,
-  // Kagenti infra (1)
+] as const;
+
+/**
+ * Infrastructure permissions (kagenti).
+ *
+ * @public
+ */
+export const boostInfraPermissions = [
   boostKagentiAdminPermission,
 ] as const;
 
@@ -400,6 +413,8 @@ export const boostFunctionalPermissions = [
  * @public
  */
 export const boostPermissions = [
-  ...boostResourcePermissions,
+  ...boostAgentPermissions,
+  ...boostToolPermissions,
+  ...boostInfraPermissions,
   ...boostFunctionalPermissions,
 ] as const;
