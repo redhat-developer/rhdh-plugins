@@ -25,8 +25,6 @@ import {
   extractWorkflowFormat,
   Filter,
   fromWorkflowSource,
-  ProcessInstance,
-  ProcessInstanceState,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
   WorkflowDefinition,
@@ -40,6 +38,7 @@ import { randomUUID } from 'node:crypto';
 import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
+import { getWorkflowRunStats, groupByProcessIdAndVersion } from './Helper';
 
 export class SonataFlowService {
   private readonly orchestratorKafkaImpl?: Kafka;
@@ -139,14 +138,7 @@ export class SonataFlowService {
      *  ...
      * }
      */
-    const groupedData = instances.reduce<Record<string, ProcessInstance[]>>(
-      (acc, item) => {
-        acc[`${item.processId}-${item.version}`] ??= [];
-        acc[`${item.processId}-${item.version}`].push(item);
-        return acc;
-      },
-      {},
-    );
+    const groupedData = groupByProcessIdAndVersion(instances);
 
     // Then we need to calculate the success rate for each processId and get the amount of runs for the last 30 days
     // Result will look something like this:
@@ -154,40 +146,23 @@ export class SonataFlowService {
       [
         {
           processIdVersion: 'quarkus-backend-1.0',
+          successCount: 1,
+          errorCount: 0,
+          totalCount: 1,
           successRatio: 1,
           runsLastMonth: 1
         },
         {
           processIdVersion: 'random-success-or-error-1.0',
+          successCount: 1,
+          errorCount: 1,
+          totalCount: 2,
           successRatio: 0.5833333333333334,
           runsLastMonth: 12
         }
       ]
      */
-    const worflowInstanceStats = Object.entries(groupedData).map(
-      ([processIdVersion, items]) => {
-        const successCount = items.filter(
-          item => item.state === ProcessInstanceState.Completed,
-        ).length;
-        const errorCount = items.filter(
-          item => item.state === ProcessInstanceState.Error,
-        ).length;
-        const runsLastMonth = items.filter(
-          item =>
-            item.start &&
-            new Date(item.start) >
-              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        );
-        return {
-          processIdVersion,
-          successCount,
-          errorCount,
-          totalCount: items.length,
-          successRatio: successCount / items.length,
-          runsLastMonth: runsLastMonth.length,
-        };
-      },
-    );
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
 
     const items = await Promise.all(
       workflowInfos
@@ -454,7 +429,31 @@ export class SonataFlowService {
       this.logger.debug(`Workflow source not found: ${definitionId}`);
       return undefined;
     }
-    return await this.fetchWorkflowOverviewBySource(source);
+
+    // Can reuse the instances to get the stats
+    const instances = await this.dataIndexService.fetchInstances({
+      definitionIds: [definitionId],
+    });
+    const groupedData = groupByProcessIdAndVersion(instances);
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
+    const workflowOverview = await this.fetchWorkflowOverviewBySource(source);
+    if (workflowOverview) {
+      const stats = worflowInstanceStats.find(
+        stat =>
+          stat.processIdVersion ===
+          `${workflowOverview.workflowId}-${workflowOverview.version}`,
+      );
+      if (stats) {
+        workflowOverview.workflowRunStats = {
+          successRatio: stats.successRatio,
+          runsLastMonth: stats.runsLastMonth,
+          successCount: stats.successCount,
+          errorCount: stats.errorCount,
+          totalCount: stats.totalCount,
+        };
+      }
+    }
+    return workflowOverview;
   }
 
   private async fetchWorkflowOverviewBySource(
@@ -481,7 +480,7 @@ export class SonataFlowService {
       lastTriggered = new Date(pInstance.start);
       lastRunStatus = pInstance.state;
     }
-    // TODO: add successCount, errorCount, totalCount
+
     return {
       workflowId: definition.id,
       name: definition.name,

@@ -878,4 +878,137 @@ describe('SonataFlowService', () => {
       expect(result?.[0].workflowId).toBe('workflow-a');
     });
   });
+
+  describe('fetchWorkflowOverview', () => {
+    const NOW = new Date('2024-06-01T12:00:00Z');
+    const WITHIN_30_DAYS = '2024-05-15T12:00:00Z';
+    const OUTSIDE_30_DAYS = '2024-04-01T12:00:00Z';
+    const workflowDefinitionId = 'workflow-a';
+
+    const workflowSource = JSON.stringify({
+      id: workflowDefinitionId,
+      specVersion: '0.8',
+      name: 'Workflow A',
+      version: '1.0',
+      start: 'startState',
+      states: [{ name: 'startState', type: 'inject', end: true }],
+    });
+
+    const createProcessInstance = (
+      overrides: Partial<ProcessInstance> &
+        Pick<ProcessInstance, 'id' | 'processId'>,
+    ): ProcessInstance => ({
+      endpoint: 'http://example.com',
+      nodes: [],
+      version: '1.0',
+      state: ProcessInstanceState.Completed,
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(NOW);
+      dataIndexServiceMock.fetchWorkflowSource = jest.fn();
+      dataIndexServiceMock.fetchInstances = jest.fn();
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('returns undefined when workflow source is not found', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(result).toBeUndefined();
+      expect(dataIndexServiceMock.fetchWorkflowSource).toHaveBeenCalledWith(
+        workflowDefinitionId,
+      );
+      expect(dataIndexServiceMock.fetchInstances).not.toHaveBeenCalled();
+      expect(loggerMock.debug).toHaveBeenCalledWith(
+        `Workflow source not found: ${workflowDefinitionId}`,
+      );
+    });
+
+    it('fetches instances for the definition id and attaches workflowRunStats', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(workflowSource);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-2',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-3',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Error,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-4',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: OUTSIDE_30_DAYS,
+        }),
+      ]);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+        definitionIds: [workflowDefinitionId],
+      });
+      expect(result).toMatchObject({
+        workflowId: workflowDefinitionId,
+        version: '1.0',
+        workflowRunStats: {
+          successRatio: 0.75,
+          runsLastMonth: 3,
+          successCount: 3,
+          errorCount: 1,
+          totalCount: 4,
+        },
+      });
+    });
+
+    it('leaves workflowRunStats undefined when no instances match the workflow', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(workflowSource);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'other-1',
+          processId: 'other-workflow',
+          version: '1.0',
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(result?.workflowId).toBe(workflowDefinitionId);
+      expect(result?.workflowRunStats).toBeUndefined();
+    });
+  });
 });

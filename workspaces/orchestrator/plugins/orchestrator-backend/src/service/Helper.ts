@@ -19,6 +19,11 @@ import type { Config } from '@backstage/config';
 
 import fs from 'fs-extra';
 
+import {
+  ProcessInstance,
+  ProcessInstanceState,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import os from 'os';
 
 export async function retryAsyncFunction<T>(args: {
@@ -89,4 +94,38 @@ export async function executeWithRetry(
 
 export function delay(time: number) {
   return new Promise(r => setTimeout(r, time));
+}
+
+export function groupByProcessIdAndVersion(instances: ProcessInstance[]) {
+  return instances.reduce<Record<string, ProcessInstance[]>>((acc, item) => {
+    acc[`${item.processId}-${item.version}`] ??= [];
+    acc[`${item.processId}-${item.version}`].push(item);
+    return acc;
+  }, {});
+}
+
+export function getWorkflowRunStats(
+  groupedData: Record<string, ProcessInstance[]>,
+) {
+  return Object.entries(groupedData).map(([processIdVersion, items]) => {
+    const successCount = items.filter(
+      item => item.state === ProcessInstanceState.Completed,
+    ).length;
+    const errorCount = items.filter(
+      item => item.state === ProcessInstanceState.Error,
+    ).length;
+    const runsLastMonth = items.filter(
+      item =>
+        item.start &&
+        new Date(item.start) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    );
+    return {
+      processIdVersion,
+      successCount,
+      errorCount,
+      totalCount: items.length,
+      successRatio: successCount / items.length,
+      runsLastMonth: runsLastMonth.length,
+    };
+  });
 }
