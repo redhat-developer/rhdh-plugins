@@ -68,6 +68,7 @@ ignore:
   - "workspaces/plugins/*-test/**"
 
 component_management:
+  # Note: workspaces with mixed support-level packages appear in multiple components
   individual_components:
     # GA Plugins — 17 workspaces
     - component_id: ga-plugins

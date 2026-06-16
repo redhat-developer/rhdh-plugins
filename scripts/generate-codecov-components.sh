@@ -13,8 +13,10 @@
 #   ./scripts/generate-codecov-components.sh ../rhdh-plugin-export-overlays
 #
 # Output:
-#   Prints YAML component definitions to stdout. Redirect to file if needed:
-#   ./scripts/generate-codecov-components.sh > codecov-components.yaml
+#   Prints the component_management YAML block to stdout (not a complete codecov.yml).
+#   Redirect to a temp file and manually merge into codecov.yml:
+#   ./scripts/generate-codecov-components.sh > /tmp/codecov-components.yaml
+#   # Then manually merge the component_management block into codecov.yml
 #
 # Related:
 #   - RHIDP-13511: Add per-support-level coverage reporting to Codecov
@@ -38,7 +40,8 @@ get_workspaces_by_support() {
   # Find files, extract workspace name (directory between "workspaces/" and "/metadata/")
   grep -l "support: $support_level" "$OVERLAY_REPO"/workspaces/*/metadata/*.yaml 2>/dev/null | \
     sed 's|.*/workspaces/\([^/]*\)/metadata/.*|\1|' | \
-    sort -u || true
+    sort -u | \
+    grep -v '^$' || true
 }
 
 # Function to generate component YAML
@@ -52,25 +55,21 @@ generate_component() {
   echo "      paths:"
 
   get_workspaces_by_support "$support_level" | while read -r workspace; do
-    if [[ -n "$workspace" ]]; then
-      echo "        - workspaces/$workspace/"
-    fi
+    echo "        - workspaces/$workspace/"
   done
 
   echo ""
 }
 
 # Print header
-cat << 'EOF'
-# Codecov component definitions generated from overlay repo metadata
-# Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-# Source: rhdh-plugin-export-overlays/workspaces/*/metadata/*.yaml
-#
-# Add this to rhdh-plugins/codecov.yml under component_management:
-
-component_management:
-  individual_components:
-EOF
+echo "# Codecov component definitions generated from overlay repo metadata"
+echo "# Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+echo "# Source: rhdh-plugin-export-overlays/workspaces/*/metadata/*.yaml"
+echo "#"
+echo "# Manually merge this component_management block into codecov.yml"
+echo ""
+echo "component_management:"
+echo "  individual_components:"
 
 # Generate components for each support level
 generate_component "ga-plugins" "GA Plugins" "generally-available"

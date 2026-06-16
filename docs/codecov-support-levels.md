@@ -211,7 +211,6 @@ This is **not implemented yet** — all components currently use the same target
 - [Codecov YAML Reference](https://docs.codecov.com/docs/codecov-yaml)
 - [Codecov Components Guide](https://docs.codecov.com/docs/components)
 - [RHDH Plugin Export Overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays)
-- [Support Level Metadata Spec](https://github.com/redhat-developer/rhdh-plugin-export-overlays/blob/main/docs/metadata-spec.md)
 
 ## Changelog
 
