@@ -39,13 +39,13 @@ export const LegendTooltipContent = ({
   return (
     <Stack direction="column">
       <TooltipContent
-        label={t('metric.averageLegendTooltipEntitiesEach', {
+        label={t('metric.weightedStatusScoreLegendTooltipEntitiesEach', {
           count,
           score: formatAggregationScoreDetail(unitScore),
         } as any)}
       />
       <TooltipContent
-        label={t('metric.averageLegendTooltipRowTotal', {
+        label={t('metric.weightedStatusScoreLegendTooltipRowTotal', {
           total: formatAggregationScoreDetail(rowTotal),
         } as any)}
         value={percentLabel}

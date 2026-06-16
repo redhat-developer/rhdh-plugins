@@ -148,16 +148,17 @@ export const scorecardMessages = {
     lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
-    averageCenterTooltipTotalLabel: 'Total score',
-    averageCenterTooltipMaxLabel: 'Max possible score',
-    averageCenterTooltipBreakdownRow_one:
+    weightedStatusScoreCenterTooltipTotalLabel: 'Total score',
+    weightedStatusScoreCenterTooltipMaxLabel: 'Max possible score',
+    weightedStatusScoreCenterTooltipBreakdownRow_one:
       '{{status}}: {{count}} entity, score: {{score}}',
-    averageCenterTooltipBreakdownRow_other:
+    weightedStatusScoreCenterTooltipBreakdownRow_other:
       '{{status}}: {{count}} entities, score: {{score}}',
-    averageLegendTooltipEntitiesEach_one: '{{count}} entity, each {{score}}',
-    averageLegendTooltipEntitiesEach_other:
+    weightedStatusScoreLegendTooltipEntitiesEach_one:
+      '{{count}} entity, each {{score}}',
+    weightedStatusScoreLegendTooltipEntitiesEach_other:
       '{{count}} entities, each {{score}}',
-    averageLegendTooltipRowTotal: 'Total score {{total}}',
+    weightedStatusScoreLegendTooltipRowTotal: 'Total score {{total}}',
     drillDownCalculationFailures:
       'One or more entities failed while calculating this metric.',
     homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',

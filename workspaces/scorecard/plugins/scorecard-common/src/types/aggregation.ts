@@ -30,7 +30,7 @@ export type AggregationType =
 export type AggregatedMetricValue = {
   count: number;
   name: string;
-  /** Present when the API includes per-status weights (e.g. average aggregation). */
+  /** Present when the API includes per-status weights (e.g. weightedStatusScore aggregation). */
   score?: number;
 };
 
@@ -70,19 +70,20 @@ export type StatusGroupedAggregationResult = Omit<
   'values'
 > & { values: AggregatedMetricValue[]; thresholds: ThresholdConfig };
 
-export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
-  averageScore: number;
-  averageWeightedSum: number;
-  averageMaxPossible: number;
-  aggregationChartDisplayColor: string;
-};
+export type WeightedStatusScoreAggregationResult =
+  StatusGroupedAggregationResult & {
+    weightedStatusScore: number;
+    weightedStatusSum: number;
+    weightedStatusMaxPossible: number;
+    aggregationChartDisplayColor: string;
+  };
 
 /**
  * @public
  */
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | AggregatedMetricAverageResult;
+  | WeightedStatusScoreAggregationResult;
 
 /**
  * @public

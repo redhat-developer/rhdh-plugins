@@ -16,14 +16,14 @@
 
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { StatusGroupedCardComponent } from './StatusGroupedCard/StatusGroupedCardComponent';
-import { AverageCardComponent } from './AverageCard/AverageCardComponent';
-import type { AverageCardComponentProps } from './AverageCard/types';
+import { WeightedStatusScoreCardComponent } from './WeightedStatusScoreCard/WeightedStatusScoreCardComponent';
+import type { WeightedStatusScoreCardComponentProps } from './WeightedStatusScoreCard/types';
 import type { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
 import { UnsupportedAggregationType } from './UnsupportedAggregationType';
 
 export type AggregatedMetricCardProps =
   | StatusGroupedCardComponentProps
-  | AverageCardComponentProps;
+  | WeightedStatusScoreCardComponentProps;
 
 export const AggregatedMetricCard = (props: AggregatedMetricCardProps) => {
   switch (props.scorecard.metadata.aggregationType) {
@@ -33,8 +33,12 @@ export const AggregatedMetricCard = (props: AggregatedMetricCardProps) => {
           {...(props as StatusGroupedCardComponentProps)}
         />
       );
-    case aggregationTypes.average:
-      return <AverageCardComponent {...(props as AverageCardComponentProps)} />;
+    case aggregationTypes.weightedStatusScore:
+      return (
+        <WeightedStatusScoreCardComponent
+          {...(props as WeightedStatusScoreCardComponentProps)}
+        />
+      );
     default:
       return (
         <UnsupportedAggregationType
