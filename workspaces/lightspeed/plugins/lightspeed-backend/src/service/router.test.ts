@@ -982,6 +982,37 @@ describe('lightspeed router tests', () => {
     });
   });
 
+  describe('POST /v1/query input size validation', () => {
+    it('returns 400 when query exceeds maximum length', async () => {
+      const backendServer = await startBackendServer();
+      const longQuery = 'a'.repeat(32001);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: longQuery,
+        });
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'query exceeds maximum length of 32000 characters',
+      );
+    });
+
+    it('accepts query at exactly maximum length', async () => {
+      const backendServer = await startBackendServer();
+      const maxQuery = 'a'.repeat(32000);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: maxQuery,
+        });
+      expect(response.statusCode).not.toEqual(400);
+    });
+  });
+
   // Locks in the 500 contract when the permission service itself fails
   // (e.g. network error) as opposed to a deliberate DENY. Ensures the
   // middleware responds with a generic error rather than leaking internals.

@@ -36,6 +36,7 @@ import { Readable } from 'node:stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -588,6 +589,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     validateCompletionsRequest,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {

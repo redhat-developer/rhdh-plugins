@@ -14,5 +14,10 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+import { BOOST_PLUGIN_ID } from './index';
+
+describe('boost-common', () => {
+  it('exports the boost plugin ID', () => {
+    expect(BOOST_PLUGIN_ID).toBe('boost');
+  });
+});
