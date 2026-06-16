@@ -123,8 +123,8 @@ export function getWorkflowRunStats(
       processIdVersion,
       successCount,
       errorCount,
-      totalCount: items.length,
-      successRatio: successCount / items.length,
+      totalCount: successCount + errorCount,
+      successRatio: successCount / (successCount + errorCount),
       runsLastMonth: runsLastMonth.length,
     };
   });

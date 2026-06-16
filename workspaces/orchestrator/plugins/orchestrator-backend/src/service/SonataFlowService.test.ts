@@ -38,6 +38,17 @@ describe('SonataFlowService', () => {
   const serviceUrl = 'http://example.com/workflows';
   const definitionId = 'workflow-123';
 
+  const createProcessInstance = (
+    overrides: Partial<ProcessInstance> &
+      Pick<ProcessInstance, 'id' | 'processId'>,
+  ): ProcessInstance => ({
+    endpoint: 'http://example.com',
+    nodes: [],
+    version: '1.0',
+    state: ProcessInstanceState.Completed,
+    ...overrides,
+  });
+
   const setupTest = (responseConfig: {
     ok: boolean;
     status?: number;
@@ -678,17 +689,6 @@ describe('SonataFlowService', () => {
       states: [{ name: 'startState', type: 'inject', end: true }],
     });
 
-    const createProcessInstance = (
-      overrides: Partial<ProcessInstance> &
-        Pick<ProcessInstance, 'id' | 'processId'>,
-    ): ProcessInstance => ({
-      endpoint: 'http://example.com',
-      nodes: [],
-      version: '1.0',
-      state: ProcessInstanceState.Completed,
-      ...overrides,
-    });
-
     beforeEach(() => {
       jest.useFakeTimers();
       jest.setSystemTime(NOW);
@@ -892,17 +892,6 @@ describe('SonataFlowService', () => {
       version: '1.0',
       start: 'startState',
       states: [{ name: 'startState', type: 'inject', end: true }],
-    });
-
-    const createProcessInstance = (
-      overrides: Partial<ProcessInstance> &
-        Pick<ProcessInstance, 'id' | 'processId'>,
-    ): ProcessInstance => ({
-      endpoint: 'http://example.com',
-      nodes: [],
-      version: '1.0',
-      state: ProcessInstanceState.Completed,
-      ...overrides,
     });
 
     beforeEach(() => {
