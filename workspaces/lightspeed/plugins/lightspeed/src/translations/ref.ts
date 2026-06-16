@@ -154,9 +154,9 @@ export const lightspeedMessages = {
     'Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?',
 
   // Conversation history
-  'conversation.delete.confirm.title': 'Delete chat?',
+  'conversation.delete.confirm.title': 'Delete "{{chatName}}"?',
   'conversation.delete.confirm.message':
-    "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+    "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback.",
   'conversation.delete.confirm.action': 'Delete',
   'conversation.rename.confirm.title': 'Rename chat?',
   'conversation.rename.confirm.action': 'Rename',
@@ -205,7 +205,7 @@ export const lightspeedMessages = {
   'chatbox.header.title': 'Developer Lightspeed',
   'chatbox.search.placeholder': 'Search',
   'chatbox.provider.other': 'Other',
-  'chatbox.emptyState.noPinnedChats': 'No pinned chats',
+  'chatbox.emptyState.noPinnedChats': 'Pin chats to keep them on top',
   'chatbox.emptyState.noRecentChats': 'No recent chats',
   'chatbox.emptyState.noResults.title': 'No results found',
   'chatbox.emptyState.noResults.body':

@@ -52,9 +52,6 @@ workspace/quickstart:
 workspace/repo-tools:
   - 'Workspace\\s*repo-tools'
 
-workspace/sandbox:
-  - 'Workspace\\s*sandbox'
-
 workspace/scorecard:
   - 'Workspace\\s*scorecard'
 

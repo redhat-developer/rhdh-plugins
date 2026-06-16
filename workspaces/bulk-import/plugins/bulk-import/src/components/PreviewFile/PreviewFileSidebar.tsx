@@ -23,7 +23,6 @@ import {
 } from '@backstage/core-plugin-api';
 
 import Drawer from '@mui/material/Drawer';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -44,13 +43,6 @@ import {
 } from '../../utils/repository-utils';
 import { PreviewFileSidebarDrawerContent } from './PreviewFileSidebarDrawerContent';
 
-const useDrawerStyles = makeStyles({
-  paper: {
-    width: '40%',
-    gap: '3%',
-  },
-});
-
 export const PreviewFileSidebar = ({
   open,
   onClose,
@@ -69,7 +61,6 @@ export const PreviewFileSidebar = ({
   const { t } = useTranslation();
   const { setStatus, status, setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
-  const classes = useDrawerStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
@@ -213,8 +204,8 @@ export const PreviewFileSidebar = ({
           ? 'preview-pullrequest-sidebar-loading'
           : 'preview-pullrequest-sidebar'
       }
-      classes={{
-        paper: classes.paper,
+      PaperProps={{
+        sx: { width: '40%', gap: '3%' },
       }}
     >
       <PreviewFileSidebarDrawerContent

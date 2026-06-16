@@ -52,6 +52,7 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import {
   LightspeedPage,
@@ -67,6 +68,7 @@ const githubProvider = {
 };
 const app = createApp({
   apis,
+  themes: getAllThemes(),
   __experimentalTranslations: {
     availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [lightspeedTranslations],

@@ -40,7 +40,7 @@ const lightspeedTranslationJa = createTranslationMessages({
     'attach.menu.description': 'JSON、YAML、または TXT ファイルを添付',
     'attach.menu.title': '添付',
     'button.newChat': '新しいチャット',
-    'chatbox.emptyState.noPinnedChats': '固定したチャットがありません',
+    'chatbox.emptyState.noPinnedChats': 'チャットを固定して上部に表示',
     'chatbox.emptyState.noRecentChats': '最近のチャットがありません',
     'chatbox.emptyState.noResults.body':
       '検索クエリーを調整して再試行してください。スペルを確認するか、より一般的な用語をお試しください。',
@@ -69,8 +69,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.delete': '削除',
     'conversation.delete.confirm.action': '削除',
     'conversation.delete.confirm.message':
-      'このチャットはここに表示されなくなります。Lightspeed Activity からのプロンプト、回答、フィードバックなど、関連アクティビティーも削除されます。',
-    'conversation.delete.confirm.title': 'チャットを削除しますか?',
+      'このチャットはここに表示されなくなります。プロンプト、回答、フィードバックなど、関連アクティビティーも削除されます。',
+    'conversation.delete.confirm.title': '"{{chatName}}" を削除しますか?',
     'conversation.removeFromPinnedChats': '固定解除',
     'conversation.rename': '名前の変更',
     'conversation.rename.confirm.action': '名前の変更',
