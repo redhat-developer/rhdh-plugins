@@ -31,8 +31,10 @@ import { Readable, Transform } from 'stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -431,14 +433,24 @@ export async function createNotebooksRouter(
     }),
   );
 
+  const validateNotebooksQuery = (query: unknown): string | null => {
+    if (!query) return 'query is required';
+    if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+      return `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`;
+    }
+    return null;
+  };
+
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { query } = req.body;
 
-      if (!query) {
-        handleError(logger, res, 'query is required');
+      const queryError = validateNotebooksQuery(query);
+      if (queryError) {
+        handleError(logger, res, queryError);
         return;
       }
 
@@ -514,7 +526,6 @@ export async function createNotebooksRouter(
             .pipe(createResponsesApiTransform(session, sessionId, userId))
             .pipe(res);
         }
-        console.log('response1234', response.body);
         break;
       }
     }),
