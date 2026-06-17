@@ -369,7 +369,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 10000 });
 
-    await expect(dialog.getByText('Edit project')).toBeVisible();
+    await expect(
+      dialog.getByRole('heading', { name: 'Edit project' }),
+    ).toBeVisible();
 
     const nameField = dialog.locator('input').first();
     await expect(nameField).toHaveValue(projectName);
