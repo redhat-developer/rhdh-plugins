@@ -1289,6 +1289,9 @@ ul.nav-tabs {
     "version" : {
       "type" : "string",
       "description" : "Workflow definition version"
+    },
+    "workflowRunStats" : {
+      "$ref" : "#/components/schemas/WorkflowRunStatsDTO"
     }
   }
 };
@@ -1380,6 +1383,30 @@ ul.nav-tabs {
   }, {
     "type" : "number"
   } ]
+};
+    defs["WorkflowRunStatsDTO"] = {
+  "properties" : {
+    "successRatio" : {
+      "type" : "number",
+      "description" : "Ratio of completed runs to total runs"
+    },
+    "runsLastMonth" : {
+      "type" : "integer",
+      "description" : "Number of runs in the last 30 days"
+    },
+    "successCount" : {
+      "type" : "integer",
+      "description" : "Number of completed workflow runs"
+    },
+    "errorCount" : {
+      "type" : "integer",
+      "description" : "Number of failed workflow runs"
+    },
+    "totalCount" : {
+      "type" : "integer",
+      "description" : "Total number of workflow runs"
+    }
+  }
 };
     defs["WorkflowRunStatusDTO"] = {
   "properties" : {
@@ -2835,8 +2862,8 @@ ID of the workflow instance
  "http://localhost/v2/workflows/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 9.301444243932576,
+    &quot;pageSize&quot; : 7.061401241503109,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -3738,8 +3765,8 @@ ID of instance
  "http://localhost/v2/workflows/{workflowId}/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 9.301444243932576,
+    &quot;pageSize&quot; : 7.061401241503109,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -5886,8 +5913,8 @@ pub fn main() {
  "http://localhost/v2/workflows/overview" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 1.4658129805029452,
-    &quot;pageSize&quot; : 6.027456183070403,
+    &quot;offset&quot; : 9.301444243932576,
+    &quot;pageSize&quot; : 7.061401241503109,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },

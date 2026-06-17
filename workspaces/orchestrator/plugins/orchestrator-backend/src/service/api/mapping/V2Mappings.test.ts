@@ -79,6 +79,28 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
     );
     expect(result.description).toBe(overview.description);
   });
+
+  it('maps workflow run count fields', () => {
+    const overview: WorkflowOverview = generateTestWorkflowOverview({
+      workflowRunStats: {
+        successCount: 8,
+        errorCount: 2,
+        totalCount: 10,
+        successRatio: 0.8,
+        runsLastMonth: 10,
+      },
+    });
+
+    const result = mapToWorkflowOverviewDTO(overview);
+
+    expect(result.workflowRunStats).toEqual({
+      successCount: 8,
+      errorCount: 2,
+      totalCount: 10,
+      successRatio: 0.8,
+      runsLastMonth: 10,
+    });
+  });
 });
 describe('scenarios to verify mapToProcessInstanceDTO', () => {
   it('correctly maps ProcessInstanceDTO for not completed workflow', () => {
