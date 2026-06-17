@@ -186,7 +186,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - Provider modules have IDs: `llamastack` and `kagenti`
 - Both are exported as OCI images for RHDH dynamic plugin loading
 - Deployers install only the providers they need — no unused provider code loaded
-- Provider modules depend on `boost-common` for shared types and `boostAiProviderServiceRef`
+- Provider modules depend on `boost-common` for shared types and `boost-node` for `boostAiProviderServiceRef`
 - Boost ships modular from day one — no monolithic fallback needed
 
 **RHDH deployment example:**
@@ -245,7 +245,7 @@ AgenticProvider (in boost-common)
 ├── evaluation?               — optional
 └── conversation?             — optional
 
-boostAiProviderServiceRef (in boost-common)
+boostAiProviderServiceRef (in boost-node)
 └── enables cross-plugin consumption of the active provider
 
 ProviderManager
