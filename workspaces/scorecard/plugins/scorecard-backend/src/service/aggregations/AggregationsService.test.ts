@@ -113,7 +113,7 @@ describe('AggregationsService', () => {
       entityRefs: ['component:default/a'],
       thresholds,
       aggregationConfig: {
-        id: 'avgKpi',
+        id: 'weightedKpi',
         title: 'Weighted health KPI',
         description: 'Weighted health score across statuses',
         metricId: metric.id,

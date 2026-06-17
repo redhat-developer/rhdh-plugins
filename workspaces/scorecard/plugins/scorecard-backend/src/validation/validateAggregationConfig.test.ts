@@ -158,7 +158,7 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
@@ -180,7 +180,7 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
@@ -203,7 +203,7 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
@@ -243,7 +243,7 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
@@ -277,7 +277,7 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
