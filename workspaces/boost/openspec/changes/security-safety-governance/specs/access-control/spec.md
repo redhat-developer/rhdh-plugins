@@ -141,7 +141,7 @@ Sensitive credentials MUST be stored encrypted in the admin config database.
 
 ### Requirement: Security Mode Naming
 
-The development security mode MUST use an explicit name that communicates its purpose. The legacy name `none` SHALL NOT be accepted.
+The development security mode MUST use an explicit name that communicates its purpose. The legacy name `none` MUST NOT be accepted.
 
 #### Scenario: Only valid mode names accepted
 

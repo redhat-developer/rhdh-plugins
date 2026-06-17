@@ -82,7 +82,7 @@ Hand-written validators MUST be replaced with schema-derived validation.
 
 ### Requirement: New Config Categories
 
-New features MUST have additional runtime configuration fields.
+The following new features MUST have runtime configuration fields as specified below.
 
 #### Scenario: Agent approval configuration
 
