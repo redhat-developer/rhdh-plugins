@@ -1,8 +1,8 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-boost-common",
+  "name": "@red-hat-developer-hub/backstage-plugin-boost-node",
   "version": "0.1.1",
   "license": "Apache-2.0",
-  "description": "Common types and utilities for the boost plugin",
+  "description": "Node.js library for the boost plugin",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -12,19 +12,20 @@
     "types": "dist/index.d.ts"
   },
   "backstage": {
-    "role": "common-library",
+    "role": "node-library",
     "pluginId": "boost",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-common",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-node",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost-common",
       "@red-hat-developer-hub/backstage-plugin-boost-node"
     ]
   },
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.9.7"
+    "@backstage/backend-plugin-api": "^1.9.1",
+    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
   },
-  "peerDependencies": {
-    "@backstage/plugin-permission-common": "^0.9.7"
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5"
   },
   "sideEffects": false,
   "scripts": {
@@ -35,16 +36,13 @@
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
-  "devDependencies": {
-    "@backstage/cli": "^0.34.5"
-  },
   "files": [
     "dist"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
-    "directory": "workspaces/boost/plugins/boost-common"
+    "directory": "workspaces/boost/plugins/boost-node"
   },
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues"

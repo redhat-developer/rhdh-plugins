@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the boost plugin.
- *
- * @packageDocumentation
- */
+import { createServiceRef } from '@backstage/backend-plugin-api';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 /**
- * The plugin ID for the boost plugin.
+ * Service ref for the active AI provider. Other Backstage plugins
+ * consume the active provider via this service ref.
+ *
+ * The default factory is registered by `boost-backend` and resolves
+ * to `ProviderManager.getActiveProvider()`.
  *
  * @public
  */
-export const BOOST_PLUGIN_ID = 'boost';
-
-export * from './types';
-export * from './permissions';
+export const boostAiProviderServiceRef = createServiceRef<AgenticProvider>({
+  id: 'boost.ai-provider',
+  scope: 'plugin',
+});
