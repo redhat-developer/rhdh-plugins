@@ -9,6 +9,8 @@ version: 1
 #   - repo.yarnpkg.com endpoint in package_registries (corepack downloads
 #     yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
 #   - corepack binary in package_registries
+#   - allow_encoded_slash on registry.npmjs.org (yarn scoped packages use
+#     @scope%2Fpkg URLs; without this the L7 proxy rejects and retries)
 #
 # Grants network access the code agent needs beyond the base sandbox:
 #   - Vertex AI (global inference + GCP auth token exchange)
@@ -95,6 +97,7 @@ network_policies:
         protocol: rest
         enforcement: enforce
         access: read-only
+        allow_encoded_slash: true
       - host: "registry.yarnpkg.com"
         port: 443
         protocol: rest
