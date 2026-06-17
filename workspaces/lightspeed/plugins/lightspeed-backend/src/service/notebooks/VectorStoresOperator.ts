@@ -487,4 +487,40 @@ export class VectorStoresOperator {
       return response.json();
     },
   };
+
+  /**
+   * Conversations API
+   */
+  conversations = {
+    /**
+     * Delete a conversation
+     * DELETE /v2/conversations/{conversation_id}
+     */
+    delete: async (conversationId: string, userId: string): Promise<void> => {
+      this.logger.debug(
+        `VectorStoresOperator: Deleting conversation ${conversationId}`,
+      );
+
+      const response = await fetch(
+        `${this.baseURL}/v2/conversations/${encodeURIComponent(conversationId)}?user_id=${encodeURIComponent(userId)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (!response.ok) {
+        this.logger.warn(
+          `Failed to delete conversation ${conversationId}: HTTP ${response.status}`,
+        );
+        throw new Error(
+          `Failed to delete conversation: HTTP ${response.status}`,
+        );
+      }
+
+      this.logger.info(`Deleted conversation ${conversationId}`);
+    },
+  };
 }

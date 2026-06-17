@@ -160,7 +160,8 @@ export const DocumentSidebar = ({
     name => !uploadedNames.has(name),
   );
   const totalCount = documents.length + activePending.length;
-  const isAddDisabled = totalCount >= NOTEBOOK_MAX_FILES;
+  const isAddDisabled =
+    totalCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
   return (
     <div className={classes.sidebar}>

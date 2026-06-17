@@ -191,27 +191,10 @@ export class SessionService {
     // Delete associated conversation if it exists
     if (conversationId) {
       try {
-        // Access the baseURL from the VectorStoresOperator client
-        const baseURL = (this.client as any).baseURL;
-        const response = await fetch(
-          `${baseURL}/v2/conversations/${encodeURIComponent(conversationId)}?user_id=${encodeURIComponent(userId)}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
+        await this.client.conversations.delete(conversationId, userId);
+        this.logger.info(
+          `Deleted conversation ${conversationId} for session ${sessionId}`,
         );
-
-        if (!response.ok) {
-          this.logger.warn(
-            `Failed to delete conversation ${conversationId}: HTTP ${response.status}`,
-          );
-        } else {
-          this.logger.info(
-            `Deleted conversation ${conversationId} for session ${sessionId}`,
-          );
-        }
       } catch (error) {
         this.logger.warn(
           `Failed to delete conversation ${conversationId}: ${error}`,
