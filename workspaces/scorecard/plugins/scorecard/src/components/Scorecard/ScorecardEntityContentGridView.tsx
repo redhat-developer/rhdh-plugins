@@ -35,6 +35,7 @@ import {
   resolveMetricTranslation,
 } from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
+import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
 
 function MetricTile({
   metric,
@@ -157,16 +158,15 @@ export const ScorecardEntityContentGridView = ({
   const groupedMetricIds = new Set<string>();
   const groupedMetrics = new Map<string, MetricResult[]>();
 
-  scorecards.forEach(metric => {
-    Object.entries(groups).forEach(([groupKey, groupConfig]) => {
-      if (groupConfig.metrics.includes(metric.id)) {
-        if (!groupedMetrics.has(groupKey)) {
-          groupedMetrics.set(groupKey, []);
-        }
-        groupedMetrics.get(groupKey)!.push(metric);
-        groupedMetricIds.add(metric.id);
-      }
-    });
+  Object.entries(groups).forEach(([groupKey, groupConfig]) => {
+    const metricsInOrder = groupConfig.metrics
+      .map(id => scorecards.find(m => m.id === id))
+      .filter((m): m is MetricResult => m !== undefined);
+
+    if (metricsInOrder.length > 0) {
+      groupedMetrics.set(groupKey, metricsInOrder);
+      metricsInOrder.forEach(m => groupedMetricIds.add(m.id));
+    }
   });
 
   const ungroupedMetrics = scorecards.filter(m => !groupedMetricIds.has(m.id));
@@ -203,10 +203,8 @@ export const ScorecardEntityContentGridView = ({
       })}
 
       {ungroupedMetrics.map((metric: MetricResult) => {
-        const metricDataError =
-          metric.status === 'error' || metric.result?.value === null;
-        const thresholdErrorState =
-          metric.result?.thresholdResult?.status === 'error';
+        const metricDataError = hasMetricDataError(metric);
+        const thresholdErrorState = hasThresholdError(metric);
         const statusConfig = getStatusConfig({
           evaluation: metric.result?.thresholdResult?.evaluation,
           thresholdStatus: metric.result?.thresholdResult?.status,

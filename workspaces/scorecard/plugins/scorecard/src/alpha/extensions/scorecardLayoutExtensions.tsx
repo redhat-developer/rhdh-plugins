@@ -25,6 +25,7 @@ import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
 export const scorecardEntityLayoutGrid =
   ScorecardEntityContentLayoutBlueprint.make({
     name: 'scorecard-entity-layout-grid',
+    disabled: true,
     params: {
       title: 'Grid',
       loader: () =>
@@ -44,6 +45,7 @@ export const scorecardEntityLayoutGrid =
 export const scorecardEntityLayoutList =
   ScorecardEntityContentLayoutBlueprint.make({
     name: 'scorecard-entity-layout-list',
+    disabled: true,
     params: {
       title: 'List',
       loader: () =>

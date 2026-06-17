@@ -61,12 +61,10 @@ export default createFrontendPlugin({
 });
 
 /**
- * Catalog module that injects the Scorecard tab and its default layout
- * extensions (grid + list) into the Catalog entity pages.
+ * Catalog module that injects the Scorecard tab and into Catalog entity pages.
  *
- * The plugin ships both layouts; platform engineers enable/disable individual
- * layouts via app-config.yaml. No separate module registration is needed
- * in App.tsx for the layouts.
+ * Also ships grid and list layout extensions (disabled by default).
+ * Enable them in app-config.yaml to get a layout toggle in the entity tab.
  *
  * @alpha
  */
