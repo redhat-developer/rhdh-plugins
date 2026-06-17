@@ -13,7 +13,7 @@ import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @alpha
+// @public
 const _default: OverridableFrontendPlugin<
   {},
   {},
@@ -76,7 +76,7 @@ const _default: OverridableFrontendPlugin<
 >;
 export default _default;
 
-// @alpha
+// @public
 export const quickstartInitModule: FrontendModule;
 
 // @public
@@ -146,7 +146,7 @@ export const quickstartTranslationRef: TranslationRef<
 // @public
 export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
-// @alpha
+// @public
 export const quickstartTranslationsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)

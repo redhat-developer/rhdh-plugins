@@ -58,7 +58,7 @@ const quickstartInitElement = AppRootElementBlueprint.make({
 /**
  * The Quickstart frontend plugin for the new Backstage frontend system.
  *
- * @alpha
+ * @public
  */
 export default createFrontendPlugin({
   pluginId: 'quickstart',
@@ -69,7 +69,7 @@ export default createFrontendPlugin({
  * Quickstart initialization module.
  * Handles first-visit auto-open and snackbar notifications.
  *
- * @alpha
+ * @public
  */
 export const quickstartInitModule = createFrontendModule({
   pluginId: 'app',
@@ -79,7 +79,7 @@ export const quickstartInitModule = createFrontendModule({
 /**
  * Translation module for the quickstart plugin.
  *
- * @alpha
+ * @public
  */
 export const quickstartTranslationsModule = createFrontendModule({
   pluginId: 'app',

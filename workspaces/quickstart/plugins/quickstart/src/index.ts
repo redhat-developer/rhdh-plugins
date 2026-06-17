@@ -52,3 +52,25 @@ export {
 } from './translations';
 
 export { filterQuickstartItemsByRole } from './utils';
+
+/**
+ * The Quickstart frontend plugin for the new Backstage frontend system.
+ *
+ * @public
+ */
+export { default } from './alpha';
+
+/**
+ * Quickstart initialization module.
+ * Handles first-visit auto-open and snackbar notifications.
+ *
+ * @public
+ */
+export { quickstartInitModule } from './alpha';
+
+/**
+ * Translation module for the quickstart plugin.
+ *
+ * @public
+ */
+export { quickstartTranslationsModule } from './alpha';
