@@ -79,3 +79,14 @@ All agent creation paths register the agent for lifecycle governance.
 - **AND** the agent enters the `Draft` lifecycle stage
 - **AND** the `createdBy` field is set to the authenticated user's identity
 - **AND** lifecycle actions (promote, withdraw, delete) are available per the agent's governance state
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

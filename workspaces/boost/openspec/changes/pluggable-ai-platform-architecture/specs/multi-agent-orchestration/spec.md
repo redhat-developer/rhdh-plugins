@@ -56,3 +56,14 @@ The OpenAI Agent SDK (via Llama Stack Responses API) handles agent orchestration
 - **THEN** the OpenAI Agent SDK manages agent handoff transitions via the Responses API
 - **AND** it coordinates tool execution within agent turns
 - **AND** orchestration is defined via YAML configuration (not custom code)
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass
