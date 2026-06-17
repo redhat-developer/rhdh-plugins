@@ -23,7 +23,7 @@ import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 
-import { quickstartTranslations } from '../translations';
+import { quickstartTranslations } from './translations';
 import { QUICKSTART_DRAWER_ID } from './const';
 import { QuickstartDrawerContent } from './QuickstartDrawerContent';
 import { QuickstartHelpMenuItem } from './QuickstartHelpMenuItem';
@@ -58,7 +58,7 @@ const quickstartInitElement = AppRootElementBlueprint.make({
 /**
  * The Quickstart frontend plugin for the new Backstage frontend system.
  *
- * @alpha
+ * @public
  */
 export default createFrontendPlugin({
   pluginId: 'quickstart',
@@ -69,7 +69,7 @@ export default createFrontendPlugin({
  * Quickstart initialization module.
  * Handles first-visit auto-open and snackbar notifications.
  *
- * @alpha
+ * @public
  */
 export const quickstartInitModule = createFrontendModule({
   pluginId: 'app',
@@ -79,7 +79,7 @@ export const quickstartInitModule = createFrontendModule({
 /**
  * Translation module for the quickstart plugin.
  *
- * @alpha
+ * @public
  */
 export const quickstartTranslationsModule = createFrontendModule({
   pluginId: 'app',
@@ -96,4 +96,6 @@ export const quickstartTranslationsModule = createFrontendModule({
 export {
   quickstartTranslationRef,
   quickstartTranslations,
-} from '../translations';
+} from './translations';
+
+export * from './legacyExports';

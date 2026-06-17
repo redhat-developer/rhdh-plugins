@@ -18,10 +18,10 @@ import { useMemo } from 'react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
-import { Quickstart } from '../components/Quickstart';
-import { useQuickstartRole } from '../hooks/useQuickstartRole';
-import { QuickstartItemData } from '../types';
-import { filterQuickstartItemsByRole } from '../utils';
+import { Quickstart } from './components/Quickstart';
+import { useQuickstartRole } from './hooks/useQuickstartRole';
+import { QuickstartItemData } from './types';
+import { filterQuickstartItemsByRole } from './utils';
 import { QUICKSTART_DRAWER_ID } from './const';
 
 export const QuickstartDrawerContent = () => {

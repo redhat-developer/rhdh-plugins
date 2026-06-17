@@ -25,10 +25,10 @@ import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 
-import { useQuickstartRole } from '../hooks/useQuickstartRole';
-import { useTranslation } from '../hooks/useTranslation';
-import { QuickstartItemData } from '../types';
-import { filterQuickstartItemsByRole } from '../utils';
+import { useQuickstartRole } from './hooks/useQuickstartRole';
+import { useTranslation } from './hooks/useTranslation';
+import { QuickstartItemData } from './types';
+import { filterQuickstartItemsByRole } from './utils';
 import { QUICKSTART_DRAWER_ID } from './const';
 
 /**
