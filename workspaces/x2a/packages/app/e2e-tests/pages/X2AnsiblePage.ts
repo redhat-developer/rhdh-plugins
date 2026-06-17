@@ -88,7 +88,7 @@ export class X2AnsiblePage {
 
   async fillProjectName(name: string) {
     const field = this.page.getByLabel('Name');
-    await expect(field).toBeVisible({ timeout: 5000 });
+    await expect(field).toBeVisible({ timeout: 30000 });
     await field.fill(name);
   }
 

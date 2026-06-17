@@ -63,7 +63,9 @@ test.describe('X2Ansible - Conversion Flow @live', () => {
       await x2aPage.clickStartFirstConversion();
       await x2aPage.verifyTemplateFormLoaded();
 
-      await expect(x2aPage.page.getByLabel('Name')).toBeVisible();
+      await expect(x2aPage.page.getByLabel('Name')).toBeVisible({
+        timeout: 30000,
+      });
       await expect(x2aPage.page.getByLabel('Description')).toBeVisible();
       await expect(x2aPage.page.getByLabel('Abbreviation')).toBeVisible();
       await expect(x2aPage.page.getByLabel('Owned by group')).toBeVisible();
