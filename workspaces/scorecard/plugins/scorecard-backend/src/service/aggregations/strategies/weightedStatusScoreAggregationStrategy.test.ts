@@ -56,7 +56,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     const logger = mockServices.logger.mock();
     const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
     const aggregationConfig = {
-      id: 'avgKpi',
+      id: 'weightedKpi',
       metricId: metric.id,
       type: aggregationTypes.weightedStatusScore,
       options: {
@@ -108,7 +108,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       entityRefs: ['component:default/a'],
       thresholds,
       aggregationConfig: {
-        id: 'avgKpi',
+        id: 'weightedKpi',
         metricId: metric.id,
         type: aggregationTypes.weightedStatusScore,
         options: {
@@ -149,7 +149,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
         entityRefs: ['component:default/a'],
         thresholds,
         aggregationConfig: {
-          id: 'avgKpi',
+          id: 'weightedKpi',
           metricId: metric.id,
           type: aggregationTypes.weightedStatusScore,
         } as any,
@@ -176,7 +176,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
 
     const aggregationConfig = {
-      id: 'avgKpi',
+      id: 'weightedKpi',
       metricId: metric.id,
       type: aggregationTypes.weightedStatusScore,
       options: {

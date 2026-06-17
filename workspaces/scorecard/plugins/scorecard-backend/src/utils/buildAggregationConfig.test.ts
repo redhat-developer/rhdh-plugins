@@ -53,10 +53,10 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result).toEqual({
-      id: 'avgKpi',
+      id: 'weightedKpi',
       title: 'Weighted health',
       description: 'Weighted health score across statuses',
       type: aggregationTypes.weightedStatusScore,
@@ -86,7 +86,7 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result.options?.thresholds?.rules).toEqual([
       { key: 'success', expression: '>=75', color: 'success.main' },
