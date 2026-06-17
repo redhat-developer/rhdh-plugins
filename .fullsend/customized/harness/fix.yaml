@@ -69,4 +69,4 @@ runner_env:
   FULLSEND_OUTPUT_SCHEMA: ${FULLSEND_DIR}/schemas/fix-result.schema.json
   FULLSEND_OUTPUT_FILE: fix-result.json
 
-timeout_minutes: 25
+timeout_minutes: 90
