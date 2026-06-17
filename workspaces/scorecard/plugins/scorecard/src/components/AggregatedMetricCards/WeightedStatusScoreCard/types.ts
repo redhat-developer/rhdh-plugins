@@ -17,18 +17,19 @@
 import {
   WeightedStatusScoreAggregationResult,
   AggregatedMetricResult,
+  AggregationMetadata,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { AggregatedMetricCardBaseProps } from '../types';
 
-export type WeightedStatusScoreCardComponentProps = {
-  scorecard: Omit<AggregatedMetricResult, 'result'> & {
-    result: WeightedStatusScoreAggregationResult;
+export type WeightedStatusScoreCardComponentProps =
+  AggregatedMetricCardBaseProps & {
+    scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
+      metadata: AggregationMetadata & {
+        aggregationType: typeof aggregationTypes.weightedStatusScore;
+      };
+      result: WeightedStatusScoreAggregationResult;
+    };
   };
-  cardTitle: string;
-  description: string;
-  aggregationId: string;
-  showSubheader?: boolean;
-  showInfo?: boolean;
-  dataTestId?: string;
-};
 
 export type TooltipPosition = { left: number; top: number };
