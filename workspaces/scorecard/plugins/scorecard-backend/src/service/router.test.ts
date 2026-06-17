@@ -1191,7 +1191,7 @@ describe('createRouter', () => {
       const kpiConfig = new ConfigReader({
         scorecard: {
           aggregationKPIs: {
-            avgKpi: {
+            weightedKpi: {
               title: 'Weighted health KPI',
               description: 'Weighted status score',
               type: 'weightedStatusScore',
@@ -1245,7 +1245,7 @@ describe('createRouter', () => {
       kpiApp.use(router);
       kpiApp.use(mockErrorHandler());
 
-      await request(kpiApp).get('/aggregations/avgKpi');
+      await request(kpiApp).get('/aggregations/weightedKpi');
 
       expect(getSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
