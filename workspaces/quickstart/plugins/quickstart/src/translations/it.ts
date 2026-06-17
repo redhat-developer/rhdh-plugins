@@ -76,7 +76,8 @@ const quickstartTranslationIt = createTranslationMessages({
     'steps.getStartedWithLightspeed.ctaTitle': 'Scopri di più',
     'steps.getStartedWithLightspeed.description':
       'Risolvi i problemi, genera codice e scopri le risorse della piattaforma grazie alla chat basata su IA.',
-    'steps.getStartedWithLightspeed.title': 'Inizia subito con Lightspeed',
+    'steps.getStartedWithLightspeed.title':
+      'Inizia subito con Intelligent Assistant',
     'steps.importApplication.ctaTitle': 'Importa',
     'steps.importApplication.description':
       'Importa codice e servizi esistenti nel catalogo per organizzarli e accedervi tramite il tuo portale per sviluppatori.',
@@ -95,8 +96,8 @@ const quickstartTranslationIt = createTranslationMessages({
     'steps.setupAuthentication.title': "Configura l'autenticazione",
     'steps.setupLightspeed.ctaTitle': 'Scopri di più',
     'steps.setupLightspeed.description':
-      "Collega Lightspeed a un modello linguistico di grandi dimensioni (LLM) supportato e configura le autorizzazioni per fornire l'assistenza basata su IA ai tuoi sviluppatori.",
-    'steps.setupLightspeed.title': 'Configura Lightspeed',
+      "Collega Intelligent Assistant a un modello linguistico di grandi dimensioni (LLM) supportato e configura le autorizzazioni per fornire l'assistenza basata su IA ai tuoi sviluppatori.",
+    'steps.setupLightspeed.title': 'Configura Intelligent Assistant',
   },
 });
 
