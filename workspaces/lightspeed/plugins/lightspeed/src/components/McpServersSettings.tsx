@@ -22,7 +22,6 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -38,9 +37,10 @@ import {
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
+  InfoCircleIcon,
   KeyIcon,
   LockIcon,
-  OffIcon,
+  PencilAltIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
   TimesIcon,
@@ -166,7 +166,10 @@ const useStyles = makeStyles(theme => ({
     color: '#B1380B',
   },
   statusDisabled: {
-    color: theme.palette.text.secondary,
+    color:
+      theme.palette.type === 'dark'
+        ? 'var(--pf-t--global--text--color--subtle, #c7c7c7)'
+        : 'var(--pf-t--global--text--color--subtle, #4d4d4d)',
   },
   actionButton: {
     color: theme.palette.text.secondary,
@@ -386,7 +389,7 @@ type McpCredentialsValidateResponse = {
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
   if (status === 'tokenRequired') return <KeyIcon className={className} />;
-  if (status === 'disabled') return <OffIcon className={className} />;
+  if (status === 'disabled') return <InfoCircleIcon className={className} />;
   if (status === 'failed')
     return <ExclamationCircleIcon className={className} />;
   return <CheckCircleIcon className={className} />;
@@ -1005,7 +1008,7 @@ export const McpServersSettings = ({
                     aria-label={t('mcp.settings.editServerAriaLabel' as any, {
                       serverName: server.name,
                     })}
-                    icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
+                    icon={<PencilAltIcon />}
                     variant="plain"
                     className={classes.actionButton}
                     isDisabled={!canManageMcp}
