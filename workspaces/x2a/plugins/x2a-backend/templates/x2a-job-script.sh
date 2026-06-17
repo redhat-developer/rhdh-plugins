@@ -132,17 +132,30 @@ copy_changed_files() {
   pushd "${source_dir}" > /dev/null
 
   # Collect new (untracked) and modified files into a single list
-  # Include both normal untracked files AND gitignored files that x2a created
   local changed_files=()
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     changed_files+=("$file")
-  done < <({ git ls-files --others --exclude-standard; git ls-files --others --ignored --exclude-standard; } | sort -u)
+  done < <(git ls-files --others --exclude-standard)
 
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     changed_files+=("$file")
   done < <(git diff --name-only)
+
+  # Check for gitignored files that x2a created
+  local ignored_files=()
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    ignored_files+=("$file")
+  done < <(git ls-files --others --ignored --exclude-standard)
+
+  if [[ ${#ignored_files[@]} -gt 0 ]]; then
+    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a but blocked by .gitignore:"
+    for file in "${ignored_files[@]}"; do
+      echo "    - $file"
+    done
+  fi
 
   if [[ ${#changed_files[@]} -eq 0 ]]; then
     echo "  No changed files detected"
@@ -207,16 +220,7 @@ cleanup() {
     # Sanitize secrets from output files before committing
     sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
 
-    # Stage all files in PROJECT_DIR, including those that match .gitignore patterns
-    echo "=== Staging files from ${PROJECT_DIR}/ ==="
-    if [ -d "${PROJECT_DIR}" ]; then
-      local processed_count=0
-      while IFS= read -r file; do
-        git add -f "$file" && processed_count=$((processed_count + 1))
-      done < <(find "${PROJECT_DIR}" -type f -not -path '*/.git/*' 2>/dev/null)
-      echo "  Processed ${processed_count} file(s) in ${PROJECT_DIR}/"
-    fi
-
+    git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
     git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
 
 Phase: ${PHASE}
