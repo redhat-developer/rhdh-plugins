@@ -228,7 +228,6 @@ export const lightspeedMessages = {
   'aria.options.label': 'Options',
   'aria.scroll.down': 'Back to bottom',
   'aria.scroll.up': 'Back to top',
-  'aria.settings.label': 'Chatbot options',
   'aria.close': 'Close chatbot',
 
   // Modal actions
