@@ -196,6 +196,12 @@ case "$MODE" in
       exit 1
     fi
     ;;
+  *)
+    # Unreachable today (MODE is set only by the flag parser), but guards against
+    # a future flag that sets MODE without adding a matching branch here.
+    echo "ERROR: internal error: unknown mode '$MODE' (expected print, write, or check)." >&2
+    exit 2
+    ;;
 esac
 
 # Summary to stderr (skipped in --check to keep CI output focused on the diff).
