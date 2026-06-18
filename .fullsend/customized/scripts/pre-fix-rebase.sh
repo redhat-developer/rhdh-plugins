@@ -20,7 +20,7 @@ CURRENT_HEAD="$(git rev-parse HEAD)"
 TARGET_HEAD="$(git rev-parse "origin/${TARGET_BRANCH}")"
 MERGE_BASE="$(git merge-base HEAD "origin/${TARGET_BRANCH}")"
 
-if [ "${MERGE_BASE}" = "${TARGET_HEAD}" ]; then
+if [[ "${MERGE_BASE}" == "${TARGET_HEAD}" ]]; then
   echo "Branch is already up-to-date with origin/${TARGET_BRANCH}. Skipping rebase."
   exit 0
 fi
@@ -30,8 +30,8 @@ echo "Branch is ${BEHIND_COUNT} commit(s) behind origin/${TARGET_BRANCH}. Rebasi
 
 if ! git rebase "origin/${TARGET_BRANCH}" 2>&1; then
   git rebase --abort 2>/dev/null || true
-  echo "::error::Rebase onto origin/${TARGET_BRANCH} failed with conflicts."
-  echo "::error::Please rebase manually and re-trigger /fs-fix."
+  echo "::error::Rebase onto origin/${TARGET_BRANCH} failed with conflicts." >&2
+  echo "::error::Please rebase manually and re-trigger /fs-fix." >&2
   exit 1
 fi
 
