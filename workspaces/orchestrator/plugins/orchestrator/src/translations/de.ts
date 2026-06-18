@@ -216,7 +216,6 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Erneuter Auslöser fehlgeschlagen: {{reason}}',
     'workflow.fields.description': 'Beschreibung',
     'workflow.fields.duration': 'Dauer',
-    'workflow.fields.averageDuration': 'Durchschnittliche Dauer',
     'workflow.fields.entity': 'Entität',
     'workflow.fields.runStatus': 'Ausführungsstatus',
     'workflow.fields.started': 'Begonnen',

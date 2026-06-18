@@ -24,15 +24,10 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import { makeStyles } from 'tss-react/mui';
 
-import {
-  WorkflowOverview,
-  WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter from '../../dataFormatters/WorkflowOverviewFormatter';
 import { useTranslation } from '../../hooks/useTranslation';
-import { formatDuration } from '../../utils/DurationUtils';
 import { WorkflowStatus } from '../ui/WorkflowStatus';
 
 export type WorkflowDetailsLayout = 'default' | 'entity';
@@ -97,18 +92,6 @@ const WorkflowDefinitionDetailsCard = ({
     [workflowOverview],
   );
 
-  const averageDuration = useMemo(() => {
-    if (loading || layout !== 'entity') {
-      return undefined;
-    }
-    const avgDurationMs = (workflowOverview as WorkflowOverview | undefined)
-      ?.avgDurationMs;
-    if (avgDurationMs === undefined) {
-      return VALUE_UNAVAILABLE;
-    }
-    return formatDuration(avgDurationMs, t);
-  }, [loading, workflowOverview, layout, t]);
-
   const workflowStatusField = (
     <AboutField
       label={t('workflow.fields.workflowStatus')}
@@ -170,14 +153,6 @@ const WorkflowDefinitionDetailsCard = ({
               </AboutField>
             </Box>
           ) : null}
-          <Box className={classes.entityFieldItem}>
-            <AboutField
-              label={t('workflow.fields.averageDuration')}
-              value={averageDuration}
-            >
-              {loading ? <Skeleton variant="text" /> : averageDuration}
-            </AboutField>
-          </Box>
           <Box className={classes.entityFieldItem}>{workflowStatusField}</Box>
           <Box className={classes.entityFieldItem}>{versionField}</Box>
           <Box className={classes.entityDescriptionItem}>

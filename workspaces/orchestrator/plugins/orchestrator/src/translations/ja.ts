@@ -212,7 +212,6 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.errors.retriggerFailed': '再トリガーに失敗しました: {{reason}}',
     'workflow.fields.description': '説明',
     'workflow.fields.duration': '期間',
-    'workflow.fields.averageDuration': '平均期間',
     'workflow.fields.entity': 'エンティティ',
     'workflow.fields.runStatus': '実行ステータス',
     'workflow.fields.started': '開始済み',
