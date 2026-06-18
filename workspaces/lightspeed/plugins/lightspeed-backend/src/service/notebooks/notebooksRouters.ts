@@ -482,6 +482,7 @@ export async function createNotebooksRouter(
         input: query,
         instructions: systemPrompt,
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
+        tool_choice: 'required',
         model: `${queryProvider}/${queryModel}`,
         stream: true,
         temperature: 0.35,
