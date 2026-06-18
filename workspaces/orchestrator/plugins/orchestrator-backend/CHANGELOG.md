@@ -16,6 +16,12 @@
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.0
 
+## 8.9.5
+
+### Patch Changes
+
+- 06ac2d0: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+
 ## 8.9.4
 
 ### Patch Changes

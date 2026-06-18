@@ -13,6 +13,12 @@
 - Updated dependencies [bd80b86]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
 
+## 2.7.4
+
+### Patch Changes
+
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+
 ## 2.7.3
 
 ### Patch Changes
