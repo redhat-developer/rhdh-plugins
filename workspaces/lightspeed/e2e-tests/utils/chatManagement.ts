@@ -238,7 +238,7 @@ export const openChatbotSettings = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('button', { name: translations['aria.settings.label'] })
+    .getByRole('button', { name: translations['aria.options.label'] })
     .click();
 };
 
@@ -247,7 +247,7 @@ export const verifyChatbotSettingsVisible = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('button', { name: translations['aria.settings.label'] }),
+    page.getByRole('button', { name: translations['aria.options.label'] }),
   ).toBeVisible();
 };
 
