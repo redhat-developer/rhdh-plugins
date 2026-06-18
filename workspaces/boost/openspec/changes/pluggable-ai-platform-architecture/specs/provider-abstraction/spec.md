@@ -42,7 +42,7 @@ Providers register via a Backstage extension point, requiring zero Boost source 
 
 ### Requirement: AI Provider Service Ref for Cross-Plugin Consumption
 
-Other Backstage plugins must be able to consume the active AI provider via Backstage's dependency injection, not just register providers.
+Other Backstage plugins MUST be able to consume the active AI provider via Backstage's dependency injection, not just register providers.
 
 #### Scenario: External plugin consumes active AI provider
 
@@ -61,7 +61,7 @@ Other Backstage plugins must be able to consume the active AI provider via Backs
 
 ### Requirement: Shared Types in Common Package
 
-Provider interfaces and conversation types must live in the common package so both frontend and backend can consume them without circular dependencies.
+Provider interfaces and conversation types MUST live in the common package so both frontend and backend can consume them without circular dependencies.
 
 #### Scenario: AgenticProvider types moved to common
 

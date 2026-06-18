@@ -8,7 +8,7 @@ Implement 16 fine-grained Backstage permissions across 2 resource types with con
 
 ### Requirement: Agent Lifecycle Permissions (Resource-Based)
 
-RBAC policies govern agent lifecycle transitions with ownership and separation-of-duties rules.
+RBAC policies MUST govern agent lifecycle transitions with ownership and separation-of-duties rules.
 
 #### Scenario: Agent permission definitions
 
@@ -43,7 +43,7 @@ RBAC policies govern agent lifecycle transitions with ownership and separation-o
 
 ### Requirement: Tool Lifecycle Permissions (Resource-Based)
 
-RBAC policies govern Kagenti tool lifecycle transitions. The `boost-tool` resource type represents Kagenti tools (K8s workloads with lifecycle governance) — not MCP servers or MCP tools. MCP servers are registered endpoints without lifecycle permissions; MCP tools are runtime-discovered children of MCP servers with no independent lifecycle.
+RBAC policies MUST govern Kagenti tool lifecycle transitions. The `boost-tool` resource type represents Kagenti tools (K8s workloads with lifecycle governance) — not MCP servers or MCP tools. MCP servers are registered endpoints without lifecycle permissions; MCP tools are runtime-discovered children of MCP servers with no independent lifecycle.
 
 #### Scenario: Tool permission definitions
 
@@ -59,6 +59,8 @@ RBAC policies govern Kagenti tool lifecycle transitions. The `boost-tool` resour
 
 ### Requirement: Infrastructure Permissions
 
+Infrastructure operations MUST be gated by dedicated Backstage permissions.
+
 #### Scenario: Kagenti admin permission
 
 - **WHEN** a user accesses Kagenti infrastructure operations
@@ -67,7 +69,7 @@ RBAC policies govern Kagenti tool lifecycle transitions. The `boost-tool` resour
 
 ### Requirement: Conditional Permission Rules
 
-Three conditional rules evaluate loaded resources during permission checks.
+Three conditional rules MUST evaluate loaded resources during permission checks.
 
 #### Scenario: IS_OWNER rule
 
@@ -89,7 +91,7 @@ Three conditional rules evaluate loaded resources during permission checks.
 
 ### Requirement: Backward Compatibility with Fallback
 
-Existing 2-permission deployments continue to work without policy changes.
+Existing 2-permission deployments MUST continue to work without policy changes.
 
 #### Scenario: Fine-grained permissions as primary authorization
 
@@ -100,7 +102,7 @@ Existing 2-permission deployments continue to work without policy changes.
 
 ### Requirement: Route-Level Authorization Middleware
 
-A shared middleware replaces scattered route-level guards.
+A shared middleware MUST replace scattered route-level guards.
 
 #### Scenario: authorizeLifecycleAction middleware
 
@@ -114,6 +116,8 @@ A shared middleware replaces scattered route-level guards.
 
 ### Requirement: Permission Registration Best Practices
 
+Permission constants MUST follow Backstage registration best practices.
+
 #### Scenario: Permissions exported from common package
 
 - **WHEN** permission constants are needed by frontend or backend
@@ -122,6 +126,8 @@ A shared middleware replaces scattered route-level guards.
 - **AND** resource permissions use `createResourcePermission` with resource types `boost-agent` and `boost-tool`
 
 ### Requirement: Functional Area Permissions (non-lifecycle)
+
+Non-lifecycle functional areas MUST have dedicated permissions for access control.
 
 #### Scenario: Functional permission definitions
 
