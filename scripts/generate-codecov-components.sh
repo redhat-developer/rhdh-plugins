@@ -45,7 +45,29 @@ MODE="print"
 OVERLAY_REPO="../rhdh-plugin-export-overlays"
 
 usage() {
-  sed -n '2,38p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  cat <<'EOF'
+Generate / sync the Codecov component_management block from overlay metadata.
+
+Support level for every plugin lives in rhdh-plugin-export-overlays as the
+spec.support field of each package metadata file. This script groups the
+workspaces that exist in THIS repository by support level and renders the
+component_management block of codecov.yml.
+
+Usage:
+  generate-codecov-components.sh [--write|--check] [--overlay <path>]
+
+Modes:
+  (no flag)   Print the component_management block to stdout.
+  --write     Rewrite the component_management block in codecov.yml in place.
+  --check     Exit non-zero (and print a diff) if codecov.yml is out of sync
+              with the overlay metadata. Used by CI to detect drift.
+
+Options:
+  --overlay <path>   Path to a checkout of rhdh-plugin-export-overlays
+                     (default: ../rhdh-plugin-export-overlays). A bare
+                     positional path is also accepted for back-compat.
+  -h, --help         Show this help.
+EOF
 }
 
 while [[ $# -gt 0 ]]; do
@@ -72,7 +94,7 @@ get_workspaces_by_support() {
   grep -lE "^[[:space:]]*support:[[:space:]]*${support_level}[[:space:]]*$" \
     "$OVERLAY_REPO"/workspaces/*/metadata/*.yaml 2>/dev/null \
     | sed -e 's|^.*/workspaces/||' -e 's|/metadata/.*||' \
-    | sort -u \
+    | LC_ALL=C sort -u \
     | while read -r ws; do
         [[ -n "$ws" && -d "$REPO_ROOT/workspaces/$ws" ]] && echo "$ws"
       done || true
@@ -87,7 +109,7 @@ generate_component() {
 
   echo "    # ${component_name} — ${count} workspace(s)"
   echo "    - component_id: ${component_id}"
-  echo "      name: \"${component_name}\""
+  echo "      name: '${component_name}'"
   if [[ "$count" -eq 0 ]]; then
     echo "      paths: []"
   else
@@ -148,13 +170,15 @@ case "$MODE" in
     generate_block
     ;;
   write)
-    tmp="$(mktemp)"
+    # Temp file lives next to the target so the final mv is an atomic rename on
+    # the same filesystem (no risk of a half-written codecov.yml).
+    tmp="$(mktemp "${CODECOV_FILE}.XXXXXX")"
     trap 'rm -f "$tmp"' EXIT
     render_codecov "$tmp"
     if cmp -s "$tmp" "$CODECOV_FILE"; then
       echo "codecov.yml already in sync with overlay metadata." >&2
     else
-      cp "$tmp" "$CODECOV_FILE"
+      mv "$tmp" "$CODECOV_FILE"
       echo "Updated component_management block in codecov.yml." >&2
     fi
     ;;

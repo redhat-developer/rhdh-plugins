@@ -77,7 +77,7 @@ component_management:
   individual_components:
     # GA Plugins — 6 workspace(s)
     - component_id: ga-plugins
-      name: "GA Plugins"
+      name: 'GA Plugins'
       paths:
         - workspaces/adoption-insights/
         - workspaces/global-header/
@@ -87,7 +87,7 @@ component_management:
         - workspaces/quickstart/
     # Tech-Preview Plugins — 4 workspace(s)
     - component_id: tech-preview-plugins
-      name: "Tech-Preview Plugins"
+      name: 'Tech-Preview Plugins'
       paths:
         - workspaces/bulk-import/
         - workspaces/cost-management/
@@ -95,14 +95,14 @@ component_management:
         - workspaces/homepage/
     # Community Plugins — 3 workspace(s)
     - component_id: community-plugins
-      name: "Community Plugins"
+      name: 'Community Plugins'
       paths:
         - workspaces/theme/
         - workspaces/translations/
         - workspaces/x2a/
     # Dev-Preview Plugins — 5 workspace(s)
     - component_id: dev-preview-plugins
-      name: "Dev-Preview Plugins"
+      name: 'Dev-Preview Plugins'
       paths:
         - workspaces/ai-integrations/
         - workspaces/app-defaults/

@@ -45,6 +45,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Checkout overlay metadata
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -52,6 +53,7 @@ jobs:
           repository: ${{ env.OVERLAY_REPO }}
           path: overlay
           fetch-depth: 1
+          persist-credentials: false
           sparse-checkout: |
             workspaces
 
@@ -84,6 +86,7 @@ jobs:
           repository: ${{ env.OVERLAY_REPO }}
           path: overlay
           fetch-depth: 1
+          persist-credentials: false
           sparse-checkout: |
             workspaces
 
