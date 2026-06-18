@@ -11435,7 +11435,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
-    "@scalprum/react-core": "npm:0.11.1"
+    "@scalprum/react-core": "npm:0.11.3"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -12072,27 +12072,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@scalprum/core@npm:0.9.0"
+"@scalprum/core@npm:^0.9.1":
+  version: 0.9.3
+  resolution: "@scalprum/core@npm:0.9.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/7eb93a9f32883f737203d12663d17248c57d68c90f23addb58b400eaa78aa015396f2655d16423190c195c6e75b3828b2dd84a7cd19706ebbd3e507fedc85b88
+  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.11.1":
-  version: 0.11.1
-  resolution: "@scalprum/react-core@npm:0.11.1"
+"@scalprum/react-core@npm:0.11.3":
+  version: 0.11.3
+  resolution: "@scalprum/react-core@npm:0.11.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.0"
+    "@scalprum/core": "npm:^0.9.1"
     lodash: "npm:^4.17.0"
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/61094ddfcef1547bb4f43ef794f555ee625e0aa1b5479ad1fa056fa00301fe96c7b96c53ef7c1ece8f8bc0be0859404507887f3109163c8a2025558ec30f364a
+  checksum: 10c0/6de3f4b624fb3e0cf1a7785154dfd6cd589809b0d44dbf0e065531729320ea918b17b673744fe60f4bdf3ef0602af87e857bf98109e03f6cc7634b4893269ff6
   languageName: node
   linkType: hard
 

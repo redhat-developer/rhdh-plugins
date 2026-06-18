@@ -96,17 +96,29 @@ function handleNestedFilter(
   type: ProcessType,
   filter: NestedFilter,
 ): FilterClause {
-  const subClauses = buildFilterCondition(
-    introspection,
-    type,
-    filter.nested,
-    true,
-  );
-
-  const filterClause: FilterClause = {
-    clauseVariable: subClauses.clauseVariable,
-    clause: `${filter.field}: {${subClauses.clause}}`,
-  };
+  // check if the nested param is an array or an object
+  // this makes sure that we can handle the case where there are multiple filters for the same field
+  let filterClause: FilterClause;
+  if (Array.isArray(filter.nested)) {
+    const subClauses = filter.nested.map(n =>
+      buildFilterCondition(introspection, type, n, true),
+    );
+    filterClause = {
+      clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
+      clause: `${filter.field}: {${subClauses.map(cl => cl.clause).join(', ')}}`,
+    };
+  } else {
+    const subClauses = buildFilterCondition(
+      introspection,
+      type,
+      filter.nested,
+      true,
+    );
+    filterClause = {
+      clauseVariable: subClauses.clauseVariable,
+      clause: `${filter.field}: {${subClauses.clause}}`,
+    };
+  }
 
   return filterClause;
 }
@@ -412,4 +424,44 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
 // Not used for any secrets or anything
 function nonSecureRandomAlphaNumeric() {
   return randomBytes(8).toString('hex');
+}
+
+// For nested filters, there might be more than one filter for the same field
+// so we need to group them by the field and then combine the nested filters into an array
+export function groupNestedFilters(node: Filter): Filter {
+  if (!isLogicalFilter(node)) return node;
+
+  const processed = node.filters.map(groupNestedFilters);
+  const grouped = new Map<string, Filter[]>();
+  const entries: Array<
+    { kind: 'single'; filter: Filter } | { kind: 'group'; field: string }
+  > = [];
+
+  for (const filter of processed) {
+    if (!('field' in filter)) {
+      entries.push({ kind: 'single', filter });
+      continue;
+    }
+
+    if (!grouped.has(filter.field)) {
+      grouped.set(filter.field, []);
+      entries.push({ kind: 'group', field: filter.field });
+    }
+    grouped.get(filter.field)!.push(filter);
+  }
+
+  const newFilters = entries.map(entry => {
+    if (entry.kind === 'single') return entry.filter;
+
+    const filters = grouped.get(entry.field)!;
+    if (filters.length === 1) return filters[0];
+
+    const nested = filters
+      .filter((f): f is NestedFilter => 'nested' in f)
+      .map(f => f.nested);
+
+    return { field: entry.field, nested } as unknown as NestedFilter;
+  });
+
+  return { ...node, filters: newFilters };
 }

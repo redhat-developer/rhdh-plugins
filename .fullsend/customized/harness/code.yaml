@@ -1,3 +1,5 @@
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
 # harness/code.yaml — code agent with pre/post script pipeline.
 #
 # Flow: pre_script → sandbox (agent) → post_script

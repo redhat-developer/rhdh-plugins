@@ -38,6 +38,7 @@ import { randomUUID } from 'node:crypto';
 import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
+import { getWorkflowRunStats, groupByProcessIdAndVersion } from './Helper';
 
 export class SonataFlowService {
   private readonly orchestratorKafkaImpl?: Kafka;
@@ -116,6 +117,53 @@ export class SonataFlowService {
     if (!workflowInfos?.length) {
       return [];
     }
+
+    // Can reuse the instances to get the stats
+    const instances = await this.dataIndexService.fetchInstances({
+      definitionIds,
+      pagination,
+      filter,
+    });
+
+    // This will have all the workflows, so we need to group by workflow id
+    // and then we can get the success ratio for each workflow
+    // And also find the amount of runs for the 30 day window
+
+    // First we ned to group the data by processId and version
+    // Result will look something like this:
+    /**
+     * {
+     *  'workflowId-version': [processInstance1, processInstance2, ...],
+     *  'workflowId-version': [processInstance1, processInstance2, ...],
+     *  ...
+     * }
+     */
+    const groupedData = groupByProcessIdAndVersion(instances);
+
+    // Then we need to calculate the success rate for each processId and get the amount of runs for the last 30 days
+    // Result will look something like this:
+    /**
+      [
+        {
+          processIdVersion: 'quarkus-backend-1.0',
+          successCount: 1,
+          errorCount: 0,
+          totalCount: 1,
+          successRatio: 1,
+          runsLastMonth: 1
+        },
+        {
+          processIdVersion: 'random-success-or-error-1.0',
+          successCount: 1,
+          errorCount: 1,
+          totalCount: 2,
+          successRatio: 0.5833333333333334,
+          runsLastMonth: 12
+        }
+      ]
+     */
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
+
     const items = await Promise.all(
       workflowInfos
         .filter(info => info.source)
@@ -123,7 +171,26 @@ export class SonataFlowService {
           this.fetchWorkflowOverviewBySource(info.source!, targetEntity),
         ),
     );
-    return items.filter((item): item is WorkflowOverview => !!item);
+
+    return items
+      .filter((item): item is WorkflowOverview => !!item)
+      .map(overview => {
+        const stats = worflowInstanceStats.find(
+          stat =>
+            stat.processIdVersion ===
+            `${overview.workflowId}-${overview.version}`,
+        );
+        if (stats) {
+          overview.workflowRunStats = {
+            successRatio: stats.successRatio,
+            runsLastMonth: stats.runsLastMonth,
+            successCount: stats.successCount,
+            errorCount: stats.errorCount,
+            totalCount: stats.totalCount,
+          };
+        }
+        return overview;
+      });
   }
 
   public async executeWorkflowAsCloudEvent(args: {
@@ -362,7 +429,31 @@ export class SonataFlowService {
       this.logger.debug(`Workflow source not found: ${definitionId}`);
       return undefined;
     }
-    return await this.fetchWorkflowOverviewBySource(source);
+
+    // Can reuse the instances to get the stats
+    const instances = await this.dataIndexService.fetchInstances({
+      definitionIds: [definitionId],
+    });
+    const groupedData = groupByProcessIdAndVersion(instances);
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
+    const workflowOverview = await this.fetchWorkflowOverviewBySource(source);
+    if (workflowOverview) {
+      const stats = worflowInstanceStats.find(
+        stat =>
+          stat.processIdVersion ===
+          `${workflowOverview.workflowId}-${workflowOverview.version}`,
+      );
+      if (stats) {
+        workflowOverview.workflowRunStats = {
+          successRatio: stats.successRatio,
+          runsLastMonth: stats.runsLastMonth,
+          successCount: stats.successCount,
+          errorCount: stats.errorCount,
+          totalCount: stats.totalCount,
+        };
+      }
+    }
+    return workflowOverview;
   }
 
   private async fetchWorkflowOverviewBySource(

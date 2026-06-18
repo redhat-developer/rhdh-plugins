@@ -12,6 +12,7 @@
 | **description** | **String** |  | [optional] [default to null] |
 | **isAvailable** | **Boolean** |  | [optional] [default to null] |
 | **version** | **String** | Workflow definition version | [optional] [default to null] |
+| **workflowRunStats** | [**WorkflowRunStatsDTO**](WorkflowRunStatsDTO.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

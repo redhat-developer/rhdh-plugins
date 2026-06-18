@@ -29,7 +29,7 @@ Deploy Boost as a traditional Backstage plugin with npm packages.
 
 #### Scenario: Static plugin installation
 
-- **WHEN** the developer installs `@boost/plugin-boost`, `@boost/plugin-boost-backend`, and `@boost/plugin-boost-common`
+- **WHEN** the developer installs `@boost/plugin-boost`, `@boost/plugin-boost-backend`, `@boost/plugin-boost-common`, and `@boost/plugin-boost-node`
 - **THEN** frontend route, sidebar entry, icon, and backend plugin are registered manually
 - **AND** `app-config.yaml` is configured
 - **AND** the application is rebuilt and deployed

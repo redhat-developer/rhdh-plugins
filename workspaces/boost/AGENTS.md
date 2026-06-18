@@ -73,7 +73,8 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 | Package                           | Purpose                                                              |
 | --------------------------------- | -------------------------------------------------------------------- |
 | `boost-frontend`                  | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                    | Shared types, permissions, `boostAiProviderServiceRef`               |
+| `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)      |
+| `boost-node`                      | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
 | `boost-backend`                   | Core routes, services, middleware, ProviderManager                   |
 | `boost-backend-module-llamastack` | Llama Stack provider module                                          |
 | `boost-backend-module-kagenti`    | Kagenti provider module                                              |

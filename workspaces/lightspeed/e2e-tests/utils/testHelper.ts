@@ -50,7 +50,7 @@ export const switchToLocale = async (page: Page, locale: string) => {
 };
 
 export const openLightspeed = async (page: Page) => {
-  await page.goto('/lightspeed');
+  await page.goto('/intelligent-assistant');
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 

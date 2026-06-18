@@ -167,6 +167,9 @@ export default _default;
 // @alpha (undocumented)
 export const lightspeedFABModule: FrontendModule;
 
+// @alpha (undocumented)
+export const lightspeedRedirectModule: FrontendModule;
+
 // @alpha
 export const lightspeedTranslationRef: TranslationRef<
   'plugin.lightspeed',

@@ -32,7 +32,8 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 ```
 workspace/boost/plugins/
 ├── boost-frontend                    — Chat UI, agent gallery, admin panels, composable extensions
-├── boost-common                      — Shared types, permissions, boostAiProviderServiceRef
+├── boost-common                      — Shared types, permissions (browser-safe, common-library role)
+├── boost-node                        — Service refs, extension points (node-library role)
 ├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
 ├── boost-backend-module-llamastack   — Llama Stack agentic provider (composes llamastack-entity-provider)
 ├── boost-backend-module-kagenti      — Kagenti agentic provider (composes kagenti-entity-provider)
@@ -40,7 +41,7 @@ workspace/boost/plugins/
 └── kagenti-entity-provider           — Backstage backend service: Kagenti catalog entities (independently deployable)
 ```
 
-The core three packages (`boost-frontend`, `boost-common`, `boost-backend`) mirror augment's structure. Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
+The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
 
 ## Design Principles (Learned from Augment)
 
@@ -60,7 +61,7 @@ _Augment lesson: 2,132 lines of custom governance code implementing 12 authoriza
 
 ### 3. Providers as Independent RHDH Dynamic Plugins
 
-Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in the common package. Cross-plugin consumption via `boostAiProviderServiceRef`.
+Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in `boost-common`; `boostAiProviderServiceRef` and the extension point live in `boost-node`. Cross-plugin consumption via the service ref.
 
 _Augment lesson: Monolithic plugin with providers locked inside. No serviceRef for cross-plugin consumption. 559 lines of Kagenti-specific types polluting the common package. 13+ provider ID string checks coupling frontend to specific providers._
 

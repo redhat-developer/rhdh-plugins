@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 2.8.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- 611bd81: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+
+## 2.7.4
+
+### Patch Changes
+
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+
 ## 2.7.3
 
 ### Patch Changes

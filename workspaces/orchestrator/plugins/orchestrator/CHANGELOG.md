@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.8.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- 3f96765: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+- 611bd81: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [03ef10a]
+- Updated dependencies [a195695]
+- Updated dependencies [3f96765]
+- Updated dependencies [611bd81]
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+
+## 5.7.13
+
+### Patch Changes
+
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.4
+
 ## 5.7.12
 
 ### Patch Changes

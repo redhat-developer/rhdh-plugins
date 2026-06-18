@@ -47,7 +47,7 @@ import { runAccessibilityTests } from './utils/accessibility';
 import { bootstrapLightspeedE2ePage } from './utils/lightspeedE2eSetup';
 import { mockModels, mockShields } from './utils/devMode';
 
-test.describe('Lightspeed UI', () => {
+test.describe('Intelligent assistant UI', () => {
   let translations: LightspeedMessages;
   let sharedPage: Page;
   let locale: string;
@@ -104,9 +104,9 @@ test.describe('Lightspeed UI', () => {
     });
   });
 
-  test('Lightspeed is available', async ({ browser }, testInfo) => {
+  test('Intelligent assistant is available', async ({ browser }, testInfo) => {
     await openLightspeed(sharedPage);
-    await expect(sharedPage).toHaveURL(/\/lightspeed/);
+    await expect(sharedPage).toHaveURL(/\/intelligent-assistant/);
 
     const headings = sharedPage.getByRole('heading');
     await expect(headings.first()).toContainText(
@@ -248,7 +248,7 @@ test.describe('Lightspeed UI', () => {
     await mockShields(sharedPage, []);
     await mockModels(sharedPage, []);
 
-    await sharedPage.goto('/lightspeed');
+    await sharedPage.goto('/intelligent-assistant');
     await sharedPage
       .getByTestId('lightspeed-lcore-not-configured')
       .waitFor({ state: 'visible' });

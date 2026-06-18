@@ -17,6 +17,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CopyButton } from './CopyButton';
 
+jest.mock('../../../hooks/useTranslation', () => {
+  const mod = require('../../../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 const writeTextMock = jest.fn();
 
 beforeAll(() => {

@@ -31,8 +31,10 @@ import { Readable, Transform } from 'stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
@@ -431,14 +433,24 @@ export async function createNotebooksRouter(
     }),
   );
 
+  const validateNotebooksQuery = (query: unknown): string | null => {
+    if (!query) return 'query is required';
+    if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+      return `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`;
+    }
+    return null;
+  };
+
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { query } = req.body;
 
-      if (!query) {
-        handleError(logger, res, 'query is required');
+      const queryError = validateNotebooksQuery(query);
+      if (queryError) {
+        handleError(logger, res, queryError);
         return;
       }
 
@@ -459,12 +471,15 @@ export async function createNotebooksRouter(
       };
 
       for (let retries = 0; retries <= MAX_QUERY_RETRIES; retries++) {
+        const abortController = new AbortController();
+
         const response = await fetch(
           `${lightspeedBaseUrl}/v1/responses?user_id=${encodeURIComponent(userId)}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lightspeedRequest),
+            signal: abortController.signal,
           },
         );
 
@@ -510,11 +525,56 @@ export async function createNotebooksRouter(
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          body
-            .pipe(createResponsesApiTransform(session, sessionId, userId))
-            .pipe(res);
+          const transformStream = createResponsesApiTransform(
+            session,
+            sessionId,
+            userId,
+          );
+
+          body.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res
+                .status(500)
+                .json({ status: 'error', error: 'Stream error occurred' });
+            }
+            abortController.abort();
+            transformStream.destroy();
+          });
+
+          transformStream.on('error', (error: Error) => {
+            logger.error(
+              `Transform stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res.status(500).json({
+                status: 'error',
+                error: 'Processing error occurred',
+              });
+            }
+            body.destroy();
+            abortController.abort();
+          });
+
+          res.on('close', () => {
+            if (!res.writableFinished) {
+              logger.warn(
+                'Client disconnected while processing notebook query',
+              );
+              abortController.abort();
+              body.destroy();
+              transformStream.destroy();
+            }
+          });
+
+          body.pipe(transformStream).pipe(res);
         }
-        console.log('response1234', response.body);
         break;
       }
     }),

@@ -62,7 +62,7 @@ export function ProviderStatus({ value }: Readonly<{ value?: string }>) {
   if (!value) {
     return (
       <Typography variant="caption" color="textSecondary">
-        —
+        -
       </Typography>
     );
   }

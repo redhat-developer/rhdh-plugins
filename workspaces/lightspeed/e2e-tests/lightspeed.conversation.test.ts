@@ -90,7 +90,7 @@ import {
   LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
 } from './utils/lightspeedE2eSetup';
 
-test.describe('Lightspeed conversation', () => {
+test.describe('Intelligent assistant conversation', () => {
   let translations: LightspeedMessages;
   let sharedPage: Page;
 

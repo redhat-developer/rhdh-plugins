@@ -22,9 +22,6 @@ workspace/dcm:
 workspace/extensions:
   - 'Workspace\\s*extensions'
 
-workspace/global-floating-action-button:
-  - 'Workspace\\s*global-floating-action-button'
-
 workspace/global-header:
   - 'Workspace\\s*global-header'
 
