@@ -119,7 +119,7 @@ User identity MUST be delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so
 
 ### Requirement: CSRF Protection
 
-All mutating requests MUST include CSRF protection headers.
+All frontend mutating requests MUST include CSRF protection headers.
 
 #### Scenario: X-Backstage-Request header enforcement
 
