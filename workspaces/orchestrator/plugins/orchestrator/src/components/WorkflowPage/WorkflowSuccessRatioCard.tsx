@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import { InfoCard } from '@backstage/core-components';
-
-import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
@@ -30,25 +25,21 @@ import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orc
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatCompactCount } from '../../utils/formatCompactCount';
-import { useIsDarkMode } from '../../utils/isDarkMode';
+import { FullWidthInfoCard } from '../ui/FullWidthInfoCard';
+import { InfoCardTitleWithTooltip } from '../ui/InfoCardTitleWithTooltip';
 
 const DONUT_SIZE = 120;
 const DONUT_RADIUS = 40;
 const DONUT_STROKE = 12;
 
-const useStyles = makeStyles<{ isDarkMode: boolean }>()(
-  (theme, { isDarkMode }) => ({
-    headerIcon: {
-      color: isDarkMode ? theme.palette.grey[400] : theme.palette.grey[700],
-    },
-    legendSwatch: {
-      width: 12,
-      height: 12,
-      borderRadius: 2,
-      flexShrink: 0,
-    },
-  }),
-);
+const useStyles = makeStyles()(() => ({
+  legendSwatch: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+    flexShrink: 0,
+  },
+}));
 
 const SuccessRatioDonut = ({
   successCount,
@@ -135,8 +126,7 @@ export const WorkflowSuccessRatioCard = ({
   loading: boolean;
 }) => {
   const { t } = useTranslation();
-  const isDarkMode = useIsDarkMode();
-  const { classes } = useStyles({ isDarkMode });
+  const { classes } = useStyles();
   const theme = useTheme();
 
   const stats = workflowOverview?.workflowRunStats;
@@ -153,31 +143,10 @@ export const WorkflowSuccessRatioCard = ({
     : undefined;
 
   const title = (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-      }}
-    >
-      <Typography
-        component="span"
-        variant="inherit"
-        sx={{ fontWeight: 'bold' }}
-      >
-        {t('workflow.successRatio')}
-      </Typography>
-      <Tooltip title={t('workflow.successRatioDescription')}>
-        <IconButton
-          size="large"
-          aria-label={t('workflow.successRatioDescription')}
-          sx={{ mr: '8px', p: 0.5 }}
-        >
-          <InfoOutlined fontSize="small" className={classes.headerIcon} />
-        </IconButton>
-      </Tooltip>
-    </Box>
+    <InfoCardTitleWithTooltip
+      title={t('workflow.successRatio')}
+      tooltip={t('workflow.successRatioDescription')}
+    />
   );
 
   const renderBody = () => {
@@ -234,14 +203,5 @@ export const WorkflowSuccessRatioCard = ({
     );
   };
 
-  return (
-    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0 }}>
-      <InfoCard
-        title={title}
-        titleTypographyProps={{ component: 'div', style: { width: '100%' } }}
-      >
-        {renderBody()}
-      </InfoCard>
-    </Box>
-  );
+  return <FullWidthInfoCard title={title}>{renderBody()}</FullWidthInfoCard>;
 };

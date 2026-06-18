@@ -33,16 +33,11 @@ import {
 import { EntityRefLink } from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import ClearIcon from '@mui/icons-material/Clear';
 import DescriptionIcon from '@mui/icons-material/Description';
-import SearchIcon from '@mui/icons-material/Search';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import MuiLink from '@mui/material/Link';
 import TablePagination from '@mui/material/TablePagination';
-import TextField from '@mui/material/TextField';
 import { DateTime } from 'luxon';
 
 import {
@@ -80,6 +75,7 @@ import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { Selector } from '../ui/Selector';
+import { TableTextFilter } from '../ui/TableTextFilter';
 import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
 import { VariablesDialog } from '../WorkflowInstancePage/VariablesDialog';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
@@ -137,42 +133,6 @@ const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
 
 const ENTITY_FILTER_KINDS = ['Component', 'System'];
 const RUN_BY_FILTER_KINDS = ['User'];
-
-const RunsTableFilter = ({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) => (
-  <TextField
-    variant="standard"
-    size="small"
-    placeholder="Filter"
-    value={value}
-    onChange={event => onChange(event.target.value)}
-    inputProps={{ 'aria-label': 'Filter' }}
-    sx={{ minWidth: { xs: '12rem', sm: '16rem' } }}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon fontSize="small" />
-        </InputAdornment>
-      ),
-      endAdornment: value ? (
-        <InputAdornment position="end">
-          <IconButton
-            size="small"
-            aria-label="Clear all"
-            onClick={() => onChange('')}
-          >
-            <ClearIcon fontSize="small" />
-          </IconButton>
-        </InputAdornment>
-      ) : null,
-    }}
-  />
-);
 
 const combineFilters = (
   filters: (Filter | undefined)[],
@@ -867,7 +827,7 @@ export const WorkflowRunsTabContent = ({
                   />
                 )
               }
-              action={<RunsTableFilter value={search} onChange={setSearch} />}
+              action={<TableTextFilter value={search} onChange={setSearch} />}
               headerProps={{ style: { alignItems: 'center' } }}
             >
               <OverrideBackstageTable

@@ -24,19 +24,13 @@ import {
   TableProps,
 } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 
-import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PlayArrow from '@mui/icons-material/PlayArrow';
-import SearchIcon from '@mui/icons-material/Search';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import MuiLink from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
 
 import {
   orchestratorWorkflowPermission,
@@ -50,8 +44,8 @@ import { ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
-import { usePermissionArray } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useWorkflowPermissionBatch } from '../../hooks/useWorkflowPermissionBatch';
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
@@ -61,95 +55,13 @@ import {
 } from '../../routes';
 import { Trans } from '../Trans';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
+import { TableTextFilter } from '../ui/TableTextFilter';
 import { WorkflowStatus } from '../ui/WorkflowStatus';
 import { WorkflowSuccessRatioCell } from '../ui/WorkflowSuccessRatioCell';
 
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
 }
-
-const WorkflowsTableFilter = ({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) => (
-  <TextField
-    variant="standard"
-    size="small"
-    placeholder="Filter"
-    value={value}
-    onChange={event => onChange(event.target.value)}
-    inputProps={{ 'aria-label': 'Filter' }}
-    sx={{ minWidth: { xs: '12rem', sm: '16rem' } }}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon fontSize="small" />
-        </InputAdornment>
-      ),
-      endAdornment: value ? (
-        <InputAdornment position="end">
-          <IconButton
-            size="small"
-            aria-label="Clear all"
-            onClick={() => onChange('')}
-          >
-            <ClearIcon fontSize="small" />
-          </IconButton>
-        </InputAdornment>
-      ) : null,
-    }}
-  />
-);
-
-const usePermittedToUseBatch = (
-  items: WorkflowOverviewDTO[],
-): { allowed: boolean[] } => {
-  const generic = usePermission({
-    permission: orchestratorWorkflowUsePermission,
-  });
-
-  let workflowIds: string[] = [];
-  if (!generic.loading && !generic.allowed) {
-    // This will effectively skip the requests if the generic permission grants the access
-    workflowIds = items.map(i => i.workflowId);
-  }
-
-  const specific = usePermissionArray(
-    workflowIds.map(workflowId =>
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ),
-  );
-  return {
-    allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
-  };
-};
-
-const usePermittedToViewBatch = (
-  items: WorkflowOverviewDTO[],
-): { allowed: boolean[] } => {
-  const generic = usePermission({
-    permission: orchestratorWorkflowPermission,
-  });
-
-  let workflowIds: string[] = [];
-  if (!generic.loading && !generic.allowed) {
-    // This will effectively skip the subsequent "specific" requests if the generic permission is granted
-    workflowIds = items.map(i => i.workflowId);
-  }
-
-  const specific = usePermissionArray(
-    workflowIds.map(workflowId =>
-      orchestratorWorkflowSpecificPermission(workflowId),
-    ),
-  );
-
-  return {
-    allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
-  };
-};
 
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const { t } = useTranslation();
@@ -168,8 +80,16 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
   const [search, setSearch] = useState('');
 
-  const { allowed: permittedToUse } = usePermittedToUseBatch(items);
-  const { allowed: permittedToView } = usePermittedToViewBatch(items);
+  const { allowed: permittedToUse } = useWorkflowPermissionBatch(
+    items,
+    orchestratorWorkflowUsePermission,
+    orchestratorWorkflowUseSpecificPermission,
+  );
+  const { allowed: permittedToView } = useWorkflowPermissionBatch(
+    items,
+    orchestratorWorkflowPermission,
+    orchestratorWorkflowSpecificPermission,
+  );
 
   const initialState = useMemo(
     () => items.map(WorkflowOverviewFormatter.format),
@@ -372,7 +292,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
             params={{ count: items.length }}
           />
         }
-        action={<WorkflowsTableFilter value={search} onChange={setSearch} />}
+        action={<TableTextFilter value={search} onChange={setSearch} />}
         headerProps={{ style: { alignItems: 'center' } }}
       >
         <OverrideBackstageTable<FormattedWorkflowOverview>
