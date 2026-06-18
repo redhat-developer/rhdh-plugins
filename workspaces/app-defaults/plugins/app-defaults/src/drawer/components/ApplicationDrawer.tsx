@@ -16,9 +16,10 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useAppDrawer } from '../hooks/useAppDrawer';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import type { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
 import { DrawerPanel } from './DrawerPanel';
-import type { AppDrawerContent } from '../types';
 
 const DEFAULT_WIDTH = 500;
 

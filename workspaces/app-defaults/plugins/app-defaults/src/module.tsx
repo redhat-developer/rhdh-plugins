@@ -15,9 +15,11 @@
  */
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
-export const appModuleDefaults = createFrontendModule({
+import { appDrawerExtensions } from './drawer';
+
+export { appDrawerExtensions } from './drawer';
+
+export const appDefaults = createFrontendModule({
   pluginId: 'app',
-  extensions: [
-    /* TODO */
-  ],
+  extensions: [...appDrawerExtensions],
 });

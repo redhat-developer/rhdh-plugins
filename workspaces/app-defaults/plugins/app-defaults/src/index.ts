@@ -13,4 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { appModuleDefaults as default } from './module';
+export * from './module';
+
+export { appDefaults as default } from './module';

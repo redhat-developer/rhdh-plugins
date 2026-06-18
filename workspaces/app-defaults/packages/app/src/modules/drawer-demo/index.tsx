@@ -15,7 +15,7 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import {
   ChatDrawerContent,

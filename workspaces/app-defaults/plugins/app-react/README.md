@@ -6,7 +6,7 @@ with host-owned state.
 
 ## Installation
 
-Add the package as a dependency in your plugin or app:
+Add the package as a dependency in your plugin:
 
 ```bash
 yarn add @red-hat-developer-hub/backstage-plugin-app-react
@@ -14,36 +14,19 @@ yarn add @red-hat-developer-hub/backstage-plugin-app-react
 
 ## App Integration
 
-Register the drawer module in your app's `createApp` call:
-
-```typescript
-import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-
-export default createApp({
-  features: [
-    appDrawerModule,
-    // ...other plugins and modules
-  ],
-});
-```
-
-This registers a single wrapper extension (`app-root-wrapper:app/drawer`) that
-renders the `ApplicationDrawer` around the app content and accepts drawer
-content contributions via inputs. Drawer state is managed by a global singleton
-store, so `useAppDrawer()` works from anywhere in the React tree without a
-wrapping provider.
+To register the default RHDH modules, and to enable the drawers in your app,
+you must install `@red-hat-developer-hub/backstage-plugin-app-defaults`
+and register this in your `createApp` or use the Backstage feature auto discovery.
 
 ## Plugin Author Guide
 
 ### Contributing a Drawer
 
-Use `AppDrawerContentBlueprint` to declare drawer content in your plugin's
-`/alpha` export:
+Use `AppDrawerContentBlueprint` to declare drawer content in your plugin:
 
 ```typescript
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 const myDrawerExtension = AppDrawerContentBlueprint.make({
   name: 'my-drawer',
@@ -134,17 +117,10 @@ function MyDrawerContent() {
 }
 ```
 
-## Exports
+### Exports
 
-### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
-
-- `useAppDrawer` -- hook to control drawers
-- `ApplicationDrawer` -- drawer renderer component
-- `DrawerPanel` -- low-level MUI drawer wrapper
-- `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
-
-### Alpha entry (`@red-hat-developer-hub/backstage-plugin-app-react/alpha`)
+From `@red-hat-developer-hub/backstage-plugin-app-react`:
 
 - `appDrawerContentDataRef` -- extension data ref
 - `AppDrawerContentBlueprint` -- blueprint for contributing drawers
-- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- `useAppDrawer` -- hook to control drawers

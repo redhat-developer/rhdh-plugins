@@ -16,14 +16,13 @@
 | @backstage/plugin-techdocs                       | package.json:40:6 | error    |
 | @backstage/plugin-signals                        | package.json:39:6 | error    |
 | @backstage/plugin-org                            | package.json:36:6 | error    |
-| react-router                                     | package.json:50:6 | error    |
+| react-router                                     | package.json:55:6 | error    |
 
-## Unused devDependencies (4)
+## Unused devDependencies (3)
 
 | Name                           | Location          | Severity |
 | :----------------------------- | :---------------- | :------- |
-| @backstage/frontend-test-utils | package.json:54:6 | error    |
-| @testing-library/user-event    | package.json:59:6 | error    |
-| @testing-library/dom           | package.json:56:6 | error    |
-| cross-env                      | package.json:61:6 | error    |
+| @backstage/frontend-test-utils | package.json:59:6 | error    |
+| @testing-library/user-event    | package.json:64:6 | error    |
+| cross-env                      | package.json:66:6 | error    |
 
