@@ -34,8 +34,8 @@ export interface InstallationStorage {
   updatePackage(packageName: string, newConfig: string): void;
   getPackages(packageNames: Set<string>): string | undefined;
   updatePackages(packageNames: Set<string>, newConfig: string): void;
-  setPackageDisabled(packageName: string, disabled: boolean): void;
-  setPackagesDisabled(packageNames: Set<string>, disabled: boolean): void;
+  setPackageEnabled(packageName: string, enabled: boolean): void;
+  setPackagesEnabled(packageNames: Set<string>, enabled: boolean): void;
 }
 
 export class FileInstallationStorage implements InstallationStorage {
@@ -133,18 +133,18 @@ export class FileInstallationStorage implements InstallationStorage {
     this.save();
   }
 
-  setPackageDisabled(packageName: string, disabled: boolean) {
+  setPackageEnabled(packageName: string, enabled: boolean) {
     let pkg = this.getPackageYamlMap(packageName);
     if (!pkg) {
       pkg = new YAMLMap<string, JsonValue>();
       pkg.set('package', packageName);
       this.packages.add(pkg);
     }
-    pkg.set('disabled', disabled);
+    pkg.set('enabled', enabled);
     this.save();
   }
 
-  setPackagesDisabled(packageNames: Set<string>, disabled: boolean) {
+  setPackagesEnabled(packageNames: Set<string>, enabled: boolean) {
     const packages = this.config.get('plugins') as YAMLSeq<
       YAMLMap<string, JsonValue>
     >;
@@ -159,7 +159,7 @@ export class FileInstallationStorage implements InstallationStorage {
         item.set('package', packageName);
         packages.add(item);
       }
-      item.set('disabled', disabled);
+      item.set('enabled', enabled);
     }
 
     this.save();

@@ -111,7 +111,7 @@ export const ExtensionsPackageEditContent = ({
     }
     if (pkgConfig.isSuccess && !existing) {
       const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
-      const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
+      const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    enabled: true\n`;
       codeEditor.setValue(yamlContent);
     }
   }, [
@@ -142,7 +142,7 @@ export const ExtensionsPackageEditContent = ({
       const current = codeEditor.getValue();
       if (!current || current.trim() === '') {
         const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
-        const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
+        const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    enabled: true\n`;
         codeEditor.setValue(yamlContent);
       }
       return;

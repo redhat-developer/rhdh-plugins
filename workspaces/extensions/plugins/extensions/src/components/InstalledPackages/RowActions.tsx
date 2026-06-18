@@ -344,7 +344,7 @@ export const TogglePackage = ({
       const res = await enablePlugin({
         namespace: pkg.namespace ?? 'default',
         name: pkg.name!,
-        disabled: !newValue,
+        enabled: newValue,
       });
 
       if (res?.status === 'OK') {
