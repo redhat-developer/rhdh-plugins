@@ -108,6 +108,15 @@ export function getWorkflowRunStats(
   groupedData: Record<string, ProcessInstance[]>,
 ) {
   return Object.entries(groupedData).map(([processIdVersion, items]) => {
+    const averageTimeToComplete =
+      items.reduce((acc, item) => {
+        return (
+          acc +
+          (item.end && item.start
+            ? new Date(item.end).getTime() - new Date(item.start).getTime()
+            : 0)
+        );
+      }, 0) / items.length;
     const successCount = items.filter(
       item => item.state === ProcessInstanceState.Completed,
     ).length;
@@ -126,6 +135,7 @@ export function getWorkflowRunStats(
       totalCount: successCount + errorCount,
       successRatio: successCount / (successCount + errorCount),
       runsLastMonth: runsLastMonth.length,
+      averageTimeToComplete,
     };
   });
 }
