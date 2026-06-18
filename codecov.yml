@@ -67,94 +67,45 @@ ignore:
   - "workspaces/plugins/*-test/**"
 
 component_management:
-  # Note: workspaces with mixed support-level packages appear in multiple components
+  # GENERATED — do not edit by hand.
+  # Source of truth: rhdh-plugin-export-overlays metadata (spec.support field).
+  # Regenerate with: scripts/generate-codecov-components.sh --write --overlay <overlay-repo>
+  # Drift is detected on PRs and synced weekly by
+  # .github/workflows/sync-codecov-components.yml.
+  # Only workspaces that exist in this repository are included.
+  # Note: workspaces with mixed support-level packages appear in multiple components.
   individual_components:
-    # GA Plugins — 17 workspaces
+    # GA Plugins — 6 workspace(s)
     - component_id: ga-plugins
       name: "GA Plugins"
       paths:
         - workspaces/adoption-insights/
-        - workspaces/analytics/
-        - workspaces/apiconnect/
-        - workspaces/backstage/
-        - workspaces/dynatrace-dql/
         - workspaces/global-header/
         - workspaces/homepage/
-        - workspaces/keycloak/
         - workspaces/lightspeed/
         - workspaces/orchestrator/
         - workspaces/quickstart/
-        - workspaces/rbac/
-        - workspaces/roadie-backstage-plugins/
-        - workspaces/scaffolder-backend-module-kubernetes/
-        - workspaces/scaffolder-backend-module-regex/
-        - workspaces/tech-radar/
-        - workspaces/topology/
-
-    # Tech-Preview Plugins — 8 workspaces
+    # Tech-Preview Plugins — 4 workspace(s)
     - component_id: tech-preview-plugins
       name: "Tech-Preview Plugins"
       paths:
-        - workspaces/acr/
-        - workspaces/backstage/
         - workspaces/bulk-import/
         - workspaces/cost-management/
         - workspaces/extensions/
         - workspaces/homepage/
-        - workspaces/pingidentity/
-        - workspaces/scaffolder-relation-processor/
-
-    # Community Plugins — 39 workspaces
+    # Community Plugins — 3 workspace(s)
     - component_id: community-plugins
       name: "Community Plugins"
       paths:
-        - workspaces/3scale/
-        - workspaces/acs/
-        - workspaces/adr/
-        - workspaces/analytics/
-        - workspaces/announcements/
-        - workspaces/argocd/
-        - workspaces/azure-devops/
-        - workspaces/backstage/
-        - workspaces/backstage-plugins-for-aws/
-        - workspaces/bookmarks/
-        - workspaces/config-viewer/
-        - workspaces/dynatrace/
-        - workspaces/env-viewer/
-        - workspaces/github/
-        - workspaces/github-notifications/
-        - workspaces/gitlab/
-        - workspaces/icon-viewer/
-        - workspaces/jenkins/
-        - workspaces/jfrog-artifactory/
-        - workspaces/kiali/
-        - workspaces/lighthouse/
-        - workspaces/mcp-chat/
-        - workspaces/mta/
-        - workspaces/multi-source-security-viewer/
-        - workspaces/nexus-repository-manager/
-        - workspaces/npm/
-        - workspaces/pagerduty/
-        - workspaces/quay/
-        - workspaces/roadie-backstage-plugins/
-        - workspaces/scaffolder-backend-module-servicenow/
-        - workspaces/scaffolder-backend-module-sonarqube/
-        - workspaces/servicenow/
-        - workspaces/sonarqube/
-        - workspaces/tech-insights/
-        - workspaces/tekton/
         - workspaces/theme/
-        - workspaces/todo/
         - workspaces/translations/
         - workspaces/x2a/
-
-    # Dev-Preview Plugins — 6 workspaces
+    # Dev-Preview Plugins — 5 workspace(s)
     - component_id: dev-preview-plugins
       name: "Dev-Preview Plugins"
       paths:
         - workspaces/ai-integrations/
         - workspaces/app-defaults/
-        - workspaces/backstage/
         - workspaces/konflux/
         - workspaces/mcp-integrations/
         - workspaces/scorecard/

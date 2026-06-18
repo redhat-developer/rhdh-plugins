@@ -29,26 +29,32 @@ component_management:
       paths:
         - workspaces/lightspeed/
         - workspaces/orchestrator/
-        # ... (17 GA workspaces)
+        # ... (GA workspaces present in this repo)
 
     - component_id: tech-preview-plugins
       name: 'Tech-Preview Plugins'
       paths:
         - workspaces/bulk-import/
-        # ... (8 TP workspaces)
+        # ... (Tech-Preview workspaces present in this repo)
 
     - component_id: community-plugins
       name: 'Community Plugins'
       paths:
-        - workspaces/3scale/
-        # ... (39 Community workspaces)
+        - workspaces/theme/
+        # ... (Community workspaces present in this repo)
 
     - component_id: dev-preview-plugins
       name: 'Dev-Preview Plugins'
       paths:
         - workspaces/konflux/
-        # ... (6 Dev-Preview workspaces)
+        # ... (Dev-Preview workspaces present in this repo)
 ```
+
+> This block is **generated** from overlay metadata and should not be edited by
+> hand — see [Maintenance](#maintenance). Only workspaces that actually exist in
+> this repository are included; overlay workspaces sourced from other upstreams
+> (e.g. `backstage/community-plugins`) are skipped because there is no coverage
+> for them here.
 
 ### Workspace-to-Support-Level Mapping
 
@@ -62,20 +68,13 @@ spec:
   lifecycle: active
 ```
 
-**Mapping script**: [`scripts/generate-codecov-components.sh`](../scripts/generate-codecov-components.sh) extracts workspace-to-support-level mappings from overlay metadata and generates YAML for `codecov.yml`.
+**Mapping script**: [`scripts/generate-codecov-components.sh`](../scripts/generate-codecov-components.sh) reads the `spec.support` field from each overlay metadata file, groups workspaces by support level, keeps only the workspaces that exist in this repository, and rewrites the `component_management` block of `codecov.yml`. It runs in three modes — print, `--write`, and `--check` (see [Maintenance](#maintenance)).
 
 ### Multi-Level Workspaces
 
-Some workspaces (e.g., `backstage`, `homepage`, `analytics`) appear in **multiple components** because they contain packages with different support levels.
+A workspace appears in **multiple components** when it contains packages with different support levels. Among the workspaces present in this repository, `homepage` is the current example: it has GA packages and Tech-Preview packages, so `workspaces/homepage/` is listed under both the `ga-plugins` and `tech-preview-plugins` components.
 
-**Example**: `workspaces/backstage/` contains:
-
-- **GA packages**: `backstage-plugin-catalog-backend-module-github`, `backstage-plugin-techdocs`
-- **Tech-Preview packages**: `backstage-plugin-notifications-backend`, `backstage-plugin-kubernetes`
-- **Community packages**: `backstage-plugin-auth`, `backstage-plugin-scaffolder-backend-module-bitbucket`
-- **Dev-Preview packages**: `backstage-plugin-mcp-actions-backend`
-
-**Behavior**: Coverage from `workspaces/backstage/` is included in **all 4 components** (GA, TP, Community, Dev-Preview). This is correct — the component represents **packages** at that support level, not exclusive workspace ownership.
+**Behavior**: Coverage from a multi-level workspace is included in **every** component that matches one of its packages' support levels. This is intentional — a component represents **packages** at that support level, not exclusive workspace ownership.
 
 ## Dashboard Usage
 
@@ -83,11 +82,12 @@ Some workspaces (e.g., `backstage`, `homepage`, `analytics`) appear in **multipl
 
 1. Navigate to [rhdh-plugins Codecov dashboard](https://app.codecov.io/gh/redhat-developer/rhdh-plugins)
 2. Click **"Components"** tab
-3. See coverage % for each component:
-   - **GA Plugins** (17 workspaces)
-   - **Tech-Preview Plugins** (8 workspaces)
-   - **Community Plugins** (39 workspaces)
-   - **Dev-Preview Plugins** (6 workspaces)
+3. See coverage % for each component (counts reflect workspaces present in this
+   repository and update automatically as support levels change in the overlay):
+   - **GA Plugins**
+   - **Tech-Preview Plugins**
+   - **Community Plugins**
+   - **Dev-Preview Plugins**
 
 ### Interpreting Results
 
@@ -107,63 +107,43 @@ Update `codecov.yml` component definitions when:
 
 ### How to Update
 
-#### Automated (Recommended)
+**You normally don't.** The `component_management` block is kept in sync
+automatically by the [`Sync Codecov components by support level`](../.github/workflows/sync-codecov-components.yml)
+workflow:
 
-Run the generation script to sync from overlay metadata:
+- **Weekly + on demand** (`schedule` / `workflow_dispatch`): the workflow checks
+  out the overlay repo, runs the script in `--write` mode, and opens a PR titled
+  _"chore: sync codecov components with overlay support levels"_ whenever a
+  plugin's support level changed. Review and merge that PR.
+- **On every pull request** that touches `codecov.yml`, the script, or the
+  workflow: a `--check` job fails if `codecov.yml` has drifted from the overlay
+  metadata, so the block can't be hand-edited out of sync.
+
+#### Regenerating locally
+
+If you want to produce or preview the change yourself (e.g. to merge the sync PR
+faster, or to debug the workflow):
 
 ```bash
 cd rhdh-plugins
 
-# Generate updated component definitions
-./scripts/generate-codecov-components.sh \
-  ~/path/to/rhdh-plugin-export-overlays > /tmp/codecov-components.yaml
+# Clone the overlay repo somewhere (sibling dir by default)
+git clone --depth 1 https://github.com/redhat-developer/rhdh-plugin-export-overlays.git ../rhdh-plugin-export-overlays
 
-# Review differences
-diff -u codecov.yml /tmp/codecov-components.yaml
+# Preview the generated block
+./scripts/generate-codecov-components.sh --overlay ../rhdh-plugin-export-overlays
 
-# Manually merge the component_management block into codecov.yml
+# Rewrite the component_management block in codecov.yml in place
+./scripts/generate-codecov-components.sh --write --overlay ../rhdh-plugin-export-overlays
+
+# Or just verify there is no drift (exit 1 + diff if out of sync) — this is what CI runs
+./scripts/generate-codecov-components.sh --check --overlay ../rhdh-plugin-export-overlays
 ```
 
-**Why manual merge?** The script outputs only the `component_management` block. You must preserve the rest of `codecov.yml` (flags, coverage settings, ignore patterns).
-
-#### Manual Update
-
-1. Check support level in overlay metadata:
-
-   ```bash
-   cd rhdh-plugin-export-overlays
-   grep -r "support:" workspaces/your-workspace/metadata/
-   ```
-
-2. Add workspace to appropriate component in `codecov.yml`:
-
-   ```yaml
-   - component_id: ga-plugins
-     name: 'GA Plugins'
-     paths:
-       - workspaces/your-new-workspace/ # ← Add here
-   ```
-
-3. Validate YAML syntax:
-   ```bash
-   python3 -c "import yaml; yaml.safe_load(open('codecov.yml'))"
-   ```
-
-### CI Validation (Future)
-
-**Planned**: Add CI job to detect drift between overlay metadata and `codecov.yml` components:
-
-```bash
-# Pseudocode for future CI check
-scripts/generate-codecov-components.sh ../rhdh-plugin-export-overlays > /tmp/generated.yaml
-diff -u <(yq '.component_management' codecov.yml) /tmp/generated.yaml
-if [ $? -ne 0 ]; then
-  echo "ERROR: codecov.yml components are out of sync with overlay metadata"
-  exit 1
-fi
-```
-
-This ensures components stay in sync with metadata changes without manual updates.
+`--write` only replaces the `component_management` block; the rest of
+`codecov.yml` (flags, coverage settings, ignore patterns) is preserved. The
+output is deterministic (no timestamps), so re-running it is a no-op when already
+in sync.
 
 ## Frequently Asked Questions
 
@@ -177,9 +157,9 @@ This ensures components stay in sync with metadata changes without manual update
 
 **Future enhancement**: Configure Codecov to post component-level coverage deltas in PR comments.
 
-### Why does `workspaces/backstage/` appear in all 4 components?
+### Why does a workspace (e.g. `workspaces/homepage/`) appear in more than one component?
 
-Because `backstage` workspace contains **packages with different support levels**. Each package's support level is defined in overlay metadata. A workspace with mixed support levels contributes to multiple components.
+Because that workspace contains **packages with different support levels**. Each package's support level is defined in overlay metadata. A workspace with mixed support levels contributes to every matching component.
 
 This is **correct behavior** — components group by **package support level**, not workspace exclusivity.
 
@@ -210,30 +190,21 @@ This is **not implemented yet** — all components currently use the same target
 
 ### Multi-Level Workspace Coverage Skew
 
-Some workspaces contain packages with different support levels, which causes **coverage skew** in component metrics:
-
-**Affected workspaces (4 out of 70):**
-
-- `backstage`: 43% GA (12 packages) + 57% non-GA (16 packages)
-- `homepage`: 17% GA (1 package) + 83% TP (5 packages)
-- `analytics`: 50% GA (1 package) + 50% Community (1 package)
-- `roadie-backstage-plugins`: 50% GA (1 package) + 50% Community (1 package)
+A workspace that contains packages at different support levels causes **coverage skew** in component metrics. Among the workspaces present in this repository, `homepage` is currently the only such case (GA + Tech-Preview packages); the script reports the exact set on every run.
 
 **How skew happens:**
 
-Codecov components aggregate coverage by **path**, not by individual package. When `workspaces/backstage/` is included in the `ga-plugins` component, coverage from **all 28 packages** (both GA and non-GA) contributes to the GA component metric.
+Codecov components aggregate coverage by **path**, not by individual package. When `workspaces/homepage/` is included in the `ga-plugins` component, coverage from **all** of its packages (both GA and Tech-Preview) contributes to the GA component metric.
 
 **Example scenario:**
 
 ```
 Actual coverage:
-- backstage GA packages (12):        85% coverage
-- backstage TP packages (8):         60% coverage
-- backstage Community packages (7):  40% coverage
-- backstage Dev-Preview packages (1): 20% coverage
+- homepage GA packages:  85% coverage
+- homepage TP packages:  60% coverage
 
 Component shows:
-- ga-plugins component: ~65% coverage (weighted average of all 28 packages)
+- ga-plugins component: weighted average of both, not pure GA coverage
 ```
 
 **Impact:**
@@ -251,13 +222,13 @@ If you need **precise GA coverage metrics** for enforcement (e.g., "GA plugins m
 
 **Workaround:**
 
-When checking GA coverage on the dashboard, mentally exclude or manually filter out the 4 multi-level workspaces and focus on pure GA workspaces (66 out of 70) for accurate metrics.
+When checking GA coverage on the dashboard, mentally exclude the multi-level workspaces (currently just `homepage`) and focus on the single-level GA workspaces for accurate metrics.
 
 **Future solution:**
 
 If precise enforcement becomes necessary, we can:
 
-1. Switch to per-package paths for multi-level workspaces (~28 packages)
+1. Switch to per-package paths for multi-level workspaces
 2. Use Codecov's dashboard filtering features (if available)
 3. Split multi-level workspaces by support level (major refactor, not recommended)
 
@@ -271,6 +242,14 @@ This limitation is **accepted** for now as the benefits (visibility, trends, bas
 
 ## Changelog
 
+- **2026-06-18**: Dynamic sync from overlay metadata
+  - `scripts/generate-codecov-components.sh` now supports `--write` (rewrite the
+    block in place) and `--check` (fail on drift) and includes only workspaces
+    present in this repository
+  - Added `.github/workflows/sync-codecov-components.yml` — weekly/on-demand auto
+    PR on support-level changes, plus a pull-request drift check
+  - Regenerated `codecov.yml` to the filtered set, removing component paths for
+    overlay workspaces that don't exist in this repo
 - **2026-06-16**: Initial implementation (RHIDP-13511)
   - Added component definitions for GA/TP/Community/Dev-Preview
   - Created `scripts/generate-codecov-components.sh` automation
