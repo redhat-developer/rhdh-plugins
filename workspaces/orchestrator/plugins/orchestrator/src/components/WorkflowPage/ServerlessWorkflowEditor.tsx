@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CodeSnippet, ErrorPanel } from '@backstage/core-components';
-
-import { makeStyles } from 'tss-react/mui';
+import { ErrorPanel } from '@backstage/core-components';
 
 import { WorkflowFormatDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { useIsDarkMode } from '../../utils/isDarkMode';
+import { TextCodeBlock } from '../ui/TextCodeBlock';
 
 type WorkflowEditorProps = {
   format: WorkflowFormatDTO;
@@ -26,34 +27,22 @@ type WorkflowEditorProps = {
   errorWorkflowSource: Error | undefined;
 };
 
-const useStyles = makeStyles()(_ => ({
-  codeSnippetCOntainer: {
-    '& pre': {
-      backgroundColor: 'transparent !important',
-    },
-  },
-}));
-
 const ServerlessWorkflowEditor = ({
-  format,
   loadingWorkflowSource,
   workflowSource,
   errorWorkflowSource,
 }: WorkflowEditorProps) => {
-  const { classes } = useStyles();
+  const isDarkMode = useIsDarkMode();
 
   return (
     <>
       {errorWorkflowSource && <ErrorPanel error={errorWorkflowSource} />}
       {!loadingWorkflowSource && !errorWorkflowSource && (
-        <div className={classes.codeSnippetCOntainer}>
-          <CodeSnippet
-            text={workflowSource}
-            language={format}
-            showLineNumbers
-            showCopyCodeButton
-          />
-        </div>
+        <TextCodeBlock
+          value={workflowSource}
+          isDarkMode={isDarkMode}
+          fullWidth
+        />
       )}
     </>
   );

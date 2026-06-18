@@ -14,22 +14,7 @@
  * limitations under the License.
  */
 
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
+declare module '*.png' {
+  const content: string;
+  export default content;
 }
-
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  startIso?: string;
-  duration: string;
-  description?: string;
-  version?: string;
-  businessKey?: string;
-  initiatorEntity?: string;
-  targetEntity?: string;
-};

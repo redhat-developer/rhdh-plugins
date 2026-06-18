@@ -50,7 +50,10 @@ const useStyles = makeStyles()(_ => ({
       width: '80%',
     },
     '& > button': {
-      maxHeight: '20px',
+      padding: '2px',
+      '& svg': {
+        fontSize: '1rem',
+      },
     },
   },
 }));
@@ -87,6 +90,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
             <b>
               <WorkflowInstanceStatusIndicator
                 status={details.state as ProcessInstanceStatusDTO}
+                compact
               />
             </b>
           </Typography>
@@ -97,7 +101,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           <Typography variant="subtitle2" component="div">
             <b>
               {!error && !loading ? (
-                <WorkflowStatus availability={value?.isAvailable} />
+                <WorkflowStatus availability={value?.isAvailable} compact />
               ) : (
                 VALUE_UNAVAILABLE
               )}
@@ -142,13 +146,6 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={12} key="Description">
-        <AboutField label={t('workflow.fields.description')}>
-          <Typography variant="subtitle2" component="div">
-            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
       <Grid item md={12} key="Version">
         <AboutField label={t('workflow.fields.version')}>
           <Typography variant="subtitle2" component="div">
@@ -157,6 +154,13 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
                 ? (value?.version ?? VALUE_UNAVAILABLE)
                 : VALUE_UNAVAILABLE}
             </b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={12} key="Description">
+        <AboutField label={t('workflow.fields.description')}>
+          <Typography variant="subtitle2" component="div">
+            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>

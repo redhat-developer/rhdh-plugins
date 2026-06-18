@@ -29,6 +29,7 @@ import { makeStyles } from 'tss-react/mui';
 import {
   InputSchemaResponseDTO,
   orchestratorAdminViewPermission,
+  orchestratorInstanceAdminViewPermission,
   ProcessInstanceDTO,
   WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -65,9 +66,13 @@ export const mapProcessInstanceToDetails = (
     processName: instance.processName || VALUE_UNAVAILABLE,
     workflowId: instance.processId,
     start: started,
+    startIso: instance.start,
     duration,
     state: instance.state,
     description: instance.description,
+    version: instance.version,
+    initiatorEntity: instance.initiatorEntity,
+    targetEntity: instance.targetEntity,
   };
 };
 
@@ -148,8 +153,12 @@ export const WorkflowInstancePageContent: React.FC<{
   const adminView = usePermission({
     permission: orchestratorAdminViewPermission,
   });
+  const instanceAdminView = usePermission({
+    permission: orchestratorInstanceAdminViewPermission,
+  });
+  const canViewVariables = adminView.allowed || instanceAdminView.allowed;
 
-  const viewVariables = adminView.allowed && (
+  const viewVariables = canViewVariables && (
     <Link
       to="#"
       onClick={e => {

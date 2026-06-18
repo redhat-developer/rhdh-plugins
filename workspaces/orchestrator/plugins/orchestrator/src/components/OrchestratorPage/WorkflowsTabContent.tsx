@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import {
   Content,
@@ -27,20 +27,21 @@ import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orc
 
 import { orchestratorApiRef } from '../../api';
 import usePolling from '../../hooks/usePolling';
+import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
 import { WorkflowsTable } from './WorkflowsTable';
 
 export const WorkflowsTabContent = ({
   workflowsArray,
   targetEntity,
+  onCountChange,
 }: {
   workflowsArray?: string[];
   targetEntity?: string;
+  onCountChange?: (count: number | undefined) => void;
 }) => {
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const fetchWorkflowOverviews = useCallback(async () => {
-    // TODO: pass pagination details only if the user is granted the generic orchestratorWorkflowPermission
-    // FE pagination will be used otherwise
     let overviewsResp;
     if (workflowsArray && targetEntity) {
       overviewsResp = await orchestratorApi.getWorkflowsOverviewForEntity(
@@ -59,11 +60,21 @@ export const WorkflowsTabContent = ({
 
   const isReady = useMemo(() => !loading && !error, [loading, error]);
 
+  useEffect(() => {
+    onCountChange?.(isReady ? (value?.length ?? 0) : undefined);
+    return () => onCountChange?.(undefined);
+  }, [isReady, value, onCountChange]);
+
   return (
     <Content noPadding>
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
-      {isReady ? <WorkflowsTable items={value ?? []} /> : null}
+      {isReady && (value?.length ?? 0) === 0 ? (
+        <OrchestratorEmptyState variant="workflows" />
+      ) : null}
+      {isReady && (value?.length ?? 0) > 0 ? (
+        <WorkflowsTable items={value ?? []} />
+      ) : null}
     </Content>
   );
 };

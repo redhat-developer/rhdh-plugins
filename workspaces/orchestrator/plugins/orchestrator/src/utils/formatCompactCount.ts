@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
+export function formatCompactCount(count: number): string {
+  if (count < 1000) {
+    return String(count);
+  }
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  startIso?: string;
-  duration: string;
-  description?: string;
-  version?: string;
-  businessKey?: string;
-  initiatorEntity?: string;
-  targetEntity?: string;
-};
+  const thousands = count / 1000;
+  const formatted =
+    thousands >= 10
+      ? Math.round(thousands).toString()
+      : parseFloat(thousands.toFixed(1)).toString();
+
+  return `${formatted} k`;
+}

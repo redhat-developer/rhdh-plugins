@@ -17,24 +17,32 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Link, TableColumn, TableProps } from '@backstage/core-components';
+import {
+  InfoCard,
+  Link,
+  TableColumn,
+  TableProps,
+} from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import DeveloperModeOutlined from '@mui/icons-material/DeveloperModeOutlined';
+import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PlayArrow from '@mui/icons-material/PlayArrow';
+import SearchIcon from '@mui/icons-material/Search';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import MuiLink from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
 
 import {
   orchestratorWorkflowPermission,
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  ProcessInstanceStatusDTO,
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -48,18 +56,53 @@ import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
   executeWorkflowRouteRef,
-  workflowInstanceRouteRef,
   workflowRouteRef,
   workflowRunsRouteRef,
 } from '../../routes';
+import { Trans } from '../Trans';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
 import { WorkflowStatus } from '../ui/WorkflowStatus';
-import { InputSchemaDialog } from './InputSchemaDialog';
+import { WorkflowSuccessRatioCell } from '../ui/WorkflowSuccessRatioCell';
 
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
 }
+
+const WorkflowsTableFilter = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) => (
+  <TextField
+    variant="standard"
+    size="small"
+    placeholder="Filter"
+    value={value}
+    onChange={event => onChange(event.target.value)}
+    inputProps={{ 'aria-label': 'Filter' }}
+    sx={{ minWidth: { xs: '12rem', sm: '16rem' } }}
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon fontSize="small" />
+        </InputAdornment>
+      ),
+      endAdornment: value ? (
+        <InputAdornment position="end">
+          <IconButton
+            size="small"
+            aria-label="Clear all"
+            onClick={() => onChange('')}
+          >
+            <ClearIcon fontSize="small" />
+          </IconButton>
+        </InputAdornment>
+      ) : null,
+    }}
+  />
+);
 
 const usePermittedToUseBatch = (
   items: WorkflowOverviewDTO[],
@@ -115,8 +158,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
-  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
-  const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
   let entityRef: string | undefined = undefined;
@@ -125,26 +166,11 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   }
 
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
+  const [search, setSearch] = useState('');
 
   const { allowed: permittedToUse } = usePermittedToUseBatch(items);
   const { allowed: permittedToView } = usePermittedToViewBatch(items);
 
-  const [isInputSchemaDialogOpen, setIsInputSchemaDialogOpen] = useState(false);
-  const [dataForDialog, setDataForDialog] = useState<
-    FormattedWorkflowOverview | undefined
-  >(undefined);
-
-  const toggleInputSchemaDialog = useCallback(() => {
-    setIsInputSchemaDialogOpen(prev => !prev);
-  }, []);
-
-  const handleViewInputSchema = useCallback(
-    (rowData: FormattedWorkflowOverview) => {
-      setDataForDialog(rowData);
-      toggleInputSchemaDialog();
-    },
-    [toggleInputSchemaDialog],
-  );
   const initialState = useMemo(
     () => items.map(WorkflowOverviewFormatter.format),
     [items],
@@ -153,6 +179,22 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   useEffect(() => {
     setData(initialState);
   }, [initialState]);
+
+  const filteredData = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) {
+      return data;
+    }
+
+    return data.filter(
+      row =>
+        row.name.toLowerCase().includes(query) ||
+        row.version.toLowerCase().includes(query) ||
+        row.runsLastMonth.toLowerCase().includes(query) ||
+        row.successRatioDisplay.toLowerCase().includes(query) ||
+        (row.availability?.toLowerCase().includes(query) ?? false),
+    );
+  }, [data, search]);
 
   const handleViewVariables = useCallback(
     (rowData: FormattedWorkflowOverview) => {
@@ -202,17 +244,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [items, permittedToView],
   );
 
-  const canViewInstance = useCallback(
-    (workflowId: string) => {
-      const idx = items?.findIndex(i => workflowId === i.workflowId);
-      if (idx < 0) {
-        return false;
-      }
-      return permittedToView[idx];
-    },
-    [items, permittedToView],
-  );
-
   const actions = useMemo(() => {
     const actionItems: TableProps<FormattedWorkflowOverview>['actions'] = [
       rowData => ({
@@ -224,20 +255,12 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     ];
 
     if (!entityRef)
-      actionItems.push(
-        rowData => ({
-          icon: () => <FormatListBulleted />,
-          tooltip: t('table.actions.viewRuns'),
-          disabled: !canViewWorkflow(rowData.id),
-          onClick: () => handleViewVariables(rowData),
-        }),
-        rowData => ({
-          icon: () => <DeveloperModeOutlined />,
-          tooltip: t('table.actions.viewInputSchema'),
-          disabled: !canViewWorkflow(rowData.id),
-          onClick: () => handleViewInputSchema(rowData),
-        }),
-      );
+      actionItems.push(rowData => ({
+        icon: () => <FormatListBulleted />,
+        tooltip: t('table.actions.viewRuns'),
+        disabled: !canViewWorkflow(rowData.id),
+        onClick: () => handleViewVariables(rowData),
+      }));
 
     return actionItems;
   }, [
@@ -246,7 +269,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     canViewWorkflow,
     handleExecute,
     handleViewVariables,
-    handleViewInputSchema,
     entityRef,
   ]);
 
@@ -264,32 +286,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
           });
     },
     [entityRef, entityWorkflowLink, definitionLink, kind, name, namespace],
-  );
-
-  const instanceLink = useCallback(
-    (rowData: FormattedWorkflowOverview) => {
-      if (canViewInstance(rowData.id)) {
-        return entityRef
-          ? entityInstanceLink({
-              namespace,
-              kind,
-              name,
-              workflowId: rowData.id,
-              instanceId: rowData.lastRunId,
-            })
-          : workflowInstanceLink({ instanceId: rowData.lastRunId });
-      }
-      return undefined;
-    },
-    [
-      canViewInstance,
-      entityInstanceLink,
-      workflowInstanceLink,
-      entityRef,
-      namespace,
-      kind,
-      name,
-    ],
   );
 
   const showDuplicateWorkflowIdAlert = useMemo(() => {
@@ -317,42 +313,27 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         ),
       },
       {
-        title: t('table.headers.lastRun'),
-        field: 'lastTriggered',
-      },
-      {
-        title: t('table.headers.lastRunStatus'),
-        field: 'lastRunStatus',
-        render: rowData => {
-          const originalRawData = items.find(
-            item => item.workflowId === rowData.id,
-          );
-          return (
-            <WorkflowInstanceStatusIndicator
-              status={
-                originalRawData?.lastRunStatus as ProcessInstanceStatusDTO
-              }
-              instanceLink={instanceLink(rowData)}
-            />
-          );
-        },
-      },
-      {
-        title: t('table.headers.description'),
-        field: 'description',
-        minWidth: '25vw',
-      },
-      {
         title: t('table.headers.version'),
         field: 'version',
       },
+      {
+        title: t('table.headers.runsLastMonth'),
+        field: 'runsLastMonth',
+      },
+      {
+        title: t('table.headers.successRatio'),
+        field: 'successRatioDisplay',
+        render: rowData => (
+          <WorkflowSuccessRatioCell successRatio={rowData.successRatio} />
+        ),
+      },
     ],
-    [t, canViewWorkflow, entityLink, items, instanceLink],
+    [t, canViewWorkflow, entityLink],
   );
 
   const options = useMemo<TableProps['options']>(
     () => ({
-      search: true,
+      search: false,
       paging: false,
       actionsColumnIndex: columns.length,
     }),
@@ -362,43 +343,49 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   // TODO: use backend pagination only if the generic orchestratorWorkflowPermission is in place
   // use FE pagination otherwise (it means when specific permissions are used)
   return (
-    <>
-      {dataForDialog && (
-        <InputSchemaDialog
-          rowData={dataForDialog}
-          isInputSchemaDialogOpen={isInputSchemaDialogOpen}
-          toggleInputSchemaDialog={toggleInputSchemaDialog}
-        />
-      )}
-      <Box sx={{ mb: showDuplicateWorkflowIdAlert ? 2 : 0 }}>
-        {showDuplicateWorkflowIdAlert ? (
-          <Alert severity="warning">
-            {t('alerts.duplicateWorkflowIds.message')}{' '}
-            <MuiLink
-              href={ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              color="primary"
-              underline="always"
-              variant="body2"
-              sx={{ fontWeight: 600 }}
-            >
-              {t('alerts.duplicateWorkflowIds.learnMore')}
-              <OpenInNewIcon
-                sx={{ ml: 0.5, fontSize: '1em', verticalAlign: 'text-bottom' }}
-                aria-hidden
-              />
-            </MuiLink>
-          </Alert>
-        ) : null}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {showDuplicateWorkflowIdAlert ? (
+        <Alert severity="warning">
+          {t('alerts.duplicateWorkflowIds.message')}{' '}
+          <MuiLink
+            href={ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            color="primary"
+            underline="always"
+            variant="body2"
+            sx={{ fontWeight: 600 }}
+          >
+            {t('alerts.duplicateWorkflowIds.learnMore')}
+            <OpenInNewIcon
+              sx={{ ml: 0.5, fontSize: '1em', verticalAlign: 'text-bottom' }}
+              aria-hidden
+            />
+          </MuiLink>
+        </Alert>
+      ) : null}
+      <InfoCard
+        noPadding
+        title={
+          <Trans
+            message="table.title.workflows"
+            params={{ count: items.length }}
+          />
+        }
+        action={<WorkflowsTableFilter value={search} onChange={setSearch} />}
+        headerProps={{ style: { alignItems: 'center' } }}
+      >
         <OverrideBackstageTable<FormattedWorkflowOverview>
-          title={t('table.title.workflows')}
+          removeOutline
           options={options}
           columns={columns}
-          data={data}
+          data={filteredData}
           actions={actions}
+          components={{
+            Toolbar: () => null,
+          }}
         />
-      </Box>
-    </>
+      </InfoCard>
+    </Box>
   );
 };

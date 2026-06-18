@@ -54,6 +54,16 @@ const orchestratorTranslationFr = createTranslationMessages({
     'duration.months': '{{count}} mois',
     'duration.seconds': '{{count}} secondes',
     'duration.years': '{{count}} années',
+    'emptyState.illustrationAlt':
+      'Illustration sans flux de travail ni exécutions',
+    'emptyState.runs.description':
+      'Les exécutions de flux de travail apparaîtront ici une fois les flux exécutés.',
+    'emptyState.runs.runWorkflow': 'Exécuter un flux de travail',
+    'emptyState.runs.title': 'Aucune exécution pour le moment',
+    'emptyState.workflows.description':
+      'Pour commencer, ajoutez un nouveau flux de travail.',
+    'emptyState.workflows.title': 'Aucun flux de travail ajouté pour le moment',
+    'emptyState.workflows.viewDocumentation': 'Voir la documentation',
     'formDecorator.error':
       'Le décorateur de formulaire doit fournir des données de contexte.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
@@ -97,14 +107,15 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.inputs': 'Entrées',
     'run.logs.noLogsAvailable':
       "Aucun journal n'est disponible pour cette exécution de workflow.",
-    'run.logs.title': "journaux d'exécution",
+    'run.logs.title': 'Journaux du workflow {{processName}}',
     'run.logs.viewLogs': 'Afficher les journaux',
     'run.messages.eventTriggered':
       'Un événement a été envoyé pour déclencher ce flux de travail. Il apparaîtra une fois la course commencée.',
     'run.pageTitle': '{{processName}} exécuter',
     'run.results': 'Résultats',
     'run.retrigger': 'Redéclenchement',
-    'run.status.aborted': "L'exécution a été interrompue.",
+    'run.status.aborted': "L'exécution a été interrompue il y a {{time}}.",
+    'run.status.abortedWithoutTime': "L'exécution a été interrompue.",
     'run.status.completed': 'Exécution terminée',
     'run.status.completedAt': 'Exécution terminée {{time}}',
     'run.status.completedWithMessage':
@@ -132,7 +143,10 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.actions.runAsEvent': 'Organiser un événement',
     'table.actions.viewInputSchema': "Schéma d'entrée du schéma de vue",
     'table.actions.viewRuns': 'Afficher les parcours',
+    'table.actions.viewRunVariables': "Afficher les variables d'exécution",
     'table.filters.started': 'Démarré',
+    'table.filters.entity': 'Entité',
+    'table.filters.runBy': 'Exécuté par',
     'table.filters.startedOptions.last7days': 'Les 7 derniers jours',
     'table.filters.startedOptions.thisMonth': 'Ce mois-ci',
     'table.filters.startedOptions.today': "Aujourd'hui",
@@ -142,11 +156,15 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.headers.duration': 'Durée',
     'table.headers.lastRun': 'Dernière exécution',
     'table.headers.lastRunStatus': 'Statut de la dernière exécution',
+    'table.headers.runsLastMonth': 'Exécutions (dernier mois)',
+    'table.headers.successRatio': 'Taux de réussite',
     'table.headers.name': 'Nom',
     'table.headers.runStatus': "État d'exécution",
     'table.headers.started': 'Démarré',
     'table.headers.status': 'Statut',
     'table.headers.version': 'Version',
+    'table.headers.entity': 'Entité',
+    'table.headers.runBy': 'Exécuté par',
     'table.headers.workflowName': 'Nom du flux de travail',
     'table.headers.workflowStatus': 'État du flux de travail',
     'table.status.aborted': 'Avorté',
@@ -157,7 +175,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.status.running': 'En cours d’exécution',
     'table.title.allRuns': 'Toutes les exécutions ({{count}})',
     'table.title.allWorkflowRuns': 'Exécutions du flux de travail ({{count}})',
-    'table.title.workflows': 'Flux de travail',
+    'table.title.workflows': 'Flux de travail ({{count}})',
     'tooltips.aborted': 'Avorté',
     'tooltips.active': 'Actif',
     'tooltips.completed': 'Terminé',
@@ -167,8 +185,12 @@ const orchestratorTranslationFr = createTranslationMessages({
       "L'utilisateur n'est pas autorisé à interrompre le flux de travail.",
     'tooltips.userNotAuthorizedExecute':
       "L'utilisateur n'est pas autorisé à exécuter le flux de travail.",
+    'tooltips.retriggerNotSupportedForAborted':
+      "Le redéclenchement à partir du point d'interruption n'est pas pris en charge. Utilisez Flux de travail entier pour démarrer une nouvelle exécution avec les mêmes entrées.",
     'tooltips.workflowDown':
       "Le flux de travail est actuellement indisponible ou en état d'erreur.",
+    'workflow.buttons.entireWorkflow': 'Flux de travail entier',
+    'workflow.buttons.fromAbortedPoint': "À partir du point d'interruption",
     'workflow.buttons.fromFailurePoint': 'À partir du point de défaillance',
     'workflow.buttons.run': 'Exécuter',
     'workflow.buttons.runAgain': 'Exécuter à nouveau',
@@ -177,6 +199,15 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.buttons.runWorkflow': 'Exécuter le flux de travail',
     'workflow.buttons.running': "En cours d'exécution...",
     'workflow.definition': 'Définition du flux de travail',
+    'workflow.inputSchema': "Schéma d'entrée",
+    'workflow.inputSchemaDescription':
+      'Définit les champs de données requis et la validation pour ce flux de travail.',
+    'workflow.successRatio': 'Taux de réussite',
+    'workflow.successRatioDescription':
+      'Part des exécutions réussies par rapport aux exécutions échouées pour ce flux de travail.',
+    'workflow.runSuccess': 'Réussite des exécutions',
+    'workflow.statsSuccess': 'Réussite',
+    'workflow.statsFailed': 'Échec',
     'workflow.details': 'Détails',
     'workflow.errors.abortFailed':
       "L'annulation a échoué : l'exécution est déjà terminée.",
@@ -186,6 +217,8 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.errors.retriggerFailed': 'Échec du redéclenchement : {{reason}}',
     'workflow.fields.description': 'Description',
     'workflow.fields.duration': 'Durée',
+    'workflow.fields.averageDuration': 'Durée moyenne',
+    'workflow.fields.entity': 'Entité',
     'workflow.fields.runStatus': "État d'exécution",
     'workflow.fields.started': 'Démarré',
     'workflow.fields.version': 'Version',

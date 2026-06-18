@@ -34,6 +34,7 @@ import { JsonObject } from '@backstage/types';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import Close from '@mui/icons-material/Close';
 import Error from '@mui/icons-material/Error';
+import ReplayOutlined from '@mui/icons-material/ReplayOutlined';
 import Start from '@mui/icons-material/Start';
 import SwipeRightAltOutlined from '@mui/icons-material/SwipeRightAltOutlined';
 import Alert from '@mui/material/Alert';
@@ -52,6 +53,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import {
   AuthTokenDescriptor,
+  capitalize,
   isJsonObject,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
@@ -68,8 +70,10 @@ import usePolling from '../../hooks/usePolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
+  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
+  workflowRouteRef,
 } from '../../routes';
 import { orchestratorTranslationRef } from '../../translations';
 import { deepSearchObject } from '../../utils/deepSearchObject';
@@ -110,6 +114,9 @@ const useStyles = makeStyles()(theme => ({
       display: 'flex',
       flexDirection: 'column',
       '& li': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1.5),
         padding: '6px 16px',
         justifyContent: 'left',
       },
@@ -220,13 +227,25 @@ export const WorkflowInstancePage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
   const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-  const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
-  const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
+  const workflowPageLink = useRouteRef(workflowRouteRef);
+  const entityWorkflowPageLink = useRouteRef(entityWorkflowRouteRef);
+  const { instanceId: globalInstanceId } = useRouteRefParams(
+    workflowInstanceRouteRef,
+  );
+  const {
+    instanceId: entityInstanceId,
+    kind,
+    name,
+    namespace,
+    workflowId: routeWorkflowId,
+  } = useRouteRefParams(entityInstanceRouteRef);
+  const instanceId = globalInstanceId ?? entityInstanceId;
 
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
     entityRef = `${kind}:${namespace}/${name}`;
   }
+  const isEntityContext = !!(kind && namespace && name && routeWorkflowId);
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
@@ -405,14 +424,31 @@ export const WorkflowInstancePage = () => {
   const handleOptionClick = (option: 'retrigger' | 'rerun') => {
     handleCloseMenu();
     if (option === 'rerun') handleRerun();
-    else if (option === 'retrigger') handleRetrigger();
+    else if (
+      option === 'retrigger' &&
+      value?.state !== ProcessInstanceStatusDTO.Aborted
+    ) {
+      handleRetrigger();
+    }
   };
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
-  const title = t('run.pageTitle', {
-    processName: value?.processName ?? '',
-  });
+  const workflowName = value?.processName
+    ? capitalize(value.processName)
+    : undefined;
+  const workflowIdForLink = routeWorkflowId ?? value?.processId;
+  let workflowParentLink: string | undefined;
+  if (workflowIdForLink && isEntityContext) {
+    workflowParentLink = entityWorkflowPageLink({
+      namespace,
+      kind,
+      name,
+      workflowId: workflowIdForLink,
+    });
+  } else if (workflowIdForLink) {
+    workflowParentLink = workflowPageLink({ workflowId: workflowIdForLink });
+  }
 
   // Check if this is a permission/access denied error
   const isPermissionError = isAccessDeniedError(combinedError);
@@ -435,8 +471,34 @@ export const WorkflowInstancePage = () => {
     return <ResponseErrorPanel error={combinedError} />;
   };
 
+  const showRerunMenu =
+    value?.state === ProcessInstanceStatusDTO.Error ||
+    value?.state === ProcessInstanceStatusDTO.Aborted;
+
+  const fromRecoveryPointLabel =
+    value?.state === ProcessInstanceStatusDTO.Aborted
+      ? t('workflow.buttons.fromAbortedPoint')
+      : t('workflow.buttons.fromFailurePoint');
+
+  const fromRecoveryPointIcon =
+    value?.state === ProcessInstanceStatusDTO.Aborted ? (
+      <ReplayOutlined />
+    ) : (
+      <SwipeRightAltOutlined />
+    );
+
+  const isAbortedRun = value?.state === ProcessInstanceStatusDTO.Aborted;
+  const retriggerFromPointDisabled = isAbortedRun || !inputSchema;
+  const retriggerFromPointTooltip = isAbortedRun
+    ? t('tooltips.retriggerNotSupportedForAborted')
+    : '';
+
   return (
-    <BaseOrchestratorPage title={title}>
+    <BaseOrchestratorPage
+      title={instanceId ?? ''}
+      type={workflowName}
+      typeLink={workflowParentLink}
+    >
       {loading ? <Progress /> : null}
       {renderError()}
       {!loading && isNonNullable(value) ? (
@@ -489,16 +551,8 @@ export const WorkflowInstancePage = () => {
                       isRetrigger ? <CircularProgress size="1rem" /> : null
                     }
                     disabled={!permittedToUse.allowed || !canRerun}
-                    onClick={
-                      value?.state === ProcessInstanceStatusDTO.Error
-                        ? handleClick
-                        : handleRerun
-                    }
-                    endIcon={
-                      value?.state === ProcessInstanceStatusDTO.Error ? (
-                        <ArrowDropDown />
-                      ) : null
-                    }
+                    onClick={showRerunMenu ? handleClick : handleRerun}
+                    endIcon={showRerunMenu ? <ArrowDropDown /> : null}
                   >
                     {value.state === ProcessInstanceStatusDTO.Active ? (
                       <>
@@ -527,15 +581,22 @@ export const WorkflowInstancePage = () => {
                 >
                   <MenuItem onClick={() => handleOptionClick('rerun')}>
                     <Start />
-                    Entire workflow
+                    {t('workflow.buttons.entireWorkflow')}
                   </MenuItem>
-                  <MenuItem
-                    onClick={() => handleOptionClick('retrigger')}
-                    disabled={!inputSchema}
+                  <Tooltip
+                    title={retriggerFromPointTooltip}
+                    disableHoverListener={!retriggerFromPointTooltip}
                   >
-                    <SwipeRightAltOutlined />
-                    {t('workflow.buttons.fromFailurePoint')}
-                  </MenuItem>
+                    <Box component="span" sx={{ display: 'inline-flex' }}>
+                      <MenuItem
+                        onClick={() => handleOptionClick('retrigger')}
+                        disabled={retriggerFromPointDisabled}
+                      >
+                        {fromRecoveryPointIcon}
+                        {fromRecoveryPointLabel}
+                      </MenuItem>
+                    </Box>
+                  </Tooltip>
                 </Menu>
               </Grid>
             </Grid>
