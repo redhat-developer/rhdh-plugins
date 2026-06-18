@@ -11252,6 +11252,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-app-defaults@workspace:^, @red-hat-developer-hub/backstage-plugin-app-defaults@workspace:plugins/app-module-defaults":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-defaults@workspace:plugins/app-module-defaults"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.0"
+    "@backstage/frontend-plugin-api": "npm:^0.15.0"
+    "@testing-library/jest-dom": "npm:^6.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-app-react@workspace:^, @red-hat-developer-hub/backstage-plugin-app-react@workspace:plugins/app-react":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-app-react@workspace:plugins/app-react"
@@ -15974,6 +15984,7 @@ __metadata:
     "@playwright/test": "npm:^1.58.2"
     "@red-hat-developer-hub/backstage-plugin-app-auth": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-integrations": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-app-defaults": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@testing-library/dom": "npm:^10.0.0"
