@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.9.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- 03ef10a: Hide wizard steps when conditional `ui:hidden` rules evaluate to true, and add `isNotEmptyList`/`notContains` operators for conditional hidden expressions.
+- a195695: Remove unnecessary gaps from conditionally hidden form fields.
+- 3f96765: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+- 611bd81: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [611bd81]
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+
 ## 2.8.4
 
 ### Patch Changes
