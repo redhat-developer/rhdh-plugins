@@ -23,7 +23,7 @@ import {
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import ChatIcon from '@material-ui/icons/Chat';

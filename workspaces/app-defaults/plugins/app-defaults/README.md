@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-app-react
+# @red-hat-developer-hub/backstage-plugin-app-defaults
 
 Shared UI components and extension APIs for the RHDH app shell. Provides the
 application drawer system that lets plugins contribute persistent side panels
@@ -9,7 +9,7 @@ with host-owned state.
 Add the package as a dependency in your plugin or app:
 
 ```bash
-yarn add @red-hat-developer-hub/backstage-plugin-app-react
+yarn add @red-hat-developer-hub/backstage-plugin-app-defaults
 ```
 
 ## App Integration
@@ -18,11 +18,11 @@ Register the drawer module in your app's `createApp` call:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import appDefaultsModule from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 export default createApp({
   features: [
-    appDrawerModule,
+    appDefaultsModule,
     // ...other plugins and modules
   ],
 });
@@ -38,12 +38,11 @@ wrapping provider.
 
 ### Contributing a Drawer
 
-Use `AppDrawerContentBlueprint` to declare drawer content in your plugin's
-`/alpha` export:
+Use `AppDrawerContentBlueprint` to declare drawer content in your plugin:
 
 ```typescript
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 const myDrawerExtension = AppDrawerContentBlueprint.make({
   name: 'my-drawer',
@@ -92,7 +91,7 @@ app:
 Use the `useAppDrawer()` hook from anywhere in the app:
 
 ```typescript
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 function MyHeaderButton() {
   const { openDrawer } = useAppDrawer();
@@ -119,7 +118,7 @@ The hook provides:
 ### Closing from Inside the Drawer
 
 ```typescript
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 function MyDrawerContent() {
   const { closeDrawer } = useAppDrawer();
@@ -136,15 +135,9 @@ function MyDrawerContent() {
 
 ## Exports
 
-### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
+### Main entry (`@red-hat-developer-hub/backstage-plugin-app-default`)
 
-- `useAppDrawer` -- hook to control drawers
-- `ApplicationDrawer` -- drawer renderer component
-- `DrawerPanel` -- low-level MUI drawer wrapper
-- `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
-
-### Alpha entry (`@red-hat-developer-hub/backstage-plugin-app-react/alpha`)
-
-- `appDrawerContentDataRef` -- extension data ref
+- `AppDrawerContent` / `AppDrawerApi` types
 - `AppDrawerContentBlueprint` -- blueprint for contributing drawers
-- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- `appDrawerContentDataRef` -- extension data ref
+- `useAppDrawer` -- hook to control drawers
