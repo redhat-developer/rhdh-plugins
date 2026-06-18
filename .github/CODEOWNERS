@@ -33,7 +33,7 @@
 /workspaces/theme                                   @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay   @logonoff
 /workspaces/translations                            @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
 /workspaces/konflux                                 @redhat-developer/rhdh-plugins-maintainers @rrosatti @sahil143 @milantaky
-/workspaces/x2a                                     @redhat-developer/rhdh-plugins-maintainers @mareklibra @elai-shalev @eloycoto
+/workspaces/x2a                                     @redhat-developer/rhdh-plugins-maintainers @mareklibra @eloycoto @yray-pixel
 /workspaces/dcm                                     @redhat-developer/rhdh-plugins-maintainers @asmasarw @jkilzi @mareklibra
 
 # Fullsend AI agent configuration — requires maintainer approval to prevent
