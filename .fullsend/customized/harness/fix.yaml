@@ -17,6 +17,7 @@
 #   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 #   - skills: adds monorepo-workspace-routing for workspace navigation
+#   - skills: adds safe-retry to guard against infinite retry loops
 #   - policy: custom fix policy with yarn registry + pnpm binary allowlist
 agent: agents/fix.md
 doc: docs/agents/fix.md
@@ -54,6 +55,7 @@ host_files:
 skills:
   - skills/fix-review
   - skills/monorepo-workspace-routing
+  - skills/safe-retry
 
 runner_env:
   PUSH_TOKEN: "${PUSH_TOKEN}"
