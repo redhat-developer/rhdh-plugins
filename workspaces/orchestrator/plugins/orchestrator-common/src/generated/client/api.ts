@@ -943,6 +943,12 @@ export interface WorkflowRunStatsDTO {
      * @memberof WorkflowRunStatsDTO
      */
     'totalCount'?: number;
+    /**
+     * Average time to complete a workflow run in milliseconds
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'averageTimeToComplete'?: number;
 }
 /**
  * 

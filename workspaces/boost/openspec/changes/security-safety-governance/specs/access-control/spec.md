@@ -83,7 +83,7 @@ Inference responses are not stored on the server when ZDR is enabled.
 
 ### Requirement: Per-User Kagenti Identity via Token Exchange
 
-User identity is delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agent operations are authorized per-user.
+User identity MUST be delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agent operations are authorized per-user.
 
 #### Scenario: Token exchange enabled
 
@@ -119,7 +119,7 @@ User identity is delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agen
 
 ### Requirement: CSRF Protection
 
-All mutating requests include CSRF protection headers.
+All frontend mutating requests MUST include CSRF protection headers.
 
 #### Scenario: X-Backstage-Request header enforcement
 
@@ -129,7 +129,7 @@ All mutating requests include CSRF protection headers.
 
 ### Requirement: Credential Storage
 
-Sensitive credentials are stored encrypted in the admin config database.
+Sensitive credentials MUST be stored encrypted in the admin config database.
 
 #### Scenario: DevSpaces token encryption
 
@@ -141,7 +141,7 @@ Sensitive credentials are stored encrypted in the admin config database.
 
 ### Requirement: Security Mode Naming
 
-The development security mode uses an explicit name that communicates its purpose. The legacy name `none` is not accepted.
+The development security mode MUST use an explicit name that communicates its purpose. The legacy name `none` MUST NOT be accepted.
 
 #### Scenario: Only valid mode names accepted
 
@@ -151,7 +151,7 @@ The development security mode uses an explicit name that communicates its purpos
 
 ### Requirement: Identity Resolution
 
-User identity resolution uses real OIDC credentials in all security modes.
+User identity resolution MUST use real OIDC credentials in all security modes.
 
 #### Scenario: getUserRef reads real credentials
 

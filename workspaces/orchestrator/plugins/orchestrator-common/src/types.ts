@@ -100,6 +100,7 @@ export interface WorkflowRunStats {
   successCount?: number;
   errorCount?: number;
   totalCount?: number;
+  averageTimeToComplete?: number;
 }
 
 export interface WorkflowOverview {

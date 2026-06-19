@@ -458,6 +458,9 @@ spec:
             totalCount:
               type: integer
               description: Total number of workflow runs
+            averageTimeToComplete:
+              type: number
+              description: Average time to complete a workflow run in milliseconds
         WorkflowOverviewDTO:
           type: object
           properties:

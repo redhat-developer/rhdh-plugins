@@ -21,6 +21,7 @@ import adoptionInsightsPlugin, {
 } from '@red-hat-developer-hub/backstage-plugin-adoption-insights/alpha';
 import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/alpha';
 import { navModule } from './modules/nav';
+import { signInModule } from './modules/signIn';
 
 export default createApp({
   features: [
@@ -30,5 +31,6 @@ export default createApp({
     adoptionInsightsTranslationsModule,
     adoptionInsightsAnalyticsPlugin,
     navModule,
+    signInModule,
   ],
 });

@@ -16,8 +16,15 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-common",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-boost-common"
+      "@red-hat-developer-hub/backstage-plugin-boost-common",
+      "@red-hat-developer-hub/backstage-plugin-boost-node"
     ]
+  },
+  "dependencies": {
+    "@backstage/plugin-permission-common": "^0.9.7"
+  },
+  "peerDependencies": {
+    "@backstage/plugin-permission-common": "^0.9.7"
   },
   "sideEffects": false,
   "scripts": {

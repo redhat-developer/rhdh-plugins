@@ -12,6 +12,7 @@
 #   post_script      : push commit, post summary comment on PR
 #
 # Customizations over upstream fix.yaml:
+#   - pre_script: wraps upstream pre-fix.sh with auto-rebase onto target branch
 #   - image: rhdh custom image with yarn/corepack pre-installed
 #   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
@@ -23,7 +24,7 @@ model: opus
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/fix.yaml
 
-pre_script: scripts/pre-fix.sh
+pre_script: scripts/pre-fix-rebase.sh
 
 validation_loop:
   script: scripts/validate-output-schema.sh

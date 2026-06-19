@@ -38,3 +38,14 @@ Agents from all providers are merged into a single discoverable list.
 - **THEN** `useAgentGalleryData()` merges agents from all providers with a 155ms timeout
 - **AND** guard merge + dedup ensures no duplicates
 - **AND** featured agents are configured via `ChatExperiencePanel`
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

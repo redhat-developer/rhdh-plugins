@@ -71,3 +71,14 @@ Professional developers can inspect agent execution for transparency and debuggi
 - **WHEN** the user expands a tool call in the execution trace
 - **THEN** full input arguments and output are visible
 - **AND** timing data (phase chips) shows duration of each phase
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

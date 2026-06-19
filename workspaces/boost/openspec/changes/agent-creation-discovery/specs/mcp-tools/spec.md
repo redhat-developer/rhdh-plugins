@@ -48,3 +48,14 @@ Kagenti provides dedicated tool lifecycle management.
 - **THEN** a new tool is configured and deployed
 - **AND** `ToolInvokeDialog` allows direct testing of the tool
 - **AND** backend proxy mode supports air-gapped environments
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

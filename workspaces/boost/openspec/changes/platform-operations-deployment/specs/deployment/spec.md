@@ -33,3 +33,14 @@ Deploy Boost as a traditional Backstage plugin with npm packages.
 - **THEN** frontend route, sidebar entry, icon, and backend plugin are registered manually
 - **AND** `app-config.yaml` is configured
 - **AND** the application is rebuilt and deployed
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

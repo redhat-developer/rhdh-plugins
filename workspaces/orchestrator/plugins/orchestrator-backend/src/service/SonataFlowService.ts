@@ -187,6 +187,7 @@ export class SonataFlowService {
             successCount: stats.successCount,
             errorCount: stats.errorCount,
             totalCount: stats.totalCount,
+            averageTimeToComplete: stats.averageTimeToComplete,
           };
         }
         return overview;
@@ -450,6 +451,7 @@ export class SonataFlowService {
           successCount: stats.successCount,
           errorCount: stats.errorCount,
           totalCount: stats.totalCount,
+          averageTimeToComplete: stats.averageTimeToComplete,
         };
       }
     }
