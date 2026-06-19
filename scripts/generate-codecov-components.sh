@@ -44,6 +44,14 @@ CODECOV_FILE="$REPO_ROOT/codecov.yml"
 MODE="print"
 OVERLAY_REPO="../rhdh-plugin-export-overlays"
 
+# Display order for the support levels that already exist, plus nothing else.
+# The set of levels is DISCOVERED from the overlay metadata (see
+# discover_support_levels), so a brand-new level is picked up automatically; this
+# list only controls the order known levels appear in and which appear first — it
+# is not the source of truth for which levels exist. Any discovered level missing
+# from here is appended in sorted order, never dropped.
+SUPPORT_LEVEL_ORDER=(generally-available tech-preview community dev-preview)
+
 usage() {
   cat <<'EOF'
 Generate / sync the Codecov component_management block from overlay metadata.
@@ -100,28 +108,73 @@ get_workspaces_by_support() {
       done || true
 }
 
-# Render the YAML for a single component.
+# Distinct spec.support values present anywhere in the overlay metadata. This is
+# the source of truth for which support levels exist — a new level shows up here
+# automatically.
+discover_support_levels() {
+  grep -hE "^[[:space:]]*support:[[:space:]]*[[:alnum:]_-]+[[:space:]]*$" \
+    "$OVERLAY_REPO"/workspaces/*/metadata/*.yaml 2>/dev/null \
+    | sed -E 's|^[[:space:]]*support:[[:space:]]*||; s|[[:space:]]*$||' \
+    | LC_ALL=C sort -u || true
+}
+
+# Discovered support levels, ordered: the known ones first (in SUPPORT_LEVEL_ORDER),
+# then any newly-introduced level appended in sorted order so it is never dropped.
+ordered_support_levels() {
+  local discovered known lvl
+  discovered="$(discover_support_levels)"
+  for known in "${SUPPORT_LEVEL_ORDER[@]}"; do
+    if printf '%s\n' "$discovered" | grep -qxF "$known"; then
+      echo "$known"
+    fi
+  done
+  printf '%s\n' "$discovered" | while read -r lvl; do
+    [[ -n "$lvl" ]] || continue
+    case " ${SUPPORT_LEVEL_ORDER[*]} " in
+      *" $lvl "*) ;; # already emitted in the known-order pass above
+      *) echo "$lvl" ;;
+    esac
+  done
+}
+
+# component_id and display name for a support level. Both derive mechanically
+# (<level>-plugins / Title-Case Plugins); "generally-available" is the one value
+# that needs an explicit alias because "GA" can't be derived from the string.
+component_id_for() {
+  case "$1" in
+    generally-available) echo "ga-plugins" ;;
+    *) echo "${1}-plugins" ;;
+  esac
+}
+
+component_name_for() {
+  case "$1" in
+    generally-available) echo "GA Plugins" ;;
+    *) echo "$(printf '%s' "$1" | awk -F- 'BEGIN{OFS="-"}{for(i=1;i<=NF;i++)$i=toupper(substr($i,1,1)) substr($i,2)}1') Plugins" ;;
+  esac
+}
+
+# Render the YAML for one component. Skips a level that has no workspace in this
+# repo so we never emit an empty component.
 generate_component() {
   local component_id="$1" component_name="$2" support_level="$3"
   local list count
   list="$(get_workspaces_by_support "$support_level")"
-  if [[ -z "$list" ]]; then count=0; else count="$(printf '%s\n' "$list" | wc -l | tr -d ' ')"; fi
+  [[ -z "$list" ]] && return 0
+  count="$(printf '%s\n' "$list" | wc -l | tr -d ' ')"
 
   echo "    # ${component_name} — ${count} workspace(s)"
   echo "    - component_id: ${component_id}"
   echo "      name: '${component_name}'"
-  if [[ "$count" -eq 0 ]]; then
-    echo "      paths: []"
-  else
-    echo "      paths:"
-    printf '%s\n' "$list" | while read -r ws; do
-      echo "        - workspaces/${ws}/"
-    done
-  fi
+  echo "      paths:"
+  printf '%s\n' "$list" | while read -r ws; do
+    echo "        - workspaces/${ws}/"
+  done
 }
 
 # Render the full component_management block (deterministic: no timestamps, so
-# --check is stable across runs).
+# --check is stable across runs). Both the support levels and their workspace
+# paths are derived from the overlay metadata — nothing here is a fixed list.
 generate_block() {
   cat <<'EOF'
 component_management:
@@ -134,10 +187,11 @@ component_management:
   # Note: workspaces with mixed support-level packages appear in multiple components.
   individual_components:
 EOF
-  generate_component "ga-plugins"           "GA Plugins"            "generally-available"
-  generate_component "tech-preview-plugins" "Tech-Preview Plugins"  "tech-preview"
-  generate_component "community-plugins"    "Community Plugins"     "community"
-  generate_component "dev-preview-plugins"  "Dev-Preview Plugins"   "dev-preview"
+  local level
+  ordered_support_levels | while read -r level; do
+    [[ -n "$level" ]] || continue
+    generate_component "$(component_id_for "$level")" "$(component_name_for "$level")" "$level"
+  done
 }
 
 # Produce a copy of codecov.yml with the component_management block replaced by a
@@ -209,9 +263,10 @@ if [[ "$MODE" != "check" ]]; then
   {
     echo ""
     echo "Summary (workspaces present in this repo):"
-    echo "  GA:           $(get_workspaces_by_support generally-available | grep -c '^' || true)"
-    echo "  Tech-Preview: $(get_workspaces_by_support tech-preview | grep -c '^' || true)"
-    echo "  Community:    $(get_workspaces_by_support community | grep -c '^' || true)"
-    echo "  Dev-Preview:  $(get_workspaces_by_support dev-preview | grep -c '^' || true)"
+    ordered_support_levels | while read -r level; do
+      [[ -n "$level" ]] || continue
+      count="$(get_workspaces_by_support "$level" | grep -c '^' || true)"
+      printf '  %-22s %s\n' "$(component_name_for "$level"):" "$count"
+    done
   } >&2
 fi
