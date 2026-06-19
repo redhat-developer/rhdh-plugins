@@ -35,8 +35,8 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  PASS_RATE_7D: 'github.ci_pass_rate_7d',
-  PASS_RATE_24H: 'github.ci_pass_rate_24h',
+  PASS_RATE_7D: 'github.pr_ci_first_time_pass_rate_7d',
+  PASS_RATE_24H: 'github.pr_ci_first_time_pass_rate_24h',
 } as const;
 
 function computePassRate(statuses: PullRequestCommitStatus[]): number {
@@ -51,7 +51,7 @@ function computePassRate(statuses: PullRequestCommitStatus[]): number {
   return Math.round((passed / withCI.length) * 1000) / 10;
 }
 
-export class GithubCIPassRateProvider implements MetricProvider<'number'> {
+export class GithubPRPassRateProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
 
   private constructor(config: Config) {
@@ -73,9 +73,9 @@ export class GithubCIPassRateProvider implements MetricProvider<'number'> {
   getMetric(): Metric<'number'> {
     return {
       id: METRIC_IDS.PASS_RATE_7D,
-      title: 'GitHub CI pass rate (7d)',
+      title: 'GitHub PR CI first time pass rate (7d)',
       description:
-        'Percentage of PRs opened in the last 7 days where all CI statuses passed on the first push (percentage).',
+        'First time pass rate (FTPR): percentage of PRs opened in the last 7 days where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
       type: this.getMetricType(),
       history: true,
     };
@@ -90,9 +90,9 @@ export class GithubCIPassRateProvider implements MetricProvider<'number'> {
       this.getMetric(),
       {
         id: METRIC_IDS.PASS_RATE_24H,
-        title: 'GitHub CI pass rate (24h)',
+        title: 'GitHub PR CI first time pass rate (24h)',
         description:
-          'Percentage of PRs opened in the last 24 hours where all CI statuses passed on the first push (percentage).',
+          'First time pass rate (FTPR): percentage of PRs opened in the last 24 hours where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
         type: this.getMetricType(),
         history: true,
       },
@@ -109,8 +109,8 @@ export class GithubCIPassRateProvider implements MetricProvider<'number'> {
     };
   }
 
-  static fromConfig(config: Config): GithubCIPassRateProvider {
-    return new GithubCIPassRateProvider(config);
+  static fromConfig(config: Config): GithubPRPassRateProvider {
+    return new GithubPRPassRateProvider(config);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

@@ -26,14 +26,6 @@ import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 import { WorkflowRun } from '../github/types';
 
-const COUNT_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    { key: 'success', expression: '<10' },
-    { key: 'warning', expression: '10-50' },
-    { key: 'error', expression: '>50' },
-  ],
-};
-
 const RATIO_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '>=80' },
@@ -43,9 +35,6 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  STARTED: 'github.actions_started_7d',
-  SUCCESSFUL: 'github.actions_successful_7d',
-  FAILED: 'github.actions_failed_7d',
   SUCCESS_RATIO_7D: 'github.actions_success_ratio_7d',
   SUCCESS_RATIO_24H: 'github.actions_success_ratio_24h',
 } as const;
@@ -59,12 +48,6 @@ function filterRunsByWindow(
   return runs.filter(r => new Date(r.created_at) >= cutoff);
 }
 
-function countByConclusion(runs: WorkflowRun[], conclusion: string): number {
-  return runs.filter(
-    r => r.status === 'completed' && r.conclusion === conclusion,
-  ).length;
-}
-
 function computeSuccessRatio(runs: WorkflowRun[]): number {
   const completed = runs.filter(r => r.status === 'completed');
   const successful = completed.filter(r => r.conclusion === 'success');
@@ -76,7 +59,7 @@ function computeSuccessRatio(runs: WorkflowRun[]): number {
   return Math.round((successful.length / total) * 1000) / 10;
 }
 
-export class GithubActionsProvider implements MetricProvider<'number'> {
+export class GithubActionsRatioProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
 
   private constructor(config: Config) {
@@ -88,7 +71,7 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return METRIC_IDS.STARTED;
+    return METRIC_IDS.SUCCESS_RATIO_7D;
   }
 
   getMetricType(): 'number' {
@@ -97,10 +80,10 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
 
   getMetric(): Metric<'number'> {
     return {
-      id: METRIC_IDS.STARTED,
-      title: 'GitHub Actions started (7d)',
+      id: METRIC_IDS.SUCCESS_RATIO_7D,
+      title: 'GitHub Actions success ratio (7d)',
       description:
-        'Number of GitHub Actions workflow runs started in the last 7 days.',
+        'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 7 days (percentage). Cancelled and skipped runs are excluded.',
       type: this.getMetricType(),
       history: true,
     };
@@ -114,34 +97,10 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
     return [
       this.getMetric(),
       {
-        id: METRIC_IDS.SUCCESSFUL,
-        title: 'GitHub Actions successful (7d)',
-        description:
-          'Number of successfully completed GitHub Actions workflow runs in the last 7 days.',
-        type: this.getMetricType(),
-        history: true,
-      },
-      {
-        id: METRIC_IDS.FAILED,
-        title: 'GitHub Actions failed (7d)',
-        description:
-          'Number of failed GitHub Actions workflow runs in the last 7 days.',
-        type: this.getMetricType(),
-        history: true,
-      },
-      {
-        id: METRIC_IDS.SUCCESS_RATIO_7D,
-        title: 'GitHub Actions success ratio (7d)',
-        description:
-          'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 7 days (percentage).',
-        type: this.getMetricType(),
-        history: true,
-      },
-      {
         id: METRIC_IDS.SUCCESS_RATIO_24H,
         title: 'GitHub Actions success ratio (24h)',
         description:
-          'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 24 hours (percentage).',
+          'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 24 hours (percentage). Cancelled and skipped runs are excluded.',
         type: this.getMetricType(),
         history: true,
       },
@@ -149,7 +108,7 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return COUNT_THRESHOLDS;
+    return RATIO_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -158,13 +117,13 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
     };
   }
 
-  static fromConfig(config: Config): GithubActionsProvider {
-    return new GithubActionsProvider(config);
+  static fromConfig(config: Config): GithubActionsRatioProvider {
+    return new GithubActionsRatioProvider(config);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
     const metrics = await this.calculateMetrics(entity);
-    return metrics.get(METRIC_IDS.STARTED) ?? 0;
+    return metrics.get(METRIC_IDS.SUCCESS_RATIO_7D) ?? 100;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
@@ -184,9 +143,6 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
     const runs24h = filterRunsByWindow(runs, 24);
 
     const results = new Map<string, number>();
-    results.set(METRIC_IDS.STARTED, runs.length);
-    results.set(METRIC_IDS.SUCCESSFUL, countByConclusion(runs, 'success'));
-    results.set(METRIC_IDS.FAILED, countByConclusion(runs, 'failure'));
     results.set(METRIC_IDS.SUCCESS_RATIO_7D, computeSuccessRatio(runs));
     results.set(METRIC_IDS.SUCCESS_RATIO_24H, computeSuccessRatio(runs24h));
 
@@ -194,4 +150,4 @@ export class GithubActionsProvider implements MetricProvider<'number'> {
   }
 }
 
-export { RATIO_THRESHOLDS, COUNT_THRESHOLDS };
+export { RATIO_THRESHOLDS };
