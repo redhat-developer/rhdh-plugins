@@ -21,9 +21,11 @@ import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import {
   MetricProvider,
+  scorecardCollectorsExtensionPoint,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
+import { CollectorRegistry } from './providers/CollectorRegistry';
 import { CatalogMetricService } from './service/CatalogMetricService';
 import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
 import { scorecardPermissions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -47,12 +49,26 @@ export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
     const metricProvidersRegistry = new MetricProvidersRegistry();
+    const collectorRegistry = new CollectorRegistry();
 
     env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
       addMetricProvider(...newMetricProviders: MetricProvider[]) {
         newMetricProviders.forEach(metricProvider => {
           metricProvidersRegistry.register(metricProvider);
         });
+      },
+    });
+    env.registerExtensionPoint(scorecardCollectorsExtensionPoint, {
+      addCollector(...collectors) {
+        collectors.forEach(collector => {
+          collectorRegistry.register(collector);
+        });
+      },
+      getCollector(collectorId: string) {
+        return collectorRegistry.getCollector(collectorId);
+      },
+      hasCollector(collectorId: string) {
+        return collectorRegistry.hasCollector(collectorId);
       },
     });
 

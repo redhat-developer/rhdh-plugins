@@ -46,7 +46,8 @@
     "@backstage/catalog-model": "^1.7.7",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^2.1.0",
-    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.11.1",

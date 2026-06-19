@@ -12350,6 +12350,7 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^2.1.0"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    zod: "npm:^3.22.4"
   languageName: unknown
   linkType: soft
 
