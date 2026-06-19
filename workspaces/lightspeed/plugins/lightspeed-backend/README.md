@@ -65,6 +65,43 @@ intelligent-assistant:
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
       token: ${MCP_TOKEN}
+  rateLimit: # Optional - per-user request rate limits (defaults apply if omitted)
+    expensive:
+      max: 25 # Max requests per minute per user for expensive endpoints (default: 25). Set to 0 to disable.
+    general:
+      max: 200 # Max requests per minute per user for other authenticated endpoints (default: 200). Set to 0 to disable.
+```
+
+#### Rate limiting
+
+The backend applies per-user rate limits to authenticated endpoints as an abuse
+prevention measure. Limits are keyed by the authenticated user's entity ref and
+use a fixed 1-minute window.
+
+**Tiers**:
+
+- **Expensive** (default: 25 requests/minute per user): `POST /v1/query`, and
+  (when Notebooks is enabled) notebook document uploads and RAG queries.
+- **General** (default: 200 requests/minute per user): all other authenticated
+  endpoints, including conversation listing, MCP server management, feedback,
+  and notebook session CRUD.
+- **Excluded**: `/health` and `/notebooks/health` are not rate limited.
+
+When a limit is exceeded, the API returns `429 Too Many Requests` with a
+`Retry-After` header and a JSON error body (`RateLimitExceeded`).
+
+Set `max: 0` on a tier to disable rate limiting for that tier. If the entire
+`rateLimit` block is omitted, the defaults above apply.
+
+**Example** — tighter limits for a small deployment:
+
+```yaml
+lightspeed:
+  rateLimit:
+    expensive:
+      max: 10
+    general:
+      max: 100
 ```
 
 #### MCP servers settings endpoints
