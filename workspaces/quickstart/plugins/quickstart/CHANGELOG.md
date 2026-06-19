@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.9.7
+
+### Patch Changes
+
+- 88f7bb7: Replace Material UI v4 with MUI v5 and scope JSS class names to prevent style collisions.
+
 ## 1.9.6
 
 ### Patch Changes

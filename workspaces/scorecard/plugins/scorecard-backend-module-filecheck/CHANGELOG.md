@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck
 
+## 0.1.11
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.9
+
 ## 0.1.10
 
 ### Patch Changes

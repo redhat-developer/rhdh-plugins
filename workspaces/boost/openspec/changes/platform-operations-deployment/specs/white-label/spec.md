@@ -38,3 +38,14 @@ Featured agents and conversation starters are configurable.
 - **THEN** featured agents for the welcome screen strip are configurable
 - **AND** per-agent conversation starters are configurable
 - **AND** changes apply at runtime
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

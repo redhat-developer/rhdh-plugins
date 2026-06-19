@@ -77,9 +77,11 @@ import type {
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
+import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CatalogItemFormFields } from './components/CatalogItemFormFields';
 import {
@@ -94,6 +96,7 @@ import type { CatalogItemForm } from './catalogItemFormTypes';
 export function CatalogItemsTabContent() {
   const classes = useStyles();
   const catalogApi = useApi(catalogApiRef);
+  const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   /** Tracks whether a submit was attempted so field-level errors show for all fields. */
@@ -123,16 +126,19 @@ export function CatalogItemsTabContent() {
     isValid: isCatalogItemFormValid,
     itemToForm: catalogItemToForm,
     storageKey: 'catalog-items',
+    createSuccessMessage: t('catalogItems.createSuccess'),
+    editSuccessMessage: t('catalogItems.updateSuccess'),
+    deleteSuccessMessage: t('catalogItems.deleteSuccess'),
   });
 
   const columns = useMemo<TableColumn<CatalogItem>[]>(
     () => [
       {
-        title: 'Display name',
+        title: t('catalogItems.columns.displayName'),
         field: 'display_name',
         render: item => (
           <TruncatedText
-            text={item.display_name || '—'}
+            text={item.display_name || '-'}
             variant="body2"
             bold
             maxWidth={220}
@@ -141,7 +147,7 @@ export function CatalogItemsTabContent() {
         ),
       },
       {
-        title: 'API version',
+        title: t('catalogItems.columns.apiVersion'),
         field: 'api_version',
         render: item =>
           item.api_version ? (
@@ -152,12 +158,12 @@ export function CatalogItemsTabContent() {
             />
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
       {
-        title: 'Service type',
+        title: t('catalogItems.columns.serviceType'),
         field: 'spec.service_type',
         render: item =>
           item.spec?.service_type ? (
@@ -169,25 +175,25 @@ export function CatalogItemsTabContent() {
             />
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
       {
-        title: 'Fields',
+        title: t('catalogItems.columns.fields'),
         field: 'spec.fields',
         sorting: false,
         render: item => {
           const count = item.spec?.fields?.length ?? 0;
           return (
             <Typography variant="body2" color="textSecondary">
-              {count} {count === 1 ? 'field' : 'fields'}
+              {(t as any)('catalogItems.fieldCount', { count })}
             </Typography>
           );
         },
       },
       {
-        title: 'Created',
+        title: t('catalogItems.columns.created'),
         field: 'create_time',
         render: item =>
           item.create_time ? (
@@ -196,16 +202,17 @@ export function CatalogItemsTabContent() {
             </Typography>
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
       createEditDeleteColumn<CatalogItem>({
         onEdit: crud.handleOpenEdit,
         onDelete: crud.handleOpenDelete,
+        title: t('common.actions'),
       }),
     ],
-    [classes, crud.handleOpenEdit, crud.handleOpenDelete],
+    [classes, crud.handleOpenEdit, crud.handleOpenDelete, t],
   );
 
   type ScalarTouched = Partial<
@@ -255,7 +262,7 @@ export function CatalogItemsTabContent() {
           <Typography variant="h6">{title}</Typography>
           <IconButton
             size="small"
-            aria-label="Close"
+            aria-label={t('common.close')}
             onClick={onClose}
             disabled={submitting}
           >
@@ -294,7 +301,7 @@ export function CatalogItemsTabContent() {
               ) : undefined
             }
           >
-            {submitting ? 'Saving\u2026' : submitLabel}
+            {submitting ? t('common.saving') : submitLabel}
           </Button>
           <Button
             variant="outlined"
@@ -302,7 +309,7 @@ export function CatalogItemsTabContent() {
             onClick={onClose}
             disabled={submitting}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </Box>
       </Box>
@@ -319,27 +326,27 @@ export function CatalogItemsTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError}
-        onDismissActionError={() => crud.setDeleteError(null)}
+        actionError={null}
+        onDismissActionError={undefined}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
         pageSize={crud.pageSize}
         onPageChange={crud.onPageChange}
         onRowsPerPageChange={crud.onRowsPerPageChange}
-        emptyTitle="No catalog items defined"
-        emptyDescription="Catalog items are service templates that developers can provision. Each catalog item references a service type and defines the fields available for customization."
-        primaryActionLabel="Create"
+        emptyTitle={t('catalogItems.emptyTitle')}
+        emptyDescription={t('catalogItems.emptyDescription')}
+        primaryActionLabel={t('catalogItems.createButton')}
         onPrimaryAction={() => {
           setCreateSubmitAttempted(false);
           crud.handleOpenCreate();
         }}
         illustrationSrc={emptyIllustration}
-        entityLabel="Catalog items"
+        entityLabel={t('catalogItems.entityLabel')}
       />
 
       {itemFormDrawer({
-        title: 'Create catalog item',
+        title: t('catalogItems.createDrawerTitle'),
         open: crud.createOpen,
         onClose: () => {
           setCreateSubmitAttempted(false);
@@ -353,7 +360,7 @@ export function CatalogItemsTabContent() {
           setCreateSubmitAttempted(true);
           crud.handleCreateSubmit();
         },
-        submitLabel: 'Create',
+        submitLabel: t('catalogItems.createButton'),
         submitting: crud.createSubmitting,
         error: crud.createError,
         submitAttempted: createSubmitAttempted,
@@ -361,7 +368,7 @@ export function CatalogItemsTabContent() {
       })}
 
       {itemFormDrawer({
-        title: 'Edit catalog item',
+        title: t('catalogItems.editDrawerTitle'),
         open: crud.editOpen,
         onClose: () => {
           setEditSubmitAttempted(false);
@@ -375,7 +382,7 @@ export function CatalogItemsTabContent() {
           setEditSubmitAttempted(true);
           crud.handleEditSubmit();
         },
-        submitLabel: 'Save',
+        submitLabel: t('catalogItems.saveButton'),
         submitting: crud.editSubmitting,
         error: crud.editError,
         submitAttempted: editSubmitAttempted,
@@ -389,7 +396,14 @@ export function CatalogItemsTabContent() {
         resourceName={
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
-        resourceLabel="catalog item"
+        resourceLabel={t('catalogItems.deleteLabel')}
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );

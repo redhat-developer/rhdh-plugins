@@ -1036,7 +1036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-common@npm:^0.9.9":
+"@backstage/plugin-permission-common@npm:^0.9.7, @backstage/plugin-permission-common@npm:^0.9.9":
   version: 0.9.9
   resolution: "@backstage/plugin-permission-common@npm:0.9.9"
   dependencies:
@@ -3699,6 +3699,27 @@ __metadata:
   checksum: 10c0/4cf6dd8c27f6425924ac749ca980693b447d39162b530e103f4613df470c1ec877f691d10796556b748ce8c954cc76e0f2a73e18e02b125d295168012c25df71
   languageName: node
   linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-boost-common@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common"
+  dependencies:
+    "@backstage/cli": "npm:^0.34.5"
+    "@backstage/plugin-permission-common": "npm:^0.9.7"
+  peerDependencies:
+    "@backstage/plugin-permission-common": ^0.9.7
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-boost-node@workspace:plugins/boost-node":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-node@workspace:plugins/boost-node"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.1"
+    "@backstage/cli": "npm:^0.34.5"
+    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
+  languageName: unknown
+  linkType: soft
 
 "@rollup/plugin-commonjs@npm:^26.0.0":
   version: 26.0.3

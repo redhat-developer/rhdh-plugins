@@ -239,7 +239,7 @@ describe('useCrudTab', () => {
       expect(result.current.items.find(i => i.id === '2')).toBeUndefined();
     });
 
-    it('sets deleteError and closes dialog on failure', async () => {
+    it('sets deleteError and keeps dialog open on failure', async () => {
       const opts = makeOptions({
         deleteFn: jest.fn().mockRejectedValue(new Error('delete failed')),
       });
@@ -252,7 +252,9 @@ describe('useCrudTab', () => {
       await waitFor(() =>
         expect(result.current.deleteError).toBe('delete failed'),
       );
-      expect(result.current.deleteOpen).toBe(false);
+      // Dialog stays open so the user can see the error inline
+      expect(result.current.deleteOpen).toBe(true);
+      expect(result.current.deleteSubmitting).toBe(false);
       // Item should NOT be removed from the list
       expect(result.current.items.find(i => i.id === '1')).toBeDefined();
     });

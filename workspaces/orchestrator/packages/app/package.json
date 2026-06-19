@@ -37,7 +37,7 @@
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
-    "react-router": "^6.3.0",
+    "react-router": "^6.30.4",
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {

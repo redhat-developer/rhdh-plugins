@@ -17,6 +17,8 @@
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
+import { homepageMessages } from '../../translations/ref';
+import { createTranslatedCardRenderer } from '../../utils/translatedCardRenderer';
 
 const defaultCardLayout = {
   width: {
@@ -41,9 +43,11 @@ export const onboardingSectionWidget = HomePageWidgetBlueprint.make({
     name: 'Red Hat Developer Hub - Onboarding',
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/OnboardingSection').then(m => ({
-        Content: m.OnboardingSection,
-      })),
+      import('../../components/OnboardingSection/OnboardingSection').then(
+        m => ({
+          Content: m.OnboardingSectionContent,
+        }),
+      ),
   },
 });
 
@@ -55,10 +59,12 @@ export const entitySectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-entity-section',
   params: {
     name: 'Red Hat Developer Hub - Software Catalog',
+    title: homepageMessages.entities.title,
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/EntitySection').then(m => ({
-        Content: () => compatWrapper(<m.EntitySection />),
+      import('../../components/EntitySection/EntitySection').then(m => ({
+        Content: m.EntitySectionContent,
+        Renderer: createTranslatedCardRenderer('entities.title'),
       })),
   },
 });
@@ -71,10 +77,12 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-template-section',
   params: {
     name: 'Red Hat Developer Hub - Explore templates',
+    title: homepageMessages.templates.title,
     layout: defaultCardLayout,
     components: () =>
-      import('../../components/TemplateSection').then(m => ({
-        Content: m.TemplateSection,
+      import('../../components/TemplateSection/TemplateSection').then(m => ({
+        Content: m.TemplateSectionContent,
+        Renderer: createTranslatedCardRenderer('templates.title'),
       })),
   },
 });
@@ -87,10 +95,14 @@ export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
   name: 'quick-access-card',
   params: {
     name: 'Quick Access Card',
+    title: homepageMessages.quickAccess.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/QuickAccessCard').then(m => ({
-        Content: () => compatWrapper(<m.QuickAccessCard />),
+        Content: m.QuickAccessCardContent,
+        Renderer: createTranslatedCardRenderer('quickAccess.title', {
+          quickAccessStyle: true,
+        }),
       })),
   },
 });
@@ -114,10 +126,22 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
     },
     components: () =>
       import('../../components/SearchBar').then(m => ({
-        Content: () => compatWrapper(<m.SearchBar />),
+        Content: m.SearchBar,
+        Renderer: ({ Content }: { Content: React.ComponentType }) =>
+          compatWrapper(<Content />),
       })),
   },
 });
+
+/**
+ * Renders upstream home cards that include their own InfoCard shell.
+ * @alpha
+ */
+const upstreamHomeCardRenderer = ({
+  Content,
+}: {
+  Content: React.ComponentType;
+}) => <Content />;
 
 /**
  * NFS widget: FeaturedDocsCard (migrated from mountPoint home.page/cards).
@@ -127,10 +151,12 @@ export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
   name: 'featured-docs-card',
   params: {
     name: 'Featured docs',
+    title: homepageMessages.featuredDocs.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/FeaturedDocsCard').then(m => ({
         Content: m.FeaturedDocsCard,
+        Renderer: upstreamHomeCardRenderer,
       })),
   },
 });
@@ -144,7 +170,14 @@ export const catalogStarredWidget = homePlugin
   .override({
     params: {
       name: 'CatalogStarred',
-      title: 'Starred catalog entities',
+      title: homepageMessages.starredEntities.title,
+      components: () =>
+        import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+          m => ({
+            Content: m.CatalogStarredEntitiesCard,
+            Renderer: upstreamHomeCardRenderer,
+          }),
+        ),
     },
   });
 
@@ -167,10 +200,14 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Recently visited',
+    title: homepageMessages.recentlyVisited.title,
     components: () =>
-      import('@backstage/plugin-home').then(m => ({
-        Content: m.HomePageRecentlyVisited,
-      })),
+      import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+        m => ({
+          Content: m.RecentlyVisitedCard,
+          Renderer: upstreamHomeCardRenderer,
+        }),
+      ),
   },
 });
 
@@ -183,9 +220,13 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Top visited',
+    title: homepageMessages.topVisited.title,
     components: () =>
-      import('@backstage/plugin-home').then(m => ({
-        Content: () => <m.HomePageTopVisited />,
-      })),
+      import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+        m => ({
+          Content: m.TopVisitedCard,
+          Renderer: upstreamHomeCardRenderer,
+        }),
+      ),
   },
 });

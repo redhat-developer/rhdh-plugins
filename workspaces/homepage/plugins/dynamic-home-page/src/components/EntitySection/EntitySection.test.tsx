@@ -19,7 +19,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { EntitySection } from './EntitySection';
+import { EntitySection } from '../legacy/HomePageLegacyCards';
 import { useEntities } from '../../hooks/useEntities';
 
 // jsdom does not provide ResizeObserver; required by useContainerQuery in EntitySection

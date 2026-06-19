@@ -24,7 +24,6 @@ import {
   IconButton,
   Switch,
   Tooltip,
-  Typography,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -56,9 +55,11 @@ import { policyManagerApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
+import { useTranslation } from '../../hooks/useTranslation';
 import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { PolicyFormFields } from './components/PolicyFormFields';
@@ -92,6 +93,7 @@ function replacePolicyById(id: string, updated: Policy) {
 export function PoliciesTabContent() {
   const classes = useStyles();
   const policyApi = useApi(policyManagerApiRef);
+  const { t } = useTranslation();
 
   /** IDs currently being toggled (to show per-row spinner). */
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
@@ -108,6 +110,9 @@ export function PoliciesTabContent() {
     isValid: isPolicyFormValid,
     itemToForm: policyToForm,
     storageKey: 'policies',
+    createSuccessMessage: t('policies.createSuccess'),
+    editSuccessMessage: t('policies.updateSuccess'),
+    deleteSuccessMessage: t('policies.deleteSuccess'),
   });
 
   const { setItems, handleOpenEdit, handleOpenDelete } = crud;
@@ -119,7 +124,7 @@ export function PoliciesTabContent() {
       setTogglingIds(addTogglingId(id));
       try {
         const updated = await policyApi.updatePolicy(id, {
-          enabled: !p.enabled,
+          enabled: !(p.enabled ?? true),
         });
         setItems(replacePolicyById(id, updated));
       } catch (err) {
@@ -134,12 +139,12 @@ export function PoliciesTabContent() {
   const columns = useMemo<TableColumn<Policy>[]>(
     () => [
       {
-        title: 'Display name',
+        title: t('policies.columns.displayName'),
         field: 'display_name',
         render: p => (
           <Box className={classes.nameCellBox}>
             <TruncatedText
-              text={p.display_name || '—'}
+              text={p.display_name || '-'}
               variant="body2"
               bold
               maxWidth={220}
@@ -157,25 +162,25 @@ export function PoliciesTabContent() {
         ),
       },
       {
-        title: 'Type',
+        title: t('policies.columns.type'),
         field: 'policy_type',
-        render: p => <Chip label={p.policy_type ?? '—'} size="small" />,
+        render: p => <Chip label={p.policy_type ?? '-'} size="small" />,
       },
       {
-        title: 'Priority',
+        title: t('policies.columns.priority'),
         field: 'priority',
-        render: p => (
-          <Typography variant="body2">{p.priority ?? 500}</Typography>
-        ),
+        render: p => <>{p.priority ?? 500}</>,
       },
       {
-        title: 'Enabled',
+        title: t('policies.columns.enabled'),
         field: 'enabled',
         render: p => {
-          const isEnabled = p.enabled === true;
+          const isEnabled = p.enabled ?? true;
           return (
             <Chip
-              label={isEnabled ? 'Yes' : 'No'}
+              label={
+                isEnabled ? t('policies.enabledYes') : t('policies.enabledNo')
+              }
               size="small"
               color={isEnabled ? 'primary' : 'default'}
             />
@@ -183,7 +188,7 @@ export function PoliciesTabContent() {
         },
       },
       {
-        title: 'Description',
+        title: t('policies.columns.description'),
         field: 'description',
         sorting: false,
         render: p => (
@@ -198,24 +203,24 @@ export function PoliciesTabContent() {
         ),
       },
       {
-        title: 'Actions',
+        title: t('common.actions'),
         field: 'actions',
         sorting: false,
         render: p => {
           const id = p.id ?? '';
           const isToggling = togglingIds.has(id);
-          const isEnabled = p.enabled !== false;
+          const isEnabled = p.enabled ?? true;
           return (
             <Box className={classes.actionsCellBox}>
               <Tooltip
-                title={isEnabled ? 'Disable policy' : 'Enable policy'}
+                title={
+                  isEnabled
+                    ? t('policies.toggleDisable')
+                    : t('policies.toggleEnable')
+                }
                 placement="top"
               >
-                <Typography
-                  component="span"
-                  variant="inherit"
-                  className={classes.toggleSpan}
-                >
+                <Box component="span" className={classes.toggleSpan}>
                   {isToggling ? (
                     <CircularProgress
                       size={16}
@@ -229,25 +234,27 @@ export function PoliciesTabContent() {
                       disabled={isToggling}
                       color="primary"
                       inputProps={{
-                        'aria-label': isEnabled ? 'Disable' : 'Enable',
+                        'aria-label': isEnabled
+                          ? t('policies.toggleDisableAria')
+                          : t('policies.toggleEnableAria'),
                       }}
                     />
                   )}
-                </Typography>
+                </Box>
               </Tooltip>
-              <Tooltip title="Edit" placement="top">
+              <Tooltip title={t('common.edit')} placement="top">
                 <IconButton
                   size="small"
-                  aria-label="Edit"
+                  aria-label={t('common.edit')}
                   onClick={() => handleOpenEdit(p)}
                 >
                   <EditIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Delete" placement="top">
+              <Tooltip title={t('common.delete')} placement="top">
                 <IconButton
                   size="small"
-                  aria-label="Delete"
+                  aria-label={t('common.delete')}
                   onClick={() => handleOpenDelete(p)}
                 >
                   <DeleteIcon fontSize="small" />
@@ -264,6 +271,7 @@ export function PoliciesTabContent() {
       handleToggleEnabled,
       handleOpenEdit,
       handleOpenDelete,
+      t,
     ],
   );
 
@@ -332,27 +340,24 @@ export function PoliciesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={crud.deleteError ?? toggleError}
-        onDismissActionError={() => {
-          crud.setDeleteError(null);
-          setToggleError(null);
-        }}
+        actionError={toggleError}
+        onDismissActionError={() => setToggleError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
         pageSize={crud.pageSize}
         onPageChange={crud.onPageChange}
         onRowsPerPageChange={crud.onRowsPerPageChange}
-        emptyTitle="No policies defined"
-        emptyDescription="Create OPA Rego policies to enforce governance rules on DCM resources. Policies can be scoped globally or per user."
-        primaryActionLabel="Create"
+        emptyTitle={t('policies.emptyTitle')}
+        emptyDescription={t('policies.emptyDescription')}
+        primaryActionLabel={t('policies.createButton')}
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
-        entityLabel="Policies"
+        entityLabel={t('policies.entityLabel')}
       />
 
       {formDialog({
-        title: 'Create policy',
+        title: t('policies.createDialogTitle'),
         open: crud.createOpen,
         onClose: crud.handleCloseCreate,
         form: crud.createForm,
@@ -360,13 +365,13 @@ export function PoliciesTabContent() {
         touched: crud.createTouched,
         setTouched: crud.setCreateTouched,
         onSubmit: crud.handleCreateSubmit,
-        submitLabel: 'Create',
+        submitLabel: t('policies.createButton'),
         submitting: crud.createSubmitting,
         error: crud.createError,
       })}
 
       {formDialog({
-        title: 'Edit policy',
+        title: t('policies.editDialogTitle'),
         open: crud.editOpen,
         onClose: crud.handleCloseEdit,
         form: crud.editForm,
@@ -374,7 +379,7 @@ export function PoliciesTabContent() {
         touched: crud.editTouched,
         setTouched: crud.setEditTouched,
         onSubmit: crud.handleEditSubmit,
-        submitLabel: 'Save',
+        submitLabel: t('policies.saveButton'),
         submitting: crud.editSubmitting,
         error: crud.editError,
       })}
@@ -386,7 +391,14 @@ export function PoliciesTabContent() {
         resourceName={
           crud.deletingItem?.display_name ?? crud.deletingItem?.id ?? ''
         }
-        resourceLabel="policy"
+        resourceLabel={t('policies.deleteLabel')}
+        error={crud.deleteError}
+        isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );

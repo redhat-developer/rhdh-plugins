@@ -724,6 +724,12 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'version'?: string;
+    /**
+     * 
+     * @type {WorkflowRunStatsDTO}
+     * @memberof WorkflowOverviewDTO
+     */
+    'workflowRunStats'?: WorkflowRunStatsDTO;
 }
 
 
@@ -900,6 +906,49 @@ export type WorkflowResultDTOOutputsInnerFormatEnum = typeof WorkflowResultDTOOu
  * @interface WorkflowResultDTOOutputsInnerValue
  */
 export interface WorkflowResultDTOOutputsInnerValue {
+}
+/**
+ * 
+ * @export
+ * @interface WorkflowRunStatsDTO
+ */
+export interface WorkflowRunStatsDTO {
+    /**
+     * Ratio of completed runs to total runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'successRatio'?: number;
+    /**
+     * Number of runs in the last 30 days
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'runsLastMonth'?: number;
+    /**
+     * Number of completed workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'successCount'?: number;
+    /**
+     * Number of failed workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'errorCount'?: number;
+    /**
+     * Total number of workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'totalCount'?: number;
+    /**
+     * Average time to complete a workflow run in milliseconds
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'averageTimeToComplete'?: number;
 }
 /**
  * 

@@ -17,6 +17,7 @@
 import { Content, EmptyState, Page } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 import { HeaderProps, Header } from '../../components/Header';
+import { HomePageStylesProvider } from '../../components/HomePageStylesProvider';
 import { ReadOnlyGridLayout } from './ReadOnlyGirdLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
 import { HomePageCardConfig } from '../../types';
@@ -49,9 +50,11 @@ export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
   }
 
   return (
-    <Page themeId="home">
-      <Header title={t('header.welcome')} />
-      <Content>{content}</Content>
-    </Page>
+    <HomePageStylesProvider>
+      <Page themeId="home">
+        <Header title={t('header.welcome')} />
+        <Content>{content}</Content>
+      </Page>
+    </HomePageStylesProvider>
   );
 };

@@ -1,8 +1,8 @@
 # Lightspeed plugin for Backstage
 
-Red Hat Developer Lightspeed for Red Hat Developer Hub (Developer Lightspeed for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+Red Hat Developer Hub Intelligent Assistant (Intelligent Assistant for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
 
-Developer Lightspeed for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+The Intelligent Assistant for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
 
 ## For administrators
 
@@ -51,23 +51,23 @@ permission:
 
 ### Configuration
 
-1. Add a new nav item **Lightspeed** in App `packages/app/src/App.tsx`:
+1. Add a new nav item **Intelligent assistant** in App `packages/app/src/App.tsx`:
 
    ```tsx title="packages/app/src/components/App.tsx"
    /* highlight-add-next-line */ import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-   <Route path="/lightspeed" element={<LightspeedPage />} />;
+   <Route path="/intelligent-assistant" element={<LightspeedPage />} />;
    ```
 
-2. Enable **Lightspeed** page in `packages/app/src/components/Root/Root.tsx`:
+2. Enable **Intelligent assistant** page in `packages/app/src/components/Root/Root.tsx`:
 
    ```tsx title="packages/app/src/components/Root/Root.tsx"
    /* highlight-add-next-line */ import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
    <SidebarItem
      icon={LightspeedIcon as IconComponent}
-     to="lightspeed"
-     text="Lightspeed"
+     to="intelligent-assistant"
+     text="Intelligent assistant"
    />;
    ```
 
@@ -84,16 +84,16 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 #### Procedure
 
-1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
-2. Ask your questions to the Lightspeed chatbot.
+1. Open your Backstage application and select the **Intelligent assistant** nav item from the **Navigation**.
+2. Ask your questions to the intelligent assistant chatbot.
 
 ### Display modes and chat continuity
 
-Lightspeed supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
+Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### MCP servers settings
 
-Lightspeed includes an MCP servers settings panel where users can:
+Intelligent assistant includes an MCP servers settings panel where users can:
 
 - View configured MCP servers and current status
 - Enable or disable eligible servers
@@ -140,7 +140,7 @@ Notebooks is an experimental feature that enables **document-based conversations
 #### Using Notebooks
 
 1. Ensure Notebooks is enabled in your Backstage instance
-2. Navigate to the Lightspeed page
+2. Navigate to the Intelligent assistant page
 3. Create a new notebook session or select an existing one
 4. Upload documents you want to query
 5. Start asking questions about your uploaded documents
@@ -178,7 +178,7 @@ global:
                   module: Alpha
                   ref: lightspeedTranslationRef
               dynamicRoutes:
-                - path: /lightspeed
+                - path: /intelligent-assistant
                   importName: LightspeedPage
               mountPoints:
                 - mountPoint: application/listener
@@ -229,7 +229,7 @@ dynamicPlugins:
           module: Alpha
           ref: lightspeedTranslationRef
       dynamicRoutes:
-        - path: /lightspeed
+        - path: /intelligent-assistant
           importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener

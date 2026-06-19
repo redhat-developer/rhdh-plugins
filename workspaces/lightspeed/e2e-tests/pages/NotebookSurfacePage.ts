@@ -30,7 +30,7 @@ import { RenameNotebookModalPage } from './RenameNotebookModalPage';
 export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
 
 /**
- * Developer Lightspeed **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
+ * Developer Hub Intelligent Assistant **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
@@ -50,7 +50,7 @@ export class NotebookSurfacePage {
   async gotoFullscreenNotebooksTab(): Promise<void> {
     await openLightspeed(this.page);
     await this.page
-      .getByRole('button', { name: this.t['aria.settings.label'] })
+      .getByRole('button', { name: this.t['aria.options.label'] })
       .click();
     await this.page
       .getByRole('menuitem', {

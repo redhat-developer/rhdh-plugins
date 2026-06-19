@@ -16,7 +16,7 @@
 
 import { MarkdownContent } from '@backstage/core-components';
 
-import { makeStyles } from 'tss-react/mui';
+import Box from '@mui/material/Box';
 
 /**
  * @public
@@ -26,32 +26,23 @@ export interface MarkdownProps {
   content?: string;
 }
 
-const useStyles = makeStyles()({
-  // Make card content scrollable (so that cards don't overlap)
-  card: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%',
-  },
-  content: {
-    overflow: 'auto',
-  },
-});
-
 /**
  * @public
  */
 export const Markdown = (props: MarkdownProps) => {
-  const { classes } = useStyles();
   return (
-    <div className={classes.card}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+      }}
+    >
       {props.title ? <h1>{props.title}</h1> : null}
-      <MarkdownContent
-        dialect="gfm"
-        content={props.content ?? ''}
-        className={classes.content}
-      />
-    </div>
+      <Box sx={{ overflow: 'auto' }}>
+        <MarkdownContent dialect="gfm" content={props.content ?? ''} />
+      </Box>
+    </Box>
   );
 };

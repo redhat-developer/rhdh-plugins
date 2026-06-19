@@ -19,7 +19,7 @@ import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 import { lightspeedTranslationRef } from './ref';
 
 /**
- * Translation Resource for Developer lightspeed
+ * Translation Resource for Developer Hub intelligent assistant
  * @alpha
  **/
 export const lightspeedTranslations = createTranslationResource({

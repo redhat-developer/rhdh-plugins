@@ -40,6 +40,7 @@ describe('DeleteModal', () => {
   const onClose = jest.fn();
   const onConfirm = jest.fn();
   const conversationId = 'test-conversation-id';
+  const chatName = 'Test Chat';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,13 +60,14 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 
-    expect(screen.getByText('Delete chat?')).toBeInTheDocument();
+    expect(screen.getByText(`Delete "${chatName}"?`)).toBeInTheDocument();
     expect(
       screen.getByText(
-        "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+        "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your activity.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
@@ -79,6 +81,7 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 
@@ -92,6 +95,7 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 
@@ -109,6 +113,7 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 
@@ -138,11 +143,11 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/Error/i)).toBeInTheDocument();
+    expect(screen.getByText(/Delete failed/i)).toBeInTheDocument();
   });
 
   test('should not call onConfirm when delete fails', async () => {
@@ -160,6 +165,7 @@ describe('DeleteModal', () => {
         onClose={onClose}
         onConfirm={onConfirm}
         conversationId={conversationId}
+        chatName={chatName}
       />,
     );
 

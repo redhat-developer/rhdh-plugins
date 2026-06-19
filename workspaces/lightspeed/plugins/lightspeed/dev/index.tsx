@@ -41,10 +41,11 @@ const TestPage = () => {
       }}
     >
       <Typography variant="h4" gutterBottom>
-        Lightspeed Display Modes Test
+        Intelligent Assistant Display Modes Test
       </Typography>
       <Typography variant="body1" paragraph>
-        Click the Lightspeed FAB button (bottom right) to open the chatbot.
+        Click the intelligent assistant FAB button (bottom right) to open the
+        chatbot.
       </Typography>
       <Typography variant="body2" paragraph>
         <strong>Display Modes:</strong>
@@ -57,7 +58,7 @@ const TestPage = () => {
           <strong>Docked:</strong> Opens as a drawer on the right
         </li>
         <li>
-          <strong>Fullscreen:</strong> Navigate to /lightspeed route
+          <strong>Fullscreen:</strong> Navigate to /intelligent-assistant route
         </li>
       </ul>
       <Typography variant="body2" color="text.secondary">
@@ -89,7 +90,7 @@ createDevApp()
         <LightspeedPage />
       </LightspeedDrawerProvider>
     ),
-    title: 'Lightspeed Page',
-    path: '/lightspeed',
+    title: 'Intelligent Assistant Page',
+    path: '/intelligent-assistant',
   })
   .render();
