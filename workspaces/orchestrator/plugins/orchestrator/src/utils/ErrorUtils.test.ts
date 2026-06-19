@@ -48,7 +48,7 @@ describe('isSamlSsoError', () => {
   });
 
   it('returns false for empty error message', () => {
-    expect(isSamlSsoError(new Error(''))).toBe(false);
+    expect(isSamlSsoError(new Error('empty'))).toBe(false);
   });
 
   it('is case-insensitive for github keyword', () => {
