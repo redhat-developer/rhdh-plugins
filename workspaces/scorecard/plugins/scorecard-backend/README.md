@@ -327,6 +327,70 @@ scorecard:
   dataRetentionDays: 12
 ```
 
+## MCP Actions
+
+The Scorecard backend plugin registers MCP (Model Context Protocol) actions that allow AI agents and MCP clients (e.g., Cursor, Claude Code) to query scorecard data programmatically.
+
+### Available Actions
+
+| Action               | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| `list-metrics`       | Lists all available scorecard metrics and their datasources.    |
+| `get-entity-metrics` | Returns the latest metric values for a specific catalog entity. |
+
+### Enabling MCP Actions
+
+To enable MCP actions, install the `@backstage/plugin-mcp-actions-backend` package and configure authentication:
+
+1. Install the MCP actions backend plugin:
+
+```bash
+# From your root directory
+yarn --cwd packages/backend add @backstage/plugin-mcp-actions-backend
+```
+
+2. Add the plugin to your backend in `packages/backend/src/index.ts`:
+
+```ts
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+```
+
+3. Add the scorecard plugin as an action source and configure a static token for MCP client authentication in your `app-config.yaml`:
+
+```yaml
+backend:
+  actions:
+    pluginSources:
+      - 'scorecard'
+  auth:
+    externalAccess:
+      - type: static
+        options:
+          token: ${MCP_TOKEN}
+          subject: mcp-clients
+```
+
+4. Set the `MCP_TOKEN` environment variable (8 characters or longer) before starting the backend.
+
+### Interacting with MCP Actions
+
+See the [Backstage MCP Actions Backend documentation](https://github.com/backstage/backstage/tree/master/plugins/mcp-actions-backend#configuring-mcp-clients) for more information on configuring MCP clients.
+
+Sample `mcp.json` for Cursor:
+
+```json
+{
+  "mcpServers": {
+    "backstage-actions": {
+      "url": "http://localhost:7007/api/mcp-actions/v1",
+      "headers": {
+        "Authorization": "Bearer ${MCP_TOKEN}"
+      }
+    }
+  }
+}
+```
+
 ## Development
 
 This plugin backend can be started in a standalone mode from directly in this
