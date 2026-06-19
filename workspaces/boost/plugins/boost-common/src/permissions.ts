@@ -183,6 +183,7 @@ export const boostToolApprovePermission = createPermission({
 
 /**
  * Demote tool lifecycle stage.
+ * Conditional rules: IS_OWNER, HAS_LIFECYCLE_STAGE.
  *
  * @public
  */
@@ -194,6 +195,7 @@ export const boostToolDemotePermission = createPermission({
 
 /**
  * Publish a tool.
+ * Conditional rules: HAS_LIFECYCLE_STAGE.
  *
  * @public
  */
@@ -205,6 +207,7 @@ export const boostToolPublishPermission = createPermission({
 
 /**
  * Unpublish a tool.
+ * Conditional rules: IS_OWNER.
  *
  * @public
  */
@@ -372,11 +375,11 @@ export const boostToolPermissions = [
 ] as const;
 
 /**
- * All 16 resource permissions (10 agent + 5 tool + 1 kagenti-infra).
+ * All 16 entity permissions (10 agent + 5 tool + 1 kagenti-infra).
  *
  * @public
  */
-export const boostResourcePermissions = [
+export const boostEntityPermissions = [
   ...boostAgentPermissions,
   ...boostToolPermissions,
   boostKagentiAdminPermission,
@@ -434,7 +437,7 @@ export const boostToolResourcePermissions: ResourcePermission<
  * @public
  */
 export const boostPermissions = [
-  ...boostResourcePermissions,
+  ...boostEntityPermissions,
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,

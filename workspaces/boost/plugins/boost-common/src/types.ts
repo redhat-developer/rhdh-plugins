@@ -52,16 +52,10 @@ export interface ProviderCapabilities {
  *
  * @public
  */
-export interface InputItem {
-  /** The type of input content. */
-  type: 'text' | 'file' | 'image';
-  /** Text content, when type is 'text'. */
-  text?: string;
-  /** File URL or reference, when type is 'file' or 'image'. */
-  url?: string;
-  /** MIME type of the content. */
-  mimeType?: string;
-}
+export type InputItem =
+  | { type: 'text'; text: string; mimeType?: string }
+  | { type: 'file'; url: string; mimeType?: string }
+  | { type: 'image'; url: string; mimeType?: string };
 
 /**
  * Summary of a conversation for listing purposes.

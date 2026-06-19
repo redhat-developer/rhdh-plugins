@@ -23,7 +23,7 @@ import {
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
   boostAgentPermissions,
   boostToolPermissions,
-  boostResourcePermissions,
+  boostEntityPermissions,
   boostFunctionalPermissions,
   boostPermissions,
   boostAgentResourcePermissions,
@@ -131,11 +131,11 @@ describe('boost-common', () => {
 
   describe('resource permissions', () => {
     it('exports exactly 16 resource permissions (10 agent + 5 tool + 1 kagenti-infra)', () => {
-      expect(boostResourcePermissions).toHaveLength(16);
+      expect(boostEntityPermissions).toHaveLength(16);
     });
 
     it('includes kagenti admin permission', () => {
-      expect(boostResourcePermissions).toContain(boostKagentiAdminPermission);
+      expect(boostEntityPermissions).toContain(boostKagentiAdminPermission);
       expect(boostKagentiAdminPermission.name).toBe('boost.kagenti.admin');
     });
   });

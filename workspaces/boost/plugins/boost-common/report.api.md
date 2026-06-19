@@ -99,6 +99,26 @@ export const boostConfigManagePermission: BasicPermission;
 export const boostDocumentsManagePermission: BasicPermission;
 
 // @public
+export const boostEntityPermissions: readonly [
+  BasicPermission,
+  BasicPermission,
+  BasicPermission,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-agent'>,
+  ResourcePermission<'boost-tool'>,
+  ResourcePermission<'boost-tool'>,
+  ResourcePermission<'boost-tool'>,
+  ResourcePermission<'boost-tool'>,
+  ResourcePermission<'boost-tool'>,
+  BasicPermission,
+];
+
+// @public
 export const boostFunctionalPermissions: readonly [
   BasicPermission,
   BasicPermission,
@@ -137,26 +157,6 @@ export const boostPermissions: readonly [
   BasicPermission,
   BasicPermission,
   BasicPermission,
-  BasicPermission,
-];
-
-// @public
-export const boostResourcePermissions: readonly [
-  BasicPermission,
-  BasicPermission,
-  BasicPermission,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-agent'>,
-  ResourcePermission<'boost-tool'>,
-  ResourcePermission<'boost-tool'>,
-  ResourcePermission<'boost-tool'>,
-  ResourcePermission<'boost-tool'>,
-  ResourcePermission<'boost-tool'>,
   BasicPermission,
 ];
 
@@ -215,12 +215,22 @@ export interface ConversationSummary {
 }
 
 // @public
-export interface InputItem {
-  mimeType?: string;
-  text?: string;
-  type: 'text' | 'file' | 'image';
-  url?: string;
-}
+export type InputItem =
+  | {
+      type: 'text';
+      text: string;
+      mimeType?: string;
+    }
+  | {
+      type: 'file';
+      url: string;
+      mimeType?: string;
+    }
+  | {
+      type: 'image';
+      url: string;
+      mimeType?: string;
+    };
 
 // @public
 export interface NormalizedStreamDoneEvent {
