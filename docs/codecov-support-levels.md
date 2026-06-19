@@ -24,8 +24,8 @@ Coverage grouping is configured in [`codecov.yml`](../codecov.yml) under `compon
 ```yaml
 component_management:
   individual_components:
-    - component_id: ga-plugins
-      name: 'GA Plugins'
+    - component_id: generally-available-plugins
+      name: 'Generally-Available Plugins'
       paths:
         - workspaces/lightspeed/
         - workspaces/orchestrator/
@@ -72,7 +72,7 @@ spec:
 
 ### Multi-Level Workspaces
 
-A workspace appears in **multiple components** when it contains packages with different support levels. Among the workspaces present in this repository, `homepage` is the current example: it has GA packages and Tech-Preview packages, so `workspaces/homepage/` is listed under both the `ga-plugins` and `tech-preview-plugins` components.
+A workspace appears in **multiple components** when it contains packages with different support levels. Among the workspaces present in this repository, `homepage` is the current example: it has GA packages and Tech-Preview packages, so `workspaces/homepage/` is listed under both the `generally-available-plugins` and `tech-preview-plugins` components.
 
 **Behavior**: Coverage from a multi-level workspace is included in **every** component that matches one of its packages' support levels. This is intentional — a component represents **packages** at that support level, not exclusive workspace ownership.
 
@@ -84,14 +84,14 @@ A workspace appears in **multiple components** when it contains packages with di
 2. Click **"Components"** tab
 3. See coverage % for each component (counts reflect workspaces present in this
    repository and update automatically as support levels change in the overlay):
-   - **GA Plugins**
+   - **Generally-Available Plugins**
    - **Tech-Preview Plugins**
    - **Community Plugins**
    - **Dev-Preview Plugins**
 
 ### Interpreting Results
 
-**Component coverage** shows aggregate coverage across all files in matching workspaces. If a workspace appears in multiple components (e.g., `backstage`), its coverage contributes to all relevant components.
+**Component coverage** shows aggregate coverage across all files in matching workspaces. If a workspace appears in multiple components (e.g., `homepage`), its coverage contributes to all relevant components.
 
 **Workspace-level detail**: Use the **"Flags"** tab to see per-workspace coverage (e.g., `lightspeed`, `orchestrator`). This granularity is unchanged — components provide a higher-level grouping view.
 
@@ -172,8 +172,8 @@ This is **correct behavior** — components group by **package support level**, 
 ```yaml
 component_management:
   individual_components:
-    - component_id: ga-plugins
-      name: 'GA Plugins'
+    - component_id: generally-available-plugins
+      name: 'Generally-Available Plugins'
       statuses:
         - type: project
           target: 80% # Require 80% for GA
@@ -194,7 +194,7 @@ A workspace that contains packages at different support levels causes **coverage
 
 **How skew happens:**
 
-Codecov components aggregate coverage by **path**, not by individual package. When `workspaces/homepage/` is included in the `ga-plugins` component, coverage from **all** of its packages (both GA and Tech-Preview) contributes to the GA component metric.
+Codecov components aggregate coverage by **path**, not by individual package. When `workspaces/homepage/` is included in the `generally-available-plugins` component, coverage from **all** of its packages (both GA and Tech-Preview) contributes to the GA component metric.
 
 **Example scenario:**
 
@@ -204,7 +204,7 @@ Actual coverage:
 - homepage TP packages:  60% coverage
 
 Component shows:
-- ga-plugins component: weighted average of both, not pure GA coverage
+- generally-available-plugins component: weighted average of both, not pure GA coverage
 ```
 
 **Impact:**
@@ -218,7 +218,7 @@ Component shows:
 If you need **precise GA coverage metrics** for enforcement (e.g., "GA plugins must have 80% coverage"), use individual **workspace flags** instead of components:
 
 - Use flag `lightspeed` (100% GA) for accurate GA coverage
-- Avoid relying on `ga-plugins` component for workspaces with mixed support levels
+- Avoid relying on `generally-available-plugins` component for workspaces with mixed support levels
 
 **Workaround:**
 

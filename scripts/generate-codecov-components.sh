@@ -137,21 +137,16 @@ ordered_support_levels() {
   done
 }
 
-# component_id and display name for a support level. Both derive mechanically
-# (<level>-plugins / Title-Case Plugins); "generally-available" is the one value
-# that needs an explicit alias because "GA" can't be derived from the string.
+# component_id and display name for a support level, both derived mechanically
+# from the level string, e.g.:
+#   generally-available -> generally-available-plugins / "Generally-Available Plugins"
+#   tech-preview        -> tech-preview-plugins        / "Tech-Preview Plugins"
 component_id_for() {
-  case "$1" in
-    generally-available) echo "ga-plugins" ;;
-    *) echo "${1}-plugins" ;;
-  esac
+  echo "${1}-plugins"
 }
 
 component_name_for() {
-  case "$1" in
-    generally-available) echo "GA Plugins" ;;
-    *) echo "$(printf '%s' "$1" | awk -F- 'BEGIN{OFS="-"}{for(i=1;i<=NF;i++)$i=toupper(substr($i,1,1)) substr($i,2)}1') Plugins" ;;
-  esac
+  echo "$(printf '%s' "$1" | awk -F- 'BEGIN{OFS="-"}{for(i=1;i<=NF;i++)$i=toupper(substr($i,1,1)) substr($i,2)}1') Plugins"
 }
 
 # Render the YAML for one component. Skips a level that has no workspace in this
