@@ -225,6 +225,12 @@ export const boostToolUnpublishPermission = createPermission({
  * Kagenti infrastructure admin operations (namespace management,
  * build pipelines, sandbox, platform links).
  *
+ * @remarks
+ * This is intentionally coarse-grained as a {@link @backstage/plugin-permission-common#BasicPermission | BasicPermission}.
+ * If fine-grained infrastructure access control is needed later, consider
+ * splitting this into a {@link @backstage/plugin-permission-common#ResourcePermission | ResourcePermission}
+ * scoped to individual infrastructure resources.
+ *
  * @public
  */
 export const boostKagentiAdminPermission = createPermission({
