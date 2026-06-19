@@ -55,7 +55,7 @@
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
     "@roadiehq/backstage-plugin-github-pull-requests": "^3.5.1",
     "@roadiehq/backstage-plugin-jira": "^2.13.1",
-    "@scalprum/react-core": "0.11.1",
+    "@scalprum/react-core": "0.11.3",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",
