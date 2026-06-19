@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.7
+
+### Patch Changes
+
+- 735441d: Updated dependency `@scalprum/react-core` to `0.11.3`.
+
 ## 1.21.6
 
 ### Patch Changes
