@@ -218,7 +218,11 @@ export class GithubClient {
     let hasMore = true;
 
     while (hasMore) {
-      const restUrl = `${apiBaseUrl}/repos/${repository.owner}/${repository.repo}/actions/runs?created=>${since}&per_page=${perPage}&page=${page}`;
+      const restUrl = `${apiBaseUrl}/repos/${encodeURIComponent(
+        repository.owner,
+      )}/${encodeURIComponent(
+        repository.repo,
+      )}/actions/runs?created=>${since}&per_page=${perPage}&page=${page}`;
       const response = await fetch(restUrl, { headers });
 
       if (!response.ok) {

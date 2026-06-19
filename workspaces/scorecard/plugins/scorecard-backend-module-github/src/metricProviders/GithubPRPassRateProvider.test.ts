@@ -16,7 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { GithubCIPassRateProvider } from './GithubCIPassRateProvider';
+import { GithubPRPassRateProvider } from './GithubPRPassRateProvider';
 import { GithubClient } from '../github/GithubClient';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -39,7 +39,7 @@ const mockEntity: Entity = {
   },
 };
 
-describe('GithubCIPassRateProvider', () => {
+describe('GithubPRPassRateProvider', () => {
   const mockedGithubClient = GithubClient as jest.MockedClass<
     typeof GithubClient
   >;
@@ -48,21 +48,21 @@ describe('GithubCIPassRateProvider', () => {
   } as any;
   mockedGithubClient.mockImplementation(() => mockedGithubClientInstance);
 
-  let provider: GithubCIPassRateProvider;
+  let provider: GithubPRPassRateProvider;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GithubCIPassRateProvider.fromConfig(new ConfigReader({}));
+    provider = GithubPRPassRateProvider.fromConfig(new ConfigReader({}));
   });
 
   it('should return all metric IDs', () => {
     expect(provider.getMetricIds()).toEqual([
-      'github.ci_pass_rate_7d',
-      'github.ci_pass_rate_24h',
+      'github.pr_ci_first_time_pass_rate_7d',
+      'github.pr_ci_first_time_pass_rate_24h',
     ]);
   });
 
-  it('should calculate CI pass rates', async () => {
+  it('should calculate PR CI first time pass rates', async () => {
     const now = new Date();
     const hoursAgo = (h: number) =>
       new Date(now.getTime() - h * 60 * 60 * 1000).toISOString();
@@ -95,9 +95,9 @@ describe('GithubCIPassRateProvider', () => {
     const results = await provider.calculateMetrics!(mockEntity);
 
     // 7d: 3 success out of 4 with CI = 75%
-    expect(results.get('github.ci_pass_rate_7d')).toBe(75);
+    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(75);
     // 24h: 2 success out of 2 with CI = 100%
-    expect(results.get('github.ci_pass_rate_24h')).toBe(100);
+    expect(results.get('github.pr_ci_first_time_pass_rate_24h')).toBe(100);
   });
 
   it('should skip PRs without CI checks', async () => {
@@ -112,7 +112,7 @@ describe('GithubCIPassRateProvider', () => {
 
     const results = await provider.calculateMetrics!(mockEntity);
 
-    expect(results.get('github.ci_pass_rate_7d')).toBe(100);
+    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
   });
 
   it('should return 100% when no PRs exist', async () => {
@@ -122,8 +122,8 @@ describe('GithubCIPassRateProvider', () => {
 
     const results = await provider.calculateMetrics!(mockEntity);
 
-    expect(results.get('github.ci_pass_rate_7d')).toBe(100);
-    expect(results.get('github.ci_pass_rate_24h')).toBe(100);
+    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
+    expect(results.get('github.pr_ci_first_time_pass_rate_24h')).toBe(100);
   });
 
   it('should handle mixed CI states', async () => {
@@ -154,6 +154,6 @@ describe('GithubCIPassRateProvider', () => {
     const results = await provider.calculateMetrics!(mockEntity);
 
     // 1 success out of 3 with CI (null excluded) = 33.3%
-    expect(results.get('github.ci_pass_rate_7d')).toBe(33.3);
+    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(33.3);
   });
 });

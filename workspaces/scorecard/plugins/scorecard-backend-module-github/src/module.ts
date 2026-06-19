@@ -25,8 +25,9 @@ import { GithubOpenedPRsProvider } from './metricProviders/GithubOpenedPRsProvid
 import { GithubClosedIssuesProvider } from './metricProviders/GithubClosedIssuesProvider';
 import { GithubClosedPRsProvider } from './metricProviders/GithubClosedPRsProvider';
 import { GithubPRLifecycleProvider } from './metricProviders/GithubPRLifecycleProvider';
-import { GithubActionsProvider } from './metricProviders/GithubActionsProvider';
-import { GithubCIPassRateProvider } from './metricProviders/GithubCIPassRateProvider';
+import { GithubActionsCountProvider } from './metricProviders/GithubActionsCountProvider';
+import { GithubActionsRatioProvider } from './metricProviders/GithubActionsRatioProvider';
+import { GithubPRPassRateProvider } from './metricProviders/GithubPRPassRateProvider';
 
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
@@ -49,8 +50,13 @@ export const scorecardModuleGithub = createBackendModule({
         );
         metrics.addMetricProvider(GithubClosedPRsProvider.fromConfig(config));
         metrics.addMetricProvider(GithubPRLifecycleProvider.fromConfig(config));
-        metrics.addMetricProvider(GithubActionsProvider.fromConfig(config));
-        metrics.addMetricProvider(GithubCIPassRateProvider.fromConfig(config));
+        metrics.addMetricProvider(
+          GithubActionsCountProvider.fromConfig(config),
+        );
+        metrics.addMetricProvider(
+          GithubActionsRatioProvider.fromConfig(config),
+        );
+        metrics.addMetricProvider(GithubPRPassRateProvider.fromConfig(config));
       },
     });
   },

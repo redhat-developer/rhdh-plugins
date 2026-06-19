@@ -16,7 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { GithubActionsProvider } from './GithubActionsProvider';
+import { GithubActionsCountProvider } from './GithubActionsCountProvider';
 import { GithubClient } from '../github/GithubClient';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -39,7 +39,7 @@ const mockEntity: Entity = {
   },
 };
 
-describe('GithubActionsProvider', () => {
+describe('GithubActionsCountProvider', () => {
   const mockedGithubClient = GithubClient as jest.MockedClass<
     typeof GithubClient
   >;
@@ -48,35 +48,41 @@ describe('GithubActionsProvider', () => {
   } as any;
   mockedGithubClient.mockImplementation(() => mockedGithubClientInstance);
 
-  let provider: GithubActionsProvider;
+  let provider: GithubActionsCountProvider;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GithubActionsProvider.fromConfig(new ConfigReader({}));
+    provider = GithubActionsCountProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return all metric IDs', () => {
+  it('should return count metric IDs only', () => {
     expect(provider.getMetricIds()).toEqual([
       'github.actions_started_7d',
       'github.actions_successful_7d',
       'github.actions_failed_7d',
-      'github.actions_success_ratio_7d',
-      'github.actions_success_ratio_24h',
     ]);
   });
 
-  it('should return all metrics', () => {
+  it('should return count metrics only', () => {
     const metrics = provider.getMetrics!();
-    expect(metrics).toHaveLength(5);
+    expect(metrics).toHaveLength(3);
   });
 
-  it('should calculate all action metrics', async () => {
+  it('should use COUNT_THRESHOLDS', () => {
+    const thresholds = provider.getMetricThresholds();
+    expect(thresholds.rules).toEqual([
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ]);
+  });
+
+  it('should calculate count metrics', async () => {
     const now = new Date();
     const hoursAgo = (h: number) =>
       new Date(now.getTime() - h * 60 * 60 * 1000).toISOString();
 
     mockedGithubClientInstance.getWorkflowRuns.mockResolvedValue([
-      // 7d window runs
       {
         status: 'completed',
         conclusion: 'success',
@@ -97,42 +103,13 @@ describe('GithubActionsProvider', () => {
         conclusion: null,
         created_at: hoursAgo(20),
       },
-      // 24h window runs
-      {
-        status: 'completed',
-        conclusion: 'success',
-        created_at: hoursAgo(2),
-      },
-      {
-        status: 'completed',
-        conclusion: 'failure',
-        created_at: hoursAgo(5),
-      },
     ]);
 
     const results = await provider.calculateMetrics!(mockEntity);
 
-    expect(results.get('github.actions_started_7d')).toBe(6);
-    expect(results.get('github.actions_successful_7d')).toBe(3);
-    expect(results.get('github.actions_failed_7d')).toBe(2);
-    // 7d ratio: 3 success / (3 success + 2 failure) = 60%
-    expect(results.get('github.actions_success_ratio_7d')).toBe(60);
-    // 24h ratio: 1 success / (1 success + 1 failure) = 50%
-    expect(results.get('github.actions_success_ratio_24h')).toBe(50);
-  });
-
-  it('should return 100% ratio when no completed runs', async () => {
-    mockedGithubClientInstance.getWorkflowRuns.mockResolvedValue([
-      {
-        status: 'in_progress',
-        conclusion: null,
-        created_at: new Date().toISOString(),
-      },
-    ]);
-
-    const results = await provider.calculateMetrics!(mockEntity);
-
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
+    expect(results.get('github.actions_started_7d')).toBe(4);
+    expect(results.get('github.actions_successful_7d')).toBe(2);
+    expect(results.get('github.actions_failed_7d')).toBe(1);
   });
 
   it('should handle empty workflow runs', async () => {
@@ -143,11 +120,9 @@ describe('GithubActionsProvider', () => {
     expect(results.get('github.actions_started_7d')).toBe(0);
     expect(results.get('github.actions_successful_7d')).toBe(0);
     expect(results.get('github.actions_failed_7d')).toBe(0);
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
-    expect(results.get('github.actions_success_ratio_24h')).toBe(100);
   });
 
-  it('should exclude non-terminal runs from counts', async () => {
+  it('should exclude non-terminal runs from success/failure counts', async () => {
     mockedGithubClientInstance.getWorkflowRuns.mockResolvedValue([
       {
         status: 'queued',
@@ -176,7 +151,5 @@ describe('GithubActionsProvider', () => {
     expect(results.get('github.actions_started_7d')).toBe(4);
     expect(results.get('github.actions_successful_7d')).toBe(1);
     expect(results.get('github.actions_failed_7d')).toBe(0);
-    // Ratio: 1/(1+0) = 100% (cancelled excluded from ratio)
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
   });
 });
