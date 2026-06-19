@@ -50,6 +50,38 @@ export interface Config {
       token?: string;
     }>;
     /**
+     * Per-user rate limiting for Lightspeed API endpoints.
+     * @visibility backend
+     */
+    rateLimit?: {
+      /**
+       * Limits for expensive endpoints (LLM queries, document uploads).
+       * @visibility backend
+       */
+      expensive?: {
+        /**
+         * Maximum requests per minute per user.
+         * Set to 0 to disable rate limiting for this tier.
+         * @default 25
+         * @visibility backend
+         */
+        max?: number;
+      };
+      /**
+       * Limits for all other authenticated endpoints.
+       * @visibility backend
+       */
+      general?: {
+        /**
+         * Maximum requests per minute per user.
+         * Set to 0 to disable rate limiting for this tier.
+         * @default 200
+         * @visibility backend
+         */
+        max?: number;
+      };
+    };
+    /**
      * Configuration for AI Notebooks (Developer Preview)
      */
     notebooks?: {

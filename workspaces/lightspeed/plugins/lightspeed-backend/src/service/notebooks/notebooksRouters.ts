@@ -39,6 +39,7 @@ import {
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
 } from '../constant';
+import { createRateLimitMiddleware } from '../middleware/createRateLimitMiddleware';
 import {
   createIdentityMiddleware,
   getIdentity,
@@ -99,6 +100,9 @@ export async function createNotebooksRouter(
   );
 
   const authorizer = userPermissionAuthorization(permissions);
+
+  const expensiveRateLimiter = createRateLimitMiddleware(config, 'expensive');
+  const generalRateLimiter = createRateLimitMiddleware(config, 'general');
 
   const requireNotebooksPermission = async (
     req: any,
@@ -270,6 +274,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.post(
     '/v1/sessions',
+    generalRateLimiter,
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
       if (!name) {
@@ -288,6 +293,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions',
+    generalRateLimiter,
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
@@ -296,6 +302,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const session = await sessionService.readSession(sessionId, userId);
@@ -307,6 +314,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { name, description, metadata } = req.body;
@@ -323,6 +331,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       await sessionService.deleteSession(sessionId, userId);
@@ -337,6 +346,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
+    generalRateLimiter,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId } = req.params;
@@ -351,6 +361,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
+    expensiveRateLimiter,
     upload.single('file') as any,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -401,6 +412,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents/:documentId/status',
+    generalRateLimiter,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -419,6 +431,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
+    generalRateLimiter,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -443,6 +456,7 @@ export async function createNotebooksRouter(
 
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    expensiveRateLimiter,
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
