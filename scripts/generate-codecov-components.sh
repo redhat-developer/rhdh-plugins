@@ -142,11 +142,13 @@ ordered_support_levels() {
 #   generally-available -> generally-available-plugins / "Generally-Available Plugins"
 #   tech-preview        -> tech-preview-plugins        / "Tech-Preview Plugins"
 component_id_for() {
-  echo "${1}-plugins"
+  local support_level="$1"
+  echo "${support_level}-plugins"
 }
 
 component_name_for() {
-  echo "$(printf '%s' "$1" | awk -F- 'BEGIN{OFS="-"}{for(i=1;i<=NF;i++)$i=toupper(substr($i,1,1)) substr($i,2)}1') Plugins"
+  local support_level="$1"
+  echo "$(printf '%s' "$support_level" | awk -F- 'BEGIN{OFS="-"}{for(i=1;i<=NF;i++)$i=toupper(substr($i,1,1)) substr($i,2)}1') Plugins"
 }
 
 # Render the YAML for one component. Skips a level that has no workspace in this
