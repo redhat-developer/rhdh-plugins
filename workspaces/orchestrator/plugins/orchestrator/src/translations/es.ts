@@ -218,6 +218,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
     'workflow.fields.description': 'Descripción',
     'workflow.fields.duration': 'Duración',
+    'workflow.fields.averageDuration': 'Duración promedio',
     'workflow.fields.entity': 'Entidad',
     'workflow.fields.runStatus': 'Estado de ejecución',
     'workflow.fields.started': 'Iniciado',

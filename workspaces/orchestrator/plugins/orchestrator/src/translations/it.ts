@@ -218,6 +218,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.errors.retriggerFailed': 'Riavvio non riuscito: {{reason}}',
     'workflow.fields.description': 'Descrizione',
     'workflow.fields.duration': 'Durata',
+    'workflow.fields.averageDuration': 'Durata media',
     'workflow.fields.entity': 'Entità',
     'workflow.fields.runStatus': 'Stato di esecuzione',
     'workflow.fields.started': 'Iniziato',

@@ -217,6 +217,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.errors.retriggerFailed': 'Échec du redéclenchement : {{reason}}',
     'workflow.fields.description': 'Description',
     'workflow.fields.duration': 'Durée',
+    'workflow.fields.averageDuration': 'Durée moyenne',
     'workflow.fields.entity': 'Entité',
     'workflow.fields.runStatus': "État d'exécution",
     'workflow.fields.started': 'Démarré',
