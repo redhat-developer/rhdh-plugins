@@ -154,12 +154,12 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.fields.version': string;
     readonly 'workflow.fields.workflowId': string;
     readonly 'workflow.fields.duration': string;
-    readonly 'workflow.fields.averageDuration': string;
     readonly 'workflow.fields.entity': string;
     readonly 'workflow.fields.runStatus': string;
     readonly 'workflow.fields.started': string;
     readonly 'workflow.fields.workflowStatus': string;
     readonly 'workflow.fields.workflow': string;
+    readonly 'workflow.fields.averageDuration': string;
     readonly 'workflow.fields.workflowIdCopied': string;
     readonly 'workflow.messages.areYouSureYouWantToRunThisWorkflow': string;
     readonly 'workflow.messages.userNotAuthorizedExecute': string;
