@@ -15,13 +15,22 @@
  */
 
 /**
- * Node.js library for the boost plugin.
+ * Backend plugin for the boost AI platform.
  *
  * @packageDocumentation
  */
 
-export { boostAiProviderServiceRef } from './services';
 export {
-  boostProviderExtensionPoint,
-  type BoostProviderExtensionPoint,
-} from './extensions';
+  boostPlugin as default,
+  boostAiProviderServiceFactory,
+} from './plugin';
+export { ProviderManager } from './provider/ProviderManager';
+export {
+  authorizeLifecycleAction,
+  validateSecurityMode,
+  createAgentResourceLoader,
+  createToolResourceLoader,
+  type SecurityMode,
+  type ResourceLoader,
+  type AuthorizeLifecycleActionOptions,
+} from './middleware/security';

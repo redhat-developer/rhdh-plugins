@@ -17,7 +17,8 @@
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-node",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost-common",
-      "@red-hat-developer-hub/backstage-plugin-boost-node"
+      "@red-hat-developer-hub/backstage-plugin-boost-node",
+      "@red-hat-developer-hub/backstage-plugin-boost-backend"
     ]
   },
   "dependencies": {
