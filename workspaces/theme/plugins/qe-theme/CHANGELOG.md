@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-qe-theme
 
+## 0.11.1
+
+### Patch Changes
+
+- 6a1b1f0: Replace Material UI v4 icon imports with MUI v5 equivalents.
+
 ## 0.11.0
 
 ### Minor Changes
