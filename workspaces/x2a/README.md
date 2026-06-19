@@ -75,7 +75,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
    This command runs both the frontend and backend plugins in parallel. The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:7007`.
 
-   Eventually run the full Backstage application for more advanced testing or development, i.e. scaffolder or RBAC:
+   Eventually run the full Backstage application for more advanced testing or development, i.e. scaffolder or RBAC.
 
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
@@ -83,7 +83,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    export AUTH_GITLAB_CLIENT_ID=...
    export AUTH_GITLAB_CLIENT_SECRET=...
 
-   yarn start
+   yarn start          # starts the app + backend
    ```
 
 ## SCM Provider Detection
@@ -274,6 +274,42 @@ yarn dev
 
 When running inside a Kubernetes cluster, the plugin will automatically fall back to in-cluster configuration if no local kubeconfig is found.
 
+### TLS Certificate Handling
+
+Dev clusters (CRC, minikube, kind) often use self-signed certificates that Node.js rejects by default. If you see TLS errors such as `UNABLE_TO_VERIFY_LEAF_SIGNATURE` or `DEPTH_ZERO_SELF_SIGNED_CERT` when the plugin connects to the cluster, use one of the approaches below.
+
+#### Recommended: trust the cluster CA
+
+Set `NODE_EXTRA_CA_CERTS` to point to the cluster's CA certificate **before** starting the backend. This trusts the CA without disabling TLS verification globally.
+
+**OpenShift / CRC** -- extract the CA from the cluster:
+
+```sh
+oc get configmap kube-root-ca.crt -n openshift-config \
+  -o jsonpath='{.data.ca\.crt}' > /tmp/cluster-ca.crt
+export NODE_EXTRA_CA_CERTS=/tmp/cluster-ca.crt
+yarn dev
+```
+
+**In-cluster (OCP deployment)** - the [sample app.yaml](https://github.com/x2ansible/x2ansible.github.io/blob/main/deploy/app.yaml) already sets:
+
+```yaml
+env:
+  - name: NODE_EXTRA_CA_CERTS
+    value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+```
+
+#### Fallback (development only): disable TLS verification
+
+If extracting the CA is not practical, you can disable TLS verification entirely. This must be set explicitly by the developer in the shell - the plugin does **not** set it automatically:
+
+```sh
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+yarn dev
+```
+
+**Warning:** `NODE_TLS_REJECT_UNAUTHORIZED=0` disables certificate verification for **all** outbound HTTPS connections in the Node.js process, not just Kubernetes. **Do not use this in production.**
+
 ### Verifying Kubernetes Connection
 
 The plugin's `KubeService` provides methods to interact with Kubernetes resources. Check the logs when starting the backend to see if the Kubernetes configuration was loaded successfully:
@@ -315,6 +351,7 @@ The first run downloads the `postgres:18` image.
 
 - `yarn test` - Run tests (SQLite only)
 - `yarn test:pg` - Run tests (SQLite + PostgreSQL via testcontainers)
+- `yarn test:e2e` - Run e2e tests
 - `yarn lint` - Run linter
 - `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages
@@ -322,6 +359,9 @@ The first run downloads the `postgres:18` image.
 
 ## Project Structure
 
+- `packages/app/` - Frontend app (New Frontend System)
+- `packages/backend/` - Backend app for local development
+- `e2e-tests/` - Workspace-level e2e tests
 - `plugins/x2a/` - Frontend plugin
 - `plugins/x2a-backend/` - Backend plugin
   - `src/schema/openapi.yaml` - OpenAPI specification

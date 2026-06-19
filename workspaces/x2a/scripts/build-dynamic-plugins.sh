@@ -2,12 +2,13 @@
 #
 # Build x2a dynamic plugins and package them as OCI images.
 #
-# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--report]
+# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--registry <registry>] [--report]
 #
 # Options:
-#   --push       Push built images to the registry after packaging
-#   --tag <tag>  Additional tag to apply to images (e.g., nightly, latest)
-#   --report     Print a JSON report of all plugin images and exit (no build)
+#   --push                 Push built images to the registry after packaging
+#   --tag <tag>            Additional tag to apply to images (e.g., nightly, latest)
+#   --registry <registry>  Image registry prefix (default: quay.io/x2ansible)
+#   --report               Print a JSON report of all plugin images and exit (no build)
 #
 # Produces OCI images:
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a:<version>
@@ -210,6 +211,14 @@ parse_args() {
           exit 1
         fi
         CUSTOM_TAG="$2"
+        shift 2
+        ;;
+      --registry)
+        if [[ -z "${2:-}" ]]; then
+          echo "ERROR: --registry requires a value" >&2
+          exit 1
+        fi
+        IMAGE_REGISTRY="$2"
         shift 2
         ;;
       --report)
