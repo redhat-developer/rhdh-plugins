@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the boost plugin.
- *
- * @packageDocumentation
- */
+import { boostAiProviderServiceRef } from './index';
 
-/**
- * The plugin ID for the boost plugin.
- *
- * @public
- */
-export const BOOST_PLUGIN_ID = 'boost';
+describe('boost-node', () => {
+  it('exports boostAiProviderServiceRef with correct ID', () => {
+    expect(boostAiProviderServiceRef.id).toBe('boost.ai-provider');
+  });
 
-export * from './types';
-export * from './permissions';
+  it('boostAiProviderServiceRef has plugin scope', () => {
+    expect(boostAiProviderServiceRef.scope).toBe('plugin');
+  });
+});
