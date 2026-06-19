@@ -32,6 +32,8 @@ export function useHomePageCardTitle(
       t,
       props.titleKey ?? defaultTitleKey,
       props.title,
-    ) ?? t(defaultTitleKey as keyof typeof t)
+    ) ??
+    getTranslatedTextWithFallback(t, defaultTitleKey, undefined) ??
+    defaultTitleKey
   );
 }

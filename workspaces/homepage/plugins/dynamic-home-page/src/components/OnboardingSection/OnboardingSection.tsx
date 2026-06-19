@@ -83,11 +83,11 @@ export function useOnboardingSection() {
     return name;
   };
 
-  const greetingLine = !profileLoading ? (
+  const greetingLine = profileLoading ? null : (
     <Typography variant="h3" sx={sectionTitleSx}>
       {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
     </Typography>
-  ) : null;
+  );
 
   const body = (
     <Box sx={{ mt: 2 }}>
