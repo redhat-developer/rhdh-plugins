@@ -35,14 +35,14 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.4.2",
-    "@backstage/catalog-model": "^1.7.5",
-    "@backstage/plugin-catalog-node": "^1.20.0",
-    "@backstage/plugin-permission-common": "^0.9.3",
+    "@backstage/backend-plugin-api": "^1.8.0",
+    "@backstage/catalog-model": "^1.7.7",
+    "@backstage/plugin-catalog-node": "^2.1.0",
+    "@backstage/plugin-permission-common": "^0.9.7",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5"
+    "@backstage/cli": "^0.36.0"
   },
   "files": [
     "dist"

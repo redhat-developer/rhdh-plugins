@@ -17,19 +17,29 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi, discoveryApiRef } from '@backstage/core-plugin-api';
 
+type DownloadStaticPublicFileProps = {
+  onNavigate?: (url: string) => void;
+};
+
+const defaultNavigate = (url: string) => {
+  globalThis.location.href = url;
+};
+
 /**
  * Matches /x2a/download/* and forwards the wildcard path to /api/x2a/static/*.
  */
-export const DownloadStaticPublicFile = () => {
+export const DownloadStaticPublicFile = ({
+  onNavigate = defaultNavigate,
+}: DownloadStaticPublicFileProps) => {
   const { '*': filePath } = useParams();
   const discoveryApi = useApi(discoveryApiRef);
 
   useEffect(() => {
     if (!filePath) return;
     discoveryApi.getBaseUrl('x2a').then(baseUrl => {
-      globalThis.location.href = `${baseUrl}/static/${filePath}`;
+      onNavigate(`${baseUrl}/static/${filePath}`);
     });
-  }, [discoveryApi, filePath]);
+  }, [discoveryApi, filePath, onNavigate]);
 
   return null;
 };
