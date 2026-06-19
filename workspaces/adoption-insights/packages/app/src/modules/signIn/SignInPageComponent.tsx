@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import type { SignInPageProps } from '@backstage/plugin-app-react';
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
+
+export function SignInPageComponent(props: SignInPageProps) {
+  return <SignInPage {...props} auto providers={['guest', githubProvider]} />;
+}

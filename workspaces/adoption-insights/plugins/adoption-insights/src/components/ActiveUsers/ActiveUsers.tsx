@@ -39,7 +39,7 @@ import {
   getGroupingLabel,
 } from '../../utils/utils';
 import { useActiveUsers } from '../../hooks/useActiveUsers';
-import { Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
 import ExportCSVButton from './ExportCSVButton';
 import EmptyChartState from '../Common/EmptyChartState';
 import ChartTooltip from '../Common/ChartTooltip';
