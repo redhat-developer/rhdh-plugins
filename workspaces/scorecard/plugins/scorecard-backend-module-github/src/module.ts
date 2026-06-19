@@ -19,6 +19,14 @@ import {
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
+import { GithubOpenIssuesProvider } from './metricProviders/GithubOpenIssuesProvider';
+import { GithubOpenedIssuesProvider } from './metricProviders/GithubOpenedIssuesProvider';
+import { GithubOpenedPRsProvider } from './metricProviders/GithubOpenedPRsProvider';
+import { GithubClosedIssuesProvider } from './metricProviders/GithubClosedIssuesProvider';
+import { GithubClosedPRsProvider } from './metricProviders/GithubClosedPRsProvider';
+import { GithubPRLifecycleProvider } from './metricProviders/GithubPRLifecycleProvider';
+import { GithubActionsProvider } from './metricProviders/GithubActionsProvider';
+import { GithubCIPassRateProvider } from './metricProviders/GithubCIPassRateProvider';
 
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
@@ -31,6 +39,18 @@ export const scorecardModuleGithub = createBackendModule({
       },
       async init({ config, metrics }) {
         metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+        metrics.addMetricProvider(GithubOpenIssuesProvider.fromConfig(config));
+        metrics.addMetricProvider(
+          GithubOpenedIssuesProvider.fromConfig(config),
+        );
+        metrics.addMetricProvider(GithubOpenedPRsProvider.fromConfig(config));
+        metrics.addMetricProvider(
+          GithubClosedIssuesProvider.fromConfig(config),
+        );
+        metrics.addMetricProvider(GithubClosedPRsProvider.fromConfig(config));
+        metrics.addMetricProvider(GithubPRLifecycleProvider.fromConfig(config));
+        metrics.addMetricProvider(GithubActionsProvider.fromConfig(config));
+        metrics.addMetricProvider(GithubCIPassRateProvider.fromConfig(config));
       },
     });
   },
