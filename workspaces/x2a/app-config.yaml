@@ -1,6 +1,16 @@
 app:
   title: X2Ansible Convertor
   baseUrl: http://localhost:3000
+  extensions:
+    - 'api:app/app-language':
+        config:
+          defaultLanguage: en
+          availableLanguages:
+            - en
+            - de
+            - es
+            - fr
+            - it
 
 organization:
   name: Red Hat

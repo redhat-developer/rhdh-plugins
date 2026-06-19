@@ -134,6 +134,9 @@ export function getCatalogMock() {
     validateEntity: jest.fn().mockResolvedValue(undefined),
     analyzeLocation: jest.fn().mockResolvedValue(undefined),
     streamEntities: jest.fn().mockResolvedValue(undefined),
+    queryLocations: jest.fn().mockResolvedValue([]),
+    streamLocations: jest.fn().mockResolvedValue(undefined),
+    updateLocation: jest.fn().mockResolvedValue(undefined),
   };
 }
 
