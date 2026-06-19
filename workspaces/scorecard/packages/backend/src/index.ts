@@ -84,6 +84,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot'
   ),
 );
