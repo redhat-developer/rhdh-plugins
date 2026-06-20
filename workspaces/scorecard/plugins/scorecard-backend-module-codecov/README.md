@@ -4,15 +4,15 @@ Adds [Codecov](https://about.codecov.io/) code coverage metrics to the scorecard
 
 ## Metrics
 
-| Metric ID               | Type   | Description                                     |
-| ------------------------ | ------ | ----------------------------------------------- |
-| `codecov.coverage`       | number | Current code coverage percentage                |
-| `codecov.coverage_trend` | number | Code coverage trend for the last 7 days         |
-| `codecov.tracked_files`  | number | Number of files tracked by Codecov              |
-| `codecov.tracked_lines`  | number | Total lines of code tracked by Codecov          |
-| `codecov.covered_lines`  | number | Number of lines covered by tests                |
-| `codecov.partial_lines`  | number | Number of partially covered lines               |
-| `codecov.missed_lines`   | number | Number of lines not covered by tests            |
+| Metric ID                | Type   | Description                             |
+| ------------------------ | ------ | --------------------------------------- |
+| `codecov.coverage`       | number | Current code coverage percentage        |
+| `codecov.coverage_trend` | number | Code coverage trend for the last 7 days |
+| `codecov.tracked_files`  | number | Number of files tracked by Codecov      |
+| `codecov.tracked_lines`  | number | Total lines of code tracked by Codecov  |
+| `codecov.covered_lines`  | number | Number of lines covered by tests        |
+| `codecov.partial_lines`  | number | Number of partially covered lines       |
+| `codecov.missed_lines`   | number | Number of lines not covered by tests    |
 
 ## Installation
 
@@ -25,9 +25,7 @@ Then register the module in your backend:
 ```ts
 // packages/backend/src/index.ts
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'),
 );
 ```
 
@@ -52,12 +50,12 @@ metadata:
 
 ### Optional annotations
 
-| Annotation            | Description                                                                 |
-| --------------------- | --------------------------------------------------------------------------- |
-| `codecov.io/repo`     | **Required.** The Codecov repository in `owner/repo` or `repo` format.     |
-| `codecov.io/service`  | Git hosting service (`github`, `gitlab`, `bitbucket`). Inferred from `github.com/project-slug` if present. |
-| `codecov.io/owner`    | Override the repository owner (if not using `owner/repo` format).          |
-| `codecov.io/account`  | Codecov account name for multi-account setups (maps to config accounts).   |
+| Annotation           | Description                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `codecov.io/repo`    | **Required.** The Codecov repository in `owner/repo` or `repo` format.                                     |
+| `codecov.io/service` | Git hosting service (`github`, `gitlab`, `bitbucket`). Inferred from `github.com/project-slug` if present. |
+| `codecov.io/owner`   | Override the repository owner (if not using `owner/repo` format).                                          |
+| `codecov.io/account` | Codecov account name for multi-account setups (maps to config accounts).                                   |
 
 ## Configuration
 
