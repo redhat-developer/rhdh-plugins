@@ -36,10 +36,9 @@ const materialUiMigrationEslintConfig = {
 /**
  * Shared ESLint config for frontend packages in the scorecard workspace.
  */
-const createEslintConfig = packageDir =>
-  require('@backstage/cli/config/eslint-factory')(
+module.exports = function createEslintConfig(packageDir) {
+  return require('@backstage/cli/config/eslint-factory')(
     packageDir,
     materialUiMigrationEslintConfig,
   );
-
-module.exports = createEslintConfig;
+};
