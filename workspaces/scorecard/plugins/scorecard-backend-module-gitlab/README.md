@@ -60,24 +60,24 @@ spec:
 
 ## Available Metrics
 
-| Metric ID | Description | Type | Time Window |
-| --- | --- | --- | --- |
-| `gitlab.open_issues` | Currently open issues | Number | — |
-| `gitlab.opened_issues_7d` | Issues opened in the last 7 days | Number | 7 days |
-| `gitlab.closed_issues_7d` | Issues closed in the last 7 days | Number | 7 days |
-| `gitlab.open_merge_requests` | Currently open merge requests | Number | — |
-| `gitlab.opened_merge_requests_7d` | Merge requests opened in the last 7 days | Number | 7 days |
-| `gitlab.closed_merge_requests_7d` | Merge requests closed or merged in the last 7 days | Number | 7 days |
-| `gitlab.started_pipelines_7d` | Pipelines started in the last 7 days | Number | 7 days |
-| `gitlab.successful_pipelines_7d` | Successful pipelines in the last 7 days | Number | 7 days |
-| `gitlab.failed_pipelines_7d` | Failed pipelines in the last 7 days | Number | 7 days |
-| `gitlab.pipeline_success_ratio_7d` | Pipeline success ratio over the last 7 days | Number (%) | 7 days |
-| `gitlab.pipeline_success_ratio_24h` | Pipeline success ratio over the last 24 hours | Number (%) | 24 hours |
-| `gitlab.started_jobs_7d` | Jobs started in the last 7 days | Number | 7 days |
-| `gitlab.successful_jobs_7d` | Successful jobs in the last 7 days | Number | 7 days |
-| `gitlab.failed_jobs_7d` | Failed jobs in the last 7 days | Number | 7 days |
-| `gitlab.job_success_ratio_7d` | Job success ratio over the last 7 days | Number (%) | 7 days |
-| `gitlab.job_success_ratio_24h` | Job success ratio over the last 24 hours | Number (%) | 24 hours |
+| Metric ID                           | Description                                        | Type       | Time Window |
+| ----------------------------------- | -------------------------------------------------- | ---------- | ----------- |
+| `gitlab.open_issues`                | Currently open issues                              | Number     | —           |
+| `gitlab.opened_issues_7d`           | Issues opened in the last 7 days                   | Number     | 7 days      |
+| `gitlab.closed_issues_7d`           | Issues closed in the last 7 days                   | Number     | 7 days      |
+| `gitlab.open_merge_requests`        | Currently open merge requests                      | Number     | —           |
+| `gitlab.opened_merge_requests_7d`   | Merge requests opened in the last 7 days           | Number     | 7 days      |
+| `gitlab.closed_merge_requests_7d`   | Merge requests closed or merged in the last 7 days | Number     | 7 days      |
+| `gitlab.started_pipelines_7d`       | Pipelines started in the last 7 days               | Number     | 7 days      |
+| `gitlab.successful_pipelines_7d`    | Successful pipelines in the last 7 days            | Number     | 7 days      |
+| `gitlab.failed_pipelines_7d`        | Failed pipelines in the last 7 days                | Number     | 7 days      |
+| `gitlab.pipeline_success_ratio_7d`  | Pipeline success ratio over the last 7 days        | Number (%) | 7 days      |
+| `gitlab.pipeline_success_ratio_24h` | Pipeline success ratio over the last 24 hours      | Number (%) | 24 hours    |
+| `gitlab.started_jobs_7d`            | Jobs started in the last 7 days                    | Number     | 7 days      |
+| `gitlab.successful_jobs_7d`         | Successful jobs in the last 7 days                 | Number     | 7 days      |
+| `gitlab.failed_jobs_7d`             | Failed jobs in the last 7 days                     | Number     | 7 days      |
+| `gitlab.job_success_ratio_7d`       | Job success ratio over the last 7 days             | Number (%) | 7 days      |
+| `gitlab.job_success_ratio_24h`      | Job success ratio over the last 24 hours           | Number (%) | 24 hours    |
 
 ## Configuration
 
