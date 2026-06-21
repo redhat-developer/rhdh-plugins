@@ -66,6 +66,21 @@ YARN_ENABLE_SCRIPTS=false yarn install --immutable
 
 After install, workspace-specific tools become available (e.g., `yarn openspec:validate`).
 
+## Step 5: Synchronize package metadata
+
+After installing dependencies, synchronize package metadata to match
+Backstage role definitions. This prevents CI failures on the
+`yarn fix --check` gate.
+
+```bash
+yarn fix
+```
+
+This runs `backstage-cli repo fix`, which updates `publishConfig`,
+`main`/`module`/`types` fields, and other role-derived metadata in
+all workspace `package.json` files. Any changes produced by this command
+should be included in your commit.
+
 ## Rules
 
 - ALL build, test, lint, and validation commands must run from the workspace root
