@@ -20,7 +20,7 @@
     "role": "common-library",
     "pluginId": "homepage",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
+      "@red-hat-developer-hub/backstage-plugin-homepage",
       "@red-hat-developer-hub/backstage-plugin-homepage-backend",
       "@red-hat-developer-hub/backstage-plugin-homepage-common"
     ]

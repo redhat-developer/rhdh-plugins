@@ -16,7 +16,7 @@
 
 import { dynamicHomePagePlugin } from './plugin';
 
-describe('dynamic-home-page', () => {
+describe('homepage', () => {
   it('should export plugin', () => {
     expect(dynamicHomePagePlugin).toBeDefined();
   });

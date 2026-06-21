@@ -18,7 +18,7 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { homepageTranslationRef } from './ref';
 
 /**
- * Japanese translation for plugin.dynamic-home-page.
+ * Japanese translation for plugin.homepage.
  * @public
  */
 const homepageTranslationJa = createTranslationMessages({
