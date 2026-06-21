@@ -66,6 +66,27 @@ YARN_ENABLE_SCRIPTS=false yarn install --immutable
 
 After install, workspace-specific tools become available (e.g., `yarn openspec:validate`).
 
+## Step 5: Synchronize Backstage metadata and generated files
+
+After installing dependencies, run Backstage maintenance commands to ensure
+all generated files and metadata are in sync. These commands fix CI gates
+that check for committed artifacts.
+
+```bash
+# Sync package.json metadata (publishConfig, role fields)
+yarn fix
+
+# Generate API report files for packages with public exports
+yarn build:api-reports
+
+# Deduplicate lockfile entries
+yarn dedupe
+```
+
+If any of these commands modify files, the changes MUST be included in your
+commit. These are not optional — CI will reject the PR if these artifacts
+are out of sync.
+
 ## Rules
 
 - ALL build, test, lint, and validation commands must run from the workspace root
