@@ -5,7 +5,7 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @alpha (undocumented)
+// @public (undocumented)
 const lightspeedFABModule: FrontendModule;
 export default lightspeedFABModule;
 
