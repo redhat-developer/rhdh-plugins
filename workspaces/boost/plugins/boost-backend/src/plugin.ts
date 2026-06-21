@@ -20,6 +20,7 @@ import {
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { boostPermissions } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
@@ -54,8 +55,21 @@ const providerManager = new ProviderManager();
 export const boostAiProviderServiceFactory = createServiceFactory({
   service: boostAiProviderServiceRef,
   deps: {},
-  factory() {
-    return providerManager.getActiveProvider();
+  factory(): AgenticProvider {
+    // Return a lazy proxy so that provider modules can register after
+    // the service factory is resolved. Each method delegates to
+    // providerManager.getActiveProvider() at invocation time.
+    return {
+      get descriptor() {
+        return providerManager.getActiveProvider().descriptor;
+      },
+      chat(messages) {
+        return providerManager.getActiveProvider().chat(messages);
+      },
+      chatStream(messages) {
+        return providerManager.getActiveProvider().chatStream(messages);
+      },
+    };
   },
 });
 

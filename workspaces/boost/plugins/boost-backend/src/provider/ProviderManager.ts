@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { NotFoundError } from '@backstage/errors';
 import type {
   AgenticProvider,
   ProviderDescriptor,
@@ -53,7 +54,7 @@ export class ProviderManager {
    */
   getActiveProvider(): AgenticProvider {
     if (!this.activeProvider) {
-      throw new Error(
+      throw new NotFoundError(
         'No AI provider is registered. Install a provider module ' +
           '(e.g., boost-backend-module-llamastack) to register a provider.',
       );
