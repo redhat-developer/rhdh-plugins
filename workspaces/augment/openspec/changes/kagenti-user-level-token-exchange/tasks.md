@@ -1,7 +1,5 @@
 # Tasks: Per-User OAuth2 Token Exchange for Kagenti Provider
 
-> **Scope:** This change covers backend-only implementation (header-based OIDC token acquisition). Frontend OIDC discovery via `useApiHolder()` is a planned follow-up change.
-
 ## 1. Configuration Schema
 
 - [ ] 1.1 Add optional `tokenExchange` block to `plugins/augment-backend/config.d.ts` under `augment.kagenti.auth` with `enabled` (boolean), `audience` (string), `userTokenHeader` (string), and `fallbackToServiceAccount` (boolean)
@@ -36,9 +34,17 @@
 - [ ] 5.3 Update `plugins/augment-backend/src/routes/chatRoutes.ts` — both sync and streaming handlers extract OIDC token from configured header and pass to `setUserContext(userRef, bearerToken)`
 - [ ] 5.4 Update `plugins/augment-backend/src/routes/kagentiRoutes.ts` — `/kagenti` middleware extracts OIDC token from configured header
 
-## 6. Verification
+## 6. Frontend OIDC Discovery
 
-- [ ] 6.1 Verify `npx tsc --noEmit` passes clean with all changes
-- [ ] 6.2 Write unit tests for `TokenExchangeManager` — exchange execution, caching, concurrent dedup, fallback on error, strict mode error propagation, streaming lifetime, clearUserCache/clearAllCache
-- [ ] 6.3 Verify backward compatibility — behavior identical with `tokenExchange` absent from config
-- [ ] 6.4 Verify `ResponsesApiProvider` and Llama Stack paths are completely unaffected
+- [ ] 6.1 Create frontend utility for OIDC provider discovery using `useApiHolder()` — attempt `useApp().getPlugins()` API enumeration first, then fall back to API holder internal map (`apiHolder.apis` for `internal.auth.oidc`, matching the orchestrator's `findCustomProvider` pattern)
+- [ ] 6.2 Implement OIDC token acquisition — call `getIdToken()` on the discovered provider (triggers login prompt if user hasn't authenticated with the OIDC provider yet), cache the result for the session
+- [ ] 6.3 Wire OIDC token into Kagenti API requests — when the frontend has acquired an OIDC token, include it in requests to the backend so it can be used for RFC 8693 exchange
+- [ ] 6.4 Handle graceful degradation — when OIDC provider is not discoverable, do not prompt or error; fall through silently so the backend uses the header-based fallback path
+
+## 7. Verification
+
+- [ ] 7.1 Verify `npx tsc --noEmit` passes clean with all changes (backend and frontend)
+- [ ] 7.2 Write unit tests for `TokenExchangeManager` — exchange execution, caching, concurrent dedup, fallback on error, strict mode error propagation, streaming lifetime, clearUserCache/clearAllCache
+- [ ] 7.3 Write unit tests for frontend OIDC discovery — provider found, provider not found (graceful degradation), token acquisition, login prompt trigger
+- [ ] 7.4 Verify backward compatibility — behavior identical with `tokenExchange` absent from config
+- [ ] 7.5 Verify `ResponsesApiProvider` and Llama Stack paths are completely unaffected

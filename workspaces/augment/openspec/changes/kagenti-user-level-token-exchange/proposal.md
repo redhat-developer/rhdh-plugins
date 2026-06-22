@@ -35,5 +35,5 @@ The augment plugin authenticates to Kagenti using a single shared service-accoun
 - `plugins/augment-backend/src/router.ts` — dynamic header getter from provider config
 - `plugins/augment-backend/src/routes/chatRoutes.ts` — OIDC token extraction in chat handlers
 - `plugins/augment-backend/src/routes/kagentiRoutes.ts` — OIDC token extraction in Kagenti middleware
-- **Scope: backend-only** — this change implements header-based OIDC token acquisition. Frontend OIDC discovery via `useApiHolder()` (modeled on the orchestrator's `useOrchestratorAuth.ts` pattern) is designed as a follow-up change.
+- Frontend OIDC discovery utility using `useApiHolder()` (modeled on the orchestrator's `useOrchestratorAuth.ts` pattern) — discovers OIDC auth provider at runtime, acquires user's token, sends to backend for exchange. This is the primary token acquisition path; header-based extraction is the fallback for non-OIDC deployments.
 - No changes to `ResponsesApiProvider`, `providers/llamastack/`, or `KeycloakTokenManager`

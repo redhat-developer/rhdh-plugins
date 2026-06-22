@@ -13,7 +13,7 @@ The system SHALL support an optional `tokenExchange` configuration block nested 
   - The Kagenti API client ID (e.g., `kagenti-api`) — the typical production value, targeting the Keycloak client that represents the Kagenti service
   - The RHDH/Backstage client ID (the value of `auth.clientId`) — the default when no explicit audience is set
   - Any other Keycloak client ID that has token exchange permissions granted for the requesting client
-- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token
+- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token when frontend API holder discovery is not available (fallback path)
 - `fallbackToServiceAccount` (boolean, default: `true`) — when `true`, exchange failures fall back to the service-account token silently with a warning log. When `false` (strict mode), exchange failures result in an error response (401 or 502) instead of falling back.
 
 The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `auth.clientSecret` for the exchange request. No new top-level config keys SHALL be introduced.
@@ -99,12 +99,12 @@ The system SHALL support configurable fallback behavior via the `fallbackToServi
 
 #### Scenario: No user OIDC token — permissive mode
 
-- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `true` and no OIDC token is present in the configured header
+- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `true` and no OIDC token was provided by the frontend and the configured header is not present on the request
 - **THEN** the system SHALL use the service-account token and log a debug message
 
 #### Scenario: No user OIDC token — strict mode
 
-- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `false` and no OIDC token is present in the configured header
+- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `false` and no OIDC token was provided by the frontend and the configured header is not present on the request
 - **THEN** the system SHALL return a 401 error indicating that per-user authentication is required
 
 #### Scenario: Exchange call fails with network error — permissive mode

@@ -15,7 +15,7 @@ Kagenti supports RFC 8693 OAuth2 Token Exchange, which can swap a user's OIDC ac
 **Goals:**
 
 - Enable per-user authorization at the Kagenti layer via RFC 8693 token exchange
-- Acquire the user's OIDC token via configurable request header (frontend OIDC discovery via `useApiHolder()` is a planned follow-up)
+- Acquire the user's OIDC token via frontend OIDC discovery (primary) or configurable request header (fallback)
 - Configurable fallback behavior: graceful fallback to service-account token by default, with an option to fail hard for strict security environments
 - Make per-user token exchange opt-in and disabled by default
 - Zero impact on `ResponsesApiProvider` or Llama Stack code paths
@@ -29,17 +29,25 @@ Kagenti supports RFC 8693 OAuth2 Token Exchange, which can swap a user's OIDC ac
 
 ## Decisions
 
-### Decision 1: Header-based OIDC token acquisition (frontend discovery as follow-up)
+### Decision 1: Frontend OIDC discovery (primary) with header-based fallback
 
-**This change implements the header-based path only.** The user's OIDC token is read from a configurable request header (default: `x-user-oidc-token`). The header can be populated by:
+The primary token acquisition path uses `useApiHolder()` to dynamically discover the OIDC auth provider at runtime — the same pattern the orchestrator plugin uses in `useOrchestratorAuth.ts`. When the user first interacts with Kagenti, the frontend discovers the OIDC provider via the API holder, triggers a login prompt if needed, and sends the OIDC token to the backend for RFC 8693 exchange. This avoids the `createApiFactory` hard dependency problem (which throws synchronously if the API isn't registered) while giving users an explicit "connect to Kagenti" experience.
 
-1. An auth proxy (oauth2-proxy, Keycloak Gatekeeper) — many RHDH deployments already have one
+**Why frontend discovery is required out of the gate:** The most common RHDH deployment pattern uses Backstage's built-in Keycloak auth — users log in via the RHDH UI, and Backstage replaces the user's Keycloak OIDC token with its own JWT before requests reach backend plugins. These deployments typically do not have an auth proxy injecting the original OIDC token into a header. Without frontend OIDC discovery, per-user token exchange would not work for this common case, making the feature effectively unusable for most deployments.
+
+When the OIDC provider is not discoverable (non-Keycloak deployments, headless environments), the system falls back to reading the user's OIDC token from a configurable request header (default: `x-user-oidc-token`). The header can be populated by:
+
+1. An auth proxy (oauth2-proxy, Keycloak Gatekeeper) — some RHDH deployments already have one
 2. Custom middleware extracting the OIDC token from the session
 3. A customer's own auth infrastructure — any mechanism that can place a valid OIDC-compatible access token into the configured HTTP header
 
-**Custom auth mechanisms:** The header-based path is deliberately auth-provider-agnostic. The system does not assume Keycloak or any specific IdP — it only requires that (a) a valid OIDC access token arrives in the configured header, and (b) the configured `auth.tokenEndpoint` supports RFC 8693 token exchange for that token.
+**Custom auth mechanisms:** The header-based fallback is deliberately auth-provider-agnostic. The system does not assume Keycloak or any specific IdP — it only requires that (a) a valid OIDC access token arrives in the configured header, and (b) the configured `auth.tokenEndpoint` supports RFC 8693 token exchange for that token.
 
-**Planned follow-up — frontend OIDC discovery:** A subsequent change will add frontend OIDC discovery using `useApiHolder()` to dynamically discover the OIDC auth provider at runtime — the same pattern the orchestrator plugin uses in `useOrchestratorAuth.ts`. When the user first interacts with Kagenti, the frontend would discover the OIDC provider via the API holder, trigger a login prompt if needed, and send the OIDC token to the backend for RFC 8693 exchange. This avoids the `createApiFactory` hard dependency problem (which throws synchronously if the API isn't registered) while giving users an explicit "connect to Kagenti" experience. The header-based path implemented in this change will serve as the fallback when the OIDC provider is not discoverable (non-Keycloak deployments, headless environments).
+**Why `useApiHolder()` and not `useApi()`:** `useApi()` throws synchronously if the API isn't registered, and `createApiFactory` has no optional dependency concept. `useApiHolder()` returns `undefined` for unregistered APIs, allowing graceful detection. The orchestrator uses this for custom providers (`findCustomProvider` in `useOrchestratorAuth.ts`), including accessing `internal.auth.oidc` via the API holder's internal map.
+
+**Alternative considered:** Header-only (no frontend). Rejected because most RHDH deployments use Backstage's built-in auth without an auth proxy, so the header would never be populated — making the feature unusable in the common case.
+
+**Alternative considered:** `createApiFactory` with `oidcAuthApiRef` as a hard dependency. Rejected because it would crash non-OIDC deployments.
 
 **Alternative considered:** Backstage middleware extracting from session. Rejected because it couples to Backstage auth internals and requires session storage access.
 
@@ -98,15 +106,15 @@ This reuses the existing `tokenEndpoint`, `clientId`, and `clientSecret` from th
 
 For per-user token exchange to function, the deployment must have:
 
-1. **A mechanism to inject the user's OIDC access token into the configured HTTP header** (default: `x-user-oidc-token`) — typical options include an auth proxy (oauth2-proxy, Keycloak Gatekeeper), custom middleware, or a customer's own auth infrastructure. Without a header injection mechanism, the system falls back to the service-account token (or fails if `fallbackToServiceAccount: false`). A planned follow-up will add frontend OIDC discovery via `useApiHolder()` as an additional acquisition path.
+1. **An OIDC auth provider accessible via the Backstage API holder** (primary path) — in RHDH Keycloak deployments, this is typically `internal.auth.oidc`. The frontend discovers this at runtime via `useApiHolder()`. **OR** a mechanism to inject the user's OIDC access token into the configured HTTP header (fallback path, default: `x-user-oidc-token`) — typical options include an auth proxy (oauth2-proxy, Keycloak Gatekeeper), custom middleware, or a customer's own auth infrastructure. Without either, the system falls back to the service-account token (or fails if `fallbackToServiceAccount: false`).
 2. **An IdP token endpoint that supports RFC 8693 token exchange** (configured via `auth.tokenEndpoint`). For Keycloak, `token-exchange-standard:v2` is enabled by default in modern versions. The requesting client (`auth.clientId`) must have permission to exchange tokens for the target audience.
 3. **The existing `auth.clientId`, `auth.clientSecret`, and `auth.tokenEndpoint`** must already be configured for the Kagenti provider's service-account flow.
 
 ## Risks / Trade-offs
 
-- **No OIDC token in header** → No header token present → falls back to service-account (or fails in strict mode). Non-OIDC deployments without a header injection mechanism get no per-user auth until frontend OIDC discovery is added.
+- **OIDC provider not discoverable and no header token** → Frontend discovery returns `undefined` and no header token present → falls back to service-account (or fails in strict mode). Non-OIDC deployments without a header injection mechanism get no per-user auth.
 - **Keycloak doesn't support token exchange** → Returns 400 `unsupported_grant_type`. Caught, warned, falls back. Requires Keycloak admin to enable token exchange on the realm.
-- **OIDC token expired** → Exchange fails, caught, falls back (or fails in strict mode). Short-lived tokens may cause frequent fallbacks. The backend cannot refresh the user's token — keeping it alive is the responsibility of the injecting layer (auth proxy or customer infrastructure).
+- **OIDC token expired** → Exchange fails, caught, falls back (or fails in strict mode). Short-lived tokens may cause frequent fallbacks. When the token is acquired via frontend discovery, the OIDC provider may handle refresh transparently via its `getIdToken()` implementation. When acquired via header, the backend cannot refresh the user's token — keeping it alive is the responsibility of the injecting layer (auth proxy or customer infrastructure).
 - **Memory** → Per-user cache bounded by concurrent users (~2KB per entry × 1000 users = ~2MB). Acceptable for backend plugin.
-- **`useApiHolder()` internal API access (follow-up risk)** → The planned frontend OIDC discovery follow-up would use the orchestrator's `findCustomProvider` pattern, which accesses `apiHolder.apis` (a private `Map`) via `@ts-ignore`. This is not a public Backstage API and could break if Backstage changes the internal representation. Mitigated by the fact that the orchestrator already ships this pattern in production RHDH, and the header-based path implemented in this change provides a working alternative.
+- **`useApiHolder()` internal API access** → The frontend OIDC discovery uses the orchestrator's `findCustomProvider` pattern, which accesses `apiHolder.apis` (a private `Map`) via `@ts-ignore`. This is not a public Backstage API and could break if Backstage changes the internal representation. Mitigated by the fact that the orchestrator already ships this pattern in production RHDH, and the header-based fallback provides a working alternative if the internal access breaks.
 - **Security surface** → The configurable header must be trusted. If an attacker can inject the header, they can impersonate users. Mitigated by typical auth proxy architectures stripping/overwriting upstream headers.
