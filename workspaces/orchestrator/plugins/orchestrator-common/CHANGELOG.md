@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.4.5
+
+### Patch Changes
+
+- 5e3e7b3: bumps ip-address, ws, axios and shell-quote in Orchestrator to resolve CVEs
+
 ## 3.4.4
 
 ### Patch Changes
