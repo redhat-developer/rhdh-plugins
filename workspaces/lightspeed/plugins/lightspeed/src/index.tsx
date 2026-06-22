@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import '@patternfly/chatbot/dist/css/main.css';
-
 import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -53,10 +48,6 @@ import {
   LIGHTSPEED_PATH,
 } from './const';
 import { lightspeedTranslations } from './translations';
-
-ClassNameGenerator.configure(componentName =>
-  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
-);
 
 const nfsRootRouteRef = createRouteRef();
 const nfsConversationRouteRef = createSubRouteRef({
@@ -169,7 +160,7 @@ const lightspeedFABExtension = AppRootWrapperBlueprint.make({
  */
 export const lightspeedFABModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [lightspeedFABExtension],
+  extensions: [lightspeedFABExtension, lightspeedRedirect],
 });
 
 /**
