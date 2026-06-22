@@ -125,7 +125,15 @@ export class AdminConfigService {
       return undefined;
     }
 
-    let rawValue: unknown = JSON.parse(row.value);
+    let rawValue: unknown;
+    try {
+      rawValue = JSON.parse(row.value);
+    } catch {
+      this.logger.error(
+        `Corrupt value for config key "${key}" — skipping (invalid JSON)`,
+      );
+      return undefined;
+    }
 
     // Decrypt sensitive fields
     if (isSensitiveField(key) && typeof rawValue === 'string') {
@@ -152,7 +160,15 @@ export class AdminConfigService {
     const result = new Map<string, unknown>();
 
     for (const row of rows) {
-      let rawValue: unknown = JSON.parse(row.value);
+      let rawValue: unknown;
+      try {
+        rawValue = JSON.parse(row.value);
+      } catch {
+        this.logger.error(
+          `Corrupt value for config key "${row.key}" — skipping (invalid JSON)`,
+        );
+        continue;
+      }
 
       // Decrypt sensitive fields
       const key = row.key as BoostConfigKey;
@@ -265,6 +281,14 @@ export class AdminConfigService {
         await knex<AdminConfigRow>(TABLE_NAME).where({ key }).delete();
         removedKeys.push(key);
         continue;
+      }
+
+      // Warn at startup if sensitive fields exist but cannot be decrypted
+      if (isSensitiveField(key) && !this.encryptionSecret) {
+        this.logger.warn(
+          `Sensitive config override "${key}" exists in DB but no encryption secret is configured — ` +
+            `this field will be unreadable at runtime. Set boost.encryptionSecret to restore access.`,
+        );
       }
 
       // Re-validate the stored value

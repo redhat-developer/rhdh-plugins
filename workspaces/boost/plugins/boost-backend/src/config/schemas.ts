@@ -200,5 +200,6 @@ export function isDbWritable(key: BoostConfigKey): boolean {
  * @public
  */
 export function isSensitiveField(key: BoostConfigKey): boolean {
-  return (boostConfigFields[key] as ConfigFieldMeta).sensitive === true;
+  const field = boostConfigFields[key] as ConfigFieldMeta | undefined;
+  return field?.sensitive === true;
 }
