@@ -6,6 +6,12 @@ The Intelligent Assistant for RHDH provides a natural language interface within 
 
 ## For administrators
 
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed. See the [backend plugin migration guide](../lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant) for the full list of renamed config keys and permission policies.
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
+
 ### Prerequisites
 
 - Follow the lightspeed backend plugin [README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md) to integrate lightspeed backend in your Backstage instance.

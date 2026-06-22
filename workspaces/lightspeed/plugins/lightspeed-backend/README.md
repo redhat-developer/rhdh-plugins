@@ -25,6 +25,32 @@ backend.add(
 backend.start();
 ```
 
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed:
+
+**Configuration** — rename the top-level key in `app-config.yaml`:
+
+| Before        | After                    |
+| ------------- | ------------------------ |
+| `lightspeed:` | `intelligent-assistant:` |
+
+All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebooks`, etc.) remain the same.
+
+**RBAC policies** — update permission names in your `rbac-policy.csv`:
+
+| Before                     | After                                 |
+| -------------------------- | ------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat.read`     |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.create`   |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat.delete`   |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`   |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
+
 ### Plugin Configurations
 
 Add the following lightspeed configurations into your `app-config.yaml` file:
@@ -33,6 +59,9 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 intelligent-assistant:
   servicePort: <portNumber> # Optional - Change the LS service port number. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
+  prompts: # Optional - Custom prompts displayed to users in the chat UI
+    - title: <prompt_title>
+      message: <prompt_message>
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
       token: ${MCP_TOKEN}
