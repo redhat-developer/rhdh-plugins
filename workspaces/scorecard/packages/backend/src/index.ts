@@ -97,4 +97,5 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage'
   ),
 );
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
 backend.start();

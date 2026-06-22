@@ -53,12 +53,12 @@
     "@red-hat-developer-hub/backstage-plugin-translations-test": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
-    "react-router": "^6.3.0",
+    "react-router": "^6.30.4",
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.16",
-    "@playwright/test": "^1.32.3",
+    "@playwright/test": "1.60.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

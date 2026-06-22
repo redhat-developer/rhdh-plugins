@@ -14,6 +14,8 @@ bash scripts/pre-fix.sh
 
 # 2. Rebase PR branch onto target branch
 cd "${REPO_DIR}"
+git config user.name "fullsend-ai-coder[bot]"
+git config user.email "fullsend-ai-coder[bot]@users.noreply.github.com"
 git fetch origin "${TARGET_BRANCH}"
 
 CURRENT_HEAD="$(git rev-parse HEAD)"
@@ -30,7 +32,7 @@ echo "Branch is ${BEHIND_COUNT} commit(s) behind origin/${TARGET_BRANCH}. Rebasi
 
 if ! git rebase "origin/${TARGET_BRANCH}" 2>&1; then
   git rebase --abort 2>/dev/null || true
-  echo "::error::Rebase onto origin/${TARGET_BRANCH} failed with conflicts." >&2
+  echo "::error::Rebase onto origin/${TARGET_BRANCH} failed (check log above for cause)." >&2
   echo "::error::Please rebase manually and re-trigger /fs-fix." >&2
   exit 1
 fi

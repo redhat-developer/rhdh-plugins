@@ -7649,12 +7649,12 @@ __metadata:
   linkType: hard
 
 "@grpc/grpc-js@npm:^1.10.9, @grpc/grpc-js@npm:^1.11.1":
-  version: 1.14.3
-  resolution: "@grpc/grpc-js@npm:1.14.3"
+  version: 1.14.4
+  resolution: "@grpc/grpc-js@npm:1.14.4"
   dependencies:
     "@grpc/proto-loader": "npm:^0.8.0"
     "@js-sdsl/ordered-map": "npm:^4.4.2"
-  checksum: 10c0/f41f06a311b93cca8c472d56e21387e0f7b57bb2337a91d15ea4279bac8ec4fa0de6bd0d881201229ab800c0f0c55277911ecb850e057f20a828d0ddd623551d
+  checksum: 10c0/0ff6395e8112ad30e8f99dbb684b997ebc3264e770b8e354f23effeedf181a380e0ecef8bca466cbbf3e9141968656144851de1da50f840a1efd9314c9812449
   languageName: node
   linkType: hard
 
@@ -7859,7 +7859,7 @@ __metadata:
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.40.0"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     typescript: "npm:~5.8.0"
   languageName: unknown
   linkType: soft
@@ -10813,14 +10813,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.58.2":
-  version: 1.58.2
-  resolution: "@playwright/test@npm:1.58.2"
+"@playwright/test@npm:1.60.0":
+  version: 1.60.0
+  resolution: "@playwright/test@npm:1.60.0"
   dependencies:
-    playwright: "npm:1.58.2"
+    playwright: "npm:1.60.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/2164c03ad97c3653ff02e8818a71f3b2bbc344ac07924c9d8e31cd57505d6d37596015a41f51396b3ed8de6840f59143eaa9c21bf65515963da20740119811da
+  checksum: 10c0/86b06e6437933e741c7cd43f362024e857e7bc28a55fcbb0553ef55e01a2a403c64f4786868de8af86a6e303fe99e98a18a42ba19489f43ae122e457f9e2d189
   languageName: node
   linkType: hard
 
@@ -11610,7 +11610,7 @@ __metadata:
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
     openapi-backend: "npm:^5.10.5"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     yn: "npm:^5.0.0"
   peerDependencies:
     "@backstage-community/plugin-rbac-common": ^1.12.1
@@ -11649,7 +11649,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/react": "npm:^18.2.58"
     json-schema: "npm:^0.4.0"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -11679,7 +11679,7 @@ __metadata:
     json-schema: "npm:^0.4.0"
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -11786,7 +11786,7 @@ __metadata:
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     react: "npm:^18.0.0"
     react-dom: "npm:^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -16962,7 +16962,7 @@ __metadata:
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:5.18.0"
     "@mui/styles": "npm:5.18.0"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
@@ -20151,7 +20151,7 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     "@janus-idp/cli": "npm:3.7.0"
     express: "npm:^4.17.1"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     typescript: "npm:5.6.3"
   languageName: unknown
   linkType: soft
@@ -20168,7 +20168,7 @@ __metadata:
     "@janus-idp/cli": "npm:3.7.0"
     "@mui/material": "npm:^5.17.1"
     "@types/react": "npm:^18.0.0"
-    prettier: "npm:3.8.3"
+    prettier: "npm:3.8.4"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router: "npm:^6.30.4"
@@ -31185,27 +31185,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright-core@npm:1.58.2"
+"playwright-core@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright-core@npm:1.60.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/5aa15b2b764e6ffe738293a09081a6f7023847a0dbf4cd05fe10eed2e25450d321baf7482f938f2d2eb330291e197fa23e57b29a5b552b89927ceb791266225b
+  checksum: 10c0/99ccd43923b6e9355e0723b7fe221e6326efd4687f8dafff951313662aea11db51f542a9c2122c704c445fb9baae1c9ec9fa6f895126bbddd9fe92313f6942c9
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright@npm:1.58.2"
+"playwright@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright@npm:1.60.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.58.2"
+    playwright-core: "npm:1.60.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/d060d9b7cc124bd8b5dffebaab5e84f6b34654a553758fe7b19cc598dfbee93f6ecfbdc1832b40a6380ae04eade86ef3285ba03aa0b136799e83402246dc0727
+  checksum: 10c0/714ad76d85b4865d7e43c0012f9039800c1485373388973ed39d79339cee5ad467052d1e2f1eaeca107a1cb6e65342186a8578a4c3504853d84c3a691250d5db
   languageName: node
   linkType: hard
 
@@ -31745,12 +31745,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.8.3":
-  version: 3.8.3
-  resolution: "prettier@npm:3.8.3"
+"prettier@npm:3.8.4":
+  version: 3.8.4
+  resolution: "prettier@npm:3.8.4"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/754816fd7593eb80f6376d7476d463e832c38a12f32775a82683adb6e35b772b1f484d65f19401507b983a8c8a7cd5a4a9f12006bd56491e8f35503473f77473
+  checksum: 10c0/b90a0cbe75b88ac0af9c13fe0f359bd19926fabccd88483227b21f71f0c1cc42da056fc1ac3a361e665577c568371d5ccfb2c62c31c8a1186f8d1bd531a063e9
   languageName: node
   linkType: hard
 

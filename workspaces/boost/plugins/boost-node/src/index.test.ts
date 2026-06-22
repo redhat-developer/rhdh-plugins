@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { boostAiProviderServiceRef } from './index';
+import {
+  boostAiProviderServiceRef,
+  boostProviderExtensionPoint,
+} from './index';
 
 describe('boost-node', () => {
   it('exports boostAiProviderServiceRef with correct ID', () => {
@@ -23,5 +26,9 @@ describe('boost-node', () => {
 
   it('boostAiProviderServiceRef has plugin scope', () => {
     expect(boostAiProviderServiceRef.scope).toBe('plugin');
+  });
+
+  it('exports boostProviderExtensionPoint with correct ID', () => {
+    expect(boostProviderExtensionPoint.id).toBe('boost.provider');
   });
 });

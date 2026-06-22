@@ -17,6 +17,7 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import {
+  Filter,
   ProcessInstance,
   ProcessInstanceState,
   WorkflowInfo,
@@ -876,6 +877,66 @@ describe('SonataFlowService', () => {
 
       expect(result).toHaveLength(1);
       expect(result?.[0].workflowId).toBe('workflow-a');
+    });
+
+    it('queries instance stats by workflow definition id for entity overview', async () => {
+      const helloWorldSource = JSON.stringify({
+        id: 'hello-world',
+        specVersion: '0.8',
+        name: 'Hello World Workflow',
+        version: '1.0',
+        start: 'startState',
+        states: [{ name: 'startState', type: 'inject', end: true }],
+      });
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'hello-world', source: helloWorldSource },
+      ];
+      const overviewFilter: Filter = {
+        field: 'id',
+        operator: 'IN',
+        value: ['hello-world'],
+      };
+      const targetEntity = 'component:default/my-component';
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'hello-world',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({
+        filter: overviewFilter,
+        targetEntity,
+      });
+
+      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+        definitionIds: ['hello-world'],
+        filter: {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        },
+      });
+      expect(result?.[0].workflowRunStats).toMatchObject({
+        successRatio: 1,
+        runsLastMonth: 1,
+        successCount: 1,
+        errorCount: 0,
+        totalCount: 1,
+      });
     });
   });
 

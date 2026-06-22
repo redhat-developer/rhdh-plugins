@@ -21,3 +21,7 @@
  */
 
 export { boostAiProviderServiceRef } from './services';
+export {
+  boostProviderExtensionPoint,
+  type BoostProviderExtensionPoint,
+} from './extensions';

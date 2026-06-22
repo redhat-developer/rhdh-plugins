@@ -9689,9 +9689,43 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:^, @red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:plugins/dynamic-home-page":
+"@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:plugins/dynamic-home-page"
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend"
+  dependencies:
+    "@backstage/backend-defaults": "npm:^0.17.1"
+    "@backstage/backend-plugin-api": "npm:^1.9.1"
+    "@backstage/backend-test-utils": "npm:^1.11.3"
+    "@backstage/catalog-client": "npm:^1.15.1"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.2"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/plugin-catalog-node": "npm:^2.2.1"
+    "@backstage/plugin-permission-common": "npm:^0.9.9"
+    "@backstage/plugin-permission-node": "npm:^0.11.0"
+    "@backstage/types": "npm:^1.2.2"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^"
+    "@types/express": "npm:^4.17.6"
+    "@types/supertest": "npm:^2.0.12"
+    express: "npm:^4.14.0"
+    express-promise-router: "npm:^4.1.0"
+    supertest: "npm:^6.2.4"
+    zod: "npm:^3.25.76 || ^4.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-homepage-common@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage-common@workspace:plugins/homepage-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@workspace:plugins/homepage-common"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.2"
+    "@backstage/plugin-permission-common": "npm:^0.9.9"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-homepage@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage@workspace:plugins/homepage":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@workspace:plugins/homepage"
   dependencies:
     "@backstage/catalog-client": "npm:^1.15.1"
     "@backstage/catalog-model": "npm:^1.9.0"
@@ -9728,44 +9762,10 @@ __metadata:
     msw: "npm:1.3.5"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-grid-layout: "npm:1.5.3"
-    react-use: "npm:17.6.0"
+    react-use: "npm:17.6.1"
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.30.4
-  languageName: unknown
-  linkType: soft
-
-"@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend"
-  dependencies:
-    "@backstage/backend-defaults": "npm:^0.17.1"
-    "@backstage/backend-plugin-api": "npm:^1.9.1"
-    "@backstage/backend-test-utils": "npm:^1.11.3"
-    "@backstage/catalog-client": "npm:^1.15.1"
-    "@backstage/catalog-model": "npm:^1.9.0"
-    "@backstage/cli": "npm:^0.36.2"
-    "@backstage/errors": "npm:^1.3.1"
-    "@backstage/plugin-catalog-node": "npm:^2.2.1"
-    "@backstage/plugin-permission-common": "npm:^0.9.9"
-    "@backstage/plugin-permission-node": "npm:^0.11.0"
-    "@backstage/types": "npm:^1.2.2"
-    "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^"
-    "@types/express": "npm:^4.17.6"
-    "@types/supertest": "npm:^2.0.12"
-    express: "npm:^4.14.0"
-    express-promise-router: "npm:^4.1.0"
-    supertest: "npm:^6.2.4"
-    zod: "npm:^3.25.76 || ^4.0.0"
-  languageName: unknown
-  linkType: soft
-
-"@red-hat-developer-hub/backstage-plugin-homepage-common@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage-common@workspace:plugins/homepage-common":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@workspace:plugins/homepage-common"
-  dependencies:
-    "@backstage/cli": "npm:^0.36.2"
-    "@backstage/plugin-permission-common": "npm:^0.9.9"
   languageName: unknown
   linkType: soft
 
@@ -13254,10 +13254,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-cookie@npm:^2.2.6":
-  version: 2.2.7
-  resolution: "@types/js-cookie@npm:2.2.7"
-  checksum: 10c0/29196c6829982b5efa79117122a7d62cf4bc2f6397ce8eac1539319ff5dce3b44b2d86f2ac064f2ed3488fb24439358f24af6914fde5c5c4bab9a85728a13a6f
+"@types/js-cookie@npm:^3.0.0":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10c0/173afaf5ea9d86c22395b9d2a00b6adb0006dcfef165d6dcb0395cdc32f5a5dcf9c3c60f97194119963a15849b8f85121e1ae730b03e40bc0c29b84396ba22f9
   languageName: node
   linkType: hard
 
@@ -14860,7 +14860,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     "@playwright/test": "npm:1.60.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
     "@scalprum/react-core": "npm:0.11.3"
     "@testing-library/dom": "npm:^9.0.0"
@@ -14873,7 +14873,7 @@ __metadata:
     react-dom: "npm:^18.0.2"
     react-router: "npm:^6.3.0"
     react-router-dom: "npm:^6.3.0"
-    react-use: "npm:17.6.0"
+    react-use: "npm:17.6.1"
     yaml: "npm:^2.8.3"
   languageName: unknown
   linkType: soft
@@ -14925,7 +14925,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@playwright/test": "npm:1.60.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
@@ -23551,10 +23551,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "js-cookie@npm:2.2.1"
-  checksum: 10c0/ee67fc0f8495d0800b851910b5eb5bf49d3033adff6493d55b5c097ca6da46f7fe666b10e2ecb13cfcaf5b88d71c205ce00a7e646de791689bfd053bbb36a376
+"js-cookie@npm:^3.0.0":
+  version: 3.0.8
+  resolution: "js-cookie@npm:3.0.8"
+  checksum: 10c0/421912a4a55535bda32b3059835864e1182c3af5b4516df00a060edc1fa5a53d38bb8d5a91d5d305e396206f4fd11e829f17850aa5aa8164118c04d8ebf1ff5d
   languageName: node
   linkType: hard
 
@@ -29621,16 +29621,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use@npm:17.6.0, react-use@npm:^17.2.4, react-use@npm:^17.3.2, react-use@npm:^17.4.0":
-  version: 17.6.0
-  resolution: "react-use@npm:17.6.0"
+"react-use@npm:17.6.1, react-use@npm:^17.2.4, react-use@npm:^17.3.2, react-use@npm:^17.4.0":
+  version: 17.6.1
+  resolution: "react-use@npm:17.6.1"
   dependencies:
-    "@types/js-cookie": "npm:^2.2.6"
+    "@types/js-cookie": "npm:^3.0.0"
     "@xobotyi/scrollbar-width": "npm:^1.9.5"
     copy-to-clipboard: "npm:^3.3.1"
     fast-deep-equal: "npm:^3.1.3"
     fast-shallow-equal: "npm:^1.0.0"
-    js-cookie: "npm:^2.2.1"
+    js-cookie: "npm:^3.0.0"
     nano-css: "npm:^5.6.2"
     react-universal-interface: "npm:^0.6.2"
     resize-observer-polyfill: "npm:^1.5.1"
@@ -29642,7 +29642,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 10c0/d122199f3edd056bfd866837b0f19a44366e77c7535c6c2c5eb5f400409eae4c9b1fe73c9d35073c8434080eee388ca8fe49a68d09d6f794ccaa35a4ae2112a9
+  checksum: 10c0/8b3babd9f7db14624e172d22c2fb30f091d785e97d0aed84e47e52a3ca8dbdc0c094ab797bbd0e754ff2f92be82357c7a46e08dbc85244edfefa21475f760cdf
   languageName: node
   linkType: hard
 

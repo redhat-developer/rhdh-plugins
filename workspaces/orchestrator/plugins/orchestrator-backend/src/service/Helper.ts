@@ -104,9 +104,19 @@ export function groupByProcessIdAndVersion(instances: ProcessInstance[]) {
   }, {});
 }
 
+export type WorkflowRunStatsResult = {
+  processIdVersion: string;
+  successCount: number;
+  errorCount: number;
+  totalCount: number;
+  successRatio: number;
+  runsLastMonth: number;
+  averageTimeToComplete: number;
+};
+
 export function getWorkflowRunStats(
   groupedData: Record<string, ProcessInstance[]>,
-) {
+): WorkflowRunStatsResult[] {
   return Object.entries(groupedData).map(([processIdVersion, items]) => {
     const averageTimeToComplete =
       items.reduce((acc, item) => {

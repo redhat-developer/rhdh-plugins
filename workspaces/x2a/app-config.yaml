@@ -172,6 +172,7 @@ permission:
       users:
         - name: user:default/mareklibra
         - name: user:default/elai-shalev
+        - name: user:default/yray-pixel
 
 # X2A Configuration
 x2a:

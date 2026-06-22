@@ -83,8 +83,8 @@ import {
   FeaturedDocsCard,
   WorldClock,
   HomePageCardMountPoint,
-} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
-import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 
 const identityProviders: IdentityProviders = [
   'guest',
