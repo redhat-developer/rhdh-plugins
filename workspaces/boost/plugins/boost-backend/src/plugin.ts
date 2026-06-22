@@ -27,6 +27,8 @@ import {
   boostProviderExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 import { Router } from 'express';
+import { AdminConfigService } from './config/AdminConfigService';
+import { RuntimeConfigResolver } from './config/RuntimeConfigResolver';
 import { ProviderManager } from './provider/ProviderManager';
 import { validateSecurityMode } from './middleware/security';
 
@@ -99,6 +101,8 @@ export const boostPlugin = createBackendPlugin({
       deps: {
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        cache: coreServices.cache,
+        database: coreServices.database,
         httpRouter: coreServices.httpRouter,
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
@@ -107,6 +111,8 @@ export const boostPlugin = createBackendPlugin({
       async init({
         logger,
         config,
+        cache,
+        database,
         httpRouter,
         permissions: _permissions,
         permissionsRegistry,
@@ -119,6 +125,33 @@ export const boostPlugin = createBackendPlugin({
           logger,
         );
         logger.info(`Boost security mode: ${securityMode}`);
+
+        // Initialize runtime configuration engine
+        const encryptionSecret = config.getOptionalString(
+          'boost.encryptionSecret',
+        );
+        const adminConfigService = new AdminConfigService({
+          database,
+          logger,
+          encryptionSecret,
+        });
+
+        // Re-validate stored DB values against current Zod schemas (schema evolution)
+        const removedKeys = await adminConfigService.validateStoredValues();
+        if (removedKeys.length > 0) {
+          logger.warn(
+            `Schema validation removed ${removedKeys.length} stale config override(s) on startup`,
+          );
+        }
+
+        const runtimeConfigResolver = new RuntimeConfigResolver({
+          cache,
+          config,
+          adminConfigService,
+          logger,
+        });
+
+        logger.info('Runtime configuration engine initialized');
 
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
@@ -149,6 +182,21 @@ export const boostPlugin = createBackendPlugin({
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
           res.json({ status: 'ok' });
+        });
+
+        // Config status endpoint (for admin onboarding)
+        router.get('/config/status', async (_req, res) => {
+          try {
+            const allConfig = await runtimeConfigResolver.resolveAll();
+            const configEntries = Object.fromEntries(allConfig);
+            res.json({
+              status: 'ok',
+              fieldCount: allConfig.size,
+              config: configEntries,
+            });
+          } catch (error) {
+            res.status(500).json({ status: 'error', message: String(error) });
+          }
         });
 
         httpRouter.use(router);

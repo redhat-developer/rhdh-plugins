@@ -14,39 +14,22 @@
  * limitations under the License.
  */
 
-/**
- * Backend plugin for the boost AI platform.
- *
- * @packageDocumentation
- */
-
-export {
-  boostPlugin as default,
-  boostAiProviderServiceFactory,
-} from './plugin';
-export { ProviderManager } from './provider/ProviderManager';
-export {
-  authorizeLifecycleAction,
-  validateSecurityMode,
-  createAgentResourceLoader,
-  createToolResourceLoader,
-  type SecurityMode,
-  type ResourceLoader,
-  type AuthorizeLifecycleActionOptions,
-} from './middleware/security';
 export {
   AdminConfigService,
+  type AdminConfigServiceOptions,
+} from './AdminConfigService';
+export {
   RuntimeConfigResolver,
+  type RuntimeConfigResolverOptions,
+} from './RuntimeConfigResolver';
+export {
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
-  encryptValue,
-  decryptValue,
-  type AdminConfigServiceOptions,
-  type RuntimeConfigResolverOptions,
   type BoostConfigKey,
   type ConfigScope,
   type ConfigFieldMeta,
-} from './config';
+} from './schemas';
+export { encryptValue, decryptValue } from './encryption';
