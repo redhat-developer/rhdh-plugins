@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 1.15.0
+
+### Minor Changes
+
+- a25f33d: Renamed the frontend homepage plugin from `@red-hat-developer-hub/backstage-plugin-dynamic-home-page` to `@red-hat-developer-hub/backstage-plugin-homepage` for consistency with the sibling `homepage-backend` and `homepage-common` packages.
+
+### Patch Changes
+
+- 695f632: Updated dependency `react-use` to `17.6.1`.
+- e234b36: Updated dependency `@scalprum/react-core` to `0.11.3`.
+  Updated dependency `react-router-dom` to `6.30.4`.
+- Updated dependencies [a25f33d]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.2.1
+
 ## 1.14.0
 
 ### Minor Changes
