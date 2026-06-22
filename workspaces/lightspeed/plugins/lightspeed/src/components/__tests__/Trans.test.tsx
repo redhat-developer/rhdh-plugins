@@ -134,10 +134,14 @@ describe('Trans Component', () => {
     it('should handle permission description formatting', () => {
       render(
         <Trans
-          message="To view intelligent assistant plugin, contact your administrator to give the <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b> permissions."
+          message="To view intelligent assistant plugin, contact your administrator to give the <b>intelligent-assistant.chat.read</b> and <b>intelligent-assistant.chat.create</b> permissions."
           components={{
-            '<b>lightspeed.chat.read</b>': <b>lightspeed.chat.read</b>,
-            '<b>lightspeed.chat.create</b>': <b>lightspeed.chat.create</b>,
+            '<b>intelligent-assistant.chat.read</b>': (
+              <b>intelligent-assistant.chat.read</b>
+            ),
+            '<b>intelligent-assistant.chat.create</b>': (
+              <b>intelligent-assistant.chat.create</b>
+            ),
           }}
         />,
       );
@@ -146,12 +150,20 @@ describe('Trans Component', () => {
       expect(
         screen.getByText(/To view intelligent assistant plugin/),
       ).toBeInTheDocument();
-      expect(screen.getByText('lightspeed.chat.read')).toBeInTheDocument();
-      expect(screen.getByText('lightspeed.chat.create')).toBeInTheDocument();
+      expect(
+        screen.getByText('intelligent-assistant.chat.read'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('intelligent-assistant.chat.create'),
+      ).toBeInTheDocument();
 
       // Check that permission names are bold
-      expect(screen.getByText('lightspeed.chat.read').tagName).toBe('B');
-      expect(screen.getByText('lightspeed.chat.create').tagName).toBe('B');
+      expect(screen.getByText('intelligent-assistant.chat.read').tagName).toBe(
+        'B',
+      );
+      expect(
+        screen.getByText('intelligent-assistant.chat.create').tagName,
+      ).toBe('B');
     });
   });
 

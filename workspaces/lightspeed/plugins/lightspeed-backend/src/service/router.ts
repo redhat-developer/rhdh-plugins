@@ -109,9 +109,11 @@ export async function createRouter(
   router.use(express.json());
 
   const port =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  const system_prompt = config.getOptionalString(
+    'intelligent-assistant.systemPrompt',
+  );
   const lightspeedCoreBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${port}`;
 
   const apiProxy = createProxyMiddleware({
@@ -138,7 +140,7 @@ export async function createRouter(
   // Only name is required; token is optional (users can provide their own via the UI).
   // URLs come from LCS (GET /v1/mcp-servers), not from app-config.
   const mcpServersConfig = config.getOptionalConfigArray(
-    'lightspeed.mcpServers',
+    'intelligent-assistant.mcpServers',
   );
   const staticServers: StaticMcpServer[] = [];
   if (mcpServersConfig) {
@@ -305,7 +307,7 @@ export async function createRouter(
         const server = staticServers.find(s => s.name === name);
         if (!server) {
           res.status(404).json({
-            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
           });
           return;
         }
@@ -370,7 +372,7 @@ export async function createRouter(
         const server = staticServers.find(s => s.name === name);
         if (!server) {
           res.status(404).json({
-            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
           });
           return;
         }

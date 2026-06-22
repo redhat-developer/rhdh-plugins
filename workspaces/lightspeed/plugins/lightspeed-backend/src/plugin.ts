@@ -52,20 +52,22 @@ export const lightspeedPlugin = createBackendPlugin({
         await migrate(database);
 
         const aiNotebooksEnabled =
-          config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
+          config.getOptionalBoolean(
+            'intelligent-assistant.notebooks.enabled',
+          ) ?? false;
 
         if (aiNotebooksEnabled) {
           const queryModel = config.getOptionalString(
-            'lightspeed.notebooks.queryDefaults.model',
+            'intelligent-assistant.notebooks.queryDefaults.model',
           );
           const queryProvider = config.getOptionalString(
-            'lightspeed.notebooks.queryDefaults.provider_id',
+            'intelligent-assistant.notebooks.queryDefaults.provider_id',
           );
 
           if (!queryModel || !queryProvider) {
             logger.warn(
               'AI Notebooks feature is enabled but required configuration is missing. ' +
-                'Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id. ' +
+                'Please configure intelligent-assistant.notebooks.queryDefaults.model and intelligent-assistant.notebooks.queryDefaults.provider_id. ' +
                 'Notebooks will not be available until these are set.',
             );
           } else {

@@ -19,13 +19,17 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
-p, role:default/team_a, lightspeed.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -162,7 +166,7 @@ global:
     - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.6.1!red-hat-developer-hub-backstage-plugin-lightspeed
       disabled: false
       pluginConfig:
-        lightspeed:
+        intelligent-assistant:
           # OPTIONAL: Custom users prompts displayed to users
           # If not provided, the plugin uses built-in default prompts
           prompts:
