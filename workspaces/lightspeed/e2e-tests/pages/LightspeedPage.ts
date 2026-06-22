@@ -442,14 +442,14 @@ function getWelcomeHeader(t: LightspeedMessages): string {
   );
   return `
     - region "Scrollable message log":
-      - 'heading "Info alert: ${t['aria.important']}" [level=4]'
+      - heading "Info alert:${t['aria.important']}" [level=4]
       - text: ${t['disclaimer.withValidation']}
       - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
 }
 
 const buttonGroup = `
-      - button
-      - text: ''`;
+      - button /.+/
+      - text: /.+/`;
 
 const buttonCounts: Record<DisplayMode, number> = {
   Overlay: 1,

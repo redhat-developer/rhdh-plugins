@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import '@patternfly/chatbot/dist/css/main.css';
-
 import { Route, Routes } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
@@ -31,10 +26,6 @@ import {
   generateClassNameV4,
 } from '../utils/generateClassName';
 import { LightspeedPage } from './LightspeedPage';
-
-ClassNameGenerator.configure(componentName =>
-  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
-);
 
 /**
  * @public

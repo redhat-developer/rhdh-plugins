@@ -34,6 +34,9 @@ const useStyles = makeStyles(theme => ({
   icon: {
     fontSize: 48,
     color: 'var(--pf-t--global--icon--color--subtle)',
+    '& > .pf-v6-icon-rh-ui': {
+      display: 'none !important',
+    },
   },
   headingRow: {
     display: 'flex',
