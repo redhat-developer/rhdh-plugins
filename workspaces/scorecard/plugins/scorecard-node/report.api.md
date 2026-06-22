@@ -13,6 +13,51 @@ import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-co
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { z } from 'zod';
+
+// @public
+export interface Collector<
+  TInputSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny = z.ZodTypeAny,
+> {
+  collect(options: {
+    entity: Entity;
+    input: z.infer<TInputSchema>;
+  }): Promise<z.infer<TOutputSchema>>;
+  getCollectorDescription(): string;
+  getCollectorId(): string;
+  getInputSchema(): TInputSchema;
+  getOutputSchema(): TOutputSchema;
+}
+
+// @public
+export type CollectorContract<
+  TInputSchema extends z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny,
+> = {
+  inputSchema: TInputSchema;
+  outputSchema: TOutputSchema;
+};
+
+// @public
+export interface CollectorRegistry {
+  // (undocumented)
+  getCollector(collectorId: string): Collector;
+  // (undocumented)
+  hasCollector(collectorId: string): boolean;
+}
+
+// @public
+export const collectWithContract: <
+  TInputSchema extends z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny,
+>(options: {
+  collectorRegistry: CollectorRegistry;
+  collectorId: string;
+  contract: CollectorContract<TInputSchema, TOutputSchema>;
+  entity: Entity;
+  input: unknown;
+}) => Promise<z.infer<TOutputSchema>>;
 
 // @public
 export type ComparisonOperator = {
@@ -55,6 +100,19 @@ export type RangeOperator = {
   operator: '-';
   values: [number, number];
 };
+
+// @public
+export interface ScorecardCollectorsExtensionPoint {
+  // (undocumented)
+  addCollector(...collectors: Array<Collector>): void;
+  // (undocumented)
+  getCollector(collectorId: string): Collector;
+  // (undocumented)
+  hasCollector(collectorId: string): boolean;
+}
+
+// @public
+export const scorecardCollectorsExtensionPoint: ExtensionPoint<ScorecardCollectorsExtensionPoint>;
 
 // @public
 export interface ScorecardMetricsExtensionPoint {
