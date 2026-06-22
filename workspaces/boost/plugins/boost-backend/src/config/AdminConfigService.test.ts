@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  DatabaseService,
-  LoggerService,
-} from '@backstage/backend-plugin-api';
+import { DatabaseService, LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import { AdminConfigService } from './AdminConfigService';
 
@@ -63,8 +60,25 @@ function createMockKnex() {
         return rows.find(r => r.key === filterKey);
       }),
       select: jest.fn(async () => [...rows]),
-      insert: jest.fn(async (row: (typeof rows)[0]) => {
-        rows.push({ ...row });
+      insert: jest.fn((row: (typeof rows)[0]) => {
+        const pendingRow = { ...row };
+        const conflict = {
+          merge: jest.fn(async (updates: Partial<(typeof rows)[0]>) => {
+            const idx = rows.findIndex(r => r.key === pendingRow.key);
+            if (idx >= 0) {
+              Object.assign(rows[idx], updates);
+            } else {
+              rows.push(pendingRow);
+            }
+          }),
+        };
+        return {
+          onConflict: jest.fn(() => conflict),
+          then: async (resolve: (v: void) => void) => {
+            rows.push(pendingRow);
+            resolve(undefined as unknown as void);
+          },
+        };
       }),
       update: jest.fn(async (updates: Partial<(typeof rows)[0]>) => {
         const idx = rows.findIndex(r => r.key === filterKey);
@@ -177,6 +191,19 @@ describe('AdminConfigService', () => {
       expect(rawRow).toBeDefined();
       const rawValue = JSON.parse(rawRow!.value);
       expect(rawValue).not.toBe('my-secret-token');
+    });
+
+    it('updates an existing override via upsert', async () => {
+      await service.setOverride(
+        'boost.model.baseUrl',
+        'https://example.com/v1',
+      );
+      await service.setOverride(
+        'boost.model.baseUrl',
+        'https://example.com/v2',
+      );
+      const value = await service.getOverride('boost.model.baseUrl');
+      expect(value).toBe('https://example.com/v2');
     });
 
     it('rejects sensitive field write without encryption secret', async () => {

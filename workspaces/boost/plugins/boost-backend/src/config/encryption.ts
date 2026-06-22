@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+} from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
@@ -27,8 +32,6 @@ const AUTH_TAG_LENGTH = 16;
  * @internal
  */
 function deriveKey(secret: string): Buffer {
-  // Use dynamic import-style for crypto to keep it synchronous
-  const { createHash } = require('crypto');
   return createHash('sha256').update(secret).digest();
 }
 

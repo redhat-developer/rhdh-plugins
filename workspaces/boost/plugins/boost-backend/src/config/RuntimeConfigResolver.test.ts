@@ -207,8 +207,9 @@ describe('RuntimeConfigResolver', () => {
       // Second call should use cache
       await resolver.resolve('boost.model.baseUrl');
 
-      // getAllOverrides should only be called once (cache hit on second)
-      expect(adminConfigService.getAllOverrides).toHaveBeenCalledTimes(1);
+      // getAllOverrides called twice: once to build cache, once on cache
+      // hit to fetch sensitive fields fresh from DB
+      expect(adminConfigService.getAllOverrides).toHaveBeenCalledTimes(2);
     });
   });
 

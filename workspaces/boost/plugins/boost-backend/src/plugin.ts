@@ -20,8 +20,12 @@ import {
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import { boostPermissions } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import {
+  boostAdminPermission,
+  boostPermissions,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
   boostProviderExtensionPoint,
@@ -29,6 +33,7 @@ import {
 import { Router } from 'express';
 import { AdminConfigService } from './config/AdminConfigService';
 import { RuntimeConfigResolver } from './config/RuntimeConfigResolver';
+import { isSensitiveField, type BoostConfigKey } from './config/schemas';
 import { ProviderManager } from './provider/ProviderManager';
 import { validateSecurityMode } from './middleware/security';
 
@@ -114,6 +119,7 @@ export const boostPlugin = createBackendPlugin({
         cache,
         database,
         httpRouter,
+        httpAuth,
         permissions: _permissions,
         permissionsRegistry,
       }) {
@@ -185,17 +191,35 @@ export const boostPlugin = createBackendPlugin({
         });
 
         // Config status endpoint (for admin onboarding)
-        router.get('/config/status', async (_req, res) => {
+        router.get('/config/status', async (req, res) => {
           try {
+            const credentials = await httpAuth.credentials(req);
+            const decision = await _permissions.authorize(
+              [{ permission: boostAdminPermission }],
+              { credentials },
+            );
+            if (decision[0].result !== AuthorizeResult.ALLOW) {
+              res.status(403).json({ status: 'error', message: 'Forbidden' });
+              return;
+            }
+
             const allConfig = await runtimeConfigResolver.resolveAll();
-            const configEntries = Object.fromEntries(allConfig);
+            const redacted: Record<string, unknown> = {};
+            for (const [key, value] of allConfig) {
+              redacted[key] = isSensitiveField(key as BoostConfigKey)
+                ? '**REDACTED**'
+                : value;
+            }
             res.json({
               status: 'ok',
               fieldCount: allConfig.size,
-              config: configEntries,
+              config: redacted,
             });
           } catch (error) {
-            res.status(500).json({ status: 'error', message: String(error) });
+            logger.error('Config status endpoint failed', error as Error);
+            res
+              .status(500)
+              .json({ status: 'error', message: 'Internal server error' });
           }
         });
 

@@ -17,8 +17,8 @@
 /**
  * Configuration schema for the boost backend plugin.
  *
- * Generated from Zod schemas in `src/config/schemas.ts`.
- * Do not edit manually — update the Zod schemas and regenerate.
+ * Mirrors the field definitions in `src/config/schemas.ts`.
+ * Keep both in sync when adding or changing config fields.
  */
 export interface Config {
   boost?: {
@@ -135,5 +135,12 @@ export interface Config {
        */
       credentials?: string;
     };
+
+    /**
+     * Secret used for encrypting sensitive config values stored in the database.
+     * Must be a high-entropy string (e.g., 32+ random characters).
+     * @visibility secret
+     */
+    encryptionSecret?: string;
   };
 }

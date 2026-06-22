@@ -21,7 +21,11 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { JsonValue } from '@backstage/types';
 import { AdminConfigService } from './AdminConfigService';
-import { boostConfigFields, type BoostConfigKey } from './schemas';
+import {
+  boostConfigFields,
+  isSensitiveField,
+  type BoostConfigKey,
+} from './schemas';
 
 /**
  * Cache key for the merged effective config.
@@ -133,10 +137,18 @@ export class RuntimeConfigResolver {
    * This is the single cache layer — no wrapper.
    */
   private async getEffectiveConfig(): Promise<Map<string, unknown>> {
-    // Check cache first
+    // Check cache first (sensitive fields are excluded from cache)
     const cached = await this.cache.get<JsonValue>(EFFECTIVE_CONFIG_CACHE_KEY);
     if (cached && typeof cached === 'object' && !Array.isArray(cached)) {
-      return new Map(Object.entries(cached as Record<string, unknown>));
+      const result = new Map(Object.entries(cached as Record<string, unknown>));
+      // Sensitive fields are never cached — fetch fresh from DB
+      const dbOverrides = await this.adminConfigService.getAllOverrides();
+      for (const [key, value] of dbOverrides) {
+        if (isSensitiveField(key as BoostConfigKey)) {
+          result.set(key, value);
+        }
+      }
+      return result;
     }
 
     // Build effective config: YAML baseline + DB overrides
@@ -156,8 +168,14 @@ export class RuntimeConfigResolver {
       effective.set(key, value);
     }
 
-    // Cache the result with 30s TTL
-    const cacheObj = Object.fromEntries(effective) as unknown as JsonValue;
+    // Exclude sensitive fields before caching
+    const cacheSafe = new Map(effective);
+    for (const key of cacheSafe.keys()) {
+      if (isSensitiveField(key as BoostConfigKey)) {
+        cacheSafe.delete(key);
+      }
+    }
+    const cacheObj = Object.fromEntries(cacheSafe) as unknown as JsonValue;
     await this.cache.set(EFFECTIVE_CONFIG_CACHE_KEY, cacheObj, {
       ttl: DEFAULT_CACHE_TTL_MS,
     });

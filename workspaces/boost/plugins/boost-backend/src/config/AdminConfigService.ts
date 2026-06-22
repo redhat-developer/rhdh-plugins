@@ -84,7 +84,10 @@ export class AdminConfigService {
         const knex = await this.database.getClient();
         await this.ensureTable(knex);
         return knex;
-      })();
+      })().catch(err => {
+        this.knexPromise = undefined;
+        throw err;
+      });
     }
     return this.knexPromise;
   }
@@ -125,11 +128,13 @@ export class AdminConfigService {
     let rawValue: unknown = JSON.parse(row.value);
 
     // Decrypt sensitive fields
-    if (
-      isSensitiveField(key) &&
-      typeof rawValue === 'string' &&
-      this.encryptionSecret
-    ) {
+    if (isSensitiveField(key) && typeof rawValue === 'string') {
+      if (!this.encryptionSecret) {
+        this.logger.warn(
+          `Cannot decrypt sensitive field "${key}" — no encryption secret configured`,
+        );
+        return undefined;
+      }
       rawValue = decryptValue(rawValue, this.encryptionSecret);
     }
 
@@ -154,9 +159,14 @@ export class AdminConfigService {
       if (
         key in boostConfigFields &&
         isSensitiveField(key) &&
-        typeof rawValue === 'string' &&
-        this.encryptionSecret
+        typeof rawValue === 'string'
       ) {
+        if (!this.encryptionSecret) {
+          this.logger.warn(
+            `Cannot decrypt sensitive field "${key}" — no encryption secret configured`,
+          );
+          continue;
+        }
         rawValue = decryptValue(rawValue, this.encryptionSecret);
       }
 
@@ -203,25 +213,19 @@ export class AdminConfigService {
     const knex = await this.getDb();
     const now = new Date().toISOString();
 
-    // Upsert: insert or update
-    const existing = await knex<AdminConfigRow>(TABLE_NAME)
-      .where({ key })
-      .first();
-
-    if (existing) {
-      await knex<AdminConfigRow>(TABLE_NAME).where({ key }).update({
-        value: serialized,
-        schema_version: BOOST_CONFIG_SCHEMA_VERSION,
-        updated_at: now,
-      });
-    } else {
-      await knex<AdminConfigRow>(TABLE_NAME).insert({
+    await knex<AdminConfigRow>(TABLE_NAME)
+      .insert({
         key,
         value: serialized,
         schema_version: BOOST_CONFIG_SCHEMA_VERSION,
         updated_at: now,
+      })
+      .onConflict('key')
+      .merge({
+        value: serialized,
+        schema_version: BOOST_CONFIG_SCHEMA_VERSION,
+        updated_at: now,
       });
-    }
 
     this.logger.info(`Config override set: ${key}`);
   }
