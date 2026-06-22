@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.0.7
+
+### Patch Changes
+
+- 5e3e7b3: bumps ip-address, ws, axios and shell-quote in Orchestrator to resolve CVEs
+- Updated dependencies [5e3e7b3]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.0.6
+
 ## 1.0.6
 
 ### Patch Changes
