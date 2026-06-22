@@ -29,6 +29,7 @@ import {
 } from '../__fixtures__/mockProviders';
 import request from 'supertest';
 import type { Server } from 'http';
+import type { Entity } from '@backstage/catalog-model';
 
 /**
  * Backend module that registers mock metric providers via the extension point,
@@ -68,22 +69,50 @@ const BASE_CONFIG = {
   },
 };
 
+function startScorecardBackend(options?: {
+  config?: object;
+  entities?: Entity[];
+}) {
+  return startTestBackend({
+    features: [
+      scorecardPlugin,
+      testMetricsModule,
+      mockServices.rootConfig.factory({ data: options?.config ?? BASE_CONFIG }),
+      mockServices.auth.factory(),
+      mockServices.httpAuth.factory({
+        defaultCredentials: mockCredentials.user('user:default/test'),
+      }),
+      catalogServiceMock.factory({ entities: options?.entities ?? [] }),
+    ],
+  });
+}
+
+const TEST_ENTITIES: Entity[] = [
+  {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'User',
+    metadata: { name: 'test', namespace: 'default' },
+    spec: { profile: {}, memberOf: [] },
+    relations: [],
+  },
+  {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      name: 'my-service',
+      namespace: 'default',
+      annotations: { 'mock/key': 'true' },
+    },
+    spec: { type: 'service', owner: 'user:default/test' },
+    relations: [{ type: 'ownedBy', targetRef: 'user:default/test' }],
+  },
+];
+
 describe('scorecard plugin (startTestBackend)', () => {
   let server: Server;
 
   beforeAll(async () => {
-    ({ server } = await startTestBackend({
-      features: [
-        scorecardPlugin,
-        testMetricsModule,
-        mockServices.rootConfig.factory({ data: BASE_CONFIG }),
-        mockServices.auth.factory(),
-        mockServices.httpAuth.factory({
-          defaultCredentials: mockCredentials.user('user:default/test'),
-        }),
-        catalogServiceMock.factory({ entities: [] }),
-      ],
-    }));
+    ({ server } = await startScorecardBackend({ entities: TEST_ENTITIES }));
   });
 
   afterAll(() => {
@@ -169,6 +198,24 @@ describe('scorecard plugin (startTestBackend)', () => {
   });
 
   describe('GET /api/scorecard/metrics/catalog/:kind/:namespace/:name', () => {
+    it('returns metrics for an existing entity', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/metrics/catalog/component/default/my-service',
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+
+    it('filters entity metrics by metricIds', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/metrics/catalog/component/default/my-service?metricIds=github.open_prs',
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+
     it('returns 404 when entity does not exist in the catalog', async () => {
       const res = await request(server).get(
         '/api/scorecard/metrics/catalog/component/default/non-existent',
@@ -178,13 +225,50 @@ describe('scorecard plugin (startTestBackend)', () => {
     });
   });
 
-  describe('GET /api/scorecard/aggregations/:aggregationId (auth edge cases)', () => {
+  describe('GET /api/scorecard/aggregations/:aggregationId', () => {
+    it('returns aggregated metrics for an authenticated user with owned entities', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/aggregations/github.open_prs',
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          id: 'github.open_prs',
+          status: 'success',
+          metadata: expect.objectContaining({
+            aggregationType: 'statusGrouped',
+            title: 'GitHub Open PRs',
+            type: 'number',
+          }),
+          result: expect.objectContaining({
+            total: 0,
+            entitiesConsidered: 0,
+            calculationErrorCount: 0,
+            values: [
+              { count: 0, name: 'error' },
+              { count: 0, name: 'warning' },
+              { count: 0, name: 'success' },
+            ],
+          }),
+        }),
+      );
+    });
+
     it('returns 401 when request has no user credentials', async () => {
       const res = await request(server)
         .get('/api/scorecard/aggregations/github.open_prs')
         .set('Authorization', mockCredentials.none.header());
 
       expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for non-existent aggregation', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/aggregations/non.existent',
+      );
+
+      expect(res.status).toBe(404);
     });
   });
 });
@@ -199,26 +283,22 @@ describe('scorecard plugin with aggregationKPIs config', () => {
         myCustomKpi: {
           title: 'Custom KPI',
           description: 'A custom KPI based on open PRs',
-          type: 'statusGrouped',
+          type: 'average',
           metricId: 'github.open_prs',
+          options: {
+            statusScores: {
+              error: 0,
+              warning: 50,
+              success: 100,
+            },
+          },
         },
       },
     },
   };
 
   beforeAll(async () => {
-    ({ server } = await startTestBackend({
-      features: [
-        scorecardPlugin,
-        testMetricsModule,
-        mockServices.rootConfig.factory({ data: KPI_CONFIG }),
-        mockServices.auth.factory(),
-        mockServices.httpAuth.factory({
-          defaultCredentials: mockCredentials.user('user:default/test'),
-        }),
-        catalogServiceMock.factory({ entities: [] }),
-      ],
-    }));
+    ({ server } = await startScorecardBackend({ config: KPI_CONFIG }));
   });
 
   afterAll(() => {
@@ -235,7 +315,7 @@ describe('scorecard plugin with aggregationKPIs config', () => {
       expect.objectContaining({
         title: 'Custom KPI',
         description: 'A custom KPI based on open PRs',
-        aggregationType: 'statusGrouped',
+        aggregationType: 'average',
       }),
     );
   });
