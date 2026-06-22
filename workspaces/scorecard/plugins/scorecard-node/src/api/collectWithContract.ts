@@ -20,10 +20,10 @@ import type { z } from 'zod';
 import type { CollectorRegistry } from './Collector';
 
 /**
- * Provider-side collector contract expected by a metric provider.
+ * Collector contract expected by caller.
  * @public
  */
-export type ProviderCollectorContract<
+export type CollectorContract<
   TInputSchema extends z.ZodTypeAny,
   TOutputSchema extends z.ZodTypeAny,
 > = {
@@ -33,10 +33,10 @@ export type ProviderCollectorContract<
 
 /**
  * Resolve collector by id and execute collect with bidirectional schema checks:
- * - provider input schema
+ * - contract input schema
  * - collector input schema
  * - collector output schema
- * - provider output schema
+ * - contract output schema
  * @public
  */
 export const collectWithContract = async <
@@ -45,18 +45,18 @@ export const collectWithContract = async <
 >(options: {
   collectorRegistry: CollectorRegistry;
   collectorId: string;
-  contract: ProviderCollectorContract<TInputSchema, TOutputSchema>;
+  contract: CollectorContract<TInputSchema, TOutputSchema>;
   entity: Entity;
   input: unknown;
 }): Promise<z.infer<TOutputSchema>> => {
   const collector = options.collectorRegistry.getCollector(options.collectorId);
 
-  const providerInput = options.contract.inputSchema.safeParse(options.input);
-  if (!providerInput.success) {
+  const contractInput = options.contract.inputSchema.safeParse(options.input);
+  if (!contractInput.success) {
     throw new InputError(
       `Invalid input for collector "${
         options.collectorId
-      }" expected by provider: ${providerInput.error.issues
+      }": input does not satisfy contract input schema: ${contractInput.error.issues
         .map(issue => issue.message)
         .join('; ')}`,
     );
@@ -64,7 +64,7 @@ export const collectWithContract = async <
 
   const collectorInput = collector
     .getInputSchema()
-    .safeParse(providerInput.data);
+    .safeParse(contractInput.data);
   if (!collectorInput.success) {
     throw new InputError(
       `Input does not satisfy collector "${
@@ -91,18 +91,18 @@ export const collectWithContract = async <
     );
   }
 
-  const providerOutput = options.contract.outputSchema.safeParse(
+  const contractOutput = options.contract.outputSchema.safeParse(
     collectorOutput.data,
   );
-  if (!providerOutput.success) {
+  if (!contractOutput.success) {
     throw new InputError(
       `Collector "${
         options.collectorId
-      }" output does not satisfy provider expected schema: ${providerOutput.error.issues
+      }" output does not satisfy contract output schema: ${contractOutput.error.issues
         .map(issue => issue.message)
         .join('; ')}`,
     );
   }
 
-  return providerOutput.data;
+  return contractOutput.data;
 };
