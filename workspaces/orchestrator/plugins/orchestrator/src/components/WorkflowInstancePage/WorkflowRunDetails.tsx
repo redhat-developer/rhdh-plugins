@@ -20,6 +20,7 @@ import { useAsync } from 'react-use';
 import { CopyTextButton, Link } from '@backstage/core-components';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
+import { EntityRefLink } from '@backstage/plugin-catalog-react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -146,7 +147,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={12} key="Version">
+      <Grid item md={7} key="Version">
         <AboutField label={t('workflow.fields.version')}>
           <Typography variant="subtitle2" component="div">
             <b>
@@ -155,6 +156,20 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
                 : VALUE_UNAVAILABLE}
             </b>
           </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={5} key="Run by">
+        <AboutField label={t('workflow.fields.runBy')}>
+          {details.initiatorEntity ? (
+            <EntityRefLink
+              entityRef={details.initiatorEntity}
+              defaultKind="user"
+            />
+          ) : (
+            <Typography variant="subtitle2" component="div">
+              <b>{VALUE_UNAVAILABLE}</b>
+            </Typography>
+          )}
         </AboutField>
       </Grid>
       <Grid item md={12} key="Description">

@@ -70,6 +70,10 @@ import {
   workflowRouteRef,
   workflowRunsRouteRef,
 } from '../../routes';
+import {
+  getInstanceVariables,
+  hasInstanceVariables,
+} from '../../utils/instanceVariables';
 import { Trans } from '../Trans';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
@@ -80,20 +84,6 @@ import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusInd
 import { VariablesDialog } from '../WorkflowInstancePage/VariablesDialog';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowLogsDialog } from '../WorkflowInstancePage/WorkflowLogsDialog';
-
-const getInstanceVariables = (
-  workflowdata: WorkflowDataDTO | undefined,
-): WorkflowDataDTO => {
-  if (!workflowdata) {
-    return {};
-  }
-
-  const instanceVariables = { ...workflowdata };
-  if (Object.prototype.hasOwnProperty.call(instanceVariables, 'result')) {
-    delete instanceVariables.result;
-  }
-  return instanceVariables;
-};
 
 const EntityRefTableCell = ({
   entityRef,
@@ -260,16 +250,21 @@ export const WorkflowRunsTabContent = ({
 
   const handleViewRunVariables = useCallback(
     async (instanceId: string) => {
-      setIsVariablesDialogOpen(true);
       setVariablesLoading(true);
       setVariablesError(undefined);
       setInstanceVariables({});
 
       try {
         const response = await orchestratorApi.getInstance(instanceId);
-        setInstanceVariables(getInstanceVariables(response.data.workflowdata));
+        const variables = getInstanceVariables(response.data.workflowdata);
+        if (!hasInstanceVariables(response.data.workflowdata)) {
+          return;
+        }
+        setInstanceVariables(variables);
+        setIsVariablesDialogOpen(true);
       } catch (err) {
         setVariablesError(err as Error);
+        setIsVariablesDialogOpen(true);
       } finally {
         setVariablesLoading(false);
       }
@@ -634,7 +629,10 @@ export const WorkflowRunsTabContent = ({
     return [
       rowData => ({
         icon: () => <DescriptionIcon />,
-        tooltip: t('table.actions.viewRunVariables'),
+        tooltip: rowData.hasVariables
+          ? t('table.actions.viewRunVariables')
+          : t('messages.noVariablesFound'),
+        disabled: !rowData.hasVariables,
         onClick: () => handleViewRunVariables(rowData.id),
       }),
     ];

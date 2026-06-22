@@ -104,6 +104,7 @@ export const orchestratorMessages = {
       averageDuration: 'Average duration',
       description: 'Description',
       started: 'Started',
+      runBy: 'Run by',
       workflowId: 'Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
       version: 'Version',

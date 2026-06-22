@@ -216,6 +216,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.fields.entity': 'エンティティ',
     'workflow.fields.runStatus': '実行ステータス',
     'workflow.fields.started': '開始済み',
+    'workflow.fields.runBy': '実行者',
     'workflow.fields.version': 'バージョン',
     'workflow.fields.workflow': 'ワークフロー',
     'workflow.fields.workflowId': '実行 ID',

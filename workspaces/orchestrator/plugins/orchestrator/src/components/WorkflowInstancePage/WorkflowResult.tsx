@@ -31,7 +31,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
@@ -64,6 +63,12 @@ import {
 import { WorkflowLogsDialog } from './WorkflowLogsDialog';
 
 const useStyles = makeStyles()(theme => ({
+  cardContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    width: '100%',
+  },
   outputGrid: {
     '& h2': {
       textTransform: 'none',
@@ -340,7 +345,7 @@ const NextWorkflows = ({
       : t('run.suggestedNextWorkflows');
 
   return (
-    <Grid item xs={12} className={classes.outputGrid}>
+    <Box className={classes.outputGrid}>
       <AboutField label={sectionLabel}>
         <List dense disablePadding>
           {nextWorkflows.map(item => (
@@ -365,7 +370,7 @@ const NextWorkflows = ({
         open={!!currentOpenedWorkflowDescriptionModalID}
         onClose={closeWorkflowDescriptionModal}
       />
-    </Grid>
+    </Box>
   );
 };
 
@@ -405,7 +410,7 @@ const WorkflowOutputs = ({
   return (
     <>
       {links?.length > 0 && (
-        <Grid item md={12} key="__links" className={classes.links}>
+        <Box key="__links" className={classes.links}>
           <AboutField label={t('common.links')}>
             <List dense disablePadding>
               {links
@@ -422,11 +427,11 @@ const WorkflowOutputs = ({
                 })}
             </List>
           </AboutField>
-        </Grid>
+        </Box>
       )}
 
       {(Object.keys(valuesAsObject).length > 0 || markdowns?.length > 0) && (
-        <Grid item md={12} key="non__links" className={classes.values}>
+        <Box key="non__links" className={classes.values}>
           <AboutField label={t('common.values')}>
             {markdowns?.length > 0 &&
               markdowns.map(item => (
@@ -439,7 +444,7 @@ const WorkflowOutputs = ({
               <StructuredMetadataTable dense metadata={valuesAsObject} />
             )}
           </AboutField>
-        </Grid>
+        </Box>
       )}
     </>
   );
@@ -451,6 +456,7 @@ export const WorkflowResult: React.FC<{
   cardClassName?: string;
 }> = ({ instance, className, cardClassName }) => {
   const { t } = useTranslation();
+  const { classes } = useStyles();
   const result = instance.workflowdata?.result;
   const [isLogsDialogOpen, toggleLogsDialog] = useReducer(
     state => !state,
@@ -468,7 +474,11 @@ export const WorkflowResult: React.FC<{
     <>
       <InfoCard
         title={t('run.results')}
-        subheader={
+        divider={false}
+        className={className}
+        cardClassName={cardClassName}
+      >
+        <Box className={classes.cardContent}>
           <ResultMessage
             status={instance.state}
             error={instance.error}
@@ -476,21 +486,16 @@ export const WorkflowResult: React.FC<{
             executionSummary={instance.executionSummary}
             end={instance.end}
           />
-        }
-        divider={false}
-        className={className}
-        cardClassName={cardClassName}
-      >
-        <Divider sx={{ '&&': { mb: 2 } }} />
-        {logsEnabled && (
-          <>
-            <Box sx={{ ml: 2 }}>
+          {logsEnabled && (
+            <>
+              <Divider />
               <Button
                 variant="text"
                 color="primary"
                 onClick={toggleLogsDialog}
                 disableRipple
                 sx={{
+                  alignSelf: 'flex-start',
                   textTransform: 'none',
                   padding: 0,
                   minWidth: 'auto',
@@ -499,17 +504,15 @@ export const WorkflowResult: React.FC<{
               >
                 {t('run.logs.viewLogs')}
               </Button>
-            </Box>
-            <Divider sx={{ '&&': { my: 2 } }} />
-          </>
-        )}
-        <Grid container alignContent="flex-start" spacing="1rem">
+              <Divider />
+            </>
+          )}
           <NextWorkflows
             instanceId={instance.id}
             nextWorkflows={result?.nextWorkflows}
           />
           <WorkflowOutputs outputs={result?.outputs} />
-        </Grid>
+        </Box>
       </InfoCard>
       <WorkflowLogsDialog
         open={isLogsDialogOpen}

@@ -31,7 +31,6 @@ import {
   orchestratorAdminViewPermission,
   orchestratorInstanceAdminViewPermission,
   ProcessInstanceDTO,
-  WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api/api';
@@ -39,6 +38,10 @@ import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useWorkflowInstanceCardHeightMode } from '../../hooks/useWorkflowInstanceCardHeightMode';
 import { formatDuration } from '../../utils/DurationUtils';
+import {
+  getInstanceVariables,
+  hasInstanceVariables,
+} from '../../utils/instanceVariables';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
@@ -73,6 +76,7 @@ export const mapProcessInstanceToDetails = (
     version: instance.version,
     initiatorEntity: instance.initiatorEntity,
     targetEntity: instance.targetEntity,
+    hasVariables: hasInstanceVariables(instance.workflowdata),
   };
 };
 
@@ -120,16 +124,7 @@ export const WorkflowInstancePageContent: React.FC<{
   );
 
   const workflowdata = instance?.workflowdata;
-  let instanceVariables: WorkflowDataDTO = {};
-  if (workflowdata) {
-    instanceVariables = {
-      /* Since we are about to remove just the top-level property, shallow copy of the object is sufficient */
-      ...workflowdata,
-    };
-    if (instanceVariables.hasOwnProperty('result')) {
-      delete instanceVariables.result;
-    }
-  }
+  const instanceVariables = getInstanceVariables(workflowdata);
   const workflowId = instance.processId;
   const instanceId = instance.id;
   const {

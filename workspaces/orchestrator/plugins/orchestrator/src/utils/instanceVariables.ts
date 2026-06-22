@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
+import { WorkflowDataDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  startIso?: string;
-  duration: string;
-  description?: string;
-  version?: string;
-  businessKey?: string;
-  initiatorEntity?: string;
-  targetEntity?: string;
-  hasVariables?: boolean;
+export const getInstanceVariables = (
+  workflowdata: WorkflowDataDTO | undefined,
+): WorkflowDataDTO => {
+  if (!workflowdata) {
+    return {};
+  }
+
+  const instanceVariables = { ...workflowdata };
+  if (Object.prototype.hasOwnProperty.call(instanceVariables, 'result')) {
+    delete instanceVariables.result;
+  }
+  return instanceVariables;
 };
+
+export const hasInstanceVariables = (
+  workflowdata: WorkflowDataDTO | undefined,
+): boolean => Object.keys(getInstanceVariables(workflowdata)).length > 0;

@@ -30,19 +30,21 @@ import { useIsDarkMode } from '../../utils/isDarkMode';
 import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
+export type VariablesDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  instanceVariables: WorkflowDataDTO;
+  loading?: boolean;
+  error?: Error;
+};
+
 export const VariablesDialog = ({
   open,
   onClose,
   instanceVariables,
   loading,
   error,
-}: {
-  open: boolean;
-  onClose: () => void;
-  instanceVariables: WorkflowDataDTO;
-  loading?: boolean;
-  error?: Error;
-}) => {
+}: VariablesDialogProps) => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const hasVariables = Object.keys(instanceVariables).length > 0;

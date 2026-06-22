@@ -220,6 +220,7 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.entity': 'Entität',
     'workflow.fields.runStatus': 'Ausführungsstatus',
     'workflow.fields.started': 'Begonnen',
+    'workflow.fields.runBy': 'Run by',
     'workflow.fields.version': 'Version',
     'workflow.fields.workflow': 'Workflow',
     'workflow.fields.workflowId': 'Lauf-ID',

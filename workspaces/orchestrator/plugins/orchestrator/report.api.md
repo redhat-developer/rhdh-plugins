@@ -158,6 +158,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.fields.runStatus': string;
     readonly 'workflow.fields.started': string;
     readonly 'workflow.fields.workflowStatus': string;
+    readonly 'workflow.fields.runBy': string;
     readonly 'workflow.fields.workflow': string;
     readonly 'workflow.fields.averageDuration': string;
     readonly 'workflow.fields.workflowIdCopied': string;
