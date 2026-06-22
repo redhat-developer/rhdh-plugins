@@ -7,7 +7,7 @@ The augment plugin authenticates to Kagenti using a single shared service-accoun
 ## What Changes
 
 - New `TokenExchangeManager` class implementing RFC 8693 token exchange with per-user caching, concurrent request deduplication, streaming-aware lifetime management, and fallback-safe error handling
-- Extended `KagentiConfigLoader` to parse optional `tokenExchange` config block (`enabled`, `audience`, `userTokenHeader`)
+- Extended `KagentiConfigLoader` to parse optional `tokenExchange` config block (`enabled`, `audience`, `userTokenHeader`, `fallbackToServiceAccount`)
 - Extended `requestCore.ts` (`doRequest`, `streamRequest`, `requestWithRetry`) to attempt per-user token exchange first, falling back to the shared service-account token on any failure
 - Widened `KagentiApiClient` context and `AugmentProvider` interface to carry the user's bearer token alongside user ref
 - Route-level extraction of the user's OIDC token from a configurable request header (default: `x-user-oidc-token`)
@@ -35,5 +35,5 @@ The augment plugin authenticates to Kagenti using a single shared service-accoun
 - `plugins/augment-backend/src/router.ts` — dynamic header getter from provider config
 - `plugins/augment-backend/src/routes/chatRoutes.ts` — OIDC token extraction in chat handlers
 - `plugins/augment-backend/src/routes/kagentiRoutes.ts` — OIDC token extraction in Kagenti middleware
-- No frontend changes — OIDC token arrives via infrastructure (auth proxy) or future frontend work
+- **Scope: backend-only** — this change implements header-based OIDC token acquisition. Frontend OIDC discovery via `useApiHolder()` (modeled on the orchestrator's `useOrchestratorAuth.ts` pattern) is designed as a follow-up change.
 - No changes to `ResponsesApiProvider`, `providers/llamastack/`, or `KeycloakTokenManager`

@@ -13,7 +13,8 @@ The system SHALL support an optional `tokenExchange` configuration block nested 
   - The Kagenti API client ID (e.g., `kagenti-api`) — the typical production value, targeting the Keycloak client that represents the Kagenti service
   - The RHDH/Backstage client ID (the value of `auth.clientId`) — the default when no explicit audience is set
   - Any other Keycloak client ID that has token exchange permissions granted for the requesting client
-- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token when frontend API holder discovery is not available (fallback path)
+- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token
+- `fallbackToServiceAccount` (boolean, default: `true`) — when `true`, exchange failures fall back to the service-account token silently with a warning log. When `false` (strict mode), exchange failures result in an error response (401 or 502) instead of falling back.
 
 The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `auth.clientSecret` for the exchange request. No new top-level config keys SHALL be introduced.
 
@@ -88,31 +89,50 @@ The `TokenExchangeManager` SHALL support streaming-aware token lifetime manageme
 - **WHEN** a streaming request is using an exchanged token and the token's TTL expires
 - **THEN** the system SHALL NOT evict the token until the stream completes
 
-### Requirement: Graceful fallback to service-account token
+### Requirement: Configurable fallback to service-account token
 
-The system SHALL fall back to the existing `KeycloakTokenManager` service-account token whenever per-user token exchange cannot complete. Fallback SHALL occur silently with a warning log — requests SHALL NOT fail due to exchange issues.
+The system SHALL support configurable fallback behavior via the `fallbackToServiceAccount` config option.
 
-#### Scenario: No user OIDC token from any source
+**When `fallbackToServiceAccount` is `true` (default):** The system SHALL fall back to the existing `KeycloakTokenManager` service-account token whenever per-user token exchange cannot complete. Fallback SHALL occur with a warning log — requests SHALL NOT fail due to exchange issues.
 
-- **WHEN** `tokenExchange.enabled` is `true` but no OIDC token was provided by the frontend and the configured header is not present on the request
+**When `fallbackToServiceAccount` is `false` (strict mode):** The system SHALL return an error response when per-user token exchange cannot complete. This mode is intended for environments with strict security postures where silently downgrading to a shared service-account identity is not acceptable.
+
+#### Scenario: No user OIDC token — permissive mode
+
+- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `true` and no OIDC token is present in the configured header
 - **THEN** the system SHALL use the service-account token and log a debug message
 
-#### Scenario: Exchange call fails with network error
+#### Scenario: No user OIDC token — strict mode
 
-- **WHEN** the exchange POST to Keycloak fails due to network error or timeout
+- **WHEN** `tokenExchange.enabled` is `true` and `fallbackToServiceAccount` is `false` and no OIDC token is present in the configured header
+- **THEN** the system SHALL return a 401 error indicating that per-user authentication is required
+
+#### Scenario: Exchange call fails with network error — permissive mode
+
+- **WHEN** `fallbackToServiceAccount` is `true` and the exchange POST to Keycloak fails due to network error or timeout
 - **THEN** the system SHALL log a warning and use the service-account token
 
-#### Scenario: IdP returns unsupported_grant_type
+#### Scenario: Exchange call fails with network error — strict mode
+
+- **WHEN** `fallbackToServiceAccount` is `false` and the exchange POST to Keycloak fails due to network error or timeout
+- **THEN** the system SHALL return a 502 error with details about the exchange failure
+
+#### Scenario: IdP returns unsupported_grant_type — permissive mode
 
 > **Note:** Modern Keycloak versions enable `token-exchange-standard:v2` by default, making this scenario unlikely in typical deployments. It remains as a defensive fallback for older Keycloak versions, realm/client-level policies that restrict token exchange permissions, or non-Keycloak OIDC providers that do not support RFC 8693.
 
-- **WHEN** the IdP returns 400 with `error: unsupported_grant_type`
+- **WHEN** `fallbackToServiceAccount` is `true` and the IdP returns 400 with `error: unsupported_grant_type`
 - **THEN** the system SHALL log a warning and use the service-account token
+
+#### Scenario: IdP returns unsupported_grant_type — strict mode
+
+- **WHEN** `fallbackToServiceAccount` is `false` and the IdP returns 400 with `error: unsupported_grant_type`
+- **THEN** the system SHALL return a 502 error indicating the IdP does not support token exchange
 
 #### Scenario: Exchanged token rejected with 401
 
 - **WHEN** Kagenti returns 401 for a request using an exchanged token
-- **THEN** the system SHALL clear both the per-user exchanged token cache AND the service-account token cache, then retry with a fresh token
+- **THEN** the system SHALL clear both the per-user exchanged token cache AND the service-account token cache, then retry with a fresh token. If the retry also fails and `fallbackToServiceAccount` is `false`, the system SHALL return a 401 error.
 
 ### Requirement: No impact on ResponsesApiProvider
 

@@ -1,16 +1,18 @@
 # Tasks: Per-User OAuth2 Token Exchange for Kagenti Provider
 
+> **Scope:** This change covers backend-only implementation (header-based OIDC token acquisition). Frontend OIDC discovery via `useApiHolder()` is a planned follow-up change.
+
 ## 1. Configuration Schema
 
-- [ ] 1.1 Add optional `tokenExchange` block to `plugins/augment-backend/config.d.ts` under `augment.kagenti.auth` with `enabled` (boolean), `audience` (string), and `userTokenHeader` (string)
-- [ ] 1.2 Extend `KagentiConfig.auth` type in `plugins/augment-backend/src/providers/kagenti/config/KagentiConfigLoader.ts` with parsed `tokenExchange` fields (defaults: enabled=false, audience=clientId, userTokenHeader='x-user-oidc-token')
+- [ ] 1.1 Add optional `tokenExchange` block to `plugins/augment-backend/config.d.ts` under `augment.kagenti.auth` with `enabled` (boolean), `audience` (string), `userTokenHeader` (string), and `fallbackToServiceAccount` (boolean)
+- [ ] 1.2 Extend `KagentiConfig.auth` type in `plugins/augment-backend/src/providers/kagenti/config/KagentiConfigLoader.ts` with parsed `tokenExchange` fields (defaults: enabled=false, audience=clientId, userTokenHeader='x-user-oidc-token', fallbackToServiceAccount=true)
 
 ## 2. Token Exchange Manager
 
 - [ ] 2.1 Create `plugins/augment-backend/src/providers/kagenti/client/TokenExchangeManager.ts` implementing RFC 8693 exchange with per-user caching keyed by user identity
 - [ ] 2.2 Implement concurrent request deduplication — in-flight exchange for same user shared across waiting callers
 - [ ] 2.3 Implement streaming-aware token lifetime — hold reference preventing eviction during active streams
-- [ ] 2.4 Implement graceful error handling — catch exchange failures (network, 400 unsupported_grant_type, Keycloak errors), log warning, return null to signal fallback
+- [ ] 2.4 Implement configurable error handling — when `fallbackToServiceAccount` is `true`, catch exchange failures and return null to signal fallback with warning log. When `false` (strict mode), throw with appropriate error (401 for missing token, 502 for exchange failure) so the request fails instead of falling back.
 
 ## 3. Request Core Integration
 
@@ -37,6 +39,6 @@
 ## 6. Verification
 
 - [ ] 6.1 Verify `npx tsc --noEmit` passes clean with all changes
-- [ ] 6.2 Write unit tests for `TokenExchangeManager` — exchange execution, caching, concurrent dedup, fallback on error, streaming lifetime, clearUserCache/clearAllCache
+- [ ] 6.2 Write unit tests for `TokenExchangeManager` — exchange execution, caching, concurrent dedup, fallback on error, strict mode error propagation, streaming lifetime, clearUserCache/clearAllCache
 - [ ] 6.3 Verify backward compatibility — behavior identical with `tokenExchange` absent from config
 - [ ] 6.4 Verify `ResponsesApiProvider` and Llama Stack paths are completely unaffected
