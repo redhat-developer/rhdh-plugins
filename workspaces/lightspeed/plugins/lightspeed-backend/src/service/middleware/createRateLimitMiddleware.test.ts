@@ -58,6 +58,38 @@ describe('getRateLimitMax', () => {
     expect(getRateLimitMax(config, 'expensive')).toBe(10);
     expect(getRateLimitMax(config, 'general')).toBe(50);
   });
+
+  it('treats negative values as disabled (0)', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        lightspeed: {
+          rateLimit: {
+            expensive: { max: -1 },
+            general: { max: -5 },
+          },
+        },
+      },
+    });
+
+    expect(getRateLimitMax(config, 'expensive')).toBe(0);
+    expect(getRateLimitMax(config, 'general')).toBe(0);
+  });
+
+  it('floors decimal values to integers', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        lightspeed: {
+          rateLimit: {
+            expensive: { max: 10.7 },
+            general: { max: 50.3 },
+          },
+        },
+      },
+    });
+
+    expect(getRateLimitMax(config, 'expensive')).toBe(10);
+    expect(getRateLimitMax(config, 'general')).toBe(50);
+  });
 });
 
 describe('createRateLimitMiddleware', () => {

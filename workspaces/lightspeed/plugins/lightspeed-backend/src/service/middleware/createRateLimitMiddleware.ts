@@ -38,7 +38,16 @@ export function getRateLimitMax(config: Config, tier: RateLimitTier): number {
       ? DEFAULT_EXPENSIVE_RATE_LIMIT_MAX
       : DEFAULT_GENERAL_RATE_LIMIT_MAX;
 
-  return config.getOptionalNumber(configKey) ?? defaultMax;
+  const configured = config.getOptionalNumber(configKey);
+  if (configured === undefined) {
+    return defaultMax;
+  }
+
+  if (configured <= 0) {
+    return 0; // rate limit of 0 means disabled
+  }
+
+  return Math.floor(configured);
 }
 
 export function createRateLimitMiddleware(
