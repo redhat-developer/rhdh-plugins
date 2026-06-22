@@ -32,11 +32,11 @@ const defaultCardLayout = {
 } as const;
 
 function AggregatedCardWithDeprecatedMetricIdContent() {
-  return <ScorecardHomepageCardWithProvider metricId="jira.open_issues" />;
+  return <ScorecardHomepageCardWithProvider metricId="jira.openIssues" />;
 }
 
 function AggregatedCardWithDefaultAggregationContent() {
-  return <ScorecardHomepageCardWithProvider aggregationId="github.open_prs" />;
+  return <ScorecardHomepageCardWithProvider aggregationId="github.openPrs" />;
 }
 
 function AggregatedCardWithJiraOpenIssuesContent() {

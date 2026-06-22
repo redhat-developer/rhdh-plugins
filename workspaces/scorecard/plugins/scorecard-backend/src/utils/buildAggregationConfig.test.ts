@@ -24,7 +24,7 @@ describe('buildAggregationConfig', () => {
       title: 'GitHub PRs',
       description: 'Open pull requests',
       type: aggregationTypes.statusGrouped,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPrs',
     });
 
     const result = buildAggregationConfig('openPrsKpi', { config });
@@ -34,7 +34,7 @@ describe('buildAggregationConfig', () => {
       title: 'GitHub PRs',
       description: 'Open pull requests',
       type: aggregationTypes.statusGrouped,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPrs',
     });
   });
 
@@ -43,7 +43,7 @@ describe('buildAggregationConfig', () => {
       title: 'Weighted health',
       description: 'Average across statuses',
       type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPrs',
       options: {
         statusScores: {
           error: 0,
@@ -60,7 +60,7 @@ describe('buildAggregationConfig', () => {
       title: 'Weighted health',
       description: 'Average across statuses',
       type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPrs',
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
       },
@@ -73,7 +73,7 @@ describe('buildAggregationConfig', () => {
       title: 'Weighted health',
       description: 'Average across statuses',
       type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPrs',
       options: {
         statusScores: { success: 100, warning: 50, error: 0 },
         thresholds: {

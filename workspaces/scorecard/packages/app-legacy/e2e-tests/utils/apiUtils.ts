@@ -197,7 +197,7 @@ export async function mockMetricsApi(
 
 /**
  * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
- * Use with direct navigation to /scorecard/aggregations/jira.open_issues/metrics/jira.open_issues
+ * Use with direct navigation to /scorecard/aggregations/jira.openIssues/metrics/jira.openIssues
  */
 export async function mockJiraDrillDownMissingPermission(
   page: Page,
@@ -209,22 +209,19 @@ export async function mockJiraDrillDownMissingPermission(
       status: 403,
       contentType: 'application/json',
       body: notAllowedError403Body(
-        '/metrics/jira.open_issues/catalog/aggregations',
+        '/metrics/jira.openIssues/catalog/aggregations',
       ),
     });
   });
-  await page.route(
-    entitiesDrillDownPattern('jira.open_issues'),
-    async route => {
-      await route.fulfill({
-        status: 403,
-        contentType: 'application/json',
-        body: notAllowedError403Body(
-          '/metrics/jira.open_issues/catalog/aggregations/entities?page=1&pageSize=5',
-        ),
-      });
-    },
-  );
+  await page.route(entitiesDrillDownPattern('jira.openIssues'), async route => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: notAllowedError403Body(
+        '/metrics/jira.openIssues/catalog/aggregations/entities?page=1&pageSize=5',
+      ),
+    });
+  });
 }
 
 /**
@@ -234,7 +231,7 @@ export async function mockJiraDrillDownMissingPermission(
 export async function mockScorecardEntitiesDrillDown(
   page: Page,
   responseData: object,
-  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  metricId: 'github.openPrs' | 'jira.openIssues' = 'github.openPrs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {
@@ -280,7 +277,7 @@ function sortEntitiesByStatus(
 export async function mockScorecardEntitiesDrillDownWithSort(
   page: Page,
   responseData: object,
-  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  metricId: 'github.openPrs' | 'jira.openIssues' = 'github.openPrs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {

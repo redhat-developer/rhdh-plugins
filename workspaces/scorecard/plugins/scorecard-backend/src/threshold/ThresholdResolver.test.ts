@@ -27,7 +27,7 @@ describe('ThresholdResolver', () => {
     scorecard: {
       plugins: {
         github: {
-          number_metric: {
+          numberMetric: {
             thresholds: {
               rules: [
                 { key: 'error', expression: '>100' },
@@ -42,7 +42,7 @@ describe('ThresholdResolver', () => {
   };
 
   it('uses default provider thresholds when no custom thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(
       new ConfigReader({
         scorecard: {
@@ -74,7 +74,7 @@ describe('ThresholdResolver', () => {
   });
 
   it('uses configured thresholds before provider default thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
       new MockNumberProvider('github.other_metric', 'github'),
       provider,
@@ -138,12 +138,12 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of default provider thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader({}), [provider]);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
@@ -157,12 +157,12 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of default provider thresholds when provider is unexpectedly not loaded on startup', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader({}), []);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
@@ -176,14 +176,14 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of custom provider thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
       provider,
     ]);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
@@ -226,7 +226,7 @@ describe('ThresholdResolver', () => {
         ],
       }),
     } as any;
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(mockConfig, [provider]);
 
     resolver.resolveProviderThresholds(provider);
@@ -241,10 +241,10 @@ describe('ThresholdResolver', () => {
         rules: [{ key: 'error', expression: 'INVALID' }],
       }),
     } as any;
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
 
     expect(() => new ThresholdResolver(mockConfig, [provider])).toThrow(
-      'Invalid thresholds configuration at scorecard.plugins.github.number_metric.thresholds',
+      'Invalid thresholds configuration at scorecard.plugins.github.numberMetric.thresholds',
     );
   });
 });

@@ -39,7 +39,7 @@ function createDatabaseMock(
 
 describe('AggregationsService', () => {
   const metric = {
-    id: 'github.open_prs',
+    id: 'github.openPrs',
     title: 'Open PRs',
     description: 'desc',
     type: 'number',
@@ -168,13 +168,13 @@ describe('AggregationsService', () => {
         logger,
       });
 
-      const cfg = service.getAggregationConfig('github.open_prs');
+      const cfg = service.getAggregationConfig('github.openPrs');
 
-      expect(cfg.id).toBe('github.open_prs');
-      expect(cfg.metricId).toBe('github.open_prs');
+      expect(cfg.id).toBe('github.openPrs');
+      expect(cfg.metricId).toBe('github.openPrs');
       expect(cfg.type).toBe(aggregationTypes.statusGrouped);
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('github.open_prs'),
+        expect.stringContaining('github.openPrs'),
       );
     });
 
@@ -186,7 +186,7 @@ describe('AggregationsService', () => {
               title: 'KPI title',
               description: 'KPI desc',
               type: aggregationTypes.average,
-              metricId: 'github.open_prs',
+              metricId: 'github.openPrs',
               options: {
                 statusScores: { error: 0, warning: 50, success: 100 },
               },
@@ -203,7 +203,7 @@ describe('AggregationsService', () => {
 
       const cfg = service.getAggregationConfig('myKpi');
 
-      expect(cfg.metricId).toBe('github.open_prs');
+      expect(cfg.metricId).toBe('github.openPrs');
       expect(cfg.type).toBe(aggregationTypes.average);
       expect(cfg.title).toBe('KPI title');
     });

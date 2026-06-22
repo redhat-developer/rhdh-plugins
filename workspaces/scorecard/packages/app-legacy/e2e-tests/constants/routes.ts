@@ -30,7 +30,7 @@ export const ScorecardRoutes = {
     '**/api/scorecard/aggregations/openIssuesKpi',
   /** Default aggregation when aggregationId is the metric id (no KPI entry). */
   JIRA_OPEN_ISSUES_METRIC_AGGREGATION_ROUTE:
-    '**/api/scorecard/aggregations/jira.open_issues',
+    '**/api/scorecard/aggregations/jira.openIssues',
   GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE:
-    '**/api/scorecard/aggregations/github.open_prs',
+    '**/api/scorecard/aggregations/github.openPrs',
 } as const;

@@ -26,7 +26,7 @@ import { AverageAggregationStrategy } from './AverageAggregationStrategy';
 
 describe('AverageAggregationStrategy', () => {
   const metric = {
-    id: 'github.open_prs',
+    id: 'github.openPrs',
     title: 'Open PRs',
     description: 'desc',
     type: 'number',

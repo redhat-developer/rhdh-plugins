@@ -38,7 +38,7 @@ const emptyThresholds: ThresholdConfig = { rules: [] };
 class TestBooleanBasic extends SonarQubeBasicMetricProvider<'boolean'> {
   constructor(
     client: SonarQubeClient,
-    metricId: 'quality_gate',
+    metricId: 'qualityGate',
     thresholds: ThresholdConfig,
   ) {
     super(client, metricId, thresholds, 'boolean');
@@ -59,15 +59,15 @@ const providers = [
   {
     provider: new TestBooleanBasic(
       makeClient(),
-      'quality_gate',
+      'qualityGate',
       emptyThresholds,
     ),
-    metricId: 'quality_gate',
+    metricId: 'qualityGate',
     type: 'boolean',
   },
   {
-    provider: new TestNumberBasic(makeClient(), 'open_issues', emptyThresholds),
-    metricId: 'open_issues',
+    provider: new TestNumberBasic(makeClient(), 'openIssues', emptyThresholds),
+    metricId: 'openIssues',
     type: 'number',
   },
 ];
