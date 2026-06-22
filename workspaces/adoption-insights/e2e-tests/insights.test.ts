@@ -186,7 +186,7 @@ test('Rest of the panels have no data', async () => {
   for (const title of titles) {
     const panel = getPanel(page, title);
     await expect(panel).toContainText(translations.common.noResults, {
-      timeout: 60000,
+      timeout: 15000,
     });
   }
 });
