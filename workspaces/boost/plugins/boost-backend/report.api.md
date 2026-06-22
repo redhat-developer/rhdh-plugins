@@ -78,11 +78,9 @@ export const boostConfigFields: {
     readonly description: 'System prompt for AI conversations';
   };
   readonly 'boost.security.mode': {
-    readonly schema: z.ZodEnum<{
-      full: 'full';
-      'development-only-no-auth': 'development-only-no-auth';
-      'plugin-only': 'plugin-only';
-    }>;
+    readonly schema: z.ZodEnum<
+      ['development-only-no-auth', 'plugin-only', 'full']
+    >;
     readonly configScope: ConfigScope;
     readonly description: 'Security mode for the boost plugin';
   };
@@ -97,12 +95,7 @@ export const boostConfigFields: {
     readonly description: 'Enable skills marketplace feature';
   };
   readonly 'boost.agentApproval.mode': {
-    readonly schema: z.ZodOptional<
-      z.ZodEnum<{
-        'built-in': 'built-in';
-        sonataflow: 'sonataflow';
-      }>
-    >;
+    readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
     readonly configScope: ConfigScope;
     readonly description: 'Agent approval mode: built-in or SonataFlow-managed';
   };
