@@ -13,7 +13,7 @@ The system SHALL support an optional `tokenExchange` configuration block nested 
   - The Kagenti API client ID (e.g., `kagenti-api`) — the typical production value, targeting the Keycloak client that represents the Kagenti service
   - The RHDH/Backstage client ID (the value of `auth.clientId`) — the default when no explicit audience is set
   - Any other Keycloak client ID that has token exchange permissions granted for the requesting client
-- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token when frontend API holder discovery is not available (fallback path)
+- `userTokenHeader` (string, default: `x-user-oidc-token`) — the HTTP request header from which to read the user's OIDC access token. This header is populated by the frontend (via `AugmentApi.ts`) when OIDC discovery succeeds, or by an auth proxy in deployments where frontend discovery is not available. The backend reads from this header regardless of source.
 - `fallbackToServiceAccount` (boolean, default: `true`) — when `true`, exchange failures fall back to the service-account token silently with a warning log. When `false` (strict mode), exchange failures result in an error response (401 or 502) instead of falling back.
 
 The system SHALL reuse the parent `auth.tokenEndpoint`, `auth.clientId`, and `auth.clientSecret` for the exchange request. No new top-level config keys SHALL be introduced.
@@ -47,7 +47,7 @@ The exchanged token SHALL preserve the user's `sub` claim and add an `act` (acto
 
 #### Scenario: Successful token exchange
 
-- **WHEN** a valid user OIDC token is provided and Keycloak supports token exchange
+- **WHEN** a valid user OIDC access token is provided (via frontend-set header or auth proxy header) and Keycloak supports token exchange
 - **THEN** the system SHALL return a Kagenti-scoped access token with the user's `sub` claim preserved
 
 #### Scenario: Exchange request format

@@ -6,13 +6,16 @@ Acquisition and forwarding of user OIDC tokens — via frontend API holder disco
 
 ### Requirement: Frontend OIDC token acquisition via API holder discovery
 
-The frontend SHALL discover the OIDC auth provider at runtime using `useApiHolder()` and the orchestrator's `findCustomProvider` pattern. When Kagenti token exchange is enabled and the user initiates a Kagenti interaction:
+The frontend SHALL discover the OIDC auth provider at runtime using `useApiHolder()` and the orchestrator's `findCustomProvider` pattern. Discovery is attempted on component mount; token acquisition is deferred to the first Kagenti API request. When Kagenti token exchange is enabled and the user initiates a Kagenti interaction:
 
-1. Attempt to discover the OIDC auth provider via `useApp().getPlugins()` API enumeration
-2. If not found, attempt to discover via the API holder's internal map (matching the orchestrator's `apiHolder.apis` pattern for `internal.auth.oidc`)
-3. If found, call `getIdToken()` to obtain the user's OIDC token (which triggers a login prompt if the user hasn't authenticated with the OIDC provider yet)
-4. Send the OIDC token to the backend via the request for RFC 8693 exchange
-5. If the OIDC provider is not discoverable, fall through to the header-based path
+1. Check `configApi.getOptionalBoolean('augment.kagenti.auth.tokenExchange.enabled')` — if `false` or absent, skip discovery entirely
+2. Attempt to discover the OIDC auth provider via `useApp().getPlugins()` API enumeration
+3. If not found, attempt to discover via the API holder's internal map (matching the orchestrator's `apiHolder.apis` pattern for `internal.auth.oidc`)
+4. Wrap discovery in try/catch — the orchestrator's `findCustomProvider` throws when the provider is not found; our implementation treats this as a non-error (returns `undefined`)
+5. If found, call `getAccessToken()` (`OAuthApi` interface) to obtain the user's OIDC access token. This is the correct token type for RFC 8693 exchange where `subject_token_type` is `urn:ietf:params:oauth:token-type:access_token`. (Note: `getIdToken()` from `OpenIdConnectApi` returns an ID token, which is a different token type and not what the exchange endpoint expects as the subject token.)
+6. If `getAccessToken()` triggers a login prompt and the user dismisses it, the hook returns `undefined` and the system falls through to the header-based path
+7. Send the OIDC token to the backend by setting the configured `userTokenHeader` header (default: `x-user-oidc-token`) on the API request — the same header the backend already reads from regardless of source
+8. If the OIDC provider is not discoverable, fall through to the header-based path silently (no error, no prompt)
 
 > **Why this is required out of the gate:** Most RHDH deployments use Backstage's built-in Keycloak auth, where the user logs in via the RHDH UI. Backstage replaces the user's Keycloak OIDC token with its own JWT before it reaches backend plugins, and these deployments typically do not have an auth proxy injecting the original OIDC token into a header. Without frontend discovery, per-user token exchange would not work for this common deployment pattern.
 
@@ -24,12 +27,59 @@ The frontend SHALL discover the OIDC auth provider at runtime using `useApiHolde
 #### Scenario: OIDC provider discovered and user already authenticated
 
 - **WHEN** the OIDC auth provider is discoverable and the user has an active OIDC session
-- **THEN** the frontend SHALL obtain the token via `getIdToken()` without prompting and send it to the backend
+- **THEN** the frontend SHALL obtain the token via `getAccessToken()` without prompting and send it to the backend via the `userTokenHeader` header
+
+#### Scenario: User dismisses OIDC login prompt
+
+- **WHEN** the OIDC auth provider is discoverable but the user has not yet authenticated and dismisses the login prompt
+- **THEN** the hook SHALL return `undefined`, the frontend SHALL NOT retry or re-prompt, and the system SHALL fall through to the header-based path (or service-account fallback). The user would need to reload the page or navigate back to trigger discovery again.
 
 #### Scenario: OIDC provider not discoverable
 
-- **WHEN** the OIDC auth provider is not found via plugin API enumeration or the API holder's internal map
-- **THEN** the frontend SHALL not attempt OIDC login and the system SHALL fall back to reading the token from the configured request header
+- **WHEN** the OIDC auth provider is not found via plugin API enumeration or the API holder's internal map (discovery wrapped in try/catch)
+- **THEN** the frontend SHALL not attempt OIDC login, SHALL NOT log an error (this is expected in non-OIDC deployments), and the system SHALL fall back to reading the token from the configured request header
+
+#### Scenario: Token exchange not enabled in config
+
+- **WHEN** `configApi.getOptionalBoolean('augment.kagenti.auth.tokenExchange.enabled')` returns `false` or `undefined`
+- **THEN** the frontend SHALL skip OIDC discovery entirely and not attempt any token acquisition
+
+### Requirement: Frontend-to-backend token transport
+
+The frontend SHALL send the acquired OIDC token to the backend by setting the `userTokenHeader` header (default: `x-user-oidc-token`) on every Kagenti API request via `AugmentApi.ts`'s request preparation (`_buildInit` method). The backend SHALL read from this same header regardless of whether the frontend or an auth proxy populated it — no backend transport changes are needed.
+
+#### Scenario: Frontend sets OIDC token header
+
+- **WHEN** the frontend has acquired an OIDC access token via API holder discovery
+- **THEN** the `AugmentApi` class SHALL include the token as the value of the configured `userTokenHeader` header in the `_buildInit` method's `Headers` object, alongside existing headers like `X-Backstage-Request: augment`
+
+#### Scenario: Frontend has no OIDC token
+
+- **WHEN** the frontend did not acquire an OIDC token (discovery failed, user dismissed prompt, or token exchange not enabled)
+- **THEN** the `AugmentApi` class SHALL NOT set the `userTokenHeader` header and the request proceeds without it
+
+### Requirement: Frontend config visibility
+
+The `tokenExchange.enabled` config field SHALL be marked with `@visibility frontend` in `config.d.ts` so that the frontend hook can check whether to attempt OIDC discovery. Other `tokenExchange` fields (`audience`, `userTokenHeader`, `fallbackToServiceAccount`, `clientSecret`) SHALL remain backend-only.
+
+#### Scenario: Frontend reads enabled flag
+
+- **WHEN** the frontend hook initializes
+- **THEN** it SHALL check `configApi.getOptionalBoolean('augment.kagenti.auth.tokenExchange.enabled')` and skip all OIDC discovery if the value is `false` or absent
+
+### Requirement: Frontend token lifecycle
+
+The frontend hook SHALL cache the OIDC provider reference for the duration of the component tree's mount. Token refresh SHALL be delegated to the OIDC provider's implementation — Backstage auth providers handle refresh transparently via internal session management. When the component unmounts and remounts (e.g., navigating away and back), discovery runs again. There SHALL be no explicit expiry tracking in the hook.
+
+#### Scenario: Token refresh handled by provider
+
+- **WHEN** the cached OIDC access token expires while the component is mounted
+- **THEN** the next call to `getAccessToken()` on the cached provider reference SHALL return a refreshed token (handled by the provider's internal session management, not by the hook)
+
+#### Scenario: Component remount triggers rediscovery
+
+- **WHEN** the user navigates away from the chat view and returns
+- **THEN** the hook SHALL re-run OIDC provider discovery on mount (provider reference is not persisted across unmounts)
 
 ### Requirement: Configurable user token header on RouteContext (fallback path)
 

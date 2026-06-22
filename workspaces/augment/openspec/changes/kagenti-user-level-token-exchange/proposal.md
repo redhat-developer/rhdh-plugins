@@ -18,7 +18,7 @@ The augment plugin authenticates to Kagenti using a single shared service-accoun
 ### New Capabilities
 
 - `token-exchange`: RFC 8693 OAuth2 token exchange for per-user Kagenti authorization — config schema, token lifecycle management, per-user caching, concurrent deduplication, and fallback behavior
-- `user-token-routing`: Route-level extraction and forwarding of user OIDC tokens from configurable request headers to the Kagenti provider
+- `user-token-routing`: Acquisition and forwarding of user OIDC tokens — via frontend API holder discovery (primary, using `getAccessToken()`) or configurable request headers (fallback) — to the Kagenti provider for RFC 8693 exchange
 
 ### Modified Capabilities
 
@@ -35,5 +35,8 @@ The augment plugin authenticates to Kagenti using a single shared service-accoun
 - `plugins/augment-backend/src/router.ts` — dynamic header getter from provider config
 - `plugins/augment-backend/src/routes/chatRoutes.ts` — OIDC token extraction in chat handlers
 - `plugins/augment-backend/src/routes/kagentiRoutes.ts` — OIDC token extraction in Kagenti middleware
-- Frontend OIDC discovery utility using `useApiHolder()` (modeled on the orchestrator's `useOrchestratorAuth.ts` pattern) — discovers OIDC auth provider at runtime, acquires user's token, sends to backend for exchange. This is the primary token acquisition path; header-based extraction is the fallback for non-OIDC deployments.
+- `plugins/augment/src/hooks/useKagentiOidcToken.ts` — **new file**: React hook using `useApiHolder()` and the `findCustomProvider` pattern (from orchestrator's `useOrchestratorAuth.ts`) to discover OIDC auth provider at runtime, call `getAccessToken()` (OAuthApi interface — correct for RFC 8693 `subject_token_type: access_token`), and return the token for use in API requests. Handles graceful degradation (try/catch around discovery, returns `undefined` if not found). Discovers on mount, acquires token lazily on first Kagenti interaction.
+- `plugins/augment/src/api/AugmentApi.ts` — modified `_buildInit` method to include OIDC token as the configured `userTokenHeader` header on outgoing requests when available (same header the backend reads from, regardless of source)
+- `plugins/augment-backend/config.d.ts` — `tokenExchange.enabled` marked `@visibility frontend` so frontend can check via `configApi`
 - No changes to `ResponsesApiProvider`, `providers/llamastack/`, or `KeycloakTokenManager`
+- No changes to dynamic plugin exports or entry points — the hook and API client changes are internal to the existing frontend plugin package

@@ -34,12 +34,13 @@
 - [ ] 5.3 Update `plugins/augment-backend/src/routes/chatRoutes.ts` — both sync and streaming handlers extract OIDC token from configured header and pass to `setUserContext(userRef, bearerToken)`
 - [ ] 5.4 Update `plugins/augment-backend/src/routes/kagentiRoutes.ts` — `/kagenti` middleware extracts OIDC token from configured header
 
-## 6. Frontend OIDC Discovery
+## 6. Frontend OIDC Discovery and Token Transport
 
-- [ ] 6.1 Create frontend utility for OIDC provider discovery using `useApiHolder()` — attempt `useApp().getPlugins()` API enumeration first, then fall back to API holder internal map (`apiHolder.apis` for `internal.auth.oidc`, matching the orchestrator's `findCustomProvider` pattern)
-- [ ] 6.2 Implement OIDC token acquisition — call `getIdToken()` on the discovered provider (triggers login prompt if user hasn't authenticated with the OIDC provider yet), cache the result for the session
-- [ ] 6.3 Wire OIDC token into Kagenti API requests — when the frontend has acquired an OIDC token, include it in requests to the backend so it can be used for RFC 8693 exchange
-- [ ] 6.4 Handle graceful degradation — when OIDC provider is not discoverable, do not prompt or error; fall through silently so the backend uses the header-based fallback path
+- [ ] 6.1 Mark `tokenExchange.enabled` with `@visibility frontend` in `plugins/augment-backend/config.d.ts` so the frontend can read it via `configApi`
+- [ ] 6.2 Create `plugins/augment/src/hooks/useKagentiOidcToken.ts` — React hook using `useApiHolder()` for OIDC provider discovery. Attempt `useApp().getPlugins()` API enumeration first, then fall back to API holder internal map (`apiHolder.apis` for `internal.auth.oidc`, matching the orchestrator's `findCustomProvider` pattern in `useOrchestratorAuth.ts`). Wrap discovery in try/catch (orchestrator's `findCustomProvider` throws on not-found; we return `undefined`). Check `configApi.getOptionalBoolean('augment.kagenti.auth.tokenExchange.enabled')` — skip discovery if not enabled. Discover provider on component mount, defer `getAccessToken()` call to first Kagenti interaction.
+- [ ] 6.3 Implement OIDC token acquisition in `useKagentiOidcToken.ts` — call `getAccessToken()` (`OAuthApi` interface, NOT `getIdToken()`) on the discovered provider. `getAccessToken()` is correct because RFC 8693 specifies `subject_token_type: access_token`. If the user hasn't authenticated with the OIDC provider, `getAccessToken()` triggers the provider's login flow. If the user dismisses the prompt, return `undefined` (no retry, no re-prompt). Cache the provider reference for the component mount duration; delegate token refresh to the provider's internal session management.
+- [ ] 6.4 Wire OIDC token into API requests in `plugins/augment/src/api/AugmentApi.ts` — modify the `_buildInit` method to include the OIDC token as the `userTokenHeader` header (default: `x-user-oidc-token`) alongside existing headers like `X-Backstage-Request: augment`. The backend reads from this same header regardless of whether the frontend or an auth proxy populated it. When no token is available, do not set the header.
+- [ ] 6.5 Handle graceful degradation — when OIDC provider is not discoverable, do not prompt or error; fall through silently so the backend uses the header-based fallback path or service-account token. No new exports, entry points, or dynamic plugin wiring changes needed — the hook is internal to the existing frontend plugin package.
 
 ## 7. Verification
 
