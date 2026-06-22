@@ -54,7 +54,7 @@ describe('ScorecardApiClient', () => {
 
   describe('getScorecards', () => {
     const metricRow: MetricResult = {
-      id: 'github.open_prs',
+      id: 'github.openPrs',
       status: 'success',
       metadata: {
         title: 'Open PRs',

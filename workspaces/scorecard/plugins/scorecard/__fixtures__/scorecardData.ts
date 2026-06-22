@@ -23,7 +23,7 @@ import {
 
 export const mockScorecardSuccessData = [
   {
-    id: 'github.open_prs',
+    id: 'github.openPrs',
     status: 'success' as const,
     metadata: {
       title: 'GitHub open PRs',
@@ -49,7 +49,7 @@ export const mockScorecardSuccessData = [
     },
   },
   {
-    id: 'jira.open_issues',
+    id: 'jira.openIssues',
     status: 'success' as const,
     metadata: {
       title: 'Jira open blocking tickets',
@@ -78,7 +78,7 @@ export const mockScorecardSuccessData = [
 
 export const mockScorecardErrorData = [
   {
-    id: 'github.open_issues',
+    id: 'github.openIssues',
     status: 'error' as const,
     metadata: {
       title: 'GitHub open Issues',
@@ -105,7 +105,7 @@ export const mockScorecardErrorData = [
     error: 'HttpError: API rate limit exceeded.',
   },
   {
-    id: 'sonar.security_issues',
+    id: 'sonar.securityIssues',
     status: 'success' as const,
     metadata: {
       title: 'Sonar number of security issues',
@@ -127,7 +127,7 @@ export const mockScorecardErrorData = [
         evaluation: 'warning',
         status: 'error' as const,
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.security_issues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.securityIssues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
       },
     },
   },
@@ -135,7 +135,7 @@ export const mockScorecardErrorData = [
 
 export const mockAggregatedScorecardData = {
   [aggregationTypes.statusGrouped]: {
-    id: 'github.open_prs',
+    id: 'github.openPrs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -159,7 +159,7 @@ export const mockAggregatedScorecardData = {
     },
   } as AggregatedMetricResult,
   [aggregationTypes.weightedStatusScore]: {
-    id: 'github.open_prs',
+    id: 'github.openPrs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',

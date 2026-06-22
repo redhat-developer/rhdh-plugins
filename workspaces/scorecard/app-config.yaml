@@ -243,12 +243,12 @@ scorecard:
       title: GitHub Open PRs KPI
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
-      metricId: github.open_prs
+      metricId: github.openPrs
     openPrsWeightedKpi:
       title: GitHub Open PRs (weighted health)
       type: weightedStatusScore
       description: Weighted health score for open PRs by threshold status across your entities.
-      metricId: github.open_prs
+      metricId: github.openPrs
       options:
         statusScores:
           success: 100
@@ -269,7 +269,7 @@ scorecard:
       title: Jira Open Issues KPI
       type: statusGrouped
       description: This KPI is provide information about Jira open issues grouped by status.
-      metricId: jira.open_issues
+      metricId: jira.openIssues
     licenseFileExistsKpi:
       title: License File Exists KPI
       type: statusGrouped
@@ -277,13 +277,13 @@ scorecard:
       metricId: filecheck.license
   plugins:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     github:
-      open_prs:
+      openPrs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

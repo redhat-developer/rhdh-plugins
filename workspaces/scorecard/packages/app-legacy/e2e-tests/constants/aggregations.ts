@@ -15,8 +15,8 @@
  */
 
 export const AGGREGATED_CARDS_METRIC_IDS = {
-  jiraMetricId: 'jira.open_issues',
-  githubMetricId: 'github.open_prs',
+  jiraMetricId: 'jira.openIssues',
+  githubMetricId: 'github.openPrs',
   githubOpenPrsKpi: 'openPrsKpi',
   jiraOpenIssuesKpi: 'openIssuesKpi',
   gitHubOpenPrsWeightedKpi: 'openPrsWeightedKpi',
@@ -35,26 +35,26 @@ export const AGGREGATED_CARDS_METADATA = {
   jiraDeprecatedMetricId: {
     id: AGGREGATED_CARDS_METRIC_IDS.jiraMetricId,
     title: 'Scorecard: With deprecated metricId property (Jira)',
-    metricId: 'jira.open_issues',
+    metricId: 'jira.openIssues',
   },
   githubDefaultAggregation: {
     id: AGGREGATED_CARDS_METRIC_IDS.githubMetricId,
     title: 'Scorecard: With default aggregation config (GitHub)',
-    metricId: 'github.open_prs',
+    metricId: 'github.openPrs',
   },
   jiraOpenIssuesKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.jiraOpenIssuesKpi,
     title: 'Scorecard: Jira open blocking tickets',
-    metricId: 'jira.open_issues',
+    metricId: 'jira.openIssues',
   },
   githubOpenPrsKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.githubOpenPrsKpi,
     title: 'Scorecard: GitHub open PRs',
-    metricId: 'github.open_prs',
+    metricId: 'github.openPrs',
   },
   githubOpenPrsWeightedKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi,
     title: 'Scorecard: GitHub open PRs (weighted health)',
-    metricId: 'github.open_prs',
+    metricId: 'github.openPrs',
   },
 } as const;

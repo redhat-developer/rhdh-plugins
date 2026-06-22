@@ -296,10 +296,10 @@ The following modules and extensions are available from `@red-hat-developer-hub/
    import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    // GitHub open PRs
-   <ScorecardHomepageCard metricId="github.open_prs" />
+   <ScorecardHomepageCard metricId="github.openPrs" />
 
    // Jira open issues
-   <ScorecardHomepageCard metricId="jira.open_issues" />
+   <ScorecardHomepageCard metricId="jira.openIssues" />
    ```
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
@@ -380,7 +380,7 @@ import { ComponentType } from 'react';
     layouts: { /* … */ },
     props: {
       aggregationId: 'openIssuesKpi',
-      // metricId: 'jira.open_issues', // legacy only; remove when only aggregationId is supported
+      // metricId: 'jira.openIssues', // legacy only; remove when only aggregationId is supported
     },
   },
 },
@@ -448,7 +448,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 ```typescript
 // In ref.ts
 metric: {
-  'github.open_prs': {
+  'github.openPrs': {
     title: 'GitHub open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },

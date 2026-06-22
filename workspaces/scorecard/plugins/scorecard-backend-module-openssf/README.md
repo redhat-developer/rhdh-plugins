@@ -46,26 +46,26 @@ metadata:
 
 18 metrics from [OpenSSF checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md):
 
-| Metric                           | Description                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------- |
-| `openssf.binary_artifacts`       | No executable (binary) artifacts in the source repository.                                  |
-| `openssf.branch_protection`      | Default and release branches protected (e.g. require review, status checks, no force push). |
-| `openssf.cii_best_practices`     | Project has an OpenSSF Best Practices badge (passing, silver, or gold).                     |
-| `openssf.ci_tests`               | Tests run before pull requests are merged.                                                  |
-| `openssf.code_review`            | Human code review required before PRs are merged.                                           |
-| `openssf.contributors`           | Recent contributors from multiple organizations.                                            |
-| `openssf.dangerous_workflow`     | GitHub Actions workflows avoid dangerous patterns (untrusted checkout, script injection).   |
-| `openssf.dependency_update_tool` | Dependency update tool in use (e.g. Dependabot, Renovate).                                  |
-| `openssf.fuzzing`                | Fuzzing in use (e.g. OSS-Fuzz, ClusterFuzzLite, or language fuzz tests).                    |
-| `openssf.license`                | Project has a published license.                                                            |
-| `openssf.maintained`             | Project is actively maintained (not archived, recent activity).                             |
-| `openssf.packaging`              | Project is published as a package.                                                          |
-| `openssf.pinned_dependencies`    | Dependencies pinned (hash or fixed version) in build/release.                               |
-| `openssf.sast`                   | Static application security testing (SAST) in use.                                          |
-| `openssf.security_policy`        | Security policy present (e.g. SECURITY.md).                                                 |
-| `openssf.signed_releases`        | Releases are cryptographically signed.                                                      |
-| `openssf.token_permissions`      | GitHub Actions use minimal token permissions.                                               |
-| `openssf.vulnerabilities`        | Known vulnerabilities in dependencies (lower score = more issues).                          |
+| Metric                         | Description                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `openssf.binaryArtifacts`      | No executable (binary) artifacts in the source repository.                                  |
+| `openssf.branchProtection`     | Default and release branches protected (e.g. require review, status checks, no force push). |
+| `openssf.ciiBestPractices`     | Project has an OpenSSF Best Practices badge (passing, silver, or gold).                     |
+| `openssf.ciTests`              | Tests run before pull requests are merged.                                                  |
+| `openssf.codeReview`           | Human code review required before PRs are merged.                                           |
+| `openssf.contributors`         | Recent contributors from multiple organizations.                                            |
+| `openssf.dangerousWorkflow`    | GitHub Actions workflows avoid dangerous patterns (untrusted checkout, script injection).   |
+| `openssf.dependencyUpdateTool` | Dependency update tool in use (e.g. Dependabot, Renovate).                                  |
+| `openssf.fuzzing`              | Fuzzing in use (e.g. OSS-Fuzz, ClusterFuzzLite, or language fuzz tests).                    |
+| `openssf.license`              | Project has a published license.                                                            |
+| `openssf.maintained`           | Project is actively maintained (not archived, recent activity).                             |
+| `openssf.packaging`            | Project is published as a package.                                                          |
+| `openssf.pinnedDependencies`   | Dependencies pinned (hash or fixed version) in build/release.                               |
+| `openssf.sast`                 | Static application security testing (SAST) in use.                                          |
+| `openssf.securityPolicy`       | Security policy present (e.g. SECURITY.md).                                                 |
+| `openssf.signedReleases`       | Releases are cryptographically signed.                                                      |
+| `openssf.tokenPermissions`     | GitHub Actions use minimal token permissions.                                               |
+| `openssf.vulnerabilities`      | Known vulnerabilities in dependencies (lower score = more issues).                          |
 
 ## Default thresholds
 

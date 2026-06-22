@@ -60,7 +60,7 @@ scorecard:
       title: GitHub Open PRs (weighted health)
       type: weightedStatusScore
       description: Weighted health score for open PRs by threshold status across your entities.
-      metricId: github.open_prs
+      metricId: github.openPrs
       options:
         statusScores:
           success: 100
@@ -79,7 +79,7 @@ scorecard:
               color: '#be1ec7' # purple
   plugins:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency: { days: 1 }
           timeout: { minutes: 2 }
@@ -89,7 +89,7 @@ scorecard:
         #   mandatoryFilter: type = Story
         #   customFilter: priority = High
     github:
-      open_prs:
+      openPrs:
         # Example threshold overrides; remove to use provider defaults.
         thresholds:
           rules:
