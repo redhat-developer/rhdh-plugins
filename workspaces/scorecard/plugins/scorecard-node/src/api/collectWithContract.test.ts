@@ -14,50 +14,60 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
 import { z } from 'zod';
-import type { Collector, CollectorRegistry } from './Collector';
+import { Collector, CollectorRegistry } from './Collector';
 import { collectWithContract } from './collectWithContract';
 
-const entity: Entity = {
+const entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'Component',
   metadata: { name: 'service-a', namespace: 'default' },
 };
 
 describe('collectWithContract', () => {
-  const collectorId = 'test.collector';
+  const collectorId = 'test:collector';
 
-  const inputSchema = z.object({
+  const contractInputSchema = z.object({
     from: z.string().datetime(),
     to: z.string().datetime(),
   });
-  const outputSchema = z.object({
+  const collectorInputSchema = z.object({
+    from: z.string().datetime(),
+    to: z.string().datetime(),
+  });
+  const collectorOutputSchema = z.object({
+    deployments: z.array(z.object({ sha: z.string() })),
+  });
+  const contractOutputSchema = z.object({
     deployments: z.array(z.object({ sha: z.string() })),
   });
 
-  const collector: Collector = {
+  const makeCollector = (overrides: Partial<Collector> = {}): Collector => ({
     getCollectorId: () => collectorId,
-    getCollectorDescription: () => 'test collector',
-    getInputSchema: () => inputSchema,
-    getOutputSchema: () => outputSchema,
+    getCollectorDescription: () => 'Test collector',
+    getInputSchema: () => collectorInputSchema,
+    getOutputSchema: () => collectorOutputSchema,
     collect: jest.fn(async () => ({
       deployments: [{ sha: 'abc123' }],
     })),
-  };
+    ...overrides,
+  });
 
-  const collectorRegistry: CollectorRegistry = {
-    getCollector: () => collector,
+  const makeCollectorRegistry = (collector: Collector): CollectorRegistry => ({
+    getCollector: jest.fn(() => collector),
     hasCollector: () => true,
-  };
+  });
 
-  it('collects successfully when provider and collector contracts are compatible', async () => {
+  it('collects successfully when collector and contract schemas are compatible', async () => {
+    const collector = makeCollector();
+    const collectorRegistry = makeCollectorRegistry(collector);
+
     const result = await collectWithContract({
       collectorRegistry,
       collectorId,
       contract: {
-        inputSchema,
-        outputSchema,
+        inputSchema: contractInputSchema,
+        outputSchema: contractOutputSchema,
       },
       entity,
       input: {
@@ -71,52 +81,72 @@ describe('collectWithContract', () => {
     });
   });
 
-  it('fails when provider input schema does not pass', async () => {
+  it('forwards input and entity to collector.collect', async () => {
+    const collect = jest.fn(async () => ({
+      deployments: [{ sha: 'abc123' }],
+    }));
+    const collector = makeCollector({ collect });
+    const collectorRegistry = makeCollectorRegistry(collector);
+
+    await collectWithContract({
+      collectorRegistry,
+      collectorId,
+      contract: {
+        inputSchema: contractInputSchema,
+        outputSchema: contractOutputSchema,
+      },
+      entity,
+      input: {
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-08T00:00:00.000Z',
+      },
+    });
+
+    expect(collect).toHaveBeenCalledWith({
+      entity,
+      input: {
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-08T00:00:00.000Z',
+      },
+    });
+  });
+
+  it('fails when input does not satisfy contract input schema', async () => {
+    const collector = makeCollector();
+    const collectorRegistry = makeCollectorRegistry(collector);
+
     await expect(
       collectWithContract({
         collectorRegistry,
         collectorId,
         contract: {
-          inputSchema,
-          outputSchema,
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
         },
         entity,
-        input: { from: 'invalid', to: 'still-invalid' },
+        input: { from: 'invalid', to: 5 },
       }),
-    ).rejects.toThrow('Invalid input for collector');
+    ).rejects.toThrow('input does not satisfy contract input schema');
   });
 
-  it('fails when collector output does not satisfy provider expected output', async () => {
-    const outputMismatchCollector: Collector = {
-      ...collector,
-      getOutputSchema: () =>
+  it('fails when contract input does not satisfy collector input schema', async () => {
+    const collector = makeCollector({
+      getInputSchema: () =>
         z.object({
-          deployments: z.array(z.object({ sha: z.string(), id: z.number() })),
+          from: z.string().datetime(),
+          to: z.string().datetime(),
+          environment: z.string().min(1),
         }),
-      collect: jest.fn(async () => ({
-        deployments: [{ sha: 'abc123', id: 1 }],
-      })),
-    };
-
-    const outputMismatchCollectorRegistry: CollectorRegistry = {
-      getCollector: () => outputMismatchCollector,
-      hasCollector: () => true,
-    };
+    });
+    const collectorRegistry = makeCollectorRegistry(collector);
 
     await expect(
       collectWithContract({
-        collectorRegistry: outputMismatchCollectorRegistry,
+        collectorRegistry,
         collectorId,
         contract: {
-          inputSchema,
-          outputSchema: z.object({
-            deployments: z.array(
-              z.object({
-                sha: z.string(),
-                mergedAt: z.string(),
-              }),
-            ),
-          }),
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
         },
         entity,
         input: {
@@ -124,6 +154,98 @@ describe('collectWithContract', () => {
           to: '2026-06-08T00:00:00.000Z',
         },
       }),
-    ).rejects.toThrow('does not satisfy provider expected schema');
+    ).rejects.toThrow('Input does not satisfy collector');
+  });
+
+  it('fails when collector output does not satisfy collector output schema', async () => {
+    const collector = makeCollector({
+      getOutputSchema: () =>
+        z.object({
+          deployments: z.array(
+            z.object({
+              sha: z.string(),
+              id: z.number(),
+            }),
+          ),
+        }),
+      collect: jest.fn(async () => ({
+        deployments: [{ sha: 'abc123' }],
+      })),
+    });
+    const collectorRegistry = makeCollectorRegistry(collector);
+
+    await expect(
+      collectWithContract({
+        collectorRegistry,
+        collectorId,
+        contract: {
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
+        },
+        entity,
+        input: {
+          from: '2026-06-01T00:00:00.000Z',
+          to: '2026-06-08T00:00:00.000Z',
+        },
+      }),
+    ).rejects.toThrow('returned output that does not satisfy collector schema');
+  });
+
+  it('fails when collector output does not satisfy contract output schema', async () => {
+    const collector = makeCollector({
+      getOutputSchema: () =>
+        z.object({
+          deployments: z.array(z.object({ id: z.number() })),
+        }),
+      collect: jest.fn(async () => ({
+        deployments: [{ id: 1 }],
+      })),
+    });
+    const collectorRegistry = makeCollectorRegistry(collector);
+
+    await expect(
+      collectWithContract({
+        collectorRegistry,
+        collectorId,
+        contract: {
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
+        },
+        entity,
+        input: {
+          from: '2026-06-01T00:00:00.000Z',
+          to: '2026-06-08T00:00:00.000Z',
+        },
+      }),
+    ).rejects.toThrow('output does not satisfy contract output schema');
+  });
+
+  it('propagates collector lookup errors', async () => {
+    const collectorRegistry = {
+      getCollector: () => {
+        throw new Error(
+          `No collector registered for collector ID '${collectorId}'`,
+        );
+      },
+      hasCollector: () => false,
+    };
+
+    await expect(
+      collectWithContract({
+        collectorRegistry,
+        collectorId,
+        contract: {
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
+        },
+        entity,
+        input: {
+          from: '2026-06-01T00:00:00.000Z',
+          to: '2026-06-08T00:00:00.000Z',
+        },
+      }),
+    ).rejects.toThrow(
+      "No collector registered for collector ID 'test:collector'",
+    );
   });
 });
