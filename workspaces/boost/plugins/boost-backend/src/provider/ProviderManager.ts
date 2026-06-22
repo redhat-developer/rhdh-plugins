@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { NotFoundError } from '@backstage/errors';
+import { ConflictError, NotFoundError } from '@backstage/errors';
 import type {
   AgenticProvider,
   ProviderDescriptor,
@@ -39,7 +39,7 @@ export class ProviderManager {
   registerProvider(provider: AgenticProvider): void {
     const id = provider.descriptor.id;
     if (this.providers.has(id)) {
-      throw new Error(`Provider "${id}" is already registered`);
+      throw new ConflictError(`Provider "${id}" is already registered`);
     }
     this.providers.set(id, provider);
     if (!this.activeProvider) {
@@ -72,7 +72,7 @@ export class ProviderManager {
     const provider = this.providers.get(providerId);
     if (!provider) {
       const available = Array.from(this.providers.keys()).join(', ');
-      throw new Error(
+      throw new NotFoundError(
         `Provider "${providerId}" is not registered. ` +
           `Available providers: ${available || '(none)'}`,
       );
