@@ -13,7 +13,7 @@ Boost builds this as modular RHDH dynamic plugins from the start: each provider 
 - `AgenticProvider` interface with required (`chat`, `chatStream`) and optional capabilities
 - `ProviderDescriptor` declares ID, name, and capability matrix
 - Backstage extension point (`boostProviderExtensionPoint`) for provider registration
-- `boostAiProviderServiceRef` in `boost-common` for cross-plugin AI provider consumption
+- `boostAiProviderServiceRef` in `boost-node` for cross-plugin AI provider consumption
 
 ### Runtime Hot-Swap
 
@@ -42,12 +42,13 @@ Two built-in provider modules, each as an independent `createBackendModule`:
 - **Providers as modules, not monoliths** — each provider is independently installable and removable
 - **Capability checks over identity checks** — `capabilities.agentCatalog` instead of `providerId === 'kagenti'`
 - **`cacheService` everywhere** — all provider caches use Backstage `cacheService` with namespace isolation via `cache.withOptions()`
-- **Clean type boundaries** — provider-specific types stay in their modules; only shared interfaces in `boost-common`
+- **Clean type boundaries** — provider-specific types stay in their modules; shared interfaces in `boost-common`, service refs and extension points in `boost-node`
 
 ## Impact
 
-- `plugins/boost-common/` — `AgenticProvider`, `NormalizedStreamEvent`, `boostAiProviderServiceRef`
-- `plugins/boost-backend/src/plugin.ts` — serviceRef registration, ProviderManager
+- `plugins/boost-common/` — `AgenticProvider`, `NormalizedStreamEvent`, permission definitions
+- `plugins/boost-node/` — `boostAiProviderServiceRef`, `boostProviderExtensionPoint`
+- `plugins/boost-backend/src/plugin.ts` — serviceRef factory registration, ProviderManager
 - `plugins/boost-backend-module-llamastack/` — Llama Stack provider module
 - `plugins/boost-backend-module-kagenti/` — Kagenti provider module
 - `plugins/boost-frontend/src/` — capability-based rendering throughout

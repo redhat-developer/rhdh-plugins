@@ -15,7 +15,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
-import { LightspeedMessages } from './translations';
+import { LightspeedMessages, evaluateMessage } from './translations';
 
 export const openChatContextMenu = async (page: Page, chatIndex = 0) => {
   await page
@@ -191,16 +191,17 @@ export const selectDeleteAction = async (
 export const verifyDeleteConfirmation = async (
   page: Page,
   translations: LightspeedMessages,
+  chatName = '',
 ) => {
-  await expect(page.locator('#delete-modal')).toContainText(
+  const title = evaluateMessage(
     translations['conversation.delete.confirm.title'],
+    chatName,
   );
-  await expect(page.locator('#delete-modal-body-confirmation')).toContainText(
+  await expect(page.locator('#delete-modal')).toContainText(title);
+  await expect(page.locator('#delete-modal-confirmation')).toContainText(
     translations['conversation.delete.confirm.message'],
   );
-  await expect(
-    page.getByLabel(translations['conversation.delete.confirm.title']),
-  ).toMatchAriaSnapshot(`
+  await expect(page.getByLabel(title)).toMatchAriaSnapshot(`
     - button "${translations['conversation.delete.confirm.action']}"
     - button "${translations['common.cancel']}"
     `);
@@ -237,7 +238,7 @@ export const openChatbotSettings = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('button', { name: translations['aria.settings.label'] })
+    .getByRole('button', { name: translations['aria.options.label'] })
     .click();
 };
 
@@ -246,7 +247,7 @@ export const verifyChatbotSettingsVisible = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('button', { name: translations['aria.settings.label'] }),
+    page.getByRole('button', { name: translations['aria.options.label'] }),
   ).toBeVisible();
 };
 
@@ -330,15 +331,16 @@ export const verifyEmptySearchResults = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
-    .toMatchAriaSnapshot(`
-    - heading "${translations['conversation.category.pinnedChats']}"
-    - menu:
-      - menuitem "${translations['chatbox.emptyState.noPinnedChats']}" 
-    - heading "${translations['conversation.category.recent']}"
-    - menu:
-      - menuitem "${translations['common.noSearchResults']}" 
-    `);
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['common.noSearchResults'],
+    }),
+  ).toBeVisible();
 };
 
 export const verifyNoResultsFoundMessage = async (

@@ -38,19 +38,8 @@ import {
 import { TechDocsSearchResultListItem } from '@backstage/plugin-techdocs';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  filter: {
-    '& + &': {
-      marginTop: theme.spacing(2.5),
-    },
-  },
-}));
 
 const SearchPage = () => {
-  const classes = useStyles();
   const { types } = useSearch();
   const catalogApi = useApi(catalogApiRef);
 
@@ -89,11 +78,11 @@ const SearchPage = () => {
               sx={{
                 p: 2,
                 mt: 2,
+                '& > * + *': { mt: 2.5 },
               }}
             >
               {types.includes('techdocs') && (
                 <SearchFilter.Select
-                  className={classes.filter}
                   label="Entity"
                   name="name"
                   values={async () => {
@@ -113,13 +102,11 @@ const SearchPage = () => {
                 />
               )}
               <SearchFilter.Select
-                className={classes.filter}
                 label="Kind"
                 name="kind"
                 values={['Component', 'Template']}
               />
               <SearchFilter.Checkbox
-                className={classes.filter}
                 label="Lifecycle"
                 name="lifecycle"
                 values={['experimental', 'production']}

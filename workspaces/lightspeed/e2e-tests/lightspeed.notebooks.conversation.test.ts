@@ -39,7 +39,7 @@ import {
   verifyFeedbackButtons,
 } from './utils/testHelper';
 
-test.describe('Lightspeed notebooks conversation', () => {
+test.describe('Intelligent assistant notebooks conversation', () => {
   let sharedPage: Page;
   let translations: LightspeedMessages;
   let notebooks: NotebookSurfacePage;

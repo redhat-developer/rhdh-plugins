@@ -33,7 +33,7 @@ import { substituteNotebookTemplate } from './utils/notebookTranslation';
 
 const RENAMED_NOTEBOOK_TITLE = 'E2E Notebook Renamed';
 
-test.describe('Lightspeed notebooks', () => {
+test.describe('Intelligent assistant notebooks', () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;

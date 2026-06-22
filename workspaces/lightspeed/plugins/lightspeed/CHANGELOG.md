@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.9.1
+
+### Patch Changes
+
+- b5bb972: fix(lightspeed): Update missing permission view with responsive layout and new illustration
+- 5bc0a03: add processing resources loading state for first-time notebook uploads
+- d0f4682: Updated dependency `@patternfly/chatbot` to `6.6.0`.
+- 9a0f571: Fixes background color of the remove/delete buttons
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.1
+
 ## 2.9.0
 
 ### Minor Changes

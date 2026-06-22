@@ -38,7 +38,8 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
-// RBAC backend (registers as "permission" and provides /rbac; do not add plugin-permission-backend separately)
+backend.add(import('@backstage/plugin-permission-backend'));
+
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // search plugin

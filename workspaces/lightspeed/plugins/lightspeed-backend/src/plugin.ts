@@ -51,17 +51,6 @@ export const lightspeedPlugin = createBackendPlugin({
       }) {
         await migrate(database);
 
-        http.use(
-          await createRouter({
-            config,
-            logger,
-            database,
-            httpAuth,
-            userInfo,
-            permissions,
-          }),
-        );
-
         const aiNotebooksEnabled =
           config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
 
@@ -97,6 +86,17 @@ export const lightspeedPlugin = createBackendPlugin({
             });
           }
         }
+
+        http.use(
+          await createRouter({
+            config,
+            logger,
+            database,
+            httpAuth,
+            userInfo,
+            permissions,
+          }),
+        );
 
         // Configure authentication policies
         http.addAuthPolicy({

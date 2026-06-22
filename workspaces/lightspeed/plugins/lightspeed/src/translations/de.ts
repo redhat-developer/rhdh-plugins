@@ -36,11 +36,10 @@ const lightspeedTranslationDe = createTranslationMessages({
     'aria.scroll.up': 'Zurück zum Anfang',
     'aria.search.placeholder': 'Suchen',
     'aria.searchPreviousConversations': 'Vorherige Unterhaltungen durchsuchen',
-    'aria.settings.label': 'Chatbot-Optionen',
     'attach.menu.description': 'Eine JSON-, YAML- oder TXT-Datei anhängen',
     'attach.menu.title': 'Anhängen',
     'button.newChat': 'Neuer Chat',
-    'chatbox.emptyState.noPinnedChats': 'Keine angehefteten Chats',
+    'chatbox.emptyState.noPinnedChats': 'Chats anheften, um sie oben zu halten',
     'chatbox.emptyState.noRecentChats': 'Keine letzten Chats',
     'chatbox.emptyState.noResults.body':
       'Passen Sie Ihre Suchanfrage an, und versuchen Sie es erneut. Überprüfen Sie Ihre Rechtschreibung, oder versuchen Sie es mit einem allgemeineren Begriff.',
@@ -48,7 +47,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
     'chatbox.fileUpload.infoText':
       'Unterstützte Dateitypen: .txt, .yaml und .json. Die maximale Dateigröße beträgt 25 MB.',
-    'chatbox.header.title': 'Developer Lightspeed',
+    'chatbox.header.title': 'Developer Hub Intelligenter Assistent',
     'chatbox.message.placeholder':
       'Senden Sie eine Nachricht, und laden Sie optional eine JSON-, YAML- oder TXT-Datei hoch ...',
     'chatbox.provider.other': 'Andere',
@@ -70,8 +69,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.delete': 'Löschen',
     'conversation.delete.confirm.action': 'Löschen',
     'conversation.delete.confirm.message':
-      'Dieser Chat wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihrer Lightspeed-Aktivität gelöscht.',
-    'conversation.delete.confirm.title': 'Chat löschen?',
+      'Dieser Chat wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
+    'conversation.delete.confirm.title': 'Chat "{{chatName}}" löschen?',
     'conversation.removeFromPinnedChats': 'Lösen',
     'conversation.rename': 'Umbenennen',
     'conversation.rename.confirm.action': 'Umbenennen',
@@ -115,16 +114,17 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Nicht unterstützter Dateityp. Unterstützte Typen: .txt, .yaml und .json.',
     'footer.accuracy.label':
       'KI-generierte Inhalte sollten vor der Verwendung stets überprüft werden.',
-    'icon.lightspeed.alt': 'Lightspeed-Symbol',
+    'icon.lightspeed.alt': 'Symbol des intelligenten Assistenten',
     'icon.permissionRequired.alt': "Symbol für 'Berechtigung erforderlich'",
     'lcore.loadError.description':
-      'Das Lightspeed-Backend hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
+      'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
-    'lcore.notConfigured.backendDocs': 'Lightspeed-Backend einrichten',
+    'lcore.notConfigured.backendDocs':
+      'Backend des intelligenten Assistenten einrichten',
     'lcore.notConfigured.description':
-      'Lightspeed erfordert ein registriertes LLM. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
+      'Der intelligente Assistent erfordert ein registriertes LLM. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
     'lcore.notConfigured.developerLightspeedDocs':
-      'Developer Lightspeed wird konfiguriert',
+      'Developer Hub Intelligent Assistant wird konfiguriert',
     'lcore.notConfigured.title': 'Verbinden Sie ein LLM, um zu starten',
     'mcp.settings.closeAriaLabel': 'MCP-Einstellungen schließen',
     'mcp.settings.closeConfigureModalAriaLabel':
@@ -136,7 +136,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'mcp.settings.enterToken': 'Geben Sie Ihren Token ein',
     'mcp.settings.loading': 'MCP-Server werden geladen...',
     'mcp.settings.modalDescription':
-      'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Lightspeed arbeitet mit genau Ihren Berechtigungen.',
+      'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Der intelligente Assistent arbeitet mit genau Ihren Berechtigungen.',
     'mcp.settings.name': 'Name',
     'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
@@ -229,7 +229,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
     'notebooks.delete.action': 'Löschen',
     'notebooks.delete.message':
-      'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Lightspeed-Aktivität gelöscht.',
+      'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
     'notebooks.documents': 'Dokumente',
@@ -253,13 +253,14 @@ const lightspeedTranslationDe = createTranslationMessages({
     'notebooks.updated.today': 'Heute aktualisiert',
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'page.subtitle': 'KI-gestützter Entwicklungsassistent',
-    'page.title': 'Lightspeed',
+    'page.title': 'Intelligenter Assistent',
     'permission.notebooks.goBack': 'Zurück',
     'permission.required.description':
       'Um <subject/> anzuzeigen, wenden Sie sich an Ihren Administrator, um die Berechtigung <permissions/> zu erhalten.',
     'permission.required.title': 'Fehlende Berechtigungen',
-    'permission.subject.notebooks': 'die Lightspeed-Notizbücher',
-    'permission.subject.plugin': 'das Lightspeed-Plugin',
+    'permission.subject.notebooks':
+      'die Notizbücher des intelligenten Assistenten',
+    'permission.subject.plugin': 'das Plugin des intelligenten Assistenten',
     'prompts.codeOptimization.message':
       'Können Sie gängige Methoden zur Codeoptimierung vorschlagen, um eine bessere Performance zu erzielen?',
     'prompts.codeOptimization.title':
@@ -316,7 +317,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'sort.label': 'Unterhaltungen sortieren',
     'sort.newest': 'Datum (neuestes zuerst)',
     'sort.oldest': 'Datum (ältestes zuerst)',
-    'tabs.ariaLabel': 'Lightspeed-Ansichten',
+    'tabs.ariaLabel': 'Ansichten des intelligenten Assistenten',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Notizbücher',
     'tabs.notebooks.devPreview': 'Entwicklervorschau',
@@ -340,14 +341,13 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.close': 'Schließen',
     'tooltip.collapseHistoryPanel': 'Chatverlauf minimieren',
     'tooltip.expandHistoryPanel': 'Chatverlauf erweitern',
-    'tooltip.fab.close': 'Lightspeed schließen',
-    'tooltip.fab.open': 'Lightspeed öffnen',
+    'tooltip.fab.close': 'Intelligenten Assistenten schließen',
+    'tooltip.fab.open': 'Intelligenten Assistenten öffnen',
     'tooltip.microphone.active': 'Überwachen beenden',
     'tooltip.microphone.inactive': 'Mikrofon verwenden',
     'tooltip.quickNewChat': 'Neuer Chat',
     'tooltip.responseRecorded': 'Antwort aufgezeichnet',
     'tooltip.send': 'Senden',
-    'tooltip.settings': 'Chatbot-Optionen',
     'user.guest': 'Gast',
     'user.loading': '...',
   },

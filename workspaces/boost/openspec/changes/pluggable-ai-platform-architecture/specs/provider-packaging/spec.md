@@ -8,7 +8,7 @@ Each AI platform provider must be packaged as an independent Backstage backend m
 
 ### Requirement: ResponsesApiProvider as Backstage Backend Module
 
-The Llama Stack provider is packaged as an independent Backstage backend module that registers via the extension point.
+The Llama Stack provider MUST be packaged as an independent Backstage backend module that registers via the extension point.
 
 #### Scenario: Module registration
 
@@ -40,7 +40,7 @@ The Llama Stack provider is packaged as an independent Backstage backend module 
 
 ### Requirement: KagentiProvider as Backstage Backend Module
 
-The Kagenti provider is packaged as an independent Backstage backend module.
+The Kagenti provider MUST be packaged as an independent Backstage backend module.
 
 #### Scenario: Module registration
 
@@ -67,7 +67,7 @@ The Kagenti provider is packaged as an independent Backstage backend module.
 
 ### Requirement: Standalone Toolkit Packages
 
-Provider-internal subsystems with zero Backstage coupling are extracted as standalone packages.
+Provider-internal subsystems with zero Backstage coupling MUST be extracted as standalone packages.
 
 #### Scenario: toolscope extracted as standalone package
 

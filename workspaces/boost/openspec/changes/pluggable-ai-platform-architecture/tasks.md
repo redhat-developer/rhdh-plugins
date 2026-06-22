@@ -1,13 +1,14 @@
 # Tasks: Pluggable AI Platform Architecture
 
-## 1. Types and Service Ref (P0)
+## 1. Types, Service Ref, and Package Scaffolding (P0)
 
 - [ ] 1.1 Define `AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities` interfaces in `boost-common`
 - [ ] 1.2 Define `NormalizedStreamEvent` union type in `boost-common`
 - [ ] 1.3 Define `ConversationSummary`, `ConversationDetails`, `InputItem` conversation types in `boost-common`
-- [ ] 1.4 Create `boostAiProviderServiceRef` in `boost-common` via `createServiceRef`
+- [ ] 1.4 Create `boost-node` package (`backstage.role: node-library`) with `boostAiProviderServiceRef` via `createServiceRef` — serviceRef must NOT live in `boost-common` (see Decision 1)
 - [ ] 1.5 Register default service factory in `boost-backend/plugin.ts` resolving to `ProviderManager.getActiveProvider()`
 - [ ] 1.6 Verify no provider-specific types in common package — only shared interfaces
+- [ ] 1.7 Verify `boost-common` has no dependency on `@backstage/backend-plugin-api`
 
 ## 2. Provider Module Packages (P0)
 

@@ -1,6 +1,8 @@
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
 # harness/fix.yaml — fix agent with yarn sandbox workaround.
 #
-# Based on upstream fix.yaml (baseline 2025-06-05). The fix agent handles
+# Based on upstream fix.yaml. The fix agent handles
 # automated fixes triggered by /fs-fix commands on issues or PRs.
 #
 # Flow: pre_script → sandbox (agent) → validation_loop → post_script
@@ -10,9 +12,12 @@
 #   post_script      : push commit, post summary comment on PR
 #
 # Customizations over upstream fix.yaml:
+#   - pre_script: wraps upstream pre-fix.sh with auto-rebase onto target branch
 #   - image: rhdh custom image with yarn/corepack pre-installed
+#   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 #   - skills: adds monorepo-workspace-routing for workspace navigation
+#   - skills: adds safe-retry to guard against infinite retry loops
 #   - policy: custom fix policy with yarn registry + pnpm binary allowlist
 agent: agents/fix.md
 doc: docs/agents/fix.md
@@ -20,7 +25,7 @@ model: opus
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/fix.yaml
 
-pre_script: scripts/pre-fix.sh
+pre_script: scripts/pre-fix-rebase.sh
 
 validation_loop:
   script: scripts/validate-output-schema.sh
@@ -30,24 +35,27 @@ post_script: scripts/post-fix.sh
 
 host_files:
   - src: env/gcp-vertex.env
-    dest: /tmp/workspace/.env.d/gcp-vertex.env
+    dest: /sandbox/workspace/.env.d/gcp-vertex.env
     expand: true
   - src: env/fix-agent.env
-    dest: /tmp/workspace/.env.d/fix-agent.env
+    dest: /sandbox/workspace/.env.d/fix-agent.env
     expand: true
   - src: ${GOOGLE_APPLICATION_CREDENTIALS}
-    dest: /tmp/workspace/.gcp-credentials.json
+    dest: /tmp/.gcp-credentials.json
   - src: ${REVIEW_BODY_FILE}
-    dest: /tmp/workspace/review-body.txt
+    dest: /sandbox/workspace/review-body.txt
   - src: ${GCP_OIDC_TOKEN_FILE}
-    dest: /tmp/workspace/.gcp-oidc-token
+    dest: /sandbox/workspace/.gcp-oidc-token
     optional: true
+  - src: env/rhdh-toolchain.env
+    dest: /sandbox/workspace/.env.d/rhdh-toolchain.env
   - src: env/yarn-proxy.env
-    dest: /tmp/workspace/.env.d/yarn-proxy.env
+    dest: /sandbox/workspace/.env.d/yarn-proxy.env
 
 skills:
   - skills/fix-review
   - skills/monorepo-workspace-routing
+  - skills/safe-retry
 
 runner_env:
   PUSH_TOKEN: "${PUSH_TOKEN}"
@@ -64,4 +72,4 @@ runner_env:
   FULLSEND_OUTPUT_SCHEMA: ${FULLSEND_DIR}/schemas/fix-result.schema.json
   FULLSEND_OUTPUT_FILE: fix-result.json
 
-timeout_minutes: 25
+timeout_minutes: 90

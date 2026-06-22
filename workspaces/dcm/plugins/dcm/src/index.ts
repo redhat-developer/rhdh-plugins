@@ -24,3 +24,4 @@ export {
 export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
 export { RhdhLogoFull } from './components/RhdhLogoFull';
 export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+export { dcmTranslations, dcmTranslationRef } from './translations';

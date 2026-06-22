@@ -1,4 +1,6 @@
 ---
+# forked-from: fullsend v0.17.0 scaffold (adds monorepo-workspace-routing)
+# last-synced: 2026-06-16
 name: code
 description: >-
   Implementation specialist for GitHub issues. Reads triaged issues, implements

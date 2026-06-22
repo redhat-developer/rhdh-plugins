@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+ClassNameGenerator.configure(componentName =>
+  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
+);
+
 export {
   lightspeedPlugin,
   LightspeedPage,

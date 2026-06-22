@@ -18,8 +18,10 @@ import { createApp } from '@backstage/frontend-defaults';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import {
   lightspeedFABModule,
+  lightspeedRedirectModule,
   lightspeedTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
@@ -28,7 +30,9 @@ export default createApp({
   features: [
     appDrawerModule,
     lightspeedFABModule,
+    lightspeedRedirectModule,
     lightspeedTranslationsModule,
+    rhdhThemeModule,
     signInModule,
     navModule,
   ],

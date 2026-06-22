@@ -15,6 +15,7 @@
  */
 
 import { Button, CircularProgress } from '@material-ui/core';
+import { useTranslation } from '../hooks/useTranslation';
 
 export type DcmFormDialogActionsProps = Readonly<{
   /** Called when the primary (submit) button is clicked. */
@@ -42,6 +43,7 @@ export function DcmFormDialogActions({
   submitting,
   disabled,
 }: DcmFormDialogActionsProps) {
+  const { t } = useTranslation();
   return (
     <>
       <Button
@@ -55,7 +57,7 @@ export function DcmFormDialogActions({
           ) : undefined
         }
       >
-        {submitting ? 'Saving\u2026' : submitLabel}
+        {submitting ? t('common.saving') : submitLabel}
       </Button>
       <Button
         variant="outlined"
@@ -63,7 +65,7 @@ export function DcmFormDialogActions({
         onClick={onCancel}
         disabled={submitting}
       >
-        Cancel
+        {t('common.cancel')}
       </Button>
     </>
   );

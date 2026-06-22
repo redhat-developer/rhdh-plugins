@@ -167,6 +167,9 @@ export default _default;
 // @alpha (undocumented)
 export const lightspeedFABModule: FrontendModule;
 
+// @alpha (undocumented)
+export const lightspeedRedirectModule: FrontendModule;
+
 // @alpha
 export const lightspeedTranslationRef: TranslationRef<
   'plugin.lightspeed',
@@ -311,7 +314,6 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'aria.options.label': string;
     readonly 'aria.scroll.down': string;
     readonly 'aria.scroll.up': string;
-    readonly 'aria.settings.label': string;
     readonly 'aria.close': string;
     readonly 'modal.edit': string;
     readonly 'modal.save': string;
