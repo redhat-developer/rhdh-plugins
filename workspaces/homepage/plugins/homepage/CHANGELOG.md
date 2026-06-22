@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-dynamic-home-page
+# @red-hat-developer-hub/backstage-plugin-homepage
 
 ## 1.14.0
 

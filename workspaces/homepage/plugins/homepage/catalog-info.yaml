@@ -2,8 +2,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: rhdh-plugins-dynamic-home-page-frontend
-  title: '@red-hat-developer-hub/backstage-plugin-dynamic-home-page'
+  name: rhdh-plugins-homepage-frontend
+  title: '@red-hat-developer-hub/backstage-plugin-homepage'
   description: Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
   annotations:
     backstage.io/techdocs-entity: component:default/red-hat-developer-hub-homepage
@@ -13,7 +13,7 @@ metadata:
   tags:
     - homepage
   links:
-    - url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/homepage/plugins/dynamic-home-page
+    - url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/homepage/plugins/homepage
       title: GitHub Source
       icon: source
       type: source
