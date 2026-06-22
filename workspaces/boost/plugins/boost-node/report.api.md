@@ -4,6 +4,7 @@
 
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { ExtensionPoint } from '@backstage/backend-plugin-api';
 import { ServiceRef } from '@backstage/backend-plugin-api';
 
 // @public
@@ -12,4 +13,12 @@ export const boostAiProviderServiceRef: ServiceRef<
   'plugin',
   'singleton'
 >;
+
+// @public
+export interface BoostProviderExtensionPoint {
+  registerProvider(provider: AgenticProvider): void;
+}
+
+// @public
+export const boostProviderExtensionPoint: ExtensionPoint<BoostProviderExtensionPoint>;
 ```
