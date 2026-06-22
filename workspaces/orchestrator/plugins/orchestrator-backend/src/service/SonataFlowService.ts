@@ -118,11 +118,24 @@ export class SonataFlowService {
       return [];
     }
 
-    // Can reuse the instances to get the stats
+    const statsDefinitionIds = workflowInfos.map(info => info.id);
+    const instancesFilter: Filter | undefined = targetEntity
+      ? {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        }
+      : undefined;
+
+    // Fetch instances by workflow definition id. Do not reuse the overview
+    // filter here: entity overview passes `id IN [workflowIds]`, which applies
+    // to definitions but would match instance ids when querying instances.
     const instances = await this.dataIndexService.fetchInstances({
-      definitionIds,
-      pagination,
-      filter,
+      definitionIds: statsDefinitionIds,
+      filter: instancesFilter,
     });
 
     // This will have all the workflows, so we need to group by workflow id
