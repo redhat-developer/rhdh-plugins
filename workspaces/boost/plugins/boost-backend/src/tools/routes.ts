@@ -27,6 +27,7 @@ import {
   boostToolPublishPermission,
   boostToolUnpublishPermission,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { authorizeLifecycleAction } from '../middleware/security';
 import type { ToolLifecycleStore } from './ToolLifecycleStore';
 import { isValidToolTransition } from './lifecycle';
@@ -161,7 +162,7 @@ export function createToolRoutes(options: ToolRoutesOptions): Router {
           !targetStage ||
           !isValidToolTransition(
             tool.lifecycleStage,
-            targetStage as import('@red-hat-developer-hub/backstage-plugin-boost-common').LifecycleStage,
+            targetStage as LifecycleStage,
           )
         ) {
           throw new InputError(
@@ -171,7 +172,7 @@ export function createToolRoutes(options: ToolRoutesOptions): Router {
         }
         const updated = await store.updateStage(
           id,
-          targetStage as import('@red-hat-developer-hub/backstage-plugin-boost-common').LifecycleStage,
+          targetStage as LifecycleStage,
         );
         if (!updated) {
           throw new NotFoundError(`Tool "${id}" was deleted during transition`);

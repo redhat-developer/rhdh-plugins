@@ -221,7 +221,7 @@ describe('tool routes', () => {
       expect(store.updateStage).toHaveBeenCalledWith('tool-1', 'pending');
     });
 
-    it('returns 400 for invalid transition (published → pending)', async () => {
+    it('returns 400 when tool is not in draft stage (published)', async () => {
       const tool = makeTool({ lifecycleStage: 'published' });
       const store = createMockStore({
         get: jest.fn().mockResolvedValue(tool),

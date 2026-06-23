@@ -169,6 +169,7 @@ export function createMcpServerRoutes(options: McpServerRoutesOptions): Router {
   router.get('/mcp/servers/:id', requireMcpManage, async (req, res, next) => {
     try {
       const { id } = req.params;
+      validateServerId(id);
       const server = await store.get(id);
       if (!server) {
         throw new NotFoundError(`MCP server "${id}" not found`);
