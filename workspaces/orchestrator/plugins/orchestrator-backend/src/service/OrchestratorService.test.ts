@@ -63,7 +63,6 @@ const createInstancesMock = (size: number): ProcessInstance[] => {
 const instanceId = createInstanceIdMock(1);
 const definitionId = createDefinitionIdMock(1);
 const workflowInfo = createWorkflowInfoMock(1);
-const workflowOverview = createWorkflowOverviewMock(1);
 const workflowOverviews = createWorkflowOverviewsMock(3);
 const instance = createInstanceMock(1);
 const instances = createInstancesMock(3);
