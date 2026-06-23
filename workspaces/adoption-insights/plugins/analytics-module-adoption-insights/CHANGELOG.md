@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.8.3
+
+### Patch Changes
+
+- 2465411: Replace Material UI v4 imports with MUI v5
+
 ## 0.8.2
 
 ## 0.8.1
