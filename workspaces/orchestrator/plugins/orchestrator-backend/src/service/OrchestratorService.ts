@@ -181,9 +181,22 @@ export class OrchestratorService {
     const { definitionId } = args;
     const isWorkflowAvailable =
       this.workflowCacheService.isAvailable(definitionId);
+    // TODO: get the reason why the workflow is not available
+    // TODO: probably need to hit the management API to get the reason why the workflow is not available
     const overview =
       await this.sonataFlowService.fetchWorkflowOverview(definitionId);
-    if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
+    if (overview) {
+      overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
+      if (!isWorkflowAvailable) {
+        overview.availability =
+          await this.sonataFlowService.pingWorkflowService({
+            definitionId,
+            serviceUrl: (
+              await this.dataIndexService.fetchWorkflowServiceUrls()
+            )[definitionId],
+          });
+      }
+    }
     return overview;
   }
 
@@ -211,6 +224,6 @@ export class OrchestratorService {
       definitionId,
       serviceUrl,
     });
-    return isServiceUp;
+    return isServiceUp.isAvailable;
   }
 }

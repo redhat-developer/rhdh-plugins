@@ -27,6 +27,7 @@ import {
   fromWorkflowSource,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
+  WorkflowAvailabilityResponse,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
@@ -511,7 +512,7 @@ export class SonataFlowService {
   public async pingWorkflowService(args: {
     definitionId: string;
     serviceUrl: string;
-  }): Promise<boolean> {
+  }): Promise<WorkflowAvailabilityResponse> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
     let response: Response | undefined;
     try {
@@ -520,9 +521,19 @@ export class SonataFlowService {
       this.logger.error(
         `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
       );
-      return false;
+      return {
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      };
     }
-    return response.ok;
+    return {
+      isAvailable: response.ok,
+      statusCode: response.status || 500,
+      urlToFetch,
+      reason: response.statusText || 'Unknown reason',
+    };
   }
 
   private async handleWorkflowServiceResponse(

@@ -667,6 +667,37 @@ export interface WorkflowLogsResponse {
 /**
  * 
  * @export
+ * @interface WorkflowAvailabilityResponseDTO
+ */
+export interface WorkflowAvailabilityResponseDTO {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'statusCode'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'urlToFetch'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'reason'?: string;
+}
+/**
+ * 
+ * @export
  * @interface WorkflowOverviewDTO
  */
 export interface WorkflowOverviewDTO {
@@ -718,6 +749,12 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {WorkflowAvailabilityResponseDTO}
+     * @memberof WorkflowOverviewDTO
+     */
+    'availability'?: WorkflowAvailabilityResponseDTO;
     /**
      * Workflow definition version
      * @type {string}
