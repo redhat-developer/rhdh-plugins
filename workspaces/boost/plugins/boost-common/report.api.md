@@ -14,6 +14,18 @@ export interface AgenticProvider {
 }
 
 // @public
+export interface AgentRecord {
+  createdAt: string;
+  createdBy: string;
+  description?: string;
+  governanceRegistered: boolean;
+  id: string;
+  lifecycleStage: LifecycleStage;
+  name: string;
+  updatedAt: string;
+}
+
+// @public
 export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
 
 // @public
@@ -231,6 +243,9 @@ export type InputItem =
       url: string;
       mimeType?: string;
     };
+
+// @public
+export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';
 
 // @public
 export interface NormalizedStreamDoneEvent {

@@ -43,7 +43,7 @@ import { defaultWidgetsApi, quickAccessApi } from './extensions/apis';
  * @alpha
  */
 export const homePageModule = createFrontendModule({
-  pluginId: 'home',
+  pluginId: 'home', // upstream home!
   extensions: [
     homePageLayoutExtension,
     onboardingSectionWidget,

@@ -4,19 +4,74 @@
 
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { BasicPermission } from '@backstage/plugin-permission-common';
+import type { CacheService } from '@backstage/backend-plugin-api';
+import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
+import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { Permission } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
 import type { RequestHandler } from 'express';
+import type { RootConfigService } from '@backstage/backend-plugin-api';
+import { Router } from 'express';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
+import { z } from 'zod';
+
+// @public
+export class AdminConfigService {
+  constructor(options: AdminConfigServiceOptions);
+  getAllOverrides(): Promise<Map<string, unknown>>;
+  getOverride(key: BoostConfigKey): Promise<unknown | undefined>;
+  removeOverride(key: BoostConfigKey): Promise<void>;
+  setOverride(key: BoostConfigKey, value: unknown): Promise<void>;
+  validateStoredValues(): Promise<string[]>;
+}
+
+// @public
+export interface AdminConfigServiceOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
+
+// @public
+export class AgentLifecycleStore {
+  constructor(options: AgentLifecycleStoreOptions);
+  delete(id: string): Promise<boolean>;
+  get(id: string): Promise<AgentRecord | undefined>;
+  list(): Promise<AgentRecord[]>;
+  register(agent: {
+    id: string;
+    name: string;
+    description?: string;
+    createdBy: string;
+  }): Promise<AgentRecord>;
+  updateStage(
+    id: string,
+    stage: LifecycleStage,
+  ): Promise<AgentRecord | undefined>;
+}
+
+// @public
+export interface AgentLifecycleStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
+
+// @public
+export interface AgentRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  store: AgentLifecycleStore;
+}
 
 // @public
 export function authorizeLifecycleAction(
-  permission: BasicPermission,
+  permission: Permission,
   _resourceLoader: ResourceLoader,
   options: AuthorizeLifecycleActionOptions,
 ): RequestHandler;
@@ -28,6 +83,9 @@ export interface AuthorizeLifecycleActionOptions {
 }
 
 // @public
+export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+
+// @public
 export const boostAiProviderServiceFactory: ServiceFactory<
   AgenticProvider,
   'plugin',
@@ -35,14 +93,123 @@ export const boostAiProviderServiceFactory: ServiceFactory<
 >;
 
 // @public
+export const boostConfigFields: {
+  readonly 'boost.model.baseUrl': {
+    readonly schema: z.ZodString;
+    readonly configScope: ConfigScope;
+    readonly description: 'Base URL for the AI model endpoint';
+  };
+  readonly 'boost.model.name': {
+    readonly schema: z.ZodString;
+    readonly configScope: ConfigScope;
+    readonly description: 'Name of the AI model to use';
+  };
+  readonly 'boost.systemPrompt': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'System prompt for AI conversations';
+  };
+  readonly 'boost.security.mode': {
+    readonly schema: z.ZodEnum<
+      ['development-only-no-auth', 'plugin-only', 'full']
+    >;
+    readonly configScope: ConfigScope;
+    readonly description: 'Security mode for the boost plugin';
+  };
+  readonly 'boost.features.agentCreation': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Enable agent creation feature';
+  };
+  readonly 'boost.features.skillsMarketplace': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Enable skills marketplace feature';
+  };
+  readonly 'boost.agentApproval.mode': {
+    readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Agent approval mode: built-in or SonataFlow-managed';
+  };
+  readonly 'boost.agentApproval.sonataflow.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'SonataFlow workflow endpoint for agent approval';
+  };
+  readonly 'boost.skillsMarketplace.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Skills catalog backend URL';
+  };
+  readonly 'boost.skillsMarketplace.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Enable or disable skills marketplace';
+  };
+  readonly 'boost.kagenti.auth.tokenExchange.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Enable RFC 8693 token exchange for Kagenti';
+  };
+  readonly 'boost.kagenti.auth.tokenExchange.audience': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Target audience for exchanged token';
+  };
+  readonly 'boost.kagenti.auth.tokenExchange.userTokenHeader': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'Header containing user OIDC token';
+  };
+  readonly 'boost.devSpaces.credentials': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'DevSpaces integration credentials';
+    readonly sensitive: true;
+  };
+};
+
+// @public
+export type BoostConfigKey = keyof typeof boostConfigFields;
+
+// @public
 const boostPlugin: BackendFeature;
 export default boostPlugin;
+
+// @public
+export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
+  configScope: ConfigScope;
+  description: string;
+  schema: T;
+  sensitive?: boolean;
+}
+
+// @public
+export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
 
 // @public
 export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
+export function createAgentRoutes(options: AgentRoutesOptions): Router;
+
+// @public
 export function createToolResourceLoader(): ResourceLoader;
+
+// @public
+export function isDbWritable(key: BoostConfigKey): boolean;
+
+// @public
+export function isDeletableStage(stage: LifecycleStage): boolean;
+
+// @public
+export function isSensitiveField(key: BoostConfigKey): boolean;
+
+// @public
+export function isValidTransition(
+  from: LifecycleStage,
+  to: LifecycleStage,
+): boolean;
 
 // @public
 export class ProviderManager {
@@ -63,7 +230,29 @@ export type ResourceLoader = (req: Request_2) => Promise<
 >;
 
 // @public
+export class RuntimeConfigResolver {
+  constructor(options: RuntimeConfigResolverOptions);
+  invalidate(): Promise<void>;
+  resolve(key: BoostConfigKey): Promise<unknown | undefined>;
+  resolveAll(): Promise<Map<string, unknown>>;
+}
+
+// @public
+export interface RuntimeConfigResolverOptions {
+  adminConfigService: AdminConfigService;
+  cache: CacheService;
+  config: RootConfigService;
+  logger: LoggerService;
+}
+
+// @public
 export type SecurityMode = 'development-only-no-auth' | 'plugin-only' | 'full';
+
+// @public
+export function validateConfigValue(
+  key: BoostConfigKey,
+  value: unknown,
+): unknown;
 
 // @public
 export function validateSecurityMode(

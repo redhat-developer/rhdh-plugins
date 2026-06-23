@@ -34,3 +34,25 @@ export {
   type ResourceLoader,
   type AuthorizeLifecycleActionOptions,
 } from './middleware/security';
+export {
+  AdminConfigService,
+  RuntimeConfigResolver,
+  boostConfigFields,
+  BOOST_CONFIG_SCHEMA_VERSION,
+  validateConfigValue,
+  isDbWritable,
+  isSensitiveField,
+  type AdminConfigServiceOptions,
+  type RuntimeConfigResolverOptions,
+  type BoostConfigKey,
+  type ConfigScope,
+  type ConfigFieldMeta,
+} from './config';
+export {
+  AgentLifecycleStore,
+  isValidTransition,
+  isDeletableStage,
+  createAgentRoutes,
+  type AgentLifecycleStoreOptions,
+  type AgentRoutesOptions,
+} from './agents';

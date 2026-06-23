@@ -53,6 +53,7 @@ import {
   extractSsoReauthorizeUrl,
   isSamlSsoError,
 } from '../../utils/ErrorUtils';
+import { formatMetadataForDisplay } from '../../utils/formatMetadataForDisplay';
 import { buildUrl } from '../../utils/UrlUtils';
 import { Trans } from '../Trans';
 import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
@@ -400,7 +401,10 @@ const WorkflowOutputs = ({
                 />
               ))}
             {Object.keys(valuesAsObject).length > 0 && (
-              <StructuredMetadataTable dense metadata={valuesAsObject} />
+              <StructuredMetadataTable
+                dense
+                metadata={formatMetadataForDisplay(valuesAsObject)}
+              />
             )}
           </AboutField>
         </Grid>

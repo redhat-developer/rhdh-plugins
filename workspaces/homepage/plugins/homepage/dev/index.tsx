@@ -19,6 +19,7 @@
  */
 
 import '@backstage/cli/asset-types';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
 import '@backstage/ui/css/styles.css';
 import ReactDOM from 'react-dom/client';
 import { createApp } from '@backstage/frontend-defaults';
@@ -61,7 +62,7 @@ import {
 import { searchApiRef } from '@backstage/plugin-search-react';
 
 const homepageApiMocksModule = createFrontendModule({
-  pluginId: 'home',
+  pluginId: 'home', // upstream home!
   extensions: [
     ApiBlueprint.make({
       name: 'quickaccess',
