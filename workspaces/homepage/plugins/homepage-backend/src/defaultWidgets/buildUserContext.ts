@@ -18,26 +18,16 @@ import {
   BackstageCredentials,
   BackstageUserPrincipal,
   LoggerService,
-  PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import {
-  createPermission,
-  PolicyDecision,
-  QueryPermissionRequest,
-} from '@backstage/plugin-permission-common';
-import { UserContext } from './types';
 
 export async function buildUserContext(opts: {
   credentials: BackstageCredentials<BackstageUserPrincipal>;
   catalog: CatalogService;
-  permissions: PermissionsService;
-  referencedPermissions: Set<string>;
   logger: LoggerService;
-}): Promise<UserContext> {
-  const { credentials, catalog, permissions, referencedPermissions, logger } =
-    opts;
+}): Promise<{ userEntityRef: string; groupEntityRefs: Set<string> }> {
+  const { credentials, catalog, logger } = opts;
 
   const userEntityRef = credentials.principal.userEntityRef;
   const userEntity = await catalog.getEntityByRef(userEntityRef, {
@@ -55,28 +45,5 @@ export async function buildUserContext(opts: {
       .map(relation => relation.targetRef),
   );
 
-  const policyDecisions = new Map<string, PolicyDecision>();
-  if (referencedPermissions.size > 0) {
-    const names = [...referencedPermissions];
-
-    const conditionalPermissionRequests = names.map<QueryPermissionRequest>(
-      name => ({
-        permission: createPermission({
-          name,
-          attributes: { action: 'read' },
-          resourceType: 'homepage-default-widget',
-        }),
-      }),
-    );
-
-    const conditionalDecisions = await permissions.authorizeConditional(
-      conditionalPermissionRequests,
-      { credentials },
-    );
-    conditionalDecisions.forEach((decision, index) => {
-      policyDecisions.set(names[index], decision);
-    });
-  }
-
-  return { userEntityRef, groupEntityRefs, policyDecisions };
+  return { userEntityRef, groupEntityRefs };
 }

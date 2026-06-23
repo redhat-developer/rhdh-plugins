@@ -21,6 +21,7 @@ import {
 import {
   filterToVisibleLeafIds,
   filterToVisibleLeaves,
+  isExcluded,
   isVisible,
 } from './evaluateVisibility';
 import { DefaultWidgetNode, UserContext } from './types';
@@ -307,6 +308,132 @@ describe('isVisible', () => {
   });
 });
 
+describe('isExcluded', () => {
+  const ctx = makeCtx({
+    groupEntityRefs: new Set(['group:default/developers']),
+    policyDecisions: new Map<string, PolicyDecision>([
+      ['perm.allowed', { result: AuthorizeResult.ALLOW }],
+      ['perm.denied', { result: AuthorizeResult.DENY }],
+    ]),
+  });
+
+  it('not excluded when no unless block is provided', () => {
+    expect(isExcluded({}, ctx)).toBe(false);
+  });
+
+  it('not excluded when unless block is empty', () => {
+    expect(isExcluded({ unless: {} }, ctx)).toBe(false);
+  });
+
+  it('not excluded when unless has only empty arrays', () => {
+    expect(
+      isExcluded({ unless: { users: [], groups: [], permissions: [] } }, ctx),
+    ).toBe(false);
+  });
+
+  it('excluded when user ref matches', () => {
+    expect(isExcluded({ unless: { users: ['user:default/alice'] } }, ctx)).toBe(
+      true,
+    );
+  });
+
+  it('not excluded when user ref does not match', () => {
+    expect(isExcluded({ unless: { users: ['user:default/bob'] } }, ctx)).toBe(
+      false,
+    );
+  });
+
+  it('excluded when group ref matches', () => {
+    expect(
+      isExcluded({ unless: { groups: ['group:default/developers'] } }, ctx),
+    ).toBe(true);
+  });
+
+  it('excluded when permission is ALLOW', () => {
+    expect(isExcluded({ unless: { permissions: ['perm.allowed'] } }, ctx)).toBe(
+      true,
+    );
+  });
+
+  it('not excluded when permission is DENY', () => {
+    expect(isExcluded({ unless: { permissions: ['perm.denied'] } }, ctx)).toBe(
+      false,
+    );
+  });
+
+  it('not excluded when permission is missing from decisions (fails closed)', () => {
+    expect(isExcluded({ unless: { permissions: ['perm.unknown'] } }, ctx)).toBe(
+      false,
+    );
+  });
+
+  describe('conditional permissions', () => {
+    const conditionFor = (widgetIds: string[]) => ({
+      rule: 'HAS_WIDGET_ID',
+      resourceType: 'homepage-default-widget',
+      params: { widgetIds },
+    });
+
+    const conditionalDecision = (
+      conditions: PolicyDecision extends infer T
+        ? T extends { conditions: infer C }
+          ? C
+          : never
+        : never,
+    ): PolicyDecision => ({
+      result: AuthorizeResult.CONDITIONAL,
+      pluginId: 'homepage',
+      resourceType: 'homepage-default-widget',
+      conditions,
+    });
+
+    it('excluded when CONDITIONAL decision matches widget id', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          ['perm.cond', conditionalDecision(conditionFor(['my-widget']))],
+        ]),
+      });
+      expect(
+        isExcluded(
+          { id: 'my-widget', unless: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(true);
+    });
+
+    it('not excluded when CONDITIONAL decision does not match widget id', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          ['perm.cond', conditionalDecision(conditionFor(['other-widget']))],
+        ]),
+      });
+      expect(
+        isExcluded(
+          { id: 'my-widget', unless: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
+
+    it('not excluded when CONDITIONAL uses not and the inner condition matches', () => {
+      const ctxCond = makeCtx({
+        policyDecisions: new Map([
+          [
+            'perm.cond',
+            conditionalDecision({ not: conditionFor(['my-widget']) }),
+          ],
+        ]),
+      });
+      expect(
+        isExcluded(
+          { id: 'my-widget', unless: { permissions: ['perm.cond'] } },
+          ctxCond,
+        ),
+      ).toBe(false);
+    });
+  });
+});
+
 describe('filterToVisibleLeafIds', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
@@ -415,6 +542,78 @@ describe('filterToVisibleLeafIds', () => {
     ];
     expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['a', 'b', 'c']);
   });
+
+  it('excludes a leaf when unless matches the user', () => {
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { users: ['user:default/alice'] },
+      },
+    ];
+    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['a']);
+  });
+
+  it('unless takes precedence over if (deny wins)', () => {
+    const tree: DefaultWidgetNode[] = [
+      {
+        id: 'a',
+        ref: 'a',
+        if: { groups: ['group:default/developers'] },
+        unless: { users: ['user:default/alice'] },
+      },
+    ];
+    expect(filterToVisibleLeafIds(tree, ctx)).toEqual([]);
+  });
+
+  it('prunes entire subtree when unless on group node matches', () => {
+    const tree: DefaultWidgetNode[] = [
+      {
+        unless: { groups: ['group:default/developers'] },
+        children: [
+          { id: 'a', ref: 'a' },
+          { id: 'b', ref: 'b' },
+        ],
+      },
+      { id: 'c', ref: 'c' },
+    ];
+    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['c']);
+  });
+
+  it('excludes a leaf when unless matches a permission', () => {
+    const ctxWithPerm = makeCtx({
+      policyDecisions: new Map<string, PolicyDecision>([
+        ['perm.exclude', { result: AuthorizeResult.ALLOW }],
+      ]),
+    });
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { permissions: ['perm.exclude'] },
+      },
+    ];
+    expect(filterToVisibleLeafIds(tree, ctxWithPerm)).toEqual(['a']);
+  });
+
+  it('keeps a leaf when unless permission is DENY', () => {
+    const ctxWithPerm = makeCtx({
+      policyDecisions: new Map<string, PolicyDecision>([
+        ['perm.exclude', { result: AuthorizeResult.DENY }],
+      ]),
+    });
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { permissions: ['perm.exclude'] },
+      },
+    ];
+    expect(filterToVisibleLeafIds(tree, ctxWithPerm)).toEqual(['a', 'b']);
+  });
 });
 
 describe('filterToVisibleLeaves', () => {
@@ -502,6 +701,65 @@ describe('filterToVisibleLeaves', () => {
     ];
     expect(filterToVisibleLeaves(tree, ctx)).toEqual([
       { id: 'visible', ref: 'visible' },
+    ]);
+  });
+
+  it('includes tags in output when present', () => {
+    const tree: DefaultWidgetNode[] = [
+      { id: 'tagged', ref: 'tagged', tags: ['admin', 'management'] },
+    ];
+    expect(filterToVisibleLeaves(tree, ctx)).toEqual([
+      { id: 'tagged', ref: 'tagged', tags: ['admin', 'management'] },
+    ]);
+  });
+
+  it('omits tags from output when empty array', () => {
+    const tree: DefaultWidgetNode[] = [{ id: 'x', ref: 'x', tags: [] }];
+    const result = filterToVisibleLeaves(tree, ctx);
+    expect(result).toEqual([{ id: 'x', ref: 'x' }]);
+    expect(Object.keys(result[0])).toEqual(['id', 'ref']);
+  });
+
+  it('excludes widget when unless matches', () => {
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { groups: ['group:default/developers'] },
+      },
+    ];
+    expect(filterToVisibleLeaves(tree, ctx)).toEqual([{ id: 'a', ref: 'a' }]);
+  });
+
+  it('unless takes precedence over if in leaf output', () => {
+    const tree: DefaultWidgetNode[] = [
+      {
+        id: 'x',
+        ref: 'x',
+        if: { groups: ['group:default/developers'] },
+        unless: { users: ['user:default/alice'] },
+      },
+    ];
+    expect(filterToVisibleLeaves(tree, ctx)).toEqual([]);
+  });
+
+  it('excludes widget when unless matches a permission', () => {
+    const ctxWithPerm = makeCtx({
+      policyDecisions: new Map<string, PolicyDecision>([
+        ['perm.exclude', { result: AuthorizeResult.ALLOW }],
+      ]),
+    });
+    const tree: DefaultWidgetNode[] = [
+      { id: 'a', ref: 'a' },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { permissions: ['perm.exclude'] },
+      },
+    ];
+    expect(filterToVisibleLeaves(tree, ctxWithPerm)).toEqual([
+      { id: 'a', ref: 'a' },
     ]);
   });
 });

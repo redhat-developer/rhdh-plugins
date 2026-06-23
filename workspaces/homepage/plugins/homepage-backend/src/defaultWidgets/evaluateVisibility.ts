@@ -15,26 +15,18 @@
  */
 
 import {
-  PermissionCondition,
-  PermissionCriteria,
-  PermissionRuleParams,
-} from '@backstage/plugin-permission-common';
-import { DefaultWidgetNode, UserContext, VisibleDefaultWidget } from './types';
-import { rules } from '../permissions/rules';
+  DefaultWidgetNode,
+  DefaultWidgetVisibility,
+  UserContext,
+  VisibleDefaultWidget,
+} from './types';
+import { matches } from '../permissions/permissionUtils';
 
-export function isVisible(
+function matchesVisibility(
   defaultWidget: DefaultWidgetNode,
+  visibility: DefaultWidgetVisibility,
   ctx: UserContext,
 ): boolean {
-  const visibility = defaultWidget?.if;
-  if (!visibility) return true;
-
-  const hasAnyCondition =
-    (visibility.users?.length ?? 0) > 0 ||
-    (visibility.groups?.length ?? 0) > 0 ||
-    (visibility.permissions?.length ?? 0) > 0;
-  if (!hasAnyCondition) return true;
-
   const matchUser =
     visibility.users?.some(ref => ref === ctx.userEntityRef) ?? false;
   const matchGroup =
@@ -46,13 +38,43 @@ export function isVisible(
       return (
         decision.result === 'ALLOW' ||
         (decision.result === 'CONDITIONAL' &&
-          matches(defaultWidget, decision.conditions))
+          matches(defaultWidget as VisibleDefaultWidget, decision.conditions))
       );
     }) ?? false;
 
-  const matchAny = matchUser || matchGroup || matchPolicy;
+  return matchUser || matchGroup || matchPolicy;
+}
 
-  return matchAny;
+export function isVisible(
+  defaultWidget: DefaultWidgetNode,
+  ctx: UserContext,
+): boolean {
+  const visibility = defaultWidget?.if;
+  if (!visibility) return true;
+
+  const hasAny =
+    (visibility.users?.length ?? 0) > 0 ||
+    (visibility.groups?.length ?? 0) > 0 ||
+    (visibility.permissions?.length ?? 0) > 0;
+  if (!hasAny) return true;
+
+  return matchesVisibility(defaultWidget, visibility, ctx);
+}
+
+export function isExcluded(
+  defaultWidget: DefaultWidgetNode,
+  ctx: UserContext,
+): boolean {
+  const visibility = defaultWidget?.unless;
+  if (!visibility) return false;
+
+  const hasAny =
+    (visibility.users?.length ?? 0) > 0 ||
+    (visibility.groups?.length ?? 0) > 0 ||
+    (visibility.permissions?.length ?? 0) > 0;
+  if (!hasAny) return false;
+
+  return matchesVisibility(defaultWidget, visibility, ctx);
 }
 
 export function filterToVisibleLeafIds(
@@ -61,6 +83,7 @@ export function filterToVisibleLeafIds(
 ): string[] {
   const out: string[] = [];
   const walk = (node: DefaultWidgetNode) => {
+    if (isExcluded(node, ctx)) return;
     if (!isVisible(node, ctx)) return;
     if (node.id !== undefined) out.push(node.id);
     node.children?.forEach(walk);
@@ -75,6 +98,7 @@ export function filterToVisibleLeaves(
 ): VisibleDefaultWidget[] {
   const out: VisibleDefaultWidget[] = [];
   const walk = (node: DefaultWidgetNode) => {
+    if (isExcluded(node, ctx)) return;
     if (!isVisible(node, ctx)) return;
     if (node.id !== undefined) {
       const card: VisibleDefaultWidget = {
@@ -83,6 +107,8 @@ export function filterToVisibleLeaves(
       };
       if (node.props !== undefined) card.props = node.props;
       if (node.layout !== undefined) card.layout = node.layout;
+      if (node.tags !== undefined && node.tags.length > 0)
+        card.tags = node.tags;
       out.push(card);
     }
     node.children?.forEach(walk);
@@ -90,32 +116,3 @@ export function filterToVisibleLeaves(
   nodes.forEach(walk);
   return out;
 }
-
-const matches = (
-  defaultWidget: DefaultWidgetNode,
-  filters?: PermissionCriteria<
-    PermissionCondition<string, PermissionRuleParams>
-  >,
-): boolean => {
-  if (!filters) {
-    return true;
-  }
-
-  if ('allOf' in filters) {
-    return filters.allOf.every(filter => matches(defaultWidget, filter));
-  }
-
-  if ('anyOf' in filters) {
-    return filters.anyOf.some(filter => matches(defaultWidget, filter));
-  }
-
-  if ('not' in filters) {
-    return !matches(defaultWidget, filters.not);
-  }
-
-  return (
-    Object.values(rules)
-      .find(r => r.name === filters.rule)
-      ?.apply(defaultWidget, filters.params ?? {}) ?? false
-  );
-};

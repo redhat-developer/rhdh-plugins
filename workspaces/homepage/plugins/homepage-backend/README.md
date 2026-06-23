@@ -43,7 +43,20 @@ For each request to `GET /api/homepage/default-widgets`, the backend looks at th
 
 Rules inside `if` use **OR** logic. If the parent fails its `if`, nothing under it is shown.
 
-At startup the backend finds every permission name used in the tree. Each request checks only those names in one batch.
+**Who cannot see a card (`unless`).** A node can have an optional `unless` block. It uses the same shape as `if` (`users`, `groups`, `permissions`) but acts as a **denylist**—if any condition matches, the widget is hidden.
+
+- `unless` is checked **before** `if`. Deny wins: if both match, the widget is hidden.
+- Rules inside `unless` also use **OR** logic—matching any user, group, or permission triggers the exclusion.
+- On a group node, `unless` prunes the entire subtree without evaluating children.
+- If `unless` is missing or empty, it never excludes.
+
+**Tags (`tags`).** A leaf node can have an optional `tags` array of strings (for example `['admin', 'developer']`). Tags are used for RBAC conditional policy filtering with the `HAS_TAG` permission rule.
+
+- Tags are passed through to the API response so the RBAC layer can filter on them.
+- Widgets **without** tags bypass tag-based RBAC filtering entirely—they are always included when the RBAC decision is `CONDITIONAL`.
+- Tags have no effect on config-time `if`/`unless` checks. They only matter at the RBAC layer.
+
+At startup the backend finds every permission name used in `if` and `unless` blocks across the tree. Each request checks only those names in one batch.
 
 **Leaves vs groups.** A **leaf** needs `id` and `ref`. A **group** needs `children` and must not use `id` or `ref`. The full rules are in `src/defaultWidgets/loadDefaultWidgets.ts`.
 
@@ -52,51 +65,85 @@ At startup the backend finds every permission name used in the tree. Each reques
 ```yaml
 homepage:
   defaultWidgets:
-    # --- Simple cards (leaves) ---
-    # id = mountpoint id for the card; ref = which widget to render.
+    # --- Simple card with tags ---
     - id: onboarding
       ref: 'rhdh-onboarding-section'
+      tags: [public]
       layout:
         xl: { w: 12, h: 6 }
         lg: { w: 12, h: 6 }
+
+    # --- Card visible to developers, tagged for RBAC filtering ---
+    - id: template-list
+      ref: 'rhdh-template-section'
+      tags: [developer]
+      if:
+        groups: [group:default/developers]
+      layout:
+        xl: { w: 12, h: 5 }
+
+    # --- Card visible to developers but hidden from interns (unless) ---
     - id: quickaccess-card
       ref: quickaccess-card
+      tags: [developer]
+      if:
+        groups: [group:default/developers]
+      unless:
+        groups: [group:default/interns]
       layout:
         xl: { w: 6, h: 8, x: 6 }
 
     # --- Group with children (shared visibility) ---
-    # The group row has `if` and `children` only. All listed cards are hidden
-    # unless the user passes the group's `if` (here: member of admins).
     - if:
         groups: [group:default/admins]
       children:
         - id: rbac
           ref: RBAC
+          tags: [admin]
           layout:
             xl: { w: 12, h: 6 }
 
-    # --- group with several children ---
-    # Use one parent to apply the same visibility to multiple cards.
-    # - if:
-    #     groups: [group:default/platform-team]
-    #   children:
-    #     - id: metrics-card
-    #       ref: platform-metrics
-    #       layout:
-    #         xl: { w: 6, h: 8 }
-    #     - id: logs-card
-    #       ref: platform-logs
-    #       layout:
-    #         xl: { w: 6, h: 8 }
-    #     # Each child can still have its own `if` for finer rules.
-    #     - id: audit-card
-    #       ref: platform-audit
-    #       if:
-    #         users: [user:default/auditor]
+    # --- Group hidden from a specific user via unless ---
+    - if:
+        groups: [group:default/admins]
+      unless:
+        users: [user:default/alice]
+      children:
+        - id: audit-log
+          ref: platform-audit
+          tags: [admin]
+          layout:
+            xl: { w: 12, h: 6 }
 
-    # --- Commented: single card gated by permission ---
-    # - id: admin-insights
-    #   ref: admin-insights-card
-    #   if:
-    #     permissions: ['homepage.default-widgets.read']
+    # --- Entire subtree hidden from viewers ---
+    - unless:
+        groups: [group:default/viewers]
+      children:
+        - id: dev-tools
+          ref: dev-tools-card
+          tags: [developer]
+          layout:
+            xl: { w: 12, h: 4 }
 ```
+
+### Three filtering layers
+
+```
+Config (if/unless)  -->  Permission check (ALLOW/DENY/CONDITIONAL)  -->  Conditional rules (HAS_TAG/HAS_WIDGET_ID)
+     Layer 1                        Layer 2                                        Layer 3
+```
+
+- **Layer 1** always runs—identity and group based (`if`/`unless`).
+- **Layer 2**—RBAC returns ALLOW (pass all), DENY (block all), or CONDITIONAL (apply Layer 3).
+- **Layer 3**—rule-based filtering on survivors from Layer 1 using `HAS_TAG` and/or `HAS_WIDGET_ID`.
+
+### Permission rules
+
+The plugin registers two permission rules for the `homepage-default-widget` resource type:
+
+| Rule            | Params                | Description                                            |
+| --------------- | --------------------- | ------------------------------------------------------ |
+| `HAS_WIDGET_ID` | `widgetIds: string[]` | Matches widgets whose `id` is in the list              |
+| `HAS_TAG`       | `tags: string[]`      | Matches widgets that have at least one overlapping tag |
+
+These rules can be used in RBAC conditional policies (via file or the RBAC UI) to control which widgets a role can see. Widgets without tags bypass `HAS_TAG` filtering entirely.

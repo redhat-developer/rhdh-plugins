@@ -25,6 +25,13 @@ import {
   createServiceRef,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import {
+  AuthorizeResult,
+  createPermission,
+  PolicyDecision,
+  QueryPermissionRequest,
+} from '@backstage/plugin-permission-common';
+import { homepageDefaultWidgetsReadPermission } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { buildUserContext } from '../defaultWidgets/buildUserContext';
 import { filterToVisibleLeaves } from '../defaultWidgets/evaluateVisibility';
 import {
@@ -34,7 +41,9 @@ import {
 import {
   DefaultWidgetNode,
   DefaultWidgetsResponse,
+  UserContext,
 } from '../defaultWidgets/types';
+import { filterAuthorizedWidgets } from '../permissions/permissionUtils';
 
 export interface DefaultWidgetsService {
   getDefaultWidgets(options: {
@@ -95,16 +104,48 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
     if (!this.#tree) {
       return {};
     }
-    const ctx = await buildUserContext({
+    const identity = await buildUserContext({
       credentials,
       catalog: this.#catalog,
-      permissions: this.#permissions,
-      referencedPermissions: this.#referencedPermissions,
       logger: this.#logger,
     });
-    return {
-      items: filterToVisibleLeaves(this.#tree, ctx),
-    };
+
+    const refPermNames = [...this.#referencedPermissions];
+    const requests: QueryPermissionRequest[] = [
+      { permission: homepageDefaultWidgetsReadPermission },
+      ...refPermNames.map(name => ({
+        permission: createPermission({
+          name,
+          attributes: { action: 'read' as const },
+          resourceType: 'homepage-default-widget',
+        }),
+      })),
+    ];
+
+    const allDecisions = await this.#permissions.authorizeConditional(
+      requests,
+      {
+        credentials,
+      },
+    );
+
+    const [rbacDecision, ...refDecisions] = allDecisions;
+
+    const policyDecisions = new Map<string, PolicyDecision>();
+    refDecisions.forEach((decision, index) => {
+      policyDecisions.set(refPermNames[index], decision);
+    });
+
+    const ctx: UserContext = { ...identity, policyDecisions };
+    const configFiltered = filterToVisibleLeaves(this.#tree, ctx);
+
+    if (rbacDecision.result === AuthorizeResult.CONDITIONAL) {
+      return {
+        items: filterAuthorizedWidgets(configFiltered, rbacDecision.conditions),
+      };
+    }
+
+    return { items: configFiltered };
   }
 }
 

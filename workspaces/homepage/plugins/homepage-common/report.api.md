@@ -19,6 +19,10 @@ export interface DefaultWidgetNode {
   props?: Record<string, unknown>;
   // (undocumented)
   ref?: string;
+  // (undocumented)
+  tags?: string[];
+  // (undocumented)
+  unless?: DefaultWidgetVisibility;
 }
 
 // @public (undocumented)
@@ -61,5 +65,7 @@ export interface VisibleDefaultWidget {
   props?: Record<string, unknown>;
   // (undocumented)
   ref: string;
+  // (undocumented)
+  tags?: string[];
 }
 ```

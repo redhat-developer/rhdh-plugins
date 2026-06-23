@@ -49,4 +49,23 @@ const hasWidgetId = createPermissionRule({
   },
 });
 
-export const rules = { hasWidgetId };
+const hasTag = createPermissionRule({
+  name: 'HAS_TAG',
+  description:
+    'Should allow users to access homepage widgets with specified tags',
+  resourceRef: homepageDefaultWidgetPermissionResourceRef,
+  paramsSchema: z.object({
+    tags: z.string().array().optional().describe('List of tags to match on'),
+  }),
+  apply: (defaultWidget: DefaultWidgetNode, { tags }) => {
+    if (!tags || tags.length === 0) return true;
+    if (!defaultWidget.tags || defaultWidget.tags.length === 0) return false;
+    return tags.some(tag => defaultWidget.tags!.includes(tag));
+  },
+  toQuery: ({ tags }) => ({
+    key: 'tag',
+    values: tags,
+  }),
+});
+
+export const rules = { hasWidgetId, hasTag };

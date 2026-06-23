@@ -31,7 +31,9 @@ export interface DefaultWidgetNode {
   ref?: string;
   props?: Record<string, unknown>;
   layout?: unknown;
+  tags?: string[];
   if?: DefaultWidgetVisibility;
+  unless?: DefaultWidgetVisibility;
   children?: DefaultWidgetNode[];
 }
 
@@ -43,6 +45,7 @@ export interface VisibleDefaultWidget {
   ref: string;
   props?: Record<string, unknown>;
   layout?: unknown;
+  tags?: string[];
 }
 
 /**
