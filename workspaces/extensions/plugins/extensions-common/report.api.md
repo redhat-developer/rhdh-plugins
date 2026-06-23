@@ -103,18 +103,18 @@ export enum ExtensionsAnnotation {
 // @public (undocumented)
 export interface ExtensionsApi {
   // (undocumented)
-  disablePackage?(
+  enablePackage?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
   // (undocumented)
-  disablePlugin?(
+  enablePlugin?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
@@ -220,18 +220,18 @@ export type ExtensionsAuthor = {
 export class ExtensionsBackendClient implements ExtensionsApi {
   constructor(options: ExtensionsBackendClientOptions);
   // (undocumented)
-  disablePackage(
+  enablePackage(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
   // (undocumented)
-  disablePlugin(
+  enablePlugin(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
