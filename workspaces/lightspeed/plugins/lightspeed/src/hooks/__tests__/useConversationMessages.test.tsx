@@ -892,7 +892,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     );
 
     await act(async () => {
-      void result.current.handleInputPrompt('Hi');
+      result.current.handleInputPrompt('Hi');
     });
 
     await waitFor(() => {

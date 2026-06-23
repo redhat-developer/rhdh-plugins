@@ -87,7 +87,7 @@ export const buildVectorStoreMetadata = (
     description: session.description,
     created_at: session.created_at,
     updated_at: session.updated_at,
-    ...(session.metadata || {}),
+    ...session.metadata,
   };
 };
 

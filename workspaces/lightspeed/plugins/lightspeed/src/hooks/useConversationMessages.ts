@@ -54,9 +54,7 @@ import {
   useCreateConversationMessage,
 } from './useCreateCoversationMessage';
 
-const toolCallIdKey = (id: string | number): string => {
-  return String(id);
-};
+const toolCallIdKey = String;
 
 const normalizeToolCalls = (
   calls: (ToolCall | undefined)[] | undefined,
@@ -102,7 +100,9 @@ const legacyToolResultToString = (response: unknown): string => {
   try {
     return JSON.stringify(response);
   } catch {
-    return String(response);
+    return typeof response === 'object'
+      ? '[unserializable object]'
+      : String(response);
   }
 };
 
@@ -141,7 +141,7 @@ export type UseConversationMessagesReturn = {
   conversations: Conversations;
   scrollToBottomRef: RefObject<ScrollContainerHandle | null>;
   streamingConversationId: string | null;
-  data?: BaseMessage[] | undefined;
+  data?: BaseMessage[];
   error: Error | null;
   isPending: boolean;
   isFetching: boolean;
@@ -230,14 +230,11 @@ export const useConversationMessages = (
     if (!Array.isArray(conversationsData) || conversationsData.length === 0)
       return;
 
-    const newConvoIndex: number[] = [];
-
     if (conversations) {
       const _conversations: { [key: string]: any[] } = {
         [currentConversation]: [],
       };
 
-      let index = 0;
       for (let i = 0; i < conversationsData.length; i++) {
         const [userMessage, aiMessage] = getConversationsData(
           conversationsData[i] as unknown as LCSConversation,
@@ -271,9 +268,6 @@ export const useConversationMessages = (
         }
 
         _conversations[currentConversation].push(userMsg, botMsg);
-
-        newConvoIndex.push(index);
-        index++;
       }
 
       if (streamingConversations.current[currentConversation]) {
@@ -371,7 +365,6 @@ export const useConversationMessages = (
           while (!streamEnded) {
             const { value, done } = await reader.read();
             if (done) {
-              streamEnded = true;
               break;
             }
 
@@ -526,7 +519,7 @@ export const useConversationMessages = (
                     );
                     matchToolName = tokenResult.tool_name;
                     toolIdKey =
-                      data?.id !== null ? toolCallIdKey(data.id) : undefined;
+                      data?.id === null ? undefined : toolCallIdKey(data.id);
                   } else if (mcpHasContent) {
                     toolIdKey = toolCallIdKey(data.id);
                     responsePayload =

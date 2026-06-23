@@ -53,9 +53,9 @@ export const Trans = ({ message, params, components }: TransProps) => {
 
   return (
     <>
-      {parts.map((part: string, index: number) => {
+      {parts.map((part: string) => {
         if (markers[part]) {
-          return cloneElement(markers[part], { key: index });
+          return cloneElement(markers[part], { key: part });
         }
         return part;
       })}
@@ -65,5 +65,5 @@ export const Trans = ({ message, params, components }: TransProps) => {
 
 // Helper function to escape special regex characters
 function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }

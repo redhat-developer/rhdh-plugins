@@ -66,8 +66,8 @@ export function formatMcpSelectedCount(
   totalCount: number,
 ): string {
   return t['mcp.settings.selectedCount']
-    .replace(/\{\{selectedCount\}\}/g, String(selectedCount))
-    .replace(/\{\{totalCount\}\}/g, String(totalCount));
+    .replaceAll('{{selectedCount}}', String(selectedCount))
+    .replaceAll('{{totalCount}}', String(totalCount));
 }
 
 /** Status cell detail for a connected server tool count (singular vs plural). */
@@ -79,5 +79,5 @@ export function formatMcpToolCountStatus(
     toolCount === 1
       ? 'mcp.settings.status.oneTool'
       : 'mcp.settings.status.manyTools';
-  return t[key].replace(/\{\{count\}\}/g, String(toolCount));
+  return t[key].replaceAll('{{count}}', String(toolCount));
 }

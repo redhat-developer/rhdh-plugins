@@ -131,7 +131,7 @@ export function useLightspeedProviderState(): {
     const pathname = location.pathname;
     const prevPathname = lightspeedPathnamePrevRef.current;
     const isUnderLightspeedPath = (p: string | null) =>
-      Boolean(p && p.startsWith(LIGHTSPEED_PATH));
+      Boolean(p?.startsWith(LIGHTSPEED_PATH));
     const isInternalLightspeedRouteChange =
       isUnderLightspeedPath(prevPathname) &&
       isUnderLightspeedPath(pathname) &&

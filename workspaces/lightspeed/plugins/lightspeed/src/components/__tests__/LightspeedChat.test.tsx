@@ -235,9 +235,7 @@ describe('LightspeedChat', () => {
       data: [],
       isRefetching: false,
       isLoading: false,
-    } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-      typeof useConversations
-    >);
+    } as unknown as ReturnType<typeof useConversations>);
     mockUseNotebookSessions.mockReturnValue({
       data: [],
       refetch: jest.fn(),
@@ -293,9 +291,7 @@ describe('LightspeedChat', () => {
       ],
       isRefetching: false,
       isLoading: false,
-    } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-      typeof useConversations
-    >);
+    } as unknown as ReturnType<typeof useConversations>);
 
     const storedData = JSON.stringify({ [mockUser]: 'test-conversation-id' });
     localStorage.setItem(localStorageKey, storedData);
@@ -475,9 +471,7 @@ describe('LightspeedChat', () => {
         ],
         isRefetching: false,
         isLoading: false,
-      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-        typeof useConversations
-      >);
+      } as unknown as ReturnType<typeof useConversations>);
     });
 
     it('should filter conversations by search term and show matching results', async () => {
@@ -518,9 +512,7 @@ describe('LightspeedChat', () => {
         data: [],
         isRefetching: false,
         isLoading: false,
-      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-        typeof useConversations
-      >);
+      } as unknown as ReturnType<typeof useConversations>);
 
       render(setupLightspeedChat());
 
@@ -1117,9 +1109,7 @@ describe('LightspeedChat', () => {
         ],
         isRefetching: false,
         isLoading: false,
-      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-        typeof useConversations
-      >);
+      } as unknown as ReturnType<typeof useConversations>);
 
       render(setupLightspeedChat());
 
@@ -1148,9 +1138,7 @@ describe('LightspeedChat', () => {
         ],
         isRefetching: false,
         isLoading: false,
-      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
-        typeof useConversations
-      >);
+      } as unknown as ReturnType<typeof useConversations>);
 
       render(setupLightspeedChat());
 

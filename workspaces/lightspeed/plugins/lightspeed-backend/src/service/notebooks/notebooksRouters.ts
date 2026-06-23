@@ -26,7 +26,7 @@ import express, { Router } from 'express';
 
 import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
-import { Readable, Transform } from 'stream';
+import { Readable, Transform } from 'node:stream';
 
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
@@ -232,8 +232,6 @@ export async function createNotebooksRouter(
             );
 
             // Extract citations/sources from tool calls (file_search results)
-
-            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else {
             // Log unhandled event types to help identify what we're missing
             logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
@@ -507,7 +505,7 @@ export async function createNotebooksRouter(
         }
 
         if (!response.ok) {
-          const errorBody = (await response.json()) as any;
+          const errorBody = await response.json();
           const errorMsg =
             errorBody?.detail?.[0]?.msg ||
             errorBody?.detail?.cause ||

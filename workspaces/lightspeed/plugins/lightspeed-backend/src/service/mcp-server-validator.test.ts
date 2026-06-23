@@ -28,10 +28,10 @@ describe('McpServerValidator auth header behavior', () => {
   };
   childMock.mockImplementation(() => logger);
 
-  const originalFetch = global.fetch;
+  const originalFetch = globalThis.fetch;
 
   afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
     jest.clearAllMocks();
   });
 
@@ -39,7 +39,7 @@ describe('McpServerValidator auth header behavior', () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValue(new Response(null, { status: 401 }));
-    global.fetch = fetchMock;
+    globalThis.fetch = fetchMock;
 
     const validator = new McpServerValidator(logger);
     const result = await validator.validate(url, 'raw-token');
@@ -63,7 +63,7 @@ describe('McpServerValidator auth header behavior', () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValue(new Response(null, { status: 401 }));
-    global.fetch = fetchMock;
+    globalThis.fetch = fetchMock;
 
     const validator = new McpServerValidator(logger);
     const result = await validator.validate(url, 'Basic abc123');

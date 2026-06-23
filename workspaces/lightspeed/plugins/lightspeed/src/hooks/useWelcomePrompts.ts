@@ -41,7 +41,7 @@ export const useWelcomePrompts = (): SamplePrompts => {
             }),
           };
         }
-        return prompt as { title: string; message: string };
+        return prompt;
       });
     };
 

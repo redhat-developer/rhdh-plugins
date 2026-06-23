@@ -33,9 +33,9 @@ import { toFile } from './fileParser';
  * Uses VectorStoresOperator to proxy through lightspeed-core
  */
 export class DocumentService {
-  private logger: LoggerService;
-  private client: VectorStoresOperator;
-  private chunkingStrategy: {
+  private readonly logger: LoggerService;
+  private readonly client: VectorStoresOperator;
+  private readonly chunkingStrategy: {
     type: string;
     static?: { max_chunk_size_tokens: number; chunk_overlap_tokens: number };
   };

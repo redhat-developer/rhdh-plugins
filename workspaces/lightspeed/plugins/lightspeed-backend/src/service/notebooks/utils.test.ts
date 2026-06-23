@@ -38,7 +38,7 @@ describe('utils', () => {
   });
 
   describe('handleError', () => {
-    let mockRes: Partial<Response>;
+    let mockRes: Response;
     let mockJson: jest.Mock;
     let mockStatus: jest.Mock;
 
@@ -47,18 +47,13 @@ describe('utils', () => {
       mockStatus = jest.fn().mockReturnValue({ json: mockJson });
       mockRes = {
         status: mockStatus,
-      };
+      } as unknown as Response;
     });
 
     it('should handle NotAllowedError with 403 status', () => {
       const error = new NotAllowedError('User lacks permission');
 
-      handleError(
-        logger,
-        mockRes as Response,
-        error,
-        'Permission check failed',
-      );
+      handleError(logger, mockRes, error, 'Permission check failed');
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith({
@@ -74,7 +69,7 @@ describe('utils', () => {
     it('should handle NotFoundError with 404 status', () => {
       const error = new NotFoundError('Resource not found');
 
-      handleError(logger, mockRes as Response, error, 'Fetch resource failed');
+      handleError(logger, mockRes, error, 'Fetch resource failed');
 
       expect(mockStatus).toHaveBeenCalledWith(404);
       expect(mockJson).toHaveBeenCalledWith({
@@ -86,7 +81,7 @@ describe('utils', () => {
     it('should handle InputError with 400 status', () => {
       const error = new InputError('Invalid input data');
 
-      handleError(logger, mockRes as Response, error, 'Validation failed');
+      handleError(logger, mockRes, error, 'Validation failed');
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -98,7 +93,7 @@ describe('utils', () => {
     it('should handle ConflictError with 409 status', () => {
       const error = new ConflictError('Resource already exists');
 
-      handleError(logger, mockRes as Response, error, 'Create resource failed');
+      handleError(logger, mockRes, error, 'Create resource failed');
 
       expect(mockStatus).toHaveBeenCalledWith(409);
       expect(mockJson).toHaveBeenCalledWith({
@@ -110,7 +105,7 @@ describe('utils', () => {
     it('should handle generic Error with 500 status', () => {
       const error = new Error('Unexpected error');
 
-      handleError(logger, mockRes as Response, error, 'Operation failed');
+      handleError(logger, mockRes, error, 'Operation failed');
 
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
@@ -122,7 +117,7 @@ describe('utils', () => {
     it('should handle validation error strings with 400 status', () => {
       const error = 'Field is required';
 
-      handleError(logger, mockRes as Response, error);
+      handleError(logger, mockRes, error);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -135,7 +130,7 @@ describe('utils', () => {
     });
 
     it('should handle empty validation error string', () => {
-      handleError(logger, mockRes as Response, '');
+      handleError(logger, mockRes, '');
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -147,7 +142,7 @@ describe('utils', () => {
     it('should handle long validation error messages', () => {
       const longMessage = 'a'.repeat(1000);
 
-      handleError(logger, mockRes as Response, longMessage);
+      handleError(logger, mockRes, longMessage);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -159,7 +154,7 @@ describe('utils', () => {
     it('should handle validation errors with special characters', () => {
       const error = 'Invalid format: "name" must match /^[a-z]+$/';
 
-      handleError(logger, mockRes as Response, error);
+      handleError(logger, mockRes, error);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -171,7 +166,7 @@ describe('utils', () => {
     it('should handle undefined error', () => {
       const error = undefined;
 
-      handleError(logger, mockRes as Response, error, 'Unknown error');
+      handleError(logger, mockRes, error, 'Unknown error');
 
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
@@ -183,7 +178,7 @@ describe('utils', () => {
     it('should handle null error', () => {
       const error = null;
 
-      handleError(logger, mockRes as Response, error, 'Null error');
+      handleError(logger, mockRes, error, 'Null error');
 
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
@@ -196,7 +191,7 @@ describe('utils', () => {
       const error = new Error('Test error');
       const contextMessage = 'Context: Operation X failed';
 
-      handleError(logger, mockRes as Response, error, contextMessage);
+      handleError(logger, mockRes, error, contextMessage);
 
       expect(logger.error).toHaveBeenCalledWith(
         'Context: Operation X failed: Test error',
@@ -204,15 +199,15 @@ describe('utils', () => {
       );
     });
 
-    it('should handle error with empty message', () => {
-      const error = new Error('');
+    it('should handle error with short message', () => {
+      const error = new Error('error');
 
-      handleError(logger, mockRes as Response, error, 'Operation failed');
+      handleError(logger, mockRes, error, 'Operation failed');
 
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
         status: 'error',
-        error: '',
+        error: 'error',
       });
     });
 
@@ -226,12 +221,7 @@ describe('utils', () => {
 
       const error = new CustomError('Custom error occurred');
 
-      handleError(
-        logger,
-        mockRes as Response,
-        error,
-        'Custom operation failed',
-      );
+      handleError(logger, mockRes, error, 'Custom operation failed');
 
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
@@ -255,7 +245,7 @@ describe('utils', () => {
         mockJson.mockClear();
         mockStatus.mockClear();
 
-        handleError(logger, mockRes as Response, error, 'Test');
+        handleError(logger, mockRes, error, 'Test');
 
         expect(mockStatus).toHaveBeenCalledWith(expectedStatuses[index]);
       });

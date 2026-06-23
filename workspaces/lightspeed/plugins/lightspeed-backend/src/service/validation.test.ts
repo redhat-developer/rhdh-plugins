@@ -24,28 +24,24 @@ import {
 import { validateCompletionsRequest } from './validation';
 
 describe('validateCompletionsRequest', () => {
-  let mockReq: Partial<Request>;
-  let mockRes: Partial<Response>;
+  let mockReq: Request;
+  let mockRes: Response;
   let mockNext: NextFunction;
   let jsonMock: jest.Mock;
   let statusMock: jest.Mock;
 
   const callValidate = () =>
-    validateCompletionsRequest(
-      mockReq as Request,
-      mockRes as Response,
-      mockNext,
-    );
+    validateCompletionsRequest(mockReq, mockRes, mockNext);
 
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
     mockReq = {
       body: {},
-    };
+    } as unknown as Request;
     mockRes = {
       status: statusMock,
-    };
+    } as unknown as Response;
     mockNext = jest.fn();
   });
 

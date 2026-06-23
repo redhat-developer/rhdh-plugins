@@ -54,8 +54,7 @@ describe('formatToolResponseForMarkdown', () => {
   });
 
   it('unwraps SSE tool_result envelope with data prefix', () => {
-    const input =
-      'data: {"event":"tool_result","data":{"id":"abc","status":"completed","content":"{\\"results\\":[{\\"score\\":1.23}]}"}}';
+    const input = String.raw`data: {"event":"tool_result","data":{"id":"abc","status":"completed","content":"{\"results\":[{\"score\":1.23}]}"}}`;
     const out = formatToolResponseForMarkdown(input);
     expect(out).toContain('```json');
     expect(out).toContain('"results"');

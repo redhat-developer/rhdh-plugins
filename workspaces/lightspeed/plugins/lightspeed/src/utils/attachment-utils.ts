@@ -30,17 +30,16 @@ export const readFileAsText = (file: File): Promise<string | null> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () =>
+      reject(new Error(reader.error?.message ?? 'Failed to read file'));
     reader.readAsText(file);
   });
 
 export const sanitizeFileType = (fileContent: FileContent): string => {
-  switch (fileContent.type) {
-    case SupportedFileType.YAML:
-      return 'application/yaml';
-    default:
-      return fileContent.type;
+  if (fileContent.type === SupportedFileType.YAML) {
+    return 'application/yaml';
   }
+  return fileContent.type;
 };
 
 export const getAttachments = (fileContents: FileContent[]): Attachment[] =>

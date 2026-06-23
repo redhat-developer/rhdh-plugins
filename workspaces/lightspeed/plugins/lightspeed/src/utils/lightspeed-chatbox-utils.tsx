@@ -74,11 +74,11 @@ const escapeBulletListMarker = (line: string) => {
   if (/^\s*\u2022/u.test(line)) {
     return line;
   }
-  return line.replace(/^(\s*)([*+-])(\s)/, '$1\\$2$3');
+  return line.replace(/^(\s*)([*+-])(\s)/, String.raw`$1\$2$3`);
 };
 
 const escapeOrderedListMarker = (line: string) =>
-  line.replace(/^(\s*)(\d+)\.(\s)/, '$1$2\\.$3');
+  line.replace(/^(\s*)(\d+)\.(\s)/, String.raw`$1$2\.$3`);
 
 /**
  * When intro lines (no blank lines among them) are followed by a contiguous run of
@@ -138,7 +138,7 @@ const foldBulletListWithIntro = (s: string) =>
  * (e.g. paragraph + blank line + ordered list) so PatternFly renders one user bubble.
  */
 export const normalizeChatUserInput = (input: string): string => {
-  let s = input.replace(/\r\n/g, '\n').trim();
+  let s = input.replaceAll('\r\n', '\n').trim();
   if (!s) {
     return s;
   }

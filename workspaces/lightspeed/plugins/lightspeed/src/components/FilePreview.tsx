@@ -56,7 +56,7 @@ const FilePreview = () => {
         <div style={{ display: 'flex', gap: '10px' }}>
           {fileContents.map((file, index) => (
             <FileDetailsLabel
-              key={index}
+              key={file.name}
               fileName={file.name}
               isLoading={isLoadingFile[file.name]}
               onClick={onAttachmentClick}

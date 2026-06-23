@@ -18,8 +18,8 @@ import { InputError } from '@backstage/errors';
 
 import { Parser } from 'htmlparser2';
 
-import dns from 'dns/promises';
-import { isIP } from 'net';
+import dns from 'node:dns/promises';
+import { isIP } from 'node:net';
 
 import {
   DEFAULT_MAX_FILE_SIZE_MB,
@@ -163,7 +163,7 @@ const isPrivateOrInternalIP = (ip: string): boolean => {
       // Extract the hex parts and check against private ranges
       const parts = ipv4Part.split(':');
       if (parts.length >= 1) {
-        const firstHex = parseInt(parts[0], 16);
+        const firstHex = Number.parseInt(parts[0], 16);
         // Check for common private ranges in hex:
         // 127.x.x.x -> 0x7F00-0x7FFF (loopback)
         // 10.x.x.x -> 0x0A00-0x0AFF (private)
@@ -293,7 +293,7 @@ export const sanitizeContentForRAG = (content: string): string => {
 
   // Limit excessive consecutive newlines to prevent context stuffing
   const newlinePattern = new RegExp(
-    `\\n{${MAX_CONSECUTIVE_NEWLINES + 1},}`,
+    String.raw`\n{${MAX_CONSECUTIVE_NEWLINES + 1},}`,
     'g',
   );
   sanitized = sanitized.replace(

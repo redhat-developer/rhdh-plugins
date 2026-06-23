@@ -17,13 +17,13 @@
 import '@testing-library/jest-dom';
 
 // eslint-disable-next-line no-restricted-imports
-import { TextDecoder, TextEncoder } from 'util';
+import { TextDecoder, TextEncoder } from 'node:util';
 
 // Also used in browser-based APIs for hashing.
-Object.defineProperty(global.self, 'TextEncoder', {
+Object.defineProperty(globalThis.self, 'TextEncoder', {
   value: TextEncoder,
 });
 
-Object.defineProperty(global.self, 'TextDecoder', {
+Object.defineProperty(globalThis.self, 'TextDecoder', {
   value: TextDecoder,
 });

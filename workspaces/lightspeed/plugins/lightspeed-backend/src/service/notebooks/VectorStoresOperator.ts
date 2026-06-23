@@ -96,8 +96,8 @@ async function handleHttpError(
  */
 export class VectorStoresOperator {
   private static instance: VectorStoresOperator | null = null;
-  private baseURL: string;
-  private logger: LoggerService;
+  private readonly baseURL: string;
+  private readonly logger: LoggerService;
 
   private constructor(lightspeedCoreUrl: string, logger: LoggerService) {
     this.baseURL = lightspeedCoreUrl;
@@ -114,12 +114,10 @@ export class VectorStoresOperator {
     lightspeedCoreUrl: string,
     logger: LoggerService,
   ): VectorStoresOperator {
-    if (!VectorStoresOperator.instance) {
-      VectorStoresOperator.instance = new VectorStoresOperator(
-        lightspeedCoreUrl,
-        logger,
-      );
-    }
+    VectorStoresOperator.instance ??= new VectorStoresOperator(
+      lightspeedCoreUrl,
+      logger,
+    );
     return VectorStoresOperator.instance;
   }
 

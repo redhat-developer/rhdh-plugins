@@ -69,7 +69,6 @@ export const mockFile1 = {
 
 // In-memory storage for tests
 const vectorStores = new Map<string, any>();
-const files = new Map<string, any>();
 const vectorStoreFiles = new Map<string, any[]>();
 
 /** Monotonic suffix so vector store IDs never collide when Date.now() repeats (fast CI). */
@@ -78,7 +77,6 @@ let nextFileSeq = 0;
 
 export function resetMockStorage() {
   vectorStores.clear();
-  files.clear();
   vectorStoreFiles.clear();
   nextVectorStoreSeq = 0;
   nextFileSeq = 0;
@@ -91,7 +89,7 @@ export function resetMockStorage() {
 export const lightspeedCoreHandlers: HttpHandler[] = [
   // Create vector store
   http.post(`${LIGHTSPEED_CORE_ADDR}/v1/vector-stores`, async ({ request }) => {
-    const body = (await request.json()) as any;
+    const body: any = await request.json();
     const id = `vs-${Date.now()}-${nextVectorStoreSeq++}`;
     const vectorStore = {
       id,
@@ -131,7 +129,7 @@ export const lightspeedCoreHandlers: HttpHandler[] = [
           { status: 404 },
         );
       }
-      const body = (await request.json()) as any;
+      const body: any = await request.json();
       const updated = {
         ...vectorStore,
         metadata: body.metadata || vectorStore.metadata,
@@ -169,7 +167,6 @@ export const lightspeedCoreHandlers: HttpHandler[] = [
       created_at: Date.now(),
       purpose: 'assistants',
     };
-    files.set(fileId, file);
     return HttpResponse.json(file);
   }),
 
@@ -186,7 +183,7 @@ export const lightspeedCoreHandlers: HttpHandler[] = [
         );
       }
 
-      const body = (await request.json()) as any;
+      const body: any = await request.json();
       const vectorStoreFile = {
         id: body.file_id,
         status: 'completed' as const,

@@ -34,7 +34,7 @@ describe('useAutoScroll', () => {
   });
 
   afterEach(() => {
-    document.body.removeChild(container);
+    container.remove();
   });
 
   it('should toggle autoScroll correctly', () => {

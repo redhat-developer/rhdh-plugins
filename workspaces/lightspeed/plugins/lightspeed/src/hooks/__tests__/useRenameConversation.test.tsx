@@ -185,7 +185,7 @@ describe('useRenameConversation', () => {
           conversation_id: conversationId,
           newName,
         });
-      } catch (e) {
+      } catch {
         // Expected error
       }
     });

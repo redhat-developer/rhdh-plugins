@@ -283,23 +283,25 @@ export function generateQueryResponseWithMcpToolCall(
       request_id: mockStreamRequestId,
     },
   });
-  events.push({
-    event: 'tool_call',
-    data: {
-      id: e2eMcpToolCallId,
-      name: 'mcp_list_tools',
-      args: { server_label: 'mcp-integration-tools' },
-      type: 'mcp_list_tools',
+  events.push(
+    {
+      event: 'tool_call',
+      data: {
+        id: e2eMcpToolCallId,
+        name: 'mcp_list_tools',
+        args: { server_label: 'mcp-integration-tools' },
+        type: 'mcp_list_tools',
+      },
     },
-  });
-  events.push({
-    event: 'tool_result',
-    data: {
-      id: e2eMcpToolCallId,
-      status: 'success',
-      content: '{"server_label":"mcp-integration-tools","tools":[]}',
+    {
+      event: 'tool_result',
+      data: {
+        id: e2eMcpToolCallId,
+        status: 'success',
+        content: '{"server_label":"mcp-integration-tools","tools":[]}',
+      },
     },
-  });
+  );
 
   const tokens = assistantResponse.match(/(\s+|[^\s]+)/g) || [
     assistantResponse,

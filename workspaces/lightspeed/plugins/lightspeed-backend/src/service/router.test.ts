@@ -128,7 +128,7 @@ describe('lightspeed router tests', () => {
         lightspeedPlugin,
         mockServices.rootLogger.factory(),
         mockServices.rootConfig.factory({
-          data: { ...BASE_CONFIG, ...(config || {}) },
+          data: { ...BASE_CONFIG, ...config },
         }),
         mockServices.httpAuth.factory({
           defaultCredentials: mockCredentials.user(mockUserId),
@@ -151,7 +151,7 @@ describe('lightspeed router tests', () => {
         lightspeedPlugin,
         mockServices.rootLogger.factory(),
         mockServices.rootConfig.factory({
-          data: { ...BASE_CONFIG, ...(config || {}) },
+          data: { ...BASE_CONFIG, ...config },
         }),
         mockServices.httpAuth.factory({
           defaultCredentials: mockCredentials.user(mockUserId),
@@ -435,7 +435,6 @@ describe('lightspeed router tests', () => {
     });
 
     it('load history with deleted conversation_id', async () => {
-      // await deleteHistory(mockConversationId);
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
         `/api/lightspeed/v2/conversations/${encodedConversationId}`,

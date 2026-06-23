@@ -72,7 +72,7 @@ describe('readFileAsText', () => {
       result: 'Hello World',
     };
 
-    global.FileReader = jest.fn(() => mockFileReader as FileReader) as any;
+    globalThis.FileReader = jest.fn(() => mockFileReader as FileReader) as any;
   });
 
   it('should resolve with file content', async () => {

@@ -379,14 +379,8 @@ export async function createRouter(
           enabled?: boolean;
           token?: string | null;
         };
-        const hasEnabledField = Object.prototype.hasOwnProperty.call(
-          body,
-          'enabled',
-        );
-        const hasTokenField = Object.prototype.hasOwnProperty.call(
-          body,
-          'token',
-        );
+        const hasEnabledField = Object.hasOwn(body, 'enabled');
+        const hasTokenField = Object.hasOwn(body, 'token');
         const { enabled, token } = body;
         if (!hasEnabledField && !hasTokenField) {
           res.status(400).json({

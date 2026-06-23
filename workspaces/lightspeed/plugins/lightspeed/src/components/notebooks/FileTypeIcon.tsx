@@ -72,7 +72,7 @@ export const FileTypeIcon = ({ fileName, className }: FileTypeIconProps) => {
 
   return (
     <span
-      className={`${classes.badge}${className ? ` ${className}` : ''}`}
+      className={[classes.badge, className].filter(Boolean).join(' ')}
       style={{ borderColor: color, color }}
     >
       {label}

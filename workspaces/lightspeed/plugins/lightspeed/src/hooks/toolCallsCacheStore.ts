@@ -60,7 +60,7 @@ export function clearSharedToolCallsCacheForConversation(
   conversationId: string,
 ) {
   const prefix = `${conversationId}-`;
-  for (const key of [...Object.keys(sharedToolCallsCache)]) {
+  for (const key of Object.keys(sharedToolCallsCache)) {
     if (key.startsWith(prefix)) {
       delete sharedToolCallsCache[key];
       removeKeyFromOrder(key);
@@ -79,7 +79,7 @@ export function migrateSharedToolCallsCacheSessionPrefixToConversation(
   newConversationId: string,
 ) {
   const keyPrefix = `${sessionPrefix}-`;
-  for (const key of [...Object.keys(sharedToolCallsCache)]) {
+  for (const key of Object.keys(sharedToolCallsCache)) {
     if (key.startsWith(keyPrefix)) {
       const messageIndex = key.slice(keyPrefix.length);
       const newKey = `${newConversationId}-${messageIndex}`;
@@ -94,7 +94,7 @@ export function migrateSharedToolCallsCacheSessionPrefixToConversation(
 /** Removes cache entries written under a per-temp-stream session prefix. */
 export function clearSharedToolCallsCacheSessionPrefix(sessionPrefix: string) {
   const keyPrefix = `${sessionPrefix}-`;
-  for (const key of [...Object.keys(sharedToolCallsCache)]) {
+  for (const key of Object.keys(sharedToolCallsCache)) {
     if (key.startsWith(keyPrefix)) {
       delete sharedToolCallsCache[key];
       removeKeyFromOrder(key);

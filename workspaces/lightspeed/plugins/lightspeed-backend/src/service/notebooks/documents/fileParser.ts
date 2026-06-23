@@ -19,7 +19,7 @@ import { InputError } from '@backstage/errors';
 import * as yaml from 'js-yaml';
 import * as pdfjsLib from 'pdfjs-dist';
 
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
 import { SupportedFileType } from '../../constant';
 

@@ -133,7 +133,7 @@ export async function assertClipboardContains(
   expectedText: string,
 ) {
   const clipboardText = await page.evaluate(() =>
-    window.navigator.clipboard.readText(),
+    globalThis.navigator.clipboard.readText(),
   );
   expect(clipboardText).toMatch(expectedText);
 }

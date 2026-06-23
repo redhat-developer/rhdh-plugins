@@ -21,7 +21,7 @@ export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = 'accessibility-scan-results.json',
-  options: { skipFailures?: boolean } = { skipFailures: true },
+  options?: { skipFailures?: boolean },
 ) {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -32,7 +32,8 @@ export async function runAccessibilityTests(
     contentType: 'application/json',
   });
 
-  if (!options?.skipFailures) {
+  const { skipFailures = true } = options ?? {};
+  if (!skipFailures) {
     expect(
       accessibilityScanResults.violations,
       'Accessibility violations found',

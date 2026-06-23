@@ -95,15 +95,14 @@ export const LightspeedChatModelsLoading = () => {
   const classes = useStyles();
   const { t } = useTranslation();
   return (
-    <div
+    <output
       className={classes.root}
       data-testid="lightspeed-models-loading"
-      role="status"
       aria-busy="true"
       aria-label={t('common.loading')}
     >
       <CircularProgress aria-hidden />
-    </div>
+    </output>
   );
 };
 

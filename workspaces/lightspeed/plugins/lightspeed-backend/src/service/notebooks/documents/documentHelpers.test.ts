@@ -96,7 +96,7 @@ describe('documentHelpers', () => {
 
   describe('parseFileContent', () => {
     it('should throw error when no file uploaded for non-URL type', async () => {
-      await expect(parseFileContent(logger, 'txt', undefined)).rejects.toThrow(
+      await expect(parseFileContent(logger, 'txt')).rejects.toThrow(
         'No file uploaded',
       );
     });

@@ -28,7 +28,7 @@ const getPromptTitle = (prompt: any): string => {
 
 describe('getRandomSamplePrompts', () => {
   it('should return empty array from default prompts and userPrompts is undefined', () => {
-    const result = getRandomSamplePrompts(undefined, undefined);
+    const result = getRandomSamplePrompts(undefined);
     expect(result.length).toBe(0);
   });
 

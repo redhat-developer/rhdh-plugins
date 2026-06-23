@@ -28,9 +28,9 @@ import { VectorStoresOperator } from '../VectorStoresOperator';
  * - Uses VectorStoresOperator to proxy through lightspeed-core
  */
 export class SessionService {
-  private logger: LoggerService;
-  private client: VectorStoresOperator;
-  private providerId: string;
+  private readonly logger: LoggerService;
+  private readonly client: VectorStoresOperator;
+  private readonly providerId: string;
 
   constructor(client: VectorStoresOperator, logger: LoggerService) {
     this.client = client;
@@ -157,10 +157,9 @@ export class SessionService {
 
     const updated: NotebookSession = {
       ...existing,
-      name: name !== undefined ? name : existing.name,
-      description:
-        description !== undefined ? description : existing.description,
-      metadata: metadata !== undefined ? metadata : existing.metadata,
+      name: name ?? existing.name,
+      description: description ?? existing.description,
+      metadata: metadata ?? existing.metadata,
       updated_at: new Date().toISOString(),
     };
 

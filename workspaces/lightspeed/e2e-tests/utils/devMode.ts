@@ -37,7 +37,7 @@ export type MockMcpServersOptions = {
 let mcpMockOptions: MockMcpServersOptions = {};
 
 function cloneMcpServersMock(json: McpServersListMock): McpServersListMock {
-  return JSON.parse(JSON.stringify(json)) as McpServersListMock;
+  return structuredClone(json);
 }
 
 export async function mockModels(page: Page, models: any[]) {

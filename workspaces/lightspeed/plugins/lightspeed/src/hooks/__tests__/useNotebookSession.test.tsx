@@ -66,7 +66,7 @@ describe('useNotebookSession', () => {
   });
 
   it('should not fetch when sessionId is undefined', async () => {
-    const { result } = renderHook(() => useNotebookSession(undefined), {
+    const { result } = renderHook(() => useNotebookSession(), {
       wrapper,
     });
 

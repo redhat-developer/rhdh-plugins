@@ -15,7 +15,7 @@
  */
 import React from 'react';
 
-interface useAutoScrollOptions {
+interface UseAutoScrollOptions {
   deltaUp?: number;
   deltaDown?: number;
   delay?: number;
@@ -23,7 +23,7 @@ interface useAutoScrollOptions {
 
 export const useAutoScroll = (
   containerRef: React.RefObject<HTMLElement>,
-  options: useAutoScrollOptions = {},
+  options: UseAutoScrollOptions = {},
 ) => {
   const { deltaUp = 10, deltaDown = 60, delay = 200 } = options;
 

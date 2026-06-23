@@ -944,7 +944,7 @@ export const McpServersSettings = ({
                         isChecked={isChecked}
                         isDisabled={isToggleDisabled}
                         onChange={(_event, checked) => {
-                          void patchServer(server.name, {
+                          patchServer(server.name, {
                             enabled: checked,
                           }).catch(() => {
                             // patchServer already updates component error state.
@@ -1089,7 +1089,9 @@ export const McpServersSettings = ({
             <Button
               key="save"
               variant="primary"
-              onClick={() => void saveServerToken()}
+              onClick={() => {
+                saveServerToken();
+              }}
               isDisabled={
                 !canManageMcp ||
                 Boolean(isSaving[editingServer?.name ?? '']) ||

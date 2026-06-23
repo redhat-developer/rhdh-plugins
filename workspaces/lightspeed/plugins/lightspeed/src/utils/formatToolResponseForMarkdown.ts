@@ -125,7 +125,7 @@ const extractToolResultPayload = (raw: string): unknown | undefined => {
 export const formatToolResponseForMarkdown = (raw: string): string => {
   if (!raw?.trim()) return '';
 
-  if (/^```/.test(raw)) return raw;
+  if (raw.startsWith('```')) return raw;
 
   const payload = extractToolResultPayload(raw);
 

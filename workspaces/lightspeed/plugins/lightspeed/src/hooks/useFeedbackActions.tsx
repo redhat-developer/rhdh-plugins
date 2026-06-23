@@ -74,14 +74,15 @@ export const useFeedbackActions = <T extends MessageProps>(
       submitWord: t('feedback.form.submitWord'),
       quickResponses: createQuickResponses[sentiment],
       onSubmit: (
-        quickResponse: string | undefined = '0',
+        quickResponse: string | undefined,
         additionalFeedback: string | undefined,
       ) => {
-        const quickIndex = Number(quickResponse) - 1;
+        const effectiveQuickResponse = quickResponse ?? '0';
+        const quickIndex = Number(effectiveQuickResponse) - 1;
         const quickText =
-          quickResponse !== '0'
-            ? createQuickResponses[sentiment]?.[quickIndex]?.content
-            : undefined;
+          effectiveQuickResponse === '0'
+            ? undefined
+            : createQuickResponses[sentiment]?.[quickIndex]?.content;
 
         let user_feedback = '';
 
