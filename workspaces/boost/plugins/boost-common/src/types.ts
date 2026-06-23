@@ -223,6 +223,81 @@ export interface AgentRecord {
 }
 
 /**
+ * A governance record for a Kagenti tool (K8s workload).
+ * Tracks lifecycle state and ownership.
+ *
+ * MCP servers and MCP tools are NOT managed by this type —
+ * they are registered endpoints without lifecycle governance.
+ *
+ * @public
+ */
+export interface ToolRecord {
+  /** Unique tool identifier. */
+  id: string;
+  /** Human-readable tool name. */
+  name: string;
+  /** Optional description of the tool. */
+  description?: string;
+  /** Current lifecycle stage. */
+  lifecycleStage: LifecycleStage;
+  /** Identity of the user who created/registered the tool (userEntityRef). */
+  createdBy: string;
+  /** Whether the tool is registered for governance. */
+  governanceRegistered: boolean;
+  /** ISO 8601 timestamp of record creation. */
+  createdAt: string;
+  /** ISO 8601 timestamp of the last update. */
+  updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// MCP server registration model
+// ---------------------------------------------------------------------------
+
+/**
+ * Transport types supported for MCP server connections.
+ *
+ * @public
+ */
+export type McpTransport = 'streamable-http' | 'sse';
+
+/**
+ * Authentication types supported for MCP server connections.
+ *
+ * @public
+ */
+export type McpAuthType =
+  | 'oauth-client-credentials'
+  | 'k8s-service-account'
+  | 'static-headers'
+  | 'infrastructure-mtls'
+  | 'none';
+
+/**
+ * A registered MCP server record.
+ *
+ * @public
+ */
+export interface McpServerRecord {
+  /** Unique MCP server identifier. */
+  id: string;
+  /** Human-readable display name. */
+  name: string;
+  /** The MCP server endpoint URL. */
+  url: string;
+  /** Transport protocol used to connect. */
+  transport: McpTransport;
+  /** Authentication type configured for this server. */
+  authType: McpAuthType;
+  /** Optional description. */
+  description?: string;
+  /** ISO 8601 timestamp of record creation. */
+  createdAt: string;
+  /** ISO 8601 timestamp of the last update. */
+  updatedAt: string;
+}
+
+/**
  * The contract between Boost and any AI platform backend.
  * Chat and streaming are required; other capabilities are optional.
  *

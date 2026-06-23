@@ -11,6 +11,9 @@ import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { McpAuthType } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { McpServerRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { McpTransport } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { Permission } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -19,6 +22,7 @@ import type { RequestHandler } from 'express';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
 import { Router } from 'express';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
+import type { ToolRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { z } from 'zod';
 
 // @public
@@ -194,7 +198,18 @@ export function createAgentResourceLoader(): ResourceLoader;
 export function createAgentRoutes(options: AgentRoutesOptions): Router;
 
 // @public
+export function createKagentiAdminRoutes(
+  options: KagentiAdminRoutesOptions,
+): Router;
+
+// @public
+export function createMcpServerRoutes(options: McpServerRoutesOptions): Router;
+
+// @public
 export function createToolResourceLoader(): ResourceLoader;
+
+// @public
+export function createToolRoutes(options: ToolRoutesOptions): Router;
 
 // @public
 export function isDbWritable(key: BoostConfigKey): boolean;
@@ -206,10 +221,63 @@ export function isDeletableStage(stage: LifecycleStage): boolean;
 export function isSensitiveField(key: BoostConfigKey): boolean;
 
 // @public
+export function isValidToolTransition(
+  from: LifecycleStage,
+  to: LifecycleStage,
+): boolean;
+
+// @public
 export function isValidTransition(
   from: LifecycleStage,
   to: LifecycleStage,
 ): boolean;
+
+// @public
+export interface KagentiAdminRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+}
+
+// @public
+export interface McpServerRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  store: McpServerStore;
+}
+
+// @public
+export class McpServerStore {
+  constructor(options: McpServerStoreOptions);
+  create(server: {
+    id: string;
+    name: string;
+    url: string;
+    transport: McpTransport;
+    authType: McpAuthType;
+    description?: string;
+  }): Promise<McpServerRecord>;
+  delete(id: string): Promise<boolean>;
+  get(id: string): Promise<McpServerRecord | undefined>;
+  list(): Promise<McpServerRecord[]>;
+  update(
+    id: string,
+    fields: {
+      name?: string;
+      url?: string;
+      transport?: McpTransport;
+      authType?: McpAuthType;
+      description?: string;
+    },
+  ): Promise<McpServerRecord | undefined>;
+}
+
+// @public
+export interface McpServerStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
 
 // @public
 export class ProviderManager {
@@ -247,6 +315,38 @@ export interface RuntimeConfigResolverOptions {
 
 // @public
 export type SecurityMode = 'development-only-no-auth' | 'plugin-only' | 'full';
+
+// @public
+export class ToolLifecycleStore {
+  constructor(options: ToolLifecycleStoreOptions);
+  delete(id: string): Promise<boolean>;
+  get(id: string): Promise<ToolRecord | undefined>;
+  list(): Promise<ToolRecord[]>;
+  register(tool: {
+    id: string;
+    name: string;
+    description?: string;
+    createdBy: string;
+  }): Promise<ToolRecord>;
+  updateStage(
+    id: string,
+    stage: LifecycleStage,
+  ): Promise<ToolRecord | undefined>;
+}
+
+// @public
+export interface ToolLifecycleStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
+
+// @public
+export interface ToolRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  store: ToolLifecycleStore;
+}
 
 // @public
 export function validateConfigValue(
