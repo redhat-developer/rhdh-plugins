@@ -227,6 +227,17 @@ export interface ConversationSummary {
 }
 
 // @public
+export interface FeedbackRecord {
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  messageId: string;
+  reason?: string;
+  sentiment: 'positive' | 'negative';
+  sessionId: string;
+}
+
+// @public
 export type InputItem =
   | {
       type: 'text';

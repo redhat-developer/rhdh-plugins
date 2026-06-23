@@ -302,6 +302,28 @@ export interface NormalizedStreamDoneEvent {
   type: 'done';
 }
 
+/**
+ * A feedback record associated with a conversation message.
+ *
+ * @public
+ */
+export interface FeedbackRecord {
+  /** Unique feedback identifier. */
+  id: string;
+  /** The session (conversation) this feedback belongs to. */
+  sessionId: string;
+  /** The message this feedback is associated with. */
+  messageId: string;
+  /** Sentiment: positive (thumbs up) or negative (thumbs down). */
+  sentiment: 'positive' | 'negative';
+  /** Optional reason text explaining the feedback. */
+  reason?: string;
+  /** Identity of the user who submitted feedback (userEntityRef). */
+  createdBy: string;
+  /** ISO 8601 timestamp of when feedback was submitted. */
+  createdAt: string;
+}
+
 // ---------------------------------------------------------------------------
 // Agent lifecycle model
 // ---------------------------------------------------------------------------

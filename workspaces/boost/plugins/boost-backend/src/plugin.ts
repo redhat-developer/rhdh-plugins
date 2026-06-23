@@ -44,7 +44,10 @@ import { createKagentiAdminRoutes } from './kagenti/routes';
 import { McpServerStore } from './mcp/McpServerStore';
 import { createMcpServerRoutes } from './mcp/routes';
 import { createChatRoutes } from './chat/routes';
+import { createConversationRoutes } from './chat/conversationRoutes';
 import { ConversationAgentCache } from './chat/ConversationAgentCache';
+import { ConversationRegistry } from './chat/ConversationRegistry';
+import { ConversationStore } from './chat/ConversationStore';
 import { RateLimiter } from './chat/RateLimiter';
 
 /**
@@ -193,6 +196,17 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        // Initialize conversation registry — maps response IDs to
+        // conversation IDs with 24h TTL (task 1.3). Available for
+        // provider modules and future response-tracking features.
+        void new ConversationRegistry({ cache, logger });
+
+        // Initialize conversation store (issue 7 of 15)
+        const conversationStore = new ConversationStore({
+          database,
+          logger,
+        });
+
         // Initialize rate limiter (task 1.9)
         const rateLimiter = new RateLimiter({
           cache,
@@ -271,6 +285,15 @@ export const boostPlugin = createBackendPlugin({
         });
         router.use(chatRoutes);
 
+        // Conversation history routes (issue 7 of 15)
+        const conversationRoutes = createConversationRoutes({
+          store: conversationStore,
+          permissions: _permissions,
+          httpAuth,
+          logger,
+        });
+        router.use(conversationRoutes);
+
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
           res.json({ status: 'ok' });
@@ -336,6 +359,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/chat',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/conversations',
           allow: 'user-cookie',
         });
 
