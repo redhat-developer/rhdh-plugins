@@ -26,6 +26,7 @@ import {
 } from './oci-key';
 import {
   type DynamicPluginsConfig,
+  isPluginDisabled,
   OCI_PROTO,
   type Plugin,
   type PluginMap,
@@ -422,7 +423,7 @@ function processOciEntry(
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
-  const disabled = plugin.disabled === true;
+  const disabled = isPluginDisabled(plugin, log);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
     logInvalidOciFormat(pkg, sourceFile, disabled);
@@ -551,7 +552,7 @@ export function filterDisabledOciPlugins(
         log(`\n======= Disabling OCI plugin ${pkg}`);
         continue;
       }
-      if (!parsed && plugin.disabled === true) {
+      if (!parsed && isPluginDisabled(plugin)) {
         log(`\n======= Disabling OCI plugin ${pkg}`);
         continue;
       }

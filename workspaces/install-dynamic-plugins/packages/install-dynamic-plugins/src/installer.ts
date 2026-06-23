@@ -51,6 +51,7 @@ import {
   type DynamicPluginsConfig,
   effectivePullPolicy,
   GLOBAL_CONFIG_FILENAME,
+  isPluginDisabled,
   LOCK_FILENAME,
   OCI_PROTO,
   type Plugin,
@@ -374,7 +375,7 @@ function categorize(allPlugins: PluginMap): Categorized {
   const npm: Plugin[] = [];
   const skipped: Plugin[] = [];
   for (const plugin of Object.values(allPlugins)) {
-    if (plugin.disabled) {
+    if (isPluginDisabled(plugin, log)) {
       log(`\n======= Skipping disabled plugin ${plugin.package}`);
       continue;
     }
