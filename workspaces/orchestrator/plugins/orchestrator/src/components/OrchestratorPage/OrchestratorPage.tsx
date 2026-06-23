@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ReactElement, ReactNode, useState } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 import { TabbedLayout } from '@backstage/core-components';
 
@@ -25,6 +25,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { useWorkflowOverviews } from '../../hooks/useWorkflowsCount';
 import { workflowInstancesRouteRef } from '../../routes';
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
@@ -73,7 +74,8 @@ export const OrchestratorPage = () => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
-  const [workflowsCount, setWorkflowsCount] = useState<number | undefined>();
+  const workflowsOverviewsState = useWorkflowOverviews();
+  const workflowsCount = workflowsOverviewsState.count;
 
   const workflowsTabTitle =
     workflowsCount !== undefined
@@ -96,7 +98,7 @@ export const OrchestratorPage = () => {
               ),
             }}
           >
-            <WorkflowsTabContent onCountChange={setWorkflowsCount} />
+            <WorkflowsTabContent overviewsState={workflowsOverviewsState} />
           </TabbedLayout.Route>
           <TabbedLayout.Route
             path={workflowInstancesRouteRef.path}

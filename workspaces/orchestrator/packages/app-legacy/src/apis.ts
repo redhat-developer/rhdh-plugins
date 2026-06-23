@@ -14,16 +14,48 @@
  * limitations under the License.
  */
 
+import { isValidElement, ReactNode } from 'react';
+
 import {
+  alertApiRef,
   AnyApiFactory,
   configApiRef,
   createApiFactory,
 } from '@backstage/core-plugin-api';
+import { ToastApiMessage, toastApiRef } from '@backstage/frontend-plugin-api';
 import {
   ScmAuth,
   ScmIntegrationsApi,
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
+
+const reactNodeToString = (node: ReactNode | null | undefined): string => {
+  if (node === null || node === undefined) {
+    return '';
+  }
+  if (typeof node === 'string') {
+    return node;
+  }
+  if (Array.isArray(node)) {
+    return node.map(reactNodeToString).join(' ');
+  }
+  if (isValidElement(node)) {
+    return reactNodeToString(node.props.children);
+  }
+  return '';
+};
+
+const toastStatusToSeverity = (message: ToastApiMessage) => {
+  const toastStatus = message.status ?? 'success';
+  switch (toastStatus) {
+    case 'warning':
+      return 'warning';
+    case 'danger':
+      return 'error';
+    default:
+      return 'info';
+  }
+};
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({
@@ -32,4 +64,21 @@ export const apis: AnyApiFactory[] = [
     factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
   }),
   ScmAuth.createDefaultApiFactory(),
+  createApiFactory({
+    api: toastApiRef,
+    deps: { alertApi: alertApiRef },
+    factory: ({ alertApi }) => ({
+      post(toast: ToastApiMessage) {
+        alertApi.post({
+          message: reactNodeToString(toast?.title),
+          severity: toastStatusToSeverity(toast),
+          display: 'transient',
+        });
+
+        return {
+          close: () => {},
+        };
+      },
+    }),
+  }),
 ];

@@ -14,67 +14,74 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
-
 import {
   Content,
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../../api';
-import usePolling from '../../hooks/usePolling';
+import {
+  useWorkflowOverviews,
+  WorkflowOverviewsState,
+} from '../../hooks/useWorkflowsCount';
 import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
 import { WorkflowsTable } from './WorkflowsTable';
+
+type WorkflowsTabContentViewProps = {
+  overviews?: WorkflowOverviewDTO[];
+  loading: boolean;
+  error?: Error;
+  isReady: boolean;
+};
+
+export const WorkflowsTabContentView = ({
+  overviews,
+  loading,
+  error,
+  isReady,
+}: WorkflowsTabContentViewProps) => (
+  <Content noPadding>
+    {loading ? <Progress /> : null}
+    {error ? <ResponseErrorPanel error={error} /> : null}
+    {isReady && (overviews?.length ?? 0) === 0 ? (
+      <OrchestratorEmptyState variant="workflows" />
+    ) : null}
+    {isReady && (overviews?.length ?? 0) > 0 ? (
+      <WorkflowsTable items={overviews ?? []} />
+    ) : null}
+  </Content>
+);
+
+const WorkflowsTabContentWithFetch = ({
+  workflowsArray,
+  targetEntity,
+}: {
+  workflowsArray?: string[];
+  targetEntity?: string;
+}) => {
+  const overviewsState = useWorkflowOverviews({ workflowsArray, targetEntity });
+  return <WorkflowsTabContentView {...overviewsState} />;
+};
 
 export const WorkflowsTabContent = ({
   workflowsArray,
   targetEntity,
-  onCountChange,
+  overviewsState,
 }: {
   workflowsArray?: string[];
   targetEntity?: string;
-  onCountChange?: (count: number | undefined) => void;
+  overviewsState?: WorkflowOverviewsState;
 }) => {
-  const orchestratorApi = useApi(orchestratorApiRef);
-
-  const fetchWorkflowOverviews = useCallback(async () => {
-    let overviewsResp;
-    if (workflowsArray && targetEntity) {
-      overviewsResp = await orchestratorApi.getWorkflowsOverviewForEntity(
-        targetEntity,
-        workflowsArray,
-      );
-    } else {
-      overviewsResp = await orchestratorApi.listWorkflowOverviews();
-    }
-    return overviewsResp.data.overviews;
-  }, [orchestratorApi, workflowsArray, targetEntity]);
-
-  const { loading, error, value } = usePolling<
-    WorkflowOverviewDTO[] | undefined
-  >(fetchWorkflowOverviews);
-
-  const isReady = useMemo(() => !loading && !error, [loading, error]);
-
-  useEffect(() => {
-    onCountChange?.(isReady ? (value?.length ?? 0) : undefined);
-    return () => onCountChange?.(undefined);
-  }, [isReady, value, onCountChange]);
+  if (overviewsState) {
+    return <WorkflowsTabContentView {...overviewsState} />;
+  }
 
   return (
-    <Content noPadding>
-      {loading ? <Progress /> : null}
-      {error ? <ResponseErrorPanel error={error} /> : null}
-      {isReady && (value?.length ?? 0) === 0 ? (
-        <OrchestratorEmptyState variant="workflows" />
-      ) : null}
-      {isReady && (value?.length ?? 0) > 0 ? (
-        <WorkflowsTable items={value ?? []} />
-      ) : null}
-    </Content>
+    <WorkflowsTabContentWithFetch
+      workflowsArray={workflowsArray}
+      targetEntity={targetEntity}
+    />
   );
 };

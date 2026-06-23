@@ -40,7 +40,10 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL } from '../../constants';
+import {
+  ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL,
+  VALUE_UNAVAILABLE,
+} from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
@@ -208,6 +211,22 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [entityRef, entityWorkflowLink, definitionLink, kind, name, namespace],
   );
 
+  const workflowRunsLink = useCallback(
+    (workflowId: string) => {
+      return entityRef
+        ? entityWorkflowLink({
+            namespace,
+            kind,
+            name,
+            workflowId,
+          })
+        : definitionRunsLink({
+            workflowId,
+          });
+    },
+    [entityRef, entityWorkflowLink, definitionRunsLink, kind, name, namespace],
+  );
+
   const showDuplicateWorkflowIdAlert = useMemo(() => {
     const ids = items.map(i => i.workflowId);
     return new Set(ids).size < ids.length;
@@ -239,6 +258,20 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       {
         title: t('table.headers.runsLastMonth'),
         field: 'runsLastMonth',
+        render: rowData => {
+          if (
+            rowData.runsLastMonth === VALUE_UNAVAILABLE ||
+            !canViewWorkflow(rowData.id)
+          ) {
+            return rowData.runsLastMonth;
+          }
+
+          return (
+            <Link to={workflowRunsLink(rowData.id)}>
+              {rowData.runsLastMonth}
+            </Link>
+          );
+        },
       },
       {
         title: t('table.headers.successRatio'),
@@ -248,7 +281,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         ),
       },
     ],
-    [t, canViewWorkflow, entityLink],
+    [t, canViewWorkflow, entityLink, workflowRunsLink],
   );
 
   const options = useMemo<TableProps['options']>(

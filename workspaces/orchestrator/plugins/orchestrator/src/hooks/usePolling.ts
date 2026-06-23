@@ -26,6 +26,7 @@ export type UsePollingOptions<T> = {
   continueRefresh?: (value: T | undefined) => boolean;
   maxErrorRetryCount?: number;
   cacheKey?: string;
+  persistCache?: boolean;
 };
 
 const usePolling = <T>(
@@ -39,6 +40,7 @@ const usePolling = <T>(
     continueRefresh: shouldContinueRefresh = continueRefresh,
     maxErrorRetryCount: maxRetries = maxErrorRetryCount,
     cacheKey,
+    persistCache = Boolean(cacheKey),
   } = typeof delayMsOrOptions === 'number'
     ? {
         delayMs: delayMsOrOptions,
@@ -90,6 +92,9 @@ const usePolling = <T>(
   }, [fn, restart]);
 
   useEffect(() => {
+    if (persistCache) {
+      return undefined;
+    }
     // clean cache after unmount, no need to store the data globally
     return () => config.cache.delete(uniqueKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
