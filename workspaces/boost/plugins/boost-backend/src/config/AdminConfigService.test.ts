@@ -232,6 +232,69 @@ describe('AdminConfigService', () => {
     });
   });
 
+  describe('corrupt data handling', () => {
+    it('getOverride returns undefined and deletes corrupt JSON row', async () => {
+      mockKnex._rows.push({
+        key: 'boost.model.baseUrl',
+        value: '<<<not-json>>>',
+        schema_version: 1,
+        updated_at: new Date().toISOString(),
+      });
+
+      const value = await service.getOverride('boost.model.baseUrl');
+      expect(value).toBeUndefined();
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Corrupt value'),
+      );
+      // Row should be deleted
+      const row = mockKnex._rows.find(
+        (r: { key: string }) => r.key === 'boost.model.baseUrl',
+      );
+      expect(row).toBeUndefined();
+    });
+
+    it('getAllOverrides skips corrupt JSON rows', async () => {
+      await service.setOverride('boost.model.name', 'gpt-4');
+      mockKnex._rows.push({
+        key: 'boost.model.baseUrl',
+        value: '<<<not-json>>>',
+        schema_version: 1,
+        updated_at: new Date().toISOString(),
+      });
+
+      const overrides = await service.getAllOverrides();
+      expect(overrides.size).toBe(1);
+      expect(overrides.get('boost.model.name')).toBe('gpt-4');
+      expect(overrides.has('boost.model.baseUrl')).toBe(false);
+    });
+
+    it('getOverride returns undefined when decryption fails (rotated secret)', async () => {
+      // Write with the current secret
+      await service.setOverride(
+        'boost.devSpaces.credentials',
+        'my-secret-token',
+      );
+
+      // Create a new service with a different secret
+      const database: DatabaseService = {
+        getClient: async () => mockKnex,
+      } as unknown as DatabaseService;
+      const rotatedService = new AdminConfigService({
+        database,
+        logger,
+        encryptionSecret: 'different-secret',
+      });
+
+      const value = await rotatedService.getOverride(
+        'boost.devSpaces.credentials',
+      );
+      expect(value).toBeUndefined();
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to decrypt'),
+      );
+    });
+  });
+
   describe('removeOverride', () => {
     it('removes an existing override', async () => {
       await service.setOverride(

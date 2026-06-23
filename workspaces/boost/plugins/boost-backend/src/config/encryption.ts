@@ -44,7 +44,7 @@ function deriveKey(secret: string): Buffer {
  * @param secret - The encryption secret (will be derived to a 256-bit key).
  * @returns The encrypted value as a base64-encoded string.
  *
- * @public
+ * @internal
  */
 export function encryptValue(plaintext: string, secret: string): string {
   const key = deriveKey(secret);
@@ -71,7 +71,7 @@ export function encryptValue(plaintext: string, secret: string): string {
  * @returns The decrypted plaintext string.
  * @throws Error if decryption fails (wrong key, tampered data, etc.)
  *
- * @public
+ * @internal
  */
 export function decryptValue(encrypted: string, secret: string): string {
   const key = deriveKey(secret);

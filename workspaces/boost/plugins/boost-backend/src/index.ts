@@ -42,8 +42,6 @@ export {
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
-  encryptValue,
-  decryptValue,
   type AdminConfigServiceOptions,
   type RuntimeConfigResolverOptions,
   type BoostConfigKey,

@@ -32,7 +32,6 @@ export class AdminConfigService {
 export interface AdminConfigServiceOptions {
   // (undocumented)
   database: DatabaseService;
-  encryptionSecret?: string;
   // (undocumented)
   logger: LoggerService;
 }
@@ -162,12 +161,6 @@ export function createAgentResourceLoader(): ResourceLoader;
 export function createToolResourceLoader(): ResourceLoader;
 
 // @public
-export function decryptValue(encrypted: string, secret: string): string;
-
-// @public
-export function encryptValue(plaintext: string, secret: string): string;
-
-// @public
 export function isDbWritable(key: BoostConfigKey): boolean;
 
 // @public
@@ -195,10 +188,8 @@ export type ResourceLoader = (req: Request_2) => Promise<
 export class RuntimeConfigResolver {
   constructor(options: RuntimeConfigResolverOptions);
   invalidate(): Promise<void>;
-  remove(key: BoostConfigKey): Promise<void>;
   resolve(key: BoostConfigKey): Promise<unknown | undefined>;
   resolveAll(): Promise<Map<string, unknown>>;
-  set(key: BoostConfigKey, value: unknown): Promise<void>;
 }
 
 // @public

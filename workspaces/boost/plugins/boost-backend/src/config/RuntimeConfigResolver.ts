@@ -115,6 +115,7 @@ export class RuntimeConfigResolver {
    *
    * @param key - The config field key.
    * @param value - The value to store.
+   * @internal
    */
   async set(key: BoostConfigKey, value: unknown): Promise<void> {
     await this.adminConfigService.setOverride(key, value);
@@ -126,6 +127,7 @@ export class RuntimeConfigResolver {
    * baseline is restored.
    *
    * @param key - The config field key.
+   * @internal
    */
   async remove(key: BoostConfigKey): Promise<void> {
     await this.adminConfigService.removeOverride(key);

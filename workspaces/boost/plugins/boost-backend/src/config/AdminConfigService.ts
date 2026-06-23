@@ -52,7 +52,10 @@ interface AdminConfigRow {
 export interface AdminConfigServiceOptions {
   database: DatabaseService;
   logger: LoggerService;
-  /** Secret used for encrypting sensitive config values. */
+  /**
+   * Secret used for encrypting sensitive config values.
+   * @internal
+   */
   encryptionSecret?: string;
 }
 
@@ -130,8 +133,9 @@ export class AdminConfigService {
       rawValue = JSON.parse(row.value);
     } catch {
       this.logger.error(
-        `Corrupt value for config key "${key}" — skipping (invalid JSON)`,
+        `Corrupt value for config key "${key}" — removing (invalid JSON)`,
       );
+      await knex<AdminConfigRow>(TABLE_NAME).where({ key }).delete();
       return undefined;
     }
 
@@ -143,7 +147,14 @@ export class AdminConfigService {
         );
         return undefined;
       }
-      rawValue = decryptValue(rawValue, this.encryptionSecret);
+      try {
+        rawValue = decryptValue(rawValue, this.encryptionSecret);
+      } catch {
+        this.logger.error(
+          `Failed to decrypt sensitive field "${key}" — secret may have been rotated`,
+        );
+        return undefined;
+      }
     }
 
     return rawValue;
@@ -183,7 +194,14 @@ export class AdminConfigService {
           );
           continue;
         }
-        rawValue = decryptValue(rawValue, this.encryptionSecret);
+        try {
+          rawValue = decryptValue(rawValue, this.encryptionSecret);
+        } catch {
+          this.logger.error(
+            `Failed to decrypt sensitive field "${key}" — secret may have been rotated`,
+          );
+          continue;
+        }
       }
 
       result.set(row.key, rawValue);
@@ -227,20 +245,19 @@ export class AdminConfigService {
     }
 
     const knex = await this.getDb();
-    const now = new Date().toISOString();
 
     await knex<AdminConfigRow>(TABLE_NAME)
       .insert({
         key,
         value: serialized,
         schema_version: BOOST_CONFIG_SCHEMA_VERSION,
-        updated_at: now,
+        updated_at: knex.fn.now() as unknown as string,
       })
       .onConflict('key')
       .merge({
         value: serialized,
         schema_version: BOOST_CONFIG_SCHEMA_VERSION,
-        updated_at: now,
+        updated_at: knex.fn.now() as unknown as string,
       });
 
     this.logger.info(`Config override set: ${key}`);

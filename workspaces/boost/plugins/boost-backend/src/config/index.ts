@@ -32,4 +32,3 @@ export {
   type ConfigScope,
   type ConfigFieldMeta,
 } from './schemas';
-export { encryptValue, decryptValue } from './encryption';
