@@ -20,7 +20,12 @@ import type {
   LoggerService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { InputError, NotFoundError } from '@backstage/errors';
+import {
+  AuthenticationError,
+  ConflictError,
+  InputError,
+  NotFoundError,
+} from '@backstage/errors';
 import {
   boostAgentListPermission,
   boostAgentRegisterPermission,
@@ -40,9 +45,13 @@ import { isValidTransition, isDeletableStage } from './lifecycle';
  * @public
  */
 export interface AgentRoutesOptions {
+  /** The agent lifecycle store for persistence. */
   store: AgentLifecycleStore;
+  /** The Backstage permissions service. */
   permissions: PermissionsService;
+  /** The Backstage HTTP auth service for extracting credentials. */
   httpAuth: HttpAuthService;
+  /** The Backstage logger service. */
   logger: LoggerService;
 }
 
@@ -88,6 +97,15 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
   const authOptions = { permissions, httpAuth };
   const resourceLoader = createStoreAgentResourceLoader(store);
 
+  const AGENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,254}$/;
+  function validateAgentId(id: string): void {
+    if (!AGENT_ID_PATTERN.test(id)) {
+      throw new InputError(
+        'Invalid agent ID: must be 1-255 characters, alphanumeric with dots, hyphens, and underscores',
+      );
+    }
+  }
+
   // 3.1: GET /agents — list agents with visibility filtering
   router.get(
     '/agents',
@@ -117,6 +135,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const { name, description } = req.body ?? {};
 
         if (!name || typeof name !== 'string') {
@@ -126,18 +145,20 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
         // Check if already registered
         const existing = await store.get(id);
         if (existing) {
-          throw new InputError(`Agent "${id}" is already registered`);
+          throw new ConflictError(`Agent "${id}" is already registered`);
         }
 
         // Resolve the user identity for createdBy
         const credentials = await httpAuth.credentials(req);
-        const userRef =
-          'principal' in credentials &&
-          credentials.principal &&
-          typeof credentials.principal === 'object' &&
-          'userEntityRef' in credentials.principal
-            ? (credentials.principal as { userEntityRef: string }).userEntityRef
-            : 'user:default/unknown';
+        const principal = credentials.principal as
+          | { userEntityRef?: string }
+          | undefined;
+        const userRef = principal?.userEntityRef;
+        if (!userRef) {
+          throw new AuthenticationError(
+            'Cannot register agent: unable to resolve user identity from credentials',
+          );
+        }
 
         const agent = await store.register({
           id,
@@ -166,6 +187,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const agent = await store.get(id);
         if (!agent) {
           throw new NotFoundError(`Agent "${id}" not found`);
@@ -179,6 +201,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
         }
 
         const updated = await store.updateStage(id, 'pending');
+        if (!updated) {
+          throw new NotFoundError(
+            `Agent "${id}" was deleted during transition`,
+          );
+        }
         res.json(updated);
       } catch (error) {
         next(error);
@@ -197,6 +224,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const agent = await store.get(id);
         if (!agent) {
           throw new NotFoundError(`Agent "${id}" not found`);
@@ -210,6 +238,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
         }
 
         const updated = await store.updateStage(id, 'published');
+        if (!updated) {
+          throw new NotFoundError(
+            `Agent "${id}" was deleted during transition`,
+          );
+        }
         res.json(updated);
       } catch (error) {
         next(error);
@@ -228,6 +261,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const agent = await store.get(id);
         if (!agent) {
           throw new NotFoundError(`Agent "${id}" not found`);
@@ -241,6 +275,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
         }
 
         const updated = await store.updateStage(id, 'archived');
+        if (!updated) {
+          throw new NotFoundError(
+            `Agent "${id}" was deleted during transition`,
+          );
+        }
         res.json(updated);
       } catch (error) {
         next(error);
@@ -259,6 +298,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const agent = await store.get(id);
         if (!agent) {
           throw new NotFoundError(`Agent "${id}" not found`);
@@ -272,6 +312,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
         }
 
         const updated = await store.updateStage(id, 'draft');
+        if (!updated) {
+          throw new NotFoundError(
+            `Agent "${id}" was deleted during transition`,
+          );
+        }
         res.json(updated);
       } catch (error) {
         next(error);
@@ -290,6 +335,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params;
+        validateAgentId(id);
         const agent = await store.get(id);
         if (!agent) {
           throw new NotFoundError(`Agent "${id}" not found`);

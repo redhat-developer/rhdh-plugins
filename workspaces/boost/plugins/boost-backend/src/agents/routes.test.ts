@@ -269,7 +269,7 @@ describe('agent routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it('returns 400 when agent already exists', async () => {
+    it('returns 409 when agent already exists', async () => {
       const store = createMockStore({
         get: jest.fn().mockResolvedValue(makeAgent()),
       });
@@ -280,7 +280,43 @@ describe('agent routes', () => {
         body: { name: 'Existing Agent' },
       });
 
+      expect(res.status).toBe(409);
+    });
+
+    it('returns 400 for invalid agent ID', async () => {
+      testApp = await createTestApp({});
+
+      const res = await fetchJson(
+        testApp.url,
+        '/agents/-invalid-start/register',
+        {
+          method: 'PUT',
+          body: { name: 'Bad Agent' },
+        },
+      );
+
       expect(res.status).toBe(400);
+    });
+
+    it('returns 401 when user identity cannot be resolved', async () => {
+      const store = createMockStore({
+        get: jest.fn().mockResolvedValue(undefined),
+      });
+      const httpAuth: HttpAuthService = {
+        credentials: jest.fn().mockResolvedValue({
+          $$type: '@backstage/BackstageCredentials',
+          principal: {},
+        }),
+        issueUserCookie: jest.fn(),
+      };
+      testApp = await createTestApp({ store, httpAuth });
+
+      const res = await fetchJson(testApp.url, '/agents/new-agent/register', {
+        method: 'PUT',
+        body: { name: 'New Agent' },
+      });
+
+      expect(res.status).toBe(401);
     });
   });
 
@@ -321,6 +357,21 @@ describe('agent routes', () => {
       testApp = await createTestApp({ store });
 
       const res = await fetchJson(testApp.url, '/agents/nonexistent/promote', {
+        method: 'PUT',
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 404 when agent deleted during transition', async () => {
+      const agent = makeAgent({ lifecycleStage: 'draft' });
+      const store = createMockStore({
+        get: jest.fn().mockResolvedValue(agent),
+        updateStage: jest.fn().mockResolvedValue(undefined),
+      });
+      testApp = await createTestApp({ store });
+
+      const res = await fetchJson(testApp.url, '/agents/agent-1/promote', {
         method: 'PUT',
       });
 

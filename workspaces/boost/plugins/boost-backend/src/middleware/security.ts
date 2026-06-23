@@ -22,7 +22,8 @@ import type {
 } from '@backstage/backend-plugin-api';
 import {
   AuthorizeResult,
-  type BasicPermission,
+  type Permission,
+  type AuthorizePermissionRequest,
 } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
 import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -142,8 +143,9 @@ export interface AuthorizeLifecycleActionOptions {
  * This enables deployments that prefer coarse-grained control to work
  * with just `boost.admin` without configuring all 16 permissions.
  *
- * @param permission - The fine-grained permission to check (basic permissions only;
- *   resource-scoped conditional authorization will be added in a later issue).
+ * @param permission - The fine-grained permission to check. Resource-scoped permissions
+ *   are accepted but conditional authorization is deferred to a later issue — for now
+ *   the check is non-conditional (ALLOW/DENY only).
  * @param _resourceLoader - Loads the resource for conditional checks (reserved for future use).
  * @param options - Services needed for authorization.
  * @returns Express middleware handler.
@@ -151,7 +153,7 @@ export interface AuthorizeLifecycleActionOptions {
  * @public
  */
 export function authorizeLifecycleAction(
-  permission: BasicPermission,
+  permission: Permission,
   _resourceLoader: ResourceLoader,
   options: AuthorizeLifecycleActionOptions,
 ): RequestHandler {
@@ -162,9 +164,17 @@ export function authorizeLifecycleAction(
       const credentials = await httpAuth.credentials(req);
 
       // Step 1: Try fine-grained permission
-      const [decision] = await permissions.authorize([{ permission }], {
-        credentials,
-      });
+      // For resource-scoped permissions, include the resource ref from the URL
+      const resourceRef = req.params?.id;
+      const request =
+        permission.type === 'resource' && resourceRef
+          ? { permission, resourceRef }
+          : { permission };
+
+      const [decision] = await permissions.authorize(
+        [request as AuthorizePermissionRequest],
+        { credentials },
+      );
 
       if (decision.result === AuthorizeResult.ALLOW) {
         return next();

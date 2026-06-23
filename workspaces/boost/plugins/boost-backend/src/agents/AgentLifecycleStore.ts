@@ -18,6 +18,7 @@ import type {
   DatabaseService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
+import { ConflictError } from '@backstage/errors';
 import type { Knex } from 'knex';
 import type {
   AgentRecord,
@@ -48,7 +49,9 @@ interface AgentRow {
  * @public
  */
 export interface AgentLifecycleStoreOptions {
+  /** The Backstage database service. */
   database: DatabaseService;
+  /** The Backstage logger service. */
   logger: LoggerService;
 }
 
@@ -115,7 +118,7 @@ export class AgentLifecycleStore {
   }
 
   /**
-   * Convert a database row to an {@link AgentRecord}.
+   * Convert a database row to an `AgentRecord`.
    */
   private rowToRecord(row: AgentRow): AgentRecord {
     return {
@@ -169,18 +172,29 @@ export class AgentLifecycleStore {
   }): Promise<AgentRecord> {
     const knex = await this.getDb();
     const now = knex.fn.now() as unknown as string;
-    await knex<AgentRow>(TABLE_NAME).insert({
-      id: agent.id,
-      name: agent.name,
-      description: agent.description ?? null,
-      lifecycle_stage: 'draft',
-      created_by: agent.createdBy,
-      governance_registered: 1,
-      created_at: now,
-      updated_at: now,
-    });
+    try {
+      await knex<AgentRow>(TABLE_NAME).insert({
+        id: agent.id,
+        name: agent.name,
+        description: agent.description ?? null,
+        lifecycle_stage: 'draft',
+        created_by: agent.createdBy,
+        governance_registered: 1,
+        created_at: now,
+        updated_at: now,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (
+        message.includes('UNIQUE') ||
+        message.includes('duplicate') ||
+        message.includes('conflict')
+      ) {
+        throw new ConflictError(`Agent "${agent.id}" is already registered`);
+      }
+      throw err;
+    }
     this.logger.info(`Agent registered: ${agent.id} by ${agent.createdBy}`);
-    // Re-read to get the generated timestamps
     const record = await this.get(agent.id);
     return record!;
   }
