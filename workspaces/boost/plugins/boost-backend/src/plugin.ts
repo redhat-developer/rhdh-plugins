@@ -20,13 +20,20 @@ import {
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import { boostPermissions } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import {
+  boostAdminPermission,
+  boostPermissions,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
   boostProviderExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 import { Router } from 'express';
+import { AdminConfigService } from './config/AdminConfigService';
+import { RuntimeConfigResolver } from './config/RuntimeConfigResolver';
+import { isSensitiveField, type BoostConfigKey } from './config/schemas';
 import { ProviderManager } from './provider/ProviderManager';
 import { validateSecurityMode } from './middleware/security';
 
@@ -99,6 +106,8 @@ export const boostPlugin = createBackendPlugin({
       deps: {
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        cache: coreServices.cache,
+        database: coreServices.database,
         httpRouter: coreServices.httpRouter,
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
@@ -107,7 +116,10 @@ export const boostPlugin = createBackendPlugin({
       async init({
         logger,
         config,
+        cache,
+        database,
         httpRouter,
+        httpAuth,
         permissions: _permissions,
         permissionsRegistry,
       }) {
@@ -119,6 +131,33 @@ export const boostPlugin = createBackendPlugin({
           logger,
         );
         logger.info(`Boost security mode: ${securityMode}`);
+
+        // Initialize runtime configuration engine
+        const encryptionSecret = config.getOptionalString(
+          'boost.encryptionSecret',
+        );
+        const adminConfigService = new AdminConfigService({
+          database,
+          logger,
+          encryptionSecret,
+        });
+
+        // Re-validate stored DB values against current Zod schemas (schema evolution)
+        const removedKeys = await adminConfigService.validateStoredValues();
+        if (removedKeys.length > 0) {
+          logger.warn(
+            `Schema validation removed ${removedKeys.length} stale config override(s) on startup`,
+          );
+        }
+
+        const runtimeConfigResolver = new RuntimeConfigResolver({
+          cache,
+          config,
+          adminConfigService,
+          logger,
+        });
+
+        logger.info('Runtime configuration engine initialized');
 
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
@@ -151,10 +190,47 @@ export const boostPlugin = createBackendPlugin({
           res.json({ status: 'ok' });
         });
 
+        // Config status endpoint (for admin onboarding)
+        router.get('/config/status', async (req, res) => {
+          try {
+            const credentials = await httpAuth.credentials(req);
+            const decision = await _permissions.authorize(
+              [{ permission: boostAdminPermission }],
+              { credentials },
+            );
+            if (decision[0].result !== AuthorizeResult.ALLOW) {
+              res.status(403).json({ status: 'error', message: 'Forbidden' });
+              return;
+            }
+
+            const allConfig = await runtimeConfigResolver.resolveAll();
+            const redacted: Record<string, unknown> = {};
+            for (const [key, value] of allConfig) {
+              redacted[key] = isSensitiveField(key as BoostConfigKey)
+                ? '**REDACTED**'
+                : value;
+            }
+            res.json({
+              status: 'ok',
+              fieldCount: allConfig.size,
+              config: redacted,
+            });
+          } catch (error) {
+            logger.error('Config status endpoint failed', error as Error);
+            res
+              .status(500)
+              .json({ status: 'error', message: 'Internal server error' });
+          }
+        });
+
         httpRouter.use(router);
         httpRouter.addAuthPolicy({
           path: '/health',
           allow: 'unauthenticated',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/config/status',
+          allow: 'user-cookie',
         });
 
         logger.info('Boost backend plugin initialized successfully');
