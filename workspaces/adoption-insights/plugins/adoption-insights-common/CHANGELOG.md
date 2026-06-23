@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 0.8.3
+
 ## 0.8.2
 
 ## 0.8.1
