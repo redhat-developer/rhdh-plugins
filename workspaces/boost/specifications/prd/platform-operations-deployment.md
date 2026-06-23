@@ -290,9 +290,9 @@ Sources (GitHub, URL, File Upload)
 
 ## Customer Context
 
-Derived from the Citi engagement. Architecture principle: "Runtime-configurable. All configuration changes take effect without restart or redeployment."
+Derived from early enterprise engagement experience. Architecture principle: "Runtime-configurable. All configuration changes take effect without restart or redeployment."
 
-Citi's vision was for the portal to present as their own product ("Cloud Concierge"), not as a Red Hat product. White-labeling is foundational to the engagement, not cosmetic.
+The customer's vision was for the portal to present as their own product, not as a Red Hat product. White-labeling is foundational to the engagement, not cosmetic.
 
 Success outcomes addressed:
 
