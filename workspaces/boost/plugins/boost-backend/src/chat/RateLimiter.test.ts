@@ -91,6 +91,35 @@ describe('RateLimiter', () => {
     expect(r.remaining).toBe(2);
   });
 
+  it('handles cache backends that auto-deserialize JSON into objects', async () => {
+    const objectCache = createMockCache();
+    const origSet = objectCache.set as jest.Mock;
+    const origGet = objectCache.get as jest.Mock;
+
+    // Intercept set to store parsed objects instead of raw strings
+    origSet.mockImplementation(async (key: string, value: unknown) => {
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      (origGet as jest.Mock).mockImplementation(async (k: string) =>
+        k === key ? parsed : undefined,
+      );
+    });
+
+    const objLimiter = new RateLimiter({
+      cache: objectCache,
+      logger: createMockLogger(),
+      maxRequests: 3,
+      windowMs: 60_000,
+    });
+
+    const r1 = await objLimiter.consume('user-obj');
+    expect(r1.allowed).toBe(true);
+    expect(r1.remaining).toBe(2);
+
+    const r2 = await objLimiter.consume('user-obj');
+    expect(r2.allowed).toBe(true);
+    expect(r2.remaining).toBe(1);
+  });
+
   it('uses cacheService withOptions for namespace isolation', () => {
     expect(cache.withOptions).toHaveBeenCalledWith({
       defaultTtl: 60_000,

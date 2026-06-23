@@ -94,6 +94,15 @@ export class RateLimiter {
       } catch {
         // Corrupt entry — treat as missing
       }
+    } else if (
+      raw &&
+      typeof raw === 'object' &&
+      !Array.isArray(raw) &&
+      typeof (raw as Record<string, unknown>).count === 'number' &&
+      typeof (raw as Record<string, unknown>).windowStart === 'number'
+    ) {
+      // Some cache backends auto-deserialize JSON into objects
+      entry = raw as unknown as RateLimitEntry;
     }
 
     // If no entry or the window has expired, start a new window
