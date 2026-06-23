@@ -280,7 +280,6 @@ function initPublicServices(
     orchestratorKafka,
   );
 
-  // TODO: creates the cache and schedules the task to update the cache
   const workflowCacheService = new WorkflowCacheService(
     logger,
     dataIndexService,

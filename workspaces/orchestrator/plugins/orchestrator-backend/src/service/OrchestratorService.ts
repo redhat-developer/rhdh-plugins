@@ -134,13 +134,28 @@ export class OrchestratorService {
       targetEntity: args.targetEntity,
     });
 
-    return overviews?.map(overview => {
-      const updatedOverview = overview;
-      updatedOverview.isAvailable = this.workflowCacheService.isAvailable(
-        updatedOverview.workflowId,
-      );
-      return updatedOverview;
-    });
+    if (!overviews?.length) {
+      return overviews;
+    }
+
+    const serviceUrls = await this.dataIndexService.fetchWorkflowServiceUrls();
+
+    return Promise.all(
+      overviews.map(async overview => {
+        const updatedOverview = overview;
+        updatedOverview.isAvailable = this.workflowCacheService.isAvailable(
+          updatedOverview.workflowId,
+        );
+        if (!updatedOverview.isAvailable) {
+          updatedOverview.availability =
+            await this.sonataFlowService.pingWorkflowService({
+              definitionId: updatedOverview.workflowId,
+              serviceUrl: serviceUrls[updatedOverview.workflowId],
+            });
+        }
+        return updatedOverview;
+      }),
+    );
   }
 
   public async executeWorkflowAsCloudEvent(args: {
@@ -181,8 +196,6 @@ export class OrchestratorService {
     const { definitionId } = args;
     const isWorkflowAvailable =
       this.workflowCacheService.isAvailable(definitionId);
-    // TODO: get the reason why the workflow is not available
-    // TODO: probably need to hit the management API to get the reason why the workflow is not available
     const overview =
       await this.sonataFlowService.fetchWorkflowOverview(definitionId);
     if (overview) {

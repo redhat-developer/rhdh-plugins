@@ -563,6 +563,37 @@ export interface SearchRequest {
 /**
  * 
  * @export
+ * @interface WorkflowAvailabilityResponseDTO
+ */
+export interface WorkflowAvailabilityResponseDTO {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'statusCode'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'urlToFetch'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'reason'?: string;
+}
+/**
+ * 
+ * @export
  * @interface WorkflowDTO
  */
 export interface WorkflowDTO {
@@ -663,37 +694,6 @@ export interface WorkflowLogsResponse {
      * @memberof WorkflowLogsResponse
      */
     'logs'?: any;
-}
-/**
- * 
- * @export
- * @interface WorkflowAvailabilityResponseDTO
- */
-export interface WorkflowAvailabilityResponseDTO {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof WorkflowAvailabilityResponseDTO
-     */
-    'isAvailable'?: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof WorkflowAvailabilityResponseDTO
-     */
-    'statusCode'?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof WorkflowAvailabilityResponseDTO
-     */
-    'urlToFetch'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof WorkflowAvailabilityResponseDTO
-     */
-    'reason'?: string;
 }
 /**
  * 

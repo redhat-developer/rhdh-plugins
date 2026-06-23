@@ -135,8 +135,21 @@ describe('OrchestratorService', () => {
   });
 
   describe('fetchWorkflowOverviews', () => {
+    const availabilityResponse = {
+      isAvailable: false,
+      statusCode: 503,
+      urlToFetch: `${serviceUrl}/management/processes/${definitionId}`,
+      reason: 'Service Unavailable',
+    };
+
     beforeEach(() => {
       jest.clearAllMocks();
+      sonataFlowServiceMock.pingWorkflowService = jest
+        .fn()
+        .mockResolvedValue(availabilityResponse);
+      dataIndexServiceMock.fetchWorkflowServiceUrls = jest
+        .fn()
+        .mockResolvedValue({ [definitionId]: serviceUrl });
     });
 
     it('should throw error when data index returns error', async () => {
@@ -161,6 +174,27 @@ describe('OrchestratorService', () => {
 
       expect(result).toHaveLength(workflowOverviews.length);
       expect(sonataFlowServiceMock.fetchWorkflowOverviews).toHaveBeenCalled();
+      expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
+    });
+
+    it('pings unavailable workflows and sets availability on each overview', async () => {
+      sonataFlowServiceMock.fetchWorkflowOverviews = jest
+        .fn()
+        .mockResolvedValue([createWorkflowOverviewMock(1)]);
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
+
+      const result = await orchestratorService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0].isAvailable).toBe(false);
+      expect(result?.[0].availability).toEqual(availabilityResponse);
+      expect(
+        dataIndexServiceMock.fetchWorkflowServiceUrls,
+      ).toHaveBeenCalledTimes(1);
+      expect(sonataFlowServiceMock.pingWorkflowService).toHaveBeenCalledWith({
+        definitionId,
+        serviceUrl,
+      });
     });
   });
 
@@ -297,7 +331,7 @@ describe('OrchestratorService', () => {
       jest.clearAllMocks();
       sonataFlowServiceMock.fetchWorkflowOverview = jest
         .fn()
-        .mockResolvedValue({ ...workflowOverview });
+        .mockResolvedValue(createWorkflowOverviewMock(1));
       sonataFlowServiceMock.pingWorkflowService = jest
         .fn()
         .mockResolvedValue(availabilityResponse);

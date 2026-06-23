@@ -20,6 +20,7 @@ Models/ProcessInstanceListResultDTO.md
 Models/ProcessInstanceStatusDTO.md
 Models/RetriggerInstanceRequestDTO.md
 Models/SearchRequest.md
+Models/WorkflowAvailabilityResponseDTO.md
 Models/WorkflowDTO.md
 Models/WorkflowDataDTO.md
 Models/WorkflowFormatDTO.md
