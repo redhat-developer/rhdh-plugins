@@ -4,17 +4,20 @@
 
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { BasicPermission } from '@backstage/plugin-permission-common';
 import type { CacheService } from '@backstage/backend-plugin-api';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
+import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { Permission } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
 import type { RequestHandler } from 'express';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
+import { Router } from 'express';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
 import { z } from 'zod';
 
@@ -30,15 +33,45 @@ export class AdminConfigService {
 
 // @public
 export interface AdminConfigServiceOptions {
-  // (undocumented)
   database: DatabaseService;
-  // (undocumented)
   logger: LoggerService;
 }
 
 // @public
+export class AgentLifecycleStore {
+  constructor(options: AgentLifecycleStoreOptions);
+  delete(id: string): Promise<boolean>;
+  get(id: string): Promise<AgentRecord | undefined>;
+  list(): Promise<AgentRecord[]>;
+  register(agent: {
+    id: string;
+    name: string;
+    description?: string;
+    createdBy: string;
+  }): Promise<AgentRecord>;
+  updateStage(
+    id: string,
+    stage: LifecycleStage,
+  ): Promise<AgentRecord | undefined>;
+}
+
+// @public
+export interface AgentLifecycleStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
+
+// @public
+export interface AgentRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  store: AgentLifecycleStore;
+}
+
+// @public
 export function authorizeLifecycleAction(
-  permission: BasicPermission,
+  permission: Permission,
   _resourceLoader: ResourceLoader,
   options: AuthorizeLifecycleActionOptions,
 ): RequestHandler;
@@ -158,13 +191,25 @@ export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
 export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
+export function createAgentRoutes(options: AgentRoutesOptions): Router;
+
+// @public
 export function createToolResourceLoader(): ResourceLoader;
 
 // @public
 export function isDbWritable(key: BoostConfigKey): boolean;
 
 // @public
+export function isDeletableStage(stage: LifecycleStage): boolean;
+
+// @public
 export function isSensitiveField(key: BoostConfigKey): boolean;
+
+// @public
+export function isValidTransition(
+  from: LifecycleStage,
+  to: LifecycleStage,
+): boolean;
 
 // @public
 export class ProviderManager {
@@ -194,13 +239,9 @@ export class RuntimeConfigResolver {
 
 // @public
 export interface RuntimeConfigResolverOptions {
-  // (undocumented)
   adminConfigService: AdminConfigService;
-  // (undocumented)
   cache: CacheService;
-  // (undocumented)
   config: RootConfigService;
-  // (undocumented)
   logger: LoggerService;
 }
 

@@ -48,3 +48,11 @@ export {
   type ConfigScope,
   type ConfigFieldMeta,
 } from './config';
+export {
+  AgentLifecycleStore,
+  isValidTransition,
+  isDeletableStage,
+  createAgentRoutes,
+  type AgentLifecycleStoreOptions,
+  type AgentRoutesOptions,
+} from './agents';

@@ -47,9 +47,13 @@ const DEFAULT_CACHE_TTL_MS = 30_000;
  * @public
  */
 export interface RuntimeConfigResolverOptions {
+  /** The Backstage cache service. */
   cache: CacheService;
+  /** The Backstage root config service. */
   config: RootConfigService;
+  /** The admin config service for DB-backed overrides. */
   adminConfigService: AdminConfigService;
+  /** The Backstage logger service. */
   logger: LoggerService;
 }
 

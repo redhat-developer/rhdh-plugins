@@ -50,7 +50,9 @@ interface AdminConfigRow {
  * @public
  */
 export interface AdminConfigServiceOptions {
+  /** The Backstage database service. */
   database: DatabaseService;
+  /** The Backstage logger service. */
   logger: LoggerService;
   /**
    * Secret used for encrypting sensitive config values.
