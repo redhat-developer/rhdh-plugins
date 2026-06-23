@@ -349,3 +349,24 @@ dynamicRoutes:
     importName: LightspeedPage
     module: Legacy
 ```
+
+### Dynamic plugin module name change
+
+The `LightspeedPlugin` scalprum module has been removed. Configurations that previously used `module: LightspeedPlugin` should be updated:
+
+- **OFS/Legacy** — use `module: Legacy`
+- **NFS** — use the default `module: PluginRoot` (or omit `module` entirely)
+
+```yaml
+# Before
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: LightspeedPlugin
+
+# After (OFS)
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: Legacy
+```

@@ -6,7 +6,7 @@
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @public
+// @alpha
 export const lightspeedTranslationRef: TranslationRef<
   'plugin.lightspeed',
   {
@@ -276,7 +276,7 @@ export const lightspeedTranslationRef: TranslationRef<
   }
 >;
 
-// @public
+// @alpha
 export const lightspeedTranslations: TranslationResource<'plugin.lightspeed'>;
 
 // (No @packageDocumentation comment for this package)

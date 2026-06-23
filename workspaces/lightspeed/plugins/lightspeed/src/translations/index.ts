@@ -20,7 +20,7 @@ import { lightspeedTranslationRef } from './ref';
 
 /**
  * Translation Resource for Developer Hub intelligent assistant
- * @public
+ * @alpha
  **/
 export const lightspeedTranslations = createTranslationResource({
   ref: lightspeedTranslationRef,
@@ -33,5 +33,5 @@ export const lightspeedTranslations = createTranslationResource({
   },
 });
 
-// @public
+// @alpha
 export { lightspeedTranslationRef };
