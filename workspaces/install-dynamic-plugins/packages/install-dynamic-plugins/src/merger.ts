@@ -298,6 +298,13 @@ function copyPluginFields(
     if (skipSet.has(k) || isForbiddenKey(k)) continue;
     safeSet(dst, k, v);
   }
+  // When the override introduces one activation field, clear the opposite
+  // so the merged record never carries both (which would trigger a spurious
+  // "specifies both 'enabled' and 'disabled'" warning in isPluginDisabled).
+  if ('enabled' in src && 'disabled' in dst)
+    delete (dst as Record<string, unknown>).disabled;
+  if ('disabled' in src && 'enabled' in dst)
+    delete (dst as Record<string, unknown>).enabled;
 }
 
 function isEqual(a: unknown, b: unknown): boolean {

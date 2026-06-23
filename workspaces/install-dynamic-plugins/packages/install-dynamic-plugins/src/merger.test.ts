@@ -118,6 +118,7 @@ describe('mergePlugin — NPM', () => {
     );
     expect(all.pkg?.package).toBe('pkg@2.0.0');
     expect(all.pkg?.enabled).toBe(true);
+    expect(all.pkg?.disabled).toBeUndefined();
     expect(all.pkg?.last_modified_level).toBe(1);
   });
 
