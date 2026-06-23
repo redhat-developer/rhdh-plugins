@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.10.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+- 22f75ad: Fix workflow run stats on entity catalog workflow overview by querying instances with workflow definition ids and optional target entity filter.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.1
+
 ## 8.10.0
 
 ### Minor Changes

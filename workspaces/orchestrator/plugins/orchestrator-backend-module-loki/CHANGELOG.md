@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.3.1
+
+### Patch Changes
+
+- e6d1c2d: Fix to allow properly quoted LoqQL querys in the selector field
+- Updated dependencies [43e0722]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.1
+
 ## 1.3.0
 
 ### Minor Changes
