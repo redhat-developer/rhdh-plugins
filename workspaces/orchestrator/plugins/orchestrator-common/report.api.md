@@ -2109,7 +2109,7 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:331:22 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
 // src/generated/client/api.d.ts:335:1 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
 // src/generated/client/api.d.ts:502:1 - (ae-undocumented) Missing documentation for "ProcessInstanceStatusDTO".
-// src/generated/client/api.d.ts:594:1 - (ae-undocumented) Missing documentation for "WorkflowFormatDTO".
+// src/generated/client/api.d.ts:625:1 - (ae-undocumented) Missing documentation for "WorkflowFormatDTO".
 // src/generated/client/api.d.ts:892:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
 // src/generated/client/api.d.ts:898:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
 // src/generated/client/api.d.ts:975:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
