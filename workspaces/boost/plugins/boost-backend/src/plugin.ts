@@ -228,6 +228,10 @@ export const boostPlugin = createBackendPlugin({
           path: '/health',
           allow: 'unauthenticated',
         });
+        httpRouter.addAuthPolicy({
+          path: '/config/status',
+          allow: 'user-cookie',
+        });
 
         logger.info('Boost backend plugin initialized successfully');
       },

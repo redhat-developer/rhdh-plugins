@@ -351,6 +351,50 @@ describe('AdminConfigService', () => {
       expect(removed).toContain('boost.nonexistent.field');
     });
 
+    it('keeps encrypted rows when decryption fails (rotated secret)', async () => {
+      // Write a sensitive field with the current secret
+      await service.setOverride(
+        'boost.devSpaces.credentials',
+        'my-secret-token',
+      );
+
+      // Create a service with a different secret
+      const database: DatabaseService = {
+        getClient: async () => mockKnex,
+      } as unknown as DatabaseService;
+      const rotatedService = new AdminConfigService({
+        database,
+        logger,
+        encryptionSecret: 'different-secret',
+      });
+
+      const removed = await rotatedService.validateStoredValues();
+      expect(removed).not.toContain('boost.devSpaces.credentials');
+      // Row should still exist
+      const row = mockKnex._rows.find(
+        (r: { key: string }) => r.key === 'boost.devSpaces.credentials',
+      );
+      expect(row).toBeDefined();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('decryption failed'),
+      );
+    });
+
+    it('removes corrupt JSON rows during validation', async () => {
+      mockKnex._rows.push({
+        key: 'boost.model.baseUrl',
+        value: '<<<not-json>>>',
+        schema_version: 1,
+        updated_at: new Date().toISOString(),
+      });
+
+      const removed = await service.validateStoredValues();
+      expect(removed).toContain('boost.model.baseUrl');
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('corrupt JSON'),
+      );
+    });
+
     it('removes values that fail validation', async () => {
       // Insert invalid URL directly
       mockKnex._rows.push({

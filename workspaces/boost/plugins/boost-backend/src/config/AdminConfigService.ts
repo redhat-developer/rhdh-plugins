@@ -308,19 +308,36 @@ export class AdminConfigService {
         );
       }
 
-      // Re-validate the stored value
+      // Decrypt sensitive fields before validation
+      let rawValue: unknown;
       try {
-        let rawValue: unknown = JSON.parse(row.value);
+        rawValue = JSON.parse(row.value);
+      } catch {
+        this.logger.warn(
+          `Removing config override "${key}" — corrupt JSON (schema version ${row.schema_version})`,
+        );
+        await knex<AdminConfigRow>(TABLE_NAME).where({ key }).delete();
+        removedKeys.push(key);
+        continue;
+      }
 
-        // Decrypt sensitive fields for validation
-        if (
-          isSensitiveField(key) &&
-          typeof rawValue === 'string' &&
-          this.encryptionSecret
-        ) {
+      if (
+        isSensitiveField(key) &&
+        typeof rawValue === 'string' &&
+        this.encryptionSecret
+      ) {
+        try {
           rawValue = decryptValue(rawValue, this.encryptionSecret);
+        } catch {
+          this.logger.warn(
+            `Cannot validate sensitive field "${key}" — decryption failed (secret may have been rotated). Keeping row intact.`,
+          );
+          continue;
         }
+      }
 
+      // Re-validate the decrypted value against the Zod schema
+      try {
         validateConfigValue(key, rawValue);
       } catch (error) {
         this.logger.warn(
