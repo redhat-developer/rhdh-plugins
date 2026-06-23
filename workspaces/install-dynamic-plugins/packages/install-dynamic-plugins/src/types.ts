@@ -133,9 +133,9 @@ export function effectivePullPolicy(plugin: {
  *     via the optional `warn` callback.
  *  4. When neither is set         → default to `false` (not disabled).
  *
- * Non-boolean values (e.g. `enabled: 'false'` from unquoted YAML) are
- * treated as unset and a warning is emitted, preventing JS truthiness
- * from silently flipping activation state.
+ * Non-boolean values (e.g. the quoted string `enabled: 'false'` or
+ * `enabled: null`) are treated as unset and a warning is emitted,
+ * preventing JS truthiness from silently flipping activation state.
  *
  * The `warn` callback receives the warning message string.  Pass `log` or
  * leave it out for silent resolution (unit tests, hashing).

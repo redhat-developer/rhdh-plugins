@@ -298,12 +298,14 @@ function copyPluginFields(
     if (skipSet.has(k) || isForbiddenKey(k)) continue;
     safeSet(dst, k, v);
   }
-  // When the override introduces one activation field, clear the opposite
-  // so the merged record never carries both (which would trigger a spurious
-  // "specifies both 'enabled' and 'disabled'" warning in isPluginDisabled).
-  if ('enabled' in src && 'disabled' in dst)
+  // When the override introduces a valid boolean activation field, clear the
+  // opposite so the merged record never carries both (which would trigger a
+  // spurious "specifies both" warning in isPluginDisabled).  Only act on
+  // actual booleans — a non-boolean value is treated as "unset" by
+  // isPluginDisabled and should not displace a valid value on dst.
+  if (typeof src.enabled === 'boolean' && 'disabled' in dst)
     delete (dst as Record<string, unknown>).disabled;
-  if ('disabled' in src && 'enabled' in dst)
+  if (typeof src.disabled === 'boolean' && 'enabled' in dst)
     delete (dst as Record<string, unknown>).enabled;
 }
 
