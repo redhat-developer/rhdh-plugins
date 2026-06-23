@@ -51,6 +51,14 @@ export const lightspeedPlugin = createBackendPlugin({
       }) {
         await migrate(database);
 
+        if (config.has('lightspeed')) {
+          logger.warn(
+            'DEPRECATED: The "lightspeed" configuration key has been renamed to "intelligent-assistant". ' +
+              'Please update your app-config.yaml. The old "lightspeed" key is no longer read. ' +
+              'Migration guide: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant',
+          );
+        }
+
         const aiNotebooksEnabled =
           config.getOptionalBoolean(
             'intelligent-assistant.notebooks.enabled',
