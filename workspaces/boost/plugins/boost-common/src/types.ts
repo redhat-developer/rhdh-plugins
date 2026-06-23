@@ -115,8 +115,16 @@ export interface ConversationMessage {
  */
 export type NormalizedStreamEvent =
   | NormalizedStreamTextEvent
+  | NormalizedStreamReasoningEvent
   | NormalizedStreamToolCallEvent
   | NormalizedStreamToolResultEvent
+  | NormalizedStreamRagResultEvent
+  | NormalizedStreamHandoffEvent
+  | NormalizedStreamApprovalEvent
+  | NormalizedStreamFormEvent
+  | NormalizedStreamAuthEvent
+  | NormalizedStreamArtifactEvent
+  | NormalizedStreamCitationEvent
   | NormalizedStreamErrorEvent
   | NormalizedStreamDoneEvent;
 
@@ -129,6 +137,18 @@ export interface NormalizedStreamTextEvent {
   /** Discriminator for text events. */
   type: 'text';
   /** The text content of this chunk. */
+  text: string;
+}
+
+/**
+ * A reasoning / chain-of-thought chunk in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamReasoningEvent {
+  /** Discriminator for reasoning events. */
+  type: 'reasoning';
+  /** The reasoning text content. */
   text: string;
 }
 
@@ -160,6 +180,102 @@ export interface NormalizedStreamToolResultEvent {
   toolCallId: string;
   /** The result content. */
   content: string;
+}
+
+/**
+ * A RAG retrieval result in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamRagResultEvent {
+  /** Discriminator for RAG result events. */
+  type: 'rag_result';
+  /** The retrieved content chunk. */
+  content: string;
+  /** Optional source identifier (URL, document name, etc.). */
+  source?: string;
+}
+
+/**
+ * A multi-agent handoff event in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamHandoffEvent {
+  /** Discriminator for handoff events. */
+  type: 'handoff';
+  /** Identifier of the agent handing off. */
+  sourceAgent: string;
+  /** Identifier of the agent receiving the handoff. */
+  targetAgent: string;
+}
+
+/**
+ * A human-in-the-loop approval request in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamApprovalEvent {
+  /** Discriminator for approval events. */
+  type: 'approval';
+  /** Unique identifier for the approval request. */
+  requestId: string;
+  /** Optional message describing what needs approval. */
+  message?: string;
+}
+
+/**
+ * A structured form/input request in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamFormEvent {
+  /** Discriminator for form events. */
+  type: 'form';
+  /** Unique identifier for the form. */
+  formId: string;
+}
+
+/**
+ * An authentication challenge in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamAuthEvent {
+  /** Discriminator for auth events. */
+  type: 'auth';
+  /** Optional message describing the auth requirement. */
+  message?: string;
+}
+
+/**
+ * A generated artifact (code, file, etc.) in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamArtifactEvent {
+  /** Discriminator for artifact events. */
+  type: 'artifact';
+  /** Unique identifier for the artifact. */
+  artifactId: string;
+  /** The artifact content. */
+  content: string;
+  /** Optional MIME type of the artifact. */
+  mimeType?: string;
+}
+
+/**
+ * A citation / source reference in a streaming response.
+ *
+ * @public
+ */
+export interface NormalizedStreamCitationEvent {
+  /** Discriminator for citation events. */
+  type: 'citation';
+  /** Optional title of the cited source. */
+  title?: string;
+  /** Optional URL of the cited source. */
+  url?: string;
 }
 
 /**

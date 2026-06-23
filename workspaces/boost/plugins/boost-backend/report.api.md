@@ -181,6 +181,16 @@ const boostPlugin: BackendFeature;
 export default boostPlugin;
 
 // @public
+export interface ChatRoutesOptions {
+  conversationAgentCache: ConversationAgentCache;
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  providerManager: ProviderManager;
+  rateLimiter: RateLimiter;
+}
+
+// @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
   description: string;
@@ -192,10 +202,27 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
 
 // @public
+export class ConversationAgentCache {
+  constructor(options: ConversationAgentCacheOptions);
+  delete(conversationId: string): Promise<void>;
+  get(conversationId: string): Promise<string | undefined>;
+  set(conversationId: string, providerId: string): Promise<void>;
+}
+
+// @public
+export interface ConversationAgentCacheOptions {
+  cache: CacheService;
+  logger: LoggerService;
+}
+
+// @public
 export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
 export function createAgentRoutes(options: AgentRoutesOptions): Router;
+
+// @public
+export function createChatRoutes(options: ChatRoutesOptions): Router;
 
 // @public
 export function createKagentiAdminRoutes(
@@ -286,6 +313,24 @@ export class ProviderManager {
   hasProvider(): boolean;
   registerProvider(provider: AgenticProvider): void;
   switchProvider(providerId: string): void;
+}
+
+// @public
+export class RateLimiter {
+  constructor(options: RateLimiterOptions);
+  consume(identity: string): Promise<{
+    allowed: boolean;
+    remaining: number;
+    retryAfterMs?: number;
+  }>;
+}
+
+// @public
+export interface RateLimiterOptions {
+  cache: CacheService;
+  logger: LoggerService;
+  maxRequests?: number;
+  windowMs?: number;
 }
 
 // @public

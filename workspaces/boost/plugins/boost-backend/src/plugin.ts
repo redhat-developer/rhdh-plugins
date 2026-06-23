@@ -43,6 +43,9 @@ import { createToolRoutes } from './tools/routes';
 import { createKagentiAdminRoutes } from './kagenti/routes';
 import { McpServerStore } from './mcp/McpServerStore';
 import { createMcpServerRoutes } from './mcp/routes';
+import { createChatRoutes } from './chat/routes';
+import { ConversationAgentCache } from './chat/ConversationAgentCache';
+import { RateLimiter } from './chat/RateLimiter';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -184,6 +187,18 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        // Initialize conversation-agent cache (task 1.8)
+        const conversationAgentCache = new ConversationAgentCache({
+          cache,
+          logger,
+        });
+
+        // Initialize rate limiter (task 1.9)
+        const rateLimiter = new RateLimiter({
+          cache,
+          logger,
+        });
+
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
@@ -244,6 +259,17 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
         router.use(mcpRoutes);
+
+        // Chat and streaming routes (issue 6 of 15)
+        const chatRoutes = createChatRoutes({
+          providerManager,
+          permissions: _permissions,
+          httpAuth,
+          logger,
+          conversationAgentCache,
+          rateLimiter,
+        });
+        router.use(chatRoutes);
 
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
@@ -306,6 +332,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/mcp',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/chat',
           allow: 'user-cookie',
         });
 
