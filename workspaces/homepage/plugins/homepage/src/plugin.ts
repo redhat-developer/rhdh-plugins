@@ -78,7 +78,7 @@ export type {
  * @public
  */
 export const dynamicHomePagePlugin = createPlugin({
-  id: 'dynamic-home-page',
+  id: 'homepage',
   routes: {
     root: rootRouteRef,
   },
