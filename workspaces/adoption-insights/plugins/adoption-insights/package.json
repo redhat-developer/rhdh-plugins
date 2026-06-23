@@ -88,6 +88,14 @@
   },
   "files": [
     "app-config.dynamic.yaml",
-    "dist"
-  ]
+    "dist",
+    "dist-scalprum"
+  ],
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-adoption-insights",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.tsx"
+    }
+  }
 }
