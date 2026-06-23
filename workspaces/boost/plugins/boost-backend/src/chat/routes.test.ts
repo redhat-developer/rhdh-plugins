@@ -380,12 +380,33 @@ describe('chat routes', () => {
       });
 
       expect(res.status).toBe(200);
-      // Should have text events + done (the provider yields done, then the route adds another)
       const textEvents = res.events.filter(e => e.type === 'text');
       expect(textEvents.length).toBe(2);
       expect((textEvents[0] as { text: string }).text).toBe('Hello ');
       expect((textEvents[1] as { text: string }).text).toBe('World');
 
+      const doneEvents = res.events.filter(e => e.type === 'done');
+      expect(doneEvents.length).toBe(1);
+    });
+
+    it('appends done event when provider does not send one', async () => {
+      const noDoneProvider = createMockProvider({
+        chatStream: jest
+          .fn()
+          .mockImplementation(
+            async function* generateEvents(): AsyncIterable<NormalizedStreamEvent> {
+              yield { type: 'text', text: 'Hello' };
+            },
+          ),
+      });
+
+      testApp = await createTestApp({ provider: noDoneProvider });
+
+      const res = await postSse(testApp.url, '/chat/stream', {
+        messages: [{ type: 'text', text: 'Hello' }],
+      });
+
+      expect(res.status).toBe(200);
       const doneEvents = res.events.filter(e => e.type === 'done');
       expect(doneEvents.length).toBe(1);
     });

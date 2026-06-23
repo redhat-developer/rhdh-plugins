@@ -271,6 +271,34 @@ export interface McpServerRecord {
 export type McpTransport = 'streamable-http' | 'sse';
 
 // @public
+export interface NormalizedStreamApprovalEvent {
+  message?: string;
+  requestId: string;
+  type: 'approval';
+}
+
+// @public
+export interface NormalizedStreamArtifactEvent {
+  artifactId: string;
+  content: string;
+  mimeType?: string;
+  type: 'artifact';
+}
+
+// @public
+export interface NormalizedStreamAuthEvent {
+  message?: string;
+  type: 'auth';
+}
+
+// @public
+export interface NormalizedStreamCitationEvent {
+  title?: string;
+  type: 'citation';
+  url?: string;
+}
+
+// @public
 export interface NormalizedStreamDoneEvent {
   type: 'done';
 }
@@ -285,10 +313,44 @@ export interface NormalizedStreamErrorEvent {
 // @public
 export type NormalizedStreamEvent =
   | NormalizedStreamTextEvent
+  | NormalizedStreamReasoningEvent
   | NormalizedStreamToolCallEvent
   | NormalizedStreamToolResultEvent
+  | NormalizedStreamRagResultEvent
+  | NormalizedStreamHandoffEvent
+  | NormalizedStreamApprovalEvent
+  | NormalizedStreamFormEvent
+  | NormalizedStreamAuthEvent
+  | NormalizedStreamArtifactEvent
+  | NormalizedStreamCitationEvent
   | NormalizedStreamErrorEvent
   | NormalizedStreamDoneEvent;
+
+// @public
+export interface NormalizedStreamFormEvent {
+  formId: string;
+  type: 'form';
+}
+
+// @public
+export interface NormalizedStreamHandoffEvent {
+  sourceAgent: string;
+  targetAgent: string;
+  type: 'handoff';
+}
+
+// @public
+export interface NormalizedStreamRagResultEvent {
+  content: string;
+  source?: string;
+  type: 'rag_result';
+}
+
+// @public
+export interface NormalizedStreamReasoningEvent {
+  text: string;
+  type: 'reasoning';
+}
 
 // @public
 export interface NormalizedStreamTextEvent {

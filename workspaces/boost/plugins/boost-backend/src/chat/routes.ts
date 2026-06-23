@@ -170,6 +170,8 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
   ): Promise<void> {
     try {
       const credentials = await httpAuth.credentials(req);
+      // Service-to-service callers have no userEntityRef — they share
+      // a single 'anonymous' rate-limit bucket (trusted, low-volume).
       const principal = credentials.principal as
         | { userEntityRef?: string }
         | undefined;
@@ -198,6 +200,8 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
   }
 
   // POST /chat — synchronous chat endpoint
+  // Returns a plain string (AgenticProvider.chat() contract). Structured
+  // content (tool calls, citations, etc.) is only available via /chat/stream.
   router.post(
     '/chat',
     requireChatCreate,

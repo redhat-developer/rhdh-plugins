@@ -217,6 +217,7 @@ describe('boost-common', () => {
     it('NormalizedStreamEvent is a discriminated union', () => {
       const events: NormalizedStreamEvent[] = [
         { type: 'text', text: 'hello' },
+        { type: 'reasoning', text: 'thinking...' },
         {
           type: 'tool_call',
           toolCallId: 'tc1',
@@ -224,10 +225,17 @@ describe('boost-common', () => {
           args: '{}',
         },
         { type: 'tool_result', toolCallId: 'tc1', content: 'result' },
+        { type: 'rag_result', content: 'retrieved chunk' },
+        { type: 'handoff', sourceAgent: 'agent-a', targetAgent: 'agent-b' },
+        { type: 'approval', requestId: 'req-1' },
+        { type: 'form', formId: 'form-1' },
+        { type: 'auth' },
+        { type: 'artifact', artifactId: 'art-1', content: 'code here' },
+        { type: 'citation', title: 'Source', url: 'https://example.com' },
         { type: 'error', message: 'fail' },
         { type: 'done' },
       ];
-      expect(events).toHaveLength(5);
+      expect(events).toHaveLength(13);
       expect(events[0].type).toBe('text');
     });
 
