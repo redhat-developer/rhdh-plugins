@@ -81,19 +81,25 @@ export class RateLimiter {
     const raw = await this.cache.get(key);
     let entry: RateLimitEntry | undefined;
 
-    if (
-      raw &&
-      typeof raw === 'object' &&
-      'count' in raw &&
-      'windowStart' in raw
-    ) {
-      entry = raw as unknown as RateLimitEntry;
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (
+          parsed &&
+          typeof parsed.count === 'number' &&
+          typeof parsed.windowStart === 'number'
+        ) {
+          entry = parsed as RateLimitEntry;
+        }
+      } catch {
+        // Corrupt entry — treat as missing
+      }
     }
 
     // If no entry or the window has expired, start a new window
     if (!entry || now - entry.windowStart >= this.windowMs) {
       const newEntry: RateLimitEntry = { count: 1, windowStart: now };
-      await this.cache.set(key, newEntry as unknown as string);
+      await this.cache.set(key, JSON.stringify(newEntry));
       return { allowed: true, remaining: this.maxRequests - 1 };
     }
 
@@ -108,7 +114,7 @@ export class RateLimiter {
 
     // Increment count
     entry.count += 1;
-    await this.cache.set(key, entry as unknown as string);
+    await this.cache.set(key, JSON.stringify(entry));
     return { allowed: true, remaining: this.maxRequests - entry.count };
   }
 }

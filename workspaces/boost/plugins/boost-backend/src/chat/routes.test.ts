@@ -387,7 +387,7 @@ describe('chat routes', () => {
       expect((textEvents[1] as { text: string }).text).toBe('World');
 
       const doneEvents = res.events.filter(e => e.type === 'done');
-      expect(doneEvents.length).toBeGreaterThanOrEqual(1);
+      expect(doneEvents.length).toBe(1);
     });
 
     it('returns 400 for missing messages', async () => {

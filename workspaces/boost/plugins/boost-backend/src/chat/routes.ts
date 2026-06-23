@@ -192,7 +192,6 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
       }
 
       next();
-      return;
     } catch (error) {
       next(error);
     }
@@ -293,6 +292,7 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
         const stream = provider.chatStream(messages);
 
         try {
+          let providerSentDone = false;
           for await (const event of stream) {
             // If the client has disconnected, stop processing
             if (res.destroyed) {
@@ -301,11 +301,13 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
             }
 
             res.write(formatSseEvent(event));
+            providerSentDone = event.type === 'done';
           }
 
-          // Send a final done event if the stream didn't already end with one
           if (!res.destroyed) {
-            res.write(formatSseEvent({ type: 'done' }));
+            if (!providerSentDone) {
+              res.write(formatSseEvent({ type: 'done' }));
+            }
             res.end();
           }
         } catch (streamError) {
