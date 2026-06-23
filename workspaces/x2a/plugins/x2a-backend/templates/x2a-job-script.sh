@@ -207,6 +207,67 @@ git_target_repo() {
   git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
 }
 
+# Commit and push changes to target repository.
+# Returns: Sets COMMIT_ID to the pushed commit SHA, or exits on push failure.
+git_commit_and_push() {
+  local commit_message="$1"
+  local fail_on_error="${2:-true}"  # Default: exit on push failure
+
+  if [ ! -d /workspace/target/.git ]; then
+    echo "ERROR: Target repository not initialized"
+    return 1
+  fi
+
+  cd /workspace/target
+
+  # Sanitize secrets from output files before committing
+  sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
+
+  git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
+
+  # Check if there are changes to commit
+  if git diff --cached --quiet; then
+    echo "No changes to commit"
+    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
+    return 0
+  fi
+
+  git commit -m "${commit_message}" || echo "Commit failed, but continuing"
+
+  # Push to remote
+  if [ "${TARGET_BRANCH_IS_NEW}" = "true" ]; then
+    echo "Pushing new branch '${TARGET_REPO_BRANCH}' to ${TARGET_REPO_URL}..."
+    if ! git_target_repo push -u origin "${TARGET_REPO_BRANCH}"; then
+      local error_msg="Failed to push new branch '${TARGET_REPO_BRANCH}' to ${TARGET_REPO_URL}"
+      echo "ERROR: ${error_msg}"
+      if [ "${fail_on_error}" = "true" ]; then
+        ERROR_MESSAGE="${error_msg}"
+        exit 1
+      else
+        PUSH_FAILED="${error_msg}"
+        return 1
+      fi
+    fi
+  else
+    echo "Pushing to existing branch '${TARGET_REPO_BRANCH}'..."
+    git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
+      local error_msg="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
+      echo "ERROR: ${error_msg}"
+      if [ "${fail_on_error}" = "true" ]; then
+        ERROR_MESSAGE="${error_msg}"
+        exit 1
+      else
+        PUSH_FAILED="${error_msg}"
+        return 1
+      fi
+    fi
+  fi
+
+  COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
+  echo "Successfully pushed commit: ${COMMIT_ID}"
+}
+
 # Cleanup trap: fires on every exit (success or failure).
 # Guarantees exactly one report_result call regardless of how the script ends.
 cleanup() {
@@ -215,13 +276,7 @@ cleanup() {
 
   # Always try to commit and push whatever is in the working directory
   if [ -d /workspace/target/.git ]; then
-    cd /workspace/target
-
-    # Sanitize secrets from output files before committing
-    sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
-
-    git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
-    git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
+    local commit_msg="x2a: ${PHASE} phase for ${MODULE_NAME:-project}
 
 Phase: ${PHASE}
 Project: ${PROJECT_ID}
@@ -229,23 +284,8 @@ Module: ${MODULE_NAME:-N/A}
 Job: ${JOB_ID}
 
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
-" || true
-
-    if [ "${TARGET_BRANCH_IS_NEW}" = "true" ]; then
-      # New branch — no remote tracking branch to rebase against
-      if ! git_target_repo push -u origin "${TARGET_REPO_BRANCH}"; then
-        PUSH_FAILED="Failed to push new branch '${TARGET_REPO_BRANCH}' to ${TARGET_REPO_URL}"
-        echo "ERROR: ${PUSH_FAILED}"
-      fi
-    else
-      # Existing branch — rebase on remote changes before pushing
-      git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
-      if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
-        PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
-        echo "ERROR: ${PUSH_FAILED}"
-      fi
-    fi
-    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
+"
+    git_commit_and_push "${commit_msg}" false  # Don't exit on error in cleanup
   fi
 
   if [ "$TERMINATED" = true ]; then
@@ -583,6 +623,20 @@ case "${PHASE}" in
     echo ""
     echo "=== Ansible project contents ==="
     find "${ANSIBLE_PROJECT_DIR}" -type f | head -50
+
+    # Commit and push the Ansible project to git BEFORE calling publish-aap
+    # This ensures AAP syncs the latest commit with the new playbooks
+    echo ""
+    echo "=== Committing and pushing Ansible project to git ==="
+    git_commit_and_push "x2a: ${PHASE} phase for ${MODULE_NAME}
+
+Phase: ${PHASE}
+Project: ${PROJECT_ID}
+Module: ${MODULE_NAME}
+Job: ${JOB_ID}
+
+Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
+"
 
     # Step 2: publish-aap — register with AAP and sync
     echo ""
