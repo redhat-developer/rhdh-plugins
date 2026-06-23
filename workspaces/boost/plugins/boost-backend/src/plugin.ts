@@ -36,6 +36,8 @@ import { RuntimeConfigResolver } from './config/RuntimeConfigResolver';
 import { isSensitiveField, type BoostConfigKey } from './config/schemas';
 import { ProviderManager } from './provider/ProviderManager';
 import { validateSecurityMode } from './middleware/security';
+import { AgentLifecycleStore } from './agents/AgentLifecycleStore';
+import { createAgentRoutes } from './agents/routes';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -159,6 +161,12 @@ export const boostPlugin = createBackendPlugin({
 
         logger.info('Runtime configuration engine initialized');
 
+        // Initialize agent lifecycle store
+        const agentStore = new AgentLifecycleStore({
+          database,
+          logger,
+        });
+
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
@@ -184,6 +192,15 @@ export const boostPlugin = createBackendPlugin({
           permissions: [...boostPermissions],
         });
         router.use(permissionIntegrationRouter);
+
+        // Agent lifecycle routes (tasks 3.1–3.7, 4.1)
+        const agentRoutes = createAgentRoutes({
+          store: agentStore,
+          permissions: _permissions,
+          httpAuth,
+          logger,
+        });
+        router.use(agentRoutes);
 
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
@@ -230,6 +247,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/config/status',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/agents',
           allow: 'user-cookie',
         });
 

@@ -186,6 +186,42 @@ export interface NormalizedStreamDoneEvent {
   type: 'done';
 }
 
+// ---------------------------------------------------------------------------
+// Agent lifecycle model
+// ---------------------------------------------------------------------------
+
+/**
+ * The four lifecycle stages for agents.
+ * Draft → Pending → Published → Archived
+ *
+ * @public
+ */
+export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';
+
+/**
+ * A governance record for an agent. Tracks lifecycle state and ownership.
+ *
+ * @public
+ */
+export interface AgentRecord {
+  /** Unique agent identifier. */
+  id: string;
+  /** Human-readable agent name. */
+  name: string;
+  /** Optional description of the agent. */
+  description?: string;
+  /** Current lifecycle stage. */
+  lifecycleStage: LifecycleStage;
+  /** Identity of the user who created/registered the agent (userEntityRef). */
+  createdBy: string;
+  /** Whether the agent is registered for governance. */
+  governanceRegistered: boolean;
+  /** ISO 8601 timestamp of record creation. */
+  createdAt: string;
+  /** ISO 8601 timestamp of the last update. */
+  updatedAt: string;
+}
+
 /**
  * The contract between Boost and any AI platform backend.
  * Chat and streaming are required; other capabilities are optional.
