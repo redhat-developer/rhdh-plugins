@@ -63,7 +63,7 @@ export async function installOciPlugin(
   imageCache: OciImageCache,
   installed: Map<string, string>,
 ): Promise<OciInstallResult> {
-  if (isPluginDisabled(plugin, log)) {
+  if (isPluginDisabled(plugin)) {
     return { pluginPath: null, pluginConfig: {} };
   }
   const hash = plugin.plugin_hash;

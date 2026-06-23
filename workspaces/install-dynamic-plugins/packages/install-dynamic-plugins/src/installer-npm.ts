@@ -45,7 +45,7 @@ export async function installNpmPlugin(
   skipIntegrity: boolean,
   installed: Map<string, string>,
 ): Promise<NpmInstallResult> {
-  if (isPluginDisabled(plugin, log)) {
+  if (isPluginDisabled(plugin)) {
     return { pluginPath: null, pluginConfig: {} };
   }
   const hash = plugin.plugin_hash;

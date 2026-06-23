@@ -423,7 +423,7 @@ function processOciEntry(
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
-  const disabled = isPluginDisabled(plugin, log);
+  const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
     logInvalidOciFormat(pkg, sourceFile, disabled);

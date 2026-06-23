@@ -311,23 +311,14 @@ describe('preMergeOciDisabledState — enabled field', () => {
   });
 
   it('enabled takes precedence when both enabled and disabled are set', () => {
-    const warn = jest
-      .spyOn(process.stdout, 'write')
-      .mockImplementation(() => true);
-    try {
-      const main: PluginSpec[] = [
-        {
-          package: 'oci://registry.example.com/plugin:1.0',
-          enabled: true,
-          disabled: true,
-        },
-      ];
-      const result = preMergeOciDisabledState([], main, 'main.yaml');
-      expect(result.has('oci://registry.example.com/plugin')).toBe(false);
-      const out = warn.mock.calls.map(args => String(args[0])).join('\n');
-      expect(out).toMatch(/both 'enabled' and 'disabled'/);
-    } finally {
-      warn.mockRestore();
-    }
+    const main: PluginSpec[] = [
+      {
+        package: 'oci://registry.example.com/plugin:1.0',
+        enabled: true,
+        disabled: true,
+      },
+    ];
+    const result = preMergeOciDisabledState([], main, 'main.yaml');
+    expect(result.has('oci://registry.example.com/plugin')).toBe(false);
   });
 });
