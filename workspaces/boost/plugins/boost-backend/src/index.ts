@@ -73,3 +73,11 @@ export {
   type McpServerStoreOptions,
   type McpServerRoutesOptions,
 } from './mcp';
+export {
+  createChatRoutes,
+  ConversationAgentCache,
+  RateLimiter,
+  type ChatRoutesOptions,
+  type ConversationAgentCacheOptions,
+  type RateLimiterOptions,
+} from './chat';
