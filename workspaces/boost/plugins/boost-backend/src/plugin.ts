@@ -50,6 +50,7 @@ import { ConversationRegistry } from './chat/ConversationRegistry';
 import { ConversationStore } from './chat/ConversationStore';
 import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
+import { DocumentSyncService } from './documents/DocumentSyncService';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -223,6 +224,16 @@ export const boostPlugin = createBackendPlugin({
         // @ts-ignore TS6133 — retained for approval routes / HITL flow
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _approvalStore = new BackendApprovalStore({
+          cache,
+          logger,
+        });
+
+        // Initialize document sync service — tracks content hashes
+        // for RAG pipeline change detection (task 1.4). Available for
+        // document ingestion and sync features.
+        // @ts-ignore TS6133 — retained for RAG pipeline / document sync
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _documentSyncService = new DocumentSyncService({
           cache,
           logger,
         });

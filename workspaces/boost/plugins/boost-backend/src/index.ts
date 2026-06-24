@@ -78,6 +78,10 @@ export {
   type BackendApprovalStoreOptions,
 } from './approval';
 export {
+  DocumentSyncService,
+  type DocumentSyncServiceOptions,
+} from './documents';
+export {
   createChatRoutes,
   ConversationAgentCache,
   ConversationRegistry,
