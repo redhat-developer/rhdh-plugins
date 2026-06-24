@@ -67,6 +67,10 @@ export interface ConversationSummary {
   id: string;
   /** Display title for the conversation. */
   title: string;
+  /** Identity of the user who created the conversation (userEntityRef). */
+  createdBy: string;
+  /** Provider that backs this conversation. */
+  providerId: string;
   /** ISO 8601 timestamp of conversation creation. */
   createdAt: string;
   /** ISO 8601 timestamp of the last update. */
@@ -83,6 +87,10 @@ export interface ConversationDetails {
   id: string;
   /** Display title for the conversation. */
   title: string;
+  /** Identity of the user who created the conversation (userEntityRef). */
+  createdBy: string;
+  /** Provider that backs this conversation. */
+  providerId: string;
   /** ISO 8601 timestamp of conversation creation. */
   createdAt: string;
   /** ISO 8601 timestamp of the last update. */

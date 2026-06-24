@@ -189,6 +189,8 @@ export class ConversationStore {
     return {
       id: row.id,
       title: row.title,
+      createdBy: row.created_by,
+      providerId: row.provider_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -273,12 +275,13 @@ export class ConversationStore {
     keyword: string,
   ): Promise<ConversationSummary[]> {
     const knex = await this.getDb();
+    const escaped = keyword.replace(/[%_\\]/g, c => `\\${c}`);
     const rows = await knex<SessionRow>(SESSIONS_TABLE)
       .whereIn(
         'id',
         knex<MessageRow>(MESSAGES_TABLE)
           .select('session_id')
-          .where('content', 'like', `%${keyword}%`),
+          .where('content', 'like', `%${escaped}%`),
       )
       .where({ created_by: createdBy })
       .orderBy('updated_at', 'desc')
@@ -311,6 +314,8 @@ export class ConversationStore {
     return {
       id: session.id,
       title: session.title,
+      createdBy: session.created_by,
+      providerId: session.provider_id,
       createdAt: session.created_at,
       updatedAt: session.updated_at,
       messages: messages.map(m => this.messageToRecord(m)),
@@ -357,22 +362,23 @@ export class ConversationStore {
    */
   async deleteSession(sessionId: string): Promise<boolean> {
     const knex = await this.getDb();
-    // Cascade: delete feedback, then messages, then session
-    await knex<FeedbackRow>(FEEDBACK_TABLE)
-      .where({ session_id: sessionId })
-      .delete();
-    await knex<MessageRow>(MESSAGES_TABLE)
-      .where({ session_id: sessionId })
-      .delete();
-    const deleted = await knex<SessionRow>(SESSIONS_TABLE)
-      .where({ id: sessionId })
-      .delete();
+    return knex.transaction(async trx => {
+      await trx<FeedbackRow>(FEEDBACK_TABLE)
+        .where({ session_id: sessionId })
+        .delete();
+      await trx<MessageRow>(MESSAGES_TABLE)
+        .where({ session_id: sessionId })
+        .delete();
+      const deleted = await trx<SessionRow>(SESSIONS_TABLE)
+        .where({ id: sessionId })
+        .delete();
 
-    if (deleted > 0) {
-      this.logger.info(`Session deleted: ${sessionId}`);
-      return true;
-    }
-    return false;
+      if (deleted > 0) {
+        this.logger.info(`Session deleted: ${sessionId}`);
+        return true;
+      }
+      return false;
+    });
   }
 
   // -------------------------------------------------------------------------

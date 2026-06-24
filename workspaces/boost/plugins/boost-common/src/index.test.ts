@@ -243,6 +243,8 @@ describe('boost-common', () => {
       const summary: ConversationSummary = {
         id: '1',
         title: 'Test',
+        createdBy: 'user:default/testuser',
+        providerId: 'test-provider',
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
       };
@@ -253,6 +255,8 @@ describe('boost-common', () => {
       const details: ConversationDetails = {
         id: '1',
         title: 'Test',
+        createdBy: 'user:default/testuser',
+        providerId: 'test-provider',
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
         messages: [

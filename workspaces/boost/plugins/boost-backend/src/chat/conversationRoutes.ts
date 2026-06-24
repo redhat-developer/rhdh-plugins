@@ -57,7 +57,13 @@ async function getUserRef(
   const principal = credentials.principal as
     | { userEntityRef?: string }
     | undefined;
-  return principal?.userEntityRef ?? 'anonymous';
+  const ref = principal?.userEntityRef;
+  if (!ref) {
+    throw new NotAllowedError(
+      'Conversation history requires user authentication',
+    );
+  }
+  return ref;
 }
 
 /**
@@ -249,6 +255,10 @@ export function createConversationRoutes(
       if (!session) {
         throw new NotFoundError(`Session "${req.params.id}" not found`);
       }
+      const userRef = await getUserRef(httpAuth, req);
+      if (session.createdBy !== userRef && !(await isAdmin(req))) {
+        throw new NotAllowedError('You do not have access to this session');
+      }
       res.json(session);
     } catch (error) {
       next(error);
@@ -261,10 +271,15 @@ export function createConversationRoutes(
     requireChatCreate,
     async (req, res, next) => {
       try {
-        const deleted = await store.deleteSession(req.params.id);
-        if (!deleted) {
+        const session = await store.getSession(req.params.id);
+        if (!session) {
           throw new NotFoundError(`Session "${req.params.id}" not found`);
         }
+        const userRef = await getUserRef(httpAuth, req);
+        if (session.createdBy !== userRef && !(await isAdmin(req))) {
+          throw new NotAllowedError('You do not have access to this session');
+        }
+        await store.deleteSession(req.params.id);
         logger.info(`Conversation session deleted: ${req.params.id}`);
         res.status(204).end();
       } catch (error) {

@@ -199,7 +199,12 @@ export const boostPlugin = createBackendPlugin({
         // Initialize conversation registry — maps response IDs to
         // conversation IDs with 24h TTL (task 1.3). Available for
         // provider modules and future response-tracking features.
-        void new ConversationRegistry({ cache, logger });
+        // @ts-ignore TS6133 — retained for provider modules / response-tracking
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _conversationRegistry = new ConversationRegistry({
+          cache,
+          logger,
+        });
 
         // Initialize conversation store (issue 7 of 15)
         const conversationStore = new ConversationStore({

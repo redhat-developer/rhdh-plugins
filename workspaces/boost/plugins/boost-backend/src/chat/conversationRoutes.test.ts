@@ -70,6 +70,8 @@ function makeSummary(
   return {
     id: 'sess-1',
     title: 'Test Session',
+    createdBy: 'user:default/testuser',
+    providerId: 'test-provider',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     ...overrides,
@@ -82,6 +84,8 @@ function makeDetails(
   return {
     id: 'sess-1',
     title: 'Test Session',
+    createdBy: 'user:default/testuser',
+    providerId: 'test-provider',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     messages: [],
@@ -397,6 +401,7 @@ describe('conversation routes', () => {
   describe('DELETE /conversations/:id', () => {
     it('deletes an existing session', async () => {
       const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
         deleteSession: jest.fn().mockResolvedValue(true),
       });
       testApp = await createTestApp({ store });

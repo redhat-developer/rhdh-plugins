@@ -81,17 +81,32 @@ function createMockKnex() {
     let orderDir: string | undefined;
     let whereInField: string | undefined;
     let whereInValues: unknown[] | undefined;
+    const likeFilters: Array<{ field: string; pattern: string }> = [];
+    let selectedColumn: string | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let whereInSubquery: any;
     const builder: Record<
       string,
       jest.Mock | ((...args: unknown[]) => unknown)
     > = {
-      where: jest.fn((condition: Record<string, unknown>) => {
-        filters = { ...filters, ...condition };
+      where: jest.fn((...args: unknown[]) => {
+        if (args.length === 1 && typeof args[0] === 'object') {
+          filters = { ...filters, ...(args[0] as Record<string, unknown>) };
+        } else if (args.length === 3 && args[1] === 'like') {
+          likeFilters.push({
+            field: args[0] as string,
+            pattern: args[2] as string,
+          });
+        }
         return builder;
       }),
-      whereIn: jest.fn((field: string, values: unknown[]) => {
+      whereIn: jest.fn((field: string, values: unknown) => {
         whereInField = field;
-        whereInValues = values as unknown[];
+        if (Array.isArray(values)) {
+          whereInValues = values;
+        } else {
+          whereInSubquery = values;
+        }
         return builder;
       }),
       orderBy: jest.fn((field: string, dir: string) => {
@@ -107,29 +122,49 @@ function createMockKnex() {
         });
         return results[0] || undefined;
       }),
-      select: jest.fn(async () => {
-        let results = store.filter(row => {
-          const matchFilters = Object.entries(filters).every(
-            ([k, v]) => (row as Record<string, unknown>)[k] === v,
-          );
-          const matchWhereIn =
-            !whereInField ||
-            !whereInValues ||
-            whereInValues.includes(
-              (row as Record<string, unknown>)[whereInField],
-            );
-          return matchFilters && matchWhereIn;
-        });
-        if (orderField) {
-          results = [...results].sort((a, b) => {
-            const aVal = (a as Record<string, unknown>)[orderField!] as string;
-            const bVal = (b as Record<string, unknown>)[orderField!] as string;
-            return orderDir === 'asc'
-              ? aVal.localeCompare(bVal)
-              : bVal.localeCompare(aVal);
-          });
+      select: jest.fn((...selectArgs: unknown[]) => {
+        if (selectArgs.length > 0 && typeof selectArgs[0] === 'string') {
+          selectedColumn = selectArgs[0] as string;
+          return builder;
         }
-        return results;
+        return (async () => {
+          let resolvedWhereIn = whereInValues;
+          if (whereInSubquery && whereInField) {
+            // eslint-disable-next-line no-underscore-dangle
+            resolvedWhereIn = await whereInSubquery._resolve();
+          }
+          let results = store.filter(row => {
+            const matchFilters = Object.entries(filters).every(
+              ([k, v]) => (row as Record<string, unknown>)[k] === v,
+            );
+            const matchLike = likeFilters.every(({ field, pattern }) => {
+              const val = String((row as Record<string, unknown>)[field] ?? '');
+              const inner = pattern.replace(/^%/, '').replace(/%$/, '');
+              return val.includes(inner);
+            });
+            const matchWhereIn =
+              !whereInField ||
+              !resolvedWhereIn ||
+              resolvedWhereIn.includes(
+                (row as Record<string, unknown>)[whereInField!],
+              );
+            return matchFilters && matchLike && matchWhereIn;
+          });
+          if (orderField) {
+            results = [...results].sort((a, b) => {
+              const aVal = (a as Record<string, unknown>)[
+                orderField!
+              ] as string;
+              const bVal = (b as Record<string, unknown>)[
+                orderField!
+              ] as string;
+              return orderDir === 'asc'
+                ? aVal.localeCompare(bVal)
+                : bVal.localeCompare(aVal);
+            });
+          }
+          return results;
+        })();
       }),
       insert: jest.fn(async (row: Record<string, unknown>) => {
         const now = new Date().toISOString();
@@ -179,6 +214,25 @@ function createMockKnex() {
           inTable: jest.fn(),
         }),
       }),
+      _resolve: async () => {
+        const results = store.filter(row => {
+          const matchFilters = Object.entries(filters).every(
+            ([k, v]) => (row as Record<string, unknown>)[k] === v,
+          );
+          const matchLike = likeFilters.every(({ field, pattern }) => {
+            const val = String((row as Record<string, unknown>)[field] ?? '');
+            const inner = pattern.replace(/^%/, '').replace(/%$/, '');
+            return val.includes(inner);
+          });
+          return matchFilters && matchLike;
+        });
+        if (selectedColumn) {
+          return results.map(
+            r => (r as Record<string, unknown>)[selectedColumn!],
+          );
+        }
+        return results;
+      },
     };
 
     return builder;
@@ -194,6 +248,10 @@ function createMockKnex() {
   };
   knex.schema = schema;
   knex.fn = { now: () => 'NOW' as unknown as string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (knex as any).transaction = jest.fn(
+    async (cb: (trx: typeof knex) => Promise<unknown>) => cb(knex),
+  );
 
   return { knex, sessions, messages, feedback };
 }
@@ -387,6 +445,117 @@ describe('ConversationStore', () => {
           createdBy: 'user:default/alice',
         }),
       ).rejects.toThrow('Message "nonexistent" not found');
+    });
+  });
+
+  describe('listAllSessions', () => {
+    it('returns sessions for all users', async () => {
+      await store.createSession({
+        id: 'sess-1',
+        title: 'Alice Session',
+        providerId: 'provider-a',
+        createdBy: 'user:default/alice',
+      });
+      await store.createSession({
+        id: 'sess-2',
+        title: 'Bob Session',
+        providerId: 'provider-a',
+        createdBy: 'user:default/bob',
+      });
+
+      const sessions = await store.listAllSessions();
+      expect(sessions).toHaveLength(2);
+    });
+
+    it('filters by providerId', async () => {
+      await store.createSession({
+        id: 'sess-1',
+        title: 'Session A',
+        providerId: 'provider-a',
+        createdBy: 'user:default/alice',
+      });
+      await store.createSession({
+        id: 'sess-2',
+        title: 'Session B',
+        providerId: 'provider-b',
+        createdBy: 'user:default/alice',
+      });
+
+      const sessions = await store.listAllSessions('provider-a');
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0].id).toBe('sess-1');
+    });
+  });
+
+  describe('searchSessions', () => {
+    it('finds sessions by message content', async () => {
+      await store.createSession({
+        id: 'sess-1',
+        title: 'Session 1',
+        providerId: 'provider-a',
+        createdBy: 'user:default/alice',
+      });
+      await store.addMessage({
+        id: 'msg-1',
+        sessionId: 'sess-1',
+        role: 'user',
+        content: 'How do I deploy to Kubernetes?',
+      });
+
+      await store.createSession({
+        id: 'sess-2',
+        title: 'Session 2',
+        providerId: 'provider-a',
+        createdBy: 'user:default/alice',
+      });
+      await store.addMessage({
+        id: 'msg-2',
+        sessionId: 'sess-2',
+        role: 'user',
+        content: 'What is OpenShift?',
+      });
+
+      const results = await store.searchSessions(
+        'user:default/alice',
+        'Kubernetes',
+      );
+      expect(results).toHaveLength(1);
+      expect(results[0].id).toBe('sess-1');
+    });
+
+    it('scopes search to the requesting user', async () => {
+      await store.createSession({
+        id: 'sess-1',
+        title: 'Alice Session',
+        providerId: 'provider-a',
+        createdBy: 'user:default/alice',
+      });
+      await store.addMessage({
+        id: 'msg-1',
+        sessionId: 'sess-1',
+        role: 'user',
+        content: 'deploy topic',
+      });
+
+      await store.createSession({
+        id: 'sess-2',
+        title: 'Bob Session',
+        providerId: 'provider-a',
+        createdBy: 'user:default/bob',
+      });
+      await store.addMessage({
+        id: 'msg-2',
+        sessionId: 'sess-2',
+        role: 'user',
+        content: 'deploy topic',
+      });
+
+      const results = await store.searchSessions(
+        'user:default/alice',
+        'deploy',
+      );
+      expect(results).toHaveLength(1);
+      expect(results[0].createdBy).toBe('user:default/alice');
     });
   });
 
