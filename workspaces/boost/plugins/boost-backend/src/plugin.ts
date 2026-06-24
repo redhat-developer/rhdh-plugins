@@ -49,6 +49,7 @@ import { ConversationAgentCache } from './chat/ConversationAgentCache';
 import { ConversationRegistry } from './chat/ConversationRegistry';
 import { ConversationStore } from './chat/ConversationStore';
 import { RateLimiter } from './chat/RateLimiter';
+import { BackendApprovalStore } from './approval/BackendApprovalStore';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -214,6 +215,14 @@ export const boostPlugin = createBackendPlugin({
 
         // Initialize rate limiter (task 1.9)
         const rateLimiter = new RateLimiter({
+          cache,
+          logger,
+        });
+
+        // Initialize HITL approval store (task 1.10)
+        // @ts-ignore TS6133 — retained for approval routes / HITL flow
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _approvalStore = new BackendApprovalStore({
           cache,
           logger,
         });
