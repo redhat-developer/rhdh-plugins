@@ -76,8 +76,6 @@ export {
 export {
   BackendApprovalStore,
   type BackendApprovalStoreOptions,
-  type ApprovalRequest,
-  type ApprovalStatus,
 } from './approval';
 export {
   createChatRoutes,

@@ -26,6 +26,24 @@ export interface AgentRecord {
 }
 
 // @public
+export interface ApprovalRequest {
+  args: string;
+  conversationId: string;
+  createdAt: string;
+  message?: string;
+  requestId: string;
+  resolvedArgs?: string;
+  resolvedAt?: string;
+  status: ApprovalStatus;
+  toolCallId: string;
+  toolName: string;
+  userRef: string;
+}
+
+// @public
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+// @public
 export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
 
 // @public

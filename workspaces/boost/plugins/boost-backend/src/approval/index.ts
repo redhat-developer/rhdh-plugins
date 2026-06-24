@@ -17,6 +17,4 @@
 export {
   BackendApprovalStore,
   type BackendApprovalStoreOptions,
-  type ApprovalRequest,
-  type ApprovalStatus,
 } from './BackendApprovalStore';

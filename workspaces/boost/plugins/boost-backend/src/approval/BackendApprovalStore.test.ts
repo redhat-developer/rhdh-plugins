@@ -18,10 +18,8 @@ import type {
   CacheService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import {
-  BackendApprovalStore,
-  type ApprovalRequest,
-} from './BackendApprovalStore';
+import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { BackendApprovalStore } from './BackendApprovalStore';
 
 function createMockLogger(): LoggerService {
   return {

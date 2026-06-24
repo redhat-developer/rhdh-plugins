@@ -5,6 +5,7 @@
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
 import type { ConversationDetails } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -76,24 +77,6 @@ export interface AgentRoutesOptions {
   permissions: PermissionsService;
   store: AgentLifecycleStore;
 }
-
-// @public
-export interface ApprovalRequest {
-  args: string;
-  conversationId: string;
-  createdAt: string;
-  message?: string;
-  requestId: string;
-  resolvedArgs?: string;
-  resolvedAt?: string;
-  status: ApprovalStatus;
-  toolCallId: string;
-  toolName: string;
-  userRef: string;
-}
-
-// @public
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 // @public
 export function authorizeLifecycleAction(
