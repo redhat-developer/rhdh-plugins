@@ -240,6 +240,29 @@ export class ResponsesApiProvider implements AgenticProvider {
         }
       }
 
+      buffer += decoder.decode();
+      if (buffer.trim()) {
+        const remaining = buffer.trim();
+        if (remaining.startsWith('data: ')) {
+          const data = remaining.slice(6);
+          if (data === '[DONE]') {
+            yield { type: 'done' };
+            return;
+          }
+          try {
+            const event = JSON.parse(data) as ResponsesApiStreamEvent;
+            for (const normalized of this.normalizeStreamEvent(event)) {
+              yield normalized;
+              if (normalized.type === 'done') {
+                return;
+              }
+            }
+          } catch {
+            this.logger.warn(`Failed to parse SSE data: ${data}`);
+          }
+        }
+      }
+
       yield { type: 'done' };
     } finally {
       reader.releaseLock();
