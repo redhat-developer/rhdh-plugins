@@ -275,6 +275,7 @@ export class ConversationStore {
   searchSessions(
     createdBy: string,
     keyword: string,
+    providerId?: string,
   ): Promise<ConversationSummary[]>;
 }
 

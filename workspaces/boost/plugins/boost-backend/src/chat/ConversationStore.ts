@@ -268,15 +268,17 @@ export class ConversationStore {
    *
    * @param createdBy - The user entity ref to scope the search.
    * @param keyword - The search term to match in message content.
+   * @param providerId - Optional provider ID to filter by.
    * @returns Matching sessions ordered by most recent update.
    */
   async searchSessions(
     createdBy: string,
     keyword: string,
+    providerId?: string,
   ): Promise<ConversationSummary[]> {
     const knex = await this.getDb();
     const escaped = keyword.replace(/[%_\\]/g, c => `\\${c}`);
-    const rows = await knex<SessionRow>(SESSIONS_TABLE)
+    let query = knex<SessionRow>(SESSIONS_TABLE)
       .whereIn(
         'id',
         knex<MessageRow>(MESSAGES_TABLE)
@@ -284,8 +286,13 @@ export class ConversationStore {
           .where('content', 'like', `%${escaped}%`),
       )
       .where({ created_by: createdBy })
-      .orderBy('updated_at', 'desc')
-      .select();
+      .orderBy('updated_at', 'desc');
+
+    if (providerId) {
+      query = query.where({ provider_id: providerId });
+    }
+
+    const rows = await query.select();
     return rows.map(row => this.sessionToSummary(row));
   }
 

@@ -345,6 +345,7 @@ describe('conversation routes', () => {
       expect(store.searchSessions).toHaveBeenCalledWith(
         'user:default/testuser',
         'kubernetes',
+        undefined,
       );
     });
 
@@ -430,7 +431,10 @@ describe('conversation routes', () => {
 
   describe('POST /conversations/:id/messages', () => {
     it('adds a message to a session', async () => {
-      testApp = await createTestApp({ store: createMockStore() });
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -442,8 +446,24 @@ describe('conversation routes', () => {
       expect(res.status).toBe(201);
     });
 
-    it('returns 400 for invalid role', async () => {
+    it('returns 404 for non-existent session', async () => {
       testApp = await createTestApp({ store: createMockStore() });
+
+      const res = await doRequest(
+        testApp.url,
+        'POST',
+        '/conversations/nonexistent/messages',
+        { role: 'user', content: 'Hello' },
+      );
+
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 400 for invalid role', async () => {
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -456,7 +476,10 @@ describe('conversation routes', () => {
     });
 
     it('returns 400 for missing content', async () => {
-      testApp = await createTestApp({ store: createMockStore() });
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -471,7 +494,10 @@ describe('conversation routes', () => {
 
   describe('POST /conversations/:id/feedback', () => {
     it('submits feedback on a message', async () => {
-      testApp = await createTestApp({ store: createMockStore() });
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -487,8 +513,24 @@ describe('conversation routes', () => {
       expect(res.status).toBe(201);
     });
 
-    it('returns 400 for invalid sentiment', async () => {
+    it('returns 404 for non-existent session', async () => {
       testApp = await createTestApp({ store: createMockStore() });
+
+      const res = await doRequest(
+        testApp.url,
+        'POST',
+        '/conversations/nonexistent/feedback',
+        { messageId: 'msg-1', sentiment: 'positive' },
+      );
+
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 400 for invalid sentiment', async () => {
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -501,7 +543,10 @@ describe('conversation routes', () => {
     });
 
     it('returns 400 for missing messageId', async () => {
-      testApp = await createTestApp({ store: createMockStore() });
+      const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
+      });
+      testApp = await createTestApp({ store });
 
       const res = await doRequest(
         testApp.url,
@@ -517,6 +562,7 @@ describe('conversation routes', () => {
   describe('GET /conversations/:id/feedback', () => {
     it('lists feedback for a session', async () => {
       const store = createMockStore({
+        getSession: jest.fn().mockResolvedValue(makeDetails()),
         listFeedback: jest.fn().mockResolvedValue([makeFeedback()]),
       });
       testApp = await createTestApp({ store });
@@ -530,6 +576,18 @@ describe('conversation routes', () => {
       expect(res.status).toBe(200);
       const data = res.body as { feedback: FeedbackRecord[] };
       expect(data.feedback).toHaveLength(1);
+    });
+
+    it('returns 404 for non-existent session', async () => {
+      testApp = await createTestApp({ store: createMockStore() });
+
+      const res = await doRequest(
+        testApp.url,
+        'GET',
+        '/conversations/nonexistent/feedback',
+      );
+
+      expect(res.status).toBe(404);
     });
   });
 

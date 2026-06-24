@@ -198,7 +198,11 @@ export function createConversationRoutes(
       }
 
       if (keyword) {
-        const sessions = await store.searchSessions(userRef, keyword);
+        const sessions = await store.searchSessions(
+          userRef,
+          keyword,
+          providerId,
+        );
         res.json({ sessions });
         return;
       }
@@ -294,6 +298,15 @@ export function createConversationRoutes(
     requireChatCreate,
     async (req, res, next) => {
       try {
+        const session = await store.getSession(req.params.id);
+        if (!session) {
+          throw new NotFoundError(`Session "${req.params.id}" not found`);
+        }
+        const userRef = await getUserRef(httpAuth, req);
+        if (session.createdBy !== userRef && !(await isAdmin(req))) {
+          throw new NotAllowedError('You do not have access to this session');
+        }
+
         if (!req.body || typeof req.body !== 'object') {
           throw new InputError('Request body is required');
         }
@@ -338,7 +351,14 @@ export function createConversationRoutes(
     requireChatCreate,
     async (req, res, next) => {
       try {
+        const session = await store.getSession(req.params.id);
+        if (!session) {
+          throw new NotFoundError(`Session "${req.params.id}" not found`);
+        }
         const userRef = await getUserRef(httpAuth, req);
+        if (session.createdBy !== userRef && !(await isAdmin(req))) {
+          throw new NotAllowedError('You do not have access to this session');
+        }
 
         if (!req.body || typeof req.body !== 'object') {
           throw new InputError('Request body is required');
@@ -385,6 +405,14 @@ export function createConversationRoutes(
     requireChatRead,
     async (req, res, next) => {
       try {
+        const session = await store.getSession(req.params.id);
+        if (!session) {
+          throw new NotFoundError(`Session "${req.params.id}" not found`);
+        }
+        const userRef = await getUserRef(httpAuth, req);
+        if (session.createdBy !== userRef && !(await isAdmin(req))) {
+          throw new NotAllowedError('You do not have access to this session');
+        }
         const feedback = await store.listFeedback(req.params.id);
         res.json({ feedback });
       } catch (error) {
@@ -402,6 +430,10 @@ export function createConversationRoutes(
         const session = await store.getSession(req.params.id);
         if (!session) {
           throw new NotFoundError(`Session "${req.params.id}" not found`);
+        }
+        const userRef = await getUserRef(httpAuth, req);
+        if (session.createdBy !== userRef && !(await isAdmin(req))) {
+          throw new NotAllowedError('You do not have access to this session');
         }
 
         const feedback = await store.listFeedback(req.params.id);
