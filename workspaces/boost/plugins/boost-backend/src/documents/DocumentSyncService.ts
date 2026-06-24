@@ -76,7 +76,15 @@ export class DocumentSyncService {
   async getHash(documentId: string): Promise<string | undefined> {
     const key = `doc-sync:${documentId}`;
     const value = await this.cache.get(key);
-    return typeof value === 'string' ? value : undefined;
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (value !== undefined) {
+      this.logger.warn(
+        `Unexpected cache value type for document ${documentId}: ${typeof value}`,
+      );
+    }
+    return undefined;
   }
 
   /**

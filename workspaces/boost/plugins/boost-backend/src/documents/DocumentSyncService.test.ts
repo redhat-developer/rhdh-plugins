@@ -47,12 +47,14 @@ function createMockCache(): CacheService {
 describe('DocumentSyncService', () => {
   let service: DocumentSyncService;
   let mockCache: CacheService;
+  let mockLogger: LoggerService;
 
   beforeEach(() => {
     mockCache = createMockCache();
+    mockLogger = createMockLogger();
     service = new DocumentSyncService({
       cache: mockCache,
-      logger: createMockLogger(),
+      logger: mockLogger,
     });
   });
 
@@ -78,6 +80,15 @@ describe('DocumentSyncService', () => {
     await service.deleteHash('doc-1');
     const result = await service.getHash('doc-1');
     expect(result).toBeUndefined();
+  });
+
+  it('warns on unexpected non-string cache value', async () => {
+    (mockCache.get as jest.Mock).mockResolvedValueOnce(42);
+    const result = await service.getHash('doc-1');
+    expect(result).toBeUndefined();
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Unexpected cache value type'),
+    );
   });
 
   it('uses namespaced cache keys', async () => {
