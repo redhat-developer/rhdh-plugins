@@ -113,11 +113,24 @@ export class ResponsesApiProvider implements AgenticProvider {
       `Sending streaming request to ${url} (model: ${body.model})`,
     );
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.buildHeaders(),
-      body: JSON.stringify(body),
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: this.buildHeaders(),
+        body: JSON.stringify(body),
+      });
+    } catch (err) {
+      this.logger.error(
+        `Fetch failed for streaming request to ${url}`,
+        err instanceof Error ? err : undefined,
+      );
+      yield {
+        type: 'error',
+        message: 'Failed to connect to Llama Stack endpoint',
+      };
+      return;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
