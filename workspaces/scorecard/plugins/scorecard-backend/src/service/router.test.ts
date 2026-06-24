@@ -738,10 +738,14 @@ describe('createRouter', () => {
       const { AggregatedMetricMapper: ActualAggregatedMetricMapper } =
         jest.requireActual<typeof import('./mappers')>('./mappers');
       const provider = metricProvidersRegistry.getProvider('github.open_prs');
-      const thresholds = provider.getMetricThresholds();
+      const metric = metricProvidersRegistry.getMetric('github.open_prs');
+      const thresholds = thresholdResolver.resolveMetricThresholds(
+        metric,
+        provider.getProviderId(),
+      );
       const emptyAggregatedMetricResult =
         ActualAggregatedMetricMapper.toAggregatedMetricResult(
-          provider.getMetric(),
+          metric,
           {
             total: 0,
             timestamp: emptyAggregatedMetric.timestamp,
@@ -874,7 +878,7 @@ describe('createRouter', () => {
         expect.objectContaining({
           total: mockAggregatedMetric.total,
           timestamp: mockAggregatedMetric.timestamp,
-          thresholds: batchProvider.getMetricThresholds(),
+          thresholds: batchProvider.getMetrics()[0].threshold,
         }),
         expect.objectContaining({
           id: 'filecheck.license',

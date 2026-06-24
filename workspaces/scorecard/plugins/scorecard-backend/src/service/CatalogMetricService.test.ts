@@ -139,7 +139,7 @@ describe('CatalogMetricService', () => {
     ]);
 
     mockedThresholdResolver = {
-      resolveProviderThresholds: jest.fn(),
+      resolveMetricThresholds: jest.fn(),
       resolveEntityThresholds: jest.fn().mockReturnValue({
         rules: mockThresholdRules,
       }),
@@ -190,8 +190,8 @@ describe('CatalogMetricService', () => {
       );
       mockedRegistry.getMetric.mockImplementation(id =>
         id === 'github.important_metric'
-          ? provider.getMetric()
-          : secondProvider.getMetric(),
+          ? provider.getMetrics()[0]
+          : secondProvider.getMetrics()[0],
       );
 
       const multipleMetrics = [
@@ -324,7 +324,11 @@ describe('CatalogMetricService', () => {
 
       expect(
         mockedThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenCalledWith(mockEntity, provider);
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({ id: 'github.important_metric' }),
+        provider.getProviderId(),
+      );
     });
 
     it('should set threshold error when merge thresholds fails', async () => {
@@ -407,10 +411,10 @@ describe('CatalogMetricService', () => {
       );
       expect(resultMetric.metadata).toEqual(
         expect.objectContaining({
-          title: provider.getMetric().title,
-          description: provider.getMetric().description,
-          type: provider.getMetric().type,
-          history: provider.getMetric().history,
+          title: provider.getMetrics()[0].title,
+          description: provider.getMetrics()[0].description,
+          type: provider.getMetrics()[0].type,
+          history: provider.getMetrics()[0].history,
         }),
       );
       expect(resultMetric.result).toEqual(
@@ -1314,9 +1318,9 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.metricMetadata).toEqual({
-        title: provider.getMetric().title,
-        description: provider.getMetric().description,
-        type: provider.getMetric().type,
+        title: provider.getMetrics()[0].title,
+        description: provider.getMetrics()[0].description,
+        type: provider.getMetrics()[0].type,
       });
     });
   });

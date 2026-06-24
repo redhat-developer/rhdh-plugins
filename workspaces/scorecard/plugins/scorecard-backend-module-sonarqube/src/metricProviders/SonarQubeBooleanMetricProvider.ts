@@ -41,12 +41,18 @@ export class SonarQubeBooleanMetricProvider
     super(client, metricId, thresholds, 'boolean');
   }
 
-  async calculateMetric(entity: Entity): Promise<boolean> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, boolean>> {
     const { instanceName, projectKey } = parseProjectKeyAnnotation(entity);
     const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
 
     if ('useQualityGateApi' in mapping) {
-      return this.client.getQualityGateStatus(projectKey, instanceName);
+      const value = await this.client.getQualityGateStatus(
+        projectKey,
+        instanceName,
+      );
+      const results = new Map<string, boolean>();
+      results.set(this.getProviderId(), value);
+      return results;
     }
 
     throw new Error(`Unsupported metric ID: ${this.metricId}`);

@@ -16,10 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { FilecheckClient } from '../clients/FilecheckClient';
 import {
@@ -44,30 +41,15 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
     return 'filecheck';
   }
 
-  getMetricIds(): string[] {
-    return this.filesConfig.files.map(f => `filecheck.${f.id}`);
-  }
-
-  getMetricType(): 'boolean' {
-    return 'boolean';
-  }
-
-  getMetric(): Metric<'boolean'> {
-    return this.getMetrics()[0];
-  }
-
   getMetrics(): Metric<'boolean'>[] {
     return this.filesConfig.files.map(f => ({
       id: `filecheck.${f.id}`,
       title: `File: ${f.path}`,
       description: `Checks if ${f.path} exists in the repository.`,
       type: 'boolean' as const,
+      threshold: DEFAULT_FILECHECK_THRESHOLDS,
       history: true,
     }));
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_FILECHECK_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -76,12 +58,6 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
       'metadata.annotations.backstage.io/source-location':
         CATALOG_FILTER_EXISTS,
     };
-  }
-
-  async calculateMetric(entity: Entity): Promise<boolean> {
-    const results = await this.calculateMetrics(entity);
-    const firstId = this.getMetricIds()[0];
-    return results.get(firstId) ?? false;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, boolean>> {

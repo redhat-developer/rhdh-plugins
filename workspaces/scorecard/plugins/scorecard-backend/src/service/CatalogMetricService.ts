@@ -134,7 +134,8 @@ export class CatalogMetricService {
         try {
           thresholds = this.thresholdResolver.resolveEntityThresholds(
             entity,
-            provider,
+            metric,
+            provider.getProviderId(),
           );
 
           if (value === null) {
