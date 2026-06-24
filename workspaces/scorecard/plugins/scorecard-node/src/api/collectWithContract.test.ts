@@ -220,6 +220,37 @@ describe('collectWithContract', () => {
     ).rejects.toThrow('output does not satisfy contract output schema');
   });
 
+  it('accepts collector params present in raw input but omitted by contract schema', async () => {
+    const collector = makeCollector({
+      getInputSchema: () =>
+        z.object({
+          from: z.string().datetime(),
+          to: z.string().datetime(),
+          environment: z.string().min(1),
+        }),
+    });
+    const collectorRegistry = makeCollectorRegistry(collector);
+
+    const result = await collectWithContract({
+      collectorRegistry,
+      collectorId,
+      contract: {
+        inputSchema: contractInputSchema,
+        outputSchema: contractOutputSchema,
+      },
+      entity,
+      input: {
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-08T00:00:00.000Z',
+        environment: 'prod',
+      },
+    });
+
+    expect(result).toEqual({
+      deployments: [{ sha: 'abc123' }],
+    });
+  });
+
   it('formats parse errors', async () => {
     const collector = makeCollector({
       getOutputSchema: () =>

@@ -9,7 +9,7 @@ For provider data-fetching reuse across datasources, Scorecard provides collecto
   - provider expected input/output schemas
   - collector declared input/output schemas
 
-For details and examples, see [collectors.md](./docs/collectors.md).
+For details and examples, see [collectors.md](./collectors.md).
 
 ## Getting started
 
