@@ -29,8 +29,6 @@ export interface McpAuthTokenCacheOptions {
   logger: LoggerService;
 }
 
-const KEY_PREFIX = 'llamastack:mcp-token:';
-
 /**
  * Caches MCP server authentication tokens using Backstage cacheService.
  *
@@ -41,6 +39,8 @@ const KEY_PREFIX = 'llamastack:mcp-token:';
  * @internal
  */
 export class McpAuthTokenCache {
+  private static readonly KEY_PREFIX = 'llamastack:mcp-token:';
+
   private readonly cache: CacheService;
   private readonly logger: LoggerService;
 
@@ -56,7 +56,7 @@ export class McpAuthTokenCache {
    * @returns The cached token, or undefined if not cached or expired.
    */
   async get(serverLabel: string): Promise<string | undefined> {
-    const key = `${KEY_PREFIX}${serverLabel}`;
+    const key = `${McpAuthTokenCache.KEY_PREFIX}${serverLabel}`;
     const cached = await this.cache.get(key);
     if (typeof cached === 'string') {
       this.logger.debug(`MCP auth token cache hit for server "${serverLabel}"`);
@@ -77,7 +77,7 @@ export class McpAuthTokenCache {
     token: string,
     ttlSeconds: number,
   ): Promise<void> {
-    const key = `${KEY_PREFIX}${serverLabel}`;
+    const key = `${McpAuthTokenCache.KEY_PREFIX}${serverLabel}`;
     await this.cache.set(key, token, {
       ttl: ttlSeconds * 1000,
     });
@@ -92,7 +92,7 @@ export class McpAuthTokenCache {
    * @param serverLabel - The MCP server label.
    */
   async invalidate(serverLabel: string): Promise<void> {
-    const key = `${KEY_PREFIX}${serverLabel}`;
+    const key = `${McpAuthTokenCache.KEY_PREFIX}${serverLabel}`;
     await this.cache.delete(key);
     this.logger.debug(
       `MCP auth token cache invalidated for server "${serverLabel}"`,

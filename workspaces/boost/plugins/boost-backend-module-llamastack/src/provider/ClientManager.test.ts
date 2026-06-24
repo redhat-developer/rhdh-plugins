@@ -99,9 +99,9 @@ describe('ClientManager', () => {
     expect(second.sessionCount).toBe(2);
   });
 
-  it('removes client state', async () => {
+  it('deletes client state', async () => {
     await clientManager.recordActivity('user:default/john');
-    await clientManager.remove('user:default/john');
+    await clientManager.delete('user:default/john');
     const result = await clientManager.get('user:default/john');
     expect(result).toBeUndefined();
   });

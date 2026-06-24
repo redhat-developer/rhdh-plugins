@@ -30,9 +30,6 @@ export interface ClientManagerOptions {
   logger: LoggerService;
 }
 
-const KEY_PREFIX = 'llamastack:client:';
-const DEFAULT_TTL_MS = 3600 * 1000; // 1 hour
-
 /**
  * Manages identity-keyed client state using Backstage cacheService.
  *
@@ -43,6 +40,9 @@ const DEFAULT_TTL_MS = 3600 * 1000; // 1 hour
  * @internal
  */
 export class ClientManager {
+  private static readonly KEY_PREFIX = 'llamastack:client:';
+  static readonly TTL_MS = 3600 * 1000; // 1 hour
+
   private readonly cache: CacheService;
   private readonly logger: LoggerService;
 
@@ -58,7 +58,7 @@ export class ClientManager {
    * @returns The client state, or undefined if not tracked.
    */
   async get(userRef: string): Promise<ClientState | undefined> {
-    const key = `${KEY_PREFIX}${userRef}`;
+    const key = `${ClientManager.KEY_PREFIX}${userRef}`;
     const cached = await this.cache.get(key);
     if (typeof cached === 'string') {
       return JSON.parse(cached) as ClientState;
@@ -74,8 +74,10 @@ export class ClientManager {
    * @param state - The client state to store.
    */
   async set(userRef: string, state: ClientState): Promise<void> {
-    const key = `${KEY_PREFIX}${userRef}`;
-    await this.cache.set(key, JSON.stringify(state), { ttl: DEFAULT_TTL_MS });
+    const key = `${ClientManager.KEY_PREFIX}${userRef}`;
+    await this.cache.set(key, JSON.stringify(state), {
+      ttl: ClientManager.TTL_MS,
+    });
     this.logger.debug(
       `Updated client state for "${userRef}" (sessions: ${state.sessionCount})`,
     );
@@ -98,13 +100,13 @@ export class ClientManager {
   }
 
   /**
-   * Remove client state for the given user identity.
+   * Delete client state for the given user identity.
    *
    * @param userRef - The user entity ref.
    */
-  async remove(userRef: string): Promise<void> {
-    const key = `${KEY_PREFIX}${userRef}`;
+  async delete(userRef: string): Promise<void> {
+    const key = `${ClientManager.KEY_PREFIX}${userRef}`;
     await this.cache.delete(key);
-    this.logger.debug(`Removed client state for "${userRef}"`);
+    this.logger.debug(`Deleted client state for "${userRef}"`);
   }
 }

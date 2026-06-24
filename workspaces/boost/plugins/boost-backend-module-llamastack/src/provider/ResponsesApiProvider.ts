@@ -182,7 +182,7 @@ export class ResponsesApiProvider implements AgenticProvider {
    */
   private extractTextFromResponse(result: ResponsesApiResponse): string {
     const parts: string[] = [];
-    for (const output of result.output) {
+    for (const output of result.output ?? []) {
       if (output.type === 'message' && output.content) {
         for (const part of output.content) {
           if (part.type === 'output_text') {
@@ -204,7 +204,6 @@ export class ResponsesApiProvider implements AgenticProvider {
     const decoder = new TextDecoder();
     const reader = body.getReader();
     let buffer = '';
-    let completed = false;
 
     try {
       while (true) {
@@ -231,7 +230,7 @@ export class ResponsesApiProvider implements AgenticProvider {
               for (const normalized of this.normalizeStreamEvent(event)) {
                 yield normalized;
                 if (normalized.type === 'done') {
-                  completed = true;
+                  return;
                 }
               }
             } catch {
@@ -241,9 +240,7 @@ export class ResponsesApiProvider implements AgenticProvider {
         }
       }
 
-      if (!completed) {
-        yield { type: 'done' };
-      }
+      yield { type: 'done' };
     } finally {
       reader.releaseLock();
     }

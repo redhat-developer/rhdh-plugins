@@ -100,7 +100,7 @@ describe('SessionMap', () => {
     };
 
     await sessionMap.set('conv-1', data);
-    await sessionMap.remove('conv-1');
+    await sessionMap.delete('conv-1');
     const result = await sessionMap.get('conv-1');
     expect(result).toBeUndefined();
   });

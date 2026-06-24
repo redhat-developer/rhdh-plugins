@@ -45,9 +45,6 @@ export interface SessionData {
   lastActivity: string;
 }
 
-const KEY_PREFIX = 'llamastack:session:';
-const DEFAULT_TTL_MS = 24 * 3600 * 1000; // 24 hours
-
 /**
  * Maps conversation IDs to Llama Stack session data using Backstage cacheService.
  *
@@ -58,6 +55,9 @@ const DEFAULT_TTL_MS = 24 * 3600 * 1000; // 24 hours
  * @internal
  */
 export class SessionMap {
+  private static readonly KEY_PREFIX = 'llamastack:session:';
+  static readonly TTL_MS = 24 * 3600 * 1000; // 24 hours
+
   private readonly cache: CacheService;
   private readonly logger: LoggerService;
 
@@ -73,7 +73,7 @@ export class SessionMap {
    * @returns The session data, or undefined if no session exists.
    */
   async get(conversationId: string): Promise<SessionData | undefined> {
-    const key = `${KEY_PREFIX}${conversationId}`;
+    const key = `${SessionMap.KEY_PREFIX}${conversationId}`;
     const cached = await this.cache.get(key);
     if (typeof cached === 'string') {
       return JSON.parse(cached) as SessionData;
@@ -89,21 +89,21 @@ export class SessionMap {
    * @param data - The session data to store.
    */
   async set(conversationId: string, data: SessionData): Promise<void> {
-    const key = `${KEY_PREFIX}${conversationId}`;
-    await this.cache.set(key, JSON.stringify(data), { ttl: DEFAULT_TTL_MS });
+    const key = `${SessionMap.KEY_PREFIX}${conversationId}`;
+    await this.cache.set(key, JSON.stringify(data), { ttl: SessionMap.TTL_MS });
     this.logger.debug(
       `Updated session for conversation "${conversationId}" (response: ${data.responseId})`,
     );
   }
 
   /**
-   * Remove session data for a conversation.
+   * Delete session data for a conversation.
    *
    * @param conversationId - The boost conversation identifier.
    */
-  async remove(conversationId: string): Promise<void> {
-    const key = `${KEY_PREFIX}${conversationId}`;
+  async delete(conversationId: string): Promise<void> {
+    const key = `${SessionMap.KEY_PREFIX}${conversationId}`;
     await this.cache.delete(key);
-    this.logger.debug(`Removed session for conversation "${conversationId}"`);
+    this.logger.debug(`Deleted session for conversation "${conversationId}"`);
   }
 }
