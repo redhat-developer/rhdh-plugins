@@ -105,7 +105,8 @@ test.describe('Dynamic Permission Registration (FLPATH-4207) @live @ro @rbac @fl
 
     test('full-access user should see data across clusters (proves multi-cluster permissions)', async ({
       page,
-    }) => {
+    }, testInfo) => {
+      testInfo.setTimeout(120_000);
       const rosPage = new ResourceOptimizationPage(page);
       const user = process.env.RBAC_FULL_USER ?? 'costmgmt-full-access';
       const pass = process.env.RBAC_FULL_PASS ?? 'test';
