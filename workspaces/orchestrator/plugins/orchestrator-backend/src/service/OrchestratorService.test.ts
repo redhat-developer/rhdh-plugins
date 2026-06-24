@@ -63,7 +63,6 @@ const createInstancesMock = (size: number): ProcessInstance[] => {
 const instanceId = createInstanceIdMock(1);
 const definitionId = createDefinitionIdMock(1);
 const workflowInfo = createWorkflowInfoMock(1);
-const workflowOverview = createWorkflowOverviewMock(1);
 const workflowOverviews = createWorkflowOverviewsMock(3);
 const instance = createInstanceMock(1);
 const instances = createInstancesMock(3);
@@ -135,8 +134,21 @@ describe('OrchestratorService', () => {
   });
 
   describe('fetchWorkflowOverviews', () => {
+    const availabilityResponse = {
+      isAvailable: false,
+      statusCode: 503,
+      urlToFetch: `${serviceUrl}/management/processes/${definitionId}`,
+      reason: 'Service Unavailable',
+    };
+
     beforeEach(() => {
       jest.clearAllMocks();
+      sonataFlowServiceMock.pingWorkflowService = jest
+        .fn()
+        .mockResolvedValue(availabilityResponse);
+      dataIndexServiceMock.fetchWorkflowServiceUrls = jest
+        .fn()
+        .mockResolvedValue({ [definitionId]: serviceUrl });
     });
 
     it('should throw error when data index returns error', async () => {
@@ -161,6 +173,27 @@ describe('OrchestratorService', () => {
 
       expect(result).toHaveLength(workflowOverviews.length);
       expect(sonataFlowServiceMock.fetchWorkflowOverviews).toHaveBeenCalled();
+      expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
+    });
+
+    it('pings unavailable workflows and sets availability on each overview', async () => {
+      sonataFlowServiceMock.fetchWorkflowOverviews = jest
+        .fn()
+        .mockResolvedValue([createWorkflowOverviewMock(1)]);
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
+
+      const result = await orchestratorService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0].isAvailable).toBe(false);
+      expect(result?.[0].availability).toEqual(availabilityResponse);
+      expect(
+        dataIndexServiceMock.fetchWorkflowServiceUrls,
+      ).toHaveBeenCalledTimes(1);
+      expect(sonataFlowServiceMock.pingWorkflowService).toHaveBeenCalledWith({
+        definitionId,
+        serviceUrl,
+      });
     });
   });
 
@@ -286,21 +319,111 @@ describe('OrchestratorService', () => {
   });
 
   describe('fetchWorkflowOverview', () => {
+    const availabilityResponse = {
+      isAvailable: false,
+      statusCode: 503,
+      urlToFetch: `${serviceUrl}/management/processes/${definitionId}`,
+      reason: 'Service Unavailable',
+    };
+
     beforeEach(() => {
       jest.clearAllMocks();
-    });
-
-    it('should execute the operation', async () => {
-      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(true);
       sonataFlowServiceMock.fetchWorkflowOverview = jest
         .fn()
-        .mockResolvedValue(workflowOverview);
+        .mockResolvedValue(createWorkflowOverviewMock(1));
+      sonataFlowServiceMock.pingWorkflowService = jest
+        .fn()
+        .mockResolvedValue(availabilityResponse);
+      dataIndexServiceMock.fetchWorkflowServiceUrls = jest
+        .fn()
+        .mockResolvedValue({ [definitionId]: serviceUrl });
+    });
+
+    it('sets isAvailable from cache when workflow is available', async () => {
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(true);
 
       const result = await orchestratorService.fetchWorkflowOverview({
         definitionId,
       });
 
-      expect(result).toBeDefined();
+      expect(workflowCacheServiceMock.isAvailable).toHaveBeenCalledWith(
+        definitionId,
+      );
+      expect(result?.isAvailable).toBe(true);
+      expect(result?.availability).toBeUndefined();
+      expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
+    });
+
+    it('pings workflow service and sets availability when workflow is unavailable', async () => {
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
+
+      const result = await orchestratorService.fetchWorkflowOverview({
+        definitionId,
+      });
+
+      expect(result?.isAvailable).toBe(false);
+      expect(result?.availability).toEqual(availabilityResponse);
+      expect(dataIndexServiceMock.fetchWorkflowServiceUrls).toHaveBeenCalled();
+      expect(sonataFlowServiceMock.pingWorkflowService).toHaveBeenCalledWith({
+        definitionId,
+        serviceUrl,
+      });
+    });
+
+    it('returns undefined without setting availability when overview is not found', async () => {
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
+      sonataFlowServiceMock.fetchWorkflowOverview = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      const result = await orchestratorService.fetchWorkflowOverview({
+        definitionId,
+      });
+
+      expect(result).toBeUndefined();
+      expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('pingWorkflowService', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns true when the workflow service is available', async () => {
+      sonataFlowServiceMock.pingWorkflowService = jest.fn().mockResolvedValue({
+        isAvailable: true,
+        statusCode: 200,
+        urlToFetch: `${serviceUrl}/management/processes/${definitionId}`,
+        reason: 'OK',
+      });
+
+      const result = await orchestratorService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toBe(true);
+      expect(sonataFlowServiceMock.pingWorkflowService).toHaveBeenCalledWith({
+        definitionId,
+        serviceUrl,
+      });
+    });
+
+    it('returns false when the workflow service is unavailable', async () => {
+      sonataFlowServiceMock.pingWorkflowService = jest.fn().mockResolvedValue({
+        isAvailable: false,
+        statusCode: 503,
+        urlToFetch: `${serviceUrl}/management/processes/${definitionId}`,
+        reason: 'Service Unavailable',
+      });
+
+      const result = await orchestratorService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toBe(false);
     });
   });
 
