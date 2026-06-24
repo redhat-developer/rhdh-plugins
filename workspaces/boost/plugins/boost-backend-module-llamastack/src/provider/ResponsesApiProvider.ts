@@ -75,6 +75,11 @@ export class ResponsesApiProvider implements AgenticProvider {
    */
   async chat(messages: InputItem[]): Promise<string> {
     const body = this.buildRequestBody(messages, false);
+
+    if (body.input.length === 0) {
+      throw new Error('No text input items provided');
+    }
+
     const url = `${this.connection.baseUrl}/v1/responses`;
 
     this.logger.debug(
@@ -107,6 +112,12 @@ export class ResponsesApiProvider implements AgenticProvider {
     messages: InputItem[],
   ): AsyncIterable<NormalizedStreamEvent> {
     const body = this.buildRequestBody(messages, true);
+
+    if (body.input.length === 0) {
+      yield { type: 'error', message: 'No text input items provided' };
+      return;
+    }
+
     const url = `${this.connection.baseUrl}/v1/responses`;
 
     this.logger.debug(
