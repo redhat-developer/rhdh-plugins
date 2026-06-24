@@ -35,31 +35,13 @@ export class MetricProvidersRegistry {
 
   register(metricProvider: MetricProvider): void {
     const providerDatasource = metricProvider.getProviderDatasourceId();
-    const metricType = metricProvider.getMetricType();
     const providerId = metricProvider.getProviderId();
 
-    // Support both single and batch providers
-    const metricIds = metricProvider.getMetricIds?.() ?? [providerId];
-    const metrics = metricProvider.getMetrics?.() ?? [
-      metricProvider.getMetric(),
-    ];
+    const metrics = metricProvider.getMetrics();
+    const metricIds = metrics.map(m => m.id);
 
-    // Validate: Each metric ID must have a corresponding metric definition
-    for (const metricId of metricIds) {
-      const metric = metrics.find(m => m.id === metricId);
-      if (!metric) {
-        throw new Error(
-          `Invalid metric provider: metric ID '${metricId}' returned by getMetricIds() ` +
-            `does not have a corresponding metric in getMetrics()`,
-        );
-      }
-
-      if (metricType !== metric.type) {
-        throw new Error(
-          `Invalid metric provider with ID ${metricId}, getMetricType() must match ` +
-            `getMetric().type. Expected '${metricType}', but got '${metric.type}'`,
-        );
-      }
+    for (const metric of metrics) {
+      const metricId = metric.id;
 
       // Validate: Provider ID format (datasource.metric_name)
       const expectedPrefix = `${providerDatasource}.`;
@@ -75,18 +57,15 @@ export class MetricProvidersRegistry {
           `Metric provider with ID '${metricId}' has already been registered`,
         );
       }
-    }
 
-    try {
-      validateThresholdsForMetric(
-        metricProvider.getMetricThresholds(),
-        metricType,
-      );
-    } catch (error) {
-      throw new ThresholdConfigFormatError(
-        `Invalid default thresholds for metric provider '${providerId}'`,
-        error,
-      );
+      try {
+        validateThresholdsForMetric(metric.threshold, metric.type);
+      } catch (error) {
+        throw new ThresholdConfigFormatError(
+          `Invalid default thresholds for metric provider '${providerId}', metric '${metricId}'`,
+          error,
+        );
+      }
     }
 
     for (const metricId of metricIds) {
@@ -118,24 +97,30 @@ export class MetricProvidersRegistry {
 
   getMetric(metricId: string): Metric {
     const provider = this.getProvider(metricId);
-
-    // For batch providers, find the specific metric by ID
-    if (provider.getMetrics) {
-      const metrics = provider.getMetrics();
-      const metric = metrics.find(m => m.id === metricId);
-      if (metric) {
-        return metric;
-      }
+    const metrics = provider.getMetrics();
+    const metric = metrics.find(m => m.id === metricId);
+    if (metric) {
+      return metric;
     }
 
-    return provider.getMetric();
+    throw new NotFoundError(
+      `Metric '${metricId}' not found in provider '${provider.getProviderId()}'`,
+    );
   }
 
   async calculateMetric(
     metricId: string,
     entity: Entity,
   ): Promise<MetricValue> {
-    return this.getProvider(metricId).calculateMetric(entity);
+    const provider = this.getProvider(metricId);
+    const results = await provider.calculateMetrics(entity);
+    const value = results.get(metricId);
+    if (value === undefined) {
+      throw new Error(
+        `Provider '${provider.getProviderId()}' did not return a value for metric '${metricId}'`,
+      );
+    }
+    return value;
   }
 
   async calculateMetrics(
@@ -167,20 +152,14 @@ export class MetricProvidersRegistry {
           const provider = this.metricProviders.get(metricId);
           if (!provider) return undefined;
 
-          if (provider.getMetrics) {
-            const metrics = provider.getMetrics();
-            return metrics.find(m => m.id === metricId);
-          }
-
-          return provider.getMetric();
+          const metrics = provider.getMetrics();
+          return metrics.find(m => m.id === metricId);
         })
         .filter((m): m is Metric => m !== undefined);
     }
 
     // List all metrics from all providers (deduplicate batch providers)
-    return this.listProviders().flatMap(
-      provider => provider.getMetrics?.() ?? [provider.getMetric()],
-    );
+    return this.listProviders().flatMap(provider => provider.getMetrics());
   }
 
   listMetricsByDatasource(datasourceId: string): Metric[] {
@@ -195,8 +174,6 @@ export class MetricProvidersRegistry {
       .map(id => this.metricProviders.get(id))
       .filter((p): p is MetricProvider => p !== undefined);
 
-    return [...new Set(providers)].flatMap(
-      provider => provider.getMetrics?.() ?? [provider.getMetric()],
-    );
+    return [...new Set(providers)].flatMap(provider => provider.getMetrics());
   }
 }

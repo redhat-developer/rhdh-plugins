@@ -135,7 +135,7 @@ describe('FilecheckMetricProvider', () => {
       );
 
       expect(provider).toBeDefined();
-      expect(provider?.getMetricIds()).toEqual([
+      expect(provider?.getMetrics().map(m => m.id)).toEqual([
         'filecheck.readme',
         'filecheck.license',
       ]);
@@ -254,22 +254,17 @@ describe('FilecheckMetricProvider', () => {
       expect(provider?.getProviderDatasourceId()).toBe('filecheck');
     });
 
-    it('should return correct metric type', () => {
-      expect(provider?.getMetricType()).toBe('boolean');
-    });
-
-    it('should return all metric IDs', () => {
-      expect(provider?.getMetricIds()).toEqual([
+    it('should return all metrics with correct type and thresholds', () => {
+      const metrics = provider?.getMetrics();
+      expect(metrics?.map(m => m.id)).toEqual([
         'filecheck.readme',
         'filecheck.codeowners',
         'filecheck.dockerfile',
       ]);
-    });
-
-    it('should return default file check thresholds', () => {
-      expect(provider?.getMetricThresholds()).toEqual(
-        DEFAULT_FILECHECK_THRESHOLDS,
-      );
+      metrics?.forEach(m => {
+        expect(m.type).toBe('boolean');
+        expect(m.threshold).toEqual(DEFAULT_FILECHECK_THRESHOLDS);
+      });
     });
 
     it('should return correct catalog filter', () => {
@@ -288,6 +283,7 @@ describe('FilecheckMetricProvider', () => {
         title: 'File: README.md',
         description: 'Checks if README.md exists in the repository.',
         type: 'boolean',
+        threshold: DEFAULT_FILECHECK_THRESHOLDS,
         history: true,
       });
       expect(metrics?.[1]).toEqual({
@@ -295,18 +291,7 @@ describe('FilecheckMetricProvider', () => {
         title: 'File: CODEOWNERS',
         description: 'Checks if CODEOWNERS exists in the repository.',
         type: 'boolean',
-        history: true,
-      });
-    });
-
-    it('should return first metric for backward compatibility via getMetric()', () => {
-      const metric = provider?.getMetric();
-
-      expect(metric).toEqual({
-        id: 'filecheck.readme',
-        title: 'File: README.md',
-        description: 'Checks if README.md exists in the repository.',
-        type: 'boolean',
+        threshold: DEFAULT_FILECHECK_THRESHOLDS,
         history: true,
       });
     });
@@ -396,53 +381,6 @@ describe('FilecheckMetricProvider', () => {
       await expect(provider?.calculateMetrics(mockEntity)).rejects.toThrow(
         'Auth failure',
       );
-    });
-
-    it('should return first metric result for legacy calculateMetric()', async () => {
-      const existingFiles = new Set(['README.md']);
-      const mockUrlReader = createMockUrlReader(existingFiles);
-
-      const config = new ConfigReader({
-        scorecard: {
-          plugins: {
-            filecheck: {
-              files: { readme: 'README.md', license: 'LICENSE' },
-            },
-          },
-        },
-      });
-      const provider = createFilecheckMetricProvider(
-        config,
-        mockUrlReader,
-        createMockCacheService(),
-      );
-
-      const result = await provider?.calculateMetric(mockEntity);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false when metric result is not found in legacy calculateMetric()', async () => {
-      const mockUrlReader = createMockUrlReader(new Set());
-
-      const config = new ConfigReader({
-        scorecard: {
-          plugins: {
-            filecheck: {
-              files: { readme: 'README.md' },
-            },
-          },
-        },
-      });
-      const provider = createFilecheckMetricProvider(
-        config,
-        mockUrlReader,
-        createMockCacheService(),
-      );
-
-      const result = await provider?.calculateMetric(mockEntity);
-
-      expect(result).toBe(false);
     });
 
     it('should handle bare repo source locations without branch ref', async () => {

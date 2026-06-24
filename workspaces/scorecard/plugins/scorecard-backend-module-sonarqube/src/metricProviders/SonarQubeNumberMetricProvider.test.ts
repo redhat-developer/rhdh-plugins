@@ -49,19 +49,21 @@ function entity(projectKey = 'my-project'): Entity {
 }
 
 describe('SonarQubeNumberMetricProvider', () => {
-  describe('getMetricThresholds', () => {
-    it('should create provider with default thresholds', () => {
+  describe('getMetrics', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = SonarQubeNumberMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
         'open_issues',
       );
-      expect(provider.getMetricThresholds()).toBeDefined();
-      expect(provider.getMetricThresholds().rules).toBeDefined();
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].threshold).toBeDefined();
+      expect(metrics[0].threshold.rules).toBeDefined();
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('should call getOpenIssuesCount for open_issues metric', async () => {
       mockGetOpenIssuesCount.mockResolvedValue(42);
       const provider = SonarQubeNumberMetricProvider.fromConfig(
@@ -70,9 +72,9 @@ describe('SonarQubeNumberMetricProvider', () => {
         'open_issues',
       );
 
-      const result = await provider.calculateMetric(entity());
+      const results = await provider.calculateMetrics(entity());
 
-      expect(result).toBe(42);
+      expect(results.get(provider.getProviderId())).toBe(42);
       expect(mockGetOpenIssuesCount).toHaveBeenCalledWith(
         'my-project',
         undefined,
@@ -101,9 +103,9 @@ describe('SonarQubeNumberMetricProvider', () => {
           metricId,
         );
 
-        const result = await provider.calculateMetric(entity());
+        const results = await provider.calculateMetrics(entity());
 
-        expect(result).toBe(value);
+        expect(results.get(provider.getProviderId())).toBe(value);
         expect(mockGetMeasures).toHaveBeenCalledWith(
           'my-project',
           [apiKey],
@@ -121,7 +123,7 @@ describe('SonarQubeNumberMetricProvider', () => {
         'open_issues',
       );
 
-      await provider.calculateMetric(entity('internal/my-project'));
+      await provider.calculateMetrics(entity('internal/my-project'));
 
       expect(mockGetOpenIssuesCount).toHaveBeenCalledWith(
         'my-project',
@@ -138,7 +140,7 @@ describe('SonarQubeNumberMetricProvider', () => {
       const e = entity();
       delete e.metadata.annotations!['sonarqube.org/project-key'];
 
-      await expect(provider.calculateMetric(e)).rejects.toThrow(
+      await expect(provider.calculateMetrics(e)).rejects.toThrow(
         "Missing annotation 'sonarqube.org/project-key'",
       );
     });
@@ -151,7 +153,8 @@ describe('SonarQubeNumberMetricProvider', () => {
         'open_issues',
       );
 
-      expect(await provider.calculateMetric(entity())).toBe(0);
+      const results = await provider.calculateMetrics(entity());
+      expect(results.get(provider.getProviderId())).toBe(0);
     });
   });
 });

@@ -20,7 +20,6 @@ import { JIRA_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
@@ -47,10 +46,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
   }
 
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
-  }
-
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
       'metadata.annotations.jira/project-key': CATALOG_FILTER_EXISTS,
@@ -65,19 +60,18 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return 'jira.open_issues';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of issues that are currently open in Jira.',
-      type: this.getMetricType(),
-      history: true,
-    };
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'Jira open blocking tickets',
+        description:
+          'Highlights the number of issues that are currently open in Jira.',
+        type: 'number',
+        threshold: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   supportsEntity(entity: Entity): boolean {
@@ -113,7 +107,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return new JiraOpenIssuesProvider(config, connectionStrategy);
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    return this.jiraClient.getCountOpenIssues(entity);
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
+    const value = await this.jiraClient.getCountOpenIssues(entity);
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), value);
+    return results;
   }
 }
