@@ -15,7 +15,6 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { InputError } from '@backstage/errors';
 import type { z } from 'zod';
 import type { CollectorRegistry } from './Collector';
 
@@ -53,11 +52,11 @@ export const collectWithContract = async <
 
   const contractInput = options.contract.inputSchema.safeParse(options.input);
   if (!contractInput.success) {
-    throw new InputError(
+    throw new Error(
       `Invalid input for collector "${
         options.collectorId
       }": input does not satisfy contract input schema: ${contractInput.error.issues
-        .map(issue => issue.message)
+        .map(formatIssue)
         .join('; ')}`,
     );
   }
@@ -66,11 +65,11 @@ export const collectWithContract = async <
     .getInputSchema()
     .safeParse(contractInput.data);
   if (!collectorInput.success) {
-    throw new InputError(
+    throw new Error(
       `Input does not satisfy collector "${
         options.collectorId
       }" input schema: ${collectorInput.error.issues
-        .map(issue => issue.message)
+        .map(formatIssue)
         .join('; ')}`,
     );
   }
@@ -82,11 +81,11 @@ export const collectWithContract = async <
 
   const collectorOutput = collector.getOutputSchema().safeParse(rawOutput);
   if (!collectorOutput.success) {
-    throw new InputError(
+    throw new Error(
       `Collector "${
         options.collectorId
       }" returned output that does not satisfy collector schema: ${collectorOutput.error.issues
-        .map(issue => issue.message)
+        .map(formatIssue)
         .join('; ')}`,
     );
   }
@@ -95,14 +94,28 @@ export const collectWithContract = async <
     collectorOutput.data,
   );
   if (!contractOutput.success) {
-    throw new InputError(
+    throw new Error(
       `Collector "${
         options.collectorId
       }" output does not satisfy contract output schema: ${contractOutput.error.issues
-        .map(issue => issue.message)
+        .map(formatIssue)
         .join('; ')}`,
     );
   }
 
   return contractOutput.data;
 };
+
+/**
+ * Adapted from Backstage {@link https://github.com/backstage/backstage/blob/patch/v1.49.0/packages/frontend-plugin-api/src/schema/createSchemaFromZod.ts#L44}
+ */
+function formatIssue(issue: z.ZodIssue): string {
+  let message = issue.message;
+  if (message === 'Required') {
+    message = `Missing required value`;
+  }
+  if (issue.path.length) {
+    message += ` at '${issue.path.join('.')}'`;
+  }
+  return message;
+}

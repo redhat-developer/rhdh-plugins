@@ -220,6 +220,42 @@ describe('collectWithContract', () => {
     ).rejects.toThrow('output does not satisfy contract output schema');
   });
 
+  it('formats parse errors', async () => {
+    const collector = makeCollector({
+      getOutputSchema: () =>
+        z.object({
+          deployments: z.array(
+            z.object({
+              sha: z.string(),
+              id: z.number(),
+            }),
+          ),
+        }),
+      collect: jest.fn(async () => ({
+        deployments: [{ sha: 4 }],
+      })),
+    });
+    const collectorRegistry = makeCollectorRegistry(collector);
+
+    await expect(
+      collectWithContract({
+        collectorRegistry,
+        collectorId,
+        contract: {
+          inputSchema: contractInputSchema,
+          outputSchema: contractOutputSchema,
+        },
+        entity,
+        input: {
+          from: '2026-06-01T00:00:00.000Z',
+          to: '2026-06-08T00:00:00.000Z',
+        },
+      }),
+    ).rejects.toThrow(
+      "Expected string, received number at 'deployments.0.sha'; Missing required value at 'deployments.0.id'",
+    );
+  });
+
   it('propagates collector lookup errors', async () => {
     const collectorRegistry = {
       getCollector: () => {
