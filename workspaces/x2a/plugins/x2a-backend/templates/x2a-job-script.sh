@@ -628,7 +628,7 @@ case "${PHASE}" in
     # This ensures AAP syncs the latest commit with the new playbooks
     echo ""
     echo "=== Committing and pushing Ansible project to git ==="
-    git_commit_and_push "x2a: ${PHASE} phase for ${MODULE_NAME}
+    local commit_msg="x2a: ${PHASE} phase for ${MODULE_NAME}
 
 Phase: ${PHASE}
 Project: ${PROJECT_ID}
@@ -637,6 +637,7 @@ Job: ${JOB_ID}
 
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 "
+    git_commit_and_push "${commit_msg}"
 
     # Step 2: publish-aap — register with AAP and sync
     echo ""
