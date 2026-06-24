@@ -28,6 +28,17 @@ function createMockLogger(): LoggerService {
   };
 }
 
+function createSSEStream(events: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const data = events.map(e => `data: ${e}\n\n`).join('');
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(data));
+      controller.close();
+    },
+  });
+}
+
 describe('KagentiProvider', () => {
   let provider: KagentiProvider;
 
@@ -109,6 +120,14 @@ describe('KagentiProvider', () => {
       ).rejects.toThrow('Kagenti A2A API returned 500');
     });
 
+    it('throws on fetch failure', async () => {
+      jest.spyOn(global, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'));
+
+      await expect(
+        provider.chat([{ type: 'text', text: 'Hello' }]),
+      ).rejects.toThrow('Failed to connect to Kagenti endpoint');
+    });
+
     it('returns empty string when response has no message', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue({
         ok: true,
@@ -173,6 +192,82 @@ describe('KagentiProvider', () => {
           type: 'error',
           message: 'Kagenti A2A API returned 503',
         },
+      ]);
+    });
+
+    it('yields error event on canceled task status', async () => {
+      const sseData = JSON.stringify({
+        type: 'task.status.update',
+        taskId: 'task-1',
+        status: { state: 'canceled', message: 'User canceled the task' },
+      });
+
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        body: createSSEStream([sseData]),
+      } as Response);
+
+      const events = [];
+      for await (const event of provider.chatStream([
+        { type: 'text', text: 'Hello' },
+      ])) {
+        events.push(event);
+      }
+      expect(events).toEqual([
+        { type: 'error', message: 'User canceled the task' },
+        { type: 'done' },
+      ]);
+    });
+
+    it('yields default message when canceled with no status message', async () => {
+      const sseData = JSON.stringify({
+        type: 'task.status.update',
+        taskId: 'task-1',
+        status: { state: 'canceled' },
+      });
+
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        body: createSSEStream([sseData]),
+      } as Response);
+
+      const events = [];
+      for await (const event of provider.chatStream([
+        { type: 'text', text: 'Hello' },
+      ])) {
+        events.push(event);
+      }
+      expect(events).toEqual([
+        { type: 'error', message: 'A2A task canceled' },
+        { type: 'done' },
+      ]);
+    });
+
+    it('yields text and done for completed task', async () => {
+      const sseData = JSON.stringify({
+        type: 'task.status.update',
+        taskId: 'task-1',
+        status: { state: 'completed' },
+        message: {
+          role: 'agent',
+          parts: [{ type: 'text', text: 'Final answer' }],
+        },
+      });
+
+      jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        body: createSSEStream([sseData]),
+      } as Response);
+
+      const events = [];
+      for await (const event of provider.chatStream([
+        { type: 'text', text: 'Hello' },
+      ])) {
+        events.push(event);
+      }
+      expect(events).toEqual([
+        { type: 'text', text: 'Final answer' },
+        { type: 'done' },
       ]);
     });
   });

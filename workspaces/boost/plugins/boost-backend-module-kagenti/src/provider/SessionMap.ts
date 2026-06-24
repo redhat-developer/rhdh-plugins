@@ -75,6 +75,12 @@ export class SessionMap {
   async get(conversationId: string): Promise<SessionData | undefined> {
     const key = `${SessionMap.KEY_PREFIX}${conversationId}`;
     const cached = await this.cache.get(key);
+    if (cached === undefined || cached === null) {
+      return undefined;
+    }
+    if (typeof cached === 'object' && !Array.isArray(cached)) {
+      return cached as SessionData;
+    }
     if (typeof cached === 'string') {
       try {
         return JSON.parse(cached) as SessionData;

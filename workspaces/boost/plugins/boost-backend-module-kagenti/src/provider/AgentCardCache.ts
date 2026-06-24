@@ -60,6 +60,13 @@ export class AgentCardCache {
    */
   async get(): Promise<AgentCard[] | undefined> {
     const cached = await this.cache.get(CACHE_KEY);
+    if (cached === undefined || cached === null) {
+      return undefined;
+    }
+    if (Array.isArray(cached)) {
+      this.logger.debug(`Agent card cache hit (${cached.length} cards)`);
+      return cached as AgentCard[];
+    }
     if (typeof cached === 'string') {
       try {
         const cards = JSON.parse(cached) as AgentCard[];

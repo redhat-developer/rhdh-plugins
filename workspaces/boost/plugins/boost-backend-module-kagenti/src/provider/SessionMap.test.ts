@@ -104,4 +104,17 @@ describe('SessionMap', () => {
     const result = await sessionMap.get('conv-1');
     expect(result).toBeUndefined();
   });
+
+  it('handles pre-parsed object returned by cache backend', async () => {
+    const data: SessionData = {
+      sessionId: 'a2a-session-456',
+      agentId: 'my-agent',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      lastActivity: '2025-01-01T00:01:00.000Z',
+    };
+    (cache.get as jest.Mock).mockResolvedValueOnce(data);
+
+    const result = await sessionMap.get('conv-obj');
+    expect(result).toEqual(data);
+  });
 });

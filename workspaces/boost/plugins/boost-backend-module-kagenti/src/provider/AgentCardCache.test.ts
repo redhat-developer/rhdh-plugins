@@ -90,4 +90,14 @@ describe('AgentCardCache', () => {
     const result = await agentCardCache.get();
     expect(result).toBeUndefined();
   });
+
+  it('handles pre-parsed array returned by cache backend', async () => {
+    const cards: AgentCard[] = [
+      { id: 'agent-1', name: 'Agent One', url: 'http://agent-1:8080' },
+    ];
+    (cache.get as jest.Mock).mockResolvedValueOnce(cards);
+
+    const result = await agentCardCache.get();
+    expect(result).toEqual(cards);
+  });
 });

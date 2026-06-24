@@ -86,11 +86,20 @@ export class KagentiProvider implements AgenticProvider {
       `Sending A2A task request to ${url} (agent: ${request.agentId})`,
     );
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      });
+    } catch (err) {
+      this.logger.error(
+        `Fetch failed for request to ${url}`,
+        err instanceof Error ? err : undefined,
+      );
+      throw new Error('Failed to connect to Kagenti endpoint');
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -308,6 +317,11 @@ export class KagentiProvider implements AgenticProvider {
           yield {
             type: 'error',
             message: event.status.message ?? 'A2A task failed',
+          };
+        } else if (event.status?.state === 'canceled') {
+          yield {
+            type: 'error',
+            message: event.status.message ?? 'A2A task canceled',
           };
         }
         break;
