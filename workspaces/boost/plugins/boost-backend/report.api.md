@@ -78,6 +78,24 @@ export interface AgentRoutesOptions {
 }
 
 // @public
+export interface ApprovalRequest {
+  args: string;
+  conversationId: string;
+  createdAt: string;
+  message?: string;
+  requestId: string;
+  resolvedArgs?: string;
+  resolvedAt?: string;
+  status: ApprovalStatus;
+  toolCallId: string;
+  toolName: string;
+  userRef: string;
+}
+
+// @public
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+// @public
 export function authorizeLifecycleAction(
   permission: Permission,
   _resourceLoader: ResourceLoader,
@@ -88,6 +106,26 @@ export function authorizeLifecycleAction(
 export interface AuthorizeLifecycleActionOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
+}
+
+// @public
+export class BackendApprovalStore {
+  constructor(options: BackendApprovalStoreOptions);
+  approve(
+    requestId: string,
+    resolvedArgs?: string,
+  ): Promise<ApprovalRequest | undefined>;
+  create(request: ApprovalRequest): Promise<void>;
+  delete(requestId: string): Promise<void>;
+  get(requestId: string): Promise<ApprovalRequest | undefined>;
+  reject(requestId: string): Promise<ApprovalRequest | undefined>;
+  static readonly TTL_MS: number;
+}
+
+// @public
+export interface BackendApprovalStoreOptions {
+  cache: CacheService;
+  logger: LoggerService;
 }
 
 // @public
