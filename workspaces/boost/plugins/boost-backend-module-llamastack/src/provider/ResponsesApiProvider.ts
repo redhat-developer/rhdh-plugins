@@ -172,6 +172,13 @@ export class ResponsesApiProvider implements AgenticProvider {
     messages: InputItem[],
     stream: boolean,
   ): ResponsesApiRequest {
+    const skipped = messages.filter(m => m.type !== 'text');
+    if (skipped.length > 0) {
+      this.logger.debug(
+        `Skipping ${skipped.length} non-text input item(s) (types: ${[...new Set(skipped.map(m => m.type))].join(', ')})`,
+      );
+    }
+
     const input: ResponsesApiInputItem[] = messages
       .filter(
         (m): m is Extract<InputItem, { type: 'text' }> => m.type === 'text',

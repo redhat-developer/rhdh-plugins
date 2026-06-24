@@ -58,8 +58,13 @@ export const boostModuleLlamastack = createBackendModule({
           logger,
         });
 
-        const { provider, modelListCache, clientManager, sessionMap } =
-          factory.create();
+        const {
+          provider,
+          modelListCache,
+          mcpAuthTokenCache,
+          clientManager,
+          sessionMap,
+        } = factory.create();
 
         // Register the provider with the boost plugin
         providers.registerProvider(provider);
@@ -81,6 +86,7 @@ export const boostModuleLlamastack = createBackendModule({
         // and available for provider-internal operations. Future iterations
         // will wire them into route handlers and orchestration flows.
         void modelListCache;
+        void mcpAuthTokenCache;
         void clientManager;
         void sessionMap;
       },
