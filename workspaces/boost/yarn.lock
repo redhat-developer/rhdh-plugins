@@ -3717,6 +3717,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:plugins/boost-backend-module-llamastack":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:plugins/boost-backend-module-llamastack"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.1"
+    "@backstage/cli": "npm:^0.34.5"
+    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-boost-backend@workspace:plugins/boost-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-backend@workspace:plugins/boost-backend"
