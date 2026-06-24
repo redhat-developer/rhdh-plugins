@@ -154,7 +154,6 @@ const InsightsHeader: FC<InsightsHeaderProps> = () => {
             disableScrollLock: true,
           },
           MenuListProps: {
-            autoFocusItem: false,
             sx: { display: 'block', flexDirection: 'column' },
           },
         }}
