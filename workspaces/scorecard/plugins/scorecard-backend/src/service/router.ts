@@ -183,7 +183,10 @@ export async function createRouter({
         await checkEntityAccess(entityRef, req, permissions, httpAuth);
       }
 
-      const thresholds = thresholdResolver.resolveProviderThresholds(provider);
+      const thresholds = thresholdResolver.resolveMetricThresholds(
+        metric,
+        provider.getProviderId(),
+      );
 
       logger.warn(
         `Deprecated Scorecard API: GET /metrics/${metricId}/catalog/aggregations is deprecated; use GET /aggregations/:aggregationId (e.g. when the aggregation id matches the metric id, GET /aggregations/${metricId}).`,
@@ -305,7 +308,10 @@ export async function createRouter({
         );
       }
 
-      const thresholds = thresholdResolver.resolveProviderThresholds(provider);
+      const thresholds = thresholdResolver.resolveMetricThresholds(
+        metric,
+        provider.getProviderId(),
+      );
 
       res.json(
         await aggregationsService.getAggregatedMetricByEntityRefs({

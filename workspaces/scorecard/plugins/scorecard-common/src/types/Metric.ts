@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ThresholdResult } from './threshold';
+import { ThresholdConfig, ThresholdResult } from './threshold';
 
 /**
  * @public
@@ -38,6 +38,7 @@ export type Metric<T extends MetricType = MetricType> = {
   title: string;
   description: string;
   type: T;
+  threshold: ThresholdConfig;
   history?: boolean;
 };
 
