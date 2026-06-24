@@ -335,6 +335,22 @@ export function createToolResourceLoader(): ResourceLoader;
 export function createToolRoutes(options: ToolRoutesOptions): Router;
 
 // @public
+export class DocumentSyncService {
+  constructor(options: DocumentSyncServiceOptions);
+  deleteHash(documentId: string): Promise<void>;
+  getHash(documentId: string): Promise<string | undefined>;
+  hasChanged(documentId: string, currentHash: string): Promise<boolean>;
+  setHash(documentId: string, hash: string): Promise<void>;
+  static readonly TTL_MS: number;
+}
+
+// @public
+export interface DocumentSyncServiceOptions {
+  cache: CacheService;
+  logger: LoggerService;
+}
+
+// @public
 export function isDbWritable(key: BoostConfigKey): boolean;
 
 // @public
