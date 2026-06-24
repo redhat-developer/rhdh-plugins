@@ -65,7 +65,7 @@ export class AgentCardCache {
     }
     if (Array.isArray(cached)) {
       this.logger.debug(`Agent card cache hit (${cached.length} cards)`);
-      return cached as AgentCard[];
+      return cached as unknown as AgentCard[];
     }
     if (typeof cached === 'string') {
       try {

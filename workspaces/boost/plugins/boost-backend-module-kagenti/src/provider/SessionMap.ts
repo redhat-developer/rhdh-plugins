@@ -79,7 +79,7 @@ export class SessionMap {
       return undefined;
     }
     if (typeof cached === 'object' && !Array.isArray(cached)) {
-      return cached as SessionData;
+      return cached as unknown as SessionData;
     }
     if (typeof cached === 'string') {
       try {
