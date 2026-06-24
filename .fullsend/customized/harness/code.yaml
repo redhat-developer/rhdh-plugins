@@ -15,6 +15,7 @@
 #   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
 #   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
+role: coder
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus

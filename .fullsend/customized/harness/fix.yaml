@@ -18,6 +18,7 @@
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
 #   - skills: adds rhdh-workspace for workspace navigation + test scoping
 #   - policy: custom fix policy with yarn registry + pnpm binary allowlist
+role: fix
 agent: agents/fix.md
 doc: docs/agents/fix.md
 model: opus
