@@ -275,6 +275,40 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
       metricId: filecheck.license
+    totalOpenBugs:
+      title: Total Open Bugs
+      description: Sum of open issues across owned entities
+      type: sum
+      metricId: jira.open_issues
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '<80'
+              color: 'rgb(224, 189, 108)' # light orange
+    avgOpenPrs:
+      title: Average Open PRs
+      description: Mean open PR count per entity
+      type: average
+      metricId: github.open_prs
+    entitiesWithOpenIssues:
+      title: Entities with Open Issues
+      description: Count of entities with a stored open-issues value
+      type: count
+      metricId: jira.open_issues
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: Maximum open PR count per entity
+      type: max
+      metricId: github.open_prs
+    minOpenPrs:
+      title: Minimum Open PRs
+      description: Minimum open PR count per entity
+      type: min
+      metricId: github.open_prs
   plugins:
     jira:
       open_issues:

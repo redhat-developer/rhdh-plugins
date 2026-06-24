@@ -19,14 +19,39 @@ import type { Config } from '@backstage/config';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 import { aggregationConfigSchema } from './schemas/aggregationConfigSchemas';
+import type { ValidatedAggregationConfig } from './schemas/aggregationConfigSchemas';
 import { buildAggregationConfig } from '../utils/buildAggregationConfig';
 import { validateThresholdsForAggregation } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
-  type AggregationConfig,
   aggregationTypes,
+  scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-function parseAggregationConfig(config: unknown): AggregationConfig {
+function isScalarAggregationType(type: string): boolean {
+  return (scalarAggregationTypes as readonly string[]).includes(type);
+}
+
+function validateScalarAggregationConfig(
+  aggregationConfig: ValidatedAggregationConfig,
+  registry: MetricProvidersRegistry,
+  aggregationId: string,
+): void {
+  if (!isScalarAggregationType(aggregationConfig.type)) {
+    return;
+  }
+
+  const metric = registry.getMetric(aggregationConfig.metricId);
+
+  if (metric.type === 'boolean') {
+    throw new InputError(
+      `Aggregation KPI "${aggregationId}" uses type "${aggregationConfig.type}" which requires a number metric, but "${aggregationConfig.metricId}" is boolean.`,
+    );
+  }
+}
+
+export function parseValidatedAggregationConfig(
+  config: unknown,
+): ValidatedAggregationConfig {
   const parsed = aggregationConfigSchema.safeParse(config);
 
   if (!parsed.success) {
@@ -38,7 +63,7 @@ function parseAggregationConfig(config: unknown): AggregationConfig {
   }
 
   if (
-    parsed.data?.type === aggregationTypes.weightedStatusScore &&
+    parsed.data.type !== aggregationTypes.statusGrouped &&
     parsed.data.options?.thresholds
   ) {
     validateThresholdsForAggregation(parsed.data.options.thresholds, 'number');
@@ -64,16 +89,18 @@ export function validateAggregationConfig(options: {
   for (const aggregationId of aggregationKPIsConfig.keys()) {
     const config = aggregationKPIsConfig.getConfig(aggregationId);
 
-    const aggregationConfig = buildAggregationConfig(aggregationId, {
-      config,
-    });
-
-    parseAggregationConfig(aggregationConfig);
+    const aggregationConfig = parseValidatedAggregationConfig(
+      buildAggregationConfig(aggregationId, {
+        config,
+      }),
+    );
 
     if (!registry.hasProvider(aggregationConfig.metricId)) {
       throw new Error(
         `Metric provider with ID '${aggregationConfig.metricId}' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}).`,
       );
     }
+
+    validateScalarAggregationConfig(aggregationConfig, registry, aggregationId);
   }
 }

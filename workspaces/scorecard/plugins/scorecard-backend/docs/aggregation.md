@@ -36,10 +36,45 @@ KPIs under **`scorecard.aggregationKPIs`** declare a **`type`** that selects an 
 
 **`weightedStatusScore`** rolls up each owned entity’s metric into status keys, applies **`options.statusScores`** (weights per status key), and returns **one normalized score** as a **percentage** in \[0, 100\] (one decimal), scaled against the metric’s threshold rules. Use it when you want a single “portfolio health” number (for example a donut gauge on the homepage).
 
+**Scalar types** (`sum`, `average`, `max`, `min`, `count`) roll up each owned entity’s **latest numeric metric value** into a single number (or entity count for `count`). Use them when you want portfolio totals, averages, extremes, or entity counts without a per-status breakdown.
+
 | Type                      | Output                                                                                                     | Typical use                                     |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | **`statusGrouped`**       | Counts per status key across owned entities                                                                | “How many entities are green vs red” style pie. |
 | **`weightedStatusScore`** | **`weightedStatusScore`** in \[0, 100\] (percent, one decimal) from weighted counts via **`statusScores`** | Portfolio health gauge from one headline score. |
+| **`sum`**                 | Single numeric total of latest metric values across owned entities                                         | “Total open bugs across my portfolio.”          |
+| **`average`**             | Mean of latest metric values across owned entities                                                         | “Average open PRs per entity.”                  |
+| **`max`**                 | Maximum latest metric value across owned entities                                                          | “Worst-case / highest value in the portfolio.”  |
+| **`min`**                 | Minimum latest metric value across owned entities                                                          | “Best-case / lowest value in the portfolio.”    |
+| **`count`**               | Number of entities with a non-null latest stored value                                                     | “How many entities have data for this metric.”  |
+
+**Scalar types** (`sum`, `average`, `max`, `min`, `count`) aggregate the **numeric `value`** from each owned entity’s **latest** stored `metric_values` row for the configured **`metricId`**, instead of bucketing by threshold status. Clients can detect scalar responses by checking **`metadata.aggregationType`** against the scalar type literals (or `scalarAggregationTypes` from scorecard-common).\*\*\*\*
+
+For scalar types:
+
+1. **Latest row per entity:** Same scope as other aggregation KPIs — one row per owned catalog entity ref (the row with the highest `id` for that entity and metric).
+2. **Calculation failures excluded:** Rows where `error_message` is set and `value` is null are excluded from the aggregate (same rule as status-grouped aggregation).
+3. **SQL function:** `sum` → `SUM(value)`, `average` → `AVG(value)`, `max` → `MAX(value)`, `min` → `MIN(value)`, `count` → `COUNT(*)` over rows with a non-null value.
+4. **Metric type rules:** All scalar types (`sum`, `average`, `max`, `min`, `count`) require a **number** metric. Startup validation rejects scalar KPIs that target a boolean metric.
+5. **Optional result thresholds:** `options.thresholds` (number-style rules) can color or classify the aggregated **`value`**. When omitted, the API returns **`DEFAULT_NUMBER_THRESHOLDS`**. See [thresholds.md — Aggregation KPI result thresholds (scalar types)](./thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types).
+
+Example scalar KPI config:
+
+```yaml
+scorecard:
+  aggregationKPIs:
+    totalOpenBugs:
+      title: Total Open Bugs
+      description: Sum of open issues across owned entities
+      type: sum
+      metricId: jira.open_issues
+
+    avgOpenPrs:
+      title: Average Open PRs
+      description: Mean open PR count per entity
+      type: average
+      metricId: github.open_prs
+```
 
 For **`weightedStatusScore`**:
 
@@ -51,9 +86,9 @@ For **`weightedStatusScore`**:
 
 ## Configuration validation
 
-**`scorecard.aggregationKPIs`** is validated when the backend plugin starts. Invalid entries (unknown **`type`**, missing **`options`** for **`weightedStatusScore`**, empty **`statusScores`**, unknown **`metricId`**, invalid threshold expressions, etc.) cause startup to **fail with an error** so misconfiguration is caught early. Fix app-config and redeploy.
+**`scorecard.aggregationKPIs`** is validated when the backend plugin starts. Invalid entries (unknown **`type`**, missing **`options`** for **`weightedStatusScore`**, empty **`statusScores`**, unknown **`metricId`**, any scalar type on a **boolean** metric, invalid threshold expressions, etc.) cause startup to **fail with an error** so misconfiguration is caught early. Fix app-config and redeploy.
 
-For **`type: weightedStatusScore`**, optional **`options.thresholds`** must satisfy the same **number interval / gap** rules as metric thresholds when multiple rules apply (union must cover the full real line with no gaps). Errors mention an approximate **first uncovered region**. See [Joint coverage (number metrics)](./thresholds.md#joint-coverage-number-metrics).
+For **`type: weightedStatusScore`** or any **scalar type** with optional **`options.thresholds`**, threshold rules must satisfy the same **number interval / gap** rules as metric thresholds when multiple rules apply (union must cover the full real line with no gaps). Errors mention an approximate **first uncovered region**. See [Joint coverage (number metrics)](./thresholds.md#joint-coverage-number-metrics).
 
 Schema reference for config discovery (IDE / `backstage-cli config:schema`): see **`config.d.ts`** on the backend package (`aggregationKPIs` and nested **`options`**).
 
@@ -66,7 +101,13 @@ Use this endpoint for all new integrations.
 - **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, **metricId**, and for **`type: weightedStatusScore`** the **`options.statusScores`** map (threshold rule key → weight), with room for more **`options`** fields per type later.
 - If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`** and uses the default **statusGrouped** strategy (same as calling **`/aggregations/<metricId>`** with a metric id). A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
 
-The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, aggregation type), and **`result`** (counts per threshold rule, total, thresholds). The **`result`** object also includes **`entitiesConsidered`** (count of in-scope owned entities that have **at least one** latest `metric_values` row for this metric) and **`calculationErrorCount`** (how many of those latest rows are metric calculation failures: `error_message` set and `value` null), so the homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs. For **`weightedStatusScore`**, **`result`** also includes **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, and **`weightedStatusMaxPossible`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
+The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, aggregation type), and **`result`**. The shape of **`result`** depends on the aggregation type:
+
+- **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
+- **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
+- **Scalar types** (`sum`, `average`, `max`, `min`, `count`): **`value`**, **`total`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**, **`thresholds`**.
+
+**`entitiesConsidered`** (all types): count of in-scope owned entities that have **at least one** latest `metric_values` row for this metric. **`calculationErrorCount`**: how many of those latest rows are metric calculation failures (`error_message` set and `value` null), so the homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs. For scalar types, **`total`** is the number of rows that contributed to **`value`** (non-null latest values, calculation failures excluded).
 
 **“Without calculation errors” on the homepage:** `healthy = entitiesConsidered - calculationErrorCount` counts only among entities that already have a latest stored row for this metric. Owned entities with **no** row yet are omitted from **`entitiesConsidered`** (same as omitting them from the drill-down list until data exists).
 
@@ -86,11 +127,11 @@ Same resolution as above, but returns only metadata fields (no aggregate counts)
 
 #### Empty results
 
-When the user owns no relevant entities, the API returns an aggregation with **zero total** and zeroed bucket counts (not an error).
+When the user owns no relevant entities, the API returns an aggregation with **zero total** and zeroed bucket counts for distribution types, or **`value: 0`** with zeroed entity counts for scalar types (not an error).
 
 ### Drill-down vs aggregation id
 
-The aggregation API uses **`aggregationId`** (KPI key or metric id). **Entity drill-down** remains **metric-scoped**: use **`GET /metrics/:metricId/catalog/aggregations/entities`** with the KPI’s **`metricId`**, not the KPI key. That applies to both **`statusGrouped`** and **`weightedStatusScore`** KPIs. See [drill-down.md](./drill-down.md).
+The aggregation API uses **`aggregationId`** (KPI key or metric id). **Entity drill-down** remains **metric-scoped**: use **`GET /metrics/:metricId/catalog/aggregations/entities`** with the KPI’s **`metricId`**, not the KPI key. That applies to **`statusGrouped`**, **`weightedStatusScore`**, and **scalar** KPIs. See [drill-down.md](./drill-down.md).
 
 ### **Deprecated API:** `GET /metrics/:metricId/catalog/aggregations`
 
@@ -175,6 +216,6 @@ If the user doesn't have access to the specified metric:
 
 5. **Metric access**: Aggregation routes enforce **`scorecard.metric.read`** for the underlying metric and **`catalog.entity.read`** for each included entity; expect **`403 Forbidden`** when either check fails.
 
-For RBAC, scheduling, full endpoint reference, and **app-config examples** for **`weightedStatusScore`** KPIs (including **`thresholds`**), see the [Scorecard backend README](../README.md).
+For RBAC, scheduling, full endpoint reference, and **app-config examples** for **`weightedStatusScore`** and **scalar** KPIs, see the [Scorecard backend README](../README.md).
 
-For **per-entity threshold overrides** (annotations), **weightedStatusScore KPI result thresholds**, and expression reference, see [thresholds.md](./thresholds.md).
+For **per-entity threshold overrides** (annotations), **weightedStatusScore** and **scalar** KPI result thresholds, and expression reference, see [thresholds.md](./thresholds.md).

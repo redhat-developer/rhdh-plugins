@@ -16,11 +16,13 @@
 
 import { mockServices } from '@backstage/backend-test-utils';
 import {
-  aggregationTypes,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
+import {
+  mockFallbackStatusGroupedAggregationConfig,
+  mockWeightedStatusScoreAggregationConfig,
+} from '../../../../__fixtures__/mockAggregationConfig';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
 
@@ -55,21 +57,15 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
 
     const logger = mockServices.logger.mock();
     const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
-    const aggregationConfig = {
-      id: 'weightedKpi',
+    const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
       metricId: metric.id,
-      type: aggregationTypes.weightedStatusScore,
-      options: {
-        statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
-      },
-    } as const;
+    });
 
     const out = await strategy.aggregate({
       metric,
       entityRefs: ['component:default/a'],
       thresholds,
-      aggregationConfig: aggregationConfig as any,
+      aggregationConfig,
     });
 
     expect(out.result).toEqual(
@@ -107,14 +103,13 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       metric,
       entityRefs: ['component:default/a'],
       thresholds,
-      aggregationConfig: {
-        id: 'weightedKpi',
+      aggregationConfig: mockWeightedStatusScoreAggregationConfig({
         metricId: metric.id,
-        type: aggregationTypes.weightedStatusScore,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
+          thresholds: undefined,
         },
-      } as any,
+      }),
     });
 
     expect(logger.info).toHaveBeenCalledWith(
@@ -129,7 +124,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     );
   });
 
-  it('throws when options.statusScores is missing', async () => {
+  it('throws when aggregation config is not weightedStatusScore', async () => {
     const loader = {
       loadStatusGroupedMetricByEntityRefs: jest.fn().mockResolvedValue({
         values: { success: 1 },
@@ -148,15 +143,12 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
         metric,
         entityRefs: ['component:default/a'],
         thresholds,
-        aggregationConfig: {
+        aggregationConfig: mockFallbackStatusGroupedAggregationConfig({
           id: 'weightedKpi',
           metricId: metric.id,
-          type: aggregationTypes.weightedStatusScore,
-        } as any,
+        }),
       }),
-    ).rejects.toThrow(
-      /statusScores.*required for weightedStatusScore aggregation/,
-    );
+    ).rejects.toThrow(/Expected aggregation type "weightedStatusScore"/);
   });
 
   it('warns and ignores when loader returns a status not in the metric threshold rules', async () => {
@@ -175,21 +167,15 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     const logger = mockServices.logger.mock();
     const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
 
-    const aggregationConfig = {
-      id: 'weightedKpi',
+    const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
       metricId: metric.id,
-      type: aggregationTypes.weightedStatusScore,
-      options: {
-        statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
-      },
-    } as const;
+    });
 
     const out = await strategy.aggregate({
       metric,
       entityRefs: ['component:default/a'],
       thresholds,
-      aggregationConfig: aggregationConfig as any,
+      aggregationConfig,
     });
 
     expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('orphan'));

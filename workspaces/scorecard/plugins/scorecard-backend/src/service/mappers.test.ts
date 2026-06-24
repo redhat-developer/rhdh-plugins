@@ -15,14 +15,20 @@
  */
 
 import { AggregatedMetricMapper } from './mappers';
-import { DbAggregatedMetric } from '../database/types';
+import {
+  DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+} from '../database/types';
 import {
   aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
-  type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  mockStatusGroupedAggregationConfig,
+  mockWeightedStatusScoreAggregationConfig,
+} from '../../__fixtures__/mockAggregationConfig';
 
 describe('AggregatedMetricMapper', () => {
   const mockMetric: Metric = {
@@ -93,6 +99,41 @@ describe('AggregatedMetricMapper', () => {
     });
   });
 
+  describe('toScalarAggregatedMetric', () => {
+    it('should map DbScalarAggregatedMetric to scalar aggregate', () => {
+      const dbMetric: DbScalarAggregatedMetric = {
+        metric_id: 'test.metric',
+        value: 847,
+        total: 42,
+        latest_entity_count: 45,
+        calculation_error_count: 3,
+        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+      };
+
+      const result = AggregatedMetricMapper.toScalarAggregatedMetric(dbMetric);
+
+      expect(result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2024-01-15T10:00:00.000Z',
+      });
+    });
+
+    it('should handle undefined input with defaults', () => {
+      const result = AggregatedMetricMapper.toScalarAggregatedMetric();
+
+      expect(result).toEqual({
+        value: 0,
+        total: 0,
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
+        timestamp: expect.any(String),
+      });
+    });
+  });
+
   describe('toAggregationMetadata', () => {
     it('should map to AggregationMetadata when no aggregationConfig is provided', () => {
       const result = AggregatedMetricMapper.toAggregationMetadata(mockMetric);
@@ -107,13 +148,7 @@ describe('AggregatedMetricMapper', () => {
     });
 
     it('should map to AggregationMetadata when aggregationConfig is provided', () => {
-      const aggregationConfig: AggregationConfig = {
-        id: 'test.metric',
-        type: 'statusGrouped',
-        title: 'Test Metric',
-        description: 'Test description',
-        metricId: 'test.metric',
-      };
+      const aggregationConfig = mockStatusGroupedAggregationConfig();
       const result = AggregatedMetricMapper.toAggregationMetadata(
         mockMetric,
         aggregationConfig,
@@ -133,13 +168,11 @@ describe('AggregatedMetricMapper', () => {
     const thresholds: ThresholdConfig = DEFAULT_NUMBER_THRESHOLDS;
 
     it('should wrap a statusGrouped-shaped result and aggregation metadata from config', () => {
-      const aggregationConfig: AggregationConfig = {
+      const aggregationConfig = mockStatusGroupedAggregationConfig({
         id: 'kpi-1',
-        type: 'statusGrouped',
         title: 'KPI',
         description: 'KPI desc',
-        metricId: 'test.metric',
-      } as AggregationConfig;
+      });
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
         {
@@ -183,13 +216,11 @@ describe('AggregatedMetricMapper', () => {
     });
 
     it('should wrap a weightedStatusScore-shaped result and aggregationType from config', () => {
-      const aggregationConfig: AggregationConfig = {
+      const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
         id: 'avg.kpi',
-        type: aggregationTypes.weightedStatusScore,
         title: 'Weighted Status Score KPI',
         description: 'Weighted status score KPI',
-        metricId: 'test.metric',
-      } as AggregationConfig;
+      });
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
         {

@@ -19,6 +19,10 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  mockFallbackStatusGroupedAggregationConfig,
+  mockStatusGroupedAggregationConfig,
+} from '../../../../__fixtures__/mockAggregationConfig';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { StatusGroupedAggregationStrategy } from './StatusGroupedAggregationStrategy';
 import { AggregatedMetricMapper } from '../../mappers';
@@ -75,17 +79,16 @@ describe('StatusGroupedAggregationStrategy', () => {
       });
 
     const strategy = new StatusGroupedAggregationStrategy(loader);
-    const aggregationConfig = {
+    const aggregationConfig = mockStatusGroupedAggregationConfig({
       id: metric.id,
       metricId: metric.id,
-      type: aggregationTypes.statusGrouped,
-    } as const;
+    });
 
     await strategy.aggregate({
       metric,
       entityRefs: ['component:default/a'],
       thresholds,
-      aggregationConfig: aggregationConfig as any,
+      aggregationConfig,
     });
 
     expect(loadStatusGroupedMetricByEntityRefs).toHaveBeenCalledWith(
@@ -120,22 +123,14 @@ describe('StatusGroupedAggregationStrategy', () => {
       metric,
       entityRefs: [],
       thresholds,
-      aggregationConfig: {
+      aggregationConfig: mockFallbackStatusGroupedAggregationConfig({
         id: metric.id,
         metricId: metric.id,
-        type: aggregationTypes.statusGrouped,
-      } as any,
+      }),
     });
 
     expect(result.result.total).toBe(0);
     expect(result.result.entitiesConsidered).toBe(0);
     expect(result.result.calculationErrorCount).toBe(0);
-    expect(
-      result.result.values.map(v => ({ name: v.name, count: v.count })),
-    ).toEqual([
-      { name: 'error', count: 0 },
-      { name: 'warning', count: 0 },
-      { name: 'success', count: 0 },
-    ]);
   });
 });

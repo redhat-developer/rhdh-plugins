@@ -21,19 +21,30 @@ import {
   type WeightedStatusScoreAggregationResult,
   Metric,
   ThresholdConfig,
-  type AggregationConfig,
+  DEFAULT_NUMBER_THRESHOLDS,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../constants/aggregationKPIs';
 import { AggregationsService } from './AggregationService';
 import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
-import type { DbAggregatedMetric } from '../../database/types';
-import { AggregationOptions } from './types';
+import type {
+  DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+} from '../../database/types';
+import {
+  mockFallbackStatusGroupedAggregationConfig,
+  mockScalarAggregationConfig,
+  mockWeightedStatusScoreAggregationConfig,
+} from '../../../__fixtures__/mockAggregationConfig';
+import { isValidatedAggregationConfig } from './utils/aggregationRuntimeConfig';
 
-function createDatabaseMock(
-  readAggregatedMetricByEntityRefs: jest.Mock,
-): DatabaseMetricValues {
+function createDatabaseMock(options: {
+  readAggregatedMetricByEntityRefs?: jest.Mock;
+  readScalarAggregatedMetricByEntityRefs?: jest.Mock;
+}): DatabaseMetricValues {
   return {
-    readAggregatedMetricByEntityRefs,
+    readAggregatedMetricByEntityRefs:
+      options.readAggregatedMetricByEntityRefs ?? jest.fn(),
+    readScalarAggregatedMetricByEntityRefs:
+      options.readScalarAggregatedMetricByEntityRefs ?? jest.fn(),
   } as unknown as DatabaseMetricValues;
 }
 
@@ -53,121 +64,168 @@ describe('AggregationsService', () => {
     ],
   };
 
-  it('getAggregatedMetricByEntityRefs loads via DB and maps through statusGrouped strategy', async () => {
-    const dbRow: DbAggregatedMetric = {
-      metric_id: metric.id,
-      total: 3,
-      max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
-      statusCounts: { error: 1, warning: 1, success: 1 },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
-    };
-    const readAggregatedMetricByEntityRefs = jest.fn().mockResolvedValue(dbRow);
+  describe('getAggregatedMetricByEntityRefs', () => {
+    it('should load via DB and maps through statusGrouped strategy', async () => {
+      const dbRow: DbAggregatedMetric = {
+        metric_id: metric.id,
+        total: 3,
+        max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
+        statusCounts: { error: 1, warning: 1, success: 1 },
+        calculation_error_count: 1,
+        latest_entity_count: 1,
+      };
+      const readAggregatedMetricByEntityRefs = jest
+        .fn()
+        .mockResolvedValue(dbRow);
 
-    const service = new AggregationsService({
-      config: mockServices.rootConfig({ data: {} }),
-      database: createDatabaseMock(readAggregatedMetricByEntityRefs),
-      logger: mockServices.logger.mock(),
-    });
+      const service = new AggregationsService({
+        config: mockServices.rootConfig({ data: {} }),
+        database: createDatabaseMock({ readAggregatedMetricByEntityRefs }),
+        logger: mockServices.logger.mock(),
+      });
 
-    const result = await service.getAggregatedMetricByEntityRefs({
-      metric,
-      entityRefs: ['component:default/a'],
-      thresholds,
-      aggregationConfig: {
-        id: metric.id,
-        metricId: metric.id,
-        type: aggregationTypes.statusGrouped,
-      } as any,
-    });
-
-    expect(readAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
-      ['component:default/a'],
-      metric.id,
-    );
-    expect(result.id).toBe(metric.id);
-    expect(result.metadata?.aggregationType).toBe(
-      aggregationTypes.statusGrouped,
-    );
-  });
-
-  it('getAggregatedMetricByEntityRefs uses weightedStatusScore strategy when configured', async () => {
-    const dbRow: DbAggregatedMetric = {
-      metric_id: metric.id,
-      total: 3,
-      max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
-      statusCounts: { error: 1, warning: 1, success: 1 },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
-    };
-    const readAggregatedMetricByEntityRefs = jest.fn().mockResolvedValue(dbRow);
-
-    const service = new AggregationsService({
-      config: mockServices.rootConfig({ data: {} }),
-      database: createDatabaseMock(readAggregatedMetricByEntityRefs),
-      logger: mockServices.logger.mock(),
-    });
-
-    const result = await service.getAggregatedMetricByEntityRefs({
-      metric,
-      entityRefs: ['component:default/a'],
-      thresholds,
-      aggregationConfig: {
-        id: 'weightedKpi',
-        title: 'Weighted health KPI',
-        description: 'Weighted health score across statuses',
-        metricId: metric.id,
-        type: aggregationTypes.weightedStatusScore,
-        options: {
-          statusScores: { error: 0, warning: 50, success: 100 },
-          thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
-        },
-      } as AggregationConfig,
-    } as AggregationOptions);
-
-    expect(readAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
-      ['component:default/a'],
-      metric.id,
-    );
-
-    const aggregationResult =
-      result.result as WeightedStatusScoreAggregationResult;
-
-    expect(result.metadata?.aggregationType).toBe(
-      aggregationTypes.weightedStatusScore,
-    );
-    expect(aggregationResult.weightedStatusScore).toBe(50);
-    expect(aggregationResult.weightedStatusSum).toBe(150);
-    expect(aggregationResult.weightedStatusMaxPossible).toBe(300);
-  });
-
-  it('getAggregatedMetricByEntityRefs throws when aggregation type is not registered', async () => {
-    const service = new AggregationsService({
-      config: mockServices.rootConfig({ data: {} }),
-      database: createDatabaseMock(jest.fn()),
-      logger: mockServices.logger.mock(),
-    });
-
-    await expect(
-      service.getAggregatedMetricByEntityRefs({
+      const result = await service.getAggregatedMetricByEntityRefs({
         metric,
-        entityRefs: [],
+        entityRefs: ['component:default/a'],
         thresholds,
-        aggregationConfig: {
+        aggregationConfig: mockFallbackStatusGroupedAggregationConfig({
           id: metric.id,
           metricId: metric.id,
-          type: 'unknownStrategy' as any,
-        } as any,
-      }),
-    ).rejects.toThrow(/Unsupported aggregation type: unknownStrategy/);
+        }),
+      });
+
+      expect(readAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+        ['component:default/a'],
+        metric.id,
+      );
+      expect(result.id).toBe(metric.id);
+      expect(result.metadata?.aggregationType).toBe(
+        aggregationTypes.statusGrouped,
+      );
+    });
+
+    it('should use weightedStatusScore strategy when configured', async () => {
+      const dbRow: DbAggregatedMetric = {
+        metric_id: metric.id,
+        total: 3,
+        max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
+        statusCounts: { error: 1, warning: 1, success: 1 },
+        calculation_error_count: 1,
+        latest_entity_count: 1,
+      };
+      const readAggregatedMetricByEntityRefs = jest
+        .fn()
+        .mockResolvedValue(dbRow);
+
+      const service = new AggregationsService({
+        config: mockServices.rootConfig({ data: {} }),
+        database: createDatabaseMock({ readAggregatedMetricByEntityRefs }),
+        logger: mockServices.logger.mock(),
+      });
+
+      const result = await service.getAggregatedMetricByEntityRefs({
+        metric,
+        entityRefs: ['component:default/a'],
+        thresholds,
+        aggregationConfig: mockWeightedStatusScoreAggregationConfig({
+          metricId: metric.id,
+        }),
+      });
+
+      expect(readAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+        ['component:default/a'],
+        metric.id,
+      );
+
+      const aggregationResult =
+        result.result as WeightedStatusScoreAggregationResult;
+
+      expect(result.metadata?.aggregationType).toBe(
+        aggregationTypes.weightedStatusScore,
+      );
+      expect(aggregationResult.weightedStatusScore).toBe(50);
+      expect(aggregationResult.weightedStatusSum).toBe(150);
+      expect(aggregationResult.weightedStatusMaxPossible).toBe(300);
+    });
+
+    it('should use sum strategy when configured', async () => {
+      const dbRow: DbScalarAggregatedMetric = {
+        metric_id: metric.id,
+        value: 847,
+        total: 42,
+        latest_entity_count: 45,
+        calculation_error_count: 3,
+        max_timestamp: new Date('2025-01-01T10:00:00.000Z'),
+      };
+      const readScalarAggregatedMetricByEntityRefs = jest
+        .fn()
+        .mockResolvedValue(dbRow);
+
+      const service = new AggregationsService({
+        config: mockServices.rootConfig({ data: {} }),
+        database: createDatabaseMock({
+          readScalarAggregatedMetricByEntityRefs,
+        }),
+        logger: mockServices.logger.mock(),
+      });
+
+      const result = await service.getAggregatedMetricByEntityRefs({
+        metric,
+        entityRefs: ['component:default/a'],
+        thresholds,
+        aggregationConfig: mockScalarAggregationConfig(aggregationTypes.sum, {
+          id: 'totalOpenPrs',
+          title: 'Total Open PRs',
+          description: 'Sum of open PRs',
+          metricId: metric.id,
+          options: undefined,
+        }),
+      });
+
+      expect(readScalarAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+        ['component:default/a'],
+        metric.id,
+        'sum',
+      );
+      expect(result.metadata?.aggregationType).toBe(aggregationTypes.sum);
+      expect(result.result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2025-01-01T10:00:00.000Z',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      });
+    });
+
+    it('should throw when aggregation type is not registered', async () => {
+      const service = new AggregationsService({
+        config: mockServices.rootConfig({ data: {} }),
+        database: createDatabaseMock({}),
+        logger: mockServices.logger.mock(),
+      });
+
+      await expect(
+        service.getAggregatedMetricByEntityRefs({
+          metric,
+          entityRefs: [],
+          thresholds,
+          aggregationConfig: {
+            id: metric.id,
+            metricId: metric.id,
+            type: 'unknownStrategy' as any,
+          } as any,
+        }),
+      ).rejects.toThrow(/Unsupported aggregation type: unknownStrategy/);
+    });
   });
 
   describe('getAggregationConfig', () => {
-    it('defaults to statusGrouped with metricId equal to aggregation id when KPI config is absent', () => {
+    it('should default to statusGrouped with metricId equal to aggregation id when KPI config is absent', () => {
       const logger = mockServices.logger.mock();
       const service = new AggregationsService({
         config: mockServices.rootConfig({ data: {} }),
-        database: createDatabaseMock(jest.fn()),
+        database: createDatabaseMock({}),
         logger,
       });
 
@@ -181,7 +239,7 @@ describe('AggregationsService', () => {
       );
     });
 
-    it('uses scorecard.aggregationKPIs when present', () => {
+    it('should use scorecard.aggregationKPIs when present', () => {
       const config = new ConfigReader({
         scorecard: {
           aggregationKPIs: {
@@ -200,7 +258,7 @@ describe('AggregationsService', () => {
 
       const service = new AggregationsService({
         config,
-        database: createDatabaseMock(jest.fn()),
+        database: createDatabaseMock({}),
         logger: mockServices.logger.mock(),
       });
 
@@ -208,7 +266,8 @@ describe('AggregationsService', () => {
 
       expect(cfg.metricId).toBe('github.open_prs');
       expect(cfg.type).toBe(aggregationTypes.weightedStatusScore);
-      expect(cfg.title).toBe('KPI title');
+      expect(isValidatedAggregationConfig(cfg)).toBe(true);
+      expect((cfg as any).title).toBe('KPI title');
     });
   });
 });

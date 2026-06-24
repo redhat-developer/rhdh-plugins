@@ -166,6 +166,20 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 
 **Further reading:** [Entity Aggregation](./aggregation.md) (`weightedStatusScore` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
 
+### 5. Aggregation KPI result thresholds (scalar types)
+
+These thresholds are **not** per-entity metric rules. They apply to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**.
+
+**Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
+
+**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
+
+**Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ValueAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**.
+
+**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Scalar KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions when multiple rules apply (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+
+**Further reading:** [Entity Aggregation](./aggregation.md) (scalar types, API response shape); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (scalar **`aggregationKPIs`** examples).
+
 ## Threshold Priority Order
 
 Thresholds are applied with the following priority (highest to lowest):
@@ -429,6 +443,6 @@ rules:
 
 ## Related documentation
 
-- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`** vs **`weightedStatusScore`**
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, and scalar types
 - [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
 - [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

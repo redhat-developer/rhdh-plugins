@@ -94,4 +94,73 @@ describe('buildAggregationConfig', () => {
       { key: 'error', expression: '<10', color: 'error.main' },
     ]);
   });
+
+  it('should map optional thresholds for scalar KPIs', () => {
+    const config = new ConfigReader({
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+      options: {
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '>=80', color: 'success.main' },
+          ],
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('totalOpenPrsKpi', { config });
+
+    expect(result.options?.thresholds?.rules).toEqual([
+      { key: 'success', expression: '>=80', color: 'success.main' },
+    ]);
+  });
+
+  it('should not map options for statusGrouped KPIs even when thresholds are configured', () => {
+    const config = new ConfigReader({
+      title: 'Status breakdown',
+      description: 'Counts by status',
+      type: aggregationTypes.statusGrouped,
+      metricId: 'github.open_prs',
+      options: {
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '>=80', color: 'success.main' },
+          ],
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('statusKpi', { config });
+
+    expect(result).toEqual({
+      id: 'statusKpi',
+      title: 'Status breakdown',
+      description: 'Counts by status',
+      type: aggregationTypes.statusGrouped,
+      metricId: 'github.open_prs',
+    });
+    expect(result.options).toBeUndefined();
+  });
+
+  it('should map scalar KPI config without options', () => {
+    const config = new ConfigReader({
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+    });
+
+    const result = buildAggregationConfig('totalOpenPrsKpi', { config });
+
+    expect(result).toEqual({
+      id: 'totalOpenPrsKpi',
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+    });
+    expect(result.options).toBeUndefined();
+  });
 });

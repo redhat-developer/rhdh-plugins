@@ -6,7 +6,7 @@ The plugin supports both the **legacy** Backstage frontend and the **New Fronten
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**.
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). The built-in card renders **`statusGrouped`** (multi-slice pie), **`weightedStatusScore`** (weighted health donut), and scalar types (`sum`, `average`, `max`, `min`, `count`).
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
 
 ## Getting started
