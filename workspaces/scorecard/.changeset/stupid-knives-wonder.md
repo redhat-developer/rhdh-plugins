@@ -1,12 +1,10 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend': minor
-'@red-hat-developer-hub/backstage-plugin-scorecard-common': minor
-'@red-hat-developer-hub/backstage-plugin-scorecard': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend': major
+'@red-hat-developer-hub/backstage-plugin-scorecard-common': major
+'@red-hat-developer-hub/backstage-plugin-scorecard': major
 ---
 
-Rename aggregation KPI type `average` to `weightedStatusScore`.
-
-**Breaking changes**
+**BREAKING**: Rename aggregation KPI type `average` to `weightedStatusScore`.
 
 ### App config
 
