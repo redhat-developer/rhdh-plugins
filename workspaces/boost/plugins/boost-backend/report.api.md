@@ -5,6 +5,7 @@
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
 import type { ConversationDetails } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -88,6 +89,26 @@ export function authorizeLifecycleAction(
 export interface AuthorizeLifecycleActionOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
+}
+
+// @public
+export class BackendApprovalStore {
+  constructor(options: BackendApprovalStoreOptions);
+  approve(
+    requestId: string,
+    resolvedArgs?: string,
+  ): Promise<ApprovalRequest | undefined>;
+  create(request: ApprovalRequest): Promise<void>;
+  delete(requestId: string): Promise<void>;
+  get(requestId: string): Promise<ApprovalRequest | undefined>;
+  reject(requestId: string): Promise<ApprovalRequest | undefined>;
+  static readonly TTL_MS: number;
+}
+
+// @public
+export interface BackendApprovalStoreOptions {
+  cache: CacheService;
+  logger: LoggerService;
 }
 
 // @public

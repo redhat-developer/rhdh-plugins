@@ -233,6 +233,43 @@ export interface NormalizedStreamApprovalEvent {
 }
 
 /**
+ * The status of an approval request.
+ *
+ * @public
+ */
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+/**
+ * A tool call approval request for human-in-the-loop flows.
+ *
+ * @public
+ */
+export interface ApprovalRequest {
+  /** Unique identifier for the approval request. */
+  requestId: string;
+  /** The conversation this approval belongs to. */
+  conversationId: string;
+  /** The tool call identifier from the inference loop. */
+  toolCallId: string;
+  /** The name of the tool being called. */
+  toolName: string;
+  /** JSON-serialized arguments proposed by the agent. */
+  args: string;
+  /** Current status of the approval request. */
+  status: ApprovalStatus;
+  /** Identity of the user who will review the request (userEntityRef). */
+  userRef: string;
+  /** ISO 8601 timestamp of when the request was created. */
+  createdAt: string;
+  /** ISO 8601 timestamp of when the request was resolved (if resolved). */
+  resolvedAt?: string;
+  /** The approved arguments (may differ from original if edited). */
+  resolvedArgs?: string;
+  /** Optional message describing what needs approval. */
+  message?: string;
+}
+
+/**
  * A structured form/input request in a streaming response.
  *
  * @public

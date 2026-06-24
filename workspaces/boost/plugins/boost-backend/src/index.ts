@@ -74,6 +74,10 @@ export {
   type McpServerRoutesOptions,
 } from './mcp';
 export {
+  BackendApprovalStore,
+  type BackendApprovalStoreOptions,
+} from './approval';
+export {
   createChatRoutes,
   ConversationAgentCache,
   ConversationRegistry,
