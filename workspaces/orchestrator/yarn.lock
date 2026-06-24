@@ -1034,6 +1034,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axe-core/playwright@npm:^4.10.0":
+  version: 4.11.3
+  resolution: "@axe-core/playwright@npm:4.11.3"
+  dependencies:
+    axe-core: "npm:~4.11.4"
+  peerDependencies:
+    playwright-core: ">= 1.0.0"
+  checksum: 10c0/da1854726dbc461a71ac25e0435f5dd9b7d143dc9142f53b1aeb4a8d7edcb4533eddb59949e8a07c4f4e3dce85ae43b7f249b3801e8b255f605fc974b94616fe
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^2.0.0, @azure/abort-controller@npm:^2.1.2":
   version: 2.1.2
   resolution: "@azure/abort-controller@npm:2.1.2"
@@ -7937,6 +7948,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
+    "@playwright/test": "npm:1.60.0"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
     enquirer: "npm:^2.4.1"
@@ -17387,6 +17399,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app-legacy@workspace:packages/app-legacy"
   dependencies:
+    "@axe-core/playwright": "npm:^4.10.0"
     "@backstage-community/plugin-rbac": "npm:^1.33.2"
     "@backstage/app-defaults": "npm:^1.7.9"
     "@backstage/catalog-model": "npm:^1.9.0"
@@ -17457,20 +17470,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
-    "@backstage/cli": "npm:^0.36.3"
-    "@backstage/core-compat-api": "npm:^0.5.12"
-    "@backstage/core-components": "npm:^0.18.11"
-    "@backstage/core-plugin-api": "npm:^1.12.7"
-    "@backstage/frontend-defaults": "npm:^0.5.3"
-    "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/integration-react": "npm:^1.2.19"
-    "@backstage/plugin-app-react": "npm:^0.2.4"
-    "@backstage/plugin-catalog": "npm:^2.0.6"
-    "@backstage/plugin-user-settings": "npm:^0.9.4"
+    "@axe-core/playwright": "npm:^4.10.0"
+    "@backstage/cli": "npm:^0.36.2"
+    "@backstage/core-compat-api": "npm:^0.5.11"
+    "@backstage/core-components": "npm:^0.18.10"
+    "@backstage/core-plugin-api": "npm:^1.12.6"
+    "@backstage/frontend-defaults": "npm:^0.5.2"
+    "@backstage/frontend-plugin-api": "npm:^0.17.1"
+    "@backstage/integration-react": "npm:^1.2.18"
+    "@backstage/plugin-app-react": "npm:^0.2.3"
+    "@backstage/plugin-catalog": "npm:^2.0.5"
+    "@backstage/plugin-user-settings": "npm:^0.9.3"
     "@backstage/test-utils": "npm:^1.7.19"
-    "@backstage/ui": "npm:^0.16.0"
+    "@backstage/ui": "npm:^0.15.0"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
@@ -17978,10 +17993,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0":
-  version: 4.10.1
-  resolution: "axe-core@npm:4.10.1"
-  checksum: 10c0/53d865efb7284fd69bc95ced1a1709fd603ea07f06e272da06942e7cfeca1c823e09bde28f57178e3a1a4c9a089fe4b5d274c871e3e6522a3b1bffec8eaa7dd8
+"axe-core@npm:^4.10.0, axe-core@npm:~4.11.4":
+  version: 4.11.4
+  resolution: "axe-core@npm:4.11.4"
+  checksum: 10c0/c4aa83fc3eac5f7a0d0cb1a28f9d073acf0c06ce8daacc38608faa278c57ce084c028c850746b98817ae4c101c30c1a32e95ea34748c4b4c7419b9b81221ef84
   languageName: node
   linkType: hard
 
