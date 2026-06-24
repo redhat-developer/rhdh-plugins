@@ -43,7 +43,7 @@ host_files:
 
 skills:
   - skills/code-implementation
-  - skills/monorepo-workspace-routing
+  - skills/rhdh-workspace
 
 plugins:
   - plugins/gopls-lsp
@@ -58,4 +58,4 @@ runner_env:
   REPO_DIR: "${GITHUB_WORKSPACE}/target-repo"
   TARGET_BRANCH: "${TARGET_BRANCH}"
 
-timeout_minutes: 35
+timeout_minutes: 45

@@ -1,12 +1,12 @@
 ---
-name: monorepo-workspace-routing
+name: rhdh-workspace
 description: >-
-  Navigate to the correct workspace in a monorepo before starting work.
-  Identifies the target workspace from issue/PR context and changes directory
-  so that CWD-bound tools (openspec, backstage-cli) work correctly.
+  Navigate to the correct workspace in the rhdh-plugins monorepo, install
+  dependencies, and scope all commands (test, build, lint) to the target
+  workspace. Prevents workspace-wide operations that exceed sandbox timeouts.
 ---
 
-# Monorepo Workspace Routing
+# RHDH Workspace
 
 This repository is a monorepo. Independent Backstage plugin workspaces live
 under `workspaces/<name>/`. Each workspace has its own `package.json`,
@@ -87,9 +87,33 @@ If any of these commands modify files, the changes MUST be included in your
 commit. These are not optional — CI will reject the PR if these artifacts
 are out of sync.
 
+## Test scoping
+
+Run tests ONLY for the affected package, from within the package directory:
+
+```bash
+cd plugins/<plugin-name>/
+yarn test
+```
+
+Or equivalently from the workspace root:
+
+```bash
+yarn backstage-cli package test --filter <package-name>
+```
+
+**NEVER run workspace-wide or monorepo-wide test sweeps.** Commands like
+`yarn backstage-cli package test` without a filter, or `yarn test` from the
+workspace root, execute tests for every package in the workspace. This exceeds
+the sandbox timeout and will kill your run — losing all uncommitted work.
 ## Rules
 
 - ALL build, test, lint, and validation commands must run from the workspace root
+  or the specific package directory — never from the monorepo root
 - Do not run `yarn install` from the monorepo root for workspace-specific work
 - Do not mix changes across multiple workspaces in a single commit
 - Each workspace is independent — do not assume shared dependencies
+- After a test/build/lint failure, read the full error output and fix the code
+  before retrying. Never retry the same command without changing code first
+- After 2 consecutive test failures, re-read every file you edited and diff your
+  changes against the original before running tests again
