@@ -333,6 +333,6 @@ ChatInput → BoostApiClient → POST /chat/stream
 
 ## Customer Context
 
-Derived from the Citi engagement. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
+Derived from early enterprise engagement experience. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
 
-Citi runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.
+The customer runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.

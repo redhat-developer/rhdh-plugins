@@ -321,11 +321,11 @@ Cross-Cutting Protections (all modes)
 
 ## Customer Context
 
-Derived from the Citi engagement. Architecture principle: "Enterprise-first trust model. Human-in-the-loop approval, RBAC, audit trails, safety shields, and zero data retention are foundational, not optional."
+Derived from early enterprise engagement experience. Architecture principle: "Enterprise-first trust model. Human-in-the-loop approval, RBAC, audit trails, safety shields, and zero data retention are foundational, not optional."
 
-Citi's regulatory and compliance requirements for AI tooling include audit trails, access controls, data residency, and separation of duties. The security model is designed to meet these requirements while supporting progressive enforcement from development through production.
+Enterprise regulatory and compliance requirements for AI tooling include audit trails, access controls, data residency, and separation of duties. The security model is designed to meet these requirements while supporting progressive enforcement from development through production.
 
-The fine-grained permission model and agent lifecycle governance address specific Citi requirements: no single individual should be able to both create and publish an agent to production users (separation of duties), and all governance decisions should be visible to Backstage RBAC policy configuration (no shadow authorization systems).
+The fine-grained permission model and agent lifecycle governance address specific enterprise requirements: no single individual should be able to both create and publish an agent to production users (separation of duties), and all governance decisions should be visible to Backstage RBAC policy configuration (no shadow authorization systems).
 
 Success outcomes addressed:
 

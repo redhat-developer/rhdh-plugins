@@ -248,6 +248,57 @@ export type InputItem =
 export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';
 
 // @public
+export type McpAuthType =
+  | 'oauth-client-credentials'
+  | 'k8s-service-account'
+  | 'static-headers'
+  | 'infrastructure-mtls'
+  | 'none';
+
+// @public
+export interface McpServerRecord {
+  authType: McpAuthType;
+  createdAt: string;
+  description?: string;
+  id: string;
+  name: string;
+  transport: McpTransport;
+  updatedAt: string;
+  url: string;
+}
+
+// @public
+export type McpTransport = 'streamable-http' | 'sse';
+
+// @public
+export interface NormalizedStreamApprovalEvent {
+  message?: string;
+  requestId: string;
+  type: 'approval';
+}
+
+// @public
+export interface NormalizedStreamArtifactEvent {
+  artifactId: string;
+  content: string;
+  mimeType?: string;
+  type: 'artifact';
+}
+
+// @public
+export interface NormalizedStreamAuthEvent {
+  message?: string;
+  type: 'auth';
+}
+
+// @public
+export interface NormalizedStreamCitationEvent {
+  title?: string;
+  type: 'citation';
+  url?: string;
+}
+
+// @public
 export interface NormalizedStreamDoneEvent {
   type: 'done';
 }
@@ -262,10 +313,44 @@ export interface NormalizedStreamErrorEvent {
 // @public
 export type NormalizedStreamEvent =
   | NormalizedStreamTextEvent
+  | NormalizedStreamReasoningEvent
   | NormalizedStreamToolCallEvent
   | NormalizedStreamToolResultEvent
+  | NormalizedStreamRagResultEvent
+  | NormalizedStreamHandoffEvent
+  | NormalizedStreamApprovalEvent
+  | NormalizedStreamFormEvent
+  | NormalizedStreamAuthEvent
+  | NormalizedStreamArtifactEvent
+  | NormalizedStreamCitationEvent
   | NormalizedStreamErrorEvent
   | NormalizedStreamDoneEvent;
+
+// @public
+export interface NormalizedStreamFormEvent {
+  formId: string;
+  type: 'form';
+}
+
+// @public
+export interface NormalizedStreamHandoffEvent {
+  sourceAgent: string;
+  targetAgent: string;
+  type: 'handoff';
+}
+
+// @public
+export interface NormalizedStreamRagResultEvent {
+  content: string;
+  source?: string;
+  type: 'rag_result';
+}
+
+// @public
+export interface NormalizedStreamReasoningEvent {
+  text: string;
+  type: 'reasoning';
+}
 
 // @public
 export interface NormalizedStreamTextEvent {
@@ -302,5 +387,17 @@ export interface ProviderDescriptor {
   description?: string;
   id: string;
   name: string;
+}
+
+// @public
+export interface ToolRecord {
+  createdAt: string;
+  createdBy: string;
+  description?: string;
+  governanceRegistered: boolean;
+  id: string;
+  lifecycleStage: LifecycleStage;
+  name: string;
+  updatedAt: string;
 }
 ```
