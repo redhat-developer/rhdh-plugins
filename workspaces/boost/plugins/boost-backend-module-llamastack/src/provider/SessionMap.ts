@@ -76,7 +76,15 @@ export class SessionMap {
     const key = `${SessionMap.KEY_PREFIX}${conversationId}`;
     const cached = await this.cache.get(key);
     if (typeof cached === 'string') {
-      return JSON.parse(cached) as SessionData;
+      try {
+        return JSON.parse(cached) as SessionData;
+      } catch {
+        this.logger.warn(
+          `Corrupted cache entry for conversation "${conversationId}", deleting`,
+        );
+        await this.cache.delete(key);
+        return undefined;
+      }
     }
     return undefined;
   }

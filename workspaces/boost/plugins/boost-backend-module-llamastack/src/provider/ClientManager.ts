@@ -61,7 +61,13 @@ export class ClientManager {
     const key = `${ClientManager.KEY_PREFIX}${userRef}`;
     const cached = await this.cache.get(key);
     if (typeof cached === 'string') {
-      return JSON.parse(cached) as ClientState;
+      try {
+        return JSON.parse(cached) as ClientState;
+      } catch {
+        this.logger.warn(`Corrupted cache entry for "${userRef}", deleting`);
+        await this.cache.delete(key);
+        return undefined;
+      }
     }
     return undefined;
   }

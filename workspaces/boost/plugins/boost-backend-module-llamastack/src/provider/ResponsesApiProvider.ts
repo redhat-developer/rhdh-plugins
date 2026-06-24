@@ -92,9 +92,7 @@ export class ResponsesApiProvider implements AgenticProvider {
       this.logger.error(
         `Responses API error: ${response.status} ${response.statusText} — ${errorText}`,
       );
-      throw new Error(
-        `Llama Stack Responses API returned ${response.status}: ${errorText}`,
-      );
+      throw new Error(`Llama Stack Responses API returned ${response.status}`);
     }
 
     const result = (await response.json()) as ResponsesApiResponse;
@@ -128,7 +126,7 @@ export class ResponsesApiProvider implements AgenticProvider {
       );
       yield {
         type: 'error',
-        message: `Llama Stack Responses API returned ${response.status}: ${errorText}`,
+        message: `Llama Stack Responses API returned ${response.status}`,
       };
       return;
     }

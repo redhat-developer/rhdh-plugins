@@ -59,9 +59,15 @@ export class ModelListCache {
   async get(): Promise<LlamaStackModel[] | undefined> {
     const cached = await this.cache.get(CACHE_KEY);
     if (typeof cached === 'string') {
-      const models = JSON.parse(cached) as LlamaStackModel[];
-      this.logger.debug(`Model list cache hit (${models.length} models)`);
-      return models;
+      try {
+        const models = JSON.parse(cached) as LlamaStackModel[];
+        this.logger.debug(`Model list cache hit (${models.length} models)`);
+        return models;
+      } catch {
+        this.logger.warn('Corrupted model list cache entry, deleting');
+        await this.cache.delete(CACHE_KEY);
+        return undefined;
+      }
     }
     return undefined;
   }
