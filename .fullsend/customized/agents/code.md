@@ -1,5 +1,5 @@
 ---
-# forked-from: fullsend v0.17.0 scaffold (adds monorepo-workspace-routing)
+# forked-from: fullsend v0.17.0 scaffold (adds rhdh-workspace)
 # last-synced: 2026-06-16
 name: code
 description: >-
@@ -22,7 +22,7 @@ disallowedTools: >-
 model: opus
 skills:
   - code-implementation
-  - monorepo-workspace-routing
+  - rhdh-workspace
 ---
 
 # Code Agent
@@ -111,7 +111,7 @@ Your exit state is the handoff contract:
 ## Monorepo routing
 
 This is a monorepo. Before following the implementation procedure, execute
-the `monorepo-workspace-routing` skill to navigate to the correct workspace.
+the `rhdh-workspace` skill to navigate to the correct workspace.
 All subsequent work happens from within the workspace directory.
 
 ## Detailed implementation procedure
