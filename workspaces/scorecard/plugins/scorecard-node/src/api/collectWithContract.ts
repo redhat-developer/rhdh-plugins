@@ -61,9 +61,7 @@ export const collectWithContract = async <
     );
   }
 
-  const collectorInput = collector
-    .getInputSchema()
-    .safeParse(contractInput.data);
+  const collectorInput = collector.getInputSchema().safeParse(options.input);
   if (!collectorInput.success) {
     throw new Error(
       `Input does not satisfy collector "${
