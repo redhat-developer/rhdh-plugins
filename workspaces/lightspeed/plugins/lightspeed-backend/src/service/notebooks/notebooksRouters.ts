@@ -518,7 +518,7 @@ export async function createNotebooksRouter(
               : HTTP_STATUS_INTERNAL_ERROR;
           res.status(statusCode).json({
             status: 'error',
-            error: `Error from Llama Stack server: ${errorMsg}`,
+            error: `Error from Lightspeed Core: ${errorMsg}`,
           });
           return;
         }
