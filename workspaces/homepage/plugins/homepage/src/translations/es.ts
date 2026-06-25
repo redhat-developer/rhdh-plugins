@@ -30,6 +30,8 @@ const homepageTranslationEs = createTranslationMessages({
     'homePage.empty':
       'No se configuraron o encontraron tarjetas de página de inicio (puntos de montaje).',
     'search.placeholder': 'Buscar',
+    'search.title': 'Buscar',
+    'search.clearButton': 'Borrar',
     'quickAccess.title': 'Acceso rápido',
     'quickAccess.fetchError': 'No se pudieron obtener los datos.',
     'quickAccess.error': 'Error desconocido',
@@ -37,7 +39,13 @@ const homepageTranslationEs = createTranslationMessages({
     'featuredDocs.learnMore': ' Saber más',
     'starredEntities.title': 'Entidades del catálogo marcadas',
     'recentlyVisited.title': 'Visitados recientemente',
+    'recentlyVisited.description':
+      'Acceso rápido a entidades y páginas visitadas recientemente',
     'topVisited.title': 'Más visitados',
+    'topVisited.description':
+      'Tus entidades y servicios a los que accedes con más frecuencia',
+    'randomJoke.title': 'Chiste aleatorio',
+    'randomJoke.description': 'Muestra un chiste de programación aleatorio',
     'templates.title': 'Explorar plantillas',
     'templates.fetchError': 'No se pudieron obtener los datos.',
     'templates.error': 'Error desconocido',
@@ -46,6 +54,7 @@ const homepageTranslationEs = createTranslationMessages({
       'Una vez que se agreguen plantillas, este espacio mostrará contenido relevante adaptado a tu experiencia.',
     'templates.register': 'Registrar una plantilla',
     'templates.viewAll': 'Ver todas las {{count}} plantillas',
+    'onboarding.title': 'Red Hat Developer Hub - Onboarding',
     'onboarding.greeting.goodMorning': 'Buenos días',
     'onboarding.greeting.goodAfternoon': 'Buenas tardes',
     'onboarding.greeting.goodEvening': 'Buenas noches',

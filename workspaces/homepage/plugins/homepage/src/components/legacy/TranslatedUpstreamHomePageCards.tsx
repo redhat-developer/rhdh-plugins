@@ -15,6 +15,7 @@
  */
 
 import {
+  HomePageRandomJoke,
   HomePageRecentlyVisited,
   HomePageStarredEntities,
   HomePageTopVisited,
@@ -60,4 +61,16 @@ export const TopVisitedCard = (props: TopVisitedCardProps) => {
   const { titleKey: _titleKey, title: _title, ...cardProps } = props;
   const title = useHomePageCardTitle('topVisited.title', props);
   return <HomePageTopVisited {...cardProps} title={title} />;
+};
+
+/** @public */
+export type JokeCardProps = TranslatableCardTitleProps & {
+  defaultCategory?: 'any' | 'programming';
+};
+
+/** @public */
+export const JokeCard = (props: JokeCardProps) => {
+  const { titleKey: _titleKey, title: _title, ...cardProps } = props;
+  const title = useHomePageCardTitle('randomJoke.title', props);
+  return <HomePageRandomJoke {...cardProps} title={title} />;
 };

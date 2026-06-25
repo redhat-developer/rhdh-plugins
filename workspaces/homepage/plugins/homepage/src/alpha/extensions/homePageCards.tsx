@@ -17,6 +17,7 @@
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
+import { InfoCard } from '@backstage/core-components';
 import { homepageMessages } from '../../translations/ref';
 import { createTranslatedCardRenderer } from '../../utils/translatedCardRenderer';
 
@@ -34,6 +35,28 @@ const defaultCardLayout = {
 } as const;
 
 /**
+ * Renders widget content without an InfoCard shell (used by Search).
+ * @alpha
+ */
+const headlessCardRenderer = ({ Content }: { Content: React.ComponentType }) =>
+  compatWrapper(<Content />);
+
+/**
+ * Renders widget content inside an InfoCard without a title header.
+ * @alpha
+ */
+const untitledInfoCardRenderer = ({
+  Content,
+}: {
+  Content: React.ComponentType;
+}) =>
+  compatWrapper(
+    <InfoCard divider={false}>
+      <Content />
+    </InfoCard>,
+  );
+
+/**
  * NFS widget: OnboardingSection (migrated from mountPoint home.page/cards).
  * @alpha
  */
@@ -41,11 +64,13 @@ export const onboardingSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-onboarding-section',
   params: {
     name: 'Red Hat Developer Hub - Onboarding',
+    title: homepageMessages.onboarding.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/OnboardingSection/OnboardingSection').then(
         m => ({
           Content: m.OnboardingSectionContent,
+          Renderer: untitledInfoCardRenderer,
         }),
       ),
   },
@@ -115,6 +140,7 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
   name: 'search-bar',
   params: {
     name: 'Search',
+    title: homepageMessages.search.title,
     layout: {
       ...defaultCardLayout,
       height: {
@@ -127,8 +153,7 @@ export const searchBarWidget = HomePageWidgetBlueprint.make({
     components: () =>
       import('../../components/SearchBar').then(m => ({
         Content: m.SearchBar,
-        Renderer: ({ Content }: { Content: React.ComponentType }) =>
-          compatWrapper(<Content />),
+        Renderer: headlessCardRenderer,
       })),
   },
 });
@@ -201,6 +226,7 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
     layout: defaultCardLayout,
     name: 'Recently visited',
     title: homepageMessages.recentlyVisited.title,
+    description: homepageMessages.recentlyVisited.description,
     components: () =>
       import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
         m => ({
@@ -221,6 +247,7 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
     layout: defaultCardLayout,
     name: 'Top visited',
     title: homepageMessages.topVisited.title,
+    description: homepageMessages.topVisited.description,
     components: () =>
       import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
         m => ({
@@ -230,3 +257,24 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
       ),
   },
 });
+
+/**
+ * NFS widget: RandomJoke (overrides upstream home plugin widget).
+ * @alpha
+ */
+export const randomJokeWidget = homePlugin
+  .getExtension('home-page-widget:home/random-joke')
+  .override({
+    params: {
+      name: 'HomePageRandomJoke',
+      title: homepageMessages.randomJoke.title,
+      description: homepageMessages.randomJoke.description,
+      components: () =>
+        import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+          m => ({
+            Content: m.JokeCard,
+            Renderer: upstreamHomeCardRenderer,
+          }),
+        ),
+    },
+  });

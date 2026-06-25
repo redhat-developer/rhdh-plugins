@@ -74,13 +74,11 @@ import {
   TemplateSection,
   SearchBar,
   Headline,
-  // Markdown,
-  // MarkdownCard,
-  // Placeholder,
   CatalogStarredEntitiesCard,
   RecentlyVisitedCard,
   TopVisitedCard,
   FeaturedDocsCard,
+  JokeCard,
   WorldClock,
   HomePageCardMountPoint,
 } from '@red-hat-developer-hub/backstage-plugin-homepage';
@@ -344,6 +342,14 @@ const cardMountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'featured-docs-card',
       titleKey: 'featuredDocs.title',
+    },
+  },
+  {
+    Component: JokeCard as ComponentType,
+    config: {
+      id: 'joke-card',
+      titleKey: 'randomJoke.title',
+      descriptionKey: 'randomJoke.description',
     },
   },
   {

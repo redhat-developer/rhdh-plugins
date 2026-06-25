@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-
 import { HomePageCardMountPoint } from '../types';
-import { homepageTranslationRef } from '../translations';
-import { getTranslatedTextWithFallback } from '../translations/utils';
+import {
+  getTranslatedTextWithFallback,
+  type HomepageTranslateFn,
+} from '../translations/utils';
 
 /**
  * Util function that decides if a `home.page/card` mount point will be rendered
@@ -48,7 +48,7 @@ function getComponentDisplayName(
 }
 
 export function getCardTitle(
-  t: TranslationFunction<typeof homepageTranslationRef.T>,
+  t: HomepageTranslateFn,
   cardMountPoint: HomePageCardMountPoint,
 ): string | undefined {
   return (
@@ -61,7 +61,7 @@ export function getCardTitle(
 }
 
 export function getCardDescription(
-  t: TranslationFunction<typeof homepageTranslationRef.T>,
+  t: HomepageTranslateFn,
   cardMountPoint: HomePageCardMountPoint,
 ): string | undefined {
   const title = getCardTitle(t, cardMountPoint);

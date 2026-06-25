@@ -29,6 +29,8 @@ const homepageTranslationIt = createTranslationMessages({
     'header.local': 'Locale',
     'homePage.empty': 'Nessuna scheda home page configurata o trovata.',
     'search.placeholder': 'Ricerca',
+    'search.title': 'Ricerca',
+    'search.clearButton': 'Cancella',
     'quickAccess.title': 'Accesso rapido',
     'quickAccess.fetchError': 'Impossibile recuperare i dati.',
     'quickAccess.error': 'Errore sconosciuto',
@@ -36,7 +38,14 @@ const homepageTranslationIt = createTranslationMessages({
     'featuredDocs.learnMore': ' Per saperne di più',
     'starredEntities.title': 'Entità del catalogo preferite',
     'recentlyVisited.title': 'Visitati di recente',
+    'recentlyVisited.description':
+      'Accesso rapido alle entità e alle pagine visualizzate di recente',
     'topVisited.title': 'I più visitati',
+    'topVisited.description':
+      'Le entità e i servizi a cui accedi più frequentemente',
+    'randomJoke.title': 'Barzelletta casuale',
+    'randomJoke.description':
+      'Mostra una barzelletta di programmazione casuale',
     'templates.title': 'Esplora i modelli',
     'templates.fetchError': 'Impossibile recuperare i dati.',
     'templates.error': 'Errore sconosciuto',
@@ -45,6 +54,7 @@ const homepageTranslationIt = createTranslationMessages({
       "Una volta aggiunti i modelli, in quest'area verranno visualizzati contenuti pertinenti e personalizzati in base all'esperienza dell'utente.",
     'templates.register': 'Registra un modello',
     'templates.viewAll': 'Visualizza tutti i {{count}} modelli',
+    'onboarding.title': 'Red Hat Developer Hub - Onboarding',
     'onboarding.greeting.goodMorning': 'Buon giorno',
     'onboarding.greeting.goodAfternoon': 'Buon pomeriggio',
     'onboarding.greeting.goodEvening': 'Buona sera',

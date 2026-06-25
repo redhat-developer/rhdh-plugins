@@ -32,6 +32,8 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import { cardWrapperSx } from '../../styles/cardWrapperSx';
 import { HomePageCardConfig } from '../../types';
 import { useContainerQuery } from '../../hooks/useContainerQuery';
+import { useTranslation } from '../../hooks/useTranslation';
+import { translateHomepageWidget } from '../../utils/translateHomepageWidgets';
 
 import 'react-grid-layout/css/styles.css';
 import { isCardADefaultConfiguration } from '../utils';
@@ -53,13 +55,19 @@ export const CustomizableGridLayout = ({
   homepageCards,
 }: CustomizableGridLayoutProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const gridContainerRef = useRef<HTMLDivElement>(null);
   useContainerQuery(gridContainerRef, { notifyWindowResize: true });
+
+  const translatedHomepageCards = useMemo(
+    () => homepageCards.map(card => translateHomepageWidget(card, t)),
+    [homepageCards, t],
+  );
 
   const config = useMemo(() => {
     const defaultConfig: LayoutConfiguration[] = [];
 
-    homepageCards.forEach(homepageCard => {
+    translatedHomepageCards.forEach(homepageCard => {
       if (!homepageCard.node) {
         return;
       }
@@ -81,7 +89,7 @@ export const CustomizableGridLayout = ({
     });
 
     return defaultConfig;
-  }, [homepageCards]);
+  }, [translatedHomepageCards]);
 
   return (
     <>
@@ -106,7 +114,7 @@ export const CustomizableGridLayout = ({
           compactType="vertical"
           style={{ margin: '-10px' }}
         >
-          {homepageCards.map((card, index) => (
+          {translatedHomepageCards.map((card, index) => (
             <Fragment key={card.name ?? index}>{card.component}</Fragment>
           ))}
         </CustomHomepageGrid>

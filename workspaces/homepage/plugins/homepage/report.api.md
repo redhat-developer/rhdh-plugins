@@ -145,6 +145,14 @@ export interface HomePageCardMountPointConfig {
 }
 
 // @public (undocumented)
+export const JokeCard: (props: JokeCardProps) => JSX_2.Element;
+
+// @public (undocumented)
+export type JokeCardProps = TranslatableCardTitleProps & {
+  defaultCategory?: 'any' | 'programming';
+};
+
+// @public (undocumented)
 export interface Layout {
   // (undocumented)
   h?: number;
@@ -241,6 +249,14 @@ export const TemplateSection: () => JSX_2.Element;
 
 // @public (undocumented)
 export const TopVisitedCard: ComponentType<VisitedByTypeProps>;
+
+// @public
+export interface TranslatableCardTitleProps {
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  titleKey?: string;
+}
 
 // @public (undocumented)
 export const VisitListener: () => JSX_2.Element | null;
