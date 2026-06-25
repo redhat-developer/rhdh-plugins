@@ -1,13 +1,10 @@
 ## DEPRECATION NOTICE - Dynamic Permissions
 
-**Dynamic workflow-specific permissions are deprecated and will be removed in the next release.** They continue to work in this release alongside the new conditional policies, but you should migrate now.
+Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are **deprecated** and will be removed in the next release. They still work in this release alongside conditional policies.
 
-The following dynamic permissions are **DEPRECATED**:
+**Replace them with conditional policies** using the `IS_ALLOWED_WORKFLOW_ID` rule. See the [Migration Guide](MIGRATION-CONDITIONAL-POLICIES.md) for step-by-step instructions.
 
-- `orchestrator.workflow.<workflowId>` (e.g., `orchestrator.workflow.yamlgreet`)
-- `orchestrator.workflow.use.<workflowId>` (e.g., `orchestrator.workflow.use.checkout`)
-
-**Replace them with conditional policies** using the `IS_ALLOWED_WORKFLOW_ID` rule. See the [Migration Guide](MIGRATION-CONDITIONAL-POLICIES.md) for detailed instructions.
+For background on what is deprecated and how both systems interact during the transition, see [Important notes about dynamic permissions](#important-notes-about-dynamic-permissions) below.
 
 ### Important notes about dynamic permissions
 
