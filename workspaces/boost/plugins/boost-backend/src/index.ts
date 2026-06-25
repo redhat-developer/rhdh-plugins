@@ -74,10 +74,24 @@ export {
   type McpServerRoutesOptions,
 } from './mcp';
 export {
+  BackendApprovalStore,
+  type BackendApprovalStoreOptions,
+} from './approval';
+export {
+  DocumentSyncService,
+  type DocumentSyncServiceOptions,
+} from './documents';
+export {
   createChatRoutes,
   ConversationAgentCache,
+  ConversationRegistry,
+  ConversationStore,
+  createConversationRoutes,
   RateLimiter,
   type ChatRoutesOptions,
   type ConversationAgentCacheOptions,
+  type ConversationRegistryOptions,
+  type ConversationStoreOptions,
+  type ConversationRoutesOptions,
   type RateLimiterOptions,
 } from './chat';

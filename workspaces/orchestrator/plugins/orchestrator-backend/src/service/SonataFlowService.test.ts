@@ -667,6 +667,97 @@ describe('SonataFlowService', () => {
     });
   });
 
+  describe('pingWorkflowService', () => {
+    const urlToFetch = `${serviceUrl}/management/processes/${definitionId}`;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns available when the management endpoint responds ok', async () => {
+      setupTest({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(result).toEqual({
+        isAvailable: true,
+        statusCode: 200,
+        urlToFetch,
+        reason: 'OK',
+      });
+    });
+
+    it('returns unavailable with status details when the management endpoint fails', async () => {
+      setupTest({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 503,
+        urlToFetch,
+        reason: 'Service Unavailable',
+      });
+    });
+
+    it('returns unavailable with a default reason when status text is missing', async () => {
+      setupTest({
+        ok: false,
+        status: 500,
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: 'Unknown reason',
+      });
+    });
+
+    it('returns unavailable when fetch throws an error', async () => {
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      });
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      );
+    });
+  });
+
   describe('fetchWorkflowOverviews', () => {
     const NOW = new Date('2024-06-01T12:00:00Z');
     const WITHIN_30_DAYS = '2024-05-15T12:00:00Z';

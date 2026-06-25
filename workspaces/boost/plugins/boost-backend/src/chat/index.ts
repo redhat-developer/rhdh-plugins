@@ -19,4 +19,16 @@ export {
   ConversationAgentCache,
   type ConversationAgentCacheOptions,
 } from './ConversationAgentCache';
+export {
+  ConversationRegistry,
+  type ConversationRegistryOptions,
+} from './ConversationRegistry';
+export {
+  ConversationStore,
+  type ConversationStoreOptions,
+} from './ConversationStore';
+export {
+  createConversationRoutes,
+  type ConversationRoutesOptions,
+} from './conversationRoutes';
 export { RateLimiter, type RateLimiterOptions } from './RateLimiter';

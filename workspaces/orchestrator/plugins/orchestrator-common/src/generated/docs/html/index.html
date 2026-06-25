@@ -1187,6 +1187,22 @@ ul.nav-tabs {
     }
   }
 };
+    defs["WorkflowAvailabilityResponseDTO"] = {
+  "properties" : {
+    "isAvailable" : {
+      "type" : "boolean"
+    },
+    "statusCode" : {
+      "type" : "integer"
+    },
+    "urlToFetch" : {
+      "type" : "string"
+    },
+    "reason" : {
+      "type" : "string"
+    }
+  }
+};
     defs["WorkflowDTO"] = {
   "required" : [ "format", "id" ],
   "properties" : {
@@ -1285,6 +1301,9 @@ ul.nav-tabs {
     },
     "isAvailable" : {
       "type" : "boolean"
+    },
+    "availability" : {
+      "$ref" : "#/components/schemas/WorkflowAvailabilityResponseDTO"
     },
     "version" : {
       "type" : "string",
@@ -2866,8 +2885,8 @@ ID of the workflow instance
  "http://localhost/v2/workflows/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 3.616076749251911,
-    &quot;pageSize&quot; : 9.301444243932576,
+    &quot;offset&quot; : 2.027123023002322,
+    &quot;pageSize&quot; : 3.616076749251911,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -3769,8 +3788,8 @@ ID of instance
  "http://localhost/v2/workflows/{workflowId}/instances" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 3.616076749251911,
-    &quot;pageSize&quot; : 9.301444243932576,
+    &quot;offset&quot; : 2.027123023002322,
+    &quot;pageSize&quot; : 3.616076749251911,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },
@@ -5917,8 +5936,8 @@ pub fn main() {
  "http://localhost/v2/workflows/overview" \
  -d '{
   &quot;paginationInfo&quot; : {
-    &quot;offset&quot; : 3.616076749251911,
-    &quot;pageSize&quot; : 9.301444243932576,
+    &quot;offset&quot; : 2.027123023002322,
+    &quot;pageSize&quot; : 3.616076749251911,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
     &quot;orderBy&quot; : &quot;orderBy&quot;
   },

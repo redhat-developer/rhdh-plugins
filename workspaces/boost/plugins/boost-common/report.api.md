@@ -26,6 +26,24 @@ export interface AgentRecord {
 }
 
 // @public
+export interface ApprovalRequest {
+  args: string;
+  conversationId: string;
+  createdAt: string;
+  message?: string;
+  requestId: string;
+  resolvedArgs?: string;
+  resolvedAt?: string;
+  status: ApprovalStatus;
+  toolCallId: string;
+  toolName: string;
+  userRef: string;
+}
+
+// @public
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+// @public
 export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
 
 // @public
@@ -204,8 +222,10 @@ export const boostToolUnpublishPermission: ResourcePermission<'boost-tool'>;
 // @public
 export interface ConversationDetails {
   createdAt: string;
+  createdBy: string;
   id: string;
   messages: ConversationMessage[];
+  providerId: string;
   title: string;
   updatedAt: string;
 }
@@ -221,9 +241,22 @@ export interface ConversationMessage {
 // @public
 export interface ConversationSummary {
   createdAt: string;
+  createdBy: string;
   id: string;
+  providerId: string;
   title: string;
   updatedAt: string;
+}
+
+// @public
+export interface FeedbackRecord {
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  messageId: string;
+  reason?: string;
+  sentiment: 'positive' | 'negative';
+  sessionId: string;
 }
 
 // @public

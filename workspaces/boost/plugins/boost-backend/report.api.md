@@ -5,9 +5,14 @@
 ```ts
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
+import type { ConversationDetails } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ConversationMessage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
+import type { FeedbackRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
@@ -84,6 +89,26 @@ export function authorizeLifecycleAction(
 export interface AuthorizeLifecycleActionOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
+}
+
+// @public
+export class BackendApprovalStore {
+  constructor(options: BackendApprovalStoreOptions);
+  approve(
+    requestId: string,
+    resolvedArgs?: string,
+  ): Promise<ApprovalRequest | undefined>;
+  create(request: ApprovalRequest): Promise<void>;
+  delete(requestId: string): Promise<void>;
+  get(requestId: string): Promise<ApprovalRequest | undefined>;
+  reject(requestId: string): Promise<ApprovalRequest | undefined>;
+  static readonly TTL_MS: number;
+}
+
+// @public
+export interface BackendApprovalStoreOptions {
+  cache: CacheService;
+  logger: LoggerService;
 }
 
 // @public
@@ -216,6 +241,72 @@ export interface ConversationAgentCacheOptions {
 }
 
 // @public
+export class ConversationRegistry {
+  constructor(options: ConversationRegistryOptions);
+  delete(responseId: string): Promise<void>;
+  get(responseId: string): Promise<string | undefined>;
+  set(responseId: string, conversationId: string): Promise<void>;
+}
+
+// @public
+export interface ConversationRegistryOptions {
+  cache: CacheService;
+  logger: LoggerService;
+}
+
+// @public
+export interface ConversationRoutesOptions {
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+  store: ConversationStore;
+}
+
+// @public
+export class ConversationStore {
+  constructor(options: ConversationStoreOptions);
+  addFeedback(feedback: {
+    id: string;
+    sessionId: string;
+    messageId: string;
+    sentiment: 'positive' | 'negative';
+    reason?: string;
+    createdBy: string;
+  }): Promise<FeedbackRecord>;
+  addMessage(message: {
+    id: string;
+    sessionId: string;
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+  }): Promise<ConversationMessage>;
+  createSession(session: {
+    id: string;
+    title: string;
+    providerId: string;
+    createdBy: string;
+  }): Promise<ConversationSummary>;
+  deleteSession(sessionId: string): Promise<boolean>;
+  getSession(sessionId: string): Promise<ConversationDetails | undefined>;
+  listAllSessions(providerId?: string): Promise<ConversationSummary[]>;
+  listFeedback(sessionId: string): Promise<FeedbackRecord[]>;
+  listSessions(
+    createdBy: string,
+    providerId?: string,
+  ): Promise<ConversationSummary[]>;
+  searchSessions(
+    createdBy: string,
+    keyword: string,
+    providerId?: string,
+  ): Promise<ConversationSummary[]>;
+}
+
+// @public
+export interface ConversationStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
+}
+
+// @public
 export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
@@ -223,6 +314,11 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router;
 
 // @public
 export function createChatRoutes(options: ChatRoutesOptions): Router;
+
+// @public
+export function createConversationRoutes(
+  options: ConversationRoutesOptions,
+): Router;
 
 // @public
 export function createKagentiAdminRoutes(
@@ -237,6 +333,22 @@ export function createToolResourceLoader(): ResourceLoader;
 
 // @public
 export function createToolRoutes(options: ToolRoutesOptions): Router;
+
+// @public
+export class DocumentSyncService {
+  constructor(options: DocumentSyncServiceOptions);
+  deleteHash(documentId: string): Promise<void>;
+  getHash(documentId: string): Promise<string | undefined>;
+  hasChanged(documentId: string, currentHash: string): Promise<boolean>;
+  setHash(documentId: string, hash: string): Promise<void>;
+  static readonly TTL_MS: number;
+}
+
+// @public
+export interface DocumentSyncServiceOptions {
+  cache: CacheService;
+  logger: LoggerService;
+}
 
 // @public
 export function isDbWritable(key: BoostConfigKey): boolean;
