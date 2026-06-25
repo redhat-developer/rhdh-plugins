@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode, useMemo, useState } from 'react';
 
 import { TabbedLayout } from '@backstage/core-components';
 
@@ -25,8 +25,9 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { useWorkflowOverviews } from '../../hooks/useWorkflowsCount';
+import { useAllWorkflowOverviews } from '../../hooks/useWorkflowsCount';
 import { workflowInstancesRouteRef } from '../../routes';
+import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
@@ -74,12 +75,33 @@ export const OrchestratorPage = () => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
-  const workflowsOverviewsState = useWorkflowOverviews();
-  const workflowsCount = workflowsOverviewsState.count;
+  const [search, setSearch] = useState('');
+  const allWorkflows = useAllWorkflowOverviews();
+
+  const displayedWorkflowsCount = useMemo(() => {
+    if (!allWorkflows.isReady || allWorkflows.count === undefined) {
+      return undefined;
+    }
+
+    if (!search.trim()) {
+      return allWorkflows.count;
+    }
+
+    return filterWorkflowOverviewsBySearch(allWorkflows.overviews ?? [], search)
+      .length;
+  }, [
+    allWorkflows.count,
+    allWorkflows.isReady,
+    allWorkflows.overviews,
+    search,
+  ]);
 
   const workflowsTabTitle =
-    workflowsCount !== undefined
-      ? t('table.title.workflows').replace('{{count}}', String(workflowsCount))
+    displayedWorkflowsCount !== undefined
+      ? t('table.title.workflows').replace(
+          '{{count}}',
+          String(displayedWorkflowsCount),
+        )
       : t('page.tabs.workflows');
 
   return (
@@ -98,7 +120,7 @@ export const OrchestratorPage = () => {
               ),
             }}
           >
-            <WorkflowsTabContent overviewsState={workflowsOverviewsState} />
+            <WorkflowsTabContent search={search} onSearchChange={setSearch} />
           </TabbedLayout.Route>
           <TabbedLayout.Route
             path={workflowInstancesRouteRef.path}

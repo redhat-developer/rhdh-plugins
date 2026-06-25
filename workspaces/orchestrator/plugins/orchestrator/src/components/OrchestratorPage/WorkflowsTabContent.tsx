@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useEffect, useMemo, useState } from 'react';
+
 import {
   Content,
   Progress,
@@ -22,66 +24,230 @@ import {
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import {
+  isEntityScopedWorkflowOverviews,
+  useAllWorkflowOverviews,
   useWorkflowOverviews,
   WorkflowOverviewsState,
 } from '../../hooks/useWorkflowsCount';
+import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
 import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
 import { WorkflowsTable } from './WorkflowsTable';
 
 type WorkflowsTabContentViewProps = {
   overviews?: WorkflowOverviewDTO[];
   loading: boolean;
+  tableLoading: boolean;
   error?: Error;
   isReady: boolean;
+  totalCount?: number;
+  isPaginated?: boolean;
+  page?: number;
+  pageSize?: number;
+  hasNextPage?: boolean;
+  search?: string;
+  onSearchChange?: (search: string) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 };
 
 export const WorkflowsTabContentView = ({
   overviews,
   loading,
+  tableLoading,
   error,
   isReady,
+  totalCount,
+  isPaginated = false,
+  page = 0,
+  pageSize = DEFAULT_TABLE_PAGE_SIZE,
+  hasNextPage = false,
+  search = '',
+  onSearchChange,
+  onPageChange,
+  onPageSizeChange,
 }: WorkflowsTabContentViewProps) => (
   <Content noPadding>
     {loading ? <Progress /> : null}
     {error ? <ResponseErrorPanel error={error} /> : null}
-    {isReady && (overviews?.length ?? 0) === 0 ? (
+    {isReady && (overviews?.length ?? 0) === 0 && page === 0 ? (
       <OrchestratorEmptyState variant="workflows" />
     ) : null}
-    {isReady && (overviews?.length ?? 0) > 0 ? (
-      <WorkflowsTable items={overviews ?? []} />
+    {isReady && ((overviews?.length ?? 0) > 0 || page > 0) ? (
+      <WorkflowsTable
+        items={overviews ?? []}
+        totalCount={totalCount}
+        isLoading={tableLoading}
+        isPaginated={isPaginated}
+        page={page}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        search={search}
+        onSearchChange={onSearchChange}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     ) : null}
   </Content>
 );
 
+const slicePaginatedPage = (
+  overviews: WorkflowOverviewDTO[],
+  page: number,
+  pageSize: number,
+) => {
+  const start = page * pageSize;
+  return overviews.slice(start, start + pageSize);
+};
+
 const WorkflowsTabContentWithFetch = ({
   workflowsArray,
   targetEntity,
+  search,
+  onSearchChange,
 }: {
   workflowsArray?: string[];
   targetEntity?: string;
+  search: string;
+  onSearchChange: (search: string) => void;
 }) => {
-  const overviewsState = useWorkflowOverviews({ workflowsArray, targetEntity });
-  return <WorkflowsTabContentView {...overviewsState} />;
+  const isEntityScoped = isEntityScopedWorkflowOverviews({
+    workflowsArray,
+    targetEntity,
+  });
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
+  const isSearching = search.trim().length > 0;
+
+  const allWorkflows = useAllWorkflowOverviews({
+    workflowsArray,
+    targetEntity,
+  });
+  const paginatedWorkflows = useWorkflowOverviews({
+    workflowsArray,
+    targetEntity,
+    ...(isEntityScoped || isSearching ? {} : { page, pageSize }),
+  });
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
+  const filteredOverviews = useMemo(
+    () => filterWorkflowOverviewsBySearch(allWorkflows.overviews ?? [], search),
+    [allWorkflows.overviews, search],
+  );
+
+  const tableOverviews = useMemo(() => {
+    if (isEntityScoped) {
+      return isSearching
+        ? slicePaginatedPage(filteredOverviews, page, pageSize)
+        : (allWorkflows.overviews ?? []);
+    }
+
+    if (isSearching) {
+      return slicePaginatedPage(filteredOverviews, page, pageSize);
+    }
+
+    const rows = paginatedWorkflows.overviews ?? [];
+    if (rows.length > pageSize) {
+      return rows.slice(0, pageSize);
+    }
+    return rows;
+  }, [
+    allWorkflows.overviews,
+    filteredOverviews,
+    isEntityScoped,
+    isSearching,
+    page,
+    pageSize,
+    paginatedWorkflows.overviews,
+  ]);
+
+  const totalCount = isSearching
+    ? filteredOverviews.length
+    : allWorkflows.count;
+
+  const hasNextPage = isSearching
+    ? (page + 1) * pageSize < filteredOverviews.length
+    : Boolean(paginatedWorkflows.hasNextPage);
+
+  const isPaginated =
+    isEntityScoped || isSearching
+      ? filteredOverviews.length > pageSize || page > 0
+      : Boolean(paginatedWorkflows.isPaginated);
+
+  const loading =
+    allWorkflows.loading || (!isSearching && paginatedWorkflows.loading);
+  const tableLoading =
+    isSearching || isEntityScoped
+      ? allWorkflows.tableLoading
+      : allWorkflows.tableLoading || paginatedWorkflows.tableLoading;
+  const error = allWorkflows.error ?? paginatedWorkflows.error;
+  const isReady =
+    allWorkflows.isReady &&
+    (isSearching || isEntityScoped || paginatedWorkflows.isReady);
+
+  return (
+    <WorkflowsTabContentView
+      overviews={tableOverviews}
+      loading={loading}
+      tableLoading={tableLoading}
+      error={error}
+      isReady={isReady}
+      totalCount={totalCount}
+      isPaginated={isPaginated}
+      page={page}
+      pageSize={pageSize}
+      hasNextPage={hasNextPage}
+      search={search}
+      onSearchChange={onSearchChange}
+      onPageChange={setPage}
+      onPageSizeChange={nextPageSize => {
+        setPageSize(nextPageSize);
+        setPage(0);
+      }}
+    />
+  );
 };
 
 export const WorkflowsTabContent = ({
   workflowsArray,
   targetEntity,
   overviewsState,
+  search: controlledSearch,
+  onSearchChange,
 }: {
   workflowsArray?: string[];
   targetEntity?: string;
   overviewsState?: WorkflowOverviewsState;
+  search?: string;
+  onSearchChange?: (search: string) => void;
 }) => {
+  const [internalSearch, setInternalSearch] = useState('');
+  const search = controlledSearch ?? internalSearch;
+  const handleSearchChange = onSearchChange ?? setInternalSearch;
+
   if (overviewsState) {
-    return <WorkflowsTabContentView {...overviewsState} />;
+    return (
+      <WorkflowsTabContentView
+        overviews={overviewsState.overviews}
+        loading={overviewsState.loading}
+        tableLoading={overviewsState.tableLoading}
+        error={overviewsState.error}
+        isReady={overviewsState.isReady}
+        totalCount={overviewsState.count}
+      />
+    );
   }
 
   return (
     <WorkflowsTabContentWithFetch
       workflowsArray={workflowsArray}
       targetEntity={targetEntity}
+      search={search}
+      onSearchChange={handleSearchChange}
     />
   );
 };

@@ -30,7 +30,10 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { EntityRefLink } from '@backstage/plugin-catalog-react';
+import {
+  entityPresentationSnapshot,
+  EntityRefLink,
+} from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -61,6 +64,7 @@ import {
 import { useEntityFilterItems } from '../../hooks/useEntityFilterItems';
 import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import usePolling from '../../hooks/usePolling';
+import { useRunByFilterItems } from '../../hooks/useRunByFilterItems';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
@@ -122,7 +126,6 @@ const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
 ];
 
 const ENTITY_FILTER_KINDS = ['Component', 'System'];
-const RUN_BY_FILTER_KINDS = ['User'];
 
 const combineFilters = (
   filters: (Filter | undefined)[],
@@ -209,12 +212,6 @@ export const WorkflowRunsTabContent = ({
     enabled: showEntityFilter,
   });
 
-  const { items: runByFilterItems } = useEntityFilterItems({
-    kinds: RUN_BY_FILTER_KINDS,
-    defaultKind: 'user',
-    enabled: showRunByFilter,
-  });
-
   const [isVariablesDialogOpen, setIsVariablesDialogOpen] = useState(false);
   const [instanceVariables, setInstanceVariables] = useState<WorkflowDataDTO>(
     {},
@@ -292,141 +289,150 @@ export const WorkflowRunsTabContent = ({
   const [orderByField, setOrderByField] = useState<string>('start');
   const [orderDirection, setOrderDirection] = useState('desc');
 
-  const getFilter = useCallback((): Filter | undefined => {
-    // runs for specific WF
-    const workflowIdFilter: FieldFilter | undefined = workflowId
-      ? {
-          operator: 'EQ',
-          value: workflowId,
-          field: 'processId',
-        }
-      : undefined;
-
-    const statusFilter: FieldFilter | undefined =
-      statusSelectorValue !== Selector.AllItems
+  const getFilter = useCallback(
+    (options?: { includeRunByFilter?: boolean }): Filter | undefined => {
+      const includeRunByFilter = options?.includeRunByFilter ?? true;
+      // runs for specific WF
+      const workflowIdFilter: FieldFilter | undefined = workflowId
         ? {
             operator: 'EQ',
-            value: statusSelectorValue,
-            field: 'state',
+            value: workflowId,
+            field: 'processId',
           }
         : undefined;
 
-    let startedFilter: FieldFilter | undefined = undefined;
-
-    if (startedSelectorValue !== Selector.AllItems) {
-      let dateRange: [string, string] | undefined = undefined;
-
-      const currentDate = new Date();
-      const endOfToday = new Date(currentDate);
-      endOfToday.setHours(23, 59, 59, 999);
-
-      switch (startedSelectorValue) {
-        case 'Today': {
-          const startOfToday = new Date();
-          startOfToday.setHours(0, 0, 0, 0);
-          dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
-          break;
-        }
-        case 'Yesterday': {
-          const startOfYesterday = new Date();
-          startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-          startOfYesterday.setHours(0, 0, 0, 0);
-
-          const endOfYesterday = new Date(startOfYesterday);
-          endOfYesterday.setHours(23, 59, 59, 999);
-
-          dateRange = [
-            startOfYesterday.toISOString(),
-            endOfYesterday.toISOString(),
-          ];
-          break;
-        }
-        case 'Last 7 days': {
-          const startOfLast7Days = new Date();
-          startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
-          startOfLast7Days.setHours(0, 0, 0, 0);
-
-          dateRange = [
-            startOfLast7Days.toISOString(),
-            endOfToday.toISOString(),
-          ];
-          break;
-        }
-        case 'This month': {
-          const startOfCurrentMonth = new Date();
-          startOfCurrentMonth.setDate(1);
-          startOfCurrentMonth.setHours(0, 0, 0, 0);
-
-          dateRange = [
-            startOfCurrentMonth.toISOString(),
-            endOfToday.toISOString(),
-          ];
-          break;
-        }
-        default:
-          dateRange = undefined;
-      }
-
-      startedFilter =
-        startedSelectorValue !== Selector.AllItems
+      const statusFilter: FieldFilter | undefined =
+        statusSelectorValue !== Selector.AllItems
           ? {
-              operator: 'BETWEEN',
-              value: dateRange,
-              field: 'start',
+              operator: 'EQ',
+              value: statusSelectorValue,
+              field: 'state',
             }
           : undefined;
-    }
 
-    let targetEntityFilter: NestedFilter | undefined;
-    if (entityRef) {
-      targetEntityFilter = {
-        field: 'variables',
-        nested: {
-          operator: 'EQ',
-          value: entityRef.toLowerCase(),
-          field: 'targetEntity',
-        },
-      };
-    } else if (showEntityFilter && entitySelectorValue !== Selector.AllItems) {
-      targetEntityFilter = {
-        field: 'variables',
-        nested: {
-          operator: 'EQ',
-          value: entitySelectorValue,
-          field: 'targetEntity',
-        },
-      };
-    }
+      let startedFilter: FieldFilter | undefined = undefined;
 
-    const initiatorEntityFilter: NestedFilter | undefined =
-      showRunByFilter && runBySelectorValue !== Selector.AllItems
-        ? {
-            field: 'variables',
-            nested: {
-              operator: 'EQ',
-              value: runBySelectorValue,
-              field: 'initiatorEntity',
-            },
+      if (startedSelectorValue !== Selector.AllItems) {
+        let dateRange: [string, string] | undefined = undefined;
+
+        const currentDate = new Date();
+        const endOfToday = new Date(currentDate);
+        endOfToday.setHours(23, 59, 59, 999);
+
+        switch (startedSelectorValue) {
+          case 'Today': {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
+            break;
           }
-        : undefined;
+          case 'Yesterday': {
+            const startOfYesterday = new Date();
+            startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+            startOfYesterday.setHours(0, 0, 0, 0);
 
-    return combineFilters([
-      statusFilter,
-      workflowIdFilter,
-      startedFilter,
-      targetEntityFilter,
-      initiatorEntityFilter,
-    ]);
-  }, [
-    workflowId,
-    statusSelectorValue,
-    startedSelectorValue,
-    entityRef,
-    showEntityFilter,
-    entitySelectorValue,
-    showRunByFilter,
-    runBySelectorValue,
-  ]);
+            const endOfYesterday = new Date(startOfYesterday);
+            endOfYesterday.setHours(23, 59, 59, 999);
+
+            dateRange = [
+              startOfYesterday.toISOString(),
+              endOfYesterday.toISOString(),
+            ];
+            break;
+          }
+          case 'Last 7 days': {
+            const startOfLast7Days = new Date();
+            startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
+            startOfLast7Days.setHours(0, 0, 0, 0);
+
+            dateRange = [
+              startOfLast7Days.toISOString(),
+              endOfToday.toISOString(),
+            ];
+            break;
+          }
+          case 'This month': {
+            const startOfCurrentMonth = new Date();
+            startOfCurrentMonth.setDate(1);
+            startOfCurrentMonth.setHours(0, 0, 0, 0);
+
+            dateRange = [
+              startOfCurrentMonth.toISOString(),
+              endOfToday.toISOString(),
+            ];
+            break;
+          }
+          default:
+            dateRange = undefined;
+        }
+
+        startedFilter =
+          startedSelectorValue !== Selector.AllItems
+            ? {
+                operator: 'BETWEEN',
+                value: dateRange,
+                field: 'start',
+              }
+            : undefined;
+      }
+
+      let targetEntityFilter: NestedFilter | undefined;
+      if (entityRef) {
+        targetEntityFilter = {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            value: entityRef.toLowerCase(),
+            field: 'targetEntity',
+          },
+        };
+      } else if (
+        showEntityFilter &&
+        entitySelectorValue !== Selector.AllItems
+      ) {
+        targetEntityFilter = {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            value: entitySelectorValue,
+            field: 'targetEntity',
+          },
+        };
+      }
+
+      const initiatorEntityFilter: NestedFilter | undefined =
+        includeRunByFilter &&
+        showRunByFilter &&
+        runBySelectorValue !== Selector.AllItems
+          ? {
+              field: 'variables',
+              nested: {
+                operator: 'EQ',
+                value: runBySelectorValue,
+                field: 'initiatorEntity',
+              },
+            }
+          : undefined;
+
+      return combineFilters([
+        statusFilter,
+        workflowIdFilter,
+        startedFilter,
+        targetEntityFilter,
+        initiatorEntityFilter,
+      ]);
+    },
+    [
+      workflowId,
+      statusSelectorValue,
+      startedSelectorValue,
+      entityRef,
+      showEntityFilter,
+      entitySelectorValue,
+      showRunByFilter,
+      runBySelectorValue,
+    ],
+  );
 
   const fetchInstances = useCallback(async () => {
     const paginationInfo: PaginationInfoDTO = {
@@ -488,6 +494,46 @@ export const WorkflowRunsTabContent = ({
   const { loading, error, value } = usePolling(fetchInstances, {
     cacheKey: pollingCacheKey,
   });
+
+  const filterForRunByOptions = useMemo(
+    () => getFilter({ includeRunByFilter: false }),
+    [getFilter],
+  );
+
+  const additionalInitiators = useMemo(
+    () =>
+      (value ?? [])
+        .map(run => run.initiatorEntity)
+        .filter((initiator): initiator is string => Boolean(initiator)),
+    [value],
+  );
+
+  const { items: runByFilterItems } = useRunByFilterItems({
+    enabled: showRunByFilter,
+    filters: filterForRunByOptions,
+    additionalInitiators,
+  });
+
+  const runByFilterItemsWithSelection = useMemo(() => {
+    if (runBySelectorValue === Selector.AllItems) {
+      return runByFilterItems;
+    }
+
+    if (runByFilterItems.some(item => item.value === runBySelectorValue)) {
+      return runByFilterItems;
+    }
+
+    return [
+      ...runByFilterItems,
+      {
+        label:
+          entityPresentationSnapshot(runBySelectorValue, {
+            defaultKind: 'user',
+          }).primaryTitle ?? runBySelectorValue,
+        value: runBySelectorValue,
+      },
+    ];
+  }, [runByFilterItems, runBySelectorValue]);
 
   const applyBackendSort = useCallback(
     (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
@@ -794,7 +840,7 @@ export const WorkflowRunsTabContent = ({
             {showRunByFilter ? (
               <Selector
                 label={t('table.filters.runBy')}
-                items={runByFilterItems}
+                items={runByFilterItemsWithSelection}
                 onChange={value_ => {
                   setRunBySelectorValue(value_);
                   setPage(0);

@@ -31,6 +31,7 @@ import PlayArrow from '@mui/icons-material/PlayArrow';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
+import TablePagination from '@mui/material/TablePagination';
 
 import {
   orchestratorWorkflowPermission,
@@ -41,6 +42,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import {
+  DEFAULT_TABLE_PAGE_SIZE,
   ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL,
   VALUE_UNAVAILABLE,
 } from '../../constants';
@@ -64,9 +66,31 @@ import { WorkflowSuccessRatioCell } from '../ui/WorkflowSuccessRatioCell';
 
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
+  totalCount?: number;
+  isLoading?: boolean;
+  isPaginated?: boolean;
+  page?: number;
+  pageSize?: number;
+  hasNextPage?: boolean;
+  search?: string;
+  onSearchChange?: (search: string) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
-export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
+export const WorkflowsTable = ({
+  items,
+  totalCount,
+  isLoading = false,
+  isPaginated = false,
+  page = 0,
+  pageSize = DEFAULT_TABLE_PAGE_SIZE,
+  hasNextPage = false,
+  search = '',
+  onSearchChange,
+  onPageChange,
+  onPageSizeChange,
+}: WorkflowsTableProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
@@ -81,7 +105,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   }
 
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
-  const [search, setSearch] = useState('');
 
   const { allowed: permittedToUse } = useWorkflowPermissionBatch(
     items,
@@ -103,21 +126,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     setData(initialState);
   }, [initialState]);
 
-  const filteredData = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) {
-      return data;
-    }
-
-    return data.filter(
-      row =>
-        row.name.toLowerCase().includes(query) ||
-        row.version.toLowerCase().includes(query) ||
-        row.runsLastMonth.toLowerCase().includes(query) ||
-        row.successRatioDisplay.toLowerCase().includes(query) ||
-        (row.availability?.toLowerCase().includes(query) ?? false),
-    );
-  }, [data, search]);
+  const displayCount = totalCount ?? items.length;
 
   const handleViewVariables = useCallback(
     (rowData: FormattedWorkflowOverview) => {
@@ -293,8 +302,8 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [columns.length],
   );
 
-  // TODO: use backend pagination only if the generic orchestratorWorkflowPermission is in place
-  // use FE pagination otherwise (it means when specific permissions are used)
+  const enablePaging = isPaginated && (page > 0 || hasNextPage);
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {showDuplicateWorkflowIdAlert ? (
@@ -322,22 +331,45 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         title={
           <Trans
             message="table.title.workflows"
-            params={{ count: items.length }}
+            params={{ count: displayCount }}
           />
         }
-        action={<TableTextFilter value={search} onChange={setSearch} />}
+        action={
+          <TableTextFilter
+            value={search}
+            onChange={value => onSearchChange?.(value)}
+          />
+        }
         headerProps={{ style: { alignItems: 'center' } }}
       >
         <OverrideBackstageTable<FormattedWorkflowOverview>
           removeOutline
+          isLoading={isLoading}
           options={options}
           columns={columns}
-          data={filteredData}
+          data={data}
           actions={actions}
           components={{
             Toolbar: () => null,
           }}
         />
+        {enablePaging ? (
+          <TablePagination
+            component="div"
+            count={-1}
+            page={page}
+            onPageChange={(_, page_) => onPageChange?.(page_)}
+            onRowsPerPageChange={e => {
+              onPageSizeChange?.(parseInt(e.target.value, 10));
+            }}
+            rowsPerPage={pageSize}
+            labelDisplayedRows={({ from }) => {
+              return `${from}-${from + data.length - 1}`;
+            }}
+            rowsPerPageOptions={[5, 10, 20]}
+            nextIconButtonProps={{ disabled: !hasNextPage }}
+          />
+        ) : null}
       </InfoCard>
     </Box>
   );
