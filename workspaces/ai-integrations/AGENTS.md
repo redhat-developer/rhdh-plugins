@@ -10,6 +10,7 @@
 - Lint single file: `yarn lint --fix path/to/file.ts`
 - Type check: `yarn tsc`
 - Dev environment: `yarn dev`
+- Debug: `yarn dev:debug`
 
 ## Key Conventions
 
