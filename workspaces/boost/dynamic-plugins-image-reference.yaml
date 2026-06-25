@@ -1,12 +1,12 @@
-# Example dynamic-plugins.yaml for deploying Boost in RHDH
+# Example dynamic-plugins.yaml for production Boost deployment in RHDH
 #
 # This file shows how to configure Boost as a dynamic plugin in Red Hat
-# Developer Hub. Copy this to your RHDH instance's
-# dynamic-plugins.override.yaml and adjust settings as needed.
+# Developer Hub using OCI container images. Use this for production
+# deployments. For local development, see
+# dynamic-plugins-filesystem-reference.yaml.
 #
-# Each plugin is loaded from an OCI artifact or a local path. The
-# package names follow the RHDH dynamic plugin naming convention:
-#   @red-hat-developer-hub/backstage-plugin-<name>
+# Each plugin is loaded from an OCI artifact in a container registry.
+# Replace <registry> and <tag> with your actual registry and version.
 #
 # For more information on RHDH dynamic plugins, see:
 #   https://docs.redhat.com/en/documentation/red_hat_developer_hub
@@ -15,7 +15,7 @@ plugins:
   # -----------------------------------------------------------------------
   # Core backend plugin — required
   # -----------------------------------------------------------------------
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-dynamic
+  - package: oci://<registry>/backstage-plugin-boost-backend:<tag>!red-hat-developer-hub-backstage-plugin-boost-backend-dynamic
     disabled: false
     pluginConfig:
       boost:
@@ -25,15 +25,20 @@ plugins:
         model:
           baseUrl: ${BOOST_MODEL_BASE_URL}
           name: ${BOOST_MODEL_NAME}
+        # Skills marketplace (optional):
+        # features:
+        #   skillsMarketplace: true
+        # skillsMarketplace:
+        #   endpoint: http://skills-catalog.example.com
 
   # -----------------------------------------------------------------------
   # Provider modules — install at least one
   # -----------------------------------------------------------------------
 
   # Llama Stack provider: connects to a Llama Stack Responses API endpoint
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-llamastack-dynamic
+  - package: oci://<registry>/backstage-plugin-boost-backend-module-llamastack:<tag>!red-hat-developer-hub-backstage-plugin-boost-backend-module-llamastack-dynamic
     disabled: false
 
   # Kagenti provider: connects to a Kagenti multi-agent orchestrator
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-kagenti-dynamic
+  - package: oci://<registry>/backstage-plugin-boost-backend-module-kagenti:<tag>!red-hat-developer-hub-backstage-plugin-boost-backend-module-kagenti-dynamic
     disabled: true

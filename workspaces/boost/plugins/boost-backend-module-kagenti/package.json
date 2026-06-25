@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
-    "@janus-idp/cli": "^3.7.0"
+    "@red-hat-developer-hub/cli": "^1.11.1"
   },
   "sideEffects": false,
   "scripts": {
@@ -51,7 +51,7 @@
     "start": "backstage-cli package start",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack",
-    "export-dynamic": "janus-cli package export-dynamic-plugin"
+    "export-dynamic": "rhdh-cli plugin export"
   },
   "files": [
     "dist",
