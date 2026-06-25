@@ -28,10 +28,10 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  lightspeedChatCreatePermission,
   lightspeedChatUpdatePermission,
   lightspeedConversationsAccessPermission,
   lightspeedConversationsManagePermission,
+  lightspeedChatUsePermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
@@ -663,7 +663,7 @@ export async function createRouter(
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(lightspeedChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -751,7 +751,7 @@ export async function createRouter(
   router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(lightspeedChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -791,7 +791,7 @@ export async function createRouter(
     expensiveRateLimiter,
     validateCompletionsRequest,
     validateAttachmentsForModel,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(lightspeedChatUsePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
