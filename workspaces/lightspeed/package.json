@@ -54,7 +54,7 @@
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@jest/environment-jsdom-abstract": "^30.3.0",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.61.0",
     "@spotify/prettier-config": "^12.0.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
@@ -74,9 +74,9 @@
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/frontend-plugin-api": "0.15.1",
-    "infinispan": "0.13.0",
+    "infinispan": "0.15.0",
     "@protobufjs/inquire": "1.1.0",
-    "langsmith": "^0.6.0"
+    "langsmith": "^0.7.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
