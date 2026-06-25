@@ -33,6 +33,7 @@ import { performLogin } from './fixtures/auth';
 const POLL_INTERVAL = 10_000;
 const INIT_TIMEOUT = 300_000;
 const PHASE_TIMEOUT = 420_000;
+const SOURCE_TYPE = process.env.X2A_SOURCE_TYPE || 'chef';
 const SOURCE_REPO_METADATA =
   process.env.X2A_SOURCE_REPO_METADATA ||
   'https://github.com/x2ansible/chef-examples-metadata.git';
@@ -245,6 +246,11 @@ async function deleteProject(baseURL: string, projectId: string) {
 
 test.describe
   .serial('X2Ansible - FLPATH-4215 Source Dir Resolution @live', () => {
+  test.skip(
+    SOURCE_TYPE !== 'chef',
+    `FLPATH-4215 requires chef-examples-metadata repo (current stream: ${SOURCE_TYPE})`,
+  );
+
   let x2aPage: X2AnsiblePage;
   const baseURL = process.env.PLAYWRIGHT_URL || 'http://localhost:3000';
 
@@ -266,7 +272,7 @@ test.describe
     state.projectName = project.name;
     // eslint-disable-next-line no-console
     console.log(
-      `FLPATH-4215: Created project from chef-examples-metadata: ${project.name} (${project.id})`,
+      `FLPATH-4215: Created project from ${SOURCE_REPO_METADATA}: ${project.name} (${project.id})`,
     );
 
     const initData = await triggerInit(baseURL, project.id);
@@ -283,7 +289,7 @@ test.describe
 
     expect(
       ['success', 'initialized'].includes(finalState),
-      `Init did not succeed for chef-examples-metadata, state=${finalState}`,
+      `Init did not succeed for ${SOURCE_REPO_METADATA}, state=${finalState}`,
     ).toBeTruthy();
 
     const modules = await getModules(baseURL, project.id);
