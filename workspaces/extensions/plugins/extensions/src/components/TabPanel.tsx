@@ -78,6 +78,8 @@ export const TabPanel = ({
   return (
     <Box
       role="tabpanel"
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
       sx={{ flex: 1, overflow: 'auto', p: 2, scrollbarWidth: 'thin' }}
     >
       <Typography component="div">
@@ -88,24 +90,26 @@ export const TabPanel = ({
               <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {Object.keys(item)[0]}
               </Typography>
-              {item?.[Object.keys(item)[0]]?.map?.(ex => (
-                <>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    {ex.title}
-                    {ex.content !== 'string' && (
-                      <Button
-                        sx={{ float: 'right' }}
-                        onClick={() =>
-                          handleApplyContent(ex.content, Object.keys(item)[0])
-                        }
-                      >
-                        {t('common.apply')}
-                      </Button>
-                    )}
-                  </Typography>
-                  <Markdown content={getExampleAsMarkdown(ex.content)} />
-                </>
-              ))}
+              {item?.[Object.keys(item)[0]]?.map?.(
+                (ex: { title: string; content: string }, exIdx: number) => (
+                  <Box key={exIdx}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {ex.title}
+                      {ex.content !== 'string' && (
+                        <Button
+                          sx={{ float: 'right' }}
+                          onClick={() =>
+                            handleApplyContent(ex.content, Object.keys(item)[0])
+                          }
+                        >
+                          {t('common.apply')}
+                        </Button>
+                      )}
+                    </Typography>
+                    <Markdown content={getExampleAsMarkdown(ex.content)} />
+                  </Box>
+                ),
+              )}
             </Box>
           ))
         ) : (

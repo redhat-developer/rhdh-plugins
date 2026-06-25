@@ -116,7 +116,7 @@ export const BadgeChip = ({ plugin }: { plugin: ExtensionsPlugin }) => {
         label={options.label}
         variant="outlined"
         size="small"
-        title={options.tooltip}
+        aria-label={options.tooltip ?? options.label}
         sx={{
           cursor: 'pointer',
         }}
@@ -142,7 +142,11 @@ export const BadgeTriange = ({ plugin }: { plugin: ExtensionsPlugin }) => {
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute' }}>
         <Tooltip title={options.tooltip} placement="top" arrow>
-          <div style={{ width: size, height: size }}>
+          <div
+            style={{ width: size, height: size }}
+            role="img"
+            aria-label={options.tooltip}
+          >
             <div
               style={{
                 position: 'absolute',
@@ -153,6 +157,7 @@ export const BadgeTriange = ({ plugin }: { plugin: ExtensionsPlugin }) => {
               }}
             />
             <TaskAltIcon
+              aria-hidden="true"
               style={{
                 position: 'absolute',
                 top: 4,

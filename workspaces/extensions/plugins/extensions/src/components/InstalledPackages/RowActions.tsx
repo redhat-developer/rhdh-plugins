@@ -74,6 +74,7 @@ export const DownloadPackageYaml = ({
       <IconButton
         size="small"
         disabled
+        aria-label={t('installedPackages.table.tooltips.downloadPackage')}
         sx={{ color: theme => theme.palette.action.disabled }}
       >
         <FileDownloadOutlinedIcon />
@@ -111,6 +112,7 @@ export const DownloadPackageYaml = ({
     <Tooltip title={t('installedPackages.table.tooltips.downloadPackage')}>
       <IconButton
         size="small"
+        aria-label={t('installedPackages.table.tooltips.downloadPackage')}
         sx={{ color: theme => theme.palette.text.primary }}
         onClick={async () => {
           try {
@@ -175,6 +177,7 @@ export const EditPackage = ({
       <IconButton
         size="small"
         disabled
+        aria-label={t('installedPackages.table.tooltips.editPackage')}
         sx={{ color: theme => theme.palette.action.disabled }}
       >
         <EditIcon />
@@ -199,6 +202,7 @@ export const EditPackage = ({
   const viewIcon = (
     <IconButton
       size="small"
+      aria-label={t('actions.view')}
       sx={{ color: theme => theme.palette.text.primary }}
       onClick={() =>
         navigate(packagePathWithSearchParams, {
@@ -252,6 +256,7 @@ export const EditPackage = ({
     <Tooltip title={t('installedPackages.table.tooltips.editPackage')}>
       <IconButton
         size="small"
+        aria-label={t('installedPackages.table.tooltips.editPackage')}
         sx={{ color: theme => theme.palette.text.primary }}
         onClick={() =>
           navigate(packagePathWithSearchParams, { state: { editAction: true } })
@@ -287,9 +292,16 @@ export const TogglePackage = ({
   );
   const disabledIcon = (
     <Box component="span" display="inline-flex">
-      <IconButton size="small" disabled>
-        {isPackageEnabled ? <Switch checked disabled /> : <Switch disabled />}
-      </IconButton>
+      <Switch
+        size="small"
+        checked={isPackageEnabled}
+        disabled
+        inputProps={{
+          'aria-label': isPackageEnabled
+            ? t('installedPackages.table.tooltips.disablePackage')
+            : t('installedPackages.table.tooltips.enablePackage'),
+        }}
+      />
     </Box>
   );
 
@@ -388,13 +400,16 @@ export const TogglePackage = ({
           : t('installedPackages.table.tooltips.enablePackage')
       }
     >
-      <IconButton
+      <Switch
         size="small"
-        sx={{ color: theme => theme.palette.text.primary }}
-        onClick={handleToggle}
-      >
-        {isPackageEnabled ? <Switch checked /> : <Switch />}
-      </IconButton>
+        checked={isPackageEnabled}
+        onChange={handleToggle}
+        inputProps={{
+          'aria-label': isPackageEnabled
+            ? t('installedPackages.table.tooltips.disablePackage')
+            : t('installedPackages.table.tooltips.enablePackage'),
+        }}
+      />
     </Tooltip>
   );
 };
@@ -410,13 +425,16 @@ export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
             : t('tooltips.missingDynamicArtifact' as any, { type: 'package' })
         }
       >
-        <IconButton
-          size="small"
-          disabled
-          sx={{ color: theme => theme.palette.action.disabled }}
-        >
-          <DeleteIcon />
-        </IconButton>
+        <Box component="span" display="inline-flex">
+          <IconButton
+            size="small"
+            disabled
+            aria-label={t('button.uninstall')}
+            sx={{ color: theme => theme.palette.action.disabled }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       </Tooltip>
     );
   }
@@ -424,6 +442,7 @@ export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   return (
     <IconButton
       size="small"
+      aria-label={t('button.uninstall')}
       sx={{ color: theme => theme.palette.text.primary }}
       onClick={() => {}}
     >
