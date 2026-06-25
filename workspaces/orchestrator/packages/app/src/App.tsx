@@ -23,7 +23,6 @@ import orchestratorPlugin, {
 import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
-import { authSignInPageModule } from './modules/auth';
 
 export default createApp({
   features: [
@@ -34,6 +33,5 @@ export default createApp({
     userSettingsPlugin,
     orchestratorTranslationsModule,
     orchestratorFormWidgetsPlugin,
-    authSignInPageModule,
   ],
 });

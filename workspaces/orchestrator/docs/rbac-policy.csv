@@ -1,5 +1,10 @@
-## p, role:default/workflowUser, orchestrator.workflow.use, update, allow
-## p, role:default/workflowUser, orchestrator.workflow, read, allow
+#p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
+#p, role:default/workflowUser, orchestrator.workflow.wait-or-error, read, allow
+#p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
+#p, role:default/workflowUser, orchestrator.workflow.use.wait-or-error, update, allow
+
+p, role:default/workflowUser, orchestrator.workflow.use, update, allow
+p, role:default/workflowUser, orchestrator.workflow, read, allow
 
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
 p, role:default/workflowAdmin, orchestrator.workflowAdminView, read, allow
@@ -10,7 +15,6 @@ g, user:development/guest, role:default/workflowUser
 g, user:default/rgolangh, role:default/workflowAdmin
 g, user:default/mareklibra, role:default/workflowAdmin
 g, user:default/liorsoffer, role:default/workflowUser
-g, user:default/andrienkoaleksandr, role:default/workflowUser
 
 p, role:default/workflowUser, catalog.entity.read, read, allow
 p, role:default/workflowUser, catalog.entity.create, create, allow
@@ -21,7 +25,7 @@ p, role:default/workflowUser, scaffolder.action.execute, use, allow
 p, role:default/workflowUser, scaffolder.template.parameter.read, read, allow
 p, role:default/workflowUser, scaffolder.template.step.read, read, allow
 p, role:default/workflowUser, scaffolder.task.create, create, allow
-p, role:default/workflowUser, scaffolder.task.cancel, use, allow
+p, role:default/workflowUser, scaffolder.task.cancel, cancel, allow
 p, role:default/workflowUser, scaffolder.task.read, read, allow
 
 ## for more details see https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.2/html/authorization/ref-rbac-permission-policies_title-authorization
