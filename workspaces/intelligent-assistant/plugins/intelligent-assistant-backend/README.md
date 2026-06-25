@@ -84,7 +84,7 @@ Update permission names in your `rbac-policy.csv`:
 | Before                     | After                                            |
 | -------------------------- | ------------------------------------------------ |
 | `lightspeed.chat.read`     | `intelligent-assistant.conversations.access`     |
-| `lightspeed.chat.create`   | `intelligent-assistant.chat.create`              |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`                 |
 | `lightspeed.chat.delete`   | `intelligent-assistant.conversations.manage`     |
 | `lightspeed.chat.update`   | `intelligent-assistant.chat.update`              |
 | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`            |
@@ -333,7 +333,7 @@ The Intelligent Assistant Backend plugin has support for the permission framewor
 
 ```CSV
 p, role:default/team_a, intelligent-assistant.conversations.access, read, allow
-p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.use, create, allow
 p, role:default/team_a, intelligent-assistant.conversations.manage, delete, allow
 p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
