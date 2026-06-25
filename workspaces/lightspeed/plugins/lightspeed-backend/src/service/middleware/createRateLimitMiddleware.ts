@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
 import type { RequestHandler } from 'express';
@@ -31,8 +32,8 @@ export type RateLimitTier = 'expensive' | 'general';
 export function getRateLimitMax(config: Config, tier: RateLimitTier): number {
   const configKey =
     tier === 'expensive'
-      ? 'lightspeed.rateLimit.expensive.max'
-      : 'lightspeed.rateLimit.general.max';
+      ? 'intelligent-assistant.rateLimit.expensive.max'
+      : 'intelligent-assistant.rateLimit.general.max';
   const defaultMax =
     tier === 'expensive'
       ? DEFAULT_EXPENSIVE_RATE_LIMIT_MAX
@@ -53,10 +54,12 @@ export function getRateLimitMax(config: Config, tier: RateLimitTier): number {
 export function createRateLimitMiddleware(
   config: Config,
   tier: RateLimitTier,
+  logger?: LoggerService,
 ): RequestHandler {
   const max = getRateLimitMax(config, tier);
 
   if (max === 0) {
+    logger?.warn(`Rate limiting disabled for "${tier}" tier (max=0)`);
     return (_req, _res, next) => next();
   }
 

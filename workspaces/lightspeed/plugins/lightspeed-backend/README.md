@@ -96,7 +96,7 @@ Set `max: 0` on a tier to disable rate limiting for that tier. If the entire
 **Example** — tighter limits for a small deployment:
 
 ```yaml
-lightspeed:
+intelligent-assistant:
   rateLimit:
     expensive:
       max: 10

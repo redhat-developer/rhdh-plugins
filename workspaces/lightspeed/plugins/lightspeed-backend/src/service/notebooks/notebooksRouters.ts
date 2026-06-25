@@ -101,8 +101,16 @@ export async function createNotebooksRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  const expensiveRateLimiter = createRateLimitMiddleware(config, 'expensive');
-  const generalRateLimiter = createRateLimitMiddleware(config, 'general');
+  const expensiveRateLimiter = createRateLimitMiddleware(
+    config,
+    'expensive',
+    logger,
+  );
+  const generalRateLimiter = createRateLimitMiddleware(
+    config,
+    'general',
+    logger,
+  );
 
   const requireNotebooksPermission = async (
     req: any,

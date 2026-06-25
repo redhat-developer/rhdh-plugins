@@ -223,8 +223,16 @@ export async function createRouter(
     return createPermissionMiddleware(authorizer, permission, logger);
   }
 
-  const expensiveRateLimiter = createRateLimitMiddleware(config, 'expensive');
-  const generalRateLimiter = createRateLimitMiddleware(config, 'general');
+  const expensiveRateLimiter = createRateLimitMiddleware(
+    config,
+    'expensive',
+    logger,
+  );
+  const generalRateLimiter = createRateLimitMiddleware(
+    config,
+    'general',
+    logger,
+  );
 
   // ─── MCP Server Management Endpoints ────────────────────────────────
   // All MCP servers are admin-configured (static). Users can view the

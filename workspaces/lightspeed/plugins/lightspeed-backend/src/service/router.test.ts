@@ -1143,8 +1143,8 @@ describe('lightspeed router tests', () => {
 
   describe('rate limiting', () => {
     const RATE_LIMIT_CONFIG = {
-      lightspeed: {
-        ...BASE_CONFIG.lightspeed,
+      'intelligent-assistant': {
+        ...BASE_CONFIG['intelligent-assistant'],
         rateLimit: {
           expensive: { max: 1 },
           general: { max: 1 },

@@ -479,7 +479,7 @@ describe('Notebooks Router', () => {
       const logger = mockServices.logger.mock();
       const config = mockServices.rootConfig({
         data: {
-          lightspeed: {
+          'intelligent-assistant': {
             servicePort: 7007,
             rateLimit: {
               expensive: { max: 1 },

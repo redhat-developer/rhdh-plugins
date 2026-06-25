@@ -46,7 +46,7 @@ describe('getRateLimitMax', () => {
   it('returns configured max values when provided', () => {
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           rateLimit: {
             expensive: { max: 10 },
             general: { max: 50 },
@@ -62,7 +62,7 @@ describe('getRateLimitMax', () => {
   it('treats negative values as disabled (0)', () => {
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           rateLimit: {
             expensive: { max: -1 },
             general: { max: -5 },
@@ -78,7 +78,7 @@ describe('getRateLimitMax', () => {
   it('floors decimal values to integers', () => {
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           rateLimit: {
             expensive: { max: 10.7 },
             general: { max: 50.3 },
@@ -100,7 +100,7 @@ describe('createRateLimitMiddleware', () => {
     const app = express();
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           rateLimit: {
             [tier]: { max },
           },
@@ -158,7 +158,7 @@ describe('createRateLimitMiddleware', () => {
   it('tracks limits independently per user', async () => {
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           rateLimit: {
             general: { max: 1 },
           },
