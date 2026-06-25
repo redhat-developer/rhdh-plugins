@@ -77,6 +77,12 @@ export class KeycloakTokenCache {
     token: string,
     ttlSeconds: number,
   ): Promise<void> {
+    if (ttlSeconds <= 0) {
+      this.logger.warn(
+        `Skipping cache for key "${tokenKey}": non-positive TTL (${ttlSeconds}s)`,
+      );
+      return;
+    }
     const key = `${KeycloakTokenCache.KEY_PREFIX}${tokenKey}`;
     await this.cache.set(key, token, {
       ttl: ttlSeconds * 1000,

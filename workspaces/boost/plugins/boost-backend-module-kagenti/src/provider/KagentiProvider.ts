@@ -110,6 +110,14 @@ export class KagentiProvider implements AgenticProvider {
     }
 
     const result = (await response.json()) as A2ATaskResponse;
+
+    if (result.status?.state === 'failed') {
+      throw new Error(result.status.message ?? 'A2A task failed');
+    }
+    if (result.status?.state === 'canceled') {
+      throw new Error(result.status.message ?? 'A2A task canceled');
+    }
+
     return this.extractTextFromResponse(result);
   }
 
@@ -318,11 +326,13 @@ export class KagentiProvider implements AgenticProvider {
             type: 'error',
             message: event.status.message ?? 'A2A task failed',
           };
+          yield { type: 'done' };
         } else if (event.status?.state === 'canceled') {
           yield {
             type: 'error',
             message: event.status.message ?? 'A2A task canceled',
           };
+          yield { type: 'done' };
         }
         break;
 

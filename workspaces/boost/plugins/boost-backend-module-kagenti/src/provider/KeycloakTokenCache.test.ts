@@ -84,6 +84,16 @@ describe('KeycloakTokenCache', () => {
     expect(result).toBeUndefined();
   });
 
+  it('skips cache for zero TTL', async () => {
+    await tokenCache.set('my-realm/my-client', 'token-abc', 0);
+    expect(cache.set).not.toHaveBeenCalled();
+  });
+
+  it('skips cache for negative TTL', async () => {
+    await tokenCache.set('my-realm/my-client', 'token-abc', -10);
+    expect(cache.set).not.toHaveBeenCalled();
+  });
+
   it('uses key prefix for namespace isolation', async () => {
     await tokenCache.set('realm-a/client-a', 'token-a', 60);
     await tokenCache.set('realm-b/client-b', 'token-b', 120);
