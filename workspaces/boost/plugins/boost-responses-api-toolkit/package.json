@@ -14,7 +14,14 @@
   "backstage": {
     "role": "node-library",
     "pluginId": "boost",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit"
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost-backend",
+      "@red-hat-developer-hub/backstage-plugin-boost-common",
+      "@red-hat-developer-hub/backstage-plugin-boost-node",
+      "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+      "@red-hat-developer-hub/backstage-plugin-boost-toolscope"
+    ]
   },
   "dependencies": {
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
