@@ -49,7 +49,8 @@ export function sanitizeEntityName(name: string): string {
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
-    .substring(0, 63);
+    .substring(0, 63)
+    .replace(/-+$/g, '');
   return sanitized || 'unnamed-entity';
 }
 

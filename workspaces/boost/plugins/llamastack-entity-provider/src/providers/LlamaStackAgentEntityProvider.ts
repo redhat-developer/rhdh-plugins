@@ -54,8 +54,7 @@ export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
  * spec.type: ai-agent.
  *
  * Unlike the model provider which polls an API, agent configurations
- * come from app-config.yaml. The provider re-reads config on each
- * refresh cycle to pick up hot-reloaded config changes.
+ * come from app-config.yaml and are read once at init time.
  *
  * @public
  */
