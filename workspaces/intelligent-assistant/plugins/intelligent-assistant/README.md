@@ -37,7 +37,7 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.conversations.access, read, allow
 p, role:default/team_a, intelligent-assistant.chat.create, create, allow
 p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
 p, role:default/team_a, intelligent-assistant.chat.update, update, allow
