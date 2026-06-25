@@ -72,14 +72,14 @@ export async function createNotebooksRouter(
   notebooksRouter.use(express.json());
 
   const lightSpeedPort =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getString(
-    'lightspeed.notebooks.queryDefaults.model',
+    'intelligent-assistant.notebooks.queryDefaults.model',
   );
   const queryProvider = config.getString(
-    'lightspeed.notebooks.queryDefaults.provider_id',
+    'intelligent-assistant.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
 

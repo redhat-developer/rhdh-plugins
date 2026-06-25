@@ -16,10 +16,10 @@
 
 export interface Config {
   /**
-   * Configuration required for using lightspeed
+   * Configuration required for using intelligent-assistant
    * @visibility frontend
    */
-  lightspeed?: {
+  'intelligent-assistant'?: {
     prompts?: Array</**
      * @visibility frontend
      */

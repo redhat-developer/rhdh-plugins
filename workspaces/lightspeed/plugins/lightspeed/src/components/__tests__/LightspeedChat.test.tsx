@@ -157,7 +157,7 @@ const mockUseLightspeedDrawerContext =
 
 const configAPi = mockApis.config({
   data: {
-    lightspeed: {
+    'intelligent-assistant': {
       notebooks: {
         enabled: true,
         queryDefaults: {
@@ -873,7 +873,7 @@ describe('LightspeedChat', () => {
   describe('notebooks permission denied', () => {
     beforeEach(() => {
       mockUsePermission.mockImplementation((args: any) => {
-        if (args.permission.name === 'lightspeed.notebooks.use') {
+        if (args.permission.name === 'intelligent-assistant.notebooks.use') {
           return { loading: false, allowed: false };
         }
         return { loading: false, allowed: true };

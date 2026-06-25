@@ -165,7 +165,10 @@ const LightspeedChatContainerInner = () => {
     return (
       <PermissionRequiredState
         subject={t('permission.subject.plugin')}
-        permissions={['lightspeed.chat.read', 'lightspeed.chat.create']}
+        permissions={[
+          'intelligent-assistant.chat.read',
+          'intelligent-assistant.chat.create',
+        ]}
         action={
           <Button
             variant="outlined"

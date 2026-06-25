@@ -50,7 +50,7 @@ export const useWelcomePrompts = (): SamplePrompts => {
       : translatePrompts([...DEFAULT_SAMPLE_PROMPTS, ...RHDH_SAMPLE_PROMPTS]);
 
     const userConfiguredPrompts: SamplePrompts = (
-      configApi?.getOptionalConfigArray('lightspeed.prompts') ?? []
+      configApi?.getOptionalConfigArray('intelligent-assistant.prompts') ?? []
     ).map(config => ({
       title: config.getString('title') ?? '',
       message: config.getString('message') ?? '',
