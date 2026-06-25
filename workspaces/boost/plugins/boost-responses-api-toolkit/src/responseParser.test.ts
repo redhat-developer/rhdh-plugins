@@ -64,6 +64,15 @@ describe('extractTextFromResponse', () => {
 
     expect(extractTextFromResponse(response)).toBe('');
   });
+
+  it('returns empty string when output is undefined', () => {
+    const response = {
+      id: 'resp-1',
+      model: 'test-model',
+    } as ResponsesApiResponse;
+
+    expect(extractTextFromResponse(response)).toBe('');
+  });
 });
 
 describe('normalizeStreamEvent', () => {
@@ -130,6 +139,24 @@ describe('normalizeStreamEvent', () => {
         type: 'tool_result',
         toolCallId: 'call-1',
         content: 'tool output',
+      },
+    ]);
+  });
+
+  it('normalizes MCP call completed with undefined content', () => {
+    const event: ResponsesApiStreamEvent = {
+      type: 'response.mcp_call.completed',
+      item: {
+        type: 'mcp_call',
+        id: 'call-2',
+      },
+    };
+
+    expect(normalizeStreamEvent(event)).toEqual([
+      {
+        type: 'tool_result',
+        toolCallId: 'call-2',
+        content: '',
       },
     ]);
   });

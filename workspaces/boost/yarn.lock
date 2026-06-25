@@ -4764,6 +4764,7 @@ __metadata:
     "@backstage/cli": "npm:^0.34.5"
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -4806,7 +4807,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:plugins/boost-responses-api-toolkit":
+"@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:plugins/boost-responses-api-toolkit":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:plugins/boost-responses-api-toolkit"
   dependencies:
