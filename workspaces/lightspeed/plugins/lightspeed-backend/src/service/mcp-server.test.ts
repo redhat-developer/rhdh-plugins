@@ -79,8 +79,8 @@ const MCP_CONFIG_MULTI = {
 };
 
 const MCP_CONFIG_DCR = {
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',

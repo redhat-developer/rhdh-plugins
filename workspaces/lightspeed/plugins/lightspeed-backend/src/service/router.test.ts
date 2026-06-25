@@ -796,8 +796,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [{ name: 'backstage-mcp', auth: 'dcr' }],
         },
       });
@@ -854,8 +854,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [
             { name: 'backstage-mcp', auth: 'dcr' },
             { name: 'static-server', token: 'my-static-token' },
