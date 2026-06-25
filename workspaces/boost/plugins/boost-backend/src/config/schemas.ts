@@ -67,88 +67,167 @@ export const BOOST_CONFIG_SCHEMA_VERSION = 1;
 export const boostConfigFields = {
   // -- Model connection --
   'boost.model.baseUrl': {
-    schema: z.string().url(),
+    schema: z.string().url().describe('Base URL for the AI model endpoint'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Base URL for the AI model endpoint',
+    description:
+      'Base URL for the AI model endpoint (e.g. https://llama.example.com/v1). ' +
+      'Used by the active provider to connect to the inference server.',
   },
   'boost.model.name': {
-    schema: z.string().min(1),
+    schema: z.string().min(1).describe('AI model identifier'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Name of the AI model to use',
+    description:
+      'Name or identifier of the AI model to use for inference ' +
+      '(e.g. "meta-llama/Llama-3.1-8B-Instruct").',
   },
 
   // -- System prompt --
   'boost.systemPrompt': {
-    schema: z.string().optional(),
+    schema: z
+      .string()
+      .optional()
+      .describe('System prompt prepended to every conversation'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'System prompt for AI conversations',
+    description:
+      'System prompt prepended to every AI conversation. ' +
+      'Overridable at runtime via the admin panel.',
   },
 
   // -- Security --
   'boost.security.mode': {
-    schema: z.enum(['development-only-no-auth', 'plugin-only', 'full']),
+    schema: z
+      .enum(['development-only-no-auth', 'plugin-only', 'full'])
+      .describe('Security enforcement level'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'Security mode for the boost plugin',
+    description:
+      'Security mode for the boost plugin. ' +
+      '"full" enforces Backstage auth + permissions; ' +
+      '"plugin-only" uses plugin-level auth without permission checks; ' +
+      '"development-only-no-auth" disables all auth (never use in production).',
   },
 
   // -- Feature flags --
   'boost.features.agentCreation': {
-    schema: z.boolean().optional(),
+    schema: z
+      .boolean()
+      .optional()
+      .describe('Toggle agent creation UI and routes'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Enable agent creation feature',
+    description:
+      'Enable the agent creation feature, including the agent builder UI ' +
+      'and creation API routes. Defaults to false when not set.',
   },
   'boost.features.skillsMarketplace': {
-    schema: z.boolean().optional(),
+    schema: z
+      .boolean()
+      .optional()
+      .describe('Toggle skills marketplace integration'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Enable skills marketplace feature',
+    description:
+      'Enable the skills marketplace feature, allowing users to browse ' +
+      'and deploy skill-based agents from an external catalog.',
   },
 
   // -- Agent approval --
   'boost.agentApproval.mode': {
-    schema: z.enum(['built-in', 'sonataflow']).optional(),
+    schema: z
+      .enum(['built-in', 'sonataflow'])
+      .optional()
+      .describe('Agent lifecycle approval mode'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Agent approval mode: built-in or SonataFlow-managed',
+    description:
+      'Agent approval mode: "built-in" uses the internal approval store; ' +
+      '"sonataflow" delegates approval to a SonataFlow workflow endpoint.',
   },
   'boost.agentApproval.sonataflow.endpoint': {
-    schema: z.string().url().optional(),
+    schema: z
+      .string()
+      .url()
+      .optional()
+      .describe('SonataFlow approval workflow URL'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'SonataFlow workflow endpoint for agent approval',
+    description:
+      'SonataFlow workflow endpoint for agent approval. ' +
+      'Required when boost.agentApproval.mode is "sonataflow".',
   },
 
   // -- Skills marketplace --
   'boost.skillsMarketplace.endpoint': {
-    schema: z.string().url().optional(),
+    schema: z
+      .string()
+      .url()
+      .optional()
+      .describe('External skills catalog backend URL'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'Skills catalog backend URL',
+    description:
+      'URL of the external skills catalog backend service. ' +
+      'Boost proxies browse/filter requests to this endpoint.',
   },
   'boost.skillsMarketplace.enabled': {
-    schema: z.boolean().optional(),
+    schema: z
+      .boolean()
+      .optional()
+      .describe('Master toggle for skills marketplace'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'Enable or disable skills marketplace',
+    description:
+      'Enable or disable the skills marketplace feature at runtime. ' +
+      'When disabled, skills proxy routes return 404.',
   },
 
   // -- Kagenti auth / token exchange --
   'boost.kagenti.auth.tokenExchange.enabled': {
-    schema: z.boolean().optional(),
+    schema: z.boolean().optional().describe('Enable RFC 8693 token exchange'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'Enable RFC 8693 token exchange for Kagenti',
+    description:
+      'Enable RFC 8693 token exchange for Kagenti. When enabled, the ' +
+      'user OIDC token is exchanged for a Kagenti-scoped token.',
   },
   'boost.kagenti.auth.tokenExchange.audience': {
-    schema: z.string().optional(),
+    schema: z
+      .string()
+      .optional()
+      .describe('Target audience for exchanged token'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'Target audience for exchanged token',
+    description:
+      'Target audience claim for the exchanged token, typically the ' +
+      'Kagenti service identifier in the identity provider.',
   },
   'boost.kagenti.auth.tokenExchange.userTokenHeader': {
-    schema: z.string().optional(),
+    schema: z
+      .string()
+      .optional()
+      .describe('Request header containing the user OIDC token'),
     configScope: 'yaml-only' as ConfigScope,
-    description: 'Header containing user OIDC token',
+    description:
+      'Name of the HTTP request header that carries the user OIDC token ' +
+      'for token exchange (e.g. "x-user-oidc-token").',
+  },
+
+  // -- Encryption --
+  'boost.encryptionSecret': {
+    schema: z
+      .string()
+      .min(16)
+      .optional()
+      .describe('Secret for encrypting sensitive DB values'),
+    configScope: 'yaml-only' as ConfigScope,
+    description:
+      'Secret used to encrypt sensitive config values stored in the ' +
+      'admin config database (AES-256-GCM). Must be at least 16 characters. ' +
+      'Required to read/write fields marked as sensitive.',
+    sensitive: true,
   },
 
   // -- DevSpaces credentials (sensitive) --
   'boost.devSpaces.credentials': {
-    schema: z.string().optional(),
+    schema: z
+      .string()
+      .optional()
+      .describe('Encrypted DevSpaces integration credentials'),
     configScope: 'db-overridable' as ConfigScope,
-    description: 'DevSpaces integration credentials',
+    description:
+      'DevSpaces integration credentials (e.g. API token). Encrypted ' +
+      'at rest in the admin config database using AES-256-GCM.',
     sensitive: true,
   },
 } as const satisfies Record<string, ConfigFieldMeta>;

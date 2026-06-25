@@ -1,0 +1,39 @@
+# Example dynamic-plugins.yaml for deploying Boost in RHDH
+#
+# This file shows how to configure Boost as a dynamic plugin in Red Hat
+# Developer Hub. Copy this to your RHDH instance's
+# dynamic-plugins.override.yaml and adjust settings as needed.
+#
+# Each plugin is loaded from an OCI artifact or a local path. The
+# package names follow the RHDH dynamic plugin naming convention:
+#   @red-hat-developer-hub/backstage-plugin-<name>
+#
+# For more information on RHDH dynamic plugins, see:
+#   https://docs.redhat.com/en/documentation/red_hat_developer_hub
+
+plugins:
+  # -----------------------------------------------------------------------
+  # Core backend plugin — required
+  # -----------------------------------------------------------------------
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-dynamic
+    disabled: false
+    pluginConfig:
+      boost:
+        # Security mode: 'full' for production, 'development-only-no-auth' for local dev
+        security:
+          mode: full
+        model:
+          baseUrl: ${BOOST_MODEL_BASE_URL}
+          name: ${BOOST_MODEL_NAME}
+
+  # -----------------------------------------------------------------------
+  # Provider modules — install at least one
+  # -----------------------------------------------------------------------
+
+  # Llama Stack provider: connects to a Llama Stack Responses API endpoint
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-llamastack-dynamic
+    disabled: false
+
+  # Kagenti provider: connects to a Kagenti multi-agent orchestrator
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-kagenti-dynamic
+    disabled: true

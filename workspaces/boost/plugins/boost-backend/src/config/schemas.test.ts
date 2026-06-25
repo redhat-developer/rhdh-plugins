@@ -38,6 +38,7 @@ describe('boostConfigFields', () => {
     expect(keys).toContain('boost.agentApproval.mode');
     expect(keys).toContain('boost.skillsMarketplace.enabled');
     expect(keys).toContain('boost.kagenti.auth.tokenExchange.enabled');
+    expect(keys).toContain('boost.encryptionSecret');
     expect(keys).toContain('boost.devSpaces.credentials');
   });
 
@@ -121,11 +122,13 @@ describe('isDbWritable', () => {
     expect(isDbWritable('boost.kagenti.auth.tokenExchange.enabled')).toBe(
       false,
     );
+    expect(isDbWritable('boost.encryptionSecret')).toBe(false);
   });
 });
 
 describe('isSensitiveField', () => {
   it('returns true for sensitive fields', () => {
+    expect(isSensitiveField('boost.encryptionSecret')).toBe(true);
     expect(isSensitiveField('boost.devSpaces.credentials')).toBe(true);
   });
 
