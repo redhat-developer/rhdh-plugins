@@ -26,5 +26,20 @@ export interface HeadlineProps {
  * @public
  */
 export const Headline = (props: HeadlineProps) => {
-  return <h1 style={{ textAlign: props.align }}>{props.title}</h1>;
+  return (
+    <h1
+      style={{
+        textAlign: props.align,
+        margin: 0,
+        fontSize: '1.25rem',
+        fontWeight: 600,
+        lineHeight: 1.25,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {props.title}
+    </h1>
+  );
 };

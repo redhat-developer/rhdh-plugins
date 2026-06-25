@@ -34,6 +34,11 @@ import useMeasure from 'react-use/lib/useMeasure';
 
 import type { VisibleDefaultWidget } from '../api/DefaultWidgetsApiClient';
 import { HomePageCardMountPoint } from '../types';
+import {
+  HOME_PAGE_GRID_BREAKPOINTS,
+  resolveDefaultWidgetLayout,
+  resolveLayoutEntryForBreakpoint,
+} from '../utils/resolveDefaultWidgetLayouts';
 
 interface Card {
   id: string;
@@ -71,6 +76,8 @@ const defaultProps: ResponsiveProps = {
 };
 
 const cardWrapperSx = {
+  height: '100%',
+  overflow: 'hidden',
   '& > div[class*="MuiCard-root"]': {
     width: '100%',
     height: '100%',
@@ -102,6 +109,8 @@ export const DefaultWidgetsReadOnlyGrid = ({
   }, [mountPoints]);
 
   const cards = useMemo<Card[]>(() => {
+    const nextYByBreakpoint = new Map<string, number>();
+
     return defaultWidgets
       .map<Card | null>((widget, index) => {
         const mountPoint = mountPointsByRef.get(widget.ref);
@@ -119,30 +128,21 @@ export const DefaultWidgetsReadOnlyGrid = ({
           | Record<string, { x?: number; y?: number; w?: number; h?: number }>
           | undefined;
 
-        if (widgetLayout) {
-          for (const [breakpoint, layout] of Object.entries(widgetLayout)) {
-            layouts[breakpoint] = {
-              i: id,
-              x: layout.x ?? 0,
-              y: layout.y ?? 0,
-              w: layout.w ?? 12,
-              h: layout.h ?? 4,
-              isDraggable: false,
-              isResizable: false,
-            };
-          }
-        } else {
-          ['xl', 'lg', 'md', 'sm', 'xs', 'xxs'].forEach(breakpoint => {
-            layouts[breakpoint] = {
-              i: id,
-              x: 0,
-              y: 0,
-              w: 12,
-              h: 4,
-              isDraggable: false,
-              isResizable: false,
-            };
-          });
+        for (const breakpoint of HOME_PAGE_GRID_BREAKPOINTS) {
+          const resolved = resolveDefaultWidgetLayout(
+            resolveLayoutEntryForBreakpoint(widgetLayout, breakpoint),
+            breakpoint,
+            nextYByBreakpoint,
+          );
+          layouts[breakpoint] = {
+            i: id,
+            x: resolved.x,
+            y: resolved.y,
+            w: resolved.w,
+            h: resolved.h,
+            isDraggable: false,
+            isResizable: false,
+          };
         }
 
         return {

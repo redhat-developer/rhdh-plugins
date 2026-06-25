@@ -18,12 +18,14 @@ import { test, expect, BrowserContext, Page } from '@playwright/test';
 import { TestUtils } from './utils/testUtils.js';
 import { HomePageCustomization } from './pages/homePageCustomization.js';
 import { runAccessibilityTests } from './utils/accessibility.js';
+import { getTranslations } from './utils/translations.js';
 
 test.describe.serial('Dynamic Home Page Customization', () => {
   let testUtils: TestUtils;
   let homePageCustomization: HomePageCustomization;
   let sharedPage: Page;
   let sharedContext: BrowserContext;
+  const translations = getTranslations('en');
 
   test.beforeAll(async ({ browser }) => {
     sharedContext = await browser.newContext();
@@ -80,13 +82,15 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test('Verify Add Widget Button Adds Cards', async () => {
-    await homePageCustomization.addWidget('Onboarding');
+    await homePageCustomization.addWidget(translations.onboarding.title);
     await expect(
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget('Quick Access');
-    await expect(sharedPage.getByText('Quick Access')).toBeVisible();
+    await homePageCustomization.addWidget(translations.quickAccess.title);
+    await expect(
+      sharedPage.getByText(translations.quickAccess.title),
+    ).toBeVisible();
   });
 
   // ── Persistent storage ────────────────────────────────────────────────
@@ -103,7 +107,9 @@ test.describe.serial('Dynamic Home Page Customization', () => {
       await homePageCustomization.verifyCardHidden(
         'Good (morning|afternoon|evening)',
       );
-      await homePageCustomization.verifyCardVisible('Quick Access');
+      await homePageCustomization.verifyCardVisible(
+        translations.quickAccess.title,
+      );
       const countAfterReload =
         await homePageCustomization.getVisibleCardCount();
       expect(countAfterReload).toBe(countBeforeReload);
@@ -120,7 +126,9 @@ test.describe.serial('Dynamic Home Page Customization', () => {
       await homePageCustomization.verifyCardHidden(
         'Good (morning|afternoon|evening)',
       );
-      await homePageCustomization.verifyCardVisible('Quick Access');
+      await homePageCustomization.verifyCardVisible(
+        translations.quickAccess.title,
+      );
       const countAfterLogout =
         await homePageCustomization.getVisibleCardCount();
       expect(countAfterLogout).toBe(countBeforeLogout);

@@ -38,6 +38,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useContainerQuery } from '../hooks/useContainerQuery';
 import { getCardTitle, getCardDescription } from '../utils/customizable-cards';
 import { getTranslatedTextWithFallback } from '../translations/utils';
+import { resolveDefaultWidgetLayout } from '../utils/resolveDefaultWidgetLayouts';
 
 export interface DefaultWidgetsCustomizableGridProps {
   defaultWidgets: VisibleDefaultWidget[];
@@ -69,6 +70,7 @@ export const DefaultWidgetsCustomizableGrid = ({
       { child: ReactElement; title: string | undefined }
     > = {};
     const defaultConfig: LayoutConfiguration[] = [];
+    const nextYByBreakpoint = new Map<string, number>();
 
     mountPoints.forEach(mountPoint => {
       const mountPointId = mountPoint.config?.id;
@@ -192,12 +194,17 @@ export const DefaultWidgetsCustomizableGrid = ({
         | Record<string, { x?: number; y?: number; w?: number; h?: number }>
         | undefined;
       const layout = widgetLayout?.xl ?? {};
+      const resolved = resolveDefaultWidgetLayout(
+        layout,
+        'xl',
+        nextYByBreakpoint,
+      );
       defaultConfig.push({
         component: cardId,
-        x: layout.x ?? 0,
-        y: layout.y ?? 0,
-        width: layout.w ?? 12,
-        height: layout.h ?? 4,
+        x: resolved.x,
+        y: resolved.y,
+        width: resolved.w,
+        height: resolved.h,
         movable: true,
         deletable: true,
         resizable: true,
