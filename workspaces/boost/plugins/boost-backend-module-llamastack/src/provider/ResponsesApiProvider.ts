@@ -21,13 +21,15 @@ import type {
   NormalizedStreamEvent,
   ProviderDescriptor,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import type {
-  LlamaStackConnectionConfig,
-  ResponsesApiInputItem,
-  ResponsesApiRequest,
-  ResponsesApiResponse,
-  ResponsesApiStreamEvent,
-} from '../types';
+import {
+  buildResponsesApiRequest,
+  extractTextFromResponse,
+  normalizeStreamEvent,
+  type ResponsesApiRequest,
+  type ResponsesApiResponse,
+  type ResponsesApiStreamEvent,
+} from '@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit';
+import type { LlamaStackConnectionConfig } from '../types';
 
 /**
  * Options for creating a {@link ResponsesApiProvider}.
@@ -101,7 +103,7 @@ export class ResponsesApiProvider implements AgenticProvider {
     }
 
     const result = (await response.json()) as ResponsesApiResponse;
-    return this.extractTextFromResponse(result);
+    return extractTextFromResponse(result);
   }
 
   /**
@@ -183,44 +185,19 @@ export class ResponsesApiProvider implements AgenticProvider {
     messages: InputItem[],
     stream: boolean,
   ): ResponsesApiRequest {
-    const skipped = messages.filter(m => m.type !== 'text');
-    if (skipped.length > 0) {
+    const { body, skippedCount, skippedTypes } = buildResponsesApiRequest({
+      model: this.connection.defaultModel ?? 'meta-llama/Llama-3.1-8B-Instruct',
+      messages,
+      stream,
+    });
+
+    if (skippedCount > 0) {
       this.logger.debug(
-        `Skipping ${skipped.length} non-text input item(s) (types: ${[...new Set(skipped.map(m => m.type))].join(', ')})`,
+        `Skipping ${skippedCount} non-text input item(s) (types: ${skippedTypes.join(', ')})`,
       );
     }
 
-    const input: ResponsesApiInputItem[] = messages
-      .filter(
-        (m): m is Extract<InputItem, { type: 'text' }> => m.type === 'text',
-      )
-      .map(m => ({
-        role: 'user' as const,
-        content: m.text,
-      }));
-
-    return {
-      model: this.connection.defaultModel ?? 'meta-llama/Llama-3.1-8B-Instruct',
-      input,
-      stream,
-    };
-  }
-
-  /**
-   * Extract plain text from a non-streaming Responses API response.
-   */
-  private extractTextFromResponse(result: ResponsesApiResponse): string {
-    const parts: string[] = [];
-    for (const output of result.output ?? []) {
-      if (output.type === 'message' && output.content) {
-        for (const part of output.content) {
-          if (part.type === 'output_text') {
-            parts.push(part.text);
-          }
-        }
-      }
-    }
-    return parts.join('');
+    return body;
   }
 
   /**
@@ -256,7 +233,7 @@ export class ResponsesApiProvider implements AgenticProvider {
 
             try {
               const event = JSON.parse(data) as ResponsesApiStreamEvent;
-              for (const normalized of this.normalizeStreamEvent(event)) {
+              for (const normalized of normalizeStreamEvent(event)) {
                 yield normalized;
                 if (normalized.type === 'done') {
                   return;
@@ -280,7 +257,7 @@ export class ResponsesApiProvider implements AgenticProvider {
           }
           try {
             const event = JSON.parse(data) as ResponsesApiStreamEvent;
-            for (const normalized of this.normalizeStreamEvent(event)) {
+            for (const normalized of normalizeStreamEvent(event)) {
               yield normalized;
               if (normalized.type === 'done') {
                 return;
@@ -295,52 +272,6 @@ export class ResponsesApiProvider implements AgenticProvider {
       yield { type: 'done' };
     } finally {
       reader.releaseLock();
-    }
-  }
-
-  /**
-   * Normalize a Responses API stream event into boost NormalizedStreamEvents.
-   */
-  private *normalizeStreamEvent(
-    event: ResponsesApiStreamEvent,
-  ): Iterable<NormalizedStreamEvent> {
-    switch (event.type) {
-      case 'response.output_text.delta':
-        if (event.delta) {
-          yield { type: 'text', text: event.delta };
-        }
-        break;
-
-      case 'response.mcp_call.in_progress':
-        if (event.item?.id && event.item?.server_label) {
-          yield {
-            type: 'tool_call',
-            toolCallId: event.item.id,
-            toolName: event.item.server_label,
-            args: '{}',
-          };
-        }
-        break;
-
-      case 'response.mcp_call.completed':
-        if (event.item?.id) {
-          const resultText =
-            event.item.content?.map(p => p.text).join('') ?? '';
-          yield {
-            type: 'tool_result',
-            toolCallId: event.item.id,
-            content: resultText,
-          };
-        }
-        break;
-
-      case 'response.completed':
-        yield { type: 'done' };
-        break;
-
-      default:
-        this.logger.debug(`Unhandled Responses API event type: ${event.type}`);
-        break;
     }
   }
 }

@@ -33,7 +33,8 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.9.1",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit": "workspace:^"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.5"

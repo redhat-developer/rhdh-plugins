@@ -15,7 +15,9 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
-      "@red-hat-developer-hub/backstage-plugin-boost-node"
+      "@red-hat-developer-hub/backstage-plugin-boost-node",
+      "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+      "@red-hat-developer-hub/backstage-plugin-boost-toolscope"
     ]
   },
   "exports": {

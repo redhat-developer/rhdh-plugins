@@ -1,8 +1,8 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-boost-node",
-  "version": "0.1.1",
+  "name": "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+  "version": "0.1.0",
   "license": "Apache-2.0",
-  "description": "Node.js library for the boost plugin",
+  "description": "Shared Responses API utilities for boost AI platform provider modules",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -14,7 +14,7 @@
   "backstage": {
     "role": "node-library",
     "pluginId": "boost",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-node",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
@@ -24,20 +24,19 @@
     ]
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.9.1",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
-  },
-  "devDependencies": {
-    "@backstage/cli": "^0.34.5"
   },
   "sideEffects": false,
   "scripts": {
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5"
   },
   "files": [
     "dist"
@@ -45,7 +44,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
-    "directory": "workspaces/boost/plugins/boost-node"
+    "directory": "workspaces/boost/plugins/boost-responses-api-toolkit"
   },
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues"
