@@ -157,7 +157,8 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
       );
     }
 
-    const url = new URL(path, endpoint);
+    const url = new URL(endpoint);
+    url.pathname = url.pathname.replace(/\/$/, '') + path;
     for (const [key, value] of Object.entries(query)) {
       if (value !== undefined) {
         if (Array.isArray(value)) {
@@ -177,7 +178,14 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
       headers: { Accept: 'application/json' },
     });
 
-    const body = await response.json();
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch {
+      body = {
+        error: `Upstream returned non-JSON response (HTTP ${response.status})`,
+      };
+    }
     return { status: response.status, body };
   }
 

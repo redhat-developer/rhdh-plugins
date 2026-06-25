@@ -163,17 +163,6 @@ export const boostConfigFields = {
       'URL of the external skills catalog backend service. ' +
       'Boost proxies browse/filter requests to this endpoint.',
   },
-  'boost.skillsMarketplace.enabled': {
-    schema: z
-      .boolean()
-      .optional()
-      .describe('Master toggle for skills marketplace'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Enable or disable the skills marketplace feature at runtime. ' +
-      'When disabled, skills proxy routes return 404.',
-  },
-
   // -- Kagenti auth / token exchange --
   'boost.kagenti.auth.tokenExchange.enabled': {
     schema: z.boolean().optional().describe('Enable RFC 8693 token exchange'),
