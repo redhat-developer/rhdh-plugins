@@ -97,6 +97,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.filecheck.description': string;
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
+    readonly 'metric.lastUpdatedInfoButton': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'metric.averageCenterTooltipTotalLabel': string;
     readonly 'metric.averageCenterTooltipMaxLabel': string;

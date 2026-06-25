@@ -98,6 +98,7 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.jira.open_issues.title': 'Jira-Tickets öffnen und blockieren',
     'metric.lastUpdated': 'Letzte Aktualisierung: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Letzte Aktualisierung: Nicht verfügbar',
+    'metric.lastUpdatedInfoButton': 'Informationen zur letzten Aktualisierung',
     'metric.someEntitiesNotReportingValues':
       'Einige Organisationen melden keine Werte, die sich auf diese Kennzahl beziehen.',
     'metric.sonarqube.code_coverage.description':

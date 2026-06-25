@@ -100,6 +100,7 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.jira.open_issues.title': 'Tickets de blocage ouverts Jira',
     'metric.lastUpdated': 'Dernière mise à jour : {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Dernière mise à jour : Non disponible',
+    'metric.lastUpdatedInfoButton': 'Informations sur la dernière mise à jour',
     'metric.someEntitiesNotReportingValues':
       'Certaines entités ne communiquent pas les valeurs relatives à cet indicateur.',
     'metric.sonarqube.code_coverage.description':
