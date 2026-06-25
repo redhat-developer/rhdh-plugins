@@ -4806,6 +4806,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:plugins/boost-responses-api-toolkit":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@workspace:plugins/boost-responses-api-toolkit"
+  dependencies:
+    "@backstage/cli": "npm:^0.34.5"
+    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-boost-toolscope@workspace:plugins/boost-toolscope":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-toolscope@workspace:plugins/boost-toolscope"
+  dependencies:
+    "@backstage/cli": "npm:^0.34.5"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider"
