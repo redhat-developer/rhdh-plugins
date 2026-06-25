@@ -128,15 +128,8 @@ export class LlamaStackAgentEntityProvider implements EntityProvider {
       annotations['boost.redhat.com/model'] = agent.model;
     }
 
-    // Build dependsOn relations for tools and handoff targets
+    // Build dependsOn relations for handoff targets
     const dependsOn: string[] = [];
-    if (agent.tools) {
-      for (const tool of agent.tools) {
-        dependsOn.push(
-          `resource:default/${sanitizeEntityName(`llamastack-tool-${tool}`)}`,
-        );
-      }
-    }
     if (agent.handoffTargets) {
       for (const target of agent.handoffTargets) {
         dependsOn.push(

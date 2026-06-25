@@ -111,7 +111,7 @@ describe('LlamaStackModelEntityProvider', () => {
     expect(entity.kind).toBe('Resource');
     expect(entity.spec.type).toBe('ai-model');
     expect(entity.spec.lifecycle).toBe('production');
-    expect(entity.spec.owner).toBe('meta');
+    expect(entity.spec.owner).toBe('user:default/meta');
     expect(entity.metadata.annotations['boost.redhat.com/model-id']).toBe(
       'meta-llama/Llama-3.1-8B-Instruct',
     );

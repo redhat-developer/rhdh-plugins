@@ -60,6 +60,10 @@ describe('entityHelpers', () => {
       const long = 'a'.repeat(100);
       expect(sanitizeEntityName(long).length).toBeLessThanOrEqual(63);
     });
+
+    it('should return unnamed-entity for all-invalid input', () => {
+      expect(sanitizeEntityName('!!!')).toBe('unnamed-entity');
+    });
   });
 
   describe('mapOwner', () => {

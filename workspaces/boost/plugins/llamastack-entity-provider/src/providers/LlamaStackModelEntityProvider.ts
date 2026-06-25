@@ -33,7 +33,7 @@ import type {
   LlamaStackModelListResponse,
   LlamaStackModelEntry,
 } from '../types';
-import { sanitizeEntityName } from './entityHelpers';
+import { mapOwner, sanitizeEntityName } from './entityHelpers';
 
 const PROVIDER_ID = 'llamastack-model-entity-provider';
 
@@ -171,7 +171,7 @@ export class LlamaStackModelEntityProvider implements EntityProvider {
       spec: {
         type: 'ai-model',
         lifecycle: 'production',
-        owner: model.owned_by ?? 'unknown',
+        owner: mapOwner(model.owned_by),
       },
     };
   }

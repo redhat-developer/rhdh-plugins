@@ -127,14 +127,13 @@ describe('LlamaStackAgentEntityProvider', () => {
     expect(mutation.entities).toHaveLength(0);
   });
 
-  it('should include dependsOn for tools and handoff targets', async () => {
+  it('should include dependsOn for handoff targets', async () => {
     const config: LlamaStackEntityProviderConfig = {
       baseUrl: 'http://localhost:8321',
       agents: [
         {
           id: 'orchestrator',
           name: 'Orchestrator',
-          tools: ['code-search', 'web-browser'],
           handoffTargets: ['code-assistant'],
         },
       ],
@@ -154,8 +153,6 @@ describe('LlamaStackAgentEntityProvider', () => {
     const entity = mutation.entities[0].entity;
 
     expect(entity.spec.dependsOn).toEqual([
-      'resource:default/llamastack-tool-code-search',
-      'resource:default/llamastack-tool-web-browser',
       'component:default/llamastack-agent-code-assistant',
     ]);
   });

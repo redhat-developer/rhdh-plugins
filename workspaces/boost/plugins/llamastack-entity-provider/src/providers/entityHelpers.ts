@@ -44,12 +44,13 @@ export function mapLifecycleStage(
  * @internal
  */
 export function sanitizeEntityName(name: string): string {
-  return name
+  const sanitized = name
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .substring(0, 63);
+  return sanitized || 'unnamed-entity';
 }
 
 /**
