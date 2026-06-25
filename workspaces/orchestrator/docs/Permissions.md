@@ -1,11 +1,20 @@
-## BREAKING CHANGE - Conditional Policies Required
+## DEPRECATION NOTICE - Dynamic Permissions
 
-**As of orchestrator plugin version 2.1.0**, the following permissions are **NO LONGER SUPPORTED**:
+**Dynamic workflow-specific permissions are deprecated and will be removed in the next release.** They continue to work in this release alongside the new conditional policies, but you should migrate now.
+
+The following dynamic permissions are **DEPRECATED**:
 
 - `orchestrator.workflow.<workflowId>` (e.g., `orchestrator.workflow.yamlgreet`)
 - `orchestrator.workflow.use.<workflowId>` (e.g., `orchestrator.workflow.use.checkout`)
 
-You **MUST** migrate to conditional policies using the `IS_ALLOWED_WORKFLOW_ID` rule. See the [Migration Guide](MIGRATION-CONDITIONAL-POLICIES.md) for detailed instructions.
+**Replace them with conditional policies** using the `IS_ALLOWED_WORKFLOW_ID` rule. See the [Migration Guide](MIGRATION-CONDITIONAL-POLICIES.md) for detailed instructions.
+
+### Important notes about dynamic permissions
+
+- Dynamic permissions could **only** be created via **CSV permission policy files** or the **REST API**. The RBAC UI does not support creating or displaying them.
+- If you created dynamic permissions via the REST API, you must **delete them via the REST API** and replace them with conditional policies.
+- Both systems (dynamic permissions and conditional policies) work simultaneously in this release. If either grants access, the user gets access.
+- A deprecation warning is logged when access is granted through a dynamic permission.
 
 ---
 
@@ -14,12 +23,14 @@ the RBAC plugin. The result is control over what users can see or execute.
 
 ## Orchestrator Permissions
 
-| Name                           | Resource Type         | Policy | Description                                                                                                                                                        | Requirements |
-| ------------------------------ | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| orchestrator.workflow          | orchestrator-workflow | read   | Allows the user to list and read workflow definitions and their instances. Use conditional policies with IS_ALLOWED_WORKFLOW_ID to restrict to specific workflows. |              |
-| orchestrator.workflow.use      | orchestrator-workflow | update | Allows the user to run or abort workflows. Use conditional policies with IS_ALLOWED_WORKFLOW_ID to restrict to specific workflows.                                 |              |
-| orchestrator.workflowAdminView | basic                 | read   | Allows the user to view instance variables and workflow definition editor                                                                                          |              |
-| orchestrator.instanceAdminView | basic                 | read   | Allows the user to view all workflow instances, including those not created by them                                                                                |              |
+| Name                                     | Resource Type         | Policy | Description                                                                                                                                                        | Status         |
+| ---------------------------------------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| orchestrator.workflow                    | orchestrator-workflow | read   | Allows the user to list and read workflow definitions and their instances. Use conditional policies with IS_ALLOWED_WORKFLOW_ID to restrict to specific workflows. |                |
+| orchestrator.workflow.use                | orchestrator-workflow | update | Allows the user to run or abort workflows. Use conditional policies with IS_ALLOWED_WORKFLOW_ID to restrict to specific workflows.                                 |                |
+| orchestrator.workflow.\<workflowId\>     | basic                 | read   | Allows read access to a specific workflow. Can only be created via CSV policy files or REST API.                                                                   | **DEPRECATED** |
+| orchestrator.workflow.use.\<workflowId\> | basic                 | update | Allows execute/abort access to a specific workflow. Can only be created via CSV policy files or REST API.                                                          | **DEPRECATED** |
+| orchestrator.workflowAdminView           | basic                 | read   | Allows the user to view instance variables and workflow definition editor                                                                                          |                |
+| orchestrator.instanceAdminView           | basic                 | read   | Allows the user to view all workflow instances, including those not created by them                                                                                |                |
 
 ## Define basic static permissions(Full access by RBAC roles)
 
@@ -27,14 +38,14 @@ To get started with policies, we recommend defining 2 roles and assigning them t
 
 As an example, mind the following [policy file](./rbac-policy.csv).
 
-**IMPORTANT:** The CSV file contains ONLY basic permissions with full access for the RBAC role. To restrict access to specific workflow resources, use conditional policies.
+**IMPORTANT:** The CSV file contains basic permissions with full access for the RBAC role. To restrict access to specific workflow resources, use conditional policies (recommended). Don't use deprecated dynamic permissions.
 
 The users of the `default/workflowAdmin` role have full permissions (can list, read and execute any workflow).
 
-The `guest` user has the `default/workflowUser` role with basic permissions. To restrict this role to specific workflows, create conditional policies via the REST API.
+The `guest` user has the `default/workflowUser` role with basic permissions. To restrict this role to specific workflows, use conditional policies.
 
 ```csv
-# WorkflowUser role - basic permissions (add conditional policies via REST API for workflow-specific access)
+# WorkflowUser role - basic permissions (add conditional policies for workflow-specific access)
 p, role:default/workflowUser, orchestrator.workflow, read, allow
 p, role:default/workflowUser, orchestrator.workflow.use, update, allow
 
@@ -46,9 +57,19 @@ g, user:development/guest, role:default/workflowUser
 g, user:default/mareklibra, role:default/workflowAdmin
 ```
 
-**To restrict `role:default/workflowUser` to specific workflows**, create addional conditional policies file. See more
+### DEPRECATED: Dynamic permissions in CSV files
 
-See https://casbin.org/docs/rbac for more information about casbin rules.
+The following CSV format still works in this release but is **deprecated** and will be removed in the next release:
+
+```csv
+# DEPRECATED - use conditional policies instead
+p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
+p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
+```
+
+Replace with conditional policies (see below).
+
+**To restrict `role:default/workflowUser` to specific workflows**, create additional conditional policies file.
 
 ## Using Conditional Policies
 
@@ -290,4 +311,6 @@ extensions:
 
 ## RBAC UI Compatibility
 
-The orchestrator permissions (`orchestrator.workflow` and `orchestrator.workflow.use`) are statically defined and work fine within the RBAC UI. Conditional policies must be managed via the REST API as shown above.
+The orchestrator permissions (`orchestrator.workflow` and `orchestrator.workflow.use`) are statically defined and work within the RBAC UI. Conditional policies can be created and managed via the RBAC UI, REST API, or conditional policies YAML files.
+
+**Note:** The deprecated dynamic permissions (`orchestrator.workflow.<workflowId>`, `orchestrator.workflow.use.<workflowId>`) are **not visible** in the RBAC UI. The UI does not support creating or displaying them. If you created them via REST API, you must delete them via REST API and replace with conditional policies.

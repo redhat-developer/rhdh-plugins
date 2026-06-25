@@ -1,4 +1,5 @@
 ## p, role:default/workflowUser, orchestrator.workflow.use, update, allow
+## p, role:default/workflowUser, orchestrator.workflow, read, allow
 
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
 p, role:default/workflowAdmin, orchestrator.workflowAdminView, read, allow
