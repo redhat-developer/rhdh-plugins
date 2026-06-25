@@ -229,7 +229,6 @@ To enable permissions, you need to add the following in the [app-config file](..
 permission:
   enabled: true
   rbac:
-    policies-csv-file: <absolute path to the policy file>
     # Permission policy file with role members definition and basic RBAC permissions
     policies-csv-file: <absolute path to the policy file>
     # Conditional policies file
@@ -237,7 +236,6 @@ permission:
     # policyFileReload: true # Optional permissions hot reload
     pluginsWithPermission:
       - orchestrator
-    policyFileReload: true
     admin:
       users:
         - name: user:default/YOUR_USER

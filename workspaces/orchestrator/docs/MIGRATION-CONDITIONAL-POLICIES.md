@@ -354,10 +354,10 @@ grep -E '^(##)?p, role:default/workflowUser, orchestrator\.workflow(\.use)?(\.[a
 
 # Take a look, what will remain
 
-sed -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /Users/oandriie/rhdh-plugins/workspaces/orchestrator/docs/rbac-policy.csv
+sed -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /path/to/rbac-policy.csv
 
 # And if everything is ok, remove deprecated permissions
-sed -i '' -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /Users/oandriie/rhdh-plugins/workspaces/orchestrator/docs/rbac-policy.csv
+sed -i '' -E '/^(##)?p, role:default\/workflowUser, orchestrator\.workflow(\.use)?(\.[a-zA-Z0-9_-]+)?,/d' /path/to/rbac-policy.csv
 ```
 
 Or manually edit the file and remove lines like:
@@ -369,11 +369,11 @@ p, role:default/user, orchestrator.workflow.use.checkout, update, allow
 
 #### Remove policies via RBAC UI
 
-RBAC UI don't allow users create or delete deprecated permissions.
+RBAC UI doesn't allow users create or delete deprecated permissions.
 
 #### Remove policies via REST API
 
-If you created policies via REST API, then fetch list all policies to find the ones to delete
+If you created policies via REST API, then fetch the list of all policies to find the ones to delete
 
 ```bash
 curl -X GET https://<your-rhdh-url>/api/permission/policies \
@@ -416,7 +416,7 @@ curl -X DELETE "https://<your-rhdh-url>/api/permission/policies/role/default/<yo
 #### Test that new permissions work
 
 1. **Verify conditional policies were created:**
-   - **YAML file**: Check your `conditional-policies.yaml` file contains the correct entries
+   - **YAML file**: Check that your `conditional-policies.yaml` file contains the correct entries
    - **RBAC UI**: Navigate to RBAC Administration page and verify conditional policies are listed for the role
 
 2. **Test user access:**
@@ -662,7 +662,7 @@ Restart Backstage after making this change.
    permission:
      rbac:
        policies-csv-file: /absolute/path/to/rbac-policy.csv
-      conditionalPoliciesFile: /path/to/conditional-policies.yaml
+       conditionalPoliciesFile: /path/to/conditional-policies.yaml
    ```
 
 4. Check RHDH logs for CSV parsing errors/warnings. RBAC plugin skips permissions with invalid format, but log warnings.
