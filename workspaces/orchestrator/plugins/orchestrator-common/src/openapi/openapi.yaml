@@ -449,6 +449,17 @@ components:
         averageTimeToComplete:
           type: number
           description: Average time to complete a workflow run in milliseconds
+    WorkflowAvailabilityResponseDTO:
+      type: object
+      properties:
+        isAvailable:
+          type: boolean
+        statusCode:
+          type: integer
+        urlToFetch:
+          type: string
+        reason:
+          type: string
     WorkflowOverviewDTO:
       type: object
       properties:
@@ -473,6 +484,8 @@ components:
           type: string
         isAvailable:
           type: boolean
+        availability:
+          $ref: '#/components/schemas/WorkflowAvailabilityResponseDTO'
         version:
           type: string
           description: Workflow definition version

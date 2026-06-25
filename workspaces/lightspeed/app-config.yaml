@@ -19,7 +19,7 @@ organization:
   name: Red Hat
 
 # Disable AI Notebooks feature by default
-lightspeed:
+intelligent-assistant:
   notebooks:
     enabled: ${NOTEBOOKS_ENABLED:-false}
     queryDefaults:

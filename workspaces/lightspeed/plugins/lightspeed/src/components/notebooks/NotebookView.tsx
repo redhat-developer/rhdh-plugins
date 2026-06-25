@@ -307,8 +307,9 @@ export const NotebookView = ({
 
   // Use notebook-specific model from config instead of chat's selected model
   const notebookModel =
-    configApi.getOptionalString('lightspeed.notebooks.queryDefaults.model') ||
-    '';
+    configApi.getOptionalString(
+      'intelligent-assistant.notebooks.queryDefaults.model',
+    ) || '';
 
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,

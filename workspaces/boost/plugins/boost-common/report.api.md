@@ -14,6 +14,36 @@ export interface AgenticProvider {
 }
 
 // @public
+export interface AgentRecord {
+  createdAt: string;
+  createdBy: string;
+  description?: string;
+  governanceRegistered: boolean;
+  id: string;
+  lifecycleStage: LifecycleStage;
+  name: string;
+  updatedAt: string;
+}
+
+// @public
+export interface ApprovalRequest {
+  args: string;
+  conversationId: string;
+  createdAt: string;
+  message?: string;
+  requestId: string;
+  resolvedArgs?: string;
+  resolvedAt?: string;
+  status: ApprovalStatus;
+  toolCallId: string;
+  toolName: string;
+  userRef: string;
+}
+
+// @public
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+// @public
 export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
 
 // @public
@@ -192,8 +222,10 @@ export const boostToolUnpublishPermission: ResourcePermission<'boost-tool'>;
 // @public
 export interface ConversationDetails {
   createdAt: string;
+  createdBy: string;
   id: string;
   messages: ConversationMessage[];
+  providerId: string;
   title: string;
   updatedAt: string;
 }
@@ -209,9 +241,22 @@ export interface ConversationMessage {
 // @public
 export interface ConversationSummary {
   createdAt: string;
+  createdBy: string;
   id: string;
+  providerId: string;
   title: string;
   updatedAt: string;
+}
+
+// @public
+export interface FeedbackRecord {
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  messageId: string;
+  reason?: string;
+  sentiment: 'positive' | 'negative';
+  sessionId: string;
 }
 
 // @public
@@ -233,6 +278,60 @@ export type InputItem =
     };
 
 // @public
+export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';
+
+// @public
+export type McpAuthType =
+  | 'oauth-client-credentials'
+  | 'k8s-service-account'
+  | 'static-headers'
+  | 'infrastructure-mtls'
+  | 'none';
+
+// @public
+export interface McpServerRecord {
+  authType: McpAuthType;
+  createdAt: string;
+  description?: string;
+  id: string;
+  name: string;
+  transport: McpTransport;
+  updatedAt: string;
+  url: string;
+}
+
+// @public
+export type McpTransport = 'streamable-http' | 'sse';
+
+// @public
+export interface NormalizedStreamApprovalEvent {
+  message?: string;
+  requestId: string;
+  type: 'approval';
+}
+
+// @public
+export interface NormalizedStreamArtifactEvent {
+  artifactId: string;
+  content: string;
+  mimeType?: string;
+  type: 'artifact';
+}
+
+// @public
+export interface NormalizedStreamAuthEvent {
+  message?: string;
+  type: 'auth';
+}
+
+// @public
+export interface NormalizedStreamCitationEvent {
+  title?: string;
+  type: 'citation';
+  url?: string;
+}
+
+// @public
 export interface NormalizedStreamDoneEvent {
   type: 'done';
 }
@@ -247,10 +346,44 @@ export interface NormalizedStreamErrorEvent {
 // @public
 export type NormalizedStreamEvent =
   | NormalizedStreamTextEvent
+  | NormalizedStreamReasoningEvent
   | NormalizedStreamToolCallEvent
   | NormalizedStreamToolResultEvent
+  | NormalizedStreamRagResultEvent
+  | NormalizedStreamHandoffEvent
+  | NormalizedStreamApprovalEvent
+  | NormalizedStreamFormEvent
+  | NormalizedStreamAuthEvent
+  | NormalizedStreamArtifactEvent
+  | NormalizedStreamCitationEvent
   | NormalizedStreamErrorEvent
   | NormalizedStreamDoneEvent;
+
+// @public
+export interface NormalizedStreamFormEvent {
+  formId: string;
+  type: 'form';
+}
+
+// @public
+export interface NormalizedStreamHandoffEvent {
+  sourceAgent: string;
+  targetAgent: string;
+  type: 'handoff';
+}
+
+// @public
+export interface NormalizedStreamRagResultEvent {
+  content: string;
+  source?: string;
+  type: 'rag_result';
+}
+
+// @public
+export interface NormalizedStreamReasoningEvent {
+  text: string;
+  type: 'reasoning';
+}
 
 // @public
 export interface NormalizedStreamTextEvent {
@@ -287,5 +420,17 @@ export interface ProviderDescriptor {
   description?: string;
   id: string;
   name: string;
+}
+
+// @public
+export interface ToolRecord {
+  createdAt: string;
+  createdBy: string;
+  description?: string;
+  governanceRegistered: boolean;
+  id: string;
+  lifecycleStage: LifecycleStage;
+  name: string;
+  updatedAt: string;
 }
 ```

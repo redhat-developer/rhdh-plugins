@@ -25,14 +25,43 @@ backend.add(
 backend.start();
 ```
 
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed:
+
+**Configuration** — rename the top-level key in `app-config.yaml`:
+
+| Before        | After                    |
+| ------------- | ------------------------ |
+| `lightspeed:` | `intelligent-assistant:` |
+
+All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebooks`, etc.) remain the same.
+
+**RBAC policies** — update permission names in your `rbac-policy.csv`:
+
+| Before                     | After                                 |
+| -------------------------- | ------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat.read`     |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.create`   |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat.delete`   |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`   |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
+
 ### Plugin Configurations
 
 Add the following lightspeed configurations into your `app-config.yaml` file:
 
 ```yaml
-lightspeed:
+intelligent-assistant:
   servicePort: <portNumber> # Optional - Change the LS service port number. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
+  prompts: # Optional - Custom prompts displayed to users in the chat UI
+    - title: <prompt_title>
+      message: <prompt_message>
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
       token: ${MCP_TOKEN}
@@ -63,9 +92,17 @@ The Lightspeed Backend plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
+
+# Required for Notebooks feature (if enabled)
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -101,7 +138,7 @@ For Llama Stack setup and configuration, refer to the [Llama Stack documentation
 To enable Notebooks, add the following configuration to your `app-config.yaml`:
 
 ```yaml
-lightspeed:
+intelligent-assistant:
   servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
   notebooks:
@@ -125,7 +162,7 @@ lightspeed:
 
 **Core Settings**:
 
-- **`lightspeed.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://{DEFAULT_LIGHTSPEED_SERVICE_HOST}:{servicePort}` to proxy vector store operations. The host is defined by the `DEFAULT_LIGHTSPEED_SERVICE_HOST` constant in the source.
+- **`intelligent-assistant.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://{DEFAULT_LIGHTSPEED_SERVICE_HOST}:{servicePort}` to proxy vector store operations. The host is defined by the `DEFAULT_LIGHTSPEED_SERVICE_HOST` constant in the source.
 
 **Notebooks Settings**:
 
@@ -177,7 +214,7 @@ When enabled, Notebooks exposes the following REST API endpoints:
 **Notes**:
 
 - All endpoints require authentication (user context is automatically provided by Backstage)
-- All `/v1/*` endpoints require the `lightspeed.notebooks.use` permission
+- All `/v1/*` endpoints require the `intelligent-assistant.notebooks.use` permission
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
@@ -186,9 +223,9 @@ When enabled, Notebooks exposes the following REST API endpoints:
 When RBAC is enabled, users need the following permission to use Notebooks:
 
 ```CSV
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 ```
 
-Add this to your `rbac-policy.csv` file along with the existing lightspeed permissions.
+Add this to your `rbac-policy.csv` file along with the existing intelligent-assistant permissions.

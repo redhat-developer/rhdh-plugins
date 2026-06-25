@@ -15213,6 +15213,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
+    "@backstage-community/plugin-rbac": "npm:^1.51.0"
     "@backstage/cli": "npm:^0.36.0"
     "@backstage/core-compat-api": "npm:^0.5.6"
     "@backstage/core-components": "npm:^0.18.8"

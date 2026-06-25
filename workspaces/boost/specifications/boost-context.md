@@ -10,7 +10,7 @@ Boost is a new workspace delivering a clean-slate implementation of the agentic 
 
 ## Relationship to Augment
 
-The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is the **reference prototype**. It was the first implementation of the agentic developer portal and served as the basis for customer engagements (notably the Citi "Cloud Concierge" engagement). Boost's requirements, architecture decisions, and design principles are drawn from augment's experience — both what worked and what didn't.
+The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is the **reference prototype**. It was the first implementation of the agentic developer portal and served as the basis for customer engagements (notably an early enterprise engagement). Boost's requirements, architecture decisions, and design principles are drawn from augment's experience — both what worked and what didn't.
 
 **Augment is the source of requirements.** The PRDs and OpenSpec changes in this directory were originally written as retroactive documentation of augment's capabilities. They have been reframed as forward-looking requirements for boost, informed by augment's implementation experience and three rounds of tech debt analysis (May 13, May 26, May 30 2026).
 

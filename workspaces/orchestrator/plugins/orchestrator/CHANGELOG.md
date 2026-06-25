@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.8.1
+
+### Patch Changes
+
+- 870f011: Fix boolean workflow inputs and outputs displaying as emoji checkmarks on the workflow instance page; show `true` and `false` instead.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.1
+
 ## 5.8.0
 
 ### Minor Changes

@@ -113,8 +113,16 @@ export interface WorkflowOverview {
   avgDurationMs?: number;
   description?: string;
   isAvailable?: boolean;
+  availability?: WorkflowAvailabilityResponse;
   version?: string;
   workflowRunStats?: WorkflowRunStats;
+}
+
+export interface WorkflowAvailabilityResponse {
+  isAvailable: boolean;
+  statusCode: number;
+  urlToFetch: string;
+  reason: string;
 }
 
 export interface WorkflowInfo {

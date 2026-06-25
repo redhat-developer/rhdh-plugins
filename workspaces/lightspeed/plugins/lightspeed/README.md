@@ -18,6 +18,12 @@ NFS is the primary and recommended mode. OFS is preserved for community consumer
 
 ## For administrators
 
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed. See the [backend plugin migration guide](../lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant) for the full list of renamed config keys and permission policies.
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
+
 ### Prerequisites
 
 - Follow the lightspeed backend plugin [README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md) to integrate lightspeed backend in your Backstage instance.
@@ -31,13 +37,17 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
-p, role:default/team_a, lightspeed.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 

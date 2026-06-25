@@ -645,7 +645,8 @@ export const LightspeedChat = ({
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
-    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
+    configApi.getOptionalBoolean('intelligent-assistant.notebooks.enabled') ??
+    false;
   const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
     `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
@@ -2190,7 +2191,7 @@ export const LightspeedChat = ({
           !hasNotebooksAccess && (
             <PermissionRequiredState
               subject={t('permission.subject.notebooks')}
-              permissions={['lightspeed.notebooks.use']}
+              permissions={['intelligent-assistant.notebooks.use']}
               action={
                 <Button
                   variant="outlined"

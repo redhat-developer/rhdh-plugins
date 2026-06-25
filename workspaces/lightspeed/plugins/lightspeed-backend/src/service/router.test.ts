@@ -42,7 +42,7 @@ const mockModel = 'test-model';
 const mockToken = 'dummy-token';
 
 const BASE_CONFIG = {
-  lightspeed: {
+  'intelligent-assistant': {
     servers: [
       {
         id: 'test-server',
@@ -634,8 +634,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [
             { name: 'mcp-server-1', token: 'token-1' },
             { name: 'mcp-server-2', token: 'token-2' },
@@ -740,8 +740,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [{ name: 'single-mcp-server', token: 'single-token' }],
         },
       });

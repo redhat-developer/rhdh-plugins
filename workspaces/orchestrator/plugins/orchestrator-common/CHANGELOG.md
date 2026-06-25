@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.7.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+
 ## 3.7.0
 
 ### Minor Changes
