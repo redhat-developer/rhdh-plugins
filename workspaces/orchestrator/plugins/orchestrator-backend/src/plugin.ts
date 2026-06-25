@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 
+import { orchestratorPermissions } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import {
   WorkflowLogProvider,
   workflowLogsExtensionEndpoint,
@@ -26,6 +27,11 @@ import {
 
 import { WorkflowLogsProvidersRegistry } from './providers/WorkflowLogsProvidersRegistry';
 import { createRouter } from './routerWrapper';
+import {
+  fetchWorkflowResources,
+  orchestratorPermissionRules,
+  orchestratorWorkflowResourceRef,
+} from './service/permission-rules';
 
 /**
  * @public
@@ -60,7 +66,15 @@ export const orchestratorPlugin = createBackendPlugin({
         userInfo: coreServices.userInfo,
       },
       async init(props) {
-        const { http } = props;
+        const { http, permissionsRegistry } = props;
+
+        permissionsRegistry.addResourceType({
+          resourceRef: orchestratorWorkflowResourceRef,
+          getResources: fetchWorkflowResources,
+          permissions: orchestratorPermissions,
+          rules: orchestratorPermissionRules,
+        });
+
         const router = await createRouter({
           ...props,
           workflowLogsProvidersRegistry,

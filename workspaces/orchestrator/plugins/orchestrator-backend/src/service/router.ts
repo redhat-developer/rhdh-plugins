@@ -20,7 +20,6 @@ import {
   AuditorServiceEvent,
   HttpAuthService,
   LoggerService,
-  PermissionsRegistryService,
   PermissionsService,
   SchedulerService,
   UserInfoService,
@@ -51,7 +50,6 @@ import {
   NestedFilter,
   openApiDocument,
   orchestratorInstanceAdminViewPermission,
-  orchestratorPermissions,
   orchestratorWorkflowPermission,
   orchestratorWorkflowSpecificPermission, // @deprecated Remove in next release
   orchestratorWorkflowUsePermission,
@@ -68,8 +66,8 @@ import { DataIndexService } from './DataIndexService';
 import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
 import {
+  bindOrchestratorService,
   OrchestratorFilters,
-  orchestratorPermissionRules,
   orchestratorWorkflowResourceRef,
   WorkflowIdParam,
 } from './permission-rules';
@@ -273,7 +271,6 @@ export async function createBackendRouter(
     config,
     scheduler,
     workflowLogsProvidersRegistry,
-    permissionsRegistry,
   );
 
   const routerApi = await initRouterApi(publicServices.orchestratorService);
@@ -354,7 +351,6 @@ function initPublicServices(
   config: Config,
   scheduler: SchedulerService,
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
-  permissionsRegistry: PermissionsRegistryService,
 ): PublicServices {
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
   const orchestratorKafka: OrchestratorKafkaServiceOptions | undefined =
@@ -388,19 +384,7 @@ function initPublicServices(
     workflowLogProvider,
   );
 
-  permissionsRegistry.addResourceType({
-    resourceRef: orchestratorWorkflowResourceRef,
-    getResources: resourceRefs =>
-      Promise.all(
-        resourceRefs.map(ref => {
-          return orchestratorService.fetchWorkflowOverview({
-            definitionId: ref,
-          });
-        }),
-      ),
-    permissions: orchestratorPermissions,
-    rules: [...orchestratorPermissionRules],
-  });
+  bindOrchestratorService(orchestratorService);
 
   const dataInputSchemaService = new DataInputSchemaService();
 
