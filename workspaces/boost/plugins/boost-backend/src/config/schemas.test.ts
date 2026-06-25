@@ -36,7 +36,6 @@ describe('boostConfigFields', () => {
     expect(keys).toContain('boost.security.mode');
     expect(keys).toContain('boost.features.agentCreation');
     expect(keys).toContain('boost.agentApproval.mode');
-    expect(keys).toContain('boost.skillsMarketplace.enabled');
     expect(keys).toContain('boost.kagenti.auth.tokenExchange.enabled');
     expect(keys).toContain('boost.encryptionSecret');
     expect(keys).toContain('boost.devSpaces.credentials');

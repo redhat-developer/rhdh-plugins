@@ -170,11 +170,6 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
-  readonly 'boost.skillsMarketplace.enabled': {
-    readonly schema: z.ZodOptional<z.ZodBoolean>;
-    readonly configScope: ConfigScope;
-    readonly description: string;
-  };
   readonly 'boost.kagenti.auth.tokenExchange.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;
