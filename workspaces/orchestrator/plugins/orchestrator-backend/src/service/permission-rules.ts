@@ -23,6 +23,10 @@ import { z } from 'zod/v3';
 
 import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import type { OrchestratorService } from './OrchestratorService';
+
+let orchestratorService: OrchestratorService | undefined;
+
 export type OrchestratorFilter = {
   key: string;
   values: unknown[];
@@ -82,3 +86,18 @@ export const isWorkflowId = createPermissionRule<
  * All orchestrator permission rules
  */
 export const orchestratorPermissionRules = [isWorkflowId];
+
+export function bindOrchestratorService(service: OrchestratorService): void {
+  orchestratorService = service;
+}
+
+export function fetchWorkflowResources(resourceRefs: string[]) {
+  if (!orchestratorService) {
+    throw new Error('Orchestrator service is not initialized');
+  }
+  return Promise.all(
+    resourceRefs.map(ref =>
+      orchestratorService!.fetchWorkflowOverview({ definitionId: ref }),
+    ),
+  );
+}
