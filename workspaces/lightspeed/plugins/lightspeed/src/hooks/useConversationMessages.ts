@@ -18,13 +18,15 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
+import { useTheme } from '@mui/material/styles';
 import { MessageProps } from '@patternfly/chatbot';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
-import botAvatar from '../images/bot-avatar.svg';
+import botAvatarDark from '../images/bot-avatar-dark.svg';
+import botAvatarLight from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
 import {
   Attachment,
@@ -38,6 +40,7 @@ import {
   createUserMessage,
   getConversationsData,
   getTimestamp,
+  normalizeChatUserInput,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
 import {
@@ -170,6 +173,9 @@ export const useConversationMessages = (
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
   onRequestIdReady?: (request_id: string) => void,
 ): UseConversationMessagesReturn => {
+  const theme = useTheme();
+  const botAvatar =
+    theme.palette.mode === 'dark' ? botAvatarDark : botAvatarLight;
   const { mutateAsync: defaultCreateMessage } = useCreateConversationMessage();
   const createMessage = createMessageOverride ?? defaultCreateMessage;
   const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
@@ -293,6 +299,11 @@ export const useConversationMessages = (
 
   const handleInputPrompt = useCallback(
     async (prompt: string, attachments: Attachment[] = []) => {
+      const normalizedPrompt = normalizeChatUserInput(prompt);
+      if (!normalizedPrompt) {
+        return;
+      }
+
       const streamStartedOnTemp = currentConversation === TEMP_CONVERSATION_ID;
       if (streamStartedOnTemp) {
         isTempStreamInProgressRef.current = true;
@@ -312,7 +323,7 @@ export const useConversationMessages = (
           createUserMessage({
             avatar,
             name: userName,
-            content: prompt,
+            content: normalizedPrompt,
             timestamp: getTimestamp(Date.now()) ?? '',
           }),
           createBotMessage({
@@ -347,7 +358,7 @@ export const useConversationMessages = (
 
         try {
           const reader = await createMessage({
-            prompt,
+            prompt: normalizedPrompt,
             selectedModel,
             selectedProvider,
             currentConversation,
@@ -831,6 +842,7 @@ export const useConversationMessages = (
 
     [
       avatar,
+      botAvatar,
       userName,
       onComplete,
       onStart,

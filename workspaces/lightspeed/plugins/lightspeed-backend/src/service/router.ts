@@ -16,6 +16,7 @@
 
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { NotAllowedError } from '@backstage/errors';
+import type { BasicPermission } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 import express, { Router } from 'express';
@@ -35,7 +36,7 @@ import { Readable } from 'node:stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
-  PROXY_PASSTHROUGH_PATHS,
+  EXPRESS_JSON_BODY_LIMIT,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -44,17 +45,17 @@ import {
   McpValidationResult,
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
+import { createPermissionMiddleware } from './middleware/createPermissionMiddleware';
+import {
+  createIdentityMiddleware,
+  getIdentity,
+} from './middleware/getIdentity';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
-import {
-  DEFAULT_HISTORY_LENGTH,
-  QueryRequestBody,
-  RouterOptions,
-} from './types';
-import { isAllowedProxyPath, validateCompletionsRequest } from './validation';
-
-const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
+import { QueryRequestBody, RouterOptions } from './types';
+import { handleLCSFetchError, rewriteLightspeedProxyPath } from './utils';
+import { validateCompletionsRequest } from './validation';
 
 interface StaticMcpServer {
   name: string;
@@ -108,10 +109,26 @@ export async function createRouter(
   router.use(express.json());
 
   const port =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  const system_prompt = config.getOptionalString(
+    'intelligent-assistant.systemPrompt',
+  );
   const lightspeedCoreBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${port}`;
+
+  const apiProxy = createProxyMiddleware({
+    target: lightspeedCoreBaseUrl,
+    changeOrigin: true,
+    pathRewrite: (path, req) => {
+      const userEntityRef = (req as any).userEntityRef;
+      const newPath = rewriteLightspeedProxyPath(path, userEntityRef);
+
+      if (newPath !== path) {
+        logger.info(`Rewriting path from ${path} to ${newPath}`);
+      }
+      return newPath;
+    },
+  });
 
   const vectorStoresOperator = VectorStoresOperator.getInstance(
     lightspeedCoreBaseUrl,
@@ -123,7 +140,7 @@ export async function createRouter(
   // Only name is required; token is optional (users can provide their own via the UI).
   // URLs come from LCS (GET /v1/mcp-servers), not from app-config.
   const mcpServersConfig = config.getOptionalConfigArray(
-    'lightspeed.mcpServers',
+    'intelligent-assistant.mcpServers',
   );
   const staticServers: StaticMcpServer[] = [];
   if (mcpServersConfig) {
@@ -185,423 +202,404 @@ export async function createRouter(
   });
   router.use(permissionIntegrationRouter);
 
+  const identityMiddleware = createIdentityMiddleware(
+    httpAuth,
+    userInfo,
+    logger,
+  );
+  router.use((req, res, next) => {
+    // Middleware mounts to notebooks router independently
+    // so we skip it here
+    if (req.path.startsWith('/notebooks')) {
+      return next();
+    }
+    return identityMiddleware(req, res, next);
+  });
+
   const authorizer = userPermissionAuthorization(permissions);
+
+  function requirePermission(permission: BasicPermission) {
+    return createPermissionMiddleware(authorizer, permission, logger);
+  }
 
   // ─── MCP Server Management Endpoints ────────────────────────────────
   // All MCP servers are admin-configured (static). Users can view the
   // list, toggle servers on/off, and provide personal access tokens.
 
-  router.get('/mcp-servers', async (req, res) => {
-    try {
-      const credentials = await httpAuth.credentials(req);
-      await authorizer.authorizeUser(lightspeedMcpReadPermission, credentials);
-      const user = await userInfo.getUserInfo(credentials);
+  router.get(
+    '/mcp-servers',
+    requirePermission(lightspeedMcpReadPermission),
+    async (req, res) => {
+      try {
+        const { userEntityRef } = getIdentity(req);
 
-      const userSettings = await settingsStore.listByUser(user.userEntityRef);
-      const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
+        const userSettings = await settingsStore.listByUser(userEntityRef);
+        const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
 
-      const hasAllUrls = staticServers.every(s => lcsUrlCache.has(s.name));
-      if (!hasAllUrls) {
-        await refreshLcsUrlCache();
-      }
+        const hasAllUrls = staticServers.every(s => lcsUrlCache.has(s.name));
+        if (!hasAllUrls) {
+          await refreshLcsUrlCache();
+        }
 
-      const servers: McpServerResponse[] = staticServers.map(server => {
-        const setting = settingsMap.get(server.name);
-        return {
-          name: server.name,
-          url: resolveServerUrl(server.name),
-          enabled: setting ? Boolean(setting.enabled) : true,
-          status: setting?.status ?? 'unknown',
-          toolCount: setting?.tool_count ?? 0,
-          hasToken: !!(setting?.token || server.token),
-          hasUserToken: !!setting?.token,
-        };
-      });
+        const servers: McpServerResponse[] = staticServers.map(server => {
+          const setting = settingsMap.get(server.name);
+          return {
+            name: server.name,
+            url: resolveServerUrl(server.name),
+            enabled: setting ? Boolean(setting.enabled) : true,
+            status: setting?.status ?? 'unknown',
+            toolCount: setting?.tool_count ?? 0,
+            hasToken: !!(setting?.token || server.token),
+            hasUserToken: !!setting?.token,
+          };
+        });
 
-      res.json({ servers });
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
+        res.json({ servers });
+      } catch (error) {
         logger.error(`Error listing MCP servers: ${error}`);
         res.status(500).json({ error: 'Failed to list MCP servers' });
       }
-    }
-  });
+    },
+  );
 
-  router.post('/mcp-servers/validate', async (req, res) => {
-    try {
-      const credentials = await httpAuth.credentials(req);
-      await authorizer.authorizeUser(lightspeedMcpReadPermission, credentials);
+  router.post(
+    '/mcp-servers/validate',
+    requirePermission(lightspeedMcpReadPermission),
+    async (req, res) => {
+      try {
+        const { url, token } = req.body;
+        if (!url || !token) {
+          res.status(400).json({ error: 'url and token are required' });
+          return;
+        }
 
-      const { url, token } = req.body;
-      if (!url || !token) {
-        res.status(400).json({ error: 'url and token are required' });
-        return;
-      }
+        // SSRF protection: only allow URLs registered in LCS
+        let knownUrls = new Set(lcsUrlCache.values());
+        if (!knownUrls.has(url)) {
+          await refreshLcsUrlCache();
+          knownUrls = new Set(lcsUrlCache.values());
+        }
+        if (!knownUrls.has(url)) {
+          res.status(400).json({
+            error:
+              'URL not recognized — only MCP server URLs registered in LCS are allowed',
+          });
+          return;
+        }
 
-      // SSRF protection: only allow URLs registered in LCS
-      let knownUrls = new Set(lcsUrlCache.values());
-      if (!knownUrls.has(url)) {
-        await refreshLcsUrlCache();
-        knownUrls = new Set(lcsUrlCache.values());
-      }
-      if (!knownUrls.has(url)) {
-        res.status(400).json({
-          error:
-            'URL not recognized — only MCP server URLs registered in LCS are allowed',
-        });
-        return;
-      }
-
-      const result = await mcpValidator.validate(url, token);
-      res.json(result);
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
+        const result = await mcpValidator.validate(url, token);
+        res.json(result);
+      } catch (error) {
         logger.error(`Error validating MCP credentials: ${error}`);
         res.status(500).json({ error: 'Validation failed' });
       }
-    }
-  });
+    },
+  );
 
-  router.post('/mcp-servers/:name/validate', async (req, res) => {
-    try {
-      const credentials = await httpAuth.credentials(req);
-      await authorizer.authorizeUser(
-        lightspeedMcpManagePermission,
-        credentials,
-      );
-      const user = await userInfo.getUserInfo(credentials);
+  router.post(
+    '/mcp-servers/:name/validate',
+    requirePermission(lightspeedMcpManagePermission),
+    async (req, res) => {
+      try {
+        const { userEntityRef } = getIdentity(req);
 
-      const { name } = req.params;
-      const server = staticServers.find(s => s.name === name);
-      if (!server) {
-        res.status(404).json({
-          error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
+        const { name } = req.params;
+        const server = staticServers.find(s => s.name === name);
+        if (!server) {
+          res.status(404).json({
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
+          });
+          return;
+        }
+        // Resolve URL: LCS cache → fresh LCS fetch
+        let serverUrl = resolveServerUrl(server.name);
+        if (!serverUrl) {
+          await refreshLcsUrlCache();
+          serverUrl = resolveServerUrl(server.name);
+        }
+        if (!serverUrl) {
+          res
+            .status(400)
+            .json({ error: 'Server has no URL — not found in LCS or config' });
+          return;
+        }
+
+        const setting = await settingsStore.get(name, userEntityRef);
+        const effectiveToken = setting?.token || server.token;
+        if (!effectiveToken) {
+          res
+            .status(400)
+            .json({ error: 'No token available — provide one first' });
+          return;
+        }
+
+        const validation = await mcpValidator.validate(
+          serverUrl,
+          effectiveToken,
+        );
+        const status: McpServerStatus = validation.valid
+          ? 'connected'
+          : 'error';
+
+        await settingsStore.updateStatus(
+          name,
+          userEntityRef,
+          status,
+          validation.toolCount,
+        );
+
+        res.json({
+          name,
+          status,
+          toolCount: validation.toolCount,
+          validation,
         });
-        return;
-      }
-      // Resolve URL: LCS cache → fresh LCS fetch
-      let serverUrl = resolveServerUrl(server.name);
-      if (!serverUrl) {
-        await refreshLcsUrlCache();
-        serverUrl = resolveServerUrl(server.name);
-      }
-      if (!serverUrl) {
-        res
-          .status(400)
-          .json({ error: 'Server has no URL — not found in LCS or config' });
-        return;
-      }
-
-      const setting = await settingsStore.get(name, user.userEntityRef);
-      const effectiveToken = setting?.token || server.token;
-      if (!effectiveToken) {
-        res
-          .status(400)
-          .json({ error: 'No token available — provide one first' });
-        return;
-      }
-
-      const validation = await mcpValidator.validate(serverUrl, effectiveToken);
-      const status: McpServerStatus = validation.valid ? 'connected' : 'error';
-
-      await settingsStore.updateStatus(
-        name,
-        user.userEntityRef,
-        status,
-        validation.toolCount,
-      );
-
-      res.json({
-        name,
-        status,
-        toolCount: validation.toolCount,
-        validation,
-      });
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
+      } catch (error) {
         logger.error(`Error validating MCP server: ${error}`);
         res.status(500).json({ error: 'Validation failed' });
       }
-    }
-  });
+    },
+  );
 
-  router.patch('/mcp-servers/:name', async (req, res) => {
-    try {
-      const credentials = await httpAuth.credentials(req);
-      await authorizer.authorizeUser(
-        lightspeedMcpManagePermission,
-        credentials,
-      );
-      const user = await userInfo.getUserInfo(credentials);
+  router.patch(
+    '/mcp-servers/:name',
+    requirePermission(lightspeedMcpManagePermission),
+    async (req, res) => {
+      try {
+        const { userEntityRef } = getIdentity(req);
 
-      const { name } = req.params;
-      const server = staticServers.find(s => s.name === name);
-      if (!server) {
-        res.status(404).json({
-          error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
-        });
-        return;
-      }
+        const { name } = req.params;
+        const server = staticServers.find(s => s.name === name);
+        if (!server) {
+          res.status(404).json({
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
+          });
+          return;
+        }
 
-      const body = (req.body ?? {}) as {
-        enabled?: boolean;
-        token?: string | null;
-      };
-      const hasEnabledField = Object.prototype.hasOwnProperty.call(
-        body,
-        'enabled',
-      );
-      const hasTokenField = Object.prototype.hasOwnProperty.call(body, 'token');
-      const { enabled, token } = body;
-      if (!hasEnabledField && !hasTokenField) {
-        res.status(400).json({
-          error: 'At least one of enabled or token must be provided',
-        });
-        return;
-      }
-
-      const setting = await settingsStore.upsert(name, user.userEntityRef, {
-        enabled: hasEnabledField ? enabled : undefined,
-        token: hasTokenField ? token : undefined,
-      });
-
-      let validation: McpValidationResult | undefined;
-      let serverUrl = resolveServerUrl(server.name);
-      if (token && !serverUrl) {
-        await refreshLcsUrlCache();
-        serverUrl = resolveServerUrl(server.name);
-      }
-      if (token && serverUrl) {
-        validation = await mcpValidator.validate(serverUrl, token);
-        const newStatus: McpServerStatus = validation.valid
-          ? 'connected'
-          : 'error';
-        await settingsStore.updateStatus(
-          name,
-          user.userEntityRef,
-          newStatus,
-          validation.toolCount,
+        const body = (req.body ?? {}) as {
+          enabled?: boolean;
+          token?: string | null;
+        };
+        const hasEnabledField = Object.prototype.hasOwnProperty.call(
+          body,
+          'enabled',
         );
-        setting.status = newStatus;
-        setting.tool_count = validation.toolCount;
-      }
+        const hasTokenField = Object.prototype.hasOwnProperty.call(
+          body,
+          'token',
+        );
+        const { enabled, token } = body;
+        if (!hasEnabledField && !hasTokenField) {
+          res.status(400).json({
+            error: 'At least one of enabled or token must be provided',
+          });
+          return;
+        }
 
-      const result: Record<string, unknown> = {
-        server: {
-          name: server.name,
-          url: resolveServerUrl(server.name),
-          enabled: Boolean(setting.enabled),
-          status: setting.status,
-          toolCount: setting.tool_count,
-          hasToken: !!(setting.token || server.token),
-          hasUserToken: !!setting.token,
-        },
-      };
-      if (validation) result.validation = validation;
-      res.json(result);
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
+        const setting = await settingsStore.upsert(name, userEntityRef, {
+          enabled: hasEnabledField ? enabled : undefined,
+          token: hasTokenField ? token : undefined,
+        });
+
+        let validation: McpValidationResult | undefined;
+        let serverUrl = resolveServerUrl(server.name);
+        if (token && !serverUrl) {
+          await refreshLcsUrlCache();
+          serverUrl = resolveServerUrl(server.name);
+        }
+        if (token && serverUrl) {
+          validation = await mcpValidator.validate(serverUrl, token);
+          const newStatus: McpServerStatus = validation.valid
+            ? 'connected'
+            : 'error';
+          await settingsStore.updateStatus(
+            name,
+            userEntityRef,
+            newStatus,
+            validation.toolCount,
+          );
+          setting.status = newStatus;
+          setting.tool_count = validation.toolCount;
+        }
+
+        const result: Record<string, unknown> = {
+          server: {
+            name: server.name,
+            url: resolveServerUrl(server.name),
+            enabled: Boolean(setting.enabled),
+            status: setting.status,
+            toolCount: setting.tool_count,
+            hasToken: !!(setting.token || server.token),
+            hasUserToken: !!setting.token,
+          },
+        };
+        if (validation) result.validation = validation;
+        res.json(result);
+      } catch (error) {
         logger.error(`Error updating MCP server settings: ${error}`);
         res.status(500).json({ error: 'Failed to update MCP server settings' });
       }
-    }
-  });
+    },
+  );
 
-  // ─── Proxy Middleware (existing) ────────────────────────────────────
-
-  router.use('/', async (req, res, next) => {
-    // Skip middleware for notebooks routes and specific paths
-    if (
-      req.path.startsWith('/notebooks') ||
-      PROXY_PASSTHROUGH_PATHS.includes(req.path) ||
-      req.method === 'PUT'
-    ) {
-      return next();
-    }
-
-    if (!isAllowedProxyPath(req.path)) {
-      return res.status(404).json({ error: 'Requested path is not available' });
-    }
-
-    // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    const userEntity = user.userEntityRef;
-
-    logger.info(`receives call from user: ${userEntity}`);
+  // Returns conversation IDs associated with notebook sessions for filtering
+  router.get('/notebook-conversation-ids', async (req, res) => {
     try {
-      if (req.method === 'GET') {
-        await authorizer.authorizeUser(
-          lightspeedChatReadPermission,
-          credentials,
-        );
-      } else if (req.method === 'DELETE') {
-        await authorizer.authorizeUser(
-          lightspeedChatDeletePermission,
-          credentials,
-        );
-      }
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        logger.error(error.message);
-        return res.status(403).json({ error: error.message });
-      }
-    }
-    // Proxy middleware configuration
-    const apiProxy = createProxyMiddleware({
-      target: lightspeedCoreBaseUrl,
-      changeOrigin: true,
-      pathRewrite: (path, _) => {
-        const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
-          path.startsWith(endpoint),
-        );
+      const { userEntityRef } = getIdentity(req);
 
-        if (isSkippable) {
-          return path;
+      const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
+      const vectorStores = vectorStoresPage.data || [];
+
+      const conversationIds: string[] = [];
+
+      for (const store of vectorStores) {
+        const sessionUserId = store.metadata?.user_id as string;
+        const conversationId = store.metadata?.conversation_id as string | null;
+
+        // Only include this user's sessions with a conversation_id
+        if (sessionUserId === userEntityRef && conversationId) {
+          conversationIds.push(conversationId);
         }
-
-        let newPath = path;
-
-        // Add user_id
-        const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
-        newPath = path.includes('?')
-          ? `${path}&${userQueryParam}`
-          : `${path}?${userQueryParam}`;
-
-        // Add history_length if needed
-        if (
-          !path.includes('history_length') &&
-          path.includes('conversation_id')
-        ) {
-          const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;
-          newPath = newPath.includes('?')
-            ? `${newPath}&${historyLengthQuery}`
-            : `${newPath}?${historyLengthQuery}`;
-        }
-
-        logger.info(`Rewriting path from ${path} to ${newPath}`);
-        return newPath;
-      },
-    });
-    return apiProxy(req, res, next);
-  });
-
-  router.post('/v1/feedback', async (request, response) => {
-    try {
-      const credentials = await httpAuth.credentials(request);
-      const user = await userInfo.getUserInfo(credentials);
-      const user_id = user.userEntityRef;
-
-      logger.info(`/v1/feedback receives call from user: ${user_id}`);
-
-      await authorizer.authorizeUser(
-        lightspeedChatCreatePermission,
-        credentials,
-      );
-      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
-      const requestBody = JSON.stringify(request.body);
-      const fetchResponse = await fetch(
-        `${lightspeedCoreBaseUrl}/v1/feedback?${userQueryParam}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: requestBody,
-        },
-      );
-
-      if (!fetchResponse.ok) {
-        // Read the error body
-        const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-        logger.error(errormsg);
-
-        response.status(fetchResponse.status).json({
-          error: errormsg,
-        });
-
-        return;
       }
 
-      const data = await fetchResponse.json();
-      response.status(fetchResponse.status).json(data);
+      res.json({
+        conversation_ids: conversationIds,
+      });
     } catch (error) {
-      const errormsg = `Error while sending feedback: ${error}`;
+      const errormsg = `Error fetching notebook conversation IDs: ${error}`;
       logger.error(errormsg);
 
       if (error instanceof NotAllowedError) {
-        response.status(403).json({ error: error.message });
+        res.status(403).json({ error: error.message });
       } else {
+        res.status(500).json({ error: errormsg });
+      }
+    }
+  });
+
+  // ─── Proxy Routes ───────────────────────────────────────────────────
+
+  router.get(
+    '/v1/models',
+    requirePermission(lightspeedChatReadPermission),
+    apiProxy,
+  );
+  router.get(
+    '/v1/shields',
+    requirePermission(lightspeedChatReadPermission),
+    apiProxy,
+  );
+  router.get(
+    '/v2/conversations',
+    requirePermission(lightspeedChatReadPermission),
+    apiProxy,
+  );
+  router.get(
+    '/v2/conversations/:conversation_id',
+    requirePermission(lightspeedChatReadPermission),
+    apiProxy,
+  );
+  router.delete(
+    '/v2/conversations/:conversation_id',
+    requirePermission(lightspeedChatDeletePermission),
+    apiProxy,
+  );
+  router.get(
+    '/v1/feedback/status',
+    requirePermission(lightspeedChatReadPermission),
+    apiProxy,
+  );
+
+  router.post(
+    '/v1/feedback',
+    requirePermission(lightspeedChatCreatePermission),
+    async (request, response) => {
+      try {
+        const { userEntityRef } = getIdentity(request);
+
+        logger.info(`/v1/feedback receives call from user: ${userEntityRef}`);
+
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const requestBody = JSON.stringify(request.body);
+        const fetchResponse = await fetch(
+          `${lightspeedCoreBaseUrl}/v1/feedback?${userQueryParam}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          },
+        );
+
+        if (!fetchResponse.ok) {
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'sending feedback',
+            response,
+          );
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while sending feedback: ${error}`;
+        logger.error(errormsg);
         response.status(500).json({ error: errormsg });
       }
-    }
-  });
+    },
+  );
 
-  router.post('/v1/query/interrupt', async (request, response) => {
-    try {
-      const credentials = await httpAuth.credentials(request);
-      const userEntity = await userInfo.getUserInfo(credentials);
-      const user_id = userEntity.userEntityRef;
-      await authorizer.authorizeUser(
-        lightspeedChatCreatePermission,
-        credentials,
-      );
-      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
-      const requestBody = JSON.stringify(request.body);
-      const fetchResponse = await fetch(
-        `${lightspeedCoreBaseUrl}/v1/streaming_query/interrupt?${userQueryParam}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+  router.post(
+    '/v1/query/interrupt',
+    requirePermission(lightspeedChatCreatePermission),
+    async (request, response) => {
+      try {
+        const { userEntityRef } = getIdentity(request);
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const requestBody = JSON.stringify(request.body);
+        const fetchResponse = await fetch(
+          `${lightspeedCoreBaseUrl}/v1/streaming_query/interrupt?${userQueryParam}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
           },
-          body: requestBody,
-        },
-      );
-      if (!fetchResponse.ok) {
-        const errorBody = await fetchResponse.json();
-        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+        );
+        if (!fetchResponse.ok) {
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'interrupting query',
+            response,
+          );
+          return;
+        }
+        response.status(fetchResponse.status).json(await fetchResponse.json());
+      } catch (error) {
+        const errormsg = `Error while interrupting query: ${error}`;
         logger.error(errormsg);
-        response.status(fetchResponse.status).json({ error: errormsg });
-        return;
+        response.status(500).json({ error: errormsg });
       }
-      response.status(fetchResponse.status).json(await fetchResponse.json());
-    } catch (error) {
-      const errormsg = `Error while interrupting query: ${error}`;
-      logger.error(errormsg);
-      if (error instanceof NotAllowedError) {
-        response.status(403).json({ error: error.message });
-      } else {
-        response.status(500).json({ error: error });
-      }
-    }
-  });
+    },
+  );
 
   router.post(
     '/v1/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     validateCompletionsRequest,
+    requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
-        const credentials = await httpAuth.credentials(request);
-        const user = await userInfo.getUserInfo(credentials);
-        const user_id = user.userEntityRef;
+        const { userEntityRef } = getIdentity(request);
 
-        logger.info(`/v1/query receives call from user: ${user_id}`);
-
-        await authorizer.authorizeUser(
-          lightspeedChatCreatePermission,
-          credentials,
-        );
+        logger.info(`/v1/query receives call from user: ${userEntityRef}`);
 
         // get the vector store id for the rhdh-product-docs vector store
         if (lightspeed_vector_store_id === '') {
@@ -616,7 +614,7 @@ export async function createRouter(
           request.body.vector_store_ids = [lightspeed_vector_store_id];
         }
 
-        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         // if system_prompt is defined in lightspeed config
         // set system_prompt to override the default rhdh system prompt
@@ -630,8 +628,10 @@ export async function createRouter(
         const mcpHeadersValue = await buildMcpHeaders(
           staticServers,
           settingsStore,
-          user_id,
+          userEntityRef,
         );
+
+        const abortController = new AbortController();
 
         const fetchResponse = await fetch(
           `${lightspeedCoreBaseUrl}/v1/streaming_query?${userQueryParam}`,
@@ -642,55 +642,64 @@ export async function createRouter(
               'MCP-HEADERS': mcpHeadersValue,
             },
             body: requestBody,
+            signal: abortController.signal,
           },
         );
 
         if (!fetchResponse.ok) {
-          // Read the error body
-          const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
-
-          response.status(fetchResponse.status).json({
-            error: errormsg,
-          });
-
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'processing query',
+            response,
+          );
           return;
         }
 
         // Pipe the response back to the original response
         if (fetchResponse.body) {
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+
+          nodeStream.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing query: ${error}`,
+            );
+            if (response.headersSent) {
+              response.destroy();
+            } else {
+              response.status(500).json({ error: 'Stream error occurred' });
+            }
+            abortController.abort();
+          });
+
+          response.on('close', () => {
+            if (!response.writableFinished) {
+              logger.warn('Client disconnected while processing query');
+              nodeStream.destroy();
+              abortController.abort();
+            }
+          });
+
           nodeStream.pipe(response);
         }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
         logger.error(errormsg);
-
-        if (error instanceof NotAllowedError) {
-          response.status(403).json({ error: error.message });
-        } else {
-          response.status(500).json({ error: errormsg });
-        }
+        response.status(500).json({ error: errormsg });
       }
     },
   );
 
   router.put(
     '/v2/conversations/:conversation_id',
+    requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
-        const credentials = await httpAuth.credentials(request);
-        const user = await userInfo.getUserInfo(credentials);
-        const user_id = user.userEntityRef;
+        const { userEntityRef } = getIdentity(request);
         const conversation_id = request.params.conversation_id;
 
         const requestBody = JSON.stringify(request.body);
-        await authorizer.authorizeUser(
-          lightspeedChatCreatePermission,
-          credentials,
-        );
-        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         const fetchResponse = await fetch(
           `${lightspeedCoreBaseUrl}/v2/conversations/${conversation_id}?${userQueryParam}`,
           {
@@ -702,14 +711,12 @@ export async function createRouter(
           },
         );
         if (!fetchResponse.ok) {
-          // Read the error body
-          const errorBody = await fetchResponse.json();
-          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
-          logger.error(errormsg);
-
-          response.status(fetchResponse.status).json({
-            error: errormsg,
-          });
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'updating conversation',
+            response,
+          );
           return;
         }
 
@@ -718,15 +725,14 @@ export async function createRouter(
       } catch (error) {
         const errormsg = `Error while updating topic summary: ${error}`;
         logger.error(errormsg);
-
-        if (error instanceof NotAllowedError) {
-          response.status(403).json({ error: error.message });
-        } else {
-          response.status(500).json({ error: errormsg });
-        }
+        response.status(500).json({ error: errormsg });
       }
     },
   );
+
+  router.use((_request, response) => {
+    response.status(404).json({ error: 'Requested path is not available' });
+  });
 
   const middleware = MiddlewareFactory.create({ logger, config });
 

@@ -20,6 +20,7 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateThresholdsForMetric } from './validateThresholds';
+import { ThresholdConfigFormatError } from '../../errors';
 
 /**
  * Read and validate threshold configuration from config or return undefined
@@ -34,10 +35,11 @@ export function getThresholdsFromConfig(
     const thresholdsConfig = config.getOptional(thresholdsPath);
     if (thresholdsConfig) {
       validateThresholdsForMetric(thresholdsConfig, expectedMetricType);
+
       return thresholdsConfig;
     }
   } catch (error) {
-    throw new Error(
+    throw new ThresholdConfigFormatError(
       `Invalid thresholds configuration at ${thresholdsPath}: ${error}`,
     );
   }

@@ -1,5 +1,69 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.9.1
+
+### Patch Changes
+
+- 2714194: Security: Sanitize LCS error responses to prevent information disclosure
+- d49a228: add middleware for identity resolution
+- e142be3: refactor permission handling and update proxy passthrough
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.1
+
+## 2.9.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
+## 2.8.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.5
+
+## 2.8.4
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.4
+
+## 2.8.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.3
+
+## 2.8.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.2
+
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 3c9c556: - Hide notebooks tab when `lightspeed.notebooks.enabled: false` in config
+  - Fix notebook queries to display correct model from config instead of chat's selected model
+  - Add `/notebook-conversation-ids` endpoint to filter notebook conversations from chat list even when notebooks disabled
+- 674f043: URL filetype backend support removed
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.0
+
+## 2.7.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.7.1
+
 ## 2.7.0
 
 ### Patch Changes

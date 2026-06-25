@@ -201,7 +201,7 @@ describe('AggregatedMetricMapper', () => {
             { name: 'error', count: 2, score: 0 },
           ],
           thresholds,
-          averageScore: 0.5,
+          averageScore: 50,
           averageWeightedSum: 500,
           averageMaxPossible: 1000,
           aggregationChartDisplayColor: 'warning.main',
@@ -210,7 +210,7 @@ describe('AggregatedMetricMapper', () => {
       );
 
       expect(result.metadata.aggregationType).toBe(aggregationTypes.average);
-      expect((result.result as any).averageScore).toBe(0.5);
+      expect((result.result as any).averageScore).toBe(50);
     });
   });
 });

@@ -35,7 +35,7 @@ export const x2aPluginMessages = {
   },
   projectPage: {
     title: 'Project',
-    deleteProject: 'Delete',
+    deleteProject: 'Delete this project',
     actionsTooltip: 'Click to open the menu for project actions',
     deleteError: 'Failed to delete project',
     deleteConfirm: {
@@ -52,18 +52,34 @@ export const x2aPluginMessages = {
   projectDetailsCard: {
     title: 'Project Details',
     name: 'Name',
-    abbreviation: 'Abbreviation',
+    dirName: 'Directory Name',
     status: 'Status',
-    createdBy: 'Created By',
+    ownedBy: 'Owned By',
     description: 'Description',
     sourceRepo: 'Source Repository',
     targetRepo: 'Target Repository',
+    edit: 'Edit',
+  },
+  editProjectDialog: {
+    title: 'Edit project',
+    cancel: 'Cancel',
+    update: 'Update',
+    updateError: 'Failed to update project',
+    ownerChangeWarningTitle: 'Confirm ownership transfer',
+    ownerChangeWarning:
+      'Changing the owner may cause you to lose access to this project if your permissions do not cover the new owner. An administrator can restore access if needed.',
+    ownerChangeConfirm: 'Transfer ownership',
+    nameRequired: 'Name is required',
+    ownerFormatHint:
+      'Must be a Backstage entity reference, e.g. user:default/name or group:default/team',
   },
   projectModulesCard: {
     title: 'Modules ({{count}})',
     noModules: 'No modules found yet...',
     toReview: 'review',
     published: 'published',
+    spinner:
+      'Running discovery phase and updating the module list from the migration plan…',
   },
   initPhaseCard: {
     title: 'Discovery Phase',
@@ -118,6 +134,8 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       runError: 'Failed to run phase for module',
       cancelError: 'Failed to cancel phase for module',
+      attempts: 'Attempts',
+      totalElapsed: 'Total Elapsed',
       commitId: 'Last Commit ID',
       viewLog: 'View Log',
       hideLog: 'Hide Log',
@@ -157,8 +175,8 @@ export const x2aPluginMessages = {
   project: {
     description: 'Description',
     id: 'ID',
-    abbreviation: 'Abbreviation',
-    createdBy: 'Owned By',
+    ownedBy: 'Owned By',
+    dirName: 'Directory Name',
     statuses: {
       none: '-',
       created: 'Created',
@@ -184,7 +202,7 @@ export const x2aPluginMessages = {
   bulkRun: {
     projectAction: 'Run all modules',
     globalAction: 'Run all',
-    projectPageAction: 'Run all',
+    projectPageAction: 'Run all modules',
     projectConfirm: {
       title: 'Run all modules in "{{name}}" project?',
       message:
@@ -252,6 +270,7 @@ export const x2aPluginMessages = {
       running: 'Running',
       error: 'Error',
       cancelled: 'Cancelled',
+      removed: 'Removed',
       toReview_one: '{{count}} module with artifacts to review',
       toReview_other: '{{count}} modules with artifacts to review',
     },
@@ -275,7 +294,22 @@ export const x2aPluginMessages = {
       success: 'Success',
       error: 'Error',
       cancelled: 'Cancelled',
+      removed: 'Removed',
     },
+  },
+  resyncMigrationPlan: {
+    action: 'Resync migration plan',
+    confirm: {
+      title: 'Resync migration plan for "{{name}}"?',
+      message:
+        'This will re-read the migration plan from the target repository and update the module list accordingly. New modules will be added and modules no longer in the plan will be marked as removed. If making changes to the document, like removing a module, make sure the document stays coherent.',
+      warning:
+        'Modules marked as removed will retain their job history but will no longer be eligible for new phase runs. This action cannot be undone for removed modules unless they are re-added to the migration plan.',
+      confirmButton: 'Resync',
+    },
+    running: 'Resyncing module list from migration plan…',
+    error: 'Failed to resync migration plan for project "{{name}}"',
+    errorStart: 'Failed to start migration plan resync',
   },
   artifact: {
     types: {
@@ -307,6 +341,51 @@ export const x2aPluginMessages = {
       noStartTime: '-',
       running: 'Running for {{duration}}',
       finished: 'Finished {{timeAgo}} (took {{duration}})',
+    },
+  },
+  scaffolder: {
+    rulesAcceptance: {
+      loadingRules: 'Loading rules...',
+      noRulesConfigured: 'No rules configured.',
+      required: 'required',
+      fetchError: 'Failed to fetch rules',
+    },
+  },
+  rulesPage: {
+    title: 'Conversion Rules',
+    subtitle: 'Manage rules that projects must accept at creation time.',
+    addRule: 'Add Rule',
+    manageRules: 'Manage Rules',
+    notAllowed: 'You do not have permission to manage rules.',
+    table: {
+      id: 'ID',
+      title: 'Title',
+      description: 'Description',
+      required: 'Required',
+      optional: 'Optional',
+      createdAt: 'Created',
+      editRule: 'Edit rule',
+      deleteRule: 'Delete rule',
+      noRules: 'No rules defined yet.',
+    },
+    deleteConfirm: {
+      title: 'Delete rule "{{title}}"?',
+      message:
+        'This rule will be permanently deleted. Existing projects that already accepted this rule will not be affected.',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      deleteError: 'Failed to delete rule',
+    },
+    dialog: {
+      createTitle: 'Create Rule',
+      editTitle: 'Edit Rule',
+      titleField: 'Title',
+      descriptionField: 'Description',
+      requiredField: 'Required for all projects',
+      save: 'Save',
+      cancel: 'Cancel',
+      createError: 'Failed to create rule',
+      updateError: 'Failed to update rule',
     },
   },
   empty: '-',

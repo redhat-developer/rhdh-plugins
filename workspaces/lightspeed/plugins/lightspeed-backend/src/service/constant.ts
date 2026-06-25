@@ -21,12 +21,20 @@ import multer from 'multer';
 export const DEFAULT_CHUNKING_STRATEGY_TYPE = 'auto'; // auto chunking
 export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
-export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
 export const DEFAULT_LIGHTSPEED_SERVICE_HOST = '127.0.0.1'; // Lightspeed core service host
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
+
+/**
+ * Input validation limits for query endpoints
+ */
+export const MAX_QUERY_LENGTH = 32000; // 32K characters (reasonable for LLM context)
+export const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024; // 20MB (matches notebooks limit)
+export const MAX_TOTAL_ATTACHMENTS_SIZE_BYTES = 50 * 1024 * 1024; // 50MB total
+export const EXPRESS_JSON_BODY_LIMIT = '60mb';
+
 export const NOTEBOOKS_SYSTEM_PROMPT = `
-You are a helpful, analytical Senior Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
+You are a helpful, analytical Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
 
 ### QUERY TYPES - IMPORTANT
 * **Meta Queries ONLY:** ONLY when the user asks specifically about YOU as an assistant (e.g., "who are you", "what can you do", "hello"), respond naturally without requiring documents.
@@ -70,6 +78,7 @@ When you lack evidence, output ONLY: "I cannot answer this based on the provided
 
 /**
  * HTTP and networking constants
+ * @reserved Reserved for future URL file type support
  */
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
 export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
@@ -86,30 +95,9 @@ export const HTTP_STATUS_CONFLICT = 409; // Conflict
 export const HTTP_STATUS_INTERNAL_ERROR = 500; // Internal server error
 
 /**
- * Proxy path security - only these LCORE path prefixes may be proxied
- * Avoids authenticated users hitting arbitrary LCORE endpoints
- * /v1/feedback is here to cover the /feedback/status case as
- * the exact /v1/feedback has its own handler
- */
-export const ALLOWED_PROXY_PREFIXES = [
-  '/v1/models',
-  '/v1/shields',
-  '/v2/conversations',
-  '/v1/feedback',
-];
-
-/**
- * Paths that bypass the proxy middleware and are handled by dedicated route handlers
- */
-export const PROXY_PASSTHROUGH_PATHS = [
-  '/v1/query',
-  '/v1/query/interrupt',
-  '/v1/feedback',
-];
-
-/**
  * SSRF Protection - Blocked hostnames for security
  * These hostnames are commonly used for Server-Side Request Forgery attacks
+ * @reserved Reserved for future URL file type support
  */
 export const SSRF_BLOCKED_HOSTNAMES = [
   'localhost',
@@ -126,6 +114,7 @@ export const SSRF_BLOCKED_HOSTNAMES = [
 /**
  * Prompt Injection Protection - Patterns to detect and sanitize
  * These patterns are commonly used in prompt injection attacks
+ * @reserved Reserved for future URL file type support
  */
 export const PROMPT_INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?previous\s+(instructions?|prompts?)/gi,
@@ -148,6 +137,7 @@ export const PROMPT_INJECTION_PATTERNS = [
 
 /**
  * Content sanitization constants
+ * @reserved Reserved for future URL file type support
  */
 export const MAX_CONSECUTIVE_NEWLINES = 4; // Max consecutive newlines allowed in content
 export const FILTERED_CONTENT_MARKER = '[CONTENT_FILTERED]'; // Marker for filtered content
@@ -163,7 +153,6 @@ export const FILE_TYPE_TO_MIME: Record<string, string> = {
   yaml: 'application/x-yaml',
   yml: 'application/x-yaml',
   pdf: 'application/pdf',
-  url: 'text/plain', // URLs are stored as plain text content
 };
 
 export const MAX_QUERY_RETRIES = 1; // Max number of retries for query
@@ -186,9 +175,12 @@ export enum SupportedFileType {
   YAML = 'yaml',
   YML = 'yml',
   LOG = 'log',
-  URL = 'url',
 }
 
+/**
+ * HTML parsing constants for stripping tags and extracting text
+ * @reserved Reserved for future URL file type support
+ */
 export const HTML_BLOCK_TAGS = new Set([
   'div',
   'p',
@@ -210,3 +202,8 @@ export const HTML_BLOCK_TAGS = new Set([
 export const HTML_IGNORED_TAGS = new Set(['script', 'style']);
 
 export const POLL_INTERVAL_MS = 1000; // 1 second
+
+export const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
+
+// default number of message history being loaded
+export const DEFAULT_HISTORY_LENGTH = 10;

@@ -31,12 +31,18 @@ import { Readable, Transform } from 'stream';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_INTERNAL_ERROR,
+  MAX_QUERY_LENGTH,
   MAX_QUERY_RETRIES,
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
 } from '../constant';
+import {
+  createIdentityMiddleware,
+  getIdentity,
+} from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
 import { isValidFileType, parseFileContent } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
@@ -66,22 +72,16 @@ export async function createNotebooksRouter(
   notebooksRouter.use(express.json());
 
   const lightSpeedPort =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
-  const queryModel = config.getOptionalString(
-    'lightspeed.notebooks.queryDefaults.model',
+  const queryModel = config.getString(
+    'intelligent-assistant.notebooks.queryDefaults.model',
   );
-  const queryProvider = config.getOptionalString(
-    'lightspeed.notebooks.queryDefaults.provider_id',
+  const queryProvider = config.getString(
+    'intelligent-assistant.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
-
-  if (!queryModel || !queryProvider) {
-    throw new Error(
-      'Query model and provider are required. Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id',
-    );
-  }
 
   logger.info(
     `AI Notebooks connecting to Lightspeed-Core at ${lightspeedBaseUrl}`,
@@ -100,19 +100,13 @@ export async function createNotebooksRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  const getUserId = async (req: any): Promise<string> => {
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    return user.userEntityRef;
-  };
-
   const requireNotebooksPermission = async (
     req: any,
     res: any,
     next: any,
   ): Promise<void> => {
     try {
-      const credentials = await httpAuth.credentials(req);
+      const { credentials } = getIdentity(req);
       await authorizer.authorizeUser(
         lightspeedNotebooksUsePermission,
         credentials,
@@ -126,9 +120,9 @@ export async function createNotebooksRouter(
   const requireSessionOwnership =
     () => async (req: any, res: any, next: any) => {
       try {
+        const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        const userId = await getUserId(req);
-        await sessionService.readSession(sessionId, userId);
+        await sessionService.readSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(
@@ -144,8 +138,8 @@ export async function createNotebooksRouter(
     (handler: (req: any, res: any, userId: string) => Promise<void>) =>
     async (req: any, res: any, next: any) => {
       try {
-        const userId = await getUserId(req);
-        await handler(req, res, userId);
+        const { userEntityRef } = getIdentity(req);
+        await handler(req, res, userEntityRef);
       } catch (error) {
         next(error);
       }
@@ -232,49 +226,14 @@ export async function createNotebooksRouter(
             };
             this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else if (eventType === 'response.completed') {
-            const usage = parsed?.response?.usage;
-
             // Log the full response to see what we're getting
             logger.info(
               `Full response.completed event: ${JSON.stringify(parsed?.response, null, 2)}`,
             );
 
             // Extract citations/sources from tool calls (file_search results)
-            const toolCalls = parsed?.response?.tool_calls || [];
-            logger.info(
-              `Tool calls received: ${JSON.stringify(toolCalls, null, 2)}`,
-            );
 
-            const referencedDocuments: any[] = [];
-
-            for (const toolCall of toolCalls) {
-              if (toolCall.tool_name === 'file_search') {
-                logger.info(
-                  `Found file_search tool call: ${JSON.stringify(toolCall, null, 2)}`,
-                );
-                const citations = toolCall.content?.citations || [];
-                for (const citation of citations) {
-                  referencedDocuments.push({
-                    document_id: citation.document_id || citation.file_id,
-                    content: citation.text || citation.content,
-                  });
-                }
-              }
-            }
-
-            logger.info(
-              `Referenced documents: ${JSON.stringify(referencedDocuments)}`,
-            );
-
-            const legacy = {
-              event: 'end',
-              data: {
-                referenced_documents: referencedDocuments,
-                input_tokens: usage?.input_tokens,
-                output_tokens: usage?.output_tokens,
-              },
-            };
-            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else {
             // Log unhandled event types to help identify what we're missing
             logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
@@ -303,6 +262,10 @@ export async function createNotebooksRouter(
   };
 
   notebooksRouter.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  notebooksRouter.use(
+    '/v1',
+    createIdentityMiddleware(httpAuth, userInfo, logger),
+  );
   notebooksRouter.use('/v1', requireNotebooksPermission);
 
   notebooksRouter.post(
@@ -402,7 +365,7 @@ export async function createNotebooksRouter(
         handleError(
           logger,
           res,
-          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log, url`,
+          `Unsupported file type: ${fileType}. Supported types: md, txt, pdf, json, yaml, yml, log`,
         );
         return;
       }
@@ -412,13 +375,7 @@ export async function createNotebooksRouter(
         handleError(logger, res, 'Session not found');
         return;
       }
-
-      const parsedDocument = await parseFileContent(
-        logger,
-        fileType,
-        req.file,
-        req.body.file,
-      );
+      const parsedDocument = await parseFileContent(logger, fileType, req.file);
       const fileId = await documentService.uploadFile(
         parsedDocument.content,
         title,
@@ -476,14 +433,24 @@ export async function createNotebooksRouter(
     }),
   );
 
+  const validateNotebooksQuery = (query: unknown): string | null => {
+    if (!query) return 'query is required';
+    if (typeof query === 'string' && query.length > MAX_QUERY_LENGTH) {
+      return `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`;
+    }
+    return null;
+  };
+
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { query } = req.body;
 
-      if (!query) {
-        handleError(logger, res, 'query is required');
+      const queryError = validateNotebooksQuery(query);
+      if (queryError) {
+        handleError(logger, res, queryError);
         return;
       }
 
@@ -494,21 +461,25 @@ export async function createNotebooksRouter(
         input: query,
         instructions: systemPrompt,
         tools: [{ type: 'file_search', vector_store_ids: [sessionId] }],
+        tool_choice: 'required',
         model: `${queryProvider}/${queryModel}`,
         stream: true,
-        temperature: 0.05,
+        temperature: 0.35,
         shield_ids: [],
-        max_tool_calls: 10,
+        max_tool_calls: 15,
         ...(conversationId && { conversation: conversationId }),
       };
 
       for (let retries = 0; retries <= MAX_QUERY_RETRIES; retries++) {
+        const abortController = new AbortController();
+
         const response = await fetch(
           `${lightspeedBaseUrl}/v1/responses?user_id=${encodeURIComponent(userId)}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(lightspeedRequest),
+            signal: abortController.signal,
           },
         );
 
@@ -547,16 +518,62 @@ export async function createNotebooksRouter(
               : HTTP_STATUS_INTERNAL_ERROR;
           res.status(statusCode).json({
             status: 'error',
-            error: `Error from Llama Stack server: ${errorMsg}`,
+            error: `Error from Lightspeed Core: ${errorMsg}`,
           });
           return;
         }
 
         if (response.body) {
           const body = Readable.fromWeb(response.body as any);
-          body
-            .pipe(createResponsesApiTransform(session, sessionId, userId))
-            .pipe(res);
+          const transformStream = createResponsesApiTransform(
+            session,
+            sessionId,
+            userId,
+          );
+
+          body.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res
+                .status(500)
+                .json({ status: 'error', error: 'Stream error occurred' });
+            }
+            abortController.abort();
+            transformStream.destroy();
+          });
+
+          transformStream.on('error', (error: Error) => {
+            logger.error(
+              `Transform stream error while processing notebook query: ${error}`,
+            );
+            if (res.headersSent) {
+              res.destroy();
+            } else {
+              res.status(500).json({
+                status: 'error',
+                error: 'Processing error occurred',
+              });
+            }
+            body.destroy();
+            abortController.abort();
+          });
+
+          res.on('close', () => {
+            if (!res.writableFinished) {
+              logger.warn(
+                'Client disconnected while processing notebook query',
+              );
+              abortController.abort();
+              body.destroy();
+              transformStream.destroy();
+            }
+          });
+
+          body.pipe(transformStream).pipe(res);
         }
         break;
       }

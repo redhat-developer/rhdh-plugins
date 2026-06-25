@@ -150,6 +150,10 @@ export const scorecardMessages = {
       'Some entities are not reporting values related to this metric.',
     averageCenterTooltipTotalLabel: 'Total score',
     averageCenterTooltipMaxLabel: 'Max possible score',
+    averageCenterTooltipBreakdownRow_one:
+      '{{status}}: {{count}} entity, score: {{score}}',
+    averageCenterTooltipBreakdownRow_other:
+      '{{status}}: {{count}} entities, score: {{score}}',
     averageLegendTooltipEntitiesEach_one: '{{count}} entity, each {{score}}',
     averageLegendTooltipEntitiesEach_other:
       '{{count}} entities, each {{score}}',

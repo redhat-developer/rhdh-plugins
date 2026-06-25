@@ -28,7 +28,6 @@ export const InitPhaseCard = ({ project }: { project: Project }) => {
         phase={project.initJob}
         phaseName="init"
         projectId={project.id}
-        // TODO:Add onRunPhase to resync the migration plan
       />
     </InfoCard>
   );

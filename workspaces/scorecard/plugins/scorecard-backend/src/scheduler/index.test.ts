@@ -28,6 +28,7 @@ import {
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 import { mockMetricProvidersRegistry } from '../../__fixtures__/mockMetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 jest.mock('./tasks/CleanupExpiredMetricsTask');
 jest.mock('./tasks/PullMetricsByProviderTask');
@@ -74,6 +75,10 @@ describe('Scheduler', () => {
       database: mockDatabase,
       metricProvidersRegistry: mockRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
+      thresholdResolver: new ThresholdResolver(
+        mockConfig,
+        mockRegistry.listProviders(),
+      ),
     });
 
     mockCleanupTask = {

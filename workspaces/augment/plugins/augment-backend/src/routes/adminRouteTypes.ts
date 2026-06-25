@@ -29,6 +29,8 @@ export interface AdminRouteDeps {
   logger: LoggerService;
   config: import('@backstage/config').Config;
   provider: AgenticProvider;
+  /** Orchestration fallback provider (LlamaStack) when primary is Kagenti */
+  orchestrationProvider?: AgenticProvider;
   adminConfig: AdminConfigService;
   /** Provider manager for hot-swap operations */
   providerManager?: ProviderManager;

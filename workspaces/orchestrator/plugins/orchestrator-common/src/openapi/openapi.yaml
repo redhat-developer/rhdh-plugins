@@ -428,6 +428,38 @@ components:
           minItems: 0
         paginationInfo:
           $ref: '#/components/schemas/PaginationInfoDTO'
+    WorkflowRunStatsDTO:
+      type: object
+      properties:
+        successRatio:
+          type: number
+          description: Ratio of completed runs to total runs
+        runsLastMonth:
+          type: integer
+          description: Number of runs in the last 30 days
+        successCount:
+          type: integer
+          description: Number of completed workflow runs
+        errorCount:
+          type: integer
+          description: Number of failed workflow runs
+        totalCount:
+          type: integer
+          description: Total number of workflow runs
+        averageTimeToComplete:
+          type: number
+          description: Average time to complete a workflow run in milliseconds
+    WorkflowAvailabilityResponseDTO:
+      type: object
+      properties:
+        isAvailable:
+          type: boolean
+        statusCode:
+          type: integer
+        urlToFetch:
+          type: string
+        reason:
+          type: string
     WorkflowOverviewDTO:
       type: object
       properties:
@@ -452,9 +484,13 @@ components:
           type: string
         isAvailable:
           type: boolean
+        availability:
+          $ref: '#/components/schemas/WorkflowAvailabilityResponseDTO'
         version:
           type: string
           description: Workflow definition version
+        workflowRunStats:
+          $ref: '#/components/schemas/WorkflowRunStatsDTO'
       required:
         - workflowId
         - format

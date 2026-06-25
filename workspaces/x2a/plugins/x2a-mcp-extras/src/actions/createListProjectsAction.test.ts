@@ -42,7 +42,6 @@ describe('x2a-list-projects MCP tool', () => {
           expect.objectContaining({
             id: 'proj-001',
             name: 'Legacy EAP Migration',
-            abbreviation: 'LEM',
             createdAt: NOW.toISOString(),
             status: { state: 'new' },
           }),

@@ -18,12 +18,14 @@ import {
   HttpAuthService,
   PermissionsService,
   DatabaseService,
+  CacheService,
 } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import type { ProviderManager } from './providers';
+import { getProviderDescriptor } from './providers';
 import type { ChatSessionService } from './services/ChatSessionService';
 import type { RouteContext } from './routes';
 import {
@@ -34,11 +36,23 @@ import {
   registerSessionRoutes,
   registerConversationRoutes,
   registerAdminRoutes,
+  registerKagentiRoutes,
+  registerKagentiSandboxRoutes,
+  registerKagentiAdminRoutes,
+  registerDevSpacesRoutes,
+  registerAgentRoutes,
+  registerToolLifecycleRoutes,
+  registerWorkflowRoutes,
+  registerSkillsRoutes,
 } from './routes';
 import { toErrorMessage } from './services/utils';
 import { sanitizeErrorMessage } from './services/utils/errorSanitizer';
 import type { AdminConfigService } from './services/AdminConfigService';
+import { WorkflowConfigService } from './services/WorkflowConfigService';
+import { AgentApprovalWorkflowService } from './services/AgentApprovalWorkflowService';
+import { ResponsesApiProvider } from './providers/llamastack';
 import { createSecurityMiddleware } from './middleware/security';
+import { createRateLimiter } from './middleware/rateLimiter';
 import {
   parseChatRequest,
   parseApprovalRequest,
@@ -53,6 +67,7 @@ export interface RouterOptions {
   providerManager: ProviderManager;
   sessions?: ChatSessionService;
   adminConfig: AdminConfigService;
+  cache?: CacheService;
 }
 
 /**
@@ -86,12 +101,40 @@ export async function createRouter({
   config,
   httpAuth,
   permissions,
+  database,
   providerManager,
   sessions,
   adminConfig,
+  cache,
 }: RouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json({ limit: '1mb' }));
+
+  router.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '0');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+  });
+
+  const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+  const CSRF_EXEMPT_PATHS = new Set(['/health']);
+  router.use((req, res, next) => {
+    if (!MUTATING_METHODS.has(req.method)) {
+      next();
+      return;
+    }
+    if (CSRF_EXEMPT_PATHS.has(req.path)) {
+      next();
+      return;
+    }
+    if (!req.headers['x-backstage-request']) {
+      res.status(403).json({ error: 'Missing X-Backstage-Request header' });
+      return;
+    }
+    next();
+  });
 
   // =============================================================================
   // Shared Helpers
@@ -125,7 +168,11 @@ export async function createRouter({
   }
 
   function missingConversations(res: express.Response): boolean {
-    if (!providerManager.provider.conversations) {
+    const descriptor = getProviderDescriptor(providerManager.provider.id);
+    if (
+      !providerManager.provider.conversations ||
+      descriptor?.capabilities.contextHydration
+    ) {
       res.status(501).json({
         success: false,
         error: 'Conversations not supported by current provider',
@@ -210,6 +257,27 @@ export async function createRouter({
   // Route Registration
   // =============================================================================
 
+  const providerDescriptor = getProviderDescriptor(providerManager.provider.id);
+  let orchestrationProvider: ResponsesApiProvider | undefined;
+  if (providerDescriptor?.capabilities.agentLifecycle) {
+    try {
+      orchestrationProvider = new ResponsesApiProvider({
+        logger: logger.child({ provider: 'orchestration-fallback' }),
+        config,
+        database,
+        adminConfig,
+      });
+      await orchestrationProvider.initialize();
+      logger.info(
+        'Orchestration fallback provider created and initialized for hybrid routing',
+      );
+    } catch (err) {
+      logger.warn(
+        `Could not create orchestration fallback provider: ${toErrorMessage(err)}`,
+      );
+    }
+  }
+
   const ctx: RouteContext = {
     router,
     logger,
@@ -217,6 +285,7 @@ export async function createRouter({
     get provider() {
       return providerManager.provider;
     },
+    orchestrationProvider,
     sessions,
     toErrorMessage,
     sendRouteError,
@@ -227,6 +296,7 @@ export async function createRouter({
     requireAdminAccess,
     parseChatRequest,
     parseApprovalRequest,
+    cache,
   };
 
   const onConfigChanged = () => {
@@ -234,13 +304,107 @@ export async function createRouter({
   };
 
   // Public routes (before auth middleware)
-  registerStatusRoutes(ctx, adminConfig);
+  registerStatusRoutes(ctx, adminConfig, providerManager.initializationError);
+
+  // Tours route is public (static config, no sensitive data)
+  router.get('/tours', (_req, res) => {
+    try {
+      const arr = config.getOptionalConfigArray('augment.tours') || [];
+      const tours = arr.map(tour => {
+        const steps = (tour.getOptionalConfigArray('steps') || []).map(step => {
+          const actionCfg = step.getOptionalConfig('action');
+          return {
+            target: step.getOptionalString('target'),
+            title: step.getString('title'),
+            description: step.getOptionalString('description'),
+            side: step.getOptionalString('side'),
+            action: actionCfg
+              ? {
+                  type: actionCfg.getString('type'),
+                  panel: actionCfg.getOptionalString('panel'),
+                  selector: actionCfg.getOptionalString('selector'),
+                  step: actionCfg.getOptionalNumber('step'),
+                  method: actionCfg.getOptionalString('method'),
+                  cardId: actionCfg.getOptionalString('cardId'),
+                }
+              : undefined,
+            waitFor: step.getOptionalString('waitFor'),
+          };
+        });
+        return {
+          id: tour.getString('id'),
+          title: tour.getString('title'),
+          description: tour.getOptionalString('description'),
+          category: tour.getOptionalString('category'),
+          estimatedMinutes: tour.getOptionalNumber('estimatedMinutes'),
+          persona: tour.getOptionalString('persona'),
+          steps,
+        };
+      });
+      res.json({
+        success: true,
+        tours,
+        source: tours.length > 0 ? 'yaml' : 'defaults',
+      });
+    } catch {
+      res.json({ success: true, tours: [], source: 'defaults' });
+    }
+  });
 
   // Apply plugin-level access control to ALL subsequent routes
   router.use(requirePluginAccess);
 
+  const mutationLimiter = createRateLimiter({
+    windowMs: 60_000,
+    maxRequests: 30,
+  });
+  router.post('/chat/approve', mutationLimiter);
+
   // Authenticated routes
-  registerChatRoutes(ctx);
+  registerChatRoutes(ctx, adminConfig);
+  const agentApprovalService = new AgentApprovalWorkflowService(config, logger);
+  registerAgentRoutes(ctx, adminConfig, agentApprovalService);
+  registerSkillsRoutes(ctx, adminConfig);
+
+  // Tool lifecycle routes -- unified tool listing with lifecycle overlay
+  {
+    const hasToolLifecycle = providerDescriptor?.capabilities.toolLifecycle;
+    const kagentiProvider = hasToolLifecycle
+      ? (providerManager.provider as import('./providers/kagenti').KagentiProvider)
+      : undefined;
+
+    registerToolLifecycleRoutes(ctx, adminConfig, {
+      async listProviderTools() {
+        if (!kagentiProvider) return [];
+        try {
+          const apiClient = kagentiProvider.getApiClient();
+          const kagentiConfig = kagentiProvider.getConfig();
+          const { getVisibleNamespaces } =
+            await import('./providers/kagenti/kagentiNamespaceUtils');
+          const namespaces = await getVisibleNamespaces(
+            apiClient,
+            kagentiConfig,
+            logger,
+          );
+          const allTools: import('@red-hat-developer-hub/backstage-plugin-augment-common').KagentiToolSummary[] =
+            [];
+          const toolResults = await Promise.allSettled(
+            namespaces.map(ns => apiClient.listTools(ns)),
+          );
+          for (const r of toolResults) {
+            if (r.status === 'fulfilled')
+              allTools.push(...(r.value.items ?? []));
+          }
+          return allTools;
+        } catch {
+          return [];
+        }
+      },
+    });
+  }
+
+  const workflowService = new WorkflowConfigService(adminConfig, logger);
+  registerWorkflowRoutes(ctx, workflowService, adminConfig);
   registerDocumentRoutes(ctx);
   registerConfigRoutes(ctx, adminConfig);
   registerSessionRoutes(ctx);
@@ -248,6 +412,29 @@ export async function createRouter({
 
   // Admin routes (requireAdminAccess is applied inside registerAdminRoutes)
   registerAdminRoutes(ctx, adminConfig, onConfigChanged, providerManager);
+
+  // Provider-specific routes (only when provider has providerRoutes capability)
+  if (providerDescriptor?.capabilities.providerRoutes) {
+    registerKagentiRoutes(ctx, adminConfig);
+    registerKagentiSandboxRoutes(ctx);
+    registerKagentiAdminRoutes(ctx);
+    logger.info('Provider-specific routes registered');
+  }
+
+  // Dev Spaces routes — use provider's auth token when available
+  const kagentiTokenFn = providerDescriptor?.capabilities.devSpaces
+    ? () => providerManager.provider.getAuthToken!()
+    : undefined;
+
+  registerDevSpacesRoutes({
+    router,
+    logger,
+    adminConfig,
+    sendRouteError,
+    requireAdminAccess,
+    getAuthToken: kagentiTokenFn,
+    config,
+  });
 
   return router;
 }

@@ -47,16 +47,31 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'initPhaseCard.title': 'Fase di scoperta',
     'projectDetailsCard.title': 'Dettagli del progetto',
     'projectDetailsCard.name': 'Nome',
-    'projectDetailsCard.abbreviation': 'Abbreviazione',
     'projectDetailsCard.status': 'Stato',
-    'projectDetailsCard.createdBy': 'Proprietario',
+    'projectDetailsCard.ownedBy': 'Proprietario',
+    'projectDetailsCard.dirName': 'Nome della directory',
     'projectDetailsCard.description': 'Descrizione',
     'projectDetailsCard.sourceRepo': 'Repository sorgente',
     'projectDetailsCard.targetRepo': 'Repository di destinazione',
+    'projectDetailsCard.edit': 'Modifica',
+    'editProjectDialog.title': 'Modifica progetto',
+    'editProjectDialog.cancel': 'Annulla',
+    'editProjectDialog.update': 'Aggiorna',
+    'editProjectDialog.updateError': 'Aggiornamento del progetto non riuscito',
+    'editProjectDialog.ownerChangeWarningTitle':
+      'Conferma trasferimento di proprietà',
+    'editProjectDialog.ownerChangeWarning':
+      "La modifica del proprietario potrebbe causare la perdita dell'accesso a questo progetto se i propri permessi non coprono il nuovo proprietario. Un amministratore può ripristinare l'accesso se necessario.",
+    'editProjectDialog.ownerChangeConfirm': 'Trasferisci proprietà',
+    'editProjectDialog.nameRequired': 'Il nome è obbligatorio',
+    'editProjectDialog.ownerFormatHint':
+      'Deve essere un riferimento di entità Backstage, ad es. user:default/nome o group:default/team',
     'projectModulesCard.title': 'Moduli ({{count}})',
     'projectModulesCard.noModules': 'Nessun modulo trovato finora...',
     'projectModulesCard.toReview': 'rivedere',
     'projectModulesCard.published': 'pubblicato',
+    'projectModulesCard.spinner':
+      'Fase di scoperta in esecuzione e aggiornamento dell’elenco moduli dal piano di migrazione…',
     'projectPage.title': 'Progetto',
     'projectPage.actionsTooltip':
       'Clicca per aprire il menu per le azioni del progetto',
@@ -70,8 +85,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'projectTable.deleteError': "Errore nell'eliminazione del progetto",
     'project.description': 'Descrizione',
     'project.id': 'ID',
-    'project.abbreviation': 'Abbreviazione',
-    'project.createdBy': 'Proprietario',
+    'project.ownedBy': 'Proprietario',
+    'project.dirName': 'Nome della directory',
     'project.statuses.none': '-',
     'project.statuses.created': 'Creato',
     'project.statuses.initializing': 'In inizializzazione',
@@ -100,6 +115,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.summary.running': 'In esecuzione',
     'module.summary.error': 'Errore',
     'module.summary.cancelled': 'Annullato',
+    'module.summary.removed': 'Rimosso',
     'module.summary.toReview_one': '{{count}} modulo con artefatti da rivedere',
     'module.summary.toReview_other':
       '{{count}} moduli con artefatti da rivedere',
@@ -124,6 +140,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.success': 'Successo',
     'module.statuses.error': 'Errore',
     'module.statuses.cancelled': 'Annullato',
+    'module.statuses.removed': 'Rimosso',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
     'artifact.types.ansible_project': 'Progetto AAP',
@@ -175,6 +192,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
       "Errore nell'esecuzione della fase per il modulo",
     'modulePage.phases.cancelError':
       "Errore nell'annullamento della fase per il modulo",
+    'modulePage.phases.attempts': 'Tentativi',
+    'modulePage.phases.totalElapsed': 'Durata totale',
     'modulePage.phases.commitId': 'Ultimo ID commit',
     'modulePage.phases.viewLog': 'Visualizza log',
     'modulePage.phases.hideLog': 'Nascondi log',
@@ -258,6 +277,57 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
     'retriggerInit.errorStart':
       "Errore nell'avvio dell'inizializzazione del progetto",
+    'resyncMigrationPlan.action': 'Risincronizza il piano di migrazione',
+    'resyncMigrationPlan.confirm.title':
+      'Risincronizzare il piano di migrazione per "{{name}}"?',
+    'resyncMigrationPlan.confirm.message':
+      'Questa operazione rileggerà il piano di migrazione dal repository di destinazione e aggiornerà la lista dei moduli di conseguenza. I nuovi moduli verranno aggiunti e quelli non più presenti nel piano verranno contrassegnati come rimossi. Se apporti modifiche al documento, ad esempio rimuovendo un modulo, assicurati che il documento resti coerente.',
+    'resyncMigrationPlan.confirm.warning':
+      'I moduli contrassegnati come rimossi manterranno la cronologia dei job ma non saranno più idonei per nuove esecuzioni di fase. Questa azione non può essere annullata per i moduli rimossi a meno che non vengano nuovamente aggiunti al piano di migrazione.',
+    'resyncMigrationPlan.confirm.confirmButton': 'Risincronizza',
+    'resyncMigrationPlan.running':
+      'Risincronizzazione della lista moduli dal piano di migrazione…',
+    'resyncMigrationPlan.error':
+      'Errore nella risincronizzazione del piano di migrazione per il progetto "{{name}}"',
+    'resyncMigrationPlan.errorStart':
+      "Errore nell'avvio della risincronizzazione del piano di migrazione",
+    'scaffolder.rulesAcceptance.loadingRules': 'Caricamento regole...',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Nessuna regola configurata.',
+    'scaffolder.rulesAcceptance.required': 'obbligatorio',
+    'scaffolder.rulesAcceptance.fetchError':
+      'Errore nel caricamento delle regole',
+    'rulesPage.title': 'Regole di conversione',
+    'rulesPage.subtitle':
+      'Gestisci le regole che i progetti devono accettare al momento della creazione.',
+    'rulesPage.addRule': 'Aggiungi regola',
+    'rulesPage.manageRules': 'Gestisci regole',
+    'rulesPage.notAllowed': 'Non hai il permesso di gestire le regole.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titolo',
+    'rulesPage.table.description': 'Descrizione',
+    'rulesPage.table.required': 'Obbligatorio',
+    'rulesPage.table.optional': 'Opzionale',
+    'rulesPage.table.createdAt': 'Creato',
+    'rulesPage.table.editRule': 'Modifica regola',
+    'rulesPage.table.deleteRule': 'Elimina regola',
+    'rulesPage.table.noRules': 'Nessuna regola definita ancora.',
+    'rulesPage.deleteConfirm.title': 'Eliminare la regola "{{title}}"?',
+    'rulesPage.deleteConfirm.message':
+      'Questa regola verrà eliminata permanentemente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
+    'rulesPage.deleteConfirm.confirm': 'Elimina',
+    'rulesPage.deleteConfirm.cancel': 'Annulla',
+    'rulesPage.deleteConfirm.deleteError':
+      "Errore nell'eliminazione della regola",
+    'rulesPage.dialog.createTitle': 'Crea regola',
+    'rulesPage.dialog.editTitle': 'Modifica regola',
+    'rulesPage.dialog.titleField': 'Titolo',
+    'rulesPage.dialog.descriptionField': 'Descrizione',
+    'rulesPage.dialog.requiredField': 'Obbligatorio per tutti i progetti',
+    'rulesPage.dialog.save': 'Salva',
+    'rulesPage.dialog.cancel': 'Annulla',
+    'rulesPage.dialog.createError': 'Errore nella creazione della regola',
+    'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
   },
 });
 

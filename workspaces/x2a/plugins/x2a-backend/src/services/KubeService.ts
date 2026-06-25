@@ -328,9 +328,25 @@ export class KubeService implements KubeServiceApi {
         },
         ownerReference,
       );
+
+      // Step 4: Create rules ConfigMap if rules are present
+      const rulesConfigMap = JobResourceBuilder.buildRulesConfigMap(
+        params.jobId,
+        params.projectId,
+        params.phase,
+        params,
+        ownerReference,
+      );
+      if (rulesConfigMap) {
+        this.#logger.info(`Creating rules ConfigMap for job: ${params.jobId}`);
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: rulesConfigMap,
+        });
+      }
     } catch (error: any) {
       this.#logger.error(
-        `Failed to create job secret, cleaning up job ${k8sJobName}: ${error.message}`,
+        `Failed to create job resources, cleaning up job ${k8sJobName}: ${error.message}`,
       );
       await this.deleteJob(k8sJobName);
       throw error;

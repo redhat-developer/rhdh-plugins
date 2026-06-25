@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PushPinIcon from '@mui/icons-material/PushPin';
-import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
+import {
+  ChatbotFootnote,
+  Conversation,
+  SourcesCardProps,
+} from '@patternfly/chatbot';
 import { Spinner } from '@patternfly/react-core';
+import { ThumbtackIcon } from '@patternfly/react-icons';
+import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 
 import {
   BaseMessage,
@@ -35,11 +40,115 @@ export const getFootnoteProps = (
     'Always review AI generated content prior to use.',
 });
 
+export const ChatbotFootnoteWithIcon = ({ label }: { label: string }) => (
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
+    }}
+  >
+    <RhUiAiInfoIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+    <ChatbotFootnote label={label} />
+  </div>
+);
+
 export const getTimestampVariablesString = (v: number) => {
   if (v < 10) {
     return `0${v}`;
   }
   return `${v}`;
+};
+
+const isBlankLine = (line: string) => !line.trim();
+
+/** Ordered list item at line start (CommonMark), ignoring leading spaces. */
+const isOrderedListLine = (line: string) => /^\s*\d+\.\s/.test(line);
+
+/** ASCII bullets; also U+2022 (•) — not a CommonMark marker, but users paste it as a list. */
+const isBulletListLine = (line: string) =>
+  /^\s*[-*+]\s/.test(line) || /^\s*\u2022(?:\s+|\S|$)/u.test(line);
+
+const escapeBulletListMarker = (line: string) => {
+  if (/^\s*\u2022/u.test(line)) {
+    return line;
+  }
+  return line.replace(/^(\s*)([*+-])(\s)/, '$1\\$2$3');
+};
+
+const escapeOrderedListMarker = (line: string) =>
+  line.replace(/^(\s*)(\d+)\.(\s)/, '$1$2\\.$3');
+
+/**
+ * When intro lines (no blank lines among them) are followed by a contiguous run of
+ * list lines, join intro + list into one Markdown paragraph using hard breaks and
+ * per-line escaping so the block does not split awkwardly in the chat UI.
+ */
+const foldListWithIntro = (
+  s: string,
+  isListItemLine: (line: string) => boolean,
+  escapeListLine: (line: string) => string,
+): string => {
+  const lines = s.split('\n');
+  let firstListIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line !== undefined && isListItemLine(line)) {
+      firstListIdx = i;
+      break;
+    }
+  }
+  if (firstListIdx < 0) {
+    return s;
+  }
+
+  const intro = lines.slice(0, firstListIdx);
+  if (intro.some(isBlankLine)) {
+    return s;
+  }
+
+  const rest = lines.slice(firstListIdx);
+  const restItems = rest.filter(l => !isBlankLine(l));
+  if (restItems.length === 0 || !restItems.every(isListItemLine)) {
+    return s;
+  }
+
+  const escaped = restItems.map(escapeListLine);
+  if (intro.length === 0) {
+    return escaped.join('  \n');
+  }
+  return `${intro.join('  \n')}  \n${escaped.join('  \n')}`;
+};
+
+/**
+ * Paragraph + ordered list (even with a single newline) parses as two blocks; merge
+ * intro + contiguous numbered lines into one paragraph using hard breaks (two spaces
+ * + newline) and escaped `1.` markers so Markdown stays a single block.
+ */
+const foldOrderedListWithIntro = (s: string) =>
+  foldListWithIntro(s, isOrderedListLine, escapeOrderedListMarker);
+
+/** Same idea as ordered lists for intro + bullet lines. */
+const foldBulletListWithIntro = (s: string) =>
+  foldListWithIntro(s, isBulletListLine, escapeBulletListMarker);
+
+/**
+ * Trims user chat input and reduces blank lines that split Markdown blocks
+ * (e.g. paragraph + blank line + ordered list) so PatternFly renders one user bubble.
+ */
+export const normalizeChatUserInput = (input: string): string => {
+  let s = input.replace(/\r\n/g, '\n').trim();
+  if (!s) {
+    return s;
+  }
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.replace(/\n\n(?=\s*\d+\.\s)/gm, '\n');
+  s = s.replace(/\n\n(?=\s*[-*+]\s)/gm, '\n');
+  s = s.replace(/\n\n(?=\s*\u2022)/gm, '\n');
+  s = foldOrderedListWithIntro(s);
+  s = foldBulletListWithIntro(s);
+  return s.trim();
 };
 
 export const getTimestamp = (unix_timestamp: number) => {
@@ -207,8 +316,9 @@ export const getCategorizeMessages = (
   t?: (key: string, params?: any) => string,
   sortOption: SortOption = 'newest',
 ): { [k: string]: Conversation[] } => {
-  const pinnedChatsKey = t?.('conversation.category.pinnedChats') || 'Pinned';
-  const recentKey = t?.('conversation.category.recent') || 'Recent';
+  const pinnedChatsKey =
+    t?.('conversation.category.pinnedChats') || 'Pinned chats';
+  const recentKey = t?.('conversation.category.recent') || 'Chats';
   const categorizedMessages: { [k: string]: Conversation[] } = {
     [pinnedChatsKey]: [],
     [recentKey]: [],
@@ -230,8 +340,8 @@ export const getCategorizeMessages = (
       categorizedMessages[pinnedChatsKey].push({
         ...message,
         icon: (
-          <PushPinIcon
-            sx={{
+          <ThumbtackIcon
+            style={{
               width: '1rem',
               height: '1rem',
               display: 'flex',

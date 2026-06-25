@@ -44,6 +44,42 @@ export interface Artifact {
 }
 
 // @public (undocumented)
+export class ArtifactKind {
+    // (undocumented)
+    static all(): readonly ArtifactKind[];
+    // (undocumented)
+    static readonly ANSIBLE_PROJECT: ArtifactKind;
+    // (undocumented)
+    equals(other: ArtifactKind): boolean;
+    // (undocumented)
+    static from(raw: string): ArtifactKind;
+    // (undocumented)
+    isAnsibleProject(): boolean;
+    // (undocumented)
+    isMigratedSources(): boolean;
+    // (undocumented)
+    isMigrationPlan(): boolean;
+    // (undocumented)
+    isModuleMigrationPlan(): boolean;
+    // (undocumented)
+    isProjectMetadata(): boolean;
+    // (undocumented)
+    static readonly MIGRATED_SOURCES: ArtifactKind;
+    // (undocumented)
+    static readonly MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly MODULE_MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly PROJECT_METADATA: ArtifactKind;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: ArtifactType;
+    // (undocumented)
+    static values(): readonly ArtifactType[];
+}
+
+// @public (undocumented)
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public
@@ -102,9 +138,17 @@ export class DefaultApiClient {
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
-    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+    rulesGet(request: RulesGet, options?: RequestOptions): Promise<TypedResponse<RulesGet200Response>>;
+    rulesPost(request: RulesPost, options?: RequestOptions): Promise<TypedResponse<Rule>>;
+    rulesRuleIdDelete(request: RulesRuleIdDelete, options?: RequestOptions): Promise<TypedResponse<RulesRuleIdDelete200Response>>;
+    rulesRuleIdGet(request: RulesRuleIdGet, options?: RequestOptions): Promise<TypedResponse<Rule>>;
+    rulesRuleIdPut(request: RulesRuleIdPut, options?: RequestOptions): Promise<TypedResponse<Rule>>;
 }
+
+// @public
+export const ENTITY_REF_RE: RegExp;
 
 // @public
 export const githubProvider: ScmProvider;
@@ -117,15 +161,32 @@ export interface GitRepoAuth {
     token: string;
 }
 
+// @public (undocumented)
+export class GitRepository {
+    constructor(url: string, branch: string, token: string);
+    // (undocumented)
+    readonly branch: string;
+    // (undocumented)
+    equals(other: GitRepository): boolean;
+    // (undocumented)
+    readonly token: string;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly url: string;
+}
+
 // @public
 export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
+    attemptCount?: number;
     commitId?: string;
     errorDetails?: string;
     finishedAt?: Date;
+    firstAttemptAt?: Date;
     id: string;
     k8sJobName: string;
     moduleId?: string;
@@ -207,6 +268,7 @@ export interface Module {
     projectId: string;
     // (undocumented)
     publish?: Job;
+    removedAt?: Date;
     sourcePath: string;
     // (undocumented)
     status?: ModuleStatus;
@@ -223,13 +285,14 @@ export interface ModulesStatusSummary {
     error: number;
     finished: number;
     pending: number;
+    removed: number;
     running: number;
     total: number;
     waiting: number;
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled' | 'removed';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -279,16 +342,17 @@ export const POLLING_INTERVAL_MS: number;
 
 // @public (undocumented)
 export interface Project {
-    abbreviation: string;
+    acceptedRules?: Array<RuleSnapshot>;
     createdAt: Date;
-    createdBy: string;
     description?: string;
+    dirName?: string;
     id: string;
     // (undocumented)
     initJob?: Job;
     // (undocumented)
     migrationPlan?: Artifact;
     name: string;
+    ownedBy: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
     // (undocumented)
@@ -306,7 +370,7 @@ export type ProjectsGet = {
         page?: number;
         pageSize?: number;
         order?: 'asc' | 'desc';
-        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'createdBy';
+        sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
     };
 };
 
@@ -323,7 +387,7 @@ export type ProjectsPost = {
 
 // @public (undocumented)
 export interface ProjectsPostRequest {
-    abbreviation: string;
+    acceptedRuleIds?: Array<string>;
     description: string;
     name: string;
     ownedByGroup?: string;
@@ -460,17 +524,18 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
 }
 
 // @public (undocumented)
-export type ProjectsProjectIdModulesPost = {
+export type ProjectsProjectIdPatch = {
     path: {
         projectId: string;
     };
-    body: ProjectsProjectIdModulesPostRequest;
+    body: ProjectsProjectIdPatchRequest;
 };
 
 // @public (undocumented)
-export interface ProjectsProjectIdModulesPostRequest {
-    name: string;
-    sourcePath: string;
+export interface ProjectsProjectIdPatchRequest {
+    description?: string;
+    name?: string;
+    ownedBy?: string;
 }
 
 // @public (undocumented)
@@ -494,6 +559,7 @@ export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
 export interface ProjectsProjectIdRunPostRequest {
     // (undocumented)
     aapCredentials?: AAPCredentials;
+    refresh?: boolean;
     // (undocumented)
     sourceRepoAuth: GitRepoAuth;
     // (undocumented)
@@ -565,6 +631,107 @@ export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string
 
 // @public
 export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public (undocumented)
+export interface Rule {
+    createdAt: Date;
+    description: string;
+    id: string;
+    required: boolean;
+    title: string;
+    updatedAt: Date;
+}
+
+// @public (undocumented)
+export class RuleEntity {
+    constructor(id: string, title: string, description: string, required: boolean, createdAt: Date, updatedAt: Date);
+    content(): string;
+    // (undocumented)
+    readonly createdAt: Date;
+    // (undocumented)
+    readonly description: string;
+    // (undocumented)
+    equals(other: RuleEntity): boolean;
+    // (undocumented)
+    static fromJSON(json: unknown): RuleEntity;
+    // (undocumented)
+    static fromRow(row: Record<string, unknown>): RuleEntity;
+    // (undocumented)
+    readonly id: string;
+    path(): string;
+    // (undocumented)
+    readonly required: boolean;
+    // (undocumented)
+    readonly title: string;
+    // (undocumented)
+    toSnapshot(): RuleSnapshot;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly updatedAt: Date;
+}
+
+// @public (undocumented)
+export type RulesGet = {};
+
+// @public (undocumented)
+export interface RulesGet200Response {
+    // (undocumented)
+    items?: Array<Rule>;
+}
+
+// @public
+export interface RuleSnapshot {
+    description: string;
+    id: string;
+    title: string;
+}
+
+// @public (undocumented)
+export type RulesPost = {
+    body: RulesPostRequest;
+};
+
+// @public (undocumented)
+export interface RulesPostRequest {
+    description: string;
+    required?: boolean;
+    title: string;
+}
+
+// @public (undocumented)
+export type RulesRuleIdDelete = {
+    path: {
+        ruleId: string;
+    };
+};
+
+// @public (undocumented)
+export interface RulesRuleIdDelete200Response {
+    deletedCount: number;
+}
+
+// @public (undocumented)
+export type RulesRuleIdGet = {
+    path: {
+        ruleId: string;
+    };
+};
+
+// @public (undocumented)
+export type RulesRuleIdPut = {
+    path: {
+        ruleId: string;
+    };
+    body: RulesRuleIdPutRequest;
+};
+
+// @public (undocumented)
+export interface RulesRuleIdPutRequest {
+    description: string;
+    required: boolean;
+    title: string;
+}
 
 // @public
 export const RUN_INIT_DEEP_LINK_HASH = "#runinit";

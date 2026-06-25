@@ -15,7 +15,7 @@
  */
 
 import { makeStyles, Typography } from '@material-ui/core';
-import { Button } from '@patternfly/react-core';
+import { Button, Spinner } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
@@ -35,11 +35,20 @@ const useStyles = makeStyles(theme => ({
     fontSize: 48,
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
+  headingRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
   heading: {
     fontWeight: 500,
     fontSize: '1.5rem',
     lineHeight: '2rem',
     letterSpacing: '-0.25px',
+  },
+  description: {
+    color: 'var(--pf-t--global--text--color--subtle)',
+    maxWidth: 400,
   },
   uploadButton: {
     textTransform: 'none',
@@ -51,10 +60,12 @@ const useStyles = makeStyles(theme => ({
 
 type UploadResourceScreenProps = {
   onUploadClick: () => void;
+  isProcessing?: boolean;
 };
 
 export const UploadResourceScreen = ({
   onUploadClick,
+  isProcessing = false,
 }: UploadResourceScreenProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -62,18 +73,34 @@ export const UploadResourceScreen = ({
   return (
     <div className={classes.container}>
       <CatalogIcon className={classes.icon} />
-      <Typography className={classes.heading}>
-        {t('notebook.view.upload.heading')}
-      </Typography>
-      <Button
-        variant="secondary"
-        className={classes.uploadButton}
-        icon={<AddCircleOIcon />}
-        iconPosition="end"
-        onClick={onUploadClick}
-      >
-        {t('notebook.view.upload.action')}
-      </Button>
+      {isProcessing ? (
+        <>
+          <div className={classes.headingRow}>
+            <Spinner size="md" />
+            <Typography className={classes.heading}>
+              {t('notebook.view.processing.heading')}
+            </Typography>
+          </div>
+          <Typography className={classes.description}>
+            {t('notebook.view.processing.description')}
+          </Typography>
+        </>
+      ) : (
+        <>
+          <Typography className={classes.heading}>
+            {t('notebook.view.upload.heading')}
+          </Typography>
+          <Button
+            variant="secondary"
+            className={classes.uploadButton}
+            icon={<AddCircleOIcon />}
+            iconPosition="end"
+            onClick={onUploadClick}
+          >
+            {t('notebook.view.upload.action')}
+          </Button>
+        </>
+      )}
     </div>
   );
 };

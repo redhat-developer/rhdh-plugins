@@ -20,14 +20,22 @@ import { useAsync } from 'react-use';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { Button } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import {
+  StylesProvider as StylesProviderV4,
+  useTheme,
+} from '@material-ui/core/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { StylesProvider } from '@mui/styles';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  generateClassName,
+  generateClassNameV4,
+} from '../utils/generateClassName';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -157,7 +165,10 @@ const LightspeedChatContainerInner = () => {
     return (
       <PermissionRequiredState
         subject={t('permission.subject.plugin')}
-        permissions={['lightspeed.chat.read', 'lightspeed.chat.create']}
+        permissions={[
+          'intelligent-assistant.chat.read',
+          'intelligent-assistant.chat.create',
+        ]}
         action={
           <Button
             variant="outlined"
@@ -213,8 +224,12 @@ const LightspeedChatContainerInner = () => {
  */
 export const LightspeedChatContainer = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LightspeedChatContainerInner />
-    </QueryClientProvider>
+    <StylesProvider generateClassName={generateClassName}>
+      <StylesProviderV4 generateClassName={generateClassNameV4}>
+        <QueryClientProvider client={queryClient}>
+          <LightspeedChatContainerInner />
+        </QueryClientProvider>
+      </StylesProviderV4>
+    </StylesProvider>
   );
 };

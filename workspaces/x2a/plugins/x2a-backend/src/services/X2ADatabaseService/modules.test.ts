@@ -41,7 +41,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'A test project',
             ...defaultProjectRepoFields,
           },
@@ -80,7 +79,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -114,7 +112,6 @@ describe('X2ADatabaseService – modules', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -123,7 +120,6 @@ describe('X2ADatabaseService – modules', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -167,7 +163,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -197,7 +192,6 @@ describe('X2ADatabaseService – modules', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -233,7 +227,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -266,7 +259,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -317,7 +309,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -359,7 +350,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -400,7 +390,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -447,7 +436,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -500,7 +488,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -548,7 +535,6 @@ describe('X2ADatabaseService – modules', () => {
           const project = await service.createProject(
             {
               name: 'Test Project',
-              abbreviation: 'TP',
               description: 'D',
               ...defaultProjectRepoFields,
             },
@@ -585,5 +571,227 @@ describe('X2ADatabaseService – modules', () => {
         LONG_TEST_TIMEOUT,
       );
     });
+  });
+
+  describe('softDeleteModule', () => {
+    it.each(supportedDatabaseIds)(
+      'sets removed_at timestamp on the module - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Soft Delete Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'to-remove',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        const result = await service.softDeleteModule({ id: mod.id });
+        expect(result).toBe(1);
+
+        const row = await client('modules').where('id', mod.id).first();
+        expect(row.removed_at).not.toBeNull();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 0 for non-existent module - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const result = await service.softDeleteModule({ id: nonExistentId });
+        expect(result).toBe(0);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'soft-deleted modules are excluded from listModules by default - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'List Removed Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'will-be-removed',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        await service.softDeleteModule({ id: mod.id });
+
+        const modules = await service.listModules({ projectId: project.id });
+        expect(modules).toHaveLength(0);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'soft-deleted modules are returned by listModules when includeRemoved is true - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'List Removed Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'will-be-removed',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        await service.softDeleteModule({ id: mod.id });
+
+        const modules = await service.listModules({
+          projectId: project.id,
+          includeRemoved: true,
+        });
+        expect(modules).toHaveLength(1);
+        expect(modules[0].removedAt).toBeDefined();
+        expect(modules[0].removedAt).toBeInstanceOf(Date);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'soft-deleted module with jobs returns status removed - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Removed Status Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'removed-with-jobs',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+        await service.softDeleteModule({ id: mod.id });
+
+        const modules = await service.listModules({
+          projectId: project.id,
+          includeRemoved: true,
+        });
+        expect(modules).toHaveLength(1);
+        expect(modules[0].status).toBe('removed');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
+
+  describe('updateModule', () => {
+    it.each(supportedDatabaseIds)(
+      'updates source_path and technology - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Update Module Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'to-update',
+          sourcePath: '/old/path',
+          projectId: project.id,
+          technology: 'chef',
+        });
+
+        const result = await service.updateModule({
+          id: mod.id,
+          sourcePath: '/new/path',
+          technology: 'ansible',
+        });
+        expect(result).toBe(1);
+
+        const row = await client('modules').where('id', mod.id).first();
+        expect(row.source_path).toBe('/new/path');
+        expect(row.technology).toBe('ansible');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
+
+  describe('restoreModule', () => {
+    it.each(supportedDatabaseIds)(
+      'clears removed_at on a soft-deleted module - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Restore Project',
+            description: 'Test',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'to-restore',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        await service.softDeleteModule({ id: mod.id });
+        const result = await service.restoreModule({ id: mod.id });
+        expect(result).toBe(1);
+
+        const row = await client('modules').where('id', mod.id).first();
+        expect(row.removed_at).toBeNull();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 0 for non-existent module - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const result = await service.restoreModule({ id: nonExistentId });
+        expect(result).toBe(0);
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 });

@@ -20,9 +20,12 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import { alpha, useTheme } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBranding } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import { augmentApiRef } from '../../api';
 import type { ChatSessionSummary } from '../../types';
 import { debugError } from '../../utils';
@@ -33,7 +36,11 @@ import { GroupedSessionList } from './GroupedSessionList';
 
 interface ConversationHistoryProps {
   /** Callback when a session is selected */
-  onSelectSession: (sessionId: string, adminView?: boolean) => void;
+  onSelectSession: (
+    sessionId: string,
+    adminView?: boolean,
+    sessionModel?: string,
+  ) => void;
   /** Called when the currently active session is deleted so the parent can clear the chat */
   onActiveSessionDeleted?: () => void;
   /** Currently active session ID */
@@ -42,6 +49,8 @@ interface ConversationHistoryProps {
   refreshTrigger?: number;
   /** Whether the current user has admin privileges */
   isAdmin?: boolean;
+  /** Filter sessions to this provider */
+  providerId?: string;
 }
 
 /**
@@ -55,12 +64,15 @@ export const ConversationHistory = ({
   activeSessionId,
   refreshTrigger,
   isAdmin = false,
+  providerId,
 }: ConversationHistoryProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const api = useApi(augmentApiRef);
   const { branding } = useBranding();
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,31 +88,41 @@ export const ConversationHistory = ({
   const loadSessions = useCallback(async () => {
     const gen = ++loadGenRef.current;
     setLoading(true);
+    setLoadError(null);
     setHasMore(true);
     setLoadingMore(false);
     try {
       const list =
         isAdmin && showAllUsers
-          ? await api.listAllSessions()
-          : await api.listSessions(PAGE_SIZE, 0);
+          ? await api.listAllSessions(PAGE_SIZE)
+          : await api.listSessions(PAGE_SIZE, 0, providerId);
       if (loadGenRef.current !== gen) return;
       setSessions(list);
       if (list.length < PAGE_SIZE) setHasMore(false);
     } catch (err) {
       debugError('Failed to load sessions:', err);
+      if (loadGenRef.current === gen) {
+        setLoadError(
+          err instanceof Error ? err.message : 'Failed to load conversations',
+        );
+      }
     } finally {
       if (loadGenRef.current === gen) {
         setLoading(false);
       }
     }
-  }, [api, isAdmin, showAllUsers]);
+  }, [api, isAdmin, showAllUsers, providerId]);
 
   const loadMore = useCallback(async () => {
     if (loading || loadingMore || !hasMore || (isAdmin && showAllUsers)) return;
     const gen = loadGenRef.current;
     setLoadingMore(true);
     try {
-      const list = await api.listSessions(PAGE_SIZE, sessions.length);
+      const list = await api.listSessions(
+        PAGE_SIZE,
+        sessions.length,
+        providerId,
+      );
       if (loadGenRef.current !== gen) return;
       if (list.length < PAGE_SIZE) setHasMore(false);
       if (list.length > 0) {
@@ -121,6 +143,7 @@ export const ConversationHistory = ({
     hasMore,
     isAdmin,
     showAllUsers,
+    providerId,
   ]);
 
   const handleListScroll = useCallback(() => {
@@ -202,7 +225,7 @@ export const ConversationHistory = ({
   const filteredSessions = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     return query
-      ? sessions.filter(s => s.title.toLowerCase().includes(query))
+      ? sessions.filter(s => (s.title || '').toLowerCase().includes(query))
       : sessions;
   }, [sessions, searchQuery]);
 
@@ -215,24 +238,35 @@ export const ConversationHistory = ({
     const groups: { label: string; sessions: ChatSessionSummary[] }[] = [];
     const buckets: Record<string, ChatSessionSummary[]> = {};
 
+    const labelToday = t('conversationHistory.today');
+    const labelYesterday = t('conversationHistory.yesterday');
+    const labelThisWeek = t('conversationHistory.thisWeek');
+    const labelOlder = t('conversationHistory.older');
+
     for (const session of filteredSessions) {
       const d = new Date(session.updatedAt);
       let label: string;
-      if (d.toDateString() === today) label = 'Today';
-      else if (d.toDateString() === yesterday) label = 'Yesterday';
-      else if (d >= weekAgo) label = 'This week';
-      else label = 'Older';
+      if (d.toDateString() === today) label = labelToday;
+      else if (d.toDateString() === yesterday) label = labelYesterday;
+      else if (d >= weekAgo) label = labelThisWeek;
+      else label = labelOlder;
 
       if (!buckets[label]) buckets[label] = [];
       buckets[label].push(session);
     }
 
-    for (const label of ['Today', 'Yesterday', 'This week', 'Older']) {
+    for (const label of [
+      labelToday,
+      labelYesterday,
+      labelThisWeek,
+      labelOlder,
+    ]) {
       if (buckets[label]?.length) {
         groups.push({ label, sessions: buckets[label] });
       }
     }
     return groups;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredSessions]);
 
   return (
@@ -266,12 +300,12 @@ export const ConversationHistory = ({
           {sessions.length} conversation
           {sessions.length !== 1 ? 's' : ''} • {branding.appName}
         </Typography>
-        <Tooltip title="Refresh">
+        <Tooltip title={t('conversationHistory.refresh')}>
           <IconButton
             size="small"
             onClick={() => loadSessions()}
             disabled={loading}
-            aria-label="Refresh conversation history"
+            aria-label={t('conversationHistory.refreshAriaLabel')}
             sx={{
               color: theme.palette.text.secondary,
               p: 0.5,
@@ -324,10 +358,29 @@ export const ConversationHistory = ({
           },
         }}
       >
+        {loadError && sessions.length === 0 && (
+          <Box sx={{ px: 1, py: 2 }}>
+            <Alert
+              severity="error"
+              action={
+                <Button
+                  size="small"
+                  color="inherit"
+                  onClick={() => loadSessions()}
+                >
+                  Retry
+                </Button>
+              }
+              sx={{ fontSize: '0.75rem' }}
+            >
+              {loadError}
+            </Alert>
+          </Box>
+        )}
         {/* eslint-disable-next-line no-nested-ternary */}
         {sessions.length === 0 && loading ? (
           <ConversationSkeleton />
-        ) : sessions.length === 0 ? (
+        ) : sessions.length === 0 && !loadError ? (
           <EmptyConversationState />
         ) : (
           <GroupedSessionList

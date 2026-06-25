@@ -46,6 +46,7 @@ describe('x2a-list-modules MCP tool', () => {
     );
     expect(x2aDatabase.listModules).toHaveBeenCalledWith({
       projectId: 'proj-001',
+      includeRemoved: undefined,
     });
     expect(result.output).toEqual({
       projectId: 'proj-001',

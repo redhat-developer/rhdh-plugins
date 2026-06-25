@@ -22,7 +22,6 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -38,9 +37,10 @@ import {
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
+  InfoCircleIcon,
   KeyIcon,
   LockIcon,
-  OffIcon,
+  PencilAltIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
   TimesIcon,
@@ -110,7 +110,7 @@ const useStyles = makeStyles(theme => ({
   closeButton: {
     marginTop: -theme.spacing(1),
     marginRight: -theme.spacing(1),
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
   },
   nameHeaderButton: {
     paddingLeft: 0,
@@ -162,17 +162,24 @@ const useStyles = makeStyles(theme => ({
   statusOk: {
     color: '#147878',
   },
-  statusToken: {
-    color: '#147878',
-  },
   statusWarn: {
     color: '#B1380B',
   },
   statusDisabled: {
-    color: theme.palette.text.secondary,
+    color:
+      theme.palette.type === 'dark'
+        ? 'var(--pf-t--global--text--color--subtle, #c7c7c7)'
+        : 'var(--pf-t--global--text--color--subtle, #4d4d4d)',
   },
   actionButton: {
     color: theme.palette.text.secondary,
+    opacity: 0,
+    transition: 'opacity 0.15s ease-in-out',
+  },
+  tableRow: {
+    '&:hover $actionButton, &:focus-within $actionButton': {
+      opacity: 1,
+    },
   },
   modalDescription: {
     color: theme.palette.text.secondary,
@@ -189,7 +196,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: theme.spacing(2),
     right: theme.spacing(-0.5),
-    color: '#1F1F1F',
+    color: theme.palette.text.primary,
   },
   modalHeading: {
     display: 'flex',
@@ -214,7 +221,7 @@ const useStyles = makeStyles(theme => ({
     top: '50%',
     transform: 'translateY(-50%)',
     zIndex: 1,
-    color: theme.palette.text.secondary,
+    color: theme.palette.action.active,
   },
   tokenHelper: {
     color: theme.palette.text.secondary,
@@ -316,6 +323,12 @@ const useStyles = makeStyles(theme => ({
   },
   table: {
     width: '100%',
+    backgroundColor: 'transparent',
+    '--pf-v6-c-table--BackgroundColor': 'transparent',
+    '--pf-v5-c-table--BackgroundColor': 'transparent',
+    '& table, & thead, & tbody, & tr, & th, & td': {
+      backgroundColor: 'transparent !important',
+    },
     '& th': {
       borderBottom: 0,
       fontSize: '0.75rem',
@@ -376,7 +389,7 @@ type McpCredentialsValidateResponse = {
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
   if (status === 'tokenRequired') return <KeyIcon className={className} />;
-  if (status === 'disabled') return <OffIcon className={className} />;
+  if (status === 'disabled') return <InfoCircleIcon className={className} />;
   if (status === 'failed')
     return <ExclamationCircleIcon className={className} />;
   return <CheckCircleIcon className={className} />;
@@ -700,7 +713,6 @@ export const McpServersSettings = ({
     >
       <CancelOutlinedIcon
         style={{
-          color: '#6A6E73',
           fontSize: 24,
           width: 24,
           height: 24,
@@ -905,14 +917,12 @@ export const McpServersSettings = ({
             let statusClass = classes.statusWarn;
             if (displayStatus === 'ok') {
               statusClass = classes.statusOk;
-            } else if (displayStatus === 'tokenRequired') {
-              statusClass = classes.statusToken;
             } else if (displayStatus === 'disabled') {
               statusClass = classes.statusDisabled;
             }
 
             return (
-              <Tr key={server.id}>
+              <Tr key={server.id} className={classes.tableRow}>
                 <Td width={10} className={classes.toggleCell}>
                   {(() => {
                     const isUnavailable =
@@ -998,7 +1008,7 @@ export const McpServersSettings = ({
                     aria-label={t('mcp.settings.editServerAriaLabel' as any, {
                       serverName: server.name,
                     })}
-                    icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
+                    icon={<PencilAltIcon />}
                     variant="plain"
                     className={classes.actionButton}
                     isDisabled={!canManageMcp}

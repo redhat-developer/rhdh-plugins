@@ -1,5 +1,5 @@
 # OPTIONAL: Backend-only configurations
-#lightspeed:
+#intelligent-assistant:
 #  servicePort: 8080 # OPTIONAL: Port for lightspeed-core service (default: 8080)
 #  systemPrompt: <custom_system_prompt> # OPTIONAL: Override default RHDH system prompt
 #

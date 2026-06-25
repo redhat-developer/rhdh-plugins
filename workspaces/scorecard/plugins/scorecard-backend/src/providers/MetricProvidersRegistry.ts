@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
 import { ConflictError, NotFoundError } from '@backstage/errors';
 import {
   Metric,
   MetricValue,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { Entity } from '@backstage/catalog-model';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  MetricProvider,
+  ThresholdConfigFormatError,
+  validateThresholdsForMetric,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 /**
  * Registry of all registered metric providers.
@@ -32,11 +36,10 @@ export class MetricProvidersRegistry {
   register(metricProvider: MetricProvider): void {
     const providerDatasource = metricProvider.getProviderDatasourceId();
     const metricType = metricProvider.getMetricType();
+    const providerId = metricProvider.getProviderId();
 
     // Support both single and batch providers
-    const metricIds = metricProvider.getMetricIds?.() ?? [
-      metricProvider.getProviderId(),
-    ];
+    const metricIds = metricProvider.getMetricIds?.() ?? [providerId];
     const metrics = metricProvider.getMetrics?.() ?? [
       metricProvider.getMetric(),
     ];
@@ -72,7 +75,21 @@ export class MetricProvidersRegistry {
           `Metric provider with ID '${metricId}' has already been registered`,
         );
       }
+    }
 
+    try {
+      validateThresholdsForMetric(
+        metricProvider.getMetricThresholds(),
+        metricType,
+      );
+    } catch (error) {
+      throw new ThresholdConfigFormatError(
+        `Invalid default thresholds for metric provider '${providerId}'`,
+        error,
+      );
+    }
+
+    for (const metricId of metricIds) {
       this.metricProviders.set(metricId, metricProvider);
 
       // Index by datasource

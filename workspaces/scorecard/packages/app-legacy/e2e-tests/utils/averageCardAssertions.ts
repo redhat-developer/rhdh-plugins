@@ -15,15 +15,10 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import type { ScorecardMessages } from './translationUtils';
-
-function metricCopy(translations: ScorecardMessages, key: string): string {
-  const metric = translations.metric as unknown as Record<
-    string,
-    string | undefined
-  >;
-  return metric[key] ?? key;
-}
+import {
+  getMetricTranslation,
+  type ScorecardMessages,
+} from './translationUtils';
 
 /** Interpolate `{{key}}` placeholders in a translation template string. */
 function interpolate(template: string, vars: Record<string, string>): string {
@@ -33,24 +28,36 @@ function interpolate(template: string, vars: Record<string, string>): string {
   );
 }
 
-function averageLegendTooltipEntitiesEachTemplateKey(
+function averageCenterTooltipBreakdownTemplateKey(
   locale: string,
-  countStr: string,
+  count: number,
 ):
-  | 'averageLegendTooltipEntitiesEach_one'
-  | 'averageLegendTooltipEntitiesEach_other' {
-  const n = Number.parseInt(countStr, 10);
-  if (Number.isNaN(n)) {
-    return 'averageLegendTooltipEntitiesEach_other';
+  | 'averageCenterTooltipBreakdownRow_one'
+  | 'averageCenterTooltipBreakdownRow_other' {
+  if (Number.isNaN(count)) {
+    return 'averageCenterTooltipBreakdownRow_other';
   }
-  // Align with `getEntityCount` / i18next-style pluralization used in the app.
-  if (locale.startsWith('fr') && n === 0) {
-    return 'averageLegendTooltipEntitiesEach_one';
-  }
-  if (n === 1) {
-    return 'averageLegendTooltipEntitiesEach_one';
-  }
-  return 'averageLegendTooltipEntitiesEach_other';
+  const category = new Intl.PluralRules(locale).select(count);
+  return category === 'one'
+    ? 'averageCenterTooltipBreakdownRow_one'
+    : 'averageCenterTooltipBreakdownRow_other';
+}
+
+function expectedAverageCenterTooltipBreakdownLine(
+  translations: ScorecardMessages,
+  locale: string,
+  statusKey: string,
+  count: string,
+  score: string,
+): string {
+  const n = Number.parseInt(count, 10);
+  const templateKey = averageCenterTooltipBreakdownTemplateKey(locale, n);
+  const template = getMetricTranslation(translations, templateKey);
+  const status =
+    statusKey in translations.thresholds
+      ? translations.thresholds[statusKey]
+      : statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+  return interpolate(template, { status, count, score });
 }
 
 export async function expectAverageCardCenterPercent(
@@ -71,14 +78,16 @@ export async function verifyAverageDonutCenterTooltip(
 ): Promise<void> {
   await card.getByTestId('average-card-center-percent-hit-area').hover();
   await expect(
-    page.getByText(metricCopy(translations, 'averageCenterTooltipTotalLabel'), {
-      exact: true,
-    }),
+    page.getByText(
+      getMetricTranslation(translations, 'averageCenterTooltipTotalLabel'),
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
-    page.getByText(metricCopy(translations, 'averageCenterTooltipMaxLabel'), {
-      exact: true,
-    }),
+    page.getByText(
+      getMetricTranslation(translations, 'averageCenterTooltipMaxLabel'),
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
     page.getByText(String(weightedSum), { exact: true }),
@@ -88,31 +97,36 @@ export async function verifyAverageDonutCenterTooltip(
   ).toBeVisible();
 }
 
-const AVERAGE_LEGEND_EXPECTED: Record<
-  'success' | 'warning' | 'error',
-  { count: string; score: string }
-> = {
-  success: { count: '3', score: '100' },
-  warning: { count: '5', score: '40' },
-  error: { count: '2', score: '0' },
-};
+/** Matches `openPrsWeightedAggregatedResponse.result.values` in scorecardResponseUtils.ts */
+const OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN: Array<{
+  statusKey: 'success' | 'warning' | 'error' | 'critical';
+  count: string;
+  score: string;
+}> = [
+  { statusKey: 'success', count: '3', score: '100' },
+  { statusKey: 'warning', count: '5', score: '40' },
+  { statusKey: 'error', count: '1', score: '15' },
+  { statusKey: 'critical', count: '1', score: '0' },
+];
 
-export async function verifyAverageLegendTooltipForStatus(
+/**
+ * Per-status lines under total/max in the center donut tooltip (replaces old side-legend tooltips).
+ */
+export async function verifyAverageCenterTooltipBreakdownRows(
   page: Page,
   card: Locator,
   translations: ScorecardMessages,
   locale: string,
-  statusKey: 'success' | 'warning' | 'error',
 ): Promise<void> {
-  await card.getByTestId(`legend-colorbox-${statusKey}`).hover();
-  const { count, score } = AVERAGE_LEGEND_EXPECTED[statusKey];
-  const templateKey = averageLegendTooltipEntitiesEachTemplateKey(
-    locale,
-    count,
-  );
-  const entitiesLabel = interpolate(metricCopy(translations, templateKey), {
-    count,
-    score,
-  });
-  await expect(page.getByText(entitiesLabel)).toBeVisible();
+  await card.getByTestId('average-card-center-percent-hit-area').hover();
+  for (const row of OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN) {
+    const line = expectedAverageCenterTooltipBreakdownLine(
+      translations,
+      locale,
+      row.statusKey,
+      row.count,
+      row.score,
+    );
+    await expect(page.getByText(line)).toBeVisible();
+  }
 }

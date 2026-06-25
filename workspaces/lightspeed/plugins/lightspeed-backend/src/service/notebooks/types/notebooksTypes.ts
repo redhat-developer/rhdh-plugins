@@ -45,7 +45,7 @@ export interface NotebookSession {
  */
 export interface SessionDocument {
   document_id: string;
-  source_type: 'text' | 'pdf' | 'url' | 'md' | 'json' | 'yaml' | 'log';
+  source_type: 'text' | 'pdf' | 'md' | 'json' | 'yaml' | 'log';
   created_at: string;
   updated_at: string;
 }

@@ -22,20 +22,15 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getThresholdsFromConfig,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
-  private readonly thresholds: ThresholdConfig;
 
-  private constructor(config: Config, thresholds?: ThresholdConfig) {
+  private constructor(config: Config) {
     this.githubClient = new GithubClient(config);
-    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
@@ -62,7 +57,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   }
 
   getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return DEFAULT_NUMBER_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -72,13 +67,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   }
 
   static fromConfig(config: Config): GithubOpenPRsProvider {
-    const thresholds = getThresholdsFromConfig(
-      config,
-      'scorecard.plugins.github.open_prs.thresholds',
-      'number',
-    );
-
-    return new GithubOpenPRsProvider(config, thresholds);
+    return new GithubOpenPRsProvider(config);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

@@ -20,7 +20,7 @@ import {
   Job,
   JobStatusEnum,
   Artifact,
-  ArtifactType,
+  ArtifactKind,
   MigrationPhase,
   SourceTechnology,
   Telemetry,
@@ -30,15 +30,29 @@ export function mapRowToProject(row: Record<string, unknown>): Project {
   return {
     id: row.id as string,
     name: row.name as string,
-    abbreviation: row.abbreviation as string,
     description: row.description as string,
     sourceRepoUrl: row.source_repo_url as string,
     targetRepoUrl: row.target_repo_url as string,
     sourceRepoBranch: row.source_repo_branch as string,
     targetRepoBranch: row.target_repo_branch as string,
-    createdBy: row.created_by as string,
+    ownedBy: row.owned_by as string,
     createdAt: new Date(row.created_at as string | Date),
+    dirName: (row.dir_name as string) || undefined,
+    acceptedRules: parseAcceptedRules(row.accepted_rules as string | undefined),
   };
+}
+
+function parseAcceptedRules(
+  raw: string | undefined,
+): Array<{ id: string; title: string; description: string }> | undefined {
+  if (!raw) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
 }
 
 export function mapRowToModule(row: Record<string, unknown>): Module {
@@ -48,6 +62,9 @@ export function mapRowToModule(row: Record<string, unknown>): Module {
     sourcePath: row.source_path as string,
     technology: (row.technology as SourceTechnology) || undefined,
     projectId: row.project_id as string,
+    removedAt: row.removed_at
+      ? new Date(row.removed_at as string | Date)
+      : undefined,
   };
 }
 
@@ -92,8 +109,7 @@ function parseTelemetry(raw: string | undefined): Telemetry | undefined {
 export function mapRowToArtifact(row: Record<string, unknown>): Artifact {
   return {
     id: row.id as string,
-    // Following retype is fragile if DB writes do not respect the enum
-    type: row.type as ArtifactType,
+    type: ArtifactKind.from(row.type as string).value,
     value: row.value as string,
   };
 }

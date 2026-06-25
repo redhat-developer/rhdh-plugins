@@ -269,7 +269,6 @@ export const extensionsMessages = {
 
   // Support type filters
   supportTypes: {
-    certifiedBy: 'Certified by {{value}} ({{count}})',
     verifiedBy: 'Verified by {{value}} ({{count}})',
     customPlugins: 'Custom plugins ({{count}})',
   },
@@ -374,12 +373,9 @@ export const extensionsMessages = {
 
   // Badge labels and tooltips
   badges: {
-    certified: 'Certified',
-    certifiedBy: 'Certified by {{provider}}',
     verified: 'Verified',
     verifiedBy: 'Verified by {{provider}}',
     customPlugin: 'Custom plugin',
-    stableAndSecured: 'Stable and secured by {{provider}}',
     generallyAvailable: 'Generally available (GA)',
     gaAndSupportedBy: 'Generally available (GA) and supported by {{provider}}',
     gaAndSupported: 'Generally available (GA) and supported',

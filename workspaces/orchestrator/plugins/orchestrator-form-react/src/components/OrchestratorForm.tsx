@@ -57,6 +57,7 @@ export type OrchestratorFormProps = {
   schema: JSONSchema7;
   updateSchema: OrchestratorFormContextProps['updateSchema'];
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
+  onSamlSsoError?: OrchestratorFormContextProps['onSamlSsoError'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
@@ -157,6 +158,7 @@ const OrchestratorForm = ({
   isExecuting,
   initialFormData,
   setAuthTokenDescriptors,
+  onSamlSsoError,
   t,
   executeLabel,
   executeAsEventLabel,
@@ -270,6 +272,7 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          onSamlSsoError={onSamlSsoError}
           getIsChangedByUser={getIsChangedByUser}
           setIsChangedByUser={setIsChangedByUser}
         >
@@ -284,6 +287,7 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          onSamlSsoError={onSamlSsoError}
           getIsChangedByUser={getIsChangedByUser}
           setIsChangedByUser={setIsChangedByUser}
         />

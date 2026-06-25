@@ -37,6 +37,11 @@ export const createRetrieveTechDocsContentAction = ({
   actionsRegistry.register({
     name: 'retrieve-techdocs-content',
     title: 'Retrieve TechDocs Content',
+    attributes: {
+      destructive: false,
+      readOnly: true,
+      idempotent: true,
+    },
     description: `Retrieve the actual TechDocs content for a specific entity and optional page.
 
       This tool allows AI clients to access documentation content for specific catalog entities.

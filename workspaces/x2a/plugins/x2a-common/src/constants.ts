@@ -101,3 +101,14 @@ export const RUN_INIT_DEEP_LINK_HASH = '#runinit';
  * @public
  */
 export const RUN_NEXT_DEEP_LINK_HASH = '#runnext';
+
+/**
+ * Pattern for a valid Backstage entity reference, e.g.
+ * `user:default/my-name` or `group:default/team-a`.
+ *
+ * Namespace and name segments are restricted to lowercase alphanumerics,
+ * dashes, underscores, and dots to match the Backstage catalog conventions.
+ *
+ * @public
+ */
+export const ENTITY_REF_RE = /^(user|group):[a-z0-9_.-]+\/[a-z0-9_.-]+$/;

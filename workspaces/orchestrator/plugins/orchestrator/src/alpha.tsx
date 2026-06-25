@@ -27,11 +27,12 @@ import {
   createApiFactory,
   createFrontendModule,
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
+
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import OrchestratorIcon from './components/OrchestratorIcon';
@@ -46,19 +47,20 @@ import {
 } from './routes';
 import { orchestratorTranslations } from './translations';
 
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
+
 const orchestratorPage = PageBlueprint.make({
   params: {
     path: '/orchestrator',
     routeRef: orchestratorRootRouteRef,
-    loader: () => import('./components/Router').then(m => <m.Router />),
-  },
-});
-
-const orchestratorNavItem = NavItemBlueprint.make({
-  params: {
-    routeRef: orchestratorRootRouteRef,
     title: 'Orchestrator',
-    icon: OrchestratorIcon,
+    icon: <OrchestratorIcon />,
+    noHeader: true,
+    loader: () => import('./components/Router').then(m => <m.Router />),
   },
 });
 
@@ -114,12 +116,7 @@ const orchestratorTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'orchestrator',
-  extensions: [
-    orchestratorPage,
-    orchestratorNavItem,
-    orchestratorApi,
-    orchestratorEntityContent,
-  ],
+  extensions: [orchestratorPage, orchestratorApi, orchestratorEntityContent],
   routes: {
     root: orchestratorRootRouteRef,
     workflow: workflowRouteRef,

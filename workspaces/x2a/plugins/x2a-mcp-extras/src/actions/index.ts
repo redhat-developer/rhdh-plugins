@@ -30,11 +30,13 @@ import { createListProjectsAction } from './createListProjectsAction';
 import { createCreateProjectAction } from './createCreateProjectAction';
 import { createTriggerNextPhaseAction } from './createTriggerNextPhaseAction';
 import { createListModulesAction } from './createListModulesAction';
+import { createListRulesAction } from './createListRulesAction';
 
 export { createListProjectsAction } from './createListProjectsAction';
 export { createCreateProjectAction } from './createCreateProjectAction';
 export { createTriggerNextPhaseAction } from './createTriggerNextPhaseAction';
 export { createListModulesAction } from './createListModulesAction';
+export { createListRulesAction } from './createListRulesAction';
 
 export interface X2aActionsOptions {
   actionsRegistry: ActionsRegistryService;
@@ -52,4 +54,5 @@ export function createX2aActions(options: X2aActionsOptions) {
   createCreateProjectAction(options);
   createTriggerNextPhaseAction(options);
   createListModulesAction(options);
+  createListRulesAction(options);
 }

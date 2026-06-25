@@ -23,18 +23,20 @@ import {
   JobStatus,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import type { RouterDeps } from './types';
 import {
-  generateCallbackToken,
-  reconcileJobStatus,
-  useEnforceProjectPermissions,
-} from './common';
-import {
+  CallbackToken,
   calculateModuleStatus,
   listModulesWithReconciledStatuses,
   reconcileModuleJobs,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+import type { RouterDeps } from './types';
+import {
+  assertProjectHasDirName,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -50,6 +52,7 @@ export function registerModuleRoutes(
     permissionsSvc,
     catalog,
   } = deps;
+  const gitRepoResolver = new GitRepositoryResolver(config);
 
   router.get('/projects/:projectId/modules', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules';
@@ -66,7 +69,10 @@ export function registerModuleRoutes(
       catalog,
     });
 
-    const modules = await x2aDatabase.listModules({ projectId });
+    const modules = await x2aDatabase.listModules({
+      projectId,
+      includeRemoved: true,
+    });
     await listModulesWithReconciledStatuses(modules, {
       kubeService,
       x2aDatabase,
@@ -122,58 +128,6 @@ export function registerModuleRoutes(
     res.json(module);
   });
 
-  // TODO: This is a TEMPORARY endpoint for testing only.
-  // According to the ADR (lines 202-213), this endpoint should sync modules by:
-  // 1. Fetching the migration project plan from the target repo
-  // 2. Parsing it via LLM to extract the list of modules
-  // 3. Generating moduleIds for new ones and deleting missing modules
-  // This simple CRUD implementation allows testing the job infrastructure
-  // until the init phase integration is complete.
-  router.post(
-    '/projects/:projectId/modules',
-    async (req: express.Request, res: express.Response) => {
-      const endpoint =
-        'Temporary endpoint - for testing only. POST /projects/:projectId/modules';
-      const { projectId } = req.params;
-      logger.info(`${endpoint} request received: projectId=${projectId}`);
-
-      await useEnforceProjectPermissions({
-        req,
-        readOnly: false,
-        projectId,
-        x2aDatabase,
-        httpAuth,
-        permissionsSvc,
-        catalog,
-      });
-
-      // Validate request body
-      const createModuleRequestSchema = z.object({
-        name: z.string(),
-        sourcePath: z.string(),
-      });
-
-      const parsedBody = createModuleRequestSchema
-        .passthrough()
-        .safeParse(req.body);
-      if (!parsedBody.success) {
-        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
-      }
-      const { name, sourcePath } = parsedBody.data;
-
-      // Create module
-      const module = await x2aDatabase.createModule({
-        name,
-        sourcePath,
-        projectId,
-      });
-
-      logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
-
-      res.status(201).json(module);
-    },
-  );
-
   router.post(
     '/projects/:projectId/modules/:moduleId/run',
     async (req: express.Request, res: express.Response) => {
@@ -228,24 +182,14 @@ export function registerModuleRoutes(
         catalog,
       });
 
-      // Get tokens with config-based fallback
-      const sourceToken =
-        sourceRepoAuth?.token ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        targetRepoAuth?.token ??
-        config.getOptionalString('x2a.git.targetRepo.token');
+      assertProjectHasDirName(project);
 
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
 
       // Verify module exists
       const module = await x2aDatabase.getModule({ id: moduleId });
@@ -284,13 +228,13 @@ export function registerModuleRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
         phase,
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -300,29 +244,27 @@ export function registerModuleRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
+        projectDirName: project.dirName,
         phase,
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
         moduleId,
         moduleName: module.name,
         sourceTechnology: module.technology,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
+        sourceRepo,
+        targetRepo,
         aapCredentials,
+        acceptedRules,
       });
 
       // Re-read the job to detect cancellation during the K8s creation window

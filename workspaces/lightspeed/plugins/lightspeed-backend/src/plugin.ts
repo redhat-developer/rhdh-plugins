@@ -51,6 +51,52 @@ export const lightspeedPlugin = createBackendPlugin({
       }) {
         await migrate(database);
 
+        if (config.has('lightspeed')) {
+          logger.warn(
+            'DEPRECATED: The "lightspeed" configuration key has been renamed to "intelligent-assistant". ' +
+              'Please update your app-config.yaml. The old "lightspeed" key is no longer read. ' +
+              'Migration guide: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant',
+          );
+        }
+
+        const aiNotebooksEnabled =
+          config.getOptionalBoolean(
+            'intelligent-assistant.notebooks.enabled',
+          ) ?? false;
+
+        if (aiNotebooksEnabled) {
+          const queryModel = config.getOptionalString(
+            'intelligent-assistant.notebooks.queryDefaults.model',
+          );
+          const queryProvider = config.getOptionalString(
+            'intelligent-assistant.notebooks.queryDefaults.provider_id',
+          );
+
+          if (!queryModel || !queryProvider) {
+            logger.warn(
+              'AI Notebooks feature is enabled but required configuration is missing. ' +
+                'Please configure intelligent-assistant.notebooks.queryDefaults.model and intelligent-assistant.notebooks.queryDefaults.provider_id. ' +
+                'Notebooks will not be available until these are set.',
+            );
+          } else {
+            http.use(
+              await createNotebooksRouter({
+                config: config,
+                logger: logger,
+                httpAuth: httpAuth,
+                userInfo: userInfo,
+                permissions,
+              }),
+            );
+            logger.info('AI Notebooks enabled');
+
+            http.addAuthPolicy({
+              path: '/notebooks/health',
+              allow: 'unauthenticated',
+            });
+          }
+        }
+
         http.use(
           await createRouter({
             config,
@@ -61,26 +107,6 @@ export const lightspeedPlugin = createBackendPlugin({
             permissions,
           }),
         );
-
-        const aiNotebooksEnabled =
-          config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
-        if (aiNotebooksEnabled) {
-          http.use(
-            await createNotebooksRouter({
-              config: config,
-              logger: logger,
-              httpAuth: httpAuth,
-              userInfo: userInfo,
-              permissions,
-            }),
-          );
-          logger.info('AI Notebooks enabled');
-
-          http.addAuthPolicy({
-            path: '/notebooks/health',
-            allow: 'unauthenticated',
-          });
-        }
 
         // Configure authentication policies
         http.addAuthPolicy({

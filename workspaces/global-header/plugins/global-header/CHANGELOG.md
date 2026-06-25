@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.6
+
+### Patch Changes
+
+- 5ee4105: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+
+## 1.21.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
 ## 1.21.4
 
 ### Patch Changes

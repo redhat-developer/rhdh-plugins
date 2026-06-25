@@ -29,7 +29,12 @@ import {
   createInitialStreamingState,
   updateStreamingState,
 } from '../components/StreamingMessage';
-import { debugError, handleStreamError, buildBotResponse } from '../utils';
+import {
+  debugError,
+  handleStreamError,
+  buildBotResponse,
+  isAbortError,
+} from '../utils';
 
 // Re-export for backward compatibility
 export { stripEchoedToolOutput } from '../utils';
@@ -47,6 +52,10 @@ export interface UseStreamingChatOptions {
   onScrollToBottom?: () => void;
   /** Callback when a new session is lazily created (first message) */
   onSessionCreated?: (sessionId: string) => void;
+  /** Model or agent identifier (e.g. "namespace/agentName" for Kagenti) */
+  model?: string;
+  /** Active provider ID — tagged on sessions for provider isolation */
+  providerId?: string;
 }
 
 /**
@@ -55,6 +64,8 @@ export interface UseStreamingChatOptions {
 export interface UseStreamingChatReturn {
   /** Current streaming state */
   streamingState: StreamingState | null;
+  /** Snapshot of the last completed streaming state (survives React 18 batching) */
+  lastCompletedState: StreamingState | null;
   /** Whether the AI is currently generating */
   isTyping: boolean;
   /** Send a message to the API */
@@ -77,6 +88,10 @@ export interface UseStreamingChatReturn {
   setConversationId: React.Dispatch<React.SetStateAction<string | undefined>>;
   /** Set sessionId — when set, backend manages conversation_id lookup */
   setSessionId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  /** Set lastCompletedState (for preserving trace across HITL clears) */
+  setLastCompletedState: React.Dispatch<
+    React.SetStateAction<StreamingState | null>
+  >;
 }
 
 /**
@@ -88,6 +103,8 @@ export function useStreamingChat({
   onMessagesChange,
   onScrollToBottom,
   onSessionCreated,
+  model,
+  providerId,
 }: UseStreamingChatOptions): UseStreamingChatReturn {
   const api = useApi(augmentApiRef);
   const {
@@ -106,12 +123,21 @@ export function useStreamingChat({
     onFlush: onScrollToBottom,
   });
   const [isTyping, setIsTyping] = useState(false);
+  const [lastCompletedState, setLastCompletedState] =
+    useState<StreamingState | null>(null);
   const messageIdCounter = useRef(0);
   const nextMessageId = useCallback(() => {
     const id = messageIdCounter.current;
     messageIdCounter.current += 1;
     return `msg-${Date.now()}-${id}`;
   }, []);
+
+  // Keep model and providerId in refs so sendMessage always reads the latest
+  // value without needing them in the dependency array
+  const modelRef = useRef(model);
+  modelRef.current = model;
+  const providerIdRef = useRef(providerId);
+  providerIdRef.current = providerId;
 
   // Store previousResponseId in state for reliable conversation threading
   const [previousResponseId, setPreviousResponseId] = useState<
@@ -139,13 +165,16 @@ export function useStreamingChat({
 
     const partial = pendingStateRef.current as StreamingState | null;
     if (hadActiveStream && partial && partial.text.trim()) {
-      setStreamingState({
+      const stoppedState = {
         ...partial,
         phase: 'completed' as const,
         completed: true,
         text: `${partial.text}\n\n*(stopped)*`,
-      });
+      };
+      setLastCompletedState(stoppedState);
+      setStreamingState(stoppedState);
     } else {
+      if (partial) setLastCompletedState(partial);
       setStreamingState(null);
     }
     pendingStateRef.current = null;
@@ -159,6 +188,7 @@ export function useStreamingChat({
     setStreamingState(null);
     setIsTyping(false);
     pendingStateRef.current = null;
+    setLastCompletedState(null);
   }, [setStreamingState, pendingStateRef]);
 
   const sendMessage = useCallback(
@@ -167,6 +197,10 @@ export function useStreamingChat({
 
       // Capture the session identity at send time so completion paths can
       // detect if the user switched sessions and skip stale updates.
+      // NOTE: `messages` is captured at call time and reused in finalization
+      // to rebuild the full array as [...messages, newMessage, botResponse].
+      // This is safe because isTyping blocks concurrent sends and HITL
+      // interactive phases return early before finalization.
       let sendSessionId = sessionIdRef.current;
 
       const newMessage: Message = {
@@ -188,14 +222,31 @@ export function useStreamingChat({
         if (!activeSessionId) {
           try {
             const title = messageText.slice(0, 80);
-            const session = await api.createSession(title);
+            const session = await api.createSession(
+              title,
+              modelRef.current,
+              providerIdRef.current,
+            );
             activeSessionId = session.id;
             sendSessionId = activeSessionId;
             setSessionId(activeSessionId);
             sessionIdRef.current = activeSessionId;
             onSessionCreated?.(activeSessionId);
-          } catch {
-            debugError('Failed to create session, falling back to legacy flow');
+          } catch (sessionErr) {
+            debugError(
+              'Failed to create session, falling back to legacy flow',
+              sessionErr,
+            );
+            currentStreamingState = updateStreamingState(
+              currentStreamingState,
+              {
+                type: 'stream.error',
+                error:
+                  'Session creation failed — conversation history will not be saved.',
+                code: 'session_creation_failed',
+              } as StreamingEvent,
+            );
+            scheduleStreamingUpdate(currentStreamingState);
           }
         }
 
@@ -208,6 +259,14 @@ export function useStreamingChat({
           await api.chatStreamWithSession(
             apiMessages,
             (event: StreamingEvent) => {
+              if (
+                event.type === 'stream.error' &&
+                (event as { code?: string }).code === 'reconnecting'
+              ) {
+                currentStreamingState = createInitialStreamingState();
+                scheduleStreamingUpdate(currentStreamingState);
+                return;
+              }
               const eventResponseId =
                 event.type === 'stream.started' ||
                 event.type === 'stream.completed'
@@ -225,6 +284,7 @@ export function useStreamingChat({
             activeSessionId,
             enableRAG,
             controller.signal,
+            modelRef.current,
           );
         } else {
           // Legacy flow: frontend manages conversation_id
@@ -263,6 +323,14 @@ export function useStreamingChat({
           await api.chatStream(
             apiMessages,
             (event: StreamingEvent) => {
+              if (
+                event.type === 'stream.error' &&
+                (event as { code?: string }).code === 'reconnecting'
+              ) {
+                currentStreamingState = createInitialStreamingState();
+                scheduleStreamingUpdate(currentStreamingState);
+                return;
+              }
               const eventResponseId =
                 event.type === 'stream.started' ||
                 event.type === 'stream.completed'
@@ -281,6 +349,7 @@ export function useStreamingChat({
             controller.signal,
             previousResponseIdRef.current,
             activeConvId,
+            modelRef.current,
           );
         }
 
@@ -293,17 +362,32 @@ export function useStreamingChat({
 
         if (!mountedRef.current) return;
 
+        // Safety net: if the stream resolved without error but never
+        // received a stream.completed event, synthesize one so the UI
+        // finalizes properly instead of hanging in a "thinking" state.
+        if (!currentStreamingState.completed) {
+          currentStreamingState = updateStreamingState(currentStreamingState, {
+            type: 'stream.completed',
+          });
+          scheduleStreamingUpdate(currentStreamingState);
+          flushStreamingState();
+        }
+
         setIsTyping(false);
         abortControllerRef.current = null;
 
-        // Don't clear streaming state if there's a pending approval (HITL)
-        if (currentStreamingState.phase !== 'pending_approval') {
+        const isInteractivePhase =
+          currentStreamingState.phase === 'pending_approval' ||
+          currentStreamingState.phase === 'form_input' ||
+          currentStreamingState.phase === 'auth_required';
+
+        if (!isInteractivePhase) {
+          setLastCompletedState(currentStreamingState);
           setStreamingState(null);
           pendingStateRef.current = null;
         }
 
-        // Skip processing if HITL is pending
-        if (currentStreamingState.phase === 'pending_approval') {
+        if (isInteractivePhase) {
           return;
         }
 
@@ -317,13 +401,14 @@ export function useStreamingChat({
       } catch (err) {
         // Intentional abort (user cancelled or sent a new message).
         // If partial content was captured, finalize it as a stopped message.
-        if (err instanceof DOMException && err.name === 'AbortError') {
+        if (isAbortError(err)) {
           if (!mountedRef.current) return;
 
           const partial = pendingStateRef.current;
           if (partial && partial.text.trim()) {
             flushStreamingState();
             setIsTyping(false);
+            setLastCompletedState(partial);
             setStreamingState(null);
             pendingStateRef.current = null;
 
@@ -352,6 +437,7 @@ export function useStreamingChat({
             }
           } else {
             setIsTyping(false);
+            setLastCompletedState(currentStreamingState);
             setStreamingState(null);
             pendingStateRef.current = null;
           }
@@ -362,6 +448,7 @@ export function useStreamingChat({
         if (errorMsg === undefined) return;
 
         setIsTyping(false);
+        setLastCompletedState(currentStreamingState);
         setStreamingState(null);
 
         const isNetworkError =
@@ -398,6 +485,7 @@ export function useStreamingChat({
 
   return {
     streamingState,
+    lastCompletedState,
     isTyping,
     sendMessage,
     cancelRequest,
@@ -407,5 +495,6 @@ export function useStreamingChat({
     setPreviousResponseId,
     setConversationId,
     setSessionId,
+    setLastCompletedState,
   };
 }

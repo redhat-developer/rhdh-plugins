@@ -1,0 +1,209 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { useEffect, useMemo } from 'react';
+import BuildIcon from '@mui/icons-material/Build';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SettingsIcon from '@mui/icons-material/Settings';
+import TuneIcon from '@mui/icons-material/Tune';
+import type { CreateAgentWizardProps } from './agentWizardTypes';
+import { FORM_STEPS, BUILD_STEP } from './agentWizardTypes';
+import { useAgentWizardForm } from './useAgentWizardForm';
+import { AgentWizardBasicsStep } from './AgentWizardBasicsStep';
+import { AgentWizardDeployStep } from './AgentWizardDeployStep';
+import { AgentWizardRuntimeStep } from './AgentWizardRuntimeStep';
+import { AgentWizardBuildStep } from './AgentWizardBuildStep';
+import { WizardShell } from './WizardShell';
+
+export type { CreateAgentWizardProps } from './agentWizardTypes';
+
+const STEP_ICONS: Record<string, React.ReactElement> = {
+  Basics: <SettingsIcon />,
+  Deployment: <CloudUploadIcon />,
+  Runtime: <TuneIcon />,
+  [BUILD_STEP]: <BuildIcon />,
+};
+
+const STEP_DESCRIPTIONS: Record<string, string> = {
+  Basics:
+    'Name your agent and choose its communication protocol and framework.',
+  Deployment:
+    'Choose how to deploy — from a pre-built container image or built from source code.',
+  Runtime:
+    'Configure the workload type, environment variables, ports, and security settings.',
+  [BUILD_STEP]:
+    'Monitor the build progress and deployment status of your agent.',
+};
+
+export function CreateAgentWizard({
+  open,
+  namespace: namespaceProp,
+  initialDeploymentMethod,
+  onClose,
+  onCreated,
+  onStepControl,
+  onDeployMethodControl,
+}: CreateAgentWizardProps) {
+  const form = useAgentWizardForm(
+    open,
+    namespaceProp,
+    onClose,
+    onCreated,
+    initialDeploymentMethod,
+  );
+  const { setDeploymentMethod, setActiveStep } = form;
+
+  useEffect(() => {
+    if (open && onDeployMethodControl) {
+      onDeployMethodControl((method: string) => {
+        if (method === 'image' || method === 'source') {
+          setDeploymentMethod(method);
+        }
+      });
+    }
+  }, [open, onDeployMethodControl, setDeploymentMethod]);
+
+  useEffect(() => {
+    if (open && onStepControl) {
+      onStepControl(setActiveStep);
+    }
+  }, [open, onStepControl, setActiveStep]);
+
+  const isSourceDeploy = form.deploymentMethod === 'source';
+  const isBuildStep = form.activeStep === FORM_STEPS.length;
+  const buildActive =
+    form.buildProgress.phase !== 'idle' &&
+    form.buildProgress.phase !== 'submitting';
+
+  const allSteps = useMemo((): string[] => {
+    const base: string[] = [...FORM_STEPS];
+    if (isBuildStep) {
+      base.push(BUILD_STEP);
+    }
+    return base;
+  }, [isBuildStep]);
+
+  return (
+    <WizardShell
+      open={open}
+      title="Create Agent"
+      steps={allSteps}
+      activeStep={form.activeStep}
+      formStepCount={FORM_STEPS.length}
+      stepIcons={STEP_ICONS}
+      stepDescriptions={STEP_DESCRIPTIONS}
+      isBuildStep={isBuildStep}
+      buildActive={buildActive}
+      submitting={form.submitting}
+      submitError={form.submitError}
+      onSubmitErrorClose={() => form.setSubmitError(null)}
+      submitLabel={isSourceDeploy ? 'Start Build' : 'Create'}
+      submittingLabel={isSourceDeploy ? 'Starting…' : 'Creating…'}
+      successOpen={form.successOpen}
+      successMessage="Agent created successfully."
+      onSuccessClose={() => form.setSuccessOpen(false)}
+      onClose={onClose}
+      onCloseBuild={form.handleCloseBuild}
+      onBack={form.handleBack}
+      onNext={form.handleNext}
+      onSubmit={form.handleSubmit}
+    >
+      {form.activeStep === 0 && (
+        <AgentWizardBasicsStep
+          name={form.name}
+          setName={form.setName}
+          namespace={form.namespace}
+          setNamespace={form.setNamespace}
+          protocol={form.protocol}
+          setProtocol={form.setProtocol}
+          framework={form.framework}
+          setFramework={form.setFramework}
+          nameError={form.nameError}
+          availableNamespaces={form.availableNamespaces}
+        />
+      )}
+
+      {form.activeStep === 1 && (
+        <AgentWizardDeployStep
+          deploymentMethod={form.deploymentMethod}
+          setDeploymentMethod={form.setDeploymentMethod}
+          containerImage={form.containerImage}
+          setContainerImage={form.setContainerImage}
+          imagePullSecret={form.imagePullSecret}
+          setImagePullSecret={form.setImagePullSecret}
+          gitUrl={form.gitUrl}
+          setGitUrl={form.setGitUrl}
+          gitBranch={form.gitBranch}
+          setGitBranch={form.setGitBranch}
+          gitPath={form.gitPath}
+          setGitPath={form.setGitPath}
+          registryUrl={form.registryUrl}
+          setRegistryUrl={form.setRegistryUrl}
+          registrySecret={form.registrySecret}
+          setRegistrySecret={form.setRegistrySecret}
+          imageTag={form.imageTag}
+          setImageTag={form.setImageTag}
+          startCommand={form.startCommand}
+          setStartCommand={form.setStartCommand}
+          buildStrategy={form.buildStrategy}
+          setBuildStrategy={form.setBuildStrategy}
+          buildStrategies={form.buildStrategies}
+          buildStrategyError={form.buildStrategyError}
+          dockerfile={form.dockerfile}
+          setDockerfile={form.setDockerfile}
+          buildTimeout={form.buildTimeout}
+          setBuildTimeout={form.setBuildTimeout}
+          buildArgRows={form.buildArgRows}
+          addBuildArgRow={form.addBuildArgRow}
+          updateBuildArgRow={form.updateBuildArgRow}
+          removeBuildArgRow={form.removeBuildArgRow}
+        />
+      )}
+
+      {form.activeStep === 2 && (
+        <AgentWizardRuntimeStep
+          workloadType={form.workloadType}
+          setWorkloadType={form.setWorkloadType}
+          envRows={form.envRows}
+          addEnvRow={form.addEnvRow}
+          updateEnvRow={form.updateEnvRow}
+          removeEnvRow={form.removeEnvRow}
+          duplicateEnvNames={form.duplicateEnvNames}
+          portRows={form.portRows}
+          addPortRow={form.addPortRow}
+          updatePortRow={form.updatePortRow}
+          removePortRow={form.removePortRow}
+          handlePortProtocol={form.handlePortProtocol}
+          portErrors={form.portErrors}
+          createHttpRoute={form.createHttpRoute}
+          setCreateHttpRoute={form.setCreateHttpRoute}
+          authBridgeEnabled={form.authBridgeEnabled}
+          setAuthBridgeEnabled={form.setAuthBridgeEnabled}
+          spireEnabled={form.spireEnabled}
+          setSpireEnabled={form.setSpireEnabled}
+        />
+      )}
+
+      {isBuildStep && (
+        <AgentWizardBuildStep
+          progress={form.buildProgress}
+          onRetry={form.handleRetryBuild}
+          onClose={form.handleCloseBuild}
+        />
+      )}
+    </WizardShell>
+  );
+}

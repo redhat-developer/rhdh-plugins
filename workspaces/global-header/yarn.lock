@@ -5572,7 +5572,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/hash@npm:^0.9.2":
+"@emotion/hash@npm:^0.9.1, @emotion/hash@npm:^0.9.2":
   version: 0.9.2
   resolution: "@emotion/hash@npm:0.9.2"
   checksum: 10c0/0dc254561a3cc0a06a10bbce7f6a997883fd240c8c1928b93713f803a2e9153a257a488537012efe89dbe1246f2abfe2add62cdb3471a13d67137fcb808e81c2
@@ -6204,12 +6204,12 @@ __metadata:
   linkType: hard
 
 "@grpc/grpc-js@npm:^1.10.9":
-  version: 1.12.4
-  resolution: "@grpc/grpc-js@npm:1.12.4"
+  version: 1.14.4
+  resolution: "@grpc/grpc-js@npm:1.14.4"
   dependencies:
-    "@grpc/proto-loader": "npm:^0.7.13"
+    "@grpc/proto-loader": "npm:^0.8.0"
     "@js-sdsl/ordered-map": "npm:^4.4.2"
-  checksum: 10c0/008a3bbf65a754e4d5a3bf373e0866e4fd91628001e0329c60dfb9ecdf200cd26e9a1dc25ed45be59776990027674904c9cb2e6bbf5dbb14081b5c748b15b770
+  checksum: 10c0/0ff6395e8112ad30e8f99dbb684b997ebc3264e770b8e354f23effeedf181a380e0ecef8bca466cbbf3e9141968656144851de1da50f840a1efd9314c9812449
   languageName: node
   linkType: hard
 
@@ -6224,6 +6224,20 @@ __metadata:
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
   checksum: 10c0/dc8ed7aa1454c15e224707cc53d84a166b98d76f33606a9f334c7a6fb1aedd3e3614dcd2c2b02a6ffaf140587d19494f93b3a56346c6c2e26bc564f6deddbbf3
+  languageName: node
+  linkType: hard
+
+"@grpc/proto-loader@npm:^0.8.0":
+  version: 0.8.1
+  resolution: "@grpc/proto-loader@npm:0.8.1"
+  dependencies:
+    lodash.camelcase: "npm:^4.3.0"
+    long: "npm:^5.0.0"
+    protobufjs: "npm:^7.5.5"
+    yargs: "npm:^17.7.2"
+  bin:
+    proto-loader-gen-types: build/bin/proto-loader-gen-types.js
+  checksum: 10c0/900814c2cbedd76ce5de083adc0696f746a652a79eeb09e8d04d53b864179e2c9aa127997b9bba8ef5f0ce0c11ee700a0e467732eb6cb1f3efdb952583533ccf
   languageName: node
   linkType: hard
 
@@ -6315,7 +6329,7 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.17.0"
     "@changesets/cli": "npm:^2.27.1"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
     jest: "npm:^30.3.0"
@@ -7883,6 +7897,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/styles@npm:5.18.0":
+  version: 5.18.0
+  resolution: "@mui/styles@npm:5.18.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@emotion/hash": "npm:^0.9.1"
+    "@mui/private-theming": "npm:^5.17.1"
+    "@mui/types": "npm:~7.2.15"
+    "@mui/utils": "npm:^5.17.1"
+    clsx: "npm:^2.1.0"
+    csstype: "npm:^3.1.3"
+    hoist-non-react-statics: "npm:^3.3.2"
+    jss: "npm:^10.10.0"
+    jss-plugin-camel-case: "npm:^10.10.0"
+    jss-plugin-default-unit: "npm:^10.10.0"
+    jss-plugin-global: "npm:^10.10.0"
+    jss-plugin-nested: "npm:^10.10.0"
+    jss-plugin-props-sort: "npm:^10.10.0"
+    jss-plugin-rule-value-function: "npm:^10.10.0"
+    jss-plugin-vendor-prefixer: "npm:^10.10.0"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/dbf9f95cb1c035b5080448f8b9ab9414a394ddc787d94be69213a926ac3e0d5ad763b6e73ab369e524db7f2c46ef9e88bf31c1a6b3798630ebf5d64cd5576434
+  languageName: node
+  linkType: hard
+
 "@mui/system@npm:^5.18.0":
   version: 5.18.0
   resolution: "@mui/system@npm:5.18.0"
@@ -8969,14 +9014,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.58.2":
-  version: 1.58.2
-  resolution: "@playwright/test@npm:1.58.2"
+"@playwright/test@npm:1.60.0":
+  version: 1.60.0
+  resolution: "@playwright/test@npm:1.60.0"
   dependencies:
-    playwright: "npm:1.58.2"
+    playwright: "npm:1.60.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/2164c03ad97c3653ff02e8818a71f3b2bbc344ac07924c9d8e31cd57505d6d37596015a41f51396b3ed8de6840f59143eaa9c21bf65515963da20740119811da
+  checksum: 10c0/86b06e6437933e741c7cd43f362024e857e7bc28a55fcbb0553ef55e01a2a403c64f4786868de8af86a6e303fe99e98a18a42ba19489f43ae122e457f9e2d189
   languageName: node
   linkType: hard
 
@@ -9048,27 +9093,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 10c0/26ae337c5659e41f091606d16465bbcc1df1f37cc1ed462438b1f67be0c1e28dfb2ca9f294f39100c52161aef82edf758c95d6d75650a1ddf31f7ddee1440b43
+"@protobufjs/codegen@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@protobufjs/codegen@npm:2.0.5"
+  checksum: 10c0/1b8a2ae56ee60a56e9d205cd4b6072a1503c5069b8ebb905710f974ff0098a0d0700641c137e0a8d98dedf14423156a106a9433695cbf52574810f55000fdcab
   languageName: node
   linkType: hard
 
-"@protobufjs/eventemitter@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/eventemitter@npm:1.1.0"
-  checksum: 10c0/1eb0a75180e5206d1033e4138212a8c7089a3d418c6dfa5a6ce42e593a4ae2e5892c4ef7421f38092badba4040ea6a45f0928869989411001d8c1018ea9a6e70
+"@protobufjs/eventemitter@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/eventemitter@npm:1.1.1"
+  checksum: 10c0/8e06193d4629c5e7c09d4f8c2ddba8fc4dfa739f0149f33a1d901568d35bb7b8b5277a4e8452baf3bdd0b302fd599cf255d193267aa93a0a4747e23cd073c4ac
   languageName: node
   linkType: hard
 
-"@protobufjs/fetch@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/fetch@npm:1.1.0"
+"@protobufjs/fetch@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/fetch@npm:1.1.1"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.1"
-    "@protobufjs/inquire": "npm:^1.1.0"
-  checksum: 10c0/cda6a3dc2d50a182c5865b160f72077aac197046600091dbb005dd0a66db9cce3c5eaed6d470ac8ed49d7bcbeef6ee5f0bc288db5ff9a70cbd003e5909065233
+  checksum: 10c0/a497ff5433854e8577f0427983ea39b9113b49a8120f94515291d763327061d2c3013e60e24ea436d091dafae01a0f6eb1867e3b1616045d96a31d8b3c646ed4
   languageName: node
   linkType: hard
 
@@ -9076,13 +9120,6 @@ __metadata:
   version: 1.0.2
   resolution: "@protobufjs/float@npm:1.0.2"
   checksum: 10c0/18f2bdede76ffcf0170708af15c9c9db6259b771e6b84c51b06df34a9c339dbbeec267d14ce0bddd20acc142b1d980d983d31434398df7f98eb0c94a0eb79069
-  languageName: node
-  linkType: hard
-
-"@protobufjs/inquire@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/inquire@npm:1.1.0"
-  checksum: 10c0/64372482efcba1fb4d166a2664a6395fa978b557803857c9c03500e0ac1013eb4b1aacc9ed851dd5fc22f81583670b4f4431bae186f3373fedcfde863ef5921a
   languageName: node
   linkType: hard
 
@@ -9100,10 +9137,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: 10c0/a3fe31fe3fa29aa3349e2e04ee13dc170cc6af7c23d92ad49e3eeaf79b9766264544d3da824dba93b7855bd6a2982fb40032ef40693da98a136d835752beb487
+"@protobufjs/utf8@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/utf8@npm:1.1.1"
+  checksum: 10c0/641fc145f00626405e8984b6e90b9edcbcc072ffc82d0647ca3176e09c730b2d022f988e65f011a7a17e2e4d77cde7733643aa10d8ac2bfa30f134dbcad553fd
   languageName: node
   linkType: hard
 
@@ -11401,9 +11438,10 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styled-engine": "npm:5.18.0"
+    "@mui/styles": "npm:5.18.0"
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
-    "@scalprum/react-core": "npm:0.11.1"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@scalprum/react-core": "npm:0.11.3"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -11417,35 +11455,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0":
+  version: 0.14.5
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.5"
   dependencies:
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.0
-    "@backstage/theme": ^0.7.0
+    "@backstage/core-plugin-api": ^1.12.4
+    "@backstage/theme": ^0.7.2
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/9ccc7f5360089f5efe98e85eeb68af061e75306b09f2386605306c8b362b67f79855592f90e7ddb63c051dd585dd3bab7d8e5ff300f9f8cc6370ccef18aea983
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.13.0":
-  version: 0.13.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.13.0"
-  dependencies:
-    "@mui/icons-material": "npm:^5.17.1"
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.0
-    "@backstage/theme": ^0.7.0
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/561c04203e9047f4df3fd9a0c29eb0e6b578740899dc3da07870f807a4c3324fb6880e2501f168b60d9a121521eb1f6a9d65d9d837e803f469415e2c0f526053
+  checksum: 10c0/a4a9f68f6be841584c20e4d363b72b3ca98976e3d05e4ded24f66a74eb3323aa385364259372631fa688c08fad39109b02a5c38809105af18d1a9413163d52a7
   languageName: node
   linkType: hard
 
@@ -12054,27 +12078,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@scalprum/core@npm:0.9.0"
+"@scalprum/core@npm:^0.9.1":
+  version: 0.9.3
+  resolution: "@scalprum/core@npm:0.9.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/7eb93a9f32883f737203d12663d17248c57d68c90f23addb58b400eaa78aa015396f2655d16423190c195c6e75b3828b2dd84a7cd19706ebbd3e507fedc85b88
+  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.11.1":
-  version: 0.11.1
-  resolution: "@scalprum/react-core@npm:0.11.1"
+"@scalprum/react-core@npm:0.11.3":
+  version: 0.11.3
+  resolution: "@scalprum/react-core@npm:0.11.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.0"
+    "@scalprum/core": "npm:^0.9.1"
     lodash: "npm:^4.17.0"
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/61094ddfcef1547bb4f43ef794f555ee625e0aa1b5479ad1fa056fa00301fe96c7b96c53ef7c1ece8f8bc0be0859404507887f3109163c8a2025558ec30f364a
+  checksum: 10c0/6de3f4b624fb3e0cf1a7785154dfd6cd589809b0d44dbf0e065531729320ea918b17b673744fe60f4bdf3ef0602af87e857bf98109e03f6cc7634b4893269ff6
   languageName: node
   linkType: hard
 
@@ -16305,14 +16329,12 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@backstage/ui": "npm:^0.13.1"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@playwright/test": "npm:1.58.2"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -16359,11 +16381,11 @@ __metadata:
     "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.34"
     "@backstage/plugin-user-settings": "npm:^0.9.1"
     "@backstage/ui": "npm:^0.13.1"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
-    "@playwright/test": "npm:1.58.2"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
+    "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -25258,7 +25280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-camel-case@npm:^10.5.1":
+"jss-plugin-camel-case@npm:^10.10.0, jss-plugin-camel-case@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-camel-case@npm:10.10.0"
   dependencies:
@@ -25269,7 +25291,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-default-unit@npm:^10.5.1":
+"jss-plugin-default-unit@npm:^10.10.0, jss-plugin-default-unit@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-default-unit@npm:10.10.0"
   dependencies:
@@ -25279,7 +25301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-global@npm:^10.5.1":
+"jss-plugin-global@npm:^10.10.0, jss-plugin-global@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-global@npm:10.10.0"
   dependencies:
@@ -25289,7 +25311,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-nested@npm:^10.5.1":
+"jss-plugin-nested@npm:^10.10.0, jss-plugin-nested@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-nested@npm:10.10.0"
   dependencies:
@@ -25300,7 +25322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-props-sort@npm:^10.5.1":
+"jss-plugin-props-sort@npm:^10.10.0, jss-plugin-props-sort@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-props-sort@npm:10.10.0"
   dependencies:
@@ -25310,7 +25332,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-rule-value-function@npm:^10.5.1":
+"jss-plugin-rule-value-function@npm:^10.10.0, jss-plugin-rule-value-function@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-rule-value-function@npm:10.10.0"
   dependencies:
@@ -25321,7 +25343,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss-plugin-vendor-prefixer@npm:^10.5.1":
+"jss-plugin-vendor-prefixer@npm:^10.10.0, jss-plugin-vendor-prefixer@npm:^10.5.1":
   version: 10.10.0
   resolution: "jss-plugin-vendor-prefixer@npm:10.10.0"
   dependencies:
@@ -25332,7 +25354,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jss@npm:10.10.0, jss@npm:^10.5.1, jss@npm:~10.10.0":
+"jss@npm:10.10.0, jss@npm:^10.10.0, jss@npm:^10.5.1, jss@npm:~10.10.0":
   version: 10.10.0
   resolution: "jss@npm:10.10.0"
   dependencies:
@@ -26028,10 +26050,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.0.0, long@npm:^5.2.1":
-  version: 5.2.3
-  resolution: "long@npm:5.2.3"
-  checksum: 10c0/6a0da658f5ef683b90330b1af76f06790c623e148222da9d75b60e266bbf88f803232dd21464575681638894a84091616e7f89557aa087fd14116c0f4e0e43d9
+"long@npm:^5.0.0, long@npm:^5.2.1, long@npm:^5.3.2":
+  version: 5.3.2
+  resolution: "long@npm:5.3.2"
+  checksum: 10c0/7130fe1cbce2dca06734b35b70d380ca3f70271c7f8852c922a7c62c86c4e35f0c39290565eca7133c625908d40e126ac57c02b1b1a4636b9457d77e1e60b981
   languageName: node
   linkType: hard
 
@@ -29347,27 +29369,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright-core@npm:1.58.2"
+"playwright-core@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright-core@npm:1.60.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/5aa15b2b764e6ffe738293a09081a6f7023847a0dbf4cd05fe10eed2e25450d321baf7482f938f2d2eb330291e197fa23e57b29a5b552b89927ceb791266225b
+  checksum: 10c0/99ccd43923b6e9355e0723b7fe221e6326efd4687f8dafff951313662aea11db51f542a9c2122c704c445fb9baae1c9ec9fa6f895126bbddd9fe92313f6942c9
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2":
-  version: 1.58.2
-  resolution: "playwright@npm:1.58.2"
+"playwright@npm:1.60.0":
+  version: 1.60.0
+  resolution: "playwright@npm:1.60.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.58.2"
+    playwright-core: "npm:1.60.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/d060d9b7cc124bd8b5dffebaab5e84f6b34654a553758fe7b19cc598dfbee93f6ecfbdc1832b40a6380ae04eade86ef3285ba03aa0b136799e83402246dc0727
+  checksum: 10c0/714ad76d85b4865d7e43c0012f9039800c1485373388973ed39d79339cee5ad467052d1e2f1eaeca107a1cb6e65342186a8578a4c3504853d84c3a691250d5db
   languageName: node
   linkType: hard
 
@@ -30107,23 +30129,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.2.6, protobufjs@npm:^7.3.2, protobufjs@npm:^7.4.0":
-  version: 7.5.5
-  resolution: "protobufjs@npm:7.5.5"
+"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.2.6, protobufjs@npm:^7.3.2, protobufjs@npm:^7.4.0, protobufjs@npm:^7.5.5":
+  version: 7.6.4
+  resolution: "protobufjs@npm:7.6.4"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
-    "@protobufjs/codegen": "npm:^2.0.4"
-    "@protobufjs/eventemitter": "npm:^1.1.0"
-    "@protobufjs/fetch": "npm:^1.1.0"
+    "@protobufjs/codegen": "npm:^2.0.5"
+    "@protobufjs/eventemitter": "npm:^1.1.1"
+    "@protobufjs/fetch": "npm:^1.1.1"
     "@protobufjs/float": "npm:^1.0.2"
-    "@protobufjs/inquire": "npm:^1.1.0"
     "@protobufjs/path": "npm:^1.1.2"
     "@protobufjs/pool": "npm:^1.1.0"
-    "@protobufjs/utf8": "npm:^1.1.0"
+    "@protobufjs/utf8": "npm:^1.1.1"
     "@types/node": "npm:>=13.7.0"
-    long: "npm:^5.0.0"
-  checksum: 10c0/3d48896a916761e3e60b52f80027eb4fba3f5a6e3f8461e04939db18812db2cb0db4c73d03e1134a960e99525ae1d236f076a0bc01273016f573b76f33ffbd47
+    long: "npm:^5.3.2"
+  checksum: 10c0/6403eaa9c5a72cc6450c11f38fefafdde243fd806e7ac606ac8d591bc3fdaec45ae764febf83181a2d9aac51aca624e0f46dec368ceea191f7e85e2d6ccaaf93
   languageName: node
   linkType: hard
 

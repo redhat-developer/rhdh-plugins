@@ -22,7 +22,11 @@ const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
 // Single e2e test suite (packages/app/e2e-tests) runs for both legacy and nfs via APP_MODE
-const testDir = 'packages/app/e2e-tests';
+const testDir = 'e2e-tests';
+
+const baseConfig = `${__dirname}/app-config.yaml`;
+const adminConfig = `${__dirname}/app-config-admin.yaml`;
+const developerConfig = `${__dirname}/app-config-developer.yaml`;
 
 export default defineConfig({
   // E2E tests run full app + login + locale; beforeAll can take 30–60s
@@ -34,11 +38,26 @@ export default defineConfig({
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : {
-        command: startCommand,
-        port: 3000,
-        reuseExistingServer: true,
-      },
+    : [
+        {
+          command: `${startCommand} --config ${baseConfig}`,
+          port: 3000,
+          reuseExistingServer: true,
+          cwd: __dirname,
+        },
+        {
+          command: `${startCommand} --config ${baseConfig} --config ${adminConfig}`,
+          port: 3001,
+          reuseExistingServer: true,
+          cwd: __dirname,
+        },
+        {
+          command: `${startCommand} --config ${baseConfig} --config ${developerConfig}`,
+          port: 3002,
+          reuseExistingServer: true,
+          cwd: __dirname,
+        },
+      ],
 
   retries: process.env.CI ? 2 : 0,
 
@@ -68,7 +87,7 @@ export default defineConfig({
     // de, es, fr, it, ja: run only Cards tests (locale-specific content)
     ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
       name: locale,
-      grep: /Cards/,
+      testMatch: '**/homepageCards.test.ts',
       use: {
         channel: 'chrome' as const,
         locale,

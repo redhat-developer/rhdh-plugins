@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+export { ArtifactKind } from './ArtifactKind';
+export { GitRepository } from './GitRepository';
 export { JobStatus } from './JobStatus';
 export { Phase } from './Phase';
 export { ProjectState } from './ProjectState';
+export { RuleEntity } from './Rule';

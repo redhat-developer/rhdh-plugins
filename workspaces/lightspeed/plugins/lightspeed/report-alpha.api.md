@@ -167,6 +167,9 @@ export default _default;
 // @alpha (undocumented)
 export const lightspeedFABModule: FrontendModule;
 
+// @alpha (undocumented)
+export const lightspeedRedirectModule: FrontendModule;
+
 // @alpha
 export const lightspeedTranslationRef: TranslationRef<
   'plugin.lightspeed',
@@ -197,11 +200,15 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'prompts.openshift.message': string;
     readonly 'prompts.rhdh.title': string;
     readonly 'prompts.rhdh.message': string;
+    readonly 'notebooks.prompts.coreConcepts.title': string;
+    readonly 'notebooks.prompts.vulnerabilities.title': string;
+    readonly 'notebooks.prompts.accessIssue.title': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;
     readonly 'tabs.chat': string;
     readonly 'tabs.notebooks': string;
+    readonly 'tabs.notebooks.devPreview': string;
     readonly 'tabs.notebooks.empty': string;
     readonly 'notebooks.title': string;
     readonly 'notebooks.empty.title': string;
@@ -230,6 +237,8 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.documents.add': string;
     readonly 'notebook.view.upload.heading': string;
     readonly 'notebook.view.upload.action': string;
+    readonly 'notebook.view.processing.heading': string;
+    readonly 'notebook.view.processing.description': string;
     readonly 'notebook.view.input.placeholder': string;
     readonly 'notebook.view.input.disabledTooltip': string;
     readonly 'notebook.view.sidebar.collapse': string;
@@ -237,7 +246,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.view.sidebar.resize': string;
     readonly 'notebook.view.documents.uploading': string;
     readonly 'notebook.view.documents.maxReached': string;
-    readonly 'notebook.upload.success': string;
+    readonly 'notebook.view.documents.uploadsInProgress': string;
     readonly 'notebook.upload.failed': string;
     readonly 'notebook.upload.modal.title': string;
     readonly 'notebook.upload.modal.dragDropTitle': string;
@@ -254,6 +263,10 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'notebook.overwrite.modal.description': string;
     readonly 'notebook.overwrite.modal.action': string;
     readonly 'notebook.document.delete': string;
+    readonly 'notebook.document.delete.title': string;
+    readonly 'notebook.document.delete.description': string;
+    readonly 'notebook.document.delete.action': string;
+    readonly 'notebook.document.delete.success': string;
     readonly 'conversation.delete.confirm.title': string;
     readonly 'conversation.delete.confirm.message': string;
     readonly 'conversation.delete.confirm.action': string;
@@ -301,7 +314,6 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'aria.options.label': string;
     readonly 'aria.scroll.down': string;
     readonly 'aria.scroll.up': string;
-    readonly 'aria.settings.label': string;
     readonly 'aria.close': string;
     readonly 'modal.edit': string;
     readonly 'modal.save': string;
@@ -333,8 +345,6 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.fab.close': string;
     readonly 'attach.menu.title': string;
     readonly 'attach.menu.description': string;
-    readonly 'history.section.pinned': string;
-    readonly 'history.section.recent': string;
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;
@@ -370,6 +380,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'settings.pinned.enabled.description': string;
     readonly 'settings.pinned.disabled.description': string;
     readonly 'settings.mcp.label': string;
+    readonly 'settings.mcp.badge': string;
     readonly 'mcp.settings.title': string;
     readonly 'mcp.settings.selectedCount': string;
     readonly 'mcp.settings.closeAriaLabel': string;

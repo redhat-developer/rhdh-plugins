@@ -1,5 +1,64 @@
 # backend
 
+## 0.0.59
+
+### Patch Changes
+
+- Updated dependencies [2714194]
+- Updated dependencies [d49a228]
+- Updated dependencies [e142be3]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.9.1
+
+## 0.0.58
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.9.0
+
+## 0.0.57
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.5
+
+## 0.0.56
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.4
+
+## 0.0.55
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.3
+
+## 0.0.54
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.2
+
+## 0.0.53
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.1
+
+## 0.0.52
+
+### Patch Changes
+
+- Updated dependencies [3c9c556]
+- Updated dependencies [674f043]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.0
+
+## 0.0.51
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.7.1
+
 ## 0.0.50
 
 ### Patch Changes

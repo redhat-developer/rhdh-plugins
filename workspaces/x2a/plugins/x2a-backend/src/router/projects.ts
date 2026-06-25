@@ -19,22 +19,33 @@ import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
+  ENTITY_REF_RE,
   JobStatus,
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
 import {
+  assertProjectHasDirName,
   authorize,
-  generateCallbackToken,
   getGroupsOfUser,
   getUserRef,
   reconcileJobStatus,
   useEnforceProjectPermissions,
   useEnforceX2APermissions,
 } from './common';
+import { GitRepositoryResolver } from './GitRepositoryResolver';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
+
+const projectUpdateSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    ownedBy: z.string().regex(ENTITY_REF_RE).optional(),
+    description: z.string().optional(),
+  })
+  .strict();
 
 export function registerProjectRoutes(
   router: express.Router,
@@ -50,6 +61,7 @@ export function registerProjectRoutes(
     permissionsSvc,
     config,
   } = deps;
+  const gitRepoResolver = new GitRepositoryResolver(config);
 
   router.get('/projects', async (req, res) => {
     const endpoint = 'GET /projects';
@@ -71,11 +83,10 @@ export function registerProjectRoutes(
         .enum([
           'createdAt',
           'name',
-          'abbreviation',
           // sorting by status is expensive for large datasets
           'status',
           'description',
-          'createdBy',
+          'ownedBy',
         ])
         .optional(),
     });
@@ -132,12 +143,12 @@ export function registerProjectRoutes(
     const projectCreateRequestSchema = z.object({
       name: z.string(),
       description: z.string(),
-      abbreviation: z.string(),
       ownedByGroup: z.string().optional(),
       sourceRepoUrl: z.string(),
       targetRepoUrl: z.string(),
       sourceRepoBranch: z.string(),
       targetRepoBranch: z.string(),
+      acceptedRuleIds: z.array(z.string()).optional(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -166,6 +177,17 @@ export function registerProjectRoutes(
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+    });
+
+    // Attach accepted rules (auto-appends required rules even with empty array)
+    await x2aDatabase.attachRulesToProject({
+      projectId: newProject.id,
+      ruleIds: requestBody.acceptedRuleIds ?? [],
+    });
+
+    // Include accepted rules in the response
+    newProject.acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+      projectId: newProject.id,
     });
 
     const response: ProjectsPost['response'] = newProject;
@@ -239,6 +261,55 @@ export function registerProjectRoutes(
     res.status(200).json({ deletedCount });
   });
 
+  router.patch('/projects/:projectId', async (req, res) => {
+    const endpoint = 'PATCH /projects/:projectId';
+    const projectId = req.params.projectId;
+    logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+    const { canWriteAll, credentials, groupsOfUser } =
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        permissionsSvc,
+        httpAuth,
+        catalog,
+      });
+
+    const parsedBody = projectUpdateSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+    }
+
+    const { name, ownedBy, description } = parsedBody.data;
+    if (
+      name === undefined &&
+      ownedBy === undefined &&
+      description === undefined
+    ) {
+      throw new InputError(
+        `${endpoint}: At least one field (name, ownedBy, description) must be provided`,
+      );
+    }
+
+    const updated = await x2aDatabase.updateProject(
+      { projectId },
+      { name, ownedBy, description },
+      {
+        credentials,
+        canWriteAll,
+        groupsOfUser,
+      },
+    );
+
+    if (!updated) {
+      throw new NotFoundError('Project not found');
+    }
+
+    res.json(updated);
+  });
+
   router.post(
     '/projects/:projectId/run',
     async (req: express.Request, res: express.Response) => {
@@ -249,12 +320,15 @@ export function registerProjectRoutes(
       const { project, userRef } = await useEnforceProjectPermissions({
         req,
         readOnly: false,
+        doEnrichment: true,
         projectId,
         x2aDatabase,
         permissionsSvc,
         httpAuth,
         catalog,
       });
+
+      assertProjectHasDirName(project);
 
       // Validate request body
       const runRequestSchema = z.object({
@@ -278,35 +352,24 @@ export function registerProjectRoutes(
           })
           .optional(),
         userPrompt: z.string().optional(),
+        refresh: z.boolean().optional(),
       });
 
       const parsedBody = runRequestSchema.passthrough().safeParse(req.body);
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
-        parsedBody.data;
+      const {
+        sourceRepoAuth,
+        targetRepoAuth,
+        aapCredentials,
+        userPrompt,
+        refresh,
+      } = parsedBody.data;
 
-      // Get tokens with config-based fallback
-      const sourceToken =
-        sourceRepoAuth?.token ??
-        config.getOptionalString('x2a.git.sourceRepo.token');
-      const targetToken =
-        targetRepoAuth?.token ??
-        config.getOptionalString('x2a.git.targetRepo.token');
-
-      if (!sourceToken) {
-        throw new InputError(
-          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
-        );
-      }
-      if (!targetToken) {
-        throw new InputError(
-          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
-        );
-      }
-
-      // Check for existing running init job
+      // Check for existing running init job before refresh validation so a
+      // pending resync (latest init job without artifacts yet) returns 409
+      // rather than 400 for missing migrationPlan on the in-flight job.
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
       const activeInitJobs = existingJobs.filter(
         job => job.phase === 'init' && JobStatus.from(job.status).isActive(),
@@ -329,13 +392,26 @@ export function registerProjectRoutes(
         });
       }
 
-      const callbackToken = generateCallbackToken();
+      if (refresh && !project.migrationPlan) {
+        throw new InputError(
+          `Invalid body ${endpoint}: refresh requires an existing migration plan from a completed init phase`,
+        );
+      }
+
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
+
+      const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId: undefined, // Init jobs have no module
         phase: 'init',
         status: 'pending',
-        callbackToken,
+        callbackToken: callbackToken.value,
       });
 
       // Create Kubernetes job (will create both project and job secrets)
@@ -346,27 +422,26 @@ export function registerProjectRoutes(
         config.getOptionalString('x2a.callbackBaseUrl') ??
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+      // Read accepted rules snapshot for the K8s job
+      const acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
+        projectId,
+      });
+
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
         projectName: project.name,
-        projectAbbrev: project.abbreviation,
+        projectDirName: project.dirName,
         phase: 'init',
         user: userRef,
-        callbackToken,
+        callbackToken: callbackToken.value,
         callbackUrl,
-        sourceRepo: {
-          url: project.sourceRepoUrl,
-          branch: project.sourceRepoBranch,
-          token: sourceToken,
-        },
-        targetRepo: {
-          url: project.targetRepoUrl,
-          branch: project.targetRepoBranch,
-          token: targetToken,
-        },
+        sourceRepo,
+        targetRepo,
         aapCredentials,
         userPrompt,
+        acceptedRules,
+        refresh,
       });
 
       // Update job with k8s job name

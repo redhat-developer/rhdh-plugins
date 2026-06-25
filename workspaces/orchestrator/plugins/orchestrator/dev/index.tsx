@@ -27,6 +27,7 @@ import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import '@backstage/ui/css/styles.css';
 
 import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import orchestratorPlugin, {
   orchestratorTranslationsModule,
@@ -35,6 +36,7 @@ import { devNavModule } from './nav';
 
 const App = createApp({
   features: [
+    rhdhThemeModule,
     orchestratorTranslationsModule,
     devNavModule,
     searchPlugin,

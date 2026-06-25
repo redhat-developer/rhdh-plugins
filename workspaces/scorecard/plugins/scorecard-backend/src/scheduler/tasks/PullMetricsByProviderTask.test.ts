@@ -17,21 +17,17 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { PullMetricsByProviderTask } from './PullMetricsByProviderTask';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   MockNumberProvider,
   MockBatchBooleanProvider,
 } from '../../../__fixtures__/mockProviders';
-import type { Config } from '@backstage/config';
+import { Config } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetricValues';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
 import { mockThresholdRules } from '../../../__fixtures__/mockThresholdRules';
-
-jest.mock('../../utils/mergeEntityAndProviderThresholds', () => ({
-  mergeEntityAndProviderThresholds: jest.fn(),
-}));
+import { ThresholdResolver } from '../../threshold/ThresholdResolver';
 
 const scheduleConfig = {
   frequency: { hours: 2 },
@@ -53,7 +49,7 @@ describe('PullMetricsByProviderTask', () => {
   let mockProvider: MetricProvider;
   let mockTaskRunner: { run: jest.Mock };
   let mockThresholdEvaluator: jest.Mocked<ThresholdEvaluator>;
-  let mockMergeEntityAndProviderThresholds: jest.Mock;
+  let mockThresholdResolver: jest.Mocked<ThresholdResolver>;
 
   let task: PullMetricsByProviderTask;
 
@@ -87,11 +83,12 @@ describe('PullMetricsByProviderTask', () => {
       mockTaskRunner as any,
     );
 
-    mockMergeEntityAndProviderThresholds =
-      mergeEntityAndProviderThresholds as jest.Mock;
-    mockMergeEntityAndProviderThresholds.mockReturnValue({
-      rules: mockThresholdRules,
-    });
+    mockThresholdResolver = {
+      resolveEntityThresholds: jest.fn().mockReturnValue({
+        rules: mockThresholdRules,
+      }),
+      resolveProviderThresholds: jest.fn(),
+    } as unknown as jest.Mocked<ThresholdResolver>;
 
     task = new PullMetricsByProviderTask(
       {
@@ -102,6 +99,7 @@ describe('PullMetricsByProviderTask', () => {
         catalog: mockCatalog,
         auth: mockAuth,
         thresholdEvaluator: mockThresholdEvaluator,
+        thresholdResolver: mockThresholdResolver,
       },
       mockProvider,
     );
@@ -232,19 +230,15 @@ describe('PullMetricsByProviderTask', () => {
       expect(getOwnServiceCredentialsSpy).toHaveBeenCalledWith();
     });
 
-    it('should merge entity and provider thresholds', async () => {
+    it('should resolve thresholds for entity/provider', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
-      expect(mockMergeEntityAndProviderThresholds).toHaveBeenNthCalledWith(
-        1,
-        mockEntities[0],
-        mockProvider,
-      );
-      expect(mockMergeEntityAndProviderThresholds).toHaveBeenNthCalledWith(
-        2,
-        mockEntities[1],
-        mockProvider,
-      );
+      expect(
+        mockThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenNthCalledWith(1, mockEntities[0], mockProvider);
+      expect(
+        mockThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenNthCalledWith(2, mockEntities[1], mockProvider);
     });
 
     it('should calculate metric', async () => {
@@ -459,6 +453,7 @@ describe('PullMetricsByProviderTask', () => {
             catalog: mockCatalog,
             auth: mockAuth,
             thresholdEvaluator: mockThresholdEvaluator,
+            thresholdResolver: mockThresholdResolver,
           },
           mockBatchProvider,
         );
@@ -685,6 +680,7 @@ describe('PullMetricsByProviderTask', () => {
             catalog: mockCatalog,
             auth: mockAuth,
             thresholdEvaluator: mockThresholdEvaluator,
+            thresholdResolver: mockThresholdResolver,
           },
           mockBatchProvider,
         );

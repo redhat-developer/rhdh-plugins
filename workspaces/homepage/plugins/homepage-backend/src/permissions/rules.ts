@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  createPermissionRule,
-  type PermissionRule,
-} from '@backstage/plugin-permission-node';
+import { createPermissionRule } from '@backstage/plugin-permission-node';
 import { z } from 'zod/v3';
-import {
-  VisibleDefaultWidget,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-} from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+import { DefaultWidgetNode } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+
 import { homepageDefaultWidgetPermissionResourceRef } from './resource';
 
 export type HomepageDefaultWidgetFilter = {
@@ -30,14 +25,11 @@ export type HomepageDefaultWidgetFilter = {
   values: Array<string> | undefined;
 };
 
-type HasWidgetIdParams = { widgetIds?: string[] | undefined };
-
 const hasWidgetId = createPermissionRule({
   name: 'HAS_WIDGET_ID',
   description:
     'Should allow users to access homepage widgets with specified widget IDs',
   resourceRef: homepageDefaultWidgetPermissionResourceRef,
-
   paramsSchema: z.object({
     widgetIds: z
       .string()
@@ -45,20 +37,16 @@ const hasWidgetId = createPermissionRule({
       .optional()
       .describe('List of widget IDs to match on'),
   }),
-  apply: (widget: VisibleDefaultWidget, { widgetIds }: HasWidgetIdParams) => {
-    return widgetIds && widgetIds.length > 0
-      ? widgetIds.includes(widget.id)
-      : true;
+  apply: (defaultWidget: DefaultWidgetNode, { widgetIds }) => {
+    if (!widgetIds || widgetIds.length === 0 || !defaultWidget.id) return false;
+    return widgetIds.includes(defaultWidget.id);
   },
-  toQuery: ({ widgetIds }: HasWidgetIdParams) => ({
-    key: 'widgetId',
-    values: widgetIds,
-  }),
-} as any) as unknown as PermissionRule<
-  VisibleDefaultWidget,
-  HomepageDefaultWidgetFilter,
-  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-  HasWidgetIdParams
->;
+  toQuery: ({ widgetIds }) => {
+    return {
+      key: 'widgetId',
+      values: widgetIds,
+    };
+  },
+});
 
 export const rules = { hasWidgetId };

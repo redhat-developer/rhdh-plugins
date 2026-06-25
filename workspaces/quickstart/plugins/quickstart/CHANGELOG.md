@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.10.0
+
+### Minor Changes
+
+- 8479da8: Rebrand Lightspeed quickstart steps to Intelligent Assistant: replace custom SVG icon with PatternFly RhUiAiChatbotIcon, update all English and localized i18n strings, and add test coverage for the Lightspeed icon.
+
+## 1.9.7
+
+### Patch Changes
+
+- 88f7bb7: Replace Material UI v4 with MUI v5 and scope JSS class names to prevent style collisions.
+
+## 1.9.6
+
+### Patch Changes
+
+- 4c130c1: Fixed dynamic plugin export failure for the Lightspeed quickstart icon by inlining SVG assets as data URIs instead of file imports that are not emitted into the ESM `dist` output.
+
+## 1.9.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
+## 1.9.4
+
+### Patch Changes
+
+- 498beb5: add react-router-dom in devDependencies
+- 6b8046b: Updated dependency `@red-hat-developer-hub/backstage-plugin-app-react` to `^0.0.5`.
+
 ## 1.9.3
 
 ### Patch Changes

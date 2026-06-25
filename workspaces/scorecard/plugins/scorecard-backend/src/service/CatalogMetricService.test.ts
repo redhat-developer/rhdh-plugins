@@ -40,7 +40,6 @@ import {
   aggregationTypes,
   Metric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
 import { DbMetricValue, DbAggregatedMetric } from '../database/types';
 import { mockThresholdRules } from '../../__fixtures__/mockThresholdRules';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
@@ -51,9 +50,9 @@ import {
 } from '@backstage/plugin-permission-common';
 import { AggregatedMetricMapper } from './mappers';
 import { AggregatedMetricLoader } from './aggregations/AggregatedMetricLoader';
-import type { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
-jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
 
 const provider = new MockNumberProvider('github.important_metric', 'github');
@@ -103,6 +102,7 @@ describe('CatalogMetricService', () => {
   let mockedRegistry: jest.Mocked<MetricProvidersRegistry>;
   let mockedDatabase: jest.Mocked<typeof mockDatabaseMetricValues>;
   let mockedLogger: jest.Mocked<LoggerService>;
+  let mockedThresholdResolver: jest.Mocked<ThresholdResolver>;
   let service: CatalogMetricService;
   let toAggregatedMetricSpy: jest.SpyInstance;
 
@@ -138,11 +138,12 @@ describe('CatalogMetricService', () => {
       { id: 'github.important_metric' },
     ]);
 
-    (
-      thresholdUtils.mergeEntityAndProviderThresholds as jest.Mock
-    ).mockReturnValue({
-      rules: mockThresholdRules,
-    });
+    mockedThresholdResolver = {
+      resolveProviderThresholds: jest.fn(),
+      resolveEntityThresholds: jest.fn().mockReturnValue({
+        rules: mockThresholdRules,
+      }),
+    } as unknown as jest.Mocked<ThresholdResolver>;
 
     toAggregatedMetricSpy = jest.spyOn(
       AggregatedMetricMapper,
@@ -155,6 +156,7 @@ describe('CatalogMetricService', () => {
       registry: mockedRegistry,
       database: mockedDatabase,
       logger: mockedLogger,
+      thresholdResolver: mockedThresholdResolver,
     });
 
     jest.useFakeTimers();
@@ -316,25 +318,17 @@ describe('CatalogMetricService', () => {
     });
 
     it('should merge entity and provider thresholds', async () => {
-      const mergeEntityAndProviderThresholdsSpy = jest.spyOn(
-        thresholdUtils,
-        'mergeEntityAndProviderThresholds',
-      );
-
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.important_metric',
       ]);
 
-      expect(mergeEntityAndProviderThresholdsSpy).toHaveBeenCalledWith(
-        mockEntity,
-        provider,
-      );
+      expect(
+        mockedThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenCalledWith(mockEntity, provider);
     });
 
     it('should set threshold error when merge thresholds fails', async () => {
-      (
-        thresholdUtils.mergeEntityAndProviderThresholds as jest.Mock
-      ).mockImplementation(() => {
+      mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
         throw new Error('Merge thresholds failed');
       });
 
@@ -508,6 +502,7 @@ describe('CatalogMetricService', () => {
         registry: mockedRegistry,
         database: mockedDatabase,
         logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
       });
 
       const results = await service.getLatestEntityMetrics(

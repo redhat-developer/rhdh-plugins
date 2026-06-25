@@ -17,38 +17,17 @@
 import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import type {
   ChatMessage,
-  ChatResponse,
   StreamingEvent,
   StreamingEventCallback,
 } from '../types';
 import { parseSSEStream } from './sseStreaming';
 import { jsonBody } from './fetchHelpers';
+import { isAbortError } from '../utils';
 
 export interface ChatApiDeps {
   fetchJson: <T>(path: string, init?: RequestInit) => Promise<T>;
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
-}
-
-/**
- * Non-streaming chat request.
- */
-export async function chat(
-  deps: ChatApiDeps,
-  messages: ChatMessage[],
-  enableRAG: boolean,
-  signal?: AbortSignal,
-  previousResponseId?: string,
-  conversationId?: string,
-): Promise<ChatResponse> {
-  return deps.fetchJson(
-    '/chat',
-    jsonBody(
-      { messages, enableRAG, previousResponseId, conversationId },
-      'POST',
-      { signal },
-    ),
-  );
 }
 
 /**
@@ -66,29 +45,59 @@ async function streamSSE(
   const baseUrl = await deps.discoveryApi.getBaseUrl('augment');
 
   let lastError: Error | undefined;
+  let receivedContent = false;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     if (signal?.aborted) return;
 
     if (attempt > 0) {
+      if (receivedContent) {
+        throw lastError || new Error('Stream failed after partial content');
+      }
       onEvent({
         type: 'stream.error',
         error: `Reconnecting... (attempt ${attempt}/${MAX_RETRIES})`,
         code: 'reconnecting',
       } as StreamingEvent);
       const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-      await new Promise(r => setTimeout(r, delay));
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, delay);
+        if (signal) {
+          const onAbort = () => {
+            clearTimeout(timer);
+            reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+          };
+          if (signal.aborted) {
+            clearTimeout(timer);
+            reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+            return;
+          }
+          signal.addEventListener('abort', onAbort, { once: true });
+        }
+      });
       if (signal?.aborted) return;
     }
 
     try {
-      await streamSSEAttempt(deps, baseUrl, body, onEvent, signal);
+      // eslint-disable-next-line no-loop-func
+      const wrappedOnEvent: StreamingEventCallback = evt => {
+        const t = (evt as { type?: string }).type;
+        if (
+          t === 'stream.text.delta' ||
+          t === 'stream.completed' ||
+          t === 'stream.tool.completed'
+        ) {
+          receivedContent = true;
+        }
+        onEvent(evt);
+      };
+      await streamSSEAttempt(deps, baseUrl, body, wrappedOnEvent, signal);
       return;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
 
       if (signal?.aborted) return;
-      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      if (isAbortError(err)) throw err;
 
       const isRetryable =
         err instanceof TypeError ||
@@ -134,7 +143,10 @@ async function streamSSEAttempt(
   try {
     response = await deps.fetchApi.fetch(`${baseUrl}/chat/stream`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Backstage-Request': 'augment',
+      },
       body: JSON.stringify(body),
       signal: timeoutController.signal,
     });
@@ -198,10 +210,11 @@ export async function chatStream(
   signal?: AbortSignal,
   previousResponseId?: string,
   conversationId?: string,
+  model?: string,
 ): Promise<void> {
   return streamSSE(
     deps,
-    { messages, enableRAG, previousResponseId, conversationId },
+    { messages, enableRAG, previousResponseId, conversationId, model },
     onEvent,
     signal,
   );
@@ -217,8 +230,14 @@ export async function chatStreamWithSession(
   sessionId: string,
   enableRAG: boolean,
   signal?: AbortSignal,
+  model?: string,
 ): Promise<void> {
-  return streamSSE(deps, { messages, enableRAG, sessionId }, onEvent, signal);
+  return streamSSE(
+    deps,
+    { messages, enableRAG, sessionId, model },
+    onEvent,
+    signal,
+  );
 }
 
 /**

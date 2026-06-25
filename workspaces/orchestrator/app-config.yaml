@@ -24,7 +24,7 @@ backend:
         options:
           # notsecret
           # echo mycurlpasswd | base64
-          token: bXljdXJscGFzc3dkCg==
+          token: bXljdXJscGFzc3dkCg== # NOSONAR
           subject: my-external-feed
   listen:
     port: 7007
@@ -191,7 +191,7 @@ orchestrator:
     # For more information, visit: https://red.ht/410mMNU.
     # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.35.0
     # notsecret
-    notificationsBearerToken: bXljdXJscGFzc3dkCg==
+    notificationsBearerToken: bXljdXJscGFzc3dkCg== # NOSONAR
     notificationsUrl: http://host.docker.internal:7007
     # uncomment the next line if you are using podman:
     # notificationsUrl: http://host.containers.internal:7007

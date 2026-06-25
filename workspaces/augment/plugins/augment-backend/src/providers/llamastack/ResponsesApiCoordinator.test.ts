@@ -192,7 +192,7 @@ describe('ResponsesApiCoordinator', () => {
   });
 
   describe('invalidateRuntimeConfig', () => {
-    it('calls invalidateToolCache on adkOrchestrator when initialized', () => {
+    it('calls invalidateToolCache on orchestrator when initialized', () => {
       const coordinator = new ResponsesApiCoordinator({
         logger: mockLogger as unknown as LoggerService,
         config: mockConfig,
@@ -201,7 +201,7 @@ describe('ResponsesApiCoordinator', () => {
       const mockInvalidateToolCache = jest.fn();
       const mockInvalidateGraphManager = jest.fn();
 
-      (coordinator as any).adkOrchestrator = {
+      (coordinator as any).orchestrator = {
         invalidateToolCache: mockInvalidateToolCache,
       };
       (coordinator as any).agentGraphManager = {

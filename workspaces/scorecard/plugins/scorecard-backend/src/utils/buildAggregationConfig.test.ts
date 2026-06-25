@@ -79,7 +79,7 @@ describe('buildAggregationConfig', () => {
         thresholds: {
           rules: [
             { key: 'success', expression: '>=75', color: 'success.main' },
-            { key: 'warning', expression: '10-74', color: 'warning.main' },
+            { key: 'warning', expression: '10-75', color: 'warning.main' },
             { key: 'error', expression: '<10', color: 'error.main' },
           ],
         },
@@ -90,7 +90,7 @@ describe('buildAggregationConfig', () => {
 
     expect(result.options?.thresholds?.rules).toEqual([
       { key: 'success', expression: '>=75', color: 'success.main' },
-      { key: 'warning', expression: '10-74', color: 'warning.main' },
+      { key: 'warning', expression: '10-75', color: 'warning.main' },
       { key: 'error', expression: '<10', color: 'error.main' },
     ]);
   });

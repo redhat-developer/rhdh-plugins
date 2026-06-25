@@ -17,6 +17,8 @@ import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import type { RuleSnapshot } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ServiceRef } from '@backstage/backend-plugin-api';
 import type { SourceTechnology } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Telemetry } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -46,6 +48,24 @@ export function calculateModuleStatus({ analyze, migrate, publish, }: {
 };
 
 // @public (undocumented)
+export class CallbackToken {
+    // (undocumented)
+    equals(other: CallbackToken): boolean;
+    // (undocumented)
+    static from(raw: string): CallbackToken;
+    // (undocumented)
+    static generate(): CallbackToken;
+    // (undocumented)
+    sign(rawBody: Buffer): string;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    validateSignature(rawBody: Buffer, providedSignature: string): boolean;
+    // (undocumented)
+    readonly value: string;
+}
+
+// @public (undocumented)
 export interface CreateJobInput {
     // (undocumented)
     artifacts?: Pick<Artifact, 'type' | 'value'>[];
@@ -72,9 +92,6 @@ export interface CreateJobInput {
 }
 
 // @public
-export function generateCallbackToken(): string;
-
-// @public
 export function getGroupsOfUser(userEntityRef: string, options: {
     catalog: CatalogService;
     credentials: BackstageCredentials;
@@ -98,6 +115,8 @@ export interface JobCreateParams {
     // (undocumented)
     aapCredentials?: AAPCredentials;
     // (undocumented)
+    acceptedRules?: RuleSnapshot[];
+    // (undocumented)
     callbackToken: string;
     // (undocumented)
     callbackUrl: string;
@@ -110,11 +129,13 @@ export interface JobCreateParams {
     // (undocumented)
     phase: MigrationPhase;
     // (undocumented)
-    projectAbbrev: string;
+    projectDirName: string;
     // (undocumented)
     projectId: string;
     // (undocumented)
     projectName: string;
+    // (undocumented)
+    refresh?: boolean;
     // (undocumented)
     sourceRepo: GitRepo;
     // (undocumented)
@@ -237,6 +258,11 @@ export interface X2AConfig {
 // @public
 export interface X2ADatabaseServiceApi {
     // (undocumented)
+    attachRulesToProject(args: {
+        projectId: string;
+        ruleIds: string[];
+    }): Promise<void>;
+    // (undocumented)
     createJob(job: CreateJobInput): Promise<Job>;
     // (undocumented)
     createModule(module: {
@@ -249,7 +275,6 @@ export interface X2ADatabaseServiceApi {
     createProject(input: {
         name: string;
         ownedByGroup?: string;
-        abbreviation: string;
         description: string;
         sourceRepoUrl: string;
         targetRepoUrl: string;
@@ -258,6 +283,12 @@ export interface X2ADatabaseServiceApi {
     }, options: {
         credentials: BackstageCredentials<BackstageUserPrincipal>;
     }): Promise<Project>;
+    // (undocumented)
+    createRule(input: {
+        title: string;
+        description: string;
+        required?: boolean;
+    }): Promise<RuleEntity>;
     // (undocumented)
     deleteJob(args: {
         id: string;
@@ -274,6 +305,14 @@ export interface X2ADatabaseServiceApi {
         canWriteAll?: boolean;
         groupsOfUser: string[];
     }): Promise<number>;
+    // (undocumented)
+    deleteRule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
+    getAcceptedRulesForProject(args: {
+        projectId: string;
+    }): Promise<RuleSnapshot[]>;
     // (undocumented)
     getJob(args: {
         id: string;
@@ -303,6 +342,10 @@ export interface X2ADatabaseServiceApi {
         groupsOfUser: string[];
     }): Promise<Project | undefined>;
     // (undocumented)
+    getRule(args: {
+        id: string;
+    }): Promise<RuleEntity | undefined>;
+    // (undocumented)
     listJobs(args: {
         projectId: string;
         moduleId?: string;
@@ -321,6 +364,7 @@ export interface X2ADatabaseServiceApi {
     // (undocumented)
     listModules(args: {
         projectId: string;
+        includeRemoved?: boolean;
     }): Promise<Module[]>;
     // (undocumented)
     listProjects(query: ProjectsGet['query'], options: {
@@ -331,6 +375,16 @@ export interface X2ADatabaseServiceApi {
         projects: Project[];
         totalCount: number;
     }>;
+    // (undocumented)
+    listRules(): Promise<RuleEntity[]>;
+    // (undocumented)
+    restoreModule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
+    softDeleteModule(args: {
+        id: string;
+    }): Promise<number>;
     // (undocumented)
     updateJob(update: {
         id: string;
@@ -343,6 +397,31 @@ export interface X2ADatabaseServiceApi {
         telemetry?: Telemetry | null;
         commitId?: string;
     }): Promise<Job | undefined>;
+    // (undocumented)
+    updateModule(args: {
+        id: string;
+        sourcePath?: string;
+        technology?: Module['technology'];
+    }): Promise<number>;
+    // (undocumented)
+    updateProject(args: {
+        projectId: string;
+    }, input: {
+        name?: string;
+        ownedBy?: string;
+        description?: string;
+    }, options: {
+        credentials: BackstageCredentials<BackstageUserPrincipal>;
+        canWriteAll?: boolean;
+        groupsOfUser: string[];
+    }): Promise<Project | undefined>;
+    // (undocumented)
+    updateRule(args: {
+        id: string;
+        title: string;
+        description: string;
+        required: boolean;
+    }): Promise<RuleEntity | undefined>;
 }
 
 // @public

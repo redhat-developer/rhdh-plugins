@@ -55,7 +55,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const created = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'Test description',
             ...defaultProjectRepoFields,
           },
@@ -69,11 +68,10 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(created.id);
         expect(retrieved?.name).toBe(created.name);
-        expect(retrieved?.abbreviation).toBe(created.abbreviation);
         expect(retrieved?.description).toBe(created.description);
         expect(retrieved?.sourceRepoUrl).toBe(created.sourceRepoUrl);
         expect(retrieved?.targetRepoUrl).toBe(created.targetRepoUrl);
-        expect(retrieved?.createdBy).toBe(created.createdBy);
+        expect(retrieved?.ownedBy).toBe(created.ownedBy);
         expect(retrieved?.createdAt).toEqual(created.createdAt);
       },
     );
@@ -89,14 +87,14 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group-owned Project',
-          abbreviation: 'GOP',
           description: 'Created by group',
           source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
           source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
-          created_by: 'group:default/team-x',
+          owned_by: 'group:default/team-x',
           created_at: new Date(),
+          dir_name: 'group-owned-project-22222222',
         });
 
         const retrieved = await service.getProject(
@@ -110,7 +108,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(groupProjectId);
         expect(retrieved?.name).toBe('Group-owned Project');
-        expect(retrieved?.createdBy).toBe('group:default/team-x');
+        expect(retrieved?.ownedBy).toBe('group:default/team-x');
       },
     );
 
@@ -123,7 +121,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Project with plan',
-            abbreviation: 'PWP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -148,6 +145,57 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'reports removed count in modulesSummary when modules are soft-deleted - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Project with removed modules',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createJob({
+          projectId: project.id,
+          phase: 'init',
+          status: 'success',
+          artifacts: artifactsFromValues(
+            ['http://example.com/plan.md'],
+            'migration_plan',
+          ),
+        });
+        const mod = await service.createModule({
+          name: 'active-module',
+          sourcePath: '/active',
+          projectId: project.id,
+        });
+        const removed = await service.createModule({
+          name: 'removed-module',
+          sourcePath: '/removed',
+          projectId: project.id,
+        });
+        await service.softDeleteModule({ id: removed.id });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'pending',
+        });
+
+        const retrieved = await service.getProject(
+          { projectId: project.id },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(retrieved?.status?.modulesSummary.total).toBe(1);
+        expect(retrieved?.status?.modulesSummary.removed).toBe(1);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
       'returns correct project when multiple exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -156,7 +204,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -165,7 +212,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -197,7 +243,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -221,7 +266,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'My Project',
-            abbreviation: 'MP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -234,7 +278,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
-        expect(retrieved?.createdBy).toBe('user:default/user1');
+        expect(retrieved?.ownedBy).toBe('user:default/user1');
       },
     );
 
@@ -248,7 +292,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -261,7 +304,7 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
-        expect(retrieved?.createdBy).toBe('user:default/user1');
+        expect(retrieved?.ownedBy).toBe('user:default/user1');
       },
     );
 
@@ -275,7 +318,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -315,7 +357,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'To Delete',
-            abbreviation: 'TD',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -351,7 +392,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -360,7 +400,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -403,7 +442,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -433,7 +471,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'My Project',
-            abbreviation: 'MP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -464,7 +501,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -495,7 +531,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'User1 Project',
-            abbreviation: 'U1P',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -528,7 +563,6 @@ describe('X2ADatabaseService – projects (get & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Lifecycle Test',
-            abbreviation: 'LT',
             description: 'Testing full lifecycle',
             ...defaultProjectRepoFields,
           },

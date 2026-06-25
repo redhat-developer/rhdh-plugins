@@ -122,6 +122,17 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  # Uncomment this when MCP Actions are needed
+  # actions:
+  #   pluginSources:
+  #     - 'scorecard'
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
+
 integrations:
   github:
     - host: github.com
@@ -249,7 +260,7 @@ scorecard:
               expression: '>=80'
               color: '#6bb300' # green
             - key: warning
-              expression: '30-79'
+              expression: '30-80'
               color: 'rgb(224, 189, 108)' # light orange
             - key: error
               expression: '<30'

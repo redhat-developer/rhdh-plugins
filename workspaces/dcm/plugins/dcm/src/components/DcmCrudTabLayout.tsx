@@ -20,12 +20,21 @@ import {
   InfoCard,
   Progress,
 } from '@backstage/core-components';
-import { Box, Button } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+} from '@material-ui/core';
+import SyncIcon from '@material-ui/icons/Sync';
 import { Dispatch, SetStateAction } from 'react';
 import MuiAlert from '@material-ui/lab/Alert';
+import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
 import { DcmSearchCardAction } from './dcmTabListHelpers';
 import { useDcmStyles } from './dcmStyles';
+import { useTranslation } from '../hooks/useTranslation';
 
 export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   /** Full (unfiltered, unpaginated) list used to decide empty-state vs. table. */
@@ -42,6 +51,10 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   loadError?: string | null;
   /** Retries the data load (used by the error alert's Retry button). */
   onRetry?: () => void;
+  /** When non-null, shown as a dismissible inline alert above the table/empty-state. */
+  actionError?: string | null;
+  /** Called when the user dismisses the actionError alert. */
+  onDismissActionError?: () => void;
 
   // ── Search ──────────────────────────────────────────────────────────────
   search: string;
@@ -62,7 +75,31 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
 
   // ── Card header ──────────────────────────────────────────────────────────
   entityLabel: string;
+
+  // ── Refresh ──────────────────────────────────────────────────────────────
+  /** When provided, a refresh icon button is shown next to the search field. */
+  onRefresh?: () => void;
+  /** When true, the refresh button shows a spinner instead of the sync icon. */
+  refreshing?: boolean;
 }>;
+
+function ActionErrorAlert({
+  message,
+  onClose,
+  boxProps,
+}: Readonly<{
+  message: string;
+  onClose?: () => void;
+  boxProps?: BoxProps;
+}>) {
+  return (
+    <Box {...boxProps}>
+      <MuiAlert severity="error" variant="outlined" onClose={onClose}>
+        {message}
+      </MuiAlert>
+    </Box>
+  );
+}
 
 /**
  * Generic layout shell for DCM CRUD tab pages.
@@ -90,6 +127,8 @@ export function DcmCrudTabLayout<T extends object>({
   loading,
   loadError,
   onRetry,
+  actionError,
+  onDismissActionError,
   search,
   onSearchChange,
   page,
@@ -102,8 +141,11 @@ export function DcmCrudTabLayout<T extends object>({
   onPrimaryAction,
   illustrationSrc,
   entityLabel,
+  onRefresh,
+  refreshing,
 }: DcmCrudTabLayoutProps<T>) {
   const classes = useDcmStyles();
+  const { t } = useTranslation();
 
   if (loading) return <Progress />;
 
@@ -116,7 +158,7 @@ export function DcmCrudTabLayout<T extends object>({
           action={
             onRetry ? (
               <Button color="inherit" size="small" onClick={onRetry}>
-                Retry
+                {t('common.retry')}
               </Button>
             ) : undefined
           }
@@ -129,13 +171,22 @@ export function DcmCrudTabLayout<T extends object>({
 
   if (items.length === 0) {
     return (
-      <DcmDataCenterTabEmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-        primaryActionLabel={primaryActionLabel}
-        onPrimaryAction={onPrimaryAction}
-        illustrationSrc={illustrationSrc ?? ''}
-      />
+      <>
+        {actionError && (
+          <ActionErrorAlert
+            message={actionError}
+            onClose={onDismissActionError}
+            boxProps={{ p: 2 }}
+          />
+        )}
+        <DcmDataCenterTabEmptyState
+          title={emptyTitle}
+          description={emptyDescription}
+          primaryActionLabel={primaryActionLabel}
+          onPrimaryAction={onPrimaryAction}
+          illustrationSrc={illustrationSrc ?? ''}
+        />
+      </>
     );
   }
 
@@ -149,15 +200,42 @@ export function DcmCrudTabLayout<T extends object>({
       <InfoCard
         title={`${entityLabel} (${filtered.length})`}
         action={
-          <DcmSearchCardAction
-            value={search}
-            setValue={onSearchChange}
-            classes={classes}
-          />
+          <Box display="flex" alignItems="center">
+            <DcmSearchCardAction
+              value={search}
+              setValue={onSearchChange}
+              classes={classes}
+            />
+            {onRefresh && (
+              <Tooltip title={t('common.refresh')}>
+                <Box component="span">
+                  <IconButton
+                    size="small"
+                    aria-label={t('common.refresh')}
+                    onClick={onRefresh}
+                    disabled={refreshing}
+                  >
+                    {refreshing ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <SyncIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </Box>
+              </Tooltip>
+            )}
+          </Box>
         }
         className={classes.dataCard}
         titleTypographyProps={{ className: classes.cardTitle }}
       >
+        {actionError && (
+          <ActionErrorAlert
+            message={actionError}
+            onClose={onDismissActionError}
+            boxProps={{ px: 2, pt: 2 }}
+          />
+        )}
         <Box className={classes.cardContent}>
           <Table<T>
             data={paginated}
@@ -177,7 +255,9 @@ export function DcmCrudTabLayout<T extends object>({
             page={page}
             onPageChange={onPageChange}
             onRowsPerPageChange={onRowsPerPageChange}
-            localization={{ pagination: { labelRowsPerPage: 'rows' } }}
+            localization={{
+              pagination: { labelRowsPerPage: t('common.rows') },
+            }}
           />
         </Box>
       </InfoCard>

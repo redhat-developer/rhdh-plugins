@@ -24,6 +24,7 @@ export const PermissionRequiredIcon = () => {
     <img
       src={permissionRequired as any}
       alt={t('icon.permissionRequired.alt')}
+      style={{ width: 'clamp(200px, 50cqi, 600px)' }}
     />
   );
 };

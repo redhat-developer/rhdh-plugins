@@ -47,6 +47,10 @@ export function buildApprovalRequest(opts: {
       const { require_approval: _, ...rest } = tool;
       return { ...rest, require_approval: 'never' };
     }
+    if (tool.type === 'function') {
+      const { type: _discriminator, ...rest } = tool;
+      return rest;
+    }
     return tool;
   });
 

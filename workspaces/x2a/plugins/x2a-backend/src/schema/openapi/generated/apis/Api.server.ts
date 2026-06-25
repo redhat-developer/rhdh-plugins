@@ -30,9 +30,14 @@ import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/Projects
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
-import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
+import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
+import { Rule } from '../models/Rule.model';
+import { RulesGet200Response } from '../models/RulesGet200Response.model';
+import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdDelete200Response } from '../models/RulesRuleIdDelete200Response.model';
+import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
  * @public
@@ -42,13 +47,7 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?:
-      | 'createdAt'
-      | 'name'
-      | 'abbreviation'
-      | 'status'
-      | 'description'
-      | 'createdBy';
+    sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
   };
   response: ProjectsGet200Response;
 };
@@ -164,12 +163,12 @@ export type ProjectsProjectIdModulesModuleIdRunPost = {
 /**
  * @public
  */
-export type ProjectsProjectIdModulesPost = {
+export type ProjectsProjectIdPatch = {
   path: {
     projectId: string;
   };
-  body: ProjectsProjectIdModulesPostRequest;
-  response: Module | void;
+  body: ProjectsProjectIdPatchRequest;
+  response: Project | void | void;
 };
 /**
  * @public
@@ -180,6 +179,47 @@ export type ProjectsProjectIdRunPost = {
   };
   body: ProjectsProjectIdRunPostRequest;
   response: ProjectsProjectIdRunPost200Response | void;
+};
+/**
+ * @public
+ */
+export type RulesGet = {
+  response: RulesGet200Response;
+};
+/**
+ * @public
+ */
+export type RulesPost = {
+  body: RulesPostRequest;
+  response: Rule;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdDelete = {
+  path: {
+    ruleId: string;
+  };
+  response: RulesRuleIdDelete200Response | void;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdGet = {
+  path: {
+    ruleId: string;
+  };
+  response: Rule | void;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdPut = {
+  path: {
+    ruleId: string;
+  };
+  body: RulesRuleIdPutRequest;
+  response: Rule | void;
 };
 
 export type EndpointMap = {
@@ -205,7 +245,17 @@ export type EndpointMap = {
 
   '#post|/projects/{projectId}/modules/{moduleId}/run': ProjectsProjectIdModulesModuleIdRunPost;
 
-  '#post|/projects/{projectId}/modules': ProjectsProjectIdModulesPost;
+  '#patch|/projects/{projectId}': ProjectsProjectIdPatch;
 
   '#post|/projects/{projectId}/run': ProjectsProjectIdRunPost;
+
+  '#get|/rules': RulesGet;
+
+  '#post|/rules': RulesPost;
+
+  '#_delete|/rules/{ruleId}': RulesRuleIdDelete;
+
+  '#get|/rules/{ruleId}': RulesRuleIdGet;
+
+  '#put|/rules/{ruleId}': RulesRuleIdPut;
 };

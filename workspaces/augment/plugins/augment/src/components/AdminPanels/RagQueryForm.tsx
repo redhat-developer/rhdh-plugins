@@ -174,7 +174,7 @@ export function RagQueryForm({
         ) : (
           <Typography
             variant="body2"
-            color="textSecondary"
+            color="text.secondary"
             sx={{ flexGrow: 1 }}
           >
             {searchContextLabel}
@@ -260,7 +260,7 @@ export function RagQueryForm({
             flexWrap: 'wrap',
           }}
         >
-          <Typography variant="caption" color="textSecondary" sx={{ mr: 0.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
             Recent:
           </Typography>
           {queryHistory.map(q => (

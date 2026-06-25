@@ -196,8 +196,7 @@ The plugin now properly handles AAP credentials from both system-wide configurat
 
 - **Fixed authentication**: All project lookup operations now properly pass user credentials for authorization checks
 - **Consistent permissions**: The following endpoints now correctly validate user permissions:
-  - `POST /projects/:projectId/run` (init phase)
-  - `POST /projects/:projectId/modules` (create module)
+  - `POST /projects/:projectId/run` (init phase, including migration plan resync via `refresh: true`)
   - `POST /projects/:projectId/modules/:moduleId/run` (analyze/migrate/publish phases)
 
 ## API Usage Examples
@@ -210,8 +209,7 @@ curl -X POST http://localhost:7007/api/x2a/projects \
   -H "Authorization: Bearer ${TOKEN}" \
   -d '{
     "name": "My source automation project migration",
-    "description": "Test migration",
-    "abbreviation": "TEST"
+    "description": "Test migration"
   }'
 ```
 

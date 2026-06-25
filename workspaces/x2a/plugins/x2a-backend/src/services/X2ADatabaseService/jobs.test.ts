@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { mockCredentials } from '@backstage/backend-test-utils';
-
 import {
   Artifact,
   toSorted,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { mockServices, mockCredentials } from '@backstage/backend-test-utils';
 
 import {
   artifactsFromValues,
@@ -32,6 +32,7 @@ import {
   tearDownDatabases,
 } from '../../__testUtils__';
 import { delay } from '../../utils';
+import { JobOperations } from './jobOperations';
 
 describe('X2ADatabaseService – jobs', () => {
   afterEach(async () => {
@@ -48,7 +49,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -94,7 +94,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -142,7 +141,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -206,7 +204,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -244,7 +241,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -286,7 +282,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -327,7 +322,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -364,7 +358,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -402,7 +395,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -446,7 +438,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -482,7 +473,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -532,7 +522,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -580,7 +569,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -636,7 +624,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -696,7 +683,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -749,7 +735,6 @@ describe('X2ADatabaseService – jobs', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -786,6 +771,151 @@ describe('X2ADatabaseService – jobs', () => {
           'artifact2.json',
         ]);
       },
+    );
+  });
+});
+
+describe('JobOperations – phase attempt stats', () => {
+  afterEach(async () => {
+    await tearDownDatabases();
+  });
+
+  describe('getPhaseAttemptStats', () => {
+    it.each(supportedDatabaseIds)(
+      'returns count and firstStartedAt for a single phase - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const jobOps = new JobOperations(mockServices.logger.mock(), client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const module = await service.createModule({
+          name: 'Mod',
+          sourcePath: '/mod',
+          projectId: project.id,
+        });
+
+        const firstJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          startedAt: new Date('2024-01-01T10:00:00Z'),
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          startedAt: new Date('2024-01-01T11:00:00Z'),
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          startedAt: new Date('2024-01-01T12:00:00Z'),
+        });
+
+        const stats = await jobOps.getPhaseAttemptStats({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+        });
+
+        expect(stats.count).toBe(3);
+        expect(stats.firstStartedAt).toBeInstanceOf(Date);
+        expect(stats.firstStartedAt!.toISOString()).toBe(
+          firstJob.startedAt.toISOString(),
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns count 0 when no jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const jobOps = new JobOperations(mockServices.logger.mock(), client);
+
+        const stats = await jobOps.getPhaseAttemptStats({
+          projectId: nonExistentId,
+          moduleId: nonExistentId,
+          phase: 'analyze',
+        });
+
+        expect(stats.count).toBe(0);
+        expect(stats.firstStartedAt).toBeUndefined();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
+
+  describe('batchPhaseAttemptStats', () => {
+    it.each(supportedDatabaseIds)(
+      'returns stats grouped by module and phase - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const jobOps = new JobOperations(mockServices.logger.mock(), client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod1 = await service.createModule({
+          name: 'Mod1',
+          sourcePath: '/mod1',
+          projectId: project.id,
+        });
+        const mod2 = await service.createModule({
+          name: 'Mod2',
+          sourcePath: '/mod2',
+          projectId: project.id,
+        });
+
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod1.id,
+          phase: 'analyze',
+        });
+        await delay(5);
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod1.id,
+          phase: 'analyze',
+        });
+        await delay(5);
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod1.id,
+          phase: 'migrate',
+        });
+        await delay(5);
+        await service.createJob({
+          projectId: project.id,
+          moduleId: mod2.id,
+          phase: 'analyze',
+        });
+
+        const statsMap = await jobOps.batchPhaseAttemptStats({
+          projectId: project.id,
+        });
+
+        expect(statsMap.get(mod1.id)?.get('analyze')?.count).toBe(2);
+        expect(statsMap.get(mod1.id)?.get('migrate')?.count).toBe(1);
+        expect(statsMap.get(mod2.id)?.get('analyze')?.count).toBe(1);
+        expect(statsMap.get(mod2.id)?.get('migrate')).toBeUndefined();
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 });

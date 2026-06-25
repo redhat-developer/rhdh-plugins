@@ -35,10 +35,6 @@ export interface ProjectsPostRequest {
    */
   description: string;
   /**
-   * Project abbreviation
-   */
-  abbreviation: string;
-  /**
    * URL of the source repository
    */
   sourceRepoUrl: string;
@@ -54,4 +50,8 @@ export interface ProjectsPostRequest {
    * Branch of the target repository (default to main)
    */
   targetRepoBranch: string;
+  /**
+   * UUIDs of rules the project accepts (required rules auto-appended)
+   */
+  acceptedRuleIds?: Array<string>;
 }

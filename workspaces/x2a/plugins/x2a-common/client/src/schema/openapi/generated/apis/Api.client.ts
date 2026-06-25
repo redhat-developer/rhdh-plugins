@@ -33,9 +33,14 @@ import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/Projects
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
-import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
+import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
+import { Rule } from '../models/Rule.model';
+import { RulesGet200Response } from '../models/RulesGet200Response.model';
+import { RulesPostRequest } from '../models/RulesPostRequest.model';
+import { RulesRuleIdDelete200Response } from '../models/RulesRuleIdDelete200Response.model';
+import { RulesRuleIdPutRequest } from '../models/RulesRuleIdPutRequest.model';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -62,13 +67,7 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?:
-      | 'createdAt'
-      | 'name'
-      | 'abbreviation'
-      | 'status'
-      | 'description'
-      | 'createdBy';
+    sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
   };
 };
 /**
@@ -173,11 +172,11 @@ export type ProjectsProjectIdModulesModuleIdRunPost = {
 /**
  * @public
  */
-export type ProjectsProjectIdModulesPost = {
+export type ProjectsProjectIdPatch = {
   path: {
     projectId: string;
   };
-  body: ProjectsProjectIdModulesPostRequest;
+  body: ProjectsProjectIdPatchRequest;
 };
 /**
  * @public
@@ -187,6 +186,41 @@ export type ProjectsProjectIdRunPost = {
     projectId: string;
   };
   body: ProjectsProjectIdRunPostRequest;
+};
+/**
+ * @public
+ */
+export type RulesGet = {};
+/**
+ * @public
+ */
+export type RulesPost = {
+  body: RulesPostRequest;
+};
+/**
+ * @public
+ */
+export type RulesRuleIdDelete = {
+  path: {
+    ruleId: string;
+  };
+};
+/**
+ * @public
+ */
+export type RulesRuleIdGet = {
+  path: {
+    ruleId: string;
+  };
+};
+/**
+ * @public
+ */
+export type RulesRuleIdPut = {
+  path: {
+    ruleId: string;
+  };
+  body: RulesRuleIdPutRequest;
 };
 
 /**
@@ -518,19 +552,18 @@ export class DefaultApiClient {
   }
 
   /**
-   * **TEMPORARY ENDPOINT FOR TESTING ONLY**  This endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.  According to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase). The proper implementation will be added when the init phase integration is complete.  TODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)
-   * Creates a new module for a project
+   * Updates an existing project.
    * @param projectId -
-   * @param projectsProjectIdModulesPostRequest -
+   * @param projectsProjectIdPatchRequest -
    */
-  public async projectsProjectIdModulesPost(
+  public async projectsProjectIdPatch(
     // @ts-ignore
-    request: ProjectsProjectIdModulesPost,
+    request: ProjectsProjectIdPatch,
     options?: RequestOptions,
-  ): Promise<TypedResponse<Module>> {
+  ): Promise<TypedResponse<Project>> {
     const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
 
-    const uriTemplate = `/projects/{projectId}/modules`;
+    const uriTemplate = `/projects/{projectId}`;
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
@@ -541,7 +574,7 @@ export class DefaultApiClient {
         'Content-Type': 'application/json',
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
-      method: 'POST',
+      method: 'PATCH',
       body: JSON.stringify(request.body),
     });
   }
@@ -570,6 +603,134 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Returns a list of all rules.
+   */
+  public async rulesGet(
+    // @ts-ignore
+    request: RulesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<RulesGet200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Creates a new rule (admin only).
+   * @param rulesPostRequest -
+   */
+  public async rulesPost(
+    // @ts-ignore
+    request: RulesPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Deletes a rule by ID (admin only).
+   * @param ruleId -
+   */
+  public async rulesRuleIdDelete(
+    // @ts-ignore
+    request: RulesRuleIdDelete,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<RulesRuleIdDelete200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Returns a rule by ID.
+   * @param ruleId -
+   */
+  public async rulesRuleIdGet(
+    // @ts-ignore
+    request: RulesRuleIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Updates a rule by ID (admin only).
+   * @param ruleId -
+   * @param rulesRuleIdPutRequest -
+   */
+  public async rulesRuleIdPut(
+    // @ts-ignore
+    request: RulesRuleIdPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Rule>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/rules/{ruleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ruleId: request.path.ruleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PUT',
       body: JSON.stringify(request.body),
     });
   }

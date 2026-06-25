@@ -24,14 +24,15 @@ import {
 import {
   MigrationPhase,
   Artifact,
+  ArtifactKind,
   JobStatus,
   Telemetry,
   Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
 import { executePhaseActions } from './phaseActions';
-import { SignatureValidator } from './utils/SignatureValidator';
 
 const agentMetricsSchema = z.object({
   name: z.string(),
@@ -54,13 +55,7 @@ const telemetrySchema = z.object({
 
 const artifactSchema = z.object({
   id: z.string(),
-  type: z.enum([
-    'migration_plan',
-    'module_migration_plan',
-    'migrated_sources',
-    'project_metadata',
-    'ansible_project',
-  ]),
+  type: z.enum(ArtifactKind.values() as [string, ...string[]]),
   value: z.string(),
 });
 
@@ -93,15 +88,12 @@ interface JobWithToken {
 }
 
 class AuthenticationHandler {
-  constructor(
-    private readonly validator: SignatureValidator,
-    private readonly logger: RouterDeps['logger'],
-  ) {}
+  constructor(private readonly logger: RouterDeps['logger']) {}
 
   validateSignature(
     rawBody: Buffer,
     providedSignature: string | undefined,
-    callbackToken: string,
+    callbackToken: CallbackToken,
     jobId: string,
   ): void {
     if (!providedSignature) {
@@ -109,11 +101,7 @@ class AuthenticationHandler {
       throw new AuthenticationError('Authentication failed');
     }
 
-    const isValid = this.validator.validateSignature(
-      callbackToken,
-      rawBody,
-      providedSignature,
-    );
+    const isValid = callbackToken.validateSignature(rawBody, providedSignature);
 
     if (!isValid) {
       this.logAuthFailure(
@@ -237,8 +225,7 @@ export function registerCollectArtifactsRoutes(
   deps: RouterDeps,
 ): void {
   const { x2aDatabase, kubeService, logger, config } = deps;
-  const signatureValidator = new SignatureValidator();
-  const authHandler = new AuthenticationHandler(signatureValidator, logger);
+  const authHandler = new AuthenticationHandler(logger);
   const requestValidator = new RequestValidator(logger);
   const maxJobAgeSeconds =
     config.getOptionalNumber('x2a.collectArtifacts.maxJobAgeSeconds') ??
@@ -286,6 +273,7 @@ export function registerCollectArtifactsRoutes(
           throw new AuthenticationError('Authentication failed');
         }
 
+        const callbackToken = CallbackToken.from(jobWithToken.callbackToken);
         const providedSignature = req.headers['x-callback-signature'] as
           | string
           | undefined;
@@ -293,7 +281,7 @@ export function registerCollectArtifactsRoutes(
         authHandler.validateSignature(
           rawBody,
           providedSignature,
-          jobWithToken.callbackToken,
+          callbackToken,
           validatedRequest.jobId,
         );
 

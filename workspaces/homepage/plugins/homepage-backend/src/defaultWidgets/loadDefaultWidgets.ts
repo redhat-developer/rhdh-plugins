@@ -75,9 +75,9 @@ export const defaultWidgetsSchema = z.array(defaultWidgetNodeSchema);
  */
 export function loadDefaultWidgets(
   config: RootConfigService,
-): DefaultWidgetNode[] {
+): DefaultWidgetNode[] | undefined {
   const raw = config.getOptional('homepage.defaultWidgets');
-  if (raw === undefined) return [];
+  if (raw === undefined) return undefined;
   const parsed = defaultWidgetsSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(

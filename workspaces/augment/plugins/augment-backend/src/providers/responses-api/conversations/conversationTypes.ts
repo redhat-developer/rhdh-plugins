@@ -170,7 +170,7 @@ export interface ProcessedRagSource {
  * @public
  */
 export interface ProcessedMessage {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   text: string;
   toolCalls?: ProcessedToolCall[];
   ragSources?: ProcessedRagSource[];

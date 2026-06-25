@@ -345,6 +345,8 @@ Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each
 
 **`type: average`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.thresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
 
+For **`type: average`**, the homepage card shows a **centered donut** with the headline percentage. Hovering the **center** opens a tooltip with **total score**, **max possible score**, and a **per-status breakdown** (from aggregation **`result.values`**). There is **no side status legend**; **`statusGrouped`** cards use a multi-slice pie with a legend instead.
+
 #### Card props
 
 The supported model is **a single `aggregationId` string** whose value is either:

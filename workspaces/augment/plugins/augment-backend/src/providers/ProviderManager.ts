@@ -42,19 +42,32 @@ export class ProviderManager {
   /** Promise-based mutex: non-null when a swap is in progress. */
   private swapLock: Promise<void> | null = null;
 
+  /** Non-null when the initial provider failed to initialize. */
+  private _initializationError: string | null = null;
+
   constructor(
     initialProvider: AgenticProvider,
     factory: ProviderFactoryFn,
     logger: LoggerService,
+    initializationError?: string,
   ) {
     this.current = initialProvider;
     this.factory = factory;
     this.logger = logger;
+    this._initializationError = initializationError ?? null;
   }
 
   /** The currently active provider. */
   get provider(): AgenticProvider {
     return this.current;
+  }
+
+  /**
+   * Non-null when the active provider failed to initialize at startup.
+   * Cleared after a successful provider swap.
+   */
+  get initializationError(): string | null {
+    return this._initializationError;
   }
 
   /** Whether a provider swap is currently in progress. */
@@ -109,6 +122,7 @@ export class ProviderManager {
 
     const old = this.current;
     this.current = next;
+    this._initializationError = null;
 
     this.logger.info(
       `Provider swapped to "${type}" successfully, shutting down "${oldId}"`,

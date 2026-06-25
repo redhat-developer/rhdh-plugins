@@ -76,13 +76,13 @@ export const quickstartMessages = {
       ctaTitle: 'View Learning Paths',
     },
     setupLightspeed: {
-      title: 'Set up Lightspeed',
+      title: 'Set up Intelligent Assistant',
       description:
-        'Connect Lightspeed to a supported large language model (LLM) and configure permissions to provide your AI-powered assistance to your developers.',
+        'Connect Intelligent Assistant to a supported large language model (LLM) and configure permissions to provide your AI-powered assistance to your developers.',
       ctaTitle: 'Learn more',
     },
     getStartedWithLightspeed: {
-      title: 'Get started with Lightspeed',
+      title: 'Get started with Intelligent Assistant',
       description:
         'Troubleshoot issues, generate code, and learn about platform resources using AI-powered chat.',
       ctaTitle: 'Learn more',

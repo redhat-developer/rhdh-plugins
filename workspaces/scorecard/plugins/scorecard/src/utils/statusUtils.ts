@@ -15,15 +15,34 @@
  */
 
 import type { Theme } from '@mui/material/styles';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
+import { scorecardTranslationRef } from '../translations';
 import { SCORECARD_ERROR_STATE_COLOR } from './constants';
 import { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
 
 export type StatusConfig = {
   color: string;
   icon?: string;
+};
+
+export const getTranslatedStatus = (
+  status: string | undefined,
+  t: TranslationFunction<typeof scorecardTranslationRef.T>,
+): string => {
+  if (!status) {
+    return '';
+  }
+
+  const translationKey = `thresholds.${status}`;
+  const translatedStatus = t(translationKey as any, {});
+  if (translatedStatus === translationKey) {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  return translatedStatus;
 };
 
 /**

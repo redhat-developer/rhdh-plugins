@@ -4,9 +4,13 @@
 # Feature umbrella: RHDHPLAN-851
 # Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
 #
-# Each workspace uploads coverage with its own flag (e.g., lightspeed,
+# Each workspace uploads coverage with its own flag (e.g., intelligent-assistant,
 # orchestrator). individual_flags scope each flag to its workspace path
 # so the Flags page shows per-workspace coverage correctly.
+#
+# Component management groups workspaces by support level (GA, Tech-Preview,
+# Community, Dev-Preview) for dashboard visualization. Generated from overlay
+# repo metadata using scripts/generate-codecov-components.sh.
 
 codecov:
   require_ci_to_pass: false
@@ -57,17 +61,59 @@ ignore:
   - "**/playwright.config.ts"
   - "**/scripts/**"
   - "**/docs/**"
+  - "workspaces/*/packages/app/**"
+  - "workspaces/*/packages/app-legacy/**"
+  - "workspaces/*/packages/backend/**"
+  - "workspaces/plugins/*-test/**"
+
+component_management:
+  # GENERATED — do not edit by hand.
+  # Source of truth: rhdh-plugin-export-overlays metadata (spec.support field).
+  # Regenerate with: scripts/generate-codecov-components.sh --write --overlay <overlay-repo>
+  # Drift is detected on PRs and synced weekly by
+  # .github/workflows/sync-codecov-components.yml.
+  # Only workspaces that exist in this repository are included.
+  # Note: workspaces with mixed support-level packages appear in multiple components.
+  individual_components:
+    # Generally-Available Plugins — 6 workspace(s)
+    - component_id: generally-available-plugins
+      name: 'Generally-Available Plugins'
+      paths:
+        - workspaces/adoption-insights/
+        - workspaces/global-header/
+        - workspaces/homepage/
+        - workspaces/lightspeed/
+        - workspaces/orchestrator/
+        - workspaces/quickstart/
+    # Tech-Preview Plugins — 4 workspace(s)
+    - component_id: tech-preview-plugins
+      name: 'Tech-Preview Plugins'
+      paths:
+        - workspaces/bulk-import/
+        - workspaces/cost-management/
+        - workspaces/extensions/
+        - workspaces/homepage/
+    # Community Plugins — 3 workspace(s)
+    - component_id: community-plugins
+      name: 'Community Plugins'
+      paths:
+        - workspaces/theme/
+        - workspaces/translations/
+        - workspaces/x2a/
+    # Dev-Preview Plugins — 5 workspace(s)
+    - component_id: dev-preview-plugins
+      name: 'Dev-Preview Plugins'
+      paths:
+        - workspaces/ai-integrations/
+        - workspaces/app-defaults/
+        - workspaces/konflux/
+        - workspaces/mcp-integrations/
+        - workspaces/scorecard/
 
 flag_management:
   default_rules:
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 100%
-      - type: patch
-        target: auto
-        threshold: 100%
+    statuses: []
   individual_flags:
     - name: adoption-insights
       paths:
@@ -112,9 +158,6 @@ flag_management:
     - name: extensions
       paths:
         - workspaces/extensions/
-    - name: global-floating-action-button
-      paths:
-        - workspaces/global-floating-action-button/
     - name: global-header
       paths:
         - workspaces/global-header/
@@ -124,7 +167,7 @@ flag_management:
     - name: konflux
       paths:
         - workspaces/konflux/
-    - name: lightspeed
+    - name: intelligent-assistant
       paths:
         - workspaces/lightspeed/
     - name: mcp-integrations
@@ -139,9 +182,6 @@ flag_management:
     - name: repo-tools
       paths:
         - workspaces/repo-tools/
-    - name: sandbox
-      paths:
-        - workspaces/sandbox/
     - name: scorecard
       paths:
         - workspaces/scorecard/

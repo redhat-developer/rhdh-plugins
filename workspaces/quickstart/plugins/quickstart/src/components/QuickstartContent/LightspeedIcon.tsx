@@ -14,27 +14,10 @@
  * limitations under the License.
  */
 
-import { useTheme } from '@mui/material/styles';
-import LightThemeLightspeedIcon from '../../images/lightspeed-icon-black.svg';
-import DarkThemeLightspeedIcon from '../../images/lightspeed-icon-white.svg';
+import { RhUiAiChatbotIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-chatbot-icon';
 
-export const LightspeedIcon = () => {
-  const theme = useTheme();
-  return theme.palette.mode === 'dark' ? (
-    <img
-      src={DarkThemeLightspeedIcon}
-      alt=""
-      height={24}
-      width={24}
-      style={{ display: 'block' }}
-    />
-  ) : (
-    <img
-      src={LightThemeLightspeedIcon}
-      alt=""
-      height={24}
-      width={24}
-      style={{ display: 'block' }}
-    />
-  );
-};
+export const LightspeedIcon = () => (
+  <RhUiAiChatbotIcon
+    style={{ height: '24px', width: '24px', display: 'block' }}
+  />
+);

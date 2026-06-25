@@ -25,7 +25,8 @@ import {
 import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
-import { Alert, AlertTitle } from '@material-ui/lab';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -48,8 +49,14 @@ import { orchestratorApiRef } from '../../api';
 import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef } from '../../routes';
+import {
+  extractSsoReauthorizeUrl,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
+import { formatMetadataForDisplay } from '../../utils/formatMetadataForDisplay';
 import { buildUrl } from '../../utils/UrlUtils';
 import { Trans } from '../Trans';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
@@ -394,7 +401,10 @@ const WorkflowOutputs = ({
                 />
               ))}
             {Object.keys(valuesAsObject).length > 0 && (
-              <StructuredMetadataTable dense metadata={valuesAsObject} />
+              <StructuredMetadataTable
+                dense
+                metadata={formatMetadataForDisplay(valuesAsObject)}
+              />
             )}
           </AboutField>
         </Grid>
@@ -415,6 +425,12 @@ export const WorkflowResult: React.FC<{
     false,
   );
   const logsEnabled = useLogsEnabled();
+
+  const errorObj = instance.error?.message
+    ? new Error(instance.error.message)
+    : undefined;
+  const hasSamlError = isSamlSsoError(errorObj);
+  const [isSamlDialogOpen, setIsSamlDialogOpen] = useState(hasSamlError);
 
   return (
     <>
@@ -466,6 +482,11 @@ export const WorkflowResult: React.FC<{
         open={isLogsDialogOpen}
         onClose={toggleLogsDialog}
         instanceId={instance.id}
+      />
+      <SamlSsoExpiredDialog
+        open={isSamlDialogOpen}
+        reauthorizeUrl={extractSsoReauthorizeUrl(errorObj)}
+        onClose={() => setIsSamlDialogOpen(false)}
       />
     </>
   );

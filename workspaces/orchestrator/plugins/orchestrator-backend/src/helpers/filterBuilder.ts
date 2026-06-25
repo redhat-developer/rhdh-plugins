@@ -96,38 +96,80 @@ function handleNestedFilter(
   type: ProcessType,
   filter: NestedFilter,
 ): FilterClause {
-  const subClauses = buildFilterCondition(
-    introspection,
-    type,
-    filter.nested,
-    true,
-  );
-
-  const filterClause: FilterClause = {
-    clauseVariable: subClauses.clauseVariable,
-    clause: `${filter.field}: {${subClauses.clause}}`,
-  };
+  // check if the nested param is an array or an object
+  // this makes sure that we can handle the case where there are multiple filters for the same field
+  let filterClause: FilterClause;
+  if (Array.isArray(filter.nested)) {
+    const subClauses = filter.nested.map(n =>
+      buildFilterCondition(introspection, type, n, true),
+    );
+    filterClause = {
+      clauseVariable: subClauses.flatMap(cl => cl.clauseVariable),
+      clause: `${filter.field}: {${subClauses.map(cl => cl.clause).join(', ')}}`,
+    };
+  } else {
+    const subClauses = buildFilterCondition(
+      introspection,
+      type,
+      filter.nested,
+      true,
+    );
+    filterClause = {
+      clauseVariable: subClauses.clauseVariable,
+      clause: `${filter.field}: {${subClauses.clause}}`,
+    };
+  }
 
   return filterClause;
 }
 
-function handleBetweenOperator(filter: FieldFilter): FilterClause {
+function getGraphQLVariableType(
+  fieldName: string,
+  fieldDef: IntrospectionField | undefined,
+  type: ProcessType,
+  isArray: boolean,
+): string {
+  if (isEnumFilter(fieldName, type)) {
+    return isArray ? '[ProcessInstanceState!]' : 'ProcessInstanceState';
+  }
+
+  if (fieldDef?.type.name === TypeName.Date) {
+    return 'DateTime!';
+  }
+
+  if (isArray) {
+    return '[String!]';
+  }
+
+  return 'String';
+}
+
+function handleBetweenOperator(
+  filter: FieldFilter,
+  fieldDef: IntrospectionField | undefined,
+): FilterClause {
   if (!Array.isArray(filter.value) || filter.value.length !== 2) {
     throw new Error('Between operator requires an array of two elements');
   }
+  const paramType = getGraphQLVariableType(
+    filter.field,
+    fieldDef,
+    'ProcessInstance',
+    false,
+  );
   const filterClauseVariableArray: FilterClauseVariable[] = [];
   const clauseVariableName1 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const filterClauseVariable1: FilterClauseVariable = {
     clauseVariableName: clauseVariableName1,
     formattedValue: filter.value[0],
-    clauseVariableType: 'String',
+    clauseVariableType: paramType,
   };
 
   const clauseVariableName2 = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const filterClauseVariable2: FilterClauseVariable = {
     clauseVariableName: clauseVariableName2,
     formattedValue: filter.value[1],
-    clauseVariableType: 'String',
+    clauseVariableType: paramType,
   };
 
   const clause = `${filter.field}: {${getGraphQLOperator(
@@ -193,14 +235,11 @@ function handleBinaryOperator(
     }
   }
   let formattedValue: any;
-  let paramType: string;
-  if (Array.isArray(binaryFilter.value)) {
-    formattedValue = binaryFilter.value.map(v =>
+  const isArray = Array.isArray(binaryFilter.value);
+  if (isArray) {
+    formattedValue = (binaryFilter.value as unknown[]).map((v: unknown) =>
       formatValue(binaryFilter.field, v, fieldDef, type),
     );
-    paramType = isEnumFilter(binaryFilter.field, type)
-      ? '[ProcessInstanceState!]'
-      : '[String!]';
   } else {
     formattedValue = formatValue(
       binaryFilter.field,
@@ -208,8 +247,13 @@ function handleBinaryOperator(
       fieldDef,
       type,
     );
-    paramType = 'String';
   }
+  const paramType = getGraphQLVariableType(
+    binaryFilter.field,
+    fieldDef,
+    type,
+    isArray,
+  );
 
   const clauseVariableName = `clauseVariable${nonSecureRandomAlphaNumeric()}`;
   const clause = `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator)}: $${clauseVariableName}}`;
@@ -273,7 +317,7 @@ export function buildFilterCondition(
     case FieldFilterOperatorEnum.IsNull:
       return handleIsNullOperator(filters);
     case FieldFilterOperatorEnum.Between:
-      return handleBetweenOperator(filters);
+      return handleBetweenOperator(filters, fieldDef);
     case FieldFilterOperatorEnum.Eq:
     case FieldFilterOperatorEnum.Like:
     case FieldFilterOperatorEnum.In:
@@ -380,4 +424,44 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
 // Not used for any secrets or anything
 function nonSecureRandomAlphaNumeric() {
   return randomBytes(8).toString('hex');
+}
+
+// For nested filters, there might be more than one filter for the same field
+// so we need to group them by the field and then combine the nested filters into an array
+export function groupNestedFilters(node: Filter): Filter {
+  if (!isLogicalFilter(node)) return node;
+
+  const processed = node.filters.map(groupNestedFilters);
+  const grouped = new Map<string, Filter[]>();
+  const entries: Array<
+    { kind: 'single'; filter: Filter } | { kind: 'group'; field: string }
+  > = [];
+
+  for (const filter of processed) {
+    if (!('field' in filter)) {
+      entries.push({ kind: 'single', filter });
+      continue;
+    }
+
+    if (!grouped.has(filter.field)) {
+      grouped.set(filter.field, []);
+      entries.push({ kind: 'group', field: filter.field });
+    }
+    grouped.get(filter.field)!.push(filter);
+  }
+
+  const newFilters = entries.map(entry => {
+    if (entry.kind === 'single') return entry.filter;
+
+    const filters = grouped.get(entry.field)!;
+    if (filters.length === 1) return filters[0];
+
+    const nested = filters
+      .filter((f): f is NestedFilter => 'nested' in f)
+      .map(f => f.nested);
+
+    return { field: entry.field, nested } as unknown as NestedFilter;
+  });
+
+  return { ...node, filters: newFilters };
 }

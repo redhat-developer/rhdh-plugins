@@ -79,16 +79,14 @@ export class AverageAggregationStrategy implements AggregationStrategy {
       weightedSum,
     );
 
-    const scorePercent = averageScore * 100;
-
     const aggregationChartDisplayColor = this.getAggregationChartDisplayColor(
-      scorePercent,
+      averageScore,
       headlineThresholds,
     );
 
     if (!aggregationChartDisplayColor) {
       throw new Error(
-        `The color for percentage '${scorePercent}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
+        `The color for percentage '${averageScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
       );
     }
 
@@ -162,11 +160,9 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
     const maxPossibleScore = maxScore * numberOfEntities;
 
-    const precision = 1000;
-
     const averageScore =
       numberOfEntities > 0 && maxPossibleScore > 0
-        ? Math.round((weightedSum / maxPossibleScore) * precision) / precision
+        ? Math.round((weightedSum / maxPossibleScore) * 1000) / 10
         : 0;
 
     return { averageScore, maxPossibleScore };

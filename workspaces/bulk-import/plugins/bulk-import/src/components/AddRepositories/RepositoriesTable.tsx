@@ -22,7 +22,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
@@ -45,22 +44,20 @@ import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoriesTableBody } from './RepositoriesTableBody';
 
-const useStyles = makeStyles(() => ({
-  repositoriesTableFixedColumns: {
-    '& th:nth-child(1), & td:nth-child(1)': {
-      width: '20%',
-    },
-    '& th:nth-child(2), & td:nth-child(2)': {
-      width: '30%',
-    },
-    '& th:nth-child(3), & td:nth-child(3)': {
-      width: '20%',
-    },
-    '& th:nth-child(4), & td:nth-child(4)': {
-      width: '30%',
-    },
+const repositoriesTableFixedColumnsSx = {
+  '& th:nth-child(1), & td:nth-child(1)': {
+    width: '20%',
   },
-}));
+  '& th:nth-child(2), & td:nth-child(2)': {
+    width: '30%',
+  },
+  '& th:nth-child(3), & td:nth-child(3)': {
+    width: '20%',
+  },
+  '& th:nth-child(4), & td:nth-child(4)': {
+    width: '30%',
+  },
+};
 
 export const RepositoriesTable = ({
   searchString,
@@ -79,7 +76,6 @@ export const RepositoriesTable = ({
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
 }) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -92,7 +88,7 @@ export const RepositoriesTable = ({
   const [localPage, setLocalPage] = useState(0);
   const [drawerPage, setDrawerPage] = useState(0);
 
-  const { loading, data, error } = useRepositories({
+  const { loading, data, error, loginRejected } = useRepositories({
     showOrganizations,
     orgName: drawerOrganization,
     approvalTool: values.approvalTool,
@@ -320,7 +316,7 @@ export const RepositoriesTable = ({
           style={{ minWidth: 750 }}
           size="small"
           data-testid={ariaLabel()}
-          className={classes.repositoriesTableFixedColumns}
+          sx={repositoriesTableFixedColumnsSx}
         >
           <RepositoriesHeader
             numSelected={
@@ -345,6 +341,7 @@ export const RepositoriesTable = ({
             isDrawer={!!drawerOrganization}
             isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
+            loginRejected={loginRejected}
           />
         </Table>
         {!isOpen && tableData?.length > 0 && (

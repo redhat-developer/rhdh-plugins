@@ -1,10 +1,16 @@
 # Lightspeed plugin for Backstage
 
-Red Hat Developer Lightspeed for Red Hat Developer Hub (Developer Lightspeed for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+Red Hat Developer Hub Intelligent Assistant (Intelligent Assistant for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
 
-Developer Lightspeed for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+The Intelligent Assistant for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
 
 ## For administrators
+
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed. See the [backend plugin migration guide](../lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant) for the full list of renamed config keys and permission policies.
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
 
 ### Prerequisites
 
@@ -19,13 +25,17 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
-p, role:default/team_a, lightspeed.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -51,23 +61,23 @@ permission:
 
 ### Configuration
 
-1. Add a new nav item **Lightspeed** in App `packages/app/src/App.tsx`:
+1. Add a new nav item **Intelligent assistant** in App `packages/app/src/App.tsx`:
 
    ```tsx title="packages/app/src/components/App.tsx"
    /* highlight-add-next-line */ import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-   <Route path="/lightspeed" element={<LightspeedPage />} />;
+   <Route path="/intelligent-assistant" element={<LightspeedPage />} />;
    ```
 
-2. Enable **Lightspeed** page in `packages/app/src/components/Root/Root.tsx`:
+2. Enable **Intelligent assistant** page in `packages/app/src/components/Root/Root.tsx`:
 
    ```tsx title="packages/app/src/components/Root/Root.tsx"
    /* highlight-add-next-line */ import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
    <SidebarItem
      icon={LightspeedIcon as IconComponent}
-     to="lightspeed"
-     text="Lightspeed"
+     to="intelligent-assistant"
+     text="Intelligent assistant"
    />;
    ```
 
@@ -84,16 +94,16 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 #### Procedure
 
-1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
-2. Ask your questions to the Lightspeed chatbot.
+1. Open your Backstage application and select the **Intelligent assistant** nav item from the **Navigation**.
+2. Ask your questions to the intelligent assistant chatbot.
 
 ### Display modes and chat continuity
 
-Lightspeed supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
+Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### MCP servers settings
 
-Lightspeed includes an MCP servers settings panel where users can:
+Intelligent assistant includes an MCP servers settings panel where users can:
 
 - View configured MCP servers and current status
 - Enable or disable eligible servers
@@ -140,7 +150,7 @@ Notebooks is an experimental feature that enables **document-based conversations
 #### Using Notebooks
 
 1. Ensure Notebooks is enabled in your Backstage instance
-2. Navigate to the Lightspeed page
+2. Navigate to the Intelligent assistant page
 3. Create a new notebook session or select an existing one
 4. Upload documents you want to query
 5. Start asking questions about your uploaded documents
@@ -162,7 +172,7 @@ global:
     - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.6.1!red-hat-developer-hub-backstage-plugin-lightspeed
       disabled: false
       pluginConfig:
-        lightspeed:
+        intelligent-assistant:
           # OPTIONAL: Custom users prompts displayed to users
           # If not provided, the plugin uses built-in default prompts
           prompts:
@@ -178,7 +188,7 @@ global:
                   module: Alpha
                   ref: lightspeedTranslationRef
               dynamicRoutes:
-                - path: /lightspeed
+                - path: /intelligent-assistant
                   importName: LightspeedPage
               mountPoints:
                 - mountPoint: application/listener
@@ -229,7 +239,7 @@ dynamicPlugins:
           module: Alpha
           ref: lightspeedTranslationRef
       dynamicRoutes:
-        - path: /lightspeed
+        - path: /intelligent-assistant
           importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener

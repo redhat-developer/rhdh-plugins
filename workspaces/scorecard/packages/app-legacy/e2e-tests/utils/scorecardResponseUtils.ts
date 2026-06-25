@@ -203,7 +203,7 @@ export const openIssuesKpiMetadataResponse = {
   aggregationType: 'statusGrouped',
 };
 
-/** Matches `scorecard.aggregationKPIs.openPrsWeightedKpi` in app-config.yaml */
+/** Matches `scorecard.aggregationKPIs.gitHubOpenPrsWeightedKpi` in app-config.yaml */
 export const openPrsWeightedKpiMetadataResponse = {
   title: 'GitHub Open PRs (weighted health)',
   description:
@@ -214,7 +214,8 @@ export const openPrsWeightedKpiMetadataResponse = {
 };
 
 /**
- * Average KPI: 3×100 + 5×40 + 2×0 = 500 weighted sum; max 100×10 entities → 50% score.
+ * Average KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
+ * Includes `critical` as a non-threshold status name (no `thresholds.critical` copy).
  * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
 export const openPrsWeightedAggregatedResponse = {
@@ -227,15 +228,39 @@ export const openPrsWeightedAggregatedResponse = {
     values: [
       { count: 3, name: 'success', score: 100 },
       { count: 5, name: 'warning', score: 40 },
-      { count: 2, name: 'error', score: 0 },
+      { count: 1, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
     ],
     total: 10,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 0.5,
-    averageWeightedSum: 500,
+    averageScore: 51.5,
+    averageWeightedSum: 515,
     averageMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const gitHubWeightedPartiallyAggregatedResponse = {
+  ...openPrsWeightedAggregatedResponse,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    ...openPrsWeightedAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success', score: 100 },
+      { count: 4, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
+    ],
+    total: 8,
+    entitiesConsidered: 6,
+    calculationErrorCount: 2,
+    averageScore: 46.7,
+    averageWeightedSum: 466.67,
   },
 };
 
@@ -507,6 +532,42 @@ export const githubAggregatedResponse = {
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entitiesConsidered: 10,
     calculationErrorCount: 0,
+  },
+};
+
+export const githubCustomAggregatedResponse = {
+  ...githubAggregatedResponse,
+  metadata: {
+    ...githubAggregatedResponse.metadata,
+    title: 'GitHub Open PRs KPI',
+    description:
+      'This KPI provides information about GitHub Open PRs grouped by status',
+  },
+  result: {
+    ...githubAggregatedResponse.result,
+    values: [
+      { count: 2, name: 'success' },
+      { count: 1, name: 'warning' },
+      { count: 5, name: 'error' },
+    ],
+    total: 8,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 8,
+    calculationErrorCount: 0,
+  },
+};
+
+export const gitHubPartiallyAggregatedResponse = {
+  ...githubCustomAggregatedResponse,
+  result: {
+    ...githubCustomAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success' },
+      { count: 3, name: 'warning' },
+      { count: 1, name: 'error' },
+    ],
+    calculationErrorCount: 3,
   },
 };
 

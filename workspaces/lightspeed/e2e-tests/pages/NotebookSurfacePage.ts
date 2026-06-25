@@ -17,7 +17,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
-import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
@@ -31,7 +30,7 @@ import { RenameNotebookModalPage } from './RenameNotebookModalPage';
 export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
 
 /**
- * Developer Lightspeed **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
+ * Developer Hub Intelligent Assistant **Notebooks** surface: fullscreen tab, notebook list/editor, sidebar, cards, modals.
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
@@ -51,7 +50,7 @@ export class NotebookSurfacePage {
   async gotoFullscreenNotebooksTab(): Promise<void> {
     await openLightspeed(this.page);
     await this.page
-      .getByRole('button', { name: this.t['aria.settings.label'] })
+      .getByRole('button', { name: this.t['aria.options.label'] })
       .click();
     await this.page
       .getByRole('menuitem', {
@@ -237,35 +236,30 @@ export class NotebookSurfacePage {
     });
   }
 
-  /** Opens the overflow menu on the first sidebar document and chooses Delete document. */
+  /** The confirmation dialog that appears after choosing Delete document. */
+  deleteDocumentConfirmDialog(): Locator {
+    return this.page.getByRole('dialog');
+  }
+
+  deleteDocumentConfirmButton(): Locator {
+    return this.deleteDocumentConfirmDialog().getByRole('button', {
+      name: this.t['notebook.document.delete.action'],
+      exact: true,
+    });
+  }
+
+  /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
     await this.firstListedDocumentOverflowMenuToggle().click();
     await this.documentRowDeleteMenuItem().click();
+    await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
+    await this.deleteDocumentConfirmButton().click();
   }
 
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {
     await expect(
       this.chatbotRegion().getByText(fileName, { exact: true }).first(),
     ).toBeVisible({ timeout: 60_000 });
-  }
-
-  /**
-   * Success toast title uses `notebook.upload.success` (`NotebookView` PF `Alert`), auto-dismiss ~2s after show.
-   */
-  async expectNotebookUploadSuccessToastVisible(
-    fileName: string,
-  ): Promise<void> {
-    const title = substituteNotebookTemplate(
-      this.t['notebook.upload.success'],
-      {
-        fileName,
-      },
-    );
-    await expect(
-      this.page.getByText(title, { exact: true }).first(),
-    ).toBeVisible({
-      timeout: 120_000,
-    });
   }
 
   /**

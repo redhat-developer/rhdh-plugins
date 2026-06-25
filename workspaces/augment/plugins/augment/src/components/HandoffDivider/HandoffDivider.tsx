@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -26,7 +26,7 @@ interface HandoffDividerProps {
   reason?: string;
 }
 
-export const HandoffDivider: React.FC<HandoffDividerProps> = React.memo(
+export const HandoffDivider: FC<HandoffDividerProps> = memo(
   function HandoffDivider({ agentName, reason }) {
     const theme = useTheme();
     const { t } = useTranslation();

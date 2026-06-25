@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import {
   InfoCard,
@@ -24,6 +24,7 @@ import {
 } from '@backstage/core-components';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { formatMetadataForDisplay } from '../../utils/formatMetadataForDisplay';
 
 export const WorkflowInputs: FC<{
   className: string;
@@ -34,6 +35,10 @@ export const WorkflowInputs: FC<{
 }> = ({ className, value, loading, responseError, cardClassName }) => {
   const { t } = useTranslation();
   const inputs = value?.data;
+  const displayInputs = useMemo(
+    () => (inputs ? formatMetadataForDisplay(inputs) : inputs),
+    [inputs],
+  );
   return (
     <InfoCard
       title={t('run.inputs')}
@@ -52,8 +57,8 @@ export const WorkflowInputs: FC<{
         <ResponseErrorPanel error={responseError} />
       )}
 
-      {!loading && !responseError && inputs && (
-        <StructuredMetadataTable dense metadata={inputs} />
+      {!loading && !responseError && displayInputs && (
+        <StructuredMetadataTable dense metadata={displayInputs} />
       )}
     </InfoCard>
   );

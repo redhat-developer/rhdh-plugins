@@ -17,8 +17,10 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { createScorecardActions } from './actions';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
@@ -36,6 +38,7 @@ import { DatabaseMetricValues } from './database/DatabaseMetricValues';
 import { Scheduler } from './scheduler';
 import { validateAggregationConfig } from './validation/validateAggregationConfig';
 import { AggregationsService } from './service/aggregations/AggregationService';
+import { ThresholdResolver } from './threshold/ThresholdResolver';
 
 /**
  * scorecardPlugin backend plugin
@@ -57,6 +60,7 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
+        actionsRegistry: actionsRegistryServiceRef,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
         config: coreServices.rootConfig,
@@ -69,6 +73,7 @@ export const scorecardPlugin = createBackendPlugin({
         scheduler: coreServices.scheduler,
       },
       async init({
+        actionsRegistry,
         auth,
         catalog,
         config,
@@ -94,6 +99,10 @@ export const scorecardPlugin = createBackendPlugin({
 
         const client = await database.getClient();
         const dbMetricValues = new DatabaseMetricValues(client);
+        const thresholdResolver = new ThresholdResolver(
+          config,
+          metricProvidersRegistry.listProviders(),
+        );
 
         const catalogMetricService = new CatalogMetricService({
           catalog,
@@ -101,6 +110,7 @@ export const scorecardPlugin = createBackendPlugin({
           registry: metricProvidersRegistry,
           database: dbMetricValues,
           logger: logger,
+          thresholdResolver,
         });
 
         const aggregationsService = new AggregationsService({
@@ -123,12 +133,22 @@ export const scorecardPlugin = createBackendPlugin({
           database: dbMetricValues,
           metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
+          thresholdResolver,
         }).start();
 
         const service = {
           aggregationsService: aggregationsService,
           catalogMetricService: catalogMetricService,
         };
+
+        createScorecardActions({
+          actionsRegistry,
+          auth,
+          permissions,
+          catalog,
+          metricProvidersRegistry,
+          catalogMetricService,
+        });
 
         httpRouter.use(
           await createRouter({
@@ -138,6 +158,7 @@ export const scorecardPlugin = createBackendPlugin({
             httpAuth,
             permissions,
             logger,
+            thresholdResolver,
           }),
         );
       },

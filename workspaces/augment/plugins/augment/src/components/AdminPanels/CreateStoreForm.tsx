@@ -52,8 +52,9 @@ export function CreateStoreForm({
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-        gap: 1.5,
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+        gap: 2,
+        pt: 1,
       }}
     >
       <TextField
@@ -64,7 +65,7 @@ export function CreateStoreForm({
         onChange={e => onUpdate('vectorStoreName', e.target.value)}
         error={!nameValid}
         helperText={nameValid ? 'Unique name' : 'Name is required'}
-        sx={{ gridColumn: { md: 'span 1' } }}
+        sx={{ minWidth: 0 }}
       />
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
         <Autocomplete
@@ -140,12 +141,16 @@ export function CreateStoreForm({
         label="Dimension"
         size="small"
         type="number"
-        value={localConfig.embeddingDimension ?? 384}
-        onChange={e =>
-          onUpdate(
-            'embeddingDimension',
-            Number.parseInt(e.target.value, 10) || 384,
-          )
+        value={localConfig.embeddingDimension ?? ''}
+        onChange={e => {
+          const parsed = Number.parseInt(e.target.value, 10);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            onUpdate('embeddingDimension', parsed);
+          }
+        }}
+        error={
+          localConfig.embeddingDimension !== undefined &&
+          !Number.isFinite(localConfig.embeddingDimension)
         }
         helperText="384, 768, etc."
       />

@@ -1,5 +1,56 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.7.9
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+
+## 2.7.8
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
+## 2.7.7
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.7
+
+## 2.7.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.6
+
+## 2.7.5
+
+### Patch Changes
+
+- 5115044: ### Threshold validation
+
+  Implemented threshold interval validation for Scorecard: joint coverage on the real line, gap detection and error messages, and overlap handling versus rule order (including aggregation KPI `options.thresholds` for `average`).
+
+  ### Aggregation
+
+  For **`type: average`** aggregations, **`result.averageScore`** returned by **`GET /aggregations/:aggregationId`** (and the same shape wherever it appears) is a **portfolio percentage in \[0, 100\]** with **one decimal place** — the same scale used for **`options.thresholds`** evaluation and the homepage donut.
+
+  Previously **`averageScore`** was a **normalized ratio in \[0, 1\]** (rounded to **three** decimal places). Any consumer that treated the old value as a fraction and multiplied by **100** for display, or compared it to thresholds on a 0–100 scale without converting, must **stop scaling**: use **`averageScore`** directly as the percentage. If you stored historical API payloads, recompute or re-fetch rather than assuming the old fractional scale.
+
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.5
+
+## 2.7.4
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.4
+
 ## 2.7.3
 
 ### Patch Changes

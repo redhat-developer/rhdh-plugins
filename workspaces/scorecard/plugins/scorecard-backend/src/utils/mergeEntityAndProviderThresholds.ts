@@ -23,6 +23,7 @@ import {
   type MetricProvider,
   validateThresholdsForMetric,
   ThresholdConfigFormatError,
+  validateThresholdNumberIntervals,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { isError } from '@backstage/errors';
 
@@ -53,9 +54,12 @@ function parseEntityAnnotationThresholds(
 export function mergeEntityAndProviderThresholds(
   entity: Entity,
   provider: MetricProvider,
+  baseThresholds?: ThresholdConfig,
 ): ThresholdConfig {
+  let isRulesMerged = false;
+
   const providerId = provider.getProviderId();
-  const providerThresholds = provider.getMetricThresholds();
+  const providerThresholds = baseThresholds ?? provider.getMetricThresholds();
   const providerMetricType = provider.getMetricType();
   const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,
@@ -78,6 +82,8 @@ export function mergeEntityAndProviderThresholds(
     const mergedRule: ThresholdRule = { ...mergedRules[foundKey], ...override };
     try {
       validateThresholdsForMetric({ rules: [mergedRule] }, providerMetricType);
+
+      if (!isRulesMerged) isRulesMerged = true;
     } catch (e) {
       if (isError(e)) {
         throw new ThresholdConfigFormatError(
@@ -92,6 +98,10 @@ export function mergeEntityAndProviderThresholds(
     }
 
     mergedRules[foundKey] = mergedRule;
+  }
+
+  if (isRulesMerged) {
+    validateThresholdNumberIntervals(mergedRules, providerMetricType);
   }
 
   return {

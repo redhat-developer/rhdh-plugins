@@ -14,29 +14,63 @@
  * limitations under the License.
  */
 
+import type { AggregatedMetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { TooltipContent } from './TooltipContent';
+import Typography from '@mui/material/Typography';
+
+import { TooltipContent, formatAggregationScoreDetail } from './TooltipContent';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { getTranslatedStatus } from '../../../utils';
 
 export const DonutChartTooltipContent = ({
   weightedSum,
   maxPossible,
+  statusValues = [],
 }: {
   weightedSum: number | undefined;
   maxPossible: number | undefined;
+  statusValues?: AggregatedMetricValue[];
 }) => {
   const { t } = useTranslation();
 
   return (
-    <Stack direction="row" spacing={3}>
-      <TooltipContent
-        label={t('metric.averageCenterTooltipTotalLabel')}
-        value={weightedSum}
-      />
-      <TooltipContent
-        label={t('metric.averageCenterTooltipMaxLabel')}
-        value={maxPossible}
-      />
+    <Stack spacing={0.5} sx={{ minWidth: 220 }}>
+      <Stack direction="row" spacing={3}>
+        <TooltipContent
+          label={t('metric.averageCenterTooltipTotalLabel')}
+          value={weightedSum}
+        />
+        <TooltipContent
+          label={t('metric.averageCenterTooltipMaxLabel')}
+          value={maxPossible}
+        />
+      </Stack>
+      {statusValues.length > 0 ? (
+        <Box
+          sx={{
+            borderTop: 1,
+            borderColor: 'divider',
+            pt: 1.5,
+          }}
+        >
+          <Stack spacing={0.75}>
+            {statusValues.map(row => (
+              <Typography
+                key={row.name}
+                variant="body2"
+                sx={{ color: 'text.primary', fontWeight: 500 }}
+              >
+                {t('metric.averageCenterTooltipBreakdownRow', {
+                  count: row.count,
+                  status: getTranslatedStatus(row.name, t),
+                  score: formatAggregationScoreDetail(row.score ?? 0),
+                } as any)}
+              </Typography>
+            ))}
+          </Stack>
+        </Box>
+      ) : null}
     </Stack>
   );
 };

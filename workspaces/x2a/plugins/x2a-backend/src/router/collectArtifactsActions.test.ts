@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import express from 'express';
 import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -35,7 +35,7 @@ describe('collectArtifacts routes (actions & signatures)', () => {
   const jobId = randomUUID();
   const moduleId = randomUUID();
   const k8sJobName = 'test-k8s-job-123';
-  const callbackToken = randomUUID();
+  const callbackToken = randomBytes(32).toString('hex');
 
   beforeEach(() => {
     ({ app, mockDeps, signRequestBody } = setupCollectArtifactsApp());
@@ -150,7 +150,7 @@ describe('collectArtifacts routes (actions & signatures)', () => {
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
       mockDeps.x2aDatabase.listModules.mockResolvedValue(existingModules);
       mockDeps.x2aDatabase.createModule.mockResolvedValue({ id: randomUUID() });
-      mockDeps.x2aDatabase.deleteModule.mockResolvedValue(1);
+      mockDeps.x2aDatabase.softDeleteModule.mockResolvedValue(1);
 
       const requestBody = { status: 'success', jobId, artifacts };
       const signature = signRequestBody(requestBody, callbackToken);
@@ -168,10 +168,73 @@ describe('collectArtifacts routes (actions & signatures)', () => {
         projectId,
         technology: undefined,
       });
-      expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledTimes(1);
-      expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledWith({
+      expect(mockDeps.x2aDatabase.softDeleteModule).toHaveBeenCalledTimes(1);
+      expect(mockDeps.x2aDatabase.softDeleteModule).toHaveBeenCalledWith({
         id: 'existing-2',
       });
+    });
+
+    it('should soft-delete a module in success state when removed from metadata during resync', async () => {
+      const metadataModules = [
+        { name: 'still-in-plan', path: '/cookbooks/still' },
+      ];
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: JSON.stringify(metadataModules),
+        },
+      ];
+
+      const existingModules = [
+        {
+          id: 'module-success',
+          name: 'removed-from-plan',
+          sourcePath: '/cookbooks/removed',
+          projectId,
+          status: 'success',
+          analyze: { id: 'job-a', status: 'success', phase: 'analyze' },
+        },
+        {
+          id: 'module-kept',
+          name: 'still-in-plan',
+          sourcePath: '/cookbooks/still',
+          projectId,
+        },
+      ];
+
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+      mockDeps.x2aDatabase.listModules.mockResolvedValue(existingModules);
+      mockDeps.x2aDatabase.softDeleteModule.mockResolvedValue(1);
+
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.softDeleteModule).toHaveBeenCalledTimes(1);
+      expect(mockDeps.x2aDatabase.softDeleteModule).toHaveBeenCalledWith({
+        id: 'module-success',
+      });
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.restoreModule).not.toHaveBeenCalled();
     });
 
     it('should not trigger phase actions when no project_metadata artifact', async () => {
@@ -290,6 +353,100 @@ describe('collectArtifacts routes (actions & signatures)', () => {
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
       expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+    });
+
+    it('should restore previously soft-deleted modules when they reappear in metadata', async () => {
+      const metadataModules = [
+        { name: 'restored-module', path: '/cookbooks/restored' },
+      ];
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: JSON.stringify(metadataModules),
+        },
+      ];
+
+      const existingModules = [
+        {
+          id: 'existing-removed',
+          name: 'restored-module',
+          sourcePath: '/cookbooks/restored',
+          projectId,
+          removedAt: new Date('2026-01-01T00:00:00Z'),
+        },
+      ];
+
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+      mockDeps.x2aDatabase.listModules.mockResolvedValue(existingModules);
+      mockDeps.x2aDatabase.restoreModule.mockResolvedValue(1);
+
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.restoreModule).toHaveBeenCalledTimes(1);
+      expect(mockDeps.x2aDatabase.restoreModule).toHaveBeenCalledWith({
+        id: 'existing-removed',
+      });
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.softDeleteModule).not.toHaveBeenCalled();
+    });
+
+    it('should handle malformed project_metadata JSON gracefully', async () => {
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: 'not valid json {{{',
+        },
+      ];
+
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.softDeleteModule).not.toHaveBeenCalled();
     });
   });
 
@@ -558,7 +715,8 @@ describe('collectArtifacts routes (actions & signatures)', () => {
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
 
       const requestBody = { status: 'success', jobId, artifacts: [] };
-      const signature = signRequestBody(requestBody, 'some-token');
+      const dummyToken = 'a'.repeat(64);
+      const signature = signRequestBody(requestBody, dummyToken);
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)

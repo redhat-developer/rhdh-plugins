@@ -20,7 +20,7 @@ import type { RouteContext } from './types';
  * Registers document, RAG sync, safety, evaluation, and vector-store endpoints.
  */
 export function registerDocumentRoutes(ctx: RouteContext): void {
-  const { router, logger, provider, sendRouteError } = ctx;
+  const { router, logger, sendRouteError } = ctx;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.get(
@@ -29,6 +29,7 @@ export function registerDocumentRoutes(ctx: RouteContext): void {
       'GET /documents',
       'Failed to list documents',
       async (req, res) => {
+        const provider = ctx.provider;
         if (!provider.rag) {
           res.json({
             success: true,
@@ -56,6 +57,7 @@ export function registerDocumentRoutes(ctx: RouteContext): void {
   router.post(
     '/sync',
     withRoute('POST /sync', 'Failed to sync documents', async (_req, res) => {
+      const provider = ctx.provider;
       if (!provider.rag) {
         res.status(501).json({
           success: false,
@@ -78,6 +80,7 @@ export function registerDocumentRoutes(ctx: RouteContext): void {
       'GET /safety/status',
       'Failed to get safety status',
       async (_req, res) => {
+        const provider = ctx.provider;
         await provider.refreshDynamicConfig?.();
         if (provider.safety) {
           const safetyStatus = await provider.safety.getStatus();
@@ -99,6 +102,7 @@ export function registerDocumentRoutes(ctx: RouteContext): void {
       'GET /evaluation/status',
       'Failed to get evaluation status',
       async (_req, res) => {
+        const provider = ctx.provider;
         await provider.refreshDynamicConfig?.();
         if (provider.evaluation) {
           const evalStatus = await provider.evaluation.getStatus();
@@ -120,6 +124,7 @@ export function registerDocumentRoutes(ctx: RouteContext): void {
       'GET /vector-stores',
       'Failed to list vector stores',
       async (_req, res) => {
+        const provider = ctx.provider;
         if (!provider.rag) {
           res.json({
             success: true,

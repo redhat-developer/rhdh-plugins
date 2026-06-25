@@ -28,7 +28,10 @@ import type {
   Artifact,
   Telemetry,
   ProjectsGet,
+  RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { CreateJobInput } from './types';
 
@@ -45,7 +48,6 @@ export interface X2ADatabaseServiceApi {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;
@@ -75,6 +77,20 @@ export interface X2ADatabaseServiceApi {
     },
   ): Promise<Project | undefined>;
 
+  updateProject(
+    args: { projectId: string },
+    input: {
+      name?: string;
+      ownedBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined>;
+
   deleteProject(
     args: { projectId: string },
     options: {
@@ -96,9 +112,22 @@ export interface X2ADatabaseServiceApi {
     skipEnrichment?: boolean;
   }): Promise<Module | undefined>;
 
-  listModules(args: { projectId: string }): Promise<Module[]>;
+  listModules(args: {
+    projectId: string;
+    includeRemoved?: boolean;
+  }): Promise<Module[]>;
 
   deleteModule(args: { id: string }): Promise<number>;
+
+  softDeleteModule(args: { id: string }): Promise<number>;
+
+  restoreModule(args: { id: string }): Promise<number>;
+
+  updateModule(args: {
+    id: string;
+    sourcePath?: string;
+    technology?: Module['technology'];
+  }): Promise<number>;
 
   createJob(job: CreateJobInput): Promise<Job>;
 
@@ -137,4 +166,34 @@ export interface X2ADatabaseServiceApi {
   }): Promise<Job | undefined>;
 
   deleteJob(args: { id: string }): Promise<number>;
+
+  // Rules
+
+  createRule(input: {
+    title: string;
+    description: string;
+    required?: boolean;
+  }): Promise<RuleEntity>;
+
+  updateRule(args: {
+    id: string;
+    title: string;
+    description: string;
+    required: boolean;
+  }): Promise<RuleEntity | undefined>;
+
+  getRule(args: { id: string }): Promise<RuleEntity | undefined>;
+
+  listRules(): Promise<RuleEntity[]>;
+
+  deleteRule(args: { id: string }): Promise<number>;
+
+  attachRulesToProject(args: {
+    projectId: string;
+    ruleIds: string[];
+  }): Promise<void>;
+
+  getAcceptedRulesForProject(args: {
+    projectId: string;
+  }): Promise<RuleSnapshot[]>;
 }

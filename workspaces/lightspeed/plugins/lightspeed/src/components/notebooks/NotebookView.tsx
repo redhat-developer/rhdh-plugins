@@ -16,14 +16,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useApi } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles, Typography } from '@material-ui/core';
 import {
   ChatbotContent,
   ChatbotFooter,
-  ChatbotFootnote,
-  ChatbotWelcomePrompt,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -56,11 +54,13 @@ import {
 } from '../../hooks/notebooks/useDocumentStatusPolling';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
+import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useWelcomePrompts } from '../../hooks/useWelcomePrompts';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
+import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
+import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
@@ -78,6 +78,22 @@ const useStyles = makeStyles(theme => ({
   drawerContainer: {
     flex: 1,
     minHeight: 0,
+    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default)',
+    },
   },
   expandStrip: {
     display: 'flex',
@@ -86,6 +102,8 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(1.5),
     gap: theme.spacing(1),
     borderRight: '1px solid var(--pf-t--global--border--color--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   addIconButton: {
     padding: 0,
@@ -102,6 +120,8 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'flex-end',
     padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   closeButton: {
     textTransform: 'none',
@@ -124,16 +144,38 @@ const useStyles = makeStyles(theme => ({
     minHeight: 0,
     overflow: 'hidden',
   },
-  alertContainer: {
+  notebookDisclaimerStrip: {
+    width: '100%',
+    maxWidth: 'unset',
+    margin: 0,
+    padding: `0 0 ${theme.spacing(1)}px`,
+    boxSizing: 'border-box',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--secondary--default) !important',
+    },
+    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
+      backgroundColor: 'transparent !important',
+    },
+    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
+      backgroundColor: 'transparent !important',
+    },
+    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
+      backgroundColor: 'transparent !important',
+    },
+  },
+  notebookDisclaimerInner: {
     width: '95%',
     maxWidth: 'unset',
     margin: '0 auto',
-    padding: `0 0 ${theme.spacing(1)}px`,
   },
   toastAlertGroup: {
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
   toastAlert: {
     maxWidth: '350px',
@@ -177,24 +219,42 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(0.5),
   },
   promptSuggestions: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: theme.spacing(1),
     width: '95%',
     maxWidth: 'unset',
-    margin: '0 auto',
+    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
+    justifyContent: 'flex-start',
   },
-  footerAlignedAlert: {
-    maxWidth: 'unset',
-    width: '95%',
-    margin: '0 auto',
-    padding: `0 0 ${theme.spacing(1)}px`,
+  promptPill: {
+    appearance: 'none' as const,
+    background: 'transparent',
+    border: `1px solid var(--pf-t--global--border--color--default)`,
+    borderRadius: '999px',
+    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
+    fontSize: '0.875rem',
+    color: 'var(--pf-t--global--text--color--regular)',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s, border-color 0.15s',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--secondary--default)',
+      borderColor: 'var(--pf-t--global--border--color--hover)',
+    },
   },
   footer: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
     },
     '& .pf-chatbot__message-bar': {
-      backgroundColor: theme.palette.grey[300],
+      backgroundColor:
+        theme.palette.type === 'light'
+          ? theme.palette.grey[100]
+          : 'var(--pf-t--global--background--color--secondary--default)',
     },
   },
   chatContent: {
@@ -210,13 +270,13 @@ type NotebookViewProps = {
   sessionId: string;
   notebookName?: string;
   documents?: SessionDocument[];
+  isDocumentsFetching?: boolean;
   metadata?: NotebookSessionMetadata;
   topicSummary?: string;
   userName?: string;
   avatar?: string;
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
-  selectedModel: string;
   onClose: () => void;
 };
 
@@ -224,20 +284,27 @@ export const NotebookView = ({
   sessionId,
   notebookName = UNTITLED_NOTEBOOK_NAME,
   documents = [],
+  isDocumentsFetching = false,
   metadata,
   topicSummary,
   userName,
   avatar,
   profileLoading,
   topicRestrictionEnabled,
-  selectedModel,
   onClose,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const configApi = useApi(configApiRef);
   const notebooksApi = useApi(notebooksApiRef);
   const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
+
+  // Use notebook-specific model from config instead of chat's selected model
+  const notebookModel =
+    configApi.getOptionalString(
+      'intelligent-assistant.notebooks.queryDefaults.model',
+    ) || '';
 
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
@@ -249,25 +316,14 @@ export const NotebookView = ({
   const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(
     new Set(),
   );
+  const [deleteDocumentTarget, setDeleteDocumentTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const handleDeleteDocument = useCallback(
-    async (documentId: string) => {
-      setDeletingDocumentIds(prev => new Set(prev).add(documentId));
-      try {
-        await notebooksApi.deleteDocument(sessionId, documentId);
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'documents', sessionId],
-        });
-      } finally {
-        setDeletingDocumentIds(prev => {
-          const next = new Set(prev);
-          next.delete(documentId);
-          return next;
-        });
-      }
-    },
-    [notebooksApi, sessionId, queryClient],
-  );
+  const handleDeleteDocument = useCallback((documentId: string) => {
+    setDeleteDocumentTarget({ id: documentId, name: documentId });
+  }, []);
 
   const onComplete = useCallback(
     (message: string) => {
@@ -298,7 +354,7 @@ export const NotebookView = ({
     useConversationMessages(
       conversationId,
       userName,
-      selectedModel,
+      notebookModel,
       '',
       avatar,
       onComplete,
@@ -326,16 +382,11 @@ export const NotebookView = ({
     [handleInputPrompt, t],
   );
 
-  const samplePrompts = useWelcomePrompts();
-  const welcomePrompts =
-    samplePrompts?.map(prompt => {
-      const p = prompt as { title: string; message: string };
-      return {
-        title: p.title,
-        message: p.message,
-        onClick: () => sendMessage(p.message),
-      };
-    }) ?? [];
+  const notebookPrompts = useNotebookWelcomePrompts();
+  const welcomePrompts = notebookPrompts.map(title => ({
+    title,
+    onClick: () => sendMessage(title),
+  }));
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -349,6 +400,35 @@ export const NotebookView = ({
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
+
+  const confirmDeleteDocument = useCallback(async () => {
+    if (!deleteDocumentTarget) return;
+    const { id: documentId, name: documentName } = deleteDocumentTarget;
+    setDeleteDocumentTarget(null);
+    setDeletingDocumentIds(prev => new Set(prev).add(documentId));
+    try {
+      await notebooksApi.deleteDocument(sessionId, documentId);
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'documents', sessionId],
+      });
+      setToastAlerts(prev => [
+        {
+          key: Date.now() + documentId,
+          title: (t as Function)('notebook.document.delete.success', {
+            documentName,
+          }) as string,
+          variant: 'success',
+        },
+        ...prev,
+      ]);
+    } finally {
+      setDeletingDocumentIds(prev => {
+        const next = new Set(prev);
+        next.delete(documentId);
+        return next;
+      });
+    }
+  }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
@@ -438,20 +518,15 @@ export const NotebookView = ({
         newCompletedNames.add(result.fileName);
       }
 
-      if (result.status === 'completed') {
+      if (result.status !== 'completed') {
+        const errorDetail = result.error ? ` ${result.error}` : '';
         newAlerts.push({
           key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.success', {
-            fileName: result.fileName,
-          }) as string,
-          variant: 'success',
-        });
-      } else {
-        newAlerts.push({
-          key: Date.now() + result.documentId,
-          title: (t as Function)('notebook.upload.failed', {
-            fileName: result.fileName,
-          }) as string,
+          title: `${
+            (t as Function)('notebook.upload.failed', {
+              fileName: result.fileName,
+            }) as string
+          }${errorDetail}`,
           variant: 'danger',
         });
       }
@@ -474,9 +549,11 @@ export const NotebookView = ({
     setToastAlerts(prev => prev.filter(a => a.key !== key));
   };
 
-  const hasDocuments = documents.length > 0 || uploadingFileNames.length > 0;
   const totalDocumentCount = documents.length + uploadingFileNames.length;
-  const isAddDisabled = totalDocumentCount >= NOTEBOOK_MAX_FILES;
+  const hasUploadsInProgress = pendingUploads.length > 0 || isDocumentsFetching;
+  const hasNoDocuments = documents.length === 0;
+  const isAddDisabled =
+    totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
   const panelContent = (
     <DrawerPanelContent
@@ -493,6 +570,7 @@ export const NotebookView = ({
         completedFileNames={completedFileNames}
         deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
+        hasUploadsInProgress={hasUploadsInProgress}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
@@ -500,11 +578,24 @@ export const NotebookView = ({
     </DrawerPanelContent>
   );
 
+  const renderNotebookDisclaimerAlert = () => (
+    <div className={classes.notebookDisclaimerStrip}>
+      <div className={classes.notebookDisclaimerInner}>
+        <Alert isInline variant="info" title={t('aria.important')}>
+          {t('disclaimer.withoutValidation')}
+        </Alert>
+      </div>
+    </div>
+  );
+
   const renderMainContent = () => {
-    if (!hasDocuments && messages.length === 0) {
+    if (hasNoDocuments && messages.length === 0) {
       return (
         <Typography component="span" className={classes.notebookEmptyUpload}>
-          <UploadResourceScreen onUploadClick={handleOpenUploadModal} />
+          <UploadResourceScreen
+            onUploadClick={handleOpenUploadModal}
+            isProcessing={uploadingFileNames.length > 0}
+          />
         </Typography>
       );
     }
@@ -527,11 +618,8 @@ export const NotebookView = ({
     }
     return (
       <div className={classes.welcomeContainer}>
-        <div className={classes.alertContainer}>
-          <Alert isInline variant="info" title={t('aria.important')}>
-            {t('disclaimer.withoutValidation')}
-          </Alert>
-        </div>
+        <div style={{ flex: 1 }} />
+        {renderNotebookDisclaimerAlert()}
         <div className={classes.notebookContentArea}>
           <Typography className={classes.notebookHeading}>
             {notebookName}
@@ -544,11 +632,16 @@ export const NotebookView = ({
         </div>
         {welcomePrompts.length > 0 && (
           <div className={classes.promptSuggestions}>
-            <ChatbotWelcomePrompt
-              title=""
-              description=""
-              prompts={welcomePrompts}
-            />
+            {welcomePrompts.map(prompt => (
+              <button
+                key={prompt.title}
+                type="button"
+                className={classes.promptPill}
+                onClick={prompt.onClick}
+              >
+                {prompt.title}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -610,11 +703,13 @@ export const NotebookView = ({
                     </Button>
                   </Tooltip>
                   <Tooltip
-                    content={
-                      isAddDisabled
-                        ? t('notebook.view.documents.maxReached')
-                        : t('notebook.view.documents.add')
-                    }
+                    content={(() => {
+                      if (hasUploadsInProgress)
+                        return t('notebook.view.documents.uploadsInProgress');
+                      if (isAddDisabled)
+                        return t('notebook.view.documents.maxReached');
+                      return t('notebook.view.documents.add');
+                    })()}
                     position="right"
                   >
                     <Typography component="span">
@@ -649,16 +744,12 @@ export const NotebookView = ({
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
-                {!hasDocuments && messages.length === 0 && (
-                  <div className={classes.footerAlignedAlert}>
-                    <Alert isInline variant="info" title={t('aria.important')}>
-                      {t('disclaimer.withoutValidation')}
-                    </Alert>
-                  </div>
-                )}
+                {hasNoDocuments &&
+                  messages.length === 0 &&
+                  renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
-                  {documents.length === 0 ? (
+                  {hasNoDocuments ? (
                     <Tooltip
                       content={t('notebook.view.input.disabledTooltip')}
                       position="top"
@@ -685,7 +776,7 @@ export const NotebookView = ({
                       placeholder={t('notebook.view.input.placeholder')}
                     />
                   )}
-                  <ChatbotFootnote label={t('footer.accuracy.label')} />
+                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
             </div>
@@ -698,6 +789,7 @@ export const NotebookView = ({
         onClose={handleCloseUploadModal}
         sessionId={sessionId}
         existingDocumentNames={documents.map(d => d.title)}
+        hasUploadsInProgress={hasUploadsInProgress}
         onFilesUploading={handleFilesUploading}
         onUploadStarted={handleUploadStarted}
         onUploadFailed={handleUploadFailed}
@@ -711,6 +803,13 @@ export const NotebookView = ({
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
         fileNames={filesToOverwrite.map(f => f.name)}
+      />
+
+      <DeleteDocumentModal
+        isOpen={deleteDocumentTarget !== null}
+        onClose={() => setDeleteDocumentTarget(null)}
+        onConfirm={confirmDeleteDocument}
+        documentName={deleteDocumentTarget?.name ?? ''}
       />
     </div>
   );

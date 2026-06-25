@@ -65,4 +65,12 @@ export interface Job {
    * Git commit SHA produced by this job
    */
   commitId?: string;
+  /**
+   * Number of restarts (attempts) for this projectId+moduleId+phase combination. Calculated value, not persisted in DB.
+   */
+  attemptCount?: number;
+  /**
+   * When the very first attempt for this phase was started.
+   */
+  firstAttemptAt?: Date;
 }
