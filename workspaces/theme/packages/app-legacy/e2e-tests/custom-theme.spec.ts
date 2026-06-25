@@ -38,12 +38,7 @@ test.describe('CustomTheme should be applied', () => {
   }, testInfo: TestInfo) => {
     const themes = ThemeConstants.getThemes();
 
-    await runAccessibilityTests(
-      page,
-      testInfo,
-      'accessibility-scan-results.json',
-      { skipViolationsAssert: true },
-    );
+    await runAccessibilityTests(page, testInfo);
 
     for (const theme of themes) {
       await themeVerifier.setTheme(theme.name);
@@ -86,7 +81,6 @@ test.describe('CustomTheme should be applied', () => {
           page,
           testInfo,
           `${themeName}-${tab}-accessibility`,
-          { skipViolationsAssert: true },
         );
         for (const subTab of subTabs) {
           await page.getByRole('tab', { name: subTab }).click();
@@ -94,7 +88,6 @@ test.describe('CustomTheme should be applied', () => {
             page,
             testInfo,
             `${themeName}-${tab}-${subTab}-accessibility`,
-            { skipViolationsAssert: true },
           );
         }
       }
