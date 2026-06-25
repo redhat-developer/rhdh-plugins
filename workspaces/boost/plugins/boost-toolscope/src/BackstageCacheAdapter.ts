@@ -78,7 +78,11 @@ export class BackstageCacheAdapter implements CacheAdapter {
     value: string,
     options?: CacheSetOptions,
   ): Promise<void> {
-    await this.cache.set(key, value, options?.ttl ? { ttl: options.ttl } : {});
+    await this.cache.set(
+      key,
+      value,
+      options?.ttl !== undefined ? { ttl: options.ttl } : {},
+    );
   }
 
   /** {@inheritdoc CacheAdapter.delete} */
