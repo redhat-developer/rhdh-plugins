@@ -51,9 +51,6 @@ test.describe('Test Quick Start plugin', () => {
       page,
       testInfo,
       'quick-start-accessibility.json',
-      {
-        skipViolationsAssert: true,
-      },
     );
 
     // Click and verify setupAuthentication step

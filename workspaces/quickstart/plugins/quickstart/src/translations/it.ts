@@ -49,6 +49,7 @@ const quickstartTranslationIt = createTranslationMessages({
     'footer.hide': 'Nascondi',
     'footer.notStarted': 'Non avviato',
     'footer.progress': '{{progress}}% di progresso',
+    'footer.progressBarAriaLabel': 'Avanzamento avvio rapido',
     'header.subtitle': 'Ti guideremo attraverso alcuni semplici passaggi',
     'header.title': 'Iniziamo a usare Developer Hub',
     'item.collapseAriaLabel': 'Comprimi i dettagli di {{title}}',
