@@ -1,26 +1,28 @@
-# Migration Guide: Deprecated Workflow Permissions to Conditional Policies
+# Migration Guide: Dynamic Workflow Permissions to Conditional Policies
 
-## Breaking Change Notice
+## Deprecation Notice
 
-**This is a breaking change.** As of orchestrator plugin version 2.1.0, the following permissions are **NO LONGER SUPPORTED**:
+**As of orchestrator plugin version 2.1.0**, the following dynamic permissions are **DEPRECATED**:
 
 - `orchestrator.workflow.<workflowId>` (e.g., `orchestrator.workflow.yamlgreet`)
 - `orchestrator.workflow.use.<workflowId>` (e.g., `orchestrator.workflow.use.checkout`)
 
-These deprecated per-workflow permissions have been removed from the codebase. You **MUST** migrate to conditional policies using the `IS_ALLOWED_WORKFLOW_ID` rule.
+These permissions **still work** in this release alongside the new conditional policies. However, they **will be removed in the next release**. You should migrate to conditional policies using the `IS_ALLOWED_WORKFLOW_ID` rule.
 
-**Impact:** Users granted access only via deprecated permissions will lose access immediately after upgrade until you complete the migration.
+**Impact:** In this release, both systems work simultaneously — if either dynamic permissions or conditional policies grant access, the user gets access. A deprecation warning is logged when access is granted through a dynamic permission. In the **next release**, dynamic permissions will be removed entirely.
 
 ## Overview
 
 ### What Changed and Why
 
-**Before:** The orchestrator plugin used specific permissions created per workflow:
+**Before:** The orchestrator plugin used dynamic permissions created per workflow:
 
 - `orchestrator.workflow.<workflowId>` for read access
 - `orchestrator.workflow.use.<workflowId>` for execute access
 
-**Now:** Only generic resource permissions are supported:
+**These dynamic permissions could only be created via CSV permission policy files or REST API.** The RBAC UI does not support creating or displaying them.
+
+**Now (recommended):** Use generic resource permissions with conditional policies:
 
 - `orchestrator.workflow` for read access (all workflows or restricted via conditional policies)
 - `orchestrator.workflow.use` for execute access (all workflows or restricted via conditional policies)
@@ -29,16 +31,15 @@ These deprecated per-workflow permissions have been removed from the codebase. Y
 
 - Improved performance - conditional policies are evaluated once per request instead of checking permissions for each workflow individually
 - Better alignment with Backstage RBAC architecture
-- Full compatibility with RBAC UI (which only supports static permissions)
+- Full compatibility with RBAC UI (which supports conditional policies but not dynamic permissions)
 - Cleaner, more maintainable authorization code
-- Deprecated permissions are not visible in the RBAC UI
 
 ### Who Needs to Migrate
 
-You need to migrate if:
+You should migrate if:
 
 - Your `rbac-policy.csv` file contains permissions like `orchestrator.workflow.<workflowId>` or `orchestrator.workflow.use.<workflowId>`
-- You created RBAC roles with not supported any more permissions via RBAC UI or REST API using deprecated permission names
+- You created dynamic permissions via REST API using deprecated permission names
 - Your users currently have per-workflow access (not full access to all workflows)
 
 You do NOT need to migrate if:
@@ -46,20 +47,29 @@ You do NOT need to migrate if:
 - You only use generic permissions (`orchestrator.workflow`, `orchestrator.workflow.use`) with no workflow-specific restrictions
 - All your users have full access to all workflows
 
-## What Was Removed
+## What Is Deprecated
 
-### Deprecated Permissions No Longer Work
+### Dynamic Permissions Still Work (For Now)
 
-These permission patterns(`p, role:default/<any-your-custom-role>, orchestrator.workflow.<workflowId>, read, allow`) are completely removed and will have **no effect** after upgrade:
+These permission patterns still work in this release but are **deprecated**:
 
 ```csv
-# THESE NO LONGER WORK - DO NOT USE
+# DEPRECATED - still works but will be removed in the next release
 p, role:default/user, orchestrator.workflow.yamlgreet, read, allow
 p, role:default/user, orchestrator.workflow.use.checkout, update, allow
 p, role:default/developer, orchestrator.workflow.approval, read, allow
 ```
 
-**After upgrade:** Users with only these permissions will see an empty workflow list and get "403 Forbidden" errors when attempting to access workflows.
+**In the next release:** These permissions will stop working entirely. Users with only these permissions will see an empty workflow list and get "403 Forbidden" errors.
+
+### Dynamic Permissions Created via REST API
+
+If you created dynamic permissions via the REST API, you must:
+
+1. **Delete** the dynamic permissions via REST API
+2. **Create** conditional policies to replace them (via RBAC UI, REST API, or YAML files)
+
+The RBAC UI cannot display or manage dynamic permissions, so REST API is the only way to remove them.
 
 ### No Automatic Migration
 
@@ -79,7 +89,7 @@ Conditional policies restric user access to the resources with help of condition
 
 You can choose either approach for defining conditional policies:
 
-- **YAML file**: Static configuration committed to source control
+- **YAML file**: Static configuration committed to source control and stored in database once file defined in the rbac configuration
 - **RBAC plugin UI**: Dynamic configuration stored in database
 - **REST API**: Dynamic configuration stored in database
 
@@ -93,6 +103,8 @@ You can choose either approach for defining conditional policies:
 - **Parameter:** `workflowIds` - array of workflow IDs to grant access to
 
 **Example conditional policy in yaml format:**
+
+This conditional policy allows members of the role role:default/hello-world-role to read and execute workflow with id 'hello_world':
 
 ```yaml
 result: CONDITIONAL
@@ -169,14 +181,14 @@ Replace deprecated per-workflow permissions with conditional policies in a separ
 **Migration approach:**
 
 - Remove deprecated permission entries from CSV (e.g., `orchestrator.workflow.<workflowId>`)
-- Remove deprecated permission entries from RBAC UI
+- Remove deprecated permission with help of REST API in case if they was created in this way
 - Create corresponding conditional policies with `IS_ALLOWED_WORKFLOW_ID` rule using at least one of these methods:
   - YAML file: `conditional-policies.yaml`
   - RBAC UI
   - REST API
 - Configure the conditional policies file path in RBAC plugin configuration if using `conditional-policies.yaml`.
 
-**IMPORTANT:** The CSV file contains ONLY basic permissions. Workflow-specific restrictions are defined separately in conditional policies (YAML file, RBAC UI, or REST API).
+**IMPORTANT:** The CSV file contains ONLY basic permissions and RBAC role members definitions. Workflow-specific restrictions are defined separately in conditional policies (YAML file, RBAC UI, or REST API).
 
 #### Example 1: Single workflow access with help of permissin file
 
@@ -311,7 +323,7 @@ permission:
 
 Create conditional policies via RBAC UI:
 
-1. Navigate to your Backstage RBAC Administration page
+1. Navigate to your RHDH RBAC Administration page
 2. Select the role you want to configure (e.g., `role:default/developer`) from the list
 3. Click role name link
 4. Take a look permissions table and click "Edit" button
@@ -411,7 +423,7 @@ curl -X DELETE "https://<your-rhdh-url>/api/permission/policies/role/default/<yo
    - Log in as a user with the migrated role
    - Navigate to the Orchestrator workflows page
    - Verify you see ONLY workflows listed in the conditional policy `workflowIds`
-   - Attempt to execute a workflow in the list (should succeed)
+   - Attempt to execute a workflow in the list (should succeed if user has "update" permission action)
    - Attempt to access a workflow NOT in the list (should get 403 Forbidden)
 
 3. **Test full access (no conditional policy):**
