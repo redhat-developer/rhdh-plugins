@@ -16,13 +16,15 @@
 
 import { ReactNode } from 'react';
 
-import {
-  AuthorizeResult,
-  Permission,
-} from '@backstage/plugin-permission-common';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
+
+import {
+  orchestratorWorkflowPermission,
+  orchestratorWorkflowUsePermission,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import {
   usePermissionArray,
@@ -40,9 +42,9 @@ jest.mock('@backstage/plugin-permission-react', () => ({
 }));
 
 const permissions = [
-  { name: 'orchestrator.workflow.read' },
-  { name: 'orchestrator.workflow.execute' },
-] as Permission[];
+  orchestratorWorkflowPermission,
+  orchestratorWorkflowUsePermission,
+];
 
 describe('usePermissionArray', () => {
   const wrapper = ({ children }: { children: ReactNode }) => (
