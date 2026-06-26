@@ -37,25 +37,18 @@ export class CatalogPage {
   }
 
   async loginAndSetLocale(locale: string) {
-    // Set up dialog handler before any page navigation to catch potential dialogs
-    const dialogHandler = (dialog: any) => dialog.accept();
-    this.page.on('dialog', dialogHandler);
+    this.page.on('dialog', dialog => dialog.accept());
 
-    try {
-      await this.page.goto('/');
-      const enterButton = this.page.getByRole('button', { name: 'Enter' });
-      await expect(enterButton).toBeVisible({ timeout: 30000 });
-      await enterButton.click();
-      await expect(
-        this.page.getByRole('link', { name: 'Home' }).first(),
-      ).toBeVisible({
-        timeout: 30000,
-      });
-      await this.switchToLocale(locale);
-    } finally {
-      // Clean up the event listener to prevent memory leaks
-      this.page.off('dialog', dialogHandler);
-    }
+    await this.page.goto('/');
+    const enterButton = this.page.getByRole('button', { name: 'Enter' });
+    await expect(enterButton).toBeVisible({ timeout: 30000 });
+    await enterButton.click();
+    await expect(
+      this.page.getByRole('link', { name: 'Home' }).first(),
+    ).toBeVisible({
+      timeout: 30000,
+    });
+    await this.switchToLocale(locale);
   }
 
   async openCatalog() {
