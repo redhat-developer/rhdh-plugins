@@ -100,7 +100,6 @@ The following new features MUST have runtime configuration fields as specified b
   | Field | Scope | Description |
   |---|---|---|
   | `boost.skillsMarketplace.endpoint` | yaml-only | Skills catalog backend URL |
-  | `boost.skillsMarketplace.enabled` | db-overridable | Enable/disable skills marketplace |
 
 #### Scenario: Token exchange configuration
 

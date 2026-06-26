@@ -61,3 +61,48 @@
 - [ ] 7.2 Verify hot-swap works with modular provider packages
 - [ ] 7.3 Verify cache behavior in both in-memory and Redis-backed modes
 - [ ] 7.4 Verify no provider ID string checks in frontend — all capability-based
+
+## 8. Skills Marketplace Integration (P1)
+
+### Design decisions (from grill-me review):
+
+- Runtimes are **local app-config**, not proxied from the external catalog.
+  `boost.skillsMarketplace.runtimes[]` defines which agent execution frameworks
+  this RHDH instance supports (e.g. DocsClaw, ZeroClaw). Each entry has `id`,
+  `name`, `description`, `image`, `language`, `footprint`, `features[]`, `status`.
+- Deploy endpoint accepts `runtimeId` in the request body; the backend resolves
+  the container image from config server-side. Frontend never sees registry URLs.
+- Manifest generation is extracted into `src/skills/manifestBuilder.ts` for
+  independent testability and future extension (Service, ConfigMap, Secret).
+- Reference implementation: augment workspace `agent-creation-discovery` section 5
+  and UC-23 flow diagram. Boost is a clean room re-implementation — endpoint paths
+  and internal structure may diverge from augment.
+
+### 8a. Skills catalog proxy routes
+
+- [x] 8a.1 Implement `GET /skills` proxy to external skills catalog backend
+- [x] 8a.2 Implement `GET /skills/domains` proxy to external skills catalog backend
+- [ ] 8a.3 Add proxy tests for `GET /skills` and `GET /skills/domains` (mock fetch, verify URL construction, query param forwarding, feature gate, permission checks, non-JSON handling)
+
+### 8b. Skills runtimes from config
+
+- [ ] 8b.1 Add `boost.skillsMarketplace.runtimes[]` Zod schema to `schemas.ts` (`yaml-only` scope) with fields: `id`, `name`, `description`, `image`, `language`, `footprint`, `features[]`, `status`
+- [ ] 8b.2 Refactor `GET /skills/runtimes` to read from local app-config instead of proxying to external catalog
+- [ ] 8b.3 Add tests for `GET /skills/runtimes` (reads config, returns runtime list, feature gate)
+
+### 8c. Deployment with runtime resolution
+
+- [ ] 8c.1 Change `POST /skills/deploy` request body to accept `runtimeId` instead of `ociImage`; resolve container image from `boost.skillsMarketplace.runtimes[]` config
+- [ ] 8c.2 Extract manifest generation into `src/skills/manifestBuilder.ts`
+- [ ] 8c.3 Update deploy tests for `runtimeId` resolution and `manifestBuilder` unit tests
+
+### 8d. Skills browse UI
+
+- [ ] 8d.1 Implement skills browse UI with runtime and domain filters (consuming proxied data)
+- [ ] 8d.2 Add skill badge to gallery for framework agents
+- [ ] 8d.3 Route chat to skill agents via `chatEndpoint` field
+
+### 8e. Deployment progress
+
+- [ ] 8e.1 Implement deployment status persistence (replace current stub)
+- [ ] 8e.2 Add deployment progress polling and status display in UI
