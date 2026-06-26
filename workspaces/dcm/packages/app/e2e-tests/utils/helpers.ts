@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { Page } from '@playwright/test';
-import { TIMEOUTS } from '../utils/constants';
+let counter = 0;
 
-export async function performGuestLogin(page: Page) {
-  await page.goto('/');
-  await page.waitForLoadState('domcontentloaded', { timeout: TIMEOUTS.page });
+export const suffix = () => `${Date.now().toString(36).slice(-5)}-${counter++}`;
 
-  const enterButton = page.locator('button:has-text("Enter")');
-  await enterButton.waitFor({ state: 'visible', timeout: TIMEOUTS.table });
-  await enterButton.click();
+export const uniquePriority = () => {
+  const buf = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(buf);
+  return String((buf[0] % 900) + 50);
+};
 
-  await page
-    .locator('nav')
-    .first()
-    .waitFor({ state: 'visible', timeout: TIMEOUTS.page });
-}
+export const kebabToDisplayName = (name: string) =>
+  name
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');

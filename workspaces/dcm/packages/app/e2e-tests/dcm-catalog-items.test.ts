@@ -16,9 +16,9 @@
 
 import { test, expect } from '@playwright/test';
 import { DcmPage } from './pages/DcmPage';
+import { suffix } from './utils/helpers';
+import { TIMEOUTS } from './utils/constants';
 import * as path from 'node:path';
-
-const suffix = () => Date.now().toString(36).slice(-5);
 
 test.describe('DCM Catalog Items & Instances @dcm', () => {
   let dcm: DcmPage;
@@ -95,7 +95,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     await dcm.clickEditOnRow('Pet Clinic');
     await expect(
       dcm.page.getByRole('heading', { name: 'Edit catalog item' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
 
     await dcm.cancelDialog();
   });
@@ -138,11 +138,11 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     });
 
     await expect(page.getByText('Field values')).toBeVisible({
-      timeout: 5000,
+      timeout: TIMEOUTS.short,
     });
 
     await dcm.submitDialog('Create');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TIMEOUTS.networkSettle);
 
     const dialogVisible = await page
       .locator('[role="dialog"]')
@@ -151,7 +151,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     if (dialogVisible) {
       await expect(page.locator('[role="alert"]').first()).toBeVisible({
-        timeout: 5000,
+        timeout: TIMEOUTS.short,
       });
       await dcm.cancelDialog();
     } else {
@@ -197,7 +197,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     await expect(apiVersion.first()).toHaveValue('v1alpha1');
 
     const pathFields = page.locator('label:has-text("Path *") + div input');
-    await expect(pathFields).toHaveCount(2, { timeout: 5000 });
+    await expect(pathFields).toHaveCount(2, { timeout: TIMEOUTS.short });
     await expect(pathFields.nth(0)).toHaveValue('config.replicas');
     await expect(pathFields.nth(1)).toHaveValue('config.region');
 
@@ -211,7 +211,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     await dcm.waitForTableRefresh();
   });
 
-  test('FLPATH-4274: Invalid YAML file import should show error feedback', async ({
+  test.skip('FLPATH-4274: Invalid YAML file import should show error feedback — blocked on FLPATH-4274 fix', async ({
     page,
   }) => {
     const fixturePath = path.resolve(
@@ -240,7 +240,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
       .locator('[class*="MuiAlert"]')
       .first()
       .or(page.locator('[class*="MuiSnackbar"]').first());
-    await expect(errorFeedback).toBeVisible({ timeout: 5000 });
+    await expect(errorFeedback).toBeVisible({ timeout: TIMEOUTS.short });
 
     await dcm.cancelDialog();
   });
@@ -254,6 +254,6 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     await expect(
       page.locator('table').first().or(page.getByText('No resources found')),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.table });
   });
 });

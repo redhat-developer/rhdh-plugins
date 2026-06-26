@@ -16,16 +16,13 @@
 
 import { test, expect } from '@playwright/test';
 import { DcmPage } from './pages/DcmPage';
-
-const suffix = () => Date.now().toString(36).slice(-5);
-const uniquePriority = () => {
-  const buf = new Uint32Array(1);
-  globalThis.crypto.getRandomValues(buf);
-  return String((buf[0] % 900) + 50);
-};
+import { suffix, uniquePriority, kebabToDisplayName } from './utils/helpers';
+import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Bug Regression Tests @dcm', () => {
   let dcm: DcmPage;
+  const createdProviders: string[] = [];
+  const createdPolicies: string[] = [];
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
@@ -33,10 +30,47 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.navigateToDataCenter();
   });
 
+  test.afterEach(async () => {
+    if (createdProviders.length > 0) {
+      try {
+        await dcm.navigateToDataCenter();
+      } catch {
+        // ignore navigation failures
+      }
+      for (const name of createdProviders) {
+        try {
+          await dcm.clickDeleteOnRow(name);
+          await dcm.confirmDelete();
+          await dcm.waitForDialogClosed();
+        } catch {
+          // already cleaned or not visible
+        }
+      }
+      createdProviders.length = 0;
+    }
+    if (createdPolicies.length > 0) {
+      try {
+        await dcm.clickTab('Policies');
+      } catch {
+        // ignore navigation failures
+      }
+      for (const name of createdPolicies) {
+        try {
+          await dcm.clickDeleteOnRow(name);
+          await dcm.confirmDelete();
+          await dcm.waitForDialogClosed();
+        } catch {
+          // already cleaned or not visible
+        }
+      }
+      createdPolicies.length = 0;
+    }
+  });
+
   test('FLPATH-4246: /dcm/providers deep link selects Providers tab', async ({
     page,
   }) => {
-    await page.goto('/dcm/providers', { timeout: 60000 });
+    await page.goto('/dcm/providers', { timeout: TIMEOUTS.page });
     await page.waitForLoadState('networkidle');
     await dcm.verifyPageTitle();
     await dcm.verifyTabSelected('Providers');
@@ -60,10 +94,8 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.waitForDialogClosed();
     await dcm.waitForTableRefresh();
 
-    const displayName = name
-      .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+    const displayName = kebabToDisplayName(name);
+    createdProviders.push(displayName);
     await dcm.verifyCellContent(displayName);
 
     await dcm.clickDeleteOnRow(displayName);
@@ -84,10 +116,9 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
   });
 
   test('FLPATH-4242: Search resets pagination to page 1', async ({ page }) => {
-    const names: string[] = [];
     for (let i = 0; i < 6; i++) {
       const name = `e2e-page-${suffix()}-${i}`;
-      names.push(name);
+      createdProviders.push(kebabToDisplayName(name));
       await dcm.clickRegisterProvider();
       await dcm.fillProviderForm({
         name,
@@ -101,7 +132,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     }
 
     const nextPageBtn = page.getByRole('button', { name: 'Next Page' });
-    await expect(nextPageBtn).toBeEnabled({ timeout: 5000 });
+    await expect(nextPageBtn).toBeEnabled({ timeout: TIMEOUTS.short });
     await nextPageBtn.click();
     await dcm.waitForTableRefresh();
 
@@ -112,33 +143,6 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
 
     await dcm.clearSearch();
     await dcm.waitForTableRefresh();
-
-    for (const name of names) {
-      const displayName = name
-        .split('-')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-      try {
-        await dcm.clickDeleteOnRow(displayName);
-        await dcm.confirmDelete();
-        await dcm.waitForDialogClosed();
-        await dcm.waitForTableRefresh();
-      } catch {
-        const nextBtn = page.getByRole('button', { name: 'Next Page' });
-        if (await nextBtn.isEnabled().catch(() => false)) {
-          await nextBtn.click();
-          await dcm.waitForTableRefresh();
-          try {
-            await dcm.clickDeleteOnRow(displayName);
-            await dcm.confirmDelete();
-            await dcm.waitForDialogClosed();
-            await dcm.waitForTableRefresh();
-          } catch {
-            // skip — already cleaned or not visible
-          }
-        }
-      }
-    }
   });
 
   test('FLPATH-4243: Policy toggle persists state after toggling', async ({
@@ -159,6 +163,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
     await dcm.waitForTableRefresh();
+    createdPolicies.push(name);
 
     const row = page.locator('table tbody tr', { hasText: name });
 
@@ -179,10 +184,6 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     const reloadedSwitch = reloadedRow.locator('[class*="MuiSwitch"] input');
     const persistedState = await reloadedSwitch.isChecked();
     expect(persistedState).toBe(!initialChecked);
-
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
   });
 
   test('FLPATH-4244: Policy Enabled chip and Switch agree for all states', async ({
@@ -203,6 +204,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
     await dcm.waitForTableRefresh();
+    createdPolicies.push(name);
 
     const row = page.locator('table tbody tr', { hasText: name });
 
@@ -230,10 +232,6 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     } else if (chipTextAfter === 'No') {
       expect(isCheckedAfter).toBe(false);
     }
-
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
   });
 
   test('FLPATH-4245: Service Types tab loads all five types from backend', async () => {
@@ -258,7 +256,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.clickEditOnRow('K8s Container Provider');
     await expect(
       page.getByRole('heading', { name: 'Edit provider' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
 
     const nameInput = page
       .locator('label:has-text("Name *") + div input')
@@ -303,11 +301,50 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
 
 test.describe('DCM UX Regression Tests @dcm', () => {
   let dcm: DcmPage;
+  const createdProviders: string[] = [];
+  const createdPolicies: string[] = [];
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
     await dcm.loginAsGuest();
     await dcm.navigateToDataCenter();
+  });
+
+  test.afterEach(async () => {
+    if (createdProviders.length > 0) {
+      try {
+        await dcm.navigateToDataCenter();
+      } catch {
+        // ignore navigation failures
+      }
+      for (const name of createdProviders) {
+        try {
+          await dcm.clickDeleteOnRow(name);
+          await dcm.confirmDelete();
+          await dcm.waitForDialogClosed();
+        } catch {
+          // already cleaned or not visible
+        }
+      }
+      createdProviders.length = 0;
+    }
+    if (createdPolicies.length > 0) {
+      try {
+        await dcm.clickTab('Policies');
+      } catch {
+        // ignore navigation failures
+      }
+      for (const name of createdPolicies) {
+        try {
+          await dcm.clickDeleteOnRow(name);
+          await dcm.confirmDelete();
+          await dcm.waitForDialogClosed();
+        } catch {
+          // already cleaned or not visible
+        }
+      }
+      createdPolicies.length = 0;
+    }
   });
 
   test('FLPATH-4253: Success snackbar appears after provider registration', async ({
@@ -327,13 +364,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     await dcm.verifySuccessSnackbar();
 
     await dcm.waitForTableRefresh();
-    const displayName = name
-      .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-    await dcm.clickDeleteOnRow(displayName);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdProviders.push(kebabToDisplayName(name));
   });
 
   test('FLPATH-4253: Success snackbar appears after policy creation', async () => {
@@ -355,9 +386,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     await dcm.verifySuccessSnackbar();
 
     await dcm.waitForTableRefresh();
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdPolicies.push(name);
   });
 
   test('FLPATH-4265: Instance create button is disabled when form is empty', async ({
@@ -394,7 +423,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     await nameInput.first().blur();
 
     const nameError = page.locator('p[class*="MuiFormHelperText"]').first();
-    await expect(nameError).toBeVisible({ timeout: 3000 });
+    await expect(nameError).toBeVisible({ timeout: TIMEOUTS.short });
 
     await dcm.cancelDialog();
   });
@@ -402,10 +431,9 @@ test.describe('DCM UX Regression Tests @dcm', () => {
   test('FLPATH-4111: Provider table does not render empty padding rows', async ({
     page,
   }) => {
-    const names: string[] = [];
     for (let i = 0; i < 3; i++) {
       const name = `e2e-emptyrows-${suffix()}-${i}`;
-      names.push(name);
+      createdProviders.push(kebabToDisplayName(name));
       await dcm.clickRegisterProvider();
       await dcm.fillProviderForm({
         name,
@@ -427,30 +455,14 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     if (!isNaN(pageSize)) {
       expect(totalRows).toBeLessThanOrEqual(pageSize);
     }
-
-    for (const name of names) {
-      const displayName = name
-        .split('-')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-      try {
-        await dcm.clickDeleteOnRow(displayName);
-        await dcm.confirmDelete();
-        await dcm.waitForDialogClosed();
-        await dcm.waitForTableRefresh();
-      } catch {
-        /* already cleaned */
-      }
-    }
   });
 
   test('FLPATH-4112: Rows-per-page selection persists after browser refresh', async ({
     page,
   }) => {
-    const names: string[] = [];
     for (let i = 0; i < 6; i++) {
       const name = `e2e-rpp-${suffix()}-${i}`;
-      names.push(name);
+      createdProviders.push(kebabToDisplayName(name));
       await dcm.clickRegisterProvider();
       await dcm.fillProviderForm({
         name,
@@ -469,24 +481,9 @@ test.describe('DCM UX Regression Tests @dcm', () => {
 
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(TIMEOUTS.networkSettle);
 
     const after = await dcm.getRowsPerPageValue();
     expect(after).toContain('10');
-
-    for (const name of names) {
-      const displayName = name
-        .split('-')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-      try {
-        await dcm.clickDeleteOnRow(displayName);
-        await dcm.confirmDelete();
-        await dcm.waitForDialogClosed();
-        await dcm.waitForTableRefresh();
-      } catch {
-        /* already cleaned */
-      }
-    }
   });
 });

@@ -16,16 +16,30 @@
 
 import { test, expect } from '@playwright/test';
 import { DcmPage } from './pages/DcmPage';
-
-const suffix = () => Date.now().toString(36).slice(-5);
+import { suffix, kebabToDisplayName } from './utils/helpers';
+import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Providers CRUD @dcm', () => {
   let dcm: DcmPage;
+  const createdProviders: string[] = [];
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
     await dcm.loginAsGuest();
     await dcm.navigateToDataCenter();
+  });
+
+  test.afterEach(async () => {
+    for (const name of createdProviders) {
+      try {
+        await dcm.clickDeleteOnRow(name);
+        await dcm.confirmDelete();
+        await dcm.waitForDialogClosed();
+      } catch {
+        // already cleaned or not visible
+      }
+    }
+    createdProviders.length = 0;
   });
 
   test('FLPATH-4200: Register a new provider with service type and operations', async () => {
@@ -43,14 +57,7 @@ test.describe('DCM Providers CRUD @dcm', () => {
     await dcm.waitForTableRefresh();
 
     await dcm.verifyCellContent(name);
-
-    const displayName = name
-      .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-    await dcm.clickDeleteOnRow(displayName);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdProviders.push(kebabToDisplayName(name));
   });
 
   test('FLPATH-4200: Register provider dialog shows all service type options', async ({
@@ -101,7 +108,7 @@ test.describe('DCM Providers CRUD @dcm', () => {
     await dcm.clickEditOnRow('K8s Container Provider');
     await expect(
       dcm.page.getByRole('heading', { name: 'Edit provider' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
 
     await dcm.cancelDialog();
     await dcm.waitForDialogClosed();
@@ -116,7 +123,7 @@ test.describe('DCM Providers CRUD @dcm', () => {
       page
         .getByText(/no.*found/i)
         .or(page.locator('table').first().locator('tbody tr').first()),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clearSearch();
     await dcm.verifyTableHasRows(1);
@@ -136,10 +143,8 @@ test.describe('DCM Providers CRUD @dcm', () => {
     await dcm.waitForTableRefresh();
 
     const countBefore = await dcm.getTableRowCount();
-    const displayName = name
-      .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+    const displayName = kebabToDisplayName(name);
+    createdProviders.push(displayName);
 
     await dcm.clickDeleteOnRow(displayName);
     await dcm.confirmDelete();

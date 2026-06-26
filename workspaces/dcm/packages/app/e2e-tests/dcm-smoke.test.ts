@@ -16,6 +16,7 @@
 
 import { test, expect } from '@playwright/test';
 import { DcmPage, SERVICE_TYPES } from './pages/DcmPage';
+import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Plugin Smoke Tests @dcm', () => {
   let dcm: DcmPage;
@@ -111,7 +112,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.clickTab('Policies');
     await expect(
       page.locator('table').first().or(page.getByText('No policies defined')),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.table });
     await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
   });
 
@@ -123,7 +124,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
         .locator('table')
         .first()
         .or(page.getByText('No instances provisioned')),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.table });
   });
 
   test('FLPATH-4200: Resources tab renders without error', async ({ page }) => {
@@ -131,13 +132,13 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.clickTab('Resources');
     await expect(
       page.locator('table').first().or(page.getByText('No resources found')),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.table });
   });
 
   test('FLPATH-3247: /dcm/service-specs route loads without error', async ({
     page,
   }) => {
-    await page.goto('/dcm/service-specs', { timeout: 60000 });
+    await page.goto('/dcm/service-specs', { timeout: TIMEOUTS.page });
     await page.waitForLoadState('networkidle');
     await dcm.verifyPageTitle();
     const errorAlert = page.locator('[class*="MuiAlert-standardError"]');

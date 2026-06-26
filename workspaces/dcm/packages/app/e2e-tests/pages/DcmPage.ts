@@ -16,6 +16,7 @@
 
 import { expect, type Page } from '@playwright/test';
 import { performGuestLogin } from '../fixtures/auth';
+import { TIMEOUTS } from '../utils/constants';
 
 const DCM_TABS = [
   'Providers',
@@ -55,7 +56,7 @@ export class DcmPage {
   // ── Navigation ────────────────────────────────────────────────────────
 
   async navigateToDataCenter() {
-    await this.page.goto('/dcm', { timeout: 60000 });
+    await this.page.goto('/dcm', { timeout: TIMEOUTS.page });
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -70,7 +71,7 @@ export class DcmPage {
   async verifyPageTitle() {
     await expect(
       this.page.locator('h3').filter({ hasText: 'Data Center' }),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.table });
   }
 
   // ── Tabs ──────────────────────────────────────────────────────────────
@@ -82,7 +83,7 @@ export class DcmPage {
 
   async verifyTabVisible(tabName: DcmTab) {
     await expect(this.page.getByRole('tab', { name: tabName })).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.element,
     });
   }
 
@@ -103,13 +104,13 @@ export class DcmPage {
 
   async verifyTableVisible() {
     await expect(this.page.locator('table').first()).toBeVisible({
-      timeout: 15000,
+      timeout: TIMEOUTS.table,
     });
   }
 
   async verifyTableHasRows(minRows = 1) {
     const rows = this.page.locator('table').first().locator('tbody tr');
-    await expect(rows.first()).toBeVisible({ timeout: 15000 });
+    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.table });
     const count = await rows.count();
     expect(count).toBeGreaterThanOrEqual(minRows);
   }
@@ -128,12 +129,12 @@ export class DcmPage {
   async verifyCellContent(text: string) {
     await expect(
       this.page.getByRole('cell', { name: text }).first(),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: TIMEOUTS.element });
   }
 
   async verifyNoCellContent(text: string) {
     await expect(this.page.getByRole('cell', { name: text })).toHaveCount(0, {
-      timeout: 10000,
+      timeout: TIMEOUTS.element,
     });
   }
 
@@ -153,13 +154,13 @@ export class DcmPage {
 
   async verifyEmptyState(titleText: string) {
     await expect(this.page.getByText(titleText)).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.element,
     });
   }
 
   async verifyLoadError() {
     await expect(this.page.locator('[class*="MuiAlert"]').first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.element,
     });
   }
 
@@ -173,7 +174,7 @@ export class DcmPage {
     await this.page.getByRole('button', { name: 'Register' }).click();
     await expect(
       this.page.getByRole('heading', { name: 'Register provider' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
   }
 
   async fillProviderForm(opts: {
@@ -214,7 +215,7 @@ export class DcmPage {
     await this.clickCreateButton();
     await expect(
       this.page.getByRole('heading', { name: 'Create policy' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
   }
 
   async fillPolicyForm(opts: {
@@ -257,7 +258,7 @@ export class DcmPage {
     await this.clickCreateButton();
     await expect(
       this.page.getByRole('heading', { name: 'Create catalog item' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
   }
 
   async fillCatalogItemForm(opts: {
@@ -296,7 +297,7 @@ export class DcmPage {
   async importCatalogItemFile(filePath: string) {
     const fileInput = this.page.locator('input[type="file"][accept*=".yaml"]');
     await fileInput.setInputFiles(filePath);
-    await this.page.waitForTimeout(1500);
+    await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
   // ── Instance CRUD ─────────────────────────────────────────────────────
@@ -307,7 +308,7 @@ export class DcmPage {
       this.page.getByRole('heading', {
         name: 'Create catalog item instance',
       }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
   }
 
   async fillInstanceForm(opts: {
@@ -333,7 +334,7 @@ export class DcmPage {
   async verifySuccessSnackbar() {
     await expect(
       this.page.locator('[class*="MuiAlert-standardSuccess"]').first(),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: TIMEOUTS.element });
   }
 
   // ── Shared dialog actions ─────────────────────────────────────────────
@@ -361,13 +362,13 @@ export class DcmPage {
 
   async waitForDialogClosed() {
     await expect(this.page.locator('[role="dialog"]')).toHaveCount(0, {
-      timeout: 10000,
+      timeout: TIMEOUTS.dialog,
     });
   }
 
   async waitForTableRefresh() {
     await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
   async getRowsPerPageValue(): Promise<string> {
@@ -383,7 +384,7 @@ export class DcmPage {
       .filter({ hasText: /rows/ });
     await rppSelect.click();
     await this.page.getByRole('option', { name: value }).click();
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
   async getTableRowTexts(): Promise<string[]> {
@@ -399,34 +400,44 @@ export class DcmPage {
   // ── Low-level form helpers ────────────────────────────────────────────
 
   private async fillTextField(label: string, value: string) {
-    const field = this.page.locator(
-      `label:has-text("${label}") + div input, label:has-text("${label}") + div textarea`,
-    );
-    if ((await field.count()) > 0) {
-      await field.first().click();
-      await field.first().fill(value);
+    const ariaField = this.page.getByLabel(label);
+    if ((await ariaField.count()) > 0) {
+      await ariaField.first().click();
+      await ariaField.first().fill(value);
       return;
     }
-    const altField = this.page.getByLabel(label);
-    await altField.click();
-    await altField.fill(value);
+    const cssField = this.page.locator(
+      `label:has-text("${label}") + div input, label:has-text("${label}") + div textarea`,
+    );
+    await cssField.first().click();
+    await cssField.first().fill(value);
   }
 
   private async selectOption(label: string, value: string) {
-    const select = this.page
-      .locator(`label:has-text("${label}")`)
-      .locator('..')
-      .locator('[role="button"], select');
-    await select.first().click();
+    const ariaCombo = this.page.getByLabel(label);
+    if ((await ariaCombo.count()) > 0) {
+      await ariaCombo.first().click();
+    } else {
+      const cssFallback = this.page
+        .locator(`label:has-text("${label}")`)
+        .locator('..')
+        .locator('[role="button"], select');
+      await cssFallback.first().click();
+    }
     await this.page.getByRole('option', { name: value }).click();
   }
 
   private async selectMultipleOptions(label: string, values: string[]) {
-    const select = this.page
-      .locator(`label:has-text("${label}")`)
-      .locator('..')
-      .locator('[role="button"], select');
-    await select.first().click();
+    const ariaCombo = this.page.getByLabel(label);
+    if ((await ariaCombo.count()) > 0) {
+      await ariaCombo.first().click();
+    } else {
+      const cssFallback = this.page
+        .locator(`label:has-text("${label}")`)
+        .locator('..')
+        .locator('[role="button"], select');
+      await cssFallback.first().click();
+    }
     for (const value of values) {
       await this.page.getByRole('option', { name: value }).click();
     }

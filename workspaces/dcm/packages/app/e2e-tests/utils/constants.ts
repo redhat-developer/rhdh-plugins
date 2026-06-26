@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-import { Page } from '@playwright/test';
-import { TIMEOUTS } from '../utils/constants';
-
-export async function performGuestLogin(page: Page) {
-  await page.goto('/');
-  await page.waitForLoadState('domcontentloaded', { timeout: TIMEOUTS.page });
-
-  const enterButton = page.locator('button:has-text("Enter")');
-  await enterButton.waitFor({ state: 'visible', timeout: TIMEOUTS.table });
-  await enterButton.click();
-
-  await page
-    .locator('nav')
-    .first()
-    .waitFor({ state: 'visible', timeout: TIMEOUTS.page });
-}
+export const TIMEOUTS = {
+  page: 60_000,
+  table: 15_000,
+  dialog: 10_000,
+  element: 10_000,
+  short: 5_000,
+  networkSettle: 1_000,
+} as const;

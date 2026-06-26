@@ -16,22 +16,31 @@
 
 import { test, expect } from '@playwright/test';
 import { DcmPage } from './pages/DcmPage';
-
-const suffix = () => Date.now().toString(36).slice(-5);
-const uniquePriority = () => {
-  const buf = new Uint32Array(1);
-  globalThis.crypto.getRandomValues(buf);
-  return String((buf[0] % 900) + 50);
-};
+import { suffix, uniquePriority } from './utils/helpers';
+import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Policies CRUD @dcm', () => {
   let dcm: DcmPage;
+  const createdPolicies: string[] = [];
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
     await dcm.loginAsGuest();
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Policies');
+  });
+
+  test.afterEach(async () => {
+    for (const name of createdPolicies) {
+      try {
+        await dcm.clickDeleteOnRow(name);
+        await dcm.confirmDelete();
+        await dcm.waitForDialogClosed();
+      } catch {
+        // already cleaned or not visible
+      }
+    }
+    createdPolicies.length = 0;
   });
 
   test('FLPATH-4200: Create a new GLOBAL policy', async () => {
@@ -52,10 +61,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
 
     await dcm.verifyCellContent(name);
     await dcm.verifyCellContent('GLOBAL');
-
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdPolicies.push(name);
   });
 
   test('FLPATH-4200: Create a USER policy', async () => {
@@ -75,10 +81,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
 
     await dcm.verifyCellContent(name);
     await dcm.verifyCellContent('USER');
-
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdPolicies.push(name);
   });
 
   test('FLPATH-4200: Policies table shows correct columns', async ({
@@ -118,15 +121,13 @@ test.describe('DCM Policies CRUD @dcm', () => {
     await dcm.waitForDialogClosed();
     await dcm.waitForTableRefresh();
 
-    await dcm.togglePolicyEnabled(name);
-    await dcm.waitForTableRefresh();
+    createdPolicies.push(name);
 
     await dcm.togglePolicyEnabled(name);
     await dcm.waitForTableRefresh();
 
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    await dcm.togglePolicyEnabled(name);
+    await dcm.waitForTableRefresh();
   });
 
   test('FLPATH-4200: Edit a policy description', async () => {
@@ -148,7 +149,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
     await dcm.clickEditOnRow(name);
     await expect(
       dcm.page.getByRole('heading', { name: 'Edit policy' }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.short });
 
     const descField = dcm.page.locator(
       'label:has-text("Description") + div textarea',
@@ -159,9 +160,6 @@ test.describe('DCM Policies CRUD @dcm', () => {
     await dcm.submitDialog('Save');
     await dcm.waitForDialogClosed();
     await dcm.waitForTableRefresh();
-
-    await dcm.clickDeleteOnRow(name);
-    await dcm.confirmDelete();
-    await dcm.waitForDialogClosed();
+    createdPolicies.push(name);
   });
 });

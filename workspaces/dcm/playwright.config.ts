@@ -53,7 +53,7 @@ export default defineConfig({
   ],
 
   use: {
-    actionTimeout: 0,
+    actionTimeout: 10_000,
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
