@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.8.0
+
+### Minor Changes
+
+- 0d1ea32: create actions to list metrics and to get entity metrics
+
+### Patch Changes
+
+- efb4c4f: Replace deprecated uuid dependency with the Node.js built-in `crypto.randomUUID`.
+- Updated dependencies [efb4c4f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
 ## 2.7.9
 
 ### Patch Changes
