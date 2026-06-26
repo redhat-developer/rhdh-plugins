@@ -23,7 +23,7 @@ The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is 
 - [Agent Creation & Discovery](prd/agent-creation-discovery.md) — agent gallery, 4 creation paths, MCP tools, skills marketplace integration, catalog entities (UC-4, UC-7 through UC-13)
 - [Pluggable AI Platform Architecture](prd/pluggable-ai-platform-architecture.md) — provider abstraction, streaming protocol, hot-swap, multi-agent orchestration, providers as RHDH dynamic plugins (UC-14, UC-16)
 - [Platform Operations & Deployment](prd/platform-operations-deployment.md) — deployment, runtime config, RAG pipelines, white-labeling, workspace package structure (UC-15, UC-17, UC-18, UC-21, UC-22)
-- [Security, Safety & Governance](prd/security-safety-governance.md) — 16 fine-grained permissions, lifecycle governance, token exchange, safety shields, resilience (UC-19, UC-20, UC-23 through UC-25)
+- [Security, Safety & Governance](prd/security-safety-governance.md) — 16 fine-grained permissions, lifecycle governance, service-account Keycloak auth, safety shields, resilience (UC-19, UC-20, UC-23 through UC-25)
 
 ## Workspace Structure
 
@@ -101,11 +101,11 @@ Agent lifecycle uses the 4-stage model (Draft → Pending → Published → Arch
 
 _Augment lesson: Pivoted from 5-stage to 4-stage model mid-development, requiring `LEGACY_STAGE_MAP` and `normalizeLifecycleStage` compatibility layers._
 
-### 10. Per-User Identity Delegation
+### 10. Service-Account Keycloak Authentication
 
-Kagenti authentication uses RFC 8693 token exchange for per-user authorization from the start (when enabled). No shared service-account-only authentication presenting all users as the same identity.
+Kagenti authentication uses OAuth2 Client Credentials Grant with a dedicated `KeycloakTokenManager` that handles token caching, expiry buffer, streaming-compatible token lifecycle, and 401 retry with cache invalidation. User identity is propagated via `X-Backstage-User` header for audit trail purposes.
 
-_Augment lesson: All Kagenti requests used a shared service-account token. `X-Backstage-User` header was informational only. Per-user audit trail impossible at the provider level._
+_Augment lesson: The service-account approach with `KeycloakTokenManager` proved robust in production. Token caching with expiry buffer, concurrent request deduplication, and streaming support are the right patterns. Per-user RFC 8693 token exchange adds complexity without proportional benefit at this stage — service-account auth with user context propagation via headers is sufficient for audit trails._
 
 ### 11. Testing from Day One
 

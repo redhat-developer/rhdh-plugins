@@ -43,15 +43,15 @@
 - [ ] 6.4 Gate MCP panel with `boost.mcp.manage`
 - [ ] 6.5 Gate config panel with `boost.config.manage`
 
-## 7. Token Exchange (P1)
+## 7. Keycloak Service-Account Authentication (P1)
 
-- [ ] 7.1 Create `TokenExchangeManager` implementing RFC 8693 exchange
-- [ ] 7.2 Add per-user token caching with TTL from token expiry
-- [ ] 7.3 Add concurrent exchange deduplication
-- [ ] 7.4 Add graceful fallback to service-account token on all failures
-- [ ] 7.5 Add config schema: `boost.kagenti.auth.tokenExchange.{enabled, audience, userTokenHeader}`
-- [ ] 7.6 Integrate into `KagentiApiClient.requestCore()` — inject per-user token when available
-- [ ] 7.7 Extract user OIDC token from configurable request header in route handlers
+- [ ] 7.1 Create `KeycloakTokenManager` implementing OAuth2 Client Credentials Grant
+- [ ] 7.2 Add token caching with configurable expiry buffer (default 60s)
+- [ ] 7.3 Add concurrent token request deduplication (single in-flight Keycloak call)
+- [ ] 7.4 Add `getTokenForStreaming(minLifetimeMs)` for SSE connection support
+- [ ] 7.5 Add 401 retry with cache invalidation and fresh token fetch
+- [ ] 7.6 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`
+- [ ] 7.7 Integrate into `KagentiApiClient.requestCore()` — add `Authorization: Bearer` and `X-Backstage-User` headers
 
 ## 8. CSRF and Credential Security (P2)
 
@@ -70,7 +70,7 @@
 - [ ] 10.2 Verify IS_OWNER blocks non-owner promote/delete/withdraw
 - [ ] 10.3 Verify IS_NOT_CREATOR blocks self-approval
 - [ ] 10.4 Verify `boost.admin` works as coarse-grained alternative to fine-grained permissions
-- [ ] 10.5 Verify token exchange fallback: disabled config → service-account token
-- [ ] 10.6 Verify token exchange fallback: Keycloak error → service-account token
-- [ ] 10.7 Verify token exchange fallback: missing header → service-account token
+- [ ] 10.5 Verify service-account token acquisition and caching with expiry buffer
+- [ ] 10.6 Verify 401 retry: cache invalidation → fresh token → successful retry
+- [ ] 10.7 Verify streaming token lifecycle: `getTokenForStreaming` returns token with sufficient validity
 - [ ] 10.8 Verify `none` is rejected with a clear error pointing to `development-only-no-auth`

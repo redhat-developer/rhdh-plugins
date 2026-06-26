@@ -170,18 +170,24 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
-  readonly 'boost.kagenti.auth.tokenExchange.enabled': {
-    readonly schema: z.ZodOptional<z.ZodBoolean>;
-    readonly configScope: ConfigScope;
-    readonly description: string;
-  };
-  readonly 'boost.kagenti.auth.tokenExchange.audience': {
+  readonly 'boost.kagenti.auth.tokenEndpoint': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
-  readonly 'boost.kagenti.auth.tokenExchange.userTokenHeader': {
+  readonly 'boost.kagenti.auth.clientId': {
     readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.kagenti.auth.clientSecret': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly sensitive: true;
+    readonly description: string;
+  };
+  readonly 'boost.kagenti.auth.tokenExpiryBufferSeconds': {
+    readonly schema: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };

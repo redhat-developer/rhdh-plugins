@@ -36,7 +36,10 @@ describe('boostConfigFields', () => {
     expect(keys).toContain('boost.security.mode');
     expect(keys).toContain('boost.features.agentCreation');
     expect(keys).toContain('boost.agentApproval.mode');
-    expect(keys).toContain('boost.kagenti.auth.tokenExchange.enabled');
+    expect(keys).toContain('boost.kagenti.auth.tokenEndpoint');
+    expect(keys).toContain('boost.kagenti.auth.clientId');
+    expect(keys).toContain('boost.kagenti.auth.clientSecret');
+    expect(keys).toContain('boost.kagenti.auth.tokenExpiryBufferSeconds');
     expect(keys).toContain('boost.encryptionSecret');
     expect(keys).toContain('boost.devSpaces.credentials');
   });
@@ -118,9 +121,7 @@ describe('isDbWritable', () => {
   it('returns false for yaml-only fields', () => {
     expect(isDbWritable('boost.security.mode')).toBe(false);
     expect(isDbWritable('boost.agentApproval.sonataflow.endpoint')).toBe(false);
-    expect(isDbWritable('boost.kagenti.auth.tokenExchange.enabled')).toBe(
-      false,
-    );
+    expect(isDbWritable('boost.kagenti.auth.tokenEndpoint')).toBe(false);
     expect(isDbWritable('boost.encryptionSecret')).toBe(false);
   });
 });
@@ -129,6 +130,7 @@ describe('isSensitiveField', () => {
   it('returns true for sensitive fields', () => {
     expect(isSensitiveField('boost.encryptionSecret')).toBe(true);
     expect(isSensitiveField('boost.devSpaces.credentials')).toBe(true);
+    expect(isSensitiveField('boost.kagenti.auth.clientSecret')).toBe(true);
   });
 
   it('returns false for non-sensitive fields', () => {

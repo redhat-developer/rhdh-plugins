@@ -4,13 +4,13 @@
 
 Boost builds the security and governance layer with Backstage fine-grained permissions as the sole authorization mechanism from day one. The Augment reference prototype's governance system grew into a parallel authorization layer where authorization decisions bypassed `permissions.authorize()`. Boost avoids this entirely.
 
-Boost also implements RFC 8693 token exchange for per-user identity delegation to Kagenti from the start, enabling per-user audit trails.
+Boost also implements service-account Keycloak authentication for Kagenti via OAuth2 Client Credentials Grant, with user identity propagated via headers for audit trails.
 
 ## Goals
 
 - Implement 16 fine-grained Backstage permissions as the sole authorization mechanism
 - Add conditional permission rules for ownership (IS_OWNER), separation of duties (IS_NOT_CREATOR), and lifecycle stage gating (HAS_LIFECYCLE_STAGE)
-- Implement RFC 8693 token exchange for per-user Kagenti identity
+- Implement service-account Keycloak auth for Kagenti via OAuth2 Client Credentials Grant
 - Use `development-only-no-auth` as the only dev security mode name (no legacy aliases)
 - Add CSRF protection and credential encryption
 - Export all permissions from `boost-common`
@@ -40,20 +40,20 @@ These rules are evaluated against loaded resources via `createConditionalDecisio
 
 The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. A route-level guard remains as defense-in-depth (belt and suspenders). Both layers are active in `security.mode === 'full'`.
 
-### Decision 4: Per-user token exchange is backend-only with graceful fallback
+### Decision 4: Service-account auth with token caching and streaming support
 
-`TokenExchangeManager` reads the user's OIDC token from a configurable request header (injected by auth proxy), exchanges it via RFC 8693, caches per-user, and deduplicates concurrent exchanges. All failures fall back silently to the shared service-account token — no request is ever blocked by token exchange issues. This is deliberately conservative: token exchange enhances audit trails and per-user authorization but must never degrade availability.
+`KeycloakTokenManager` obtains service-account tokens via OAuth2 Client Credentials Grant against Keycloak's token endpoint. Tokens are cached with a configurable expiry buffer (default 60s), concurrent requests share a single in-flight Keycloak call, and `getTokenForStreaming(minLifetimeMs)` ensures minimum validity for SSE connections. On 401 errors, the cached token is cleared and a fresh token is fetched before retrying. User identity is propagated via `X-Backstage-User` header for audit purposes (informational, not for authentication).
 
 ### Decision 5: Separation of authorization concerns
 
 Three non-overlapping authorization layers:
 
 - **Backstage** governs: UI visibility, agent lifecycle governance, ownership, approval workflows, admin operations
-- **Kagenti** governs: agent specs, tools, runtime operations — via per-user exchanged token when enabled
+- **Kagenti** governs: agent specs, tools, runtime operations — via service-account token; user identity propagated via header for audit
 - **Kubernetes** governs: pod/deployment operations, namespace scoping, SPIRE mTLS
 
 ## Risks
 
 - **RBAC policy complexity:** 16 permissions with conditions is more complex than 2. Mitigated by sensible defaults — `boost.access` as top-level gate and `boost.admin` available for coarse control.
-- **Token exchange reliability:** Keycloak availability becomes a dependency. Mitigated by graceful fallback to service-account token on any failure.
+- **Keycloak availability:** Keycloak availability becomes a dependency for Kagenti auth. Mitigated by token caching with expiry buffer (requests continue with cached token even during brief Keycloak outages) and clear error reporting on token fetch failures.
 - **SonataFlow trust boundary:** Callbacks bypass self-approval prevention via header. Callback identity verification should be implemented to close this gap.

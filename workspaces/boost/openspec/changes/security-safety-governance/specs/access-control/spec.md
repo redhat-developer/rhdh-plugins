@@ -81,41 +81,54 @@ Inference responses are not stored on the server when ZDR is enabled.
 
 ## ADDED Requirements
 
-### Requirement: Per-User Kagenti Identity via Token Exchange
+### Requirement: Service-Account Kagenti Authentication via Keycloak
 
-User identity MUST be delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agent operations are authorized per-user.
+Kagenti requests MUST be authenticated using a dedicated service-account via OAuth2 Client Credentials Grant. User identity MUST be propagated via headers for audit purposes.
 
-#### Scenario: Token exchange enabled
+#### Scenario: Service-account token acquisition
 
-- **WHEN** `boost.kagenti.auth.tokenExchange.enabled` is `true`
-- **AND** a user's OIDC token is available via the configured header (default: `X-Forwarded-Access-Token`)
-- **THEN** `TokenExchangeManager` exchanges the user's token for a Kagenti-scoped token via RFC 8693
-- **AND** the exchanged token is cached per-user with TTL from token expiry
-- **AND** concurrent exchanges for the same user are deduplicated
-- **AND** the per-user token is used for all Kagenti API calls on behalf of that user
+- **WHEN** `boost.kagenti.auth.tokenEndpoint` is configured
+- **AND** `boost.kagenti.auth.clientId` and `boost.kagenti.auth.clientSecret` are provided
+- **THEN** `KeycloakTokenManager` obtains a service-account token via OAuth2 Client Credentials Grant
+- **AND** the token is cached with a configurable expiry buffer (default: 60 seconds)
+- **AND** concurrent token requests share a single in-flight Keycloak call
+- **AND** the `Authorization: Bearer <token>` header is added to all Kagenti API calls
 
-#### Scenario: Token exchange graceful fallback
+#### Scenario: Streaming token lifecycle
 
-- **WHEN** token exchange fails (missing header, Keycloak error, exchange failure, disabled config)
-- **THEN** the system silently falls back to the shared service-account token
-- **AND** no request is blocked due to token exchange failure
-- **AND** the fallback is logged for debugging
+- **WHEN** a streaming (SSE) request is initiated
+- **THEN** `getTokenForStreaming(minLifetimeMs)` ensures the token has sufficient remaining validity
+- **AND** if the token would expire during the stream, a fresh token is obtained before the request starts
 
-#### Scenario: Token exchange configuration
+#### Scenario: Token refresh on authentication failure
 
-- **WHEN** token exchange is configured
+- **WHEN** a Kagenti API call returns HTTP 401
+- **THEN** the cached token is immediately invalidated
+- **AND** a fresh token is obtained from Keycloak
+- **AND** the original request is retried with the new token
+
+#### Scenario: User identity propagation
+
+- **WHEN** a Kagenti API call is made on behalf of a user
+- **THEN** the `X-Backstage-User` header carries the Backstage user entity ref (e.g., `user:default/jsmith`)
+- **AND** this header is informational only — authentication is via the service-account token
+
+#### Scenario: Service-account auth configuration
+
+- **WHEN** Kagenti authentication is configured
 - **THEN** the following config is used:
   | Key | Default | Description |
   |---|---|---|
-  | `boost.kagenti.auth.tokenExchange.enabled` | `false` | Enable per-user token exchange |
-  | `boost.kagenti.auth.tokenExchange.audience` | — | Target audience for exchanged token |
-  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | `X-Forwarded-Access-Token` | Header containing user's OIDC token |
+  | `boost.kagenti.auth.tokenEndpoint` | — | Keycloak token endpoint URL |
+  | `boost.kagenti.auth.clientId` | — | OAuth2 client ID for service-account |
+  | `boost.kagenti.auth.clientSecret` | — | OAuth2 client secret |
+  | `boost.kagenti.auth.tokenExpiryBufferSeconds` | `60` | Seconds before expiry to refresh token |
 
 #### Scenario: LlamaStack provider unaffected
 
-- **WHEN** token exchange is configured
-- **THEN** `ResponsesApiProvider` is not modified — `setUserContext` is optional and not implemented
-- **AND** token exchange is Kagenti-specific
+- **WHEN** Kagenti service-account auth is configured
+- **THEN** `ResponsesApiProvider` is not modified — it uses a separate authentication path
+- **AND** Keycloak service-account auth is Kagenti-specific
 
 ### Requirement: CSRF Protection
 

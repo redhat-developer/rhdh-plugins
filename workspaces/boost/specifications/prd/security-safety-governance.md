@@ -3,7 +3,7 @@
 **Product:** Boost — Agentic Developer Portal for Red Hat Developer Hub
 **Status:** Requirements for new implementation (informed by Augment reference prototype)
 **Date:** 2026-05-19
-**Updated:** 2026-06-02 — reframed for boost; 4-stage lifecycle, 16 fine-grained permissions, RFC 8693 token exchange, SonataFlow approval integration, Backstage RBAC as sole authorization layer
+**Updated:** 2026-06-26 — reframed for boost; 4-stage lifecycle, 16 fine-grained permissions, service-account Keycloak auth (client credentials grant), SonataFlow approval integration, Backstage RBAC as sole authorization layer
 **Priority:** P0 (access control, security posture, governance) / P1 (safety shields, SSRF, resilience)
 **Provenance:** Requirements derived from Augment plugin analysis and three tech debt assessments (May 13, May 26, May 30 2026). See `specifications/boost-context.md` for project context.
 
@@ -13,21 +13,21 @@
 
 Agentic AI platforms operating in enterprise environments — especially regulated financial institutions — must treat security, safety, and governance as foundational capabilities, not optional add-ons. An AI agent that can call tools, read internal documentation, and take actions on live infrastructure without proper access control, content safety, and audit trails is a liability, not a product.
 
-This PRD defines the enterprise trust model: multi-level access control with fine-grained Backstage RBAC, agent lifecycle governance with approval workflows, per-user identity delegation to AI providers, content safety shields, network security protections, data retention policies, and resilience patterns that ensure the platform is safe to deploy in production.
+This PRD defines the enterprise trust model: multi-level access control with fine-grained Backstage RBAC, agent lifecycle governance with approval workflows, service-account Keycloak authentication for AI providers with user context propagation, content safety shields, network security protections, data retention policies, and resilience patterns that ensure the platform is safe to deploy in production.
 
 ## What This Product Does
 
-Boost implements a three-tier security mode system, fine-grained role-based access control via Backstage RBAC (16 permissions across agent, tool, and infrastructure resource types), agent lifecycle governance (Draft → Pending → Published → Archived) with configurable approval workflows (built-in or SonataFlow-managed), per-user identity delegation to Kagenti via RFC 8693 token exchange, content safety shields on both inputs and outputs, SSRF protection on all backend HTTP paths, optional zero data retention mode, and resilience patterns. All authorization decisions use Backstage `permissions.authorize()` from day one — no parallel authorization systems in route handlers. The security posture is configurable per environment — from zero-auth development mode to full production lockdown with OAuth token propagation to both MCP servers and AI providers.
+Boost implements a three-tier security mode system, fine-grained role-based access control via Backstage RBAC (16 permissions across agent, tool, and infrastructure resource types), agent lifecycle governance (Draft → Pending → Published → Archived) with configurable approval workflows (built-in or SonataFlow-managed), service-account Keycloak authentication for Kagenti via OAuth2 Client Credentials Grant with user context propagation, content safety shields on both inputs and outputs, SSRF protection on all backend HTTP paths, optional zero data retention mode, and resilience patterns. All authorization decisions use Backstage `permissions.authorize()` from day one — no parallel authorization systems in route handlers. The security posture is configurable per environment — from zero-auth development mode to full production lockdown with OAuth authentication to both MCP servers and AI providers.
 
 ## Who It's For
 
 ### Administrator
 
-Selects security mode, configures RBAC policies with fine-grained permissions, manages agent lifecycle governance (approving/rejecting agent promotions), sets up MCP auth chains, enables safety shields, configures data retention mode, and manages network security.
+Selects security mode, configures RBAC policies with fine-grained permissions, manages agent lifecycle governance (approving/rejecting agent promotions), configures Keycloak service-account credentials, sets up MCP auth chains, enables safety shields, configures data retention mode, and manages network security.
 
 ### Security Architect
 
-Designs the security posture, evaluates the auth chain for tool connections, configures per-user token exchange for Kagenti, and configures SPIRE for infrastructure-level mTLS in Kagenti environments.
+Designs the security posture, evaluates the auth chain for tool connections, configures Keycloak service-account authentication for Kagenti, and configures SPIRE for infrastructure-level mTLS in Kagenti environments.
 
 ### Agent Creator
 
@@ -41,7 +41,7 @@ Creates agents and submits them for governance review. Subject to ownership-base
 - Fine-grained RBAC via Backstage permissions (16 permissions, 2 resource types, conditional rules)
 - Agent lifecycle governance: 4-stage model (Draft → Pending → Published → Archived) with approval workflows
 - SonataFlow integration for external approval orchestration
-- Per-user Kagenti identity via RFC 8693 OAuth2 Token Exchange
+- Service-account Kagenti authentication via OAuth2 Client Credentials Grant with user context propagation
 - Frontend SecurityGate with meaningful access-denied page
 - CSRF protection via `X-Backstage-Request` header
 - Content safety shields (input and output) with fail-open/fail-closed
@@ -78,11 +78,11 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 
 **Three security modes:**
 
-| Mode                       | Frontend                          | Backend                                                                  | Provider Auth                                                                       | Use Case                                 |
-| -------------------------- | --------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------- |
-| `development-only-no-auth` | No gate — all users pass as guest | No RBAC, everyone is admin                                               | Static token/TLS (if configured)                                                    | Development/demo only                    |
-| `plugin-only`              | SecurityGate wraps BoostPage      | user-cookie, boost.access, admin allow-list, real user principal         | Token/TLS to Llama Stack, Keycloak OAuth2 for Kagenti                               | Recommended for production               |
-| `full`                     | SecurityGate wraps BoostPage      | Fine-grained RBAC (16 permissions), real user principal, mcpOAuth config | Token/TLS + MCP OAuth chain, Keycloak OAuth2 + per-user token exchange + SPIRE mTLS | Full production with identity delegation |
+| Mode                       | Frontend                          | Backend                                                                  | Provider Auth                                                                | Use Case                                  |
+| -------------------------- | --------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------- |
+| `development-only-no-auth` | No gate — all users pass as guest | No RBAC, everyone is admin                                               | Static token/TLS (if configured)                                             | Development/demo only                     |
+| `plugin-only`              | SecurityGate wraps BoostPage      | user-cookie, boost.access, admin allow-list, real user principal         | Token/TLS to Llama Stack, Keycloak OAuth2 for Kagenti                        | Recommended for production                |
+| `full`                     | SecurityGate wraps BoostPage      | Fine-grained RBAC (16 permissions), real user principal, mcpOAuth config | Token/TLS + MCP OAuth chain, Keycloak OAuth2 Client Credentials + SPIRE mTLS | Full production with service-account auth |
 
 **Note:** The legacy mode name `none` is deprecated; deployments should use `development-only-no-auth`. A prominent warning is logged if this mode is detected in a non-development environment.
 
@@ -192,26 +192,25 @@ Draft → Pending → Published → Archived
 
 **Cascading delete:** `DELETE /agents/:id` detects the agent's source (kagenti, orchestration, workflow) and cascades cleanup across corresponding backend stores.
 
-### 3. Per-User Identity Delegation — Kagenti Token Exchange (UC-20 extension)
+### 3. Service-Account Keycloak Authentication — Kagenti (UC-20 extension)
 
-**Goal:** Propagate the authenticated user's identity to Kagenti so that agent operations are authorized per-user, not via a shared service-account.
-
-**Current state:** Augment authenticates to Kagenti using a shared service-account token (Keycloak `client_credentials` grant). All requests appear as the same service identity regardless of which user initiated them. The `X-Backstage-User` header is informational only.
-
-**Target state:** RFC 8693 OAuth2 Token Exchange. The user's OIDC token (injected by an auth proxy such as oauth2-proxy or Keycloak Gatekeeper) is exchanged for a Kagenti-scoped token, enabling per-user authorization at the provider level.
+**Goal:** Authenticate Boost to Kagenti via a dedicated Keycloak service-account using OAuth2 Client Credentials Grant, with user identity propagated via headers for audit purposes.
 
 **Architecture:**
 
-- Backend-only implementation: OIDC token read from a configurable request header (default: `X-Forwarded-Access-Token`)
-- `TokenExchangeManager` service: implements RFC 8693 exchange against Keycloak, with per-user token caching, concurrent request deduplication, and streaming-compatible token lifecycle
-- Graceful fallback on all failures: token exchange failure, missing header, disabled config, or Keycloak error → silently falls back to shared service-account token (no request blocking)
-- Configuration: `boost.kagenti.auth.tokenExchange.enabled` (default: false), `audience`, `userTokenHeader`
-- `ResponsesApiProvider` (Llama Stack) is unaffected: `setUserContext` method is optional and not implemented
+- `KeycloakTokenManager` service: obtains service-account tokens via OAuth2 Client Credentials Grant against Keycloak's token endpoint
+- Token caching with configurable expiry buffer (default: 60 seconds) — re-fetches token before expiry to avoid mid-request token invalidation
+- Concurrent request deduplication: multiple simultaneous token requests share a single in-flight Keycloak call
+- Streaming-compatible token lifecycle: `getTokenForStreaming(minLifetimeMs)` ensures minimum token validity for long-running SSE connections
+- 401 retry with cache invalidation: on authentication failure, the cached token is cleared and a fresh token is fetched before retrying
+- User identity propagation: `X-Backstage-User` header carries the Backstage user entity ref for audit trails (informational, not for authentication)
+- Configuration: `boost.kagenti.auth.tokenEndpoint`, `clientId`, `clientSecret`, `tokenExpiryBufferSeconds`
+- `ResponsesApiProvider` (Llama Stack) is unaffected: separate authentication path
 
 **Separation of authorization concerns:**
 
 - **Backstage governs:** UI visibility, agent lifecycle governance (draft/pending/published), ownership, approval workflows, admin operations
-- **Kagenti governs:** agent specs, tools, runtime operations — authorized via per-user exchanged token when enabled
+- **Kagenti governs:** agent specs, tools, runtime operations — authorized via service-account token; user identity propagated via header for audit
 - **Kubernetes governs:** pod/deployment operations, namespace scoping, SPIRE mTLS
 
 ### 4. Safety Shields and Guardrails (UC-19)
@@ -285,7 +284,7 @@ Agent Lifecycle Governance
 
 Provider Authentication
 ├── Llama Stack              — static token/TLS → Token/TLS → Token/TLS + MCP OAuth chain
-└── Kagenti                  — no auth → client_credentials → per-user token exchange (RFC 8693) + SPIRE mTLS
+└── Kagenti                  — no auth → client_credentials (KeycloakTokenManager) + SPIRE mTLS
 
 Cross-Cutting Protections (all modes)
 ├── SsrfGuard               — blocks SSRF on all HTTP paths
@@ -297,7 +296,7 @@ Cross-Cutting Protections (all modes)
 
 - `middleware/security.ts`: security mode enforcement, `requirePluginAccess`, `authorizeLifecycleAction`
 - `permissions.ts`: 16 fine-grained permissions, 2 resource types, 3 conditional rules
-- `TokenExchangeManager`: RFC 8693 per-user token exchange for Kagenti
+- `KeycloakTokenManager`: OAuth2 Client Credentials service-account auth for Kagenti
 - `AgentApprovalWorkflowService`: SonataFlow integration
 - `services/SafetyService`: safety shield delegation
 - `services/McpAuthService`: 4-level auth chain
@@ -312,7 +311,7 @@ Cross-Cutting Protections (all modes)
 | --------------------------------- | ------------------- | -------- | -------------------------------- |
 | Security Posture & Access Control | UC-20               | P0       | 8.1.1-8.1.3, 8.3.1, 8.4.1, 3.5.1 |
 | Agent Lifecycle Governance        | UC-23, UC-24, UC-25 | P0       | (new)                            |
-| Per-User Token Exchange           | UC-20 (extension)   | P1       | (new)                            |
+| Service-Account Keycloak Auth     | UC-20 (extension)   | P1       | (new)                            |
 | Fine-Grained Permissions          | UC-20 (extension)   | P0       | (new)                            |
 | Safety Shields                    | UC-19               | P1       | 8.2.1-8.2.2                      |
 | Resilience                        | (cross-cutting)     | P1       | 8.5.1-8.5.2                      |
@@ -332,4 +331,4 @@ Success outcomes addressed:
 - Enterprise security, safety, and compliance are built in (UC-19, UC-20)
 - Sensitive operations stay under human control (UC-3, addressed in AI Chat PRD)
 - Agent lifecycle governed with approval workflows and separation of duties (UC-23, UC-24, UC-25)
-- Per-user identity delegated to AI providers for audit trail (UC-20 extension)
+- Service-account authentication to AI providers with user context propagation for audit trail (UC-20 extension)

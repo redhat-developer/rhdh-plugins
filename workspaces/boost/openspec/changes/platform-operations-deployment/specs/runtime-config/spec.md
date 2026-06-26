@@ -101,15 +101,16 @@ The following new features MUST have runtime configuration fields as specified b
   |---|---|---|
   | `boost.skillsMarketplace.endpoint` | yaml-only | Skills catalog backend URL |
 
-#### Scenario: Token exchange configuration
+#### Scenario: Keycloak service-account auth configuration
 
-- **WHEN** the admin configures per-user Kagenti auth
+- **WHEN** the admin configures Kagenti authentication
 - **THEN** the following fields are available:
   | Field | Scope | Description |
   |---|---|---|
-  | `boost.kagenti.auth.tokenExchange.enabled` | yaml-only | Enable RFC 8693 token exchange |
-  | `boost.kagenti.auth.tokenExchange.audience` | yaml-only | Target audience for exchanged token |
-  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | yaml-only | Header containing user OIDC token |
+  | `boost.kagenti.auth.tokenEndpoint` | yaml-only | Keycloak token endpoint URL |
+  | `boost.kagenti.auth.clientId` | yaml-only | OAuth2 client ID for service-account |
+  | `boost.kagenti.auth.clientSecret` | yaml-only | OAuth2 client secret (visibility: secret) |
+  | `boost.kagenti.auth.tokenExpiryBufferSeconds` | yaml-only | Seconds before expiry to refresh token (default: 60) |
 
 #### Scenario: Credential encryption
 
