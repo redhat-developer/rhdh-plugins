@@ -473,6 +473,10 @@ From `openspec/changes/platform-operations-deployment/tasks.md` section 3:
 
 ## boost-skills-routes — Skills marketplace route improvements and runtime config (issue 16 after 15)
 
+https://github.com/redhat-developer/rhdh-plugins/issues/3597
+
+https://github.com/redhat-developer/rhdh-plugins/issues/3597
+
 **Labels:** `ready-to-code`
 **Depends on:** Issue 15 (#3311)
 
