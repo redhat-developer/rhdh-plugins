@@ -384,7 +384,7 @@ From `openspec/changes/security-safety-governance/tasks.md` section 7:
 - 7.2 Add token caching with configurable expiry buffer (default 60s)
 - 7.3 Add concurrent token request deduplication (single in-flight Keycloak call)
 - 7.4 Add `getTokenForStreaming(minLifetimeMs)` for SSE connection support
-- 7.5 Add 401 retry with cache invalidation and fresh token fetch
+- 7.5 Add single 401 retry with cache invalidation and fresh token fetch
 - 7.6 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`
 - 7.7 Integrate into `KagentiApiClient.requestCore()` — add `Authorization: Bearer` and `X-Backstage-User` headers
 

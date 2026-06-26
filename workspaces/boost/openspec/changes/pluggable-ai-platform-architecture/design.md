@@ -18,7 +18,7 @@ Boost implements the provider abstraction as modular RHDH dynamic plugins from t
 - Modifying chat interaction behavior or message rendering
 - Rewriting the ADK orchestration library
 - Creating catalog entities for models/agents (covered in agent-creation-discovery change)
-- Per-user token exchange (covered in security-safety-governance change)
+- Per-user token exchange (deferred — service-account auth adopted instead; see security-safety-governance change)
 
 ## Decisions
 

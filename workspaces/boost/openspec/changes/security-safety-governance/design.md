@@ -42,7 +42,7 @@ The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. A rou
 
 ### Decision 4: Service-account auth with token caching and streaming support
 
-`KeycloakTokenManager` obtains service-account tokens via OAuth2 Client Credentials Grant against Keycloak's token endpoint. Tokens are cached with a configurable expiry buffer (default 60s), concurrent requests share a single in-flight Keycloak call, and `getTokenForStreaming(minLifetimeMs)` ensures minimum validity for SSE connections. On 401 errors, the cached token is cleared and a fresh token is fetched before retrying. User identity is propagated via `X-Backstage-User` header for audit purposes (informational, not for authentication).
+`KeycloakTokenManager` obtains service-account tokens via OAuth2 Client Credentials Grant against Keycloak's token endpoint. Tokens are cached with a configurable expiry buffer (default 60s), concurrent requests share a single in-flight Keycloak call, and `getTokenForStreaming(minLifetimeMs)` ensures minimum validity for SSE connections. On 401 errors, the cached token is cleared and a fresh token is fetched before retrying (at most once — a second 401 is propagated to the caller). User identity is propagated via `X-Backstage-User` header for audit purposes (informational, not for authentication).
 
 ### Decision 5: Separation of authorization concerns
 

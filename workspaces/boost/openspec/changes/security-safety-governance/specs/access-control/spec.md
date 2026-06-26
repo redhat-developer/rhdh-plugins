@@ -106,6 +106,7 @@ Kagenti requests MUST be authenticated using a dedicated service-account via OAu
 - **THEN** the cached token is immediately invalidated
 - **AND** a fresh token is obtained from Keycloak
 - **AND** the original request is retried with the new token
+- **AND** the retry is attempted at most once — if the retried request also returns 401, the error is propagated to the caller
 
 #### Scenario: User identity propagation
 
