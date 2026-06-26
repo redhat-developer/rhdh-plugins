@@ -93,12 +93,6 @@ export interface Config {
        * @configScope yaml-only
        */
       endpoint?: string;
-      /**
-       * Enable or disable skills marketplace.
-       * @visibility frontend
-       * @configScope db-overridable
-       */
-      enabled?: boolean;
     };
 
     /** Kagenti provider configuration. */

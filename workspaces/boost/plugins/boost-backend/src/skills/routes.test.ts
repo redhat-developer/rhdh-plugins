@@ -120,6 +120,7 @@ async function createTestApp(options?: {
   });
   app.use(router);
   const errorStatusMap: Record<string, number> = {
+    InputError: 400,
     NotAllowedError: 403,
     NotFoundError: 404,
   };

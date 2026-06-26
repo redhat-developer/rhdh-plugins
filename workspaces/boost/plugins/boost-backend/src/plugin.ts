@@ -320,7 +320,7 @@ export const boostPlugin = createBackendPlugin({
         });
         router.use(conversationRoutes);
 
-        // Skills marketplace proxy routes (issue 15 of 15, tasks 5.1/5.3/5.4)
+        // Skills marketplace proxy routes (section 8, tasks 8a/8b/8c)
         const skillsRoutes = createSkillsRoutes({
           permissions: _permissions,
           httpAuth,

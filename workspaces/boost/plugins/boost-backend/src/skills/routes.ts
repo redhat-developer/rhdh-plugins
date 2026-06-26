@@ -26,7 +26,7 @@ import {
   boostAccessPermission,
   boostAdminPermission,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 
 /**
  * Options for creating skills marketplace routes.
@@ -265,10 +265,7 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
           };
 
         if (!skillId || !ociImage) {
-          res.status(400).json({
-            error: 'skillId and ociImage are required',
-          });
-          return;
+          throw new InputError('skillId and ociImage are required');
         }
 
         const deploymentId = `skill-${skillId}-${Date.now()}`;
