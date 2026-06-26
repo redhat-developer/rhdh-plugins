@@ -94,7 +94,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@backstage-community/plugin-rbac-common": "^1.12.1",
+    "@backstage-community/plugin-rbac-common": "^1.28.0",
     "@backstage/backend-test-utils": "^1.11.3",
     "@backstage/cli": "^0.36.2",
     "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1",
@@ -108,7 +108,7 @@
     "supertest": "^7.2.2"
   },
   "peerDependencies": {
-    "@backstage-community/plugin-rbac-common": "^1.12.1",
+    "@backstage-community/plugin-rbac-common": "^1.28.0",
     "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1"
   },
   "maintainers": [
