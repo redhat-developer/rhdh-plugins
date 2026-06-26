@@ -146,6 +146,7 @@ export const scorecardMessages = {
     },
     lastUpdated: 'Last updated: {{timestamp}}',
     lastUpdatedNotAvailable: 'Last updated: Not available',
+    lastUpdatedInfoButton: 'Last updated info',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
     averageCenterTooltipTotalLabel: 'Total score',

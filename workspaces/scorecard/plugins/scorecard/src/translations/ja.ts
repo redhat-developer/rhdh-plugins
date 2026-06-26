@@ -100,6 +100,7 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.lastUpdated': '最終更新: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': '最終更新: 利用不可',
+    'metric.lastUpdatedInfoButton': '最終更新情報',
     'metric.someEntitiesNotReportingValues':
       'このメトリクスに関連する値を報告していないエンティティーがあります。',
     'metric.sonarqube.code_coverage.description':

@@ -56,7 +56,10 @@ export const CardInfoButton = ({ timestamp }: { timestamp: string }) => {
           },
         }}
       >
-        <IconButton data-testid="scorecard-homepage-card-info">
+        <IconButton
+          data-testid="scorecard-homepage-card-info"
+          aria-label={t('metric.lastUpdatedInfoButton')}
+        >
           <InfoOutlinedIcon
             sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />

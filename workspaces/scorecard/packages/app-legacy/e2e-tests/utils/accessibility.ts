@@ -41,10 +41,8 @@ export async function runAccessibilityTests(
     contentType: 'application/json',
   });
 
-  // Ignore button-name for icon-only buttons that have a tooltip (e.g. scorecard "Last updated" info icon)
-  const filteredViolations = accessibilityScanResults.violations.filter(
-    v => v.id !== 'button-name',
-  );
-
-  expect(filteredViolations, 'Accessibility violations found').toEqual([]);
+  expect(
+    accessibilityScanResults.violations,
+    'Accessibility violations found',
+  ).toEqual([]);
 }

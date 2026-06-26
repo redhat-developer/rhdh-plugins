@@ -25,8 +25,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -59,7 +59,6 @@ const _default: OverridableFrontendPlugin<
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             RouteRef_2<AnyRouteRefParams>,
             'core.routing.ref',
@@ -67,6 +66,7 @@ const _default: OverridableFrontendPlugin<
               optional: true;
             }
           >
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             string,
             'core.title',
@@ -197,6 +197,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.filecheck.description': string;
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
+    readonly 'metric.lastUpdatedInfoButton': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'metric.averageCenterTooltipTotalLabel': string;
     readonly 'metric.averageCenterTooltipMaxLabel': string;
