@@ -27,6 +27,14 @@ import {
   boostAdminPermission,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
+import {
+  buildDeploymentManifest,
+  validateRfc1123Label,
+  type DeploymentResources,
+} from './manifestBuilder';
+
+/** Default timeout for upstream fetch calls (10 seconds). */
+const PROXY_TIMEOUT_MS = 10_000;
 
 /**
  * Options for creating skills marketplace routes.
@@ -45,6 +53,22 @@ export interface SkillsRoutesOptions {
 }
 
 /**
+ * A runtime entry from local app-config.
+ *
+ * @public
+ */
+export interface SkillRuntime {
+  id: string;
+  name: string;
+  description?: string;
+  image: string;
+  language?: string;
+  footprint?: string;
+  features?: string[];
+  status?: string;
+}
+
+/**
  * Creates an Express router with skills marketplace proxy routes.
  *
  * Boost acts as a consumer of an external skills catalog backend.
@@ -54,7 +78,7 @@ export interface SkillsRoutesOptions {
  *
  * Routes:
  * - GET /skills — list available skills (proxied)
- * - GET /skills/runtimes — list skill runtimes (proxied)
+ * - GET /skills/runtimes — list skill runtimes (from local config)
  * - GET /skills/domains — list skill domains (proxied)
  * - POST /skills/deploy — generate K8s manifest and deploy a skill
  * - GET /skills/deployments/:id — poll deployment progress
@@ -83,7 +107,32 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
   }
 
   /**
-   * Middleware to require boost access permission.
+   * Read runtimes from local app-config.
+   */
+  function getRuntimes(): SkillRuntime[] {
+    const runtimeConfigs = config.getOptionalConfigArray(
+      'boost.skillsMarketplace.runtimes',
+    );
+    if (!runtimeConfigs) {
+      return [];
+    }
+    return runtimeConfigs.map(c => ({
+      id: c.getString('id'),
+      name: c.getString('name'),
+      description: c.getOptionalString('description'),
+      image: c.getString('image'),
+      language: c.getOptionalString('language'),
+      footprint: c.getOptionalString('footprint'),
+      features: c.getOptionalStringArray('features'),
+      status: c.getOptionalString('status'),
+    }));
+  }
+
+  /**
+   * Middleware to require boost access permission with admin fallback.
+   *
+   * Checks `boostAccessPermission` first; if denied, falls back to
+   * `boostAdminPermission` so admins always have access.
    */
   async function requireAccess(
     req: import('express').Request,
@@ -96,10 +145,22 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
         [{ permission: boostAccessPermission }],
         { credentials },
       );
-      if (decision.result !== AuthorizeResult.ALLOW) {
-        throw new NotAllowedError('Unauthorized');
+
+      if (decision.result === AuthorizeResult.ALLOW) {
+        return next();
       }
-      return next();
+
+      // Fall back to coarse-grained admin permission
+      const [adminDecision] = await permissions.authorize(
+        [{ permission: boostAdminPermission }],
+        { credentials },
+      );
+
+      if (adminDecision.result === AuthorizeResult.ALLOW) {
+        return next();
+      }
+
+      throw new NotAllowedError('Unauthorized');
     } catch (error) {
       return next(error);
     }
@@ -176,6 +237,7 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
     });
 
     let body: unknown;
@@ -207,18 +269,15 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
     },
   );
 
-  // 5.1: GET /skills/runtimes — list skill runtimes
+  // 8b.2: GET /skills/runtimes — list skill runtimes from local config
   router.get(
     '/skills/runtimes',
     requireSkillsEnabled,
     requireAccess,
-    async (req, res, next) => {
+    async (_req, res, next) => {
       try {
-        const result = await proxyToSkillsCatalog(
-          '/skills/runtimes',
-          req.query as Record<string, string>,
-        );
-        res.status(result.status).json(result.body);
+        const runtimes = getRuntimes();
+        res.json({ runtimes });
       } catch (error) {
         next(error);
       }
@@ -243,117 +302,58 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
     },
   );
 
-  // 5.3: POST /skills/deploy — generate K8s manifest with OCI init
-  // containers and deploy a skill agent
+  // 8c.1: POST /skills/deploy — generate K8s manifest with runtime
+  // resolution and deploy a skill agent
   router.post(
     '/skills/deploy',
     requireSkillsEnabled,
     requireAdmin,
     async (req, res, next) => {
       try {
-        const { skillId, namespace, name, ociImage, chatEndpoint, resources } =
+        const { skillId, namespace, name, runtimeId, chatEndpoint, resources } =
           req.body as {
             skillId: string;
             namespace?: string;
             name?: string;
-            ociImage: string;
+            runtimeId: string;
             chatEndpoint?: string;
-            resources?: {
-              cpu?: string;
-              memory?: string;
-            };
+            resources?: DeploymentResources;
           };
 
-        if (!skillId || !ociImage) {
-          throw new InputError('skillId and ociImage are required');
+        if (!skillId || !runtimeId) {
+          throw new InputError('skillId and runtimeId are required');
+        }
+
+        // Validate skillId against K8s RFC 1123 naming rules
+        validateRfc1123Label(skillId, 'skillId');
+
+        const deploymentName = name || `skill-${skillId}`;
+
+        // Validate deployment name against K8s RFC 1123 naming rules
+        validateRfc1123Label(deploymentName, 'name');
+
+        // Resolve container image from configured runtimes
+        const runtimes = getRuntimes();
+        const runtime = runtimes.find(r => r.id === runtimeId);
+        if (!runtime) {
+          throw new InputError(
+            `Unknown runtimeId "${runtimeId}". ` +
+              `Available runtimes: ${runtimes.map(r => r.id).join(', ') || 'none configured'}`,
+          );
         }
 
         const deploymentId = `skill-${skillId}-${Date.now()}`;
-        const deploymentName = name || `skill-${skillId}`;
         const deploymentNamespace = namespace || 'boost-skills';
 
-        // Generate K8s manifest with OCI init container
-        const manifest = {
-          apiVersion: 'apps/v1',
-          kind: 'Deployment',
-          metadata: {
-            name: deploymentName,
-            namespace: deploymentNamespace,
-            labels: {
-              'app.kubernetes.io/name': deploymentName,
-              'app.kubernetes.io/managed-by': 'boost',
-              'boost.redhat.com/skill-id': skillId,
-              'boost.redhat.com/deployment-id': deploymentId,
-            },
-          },
-          spec: {
-            replicas: 1,
-            selector: {
-              matchLabels: {
-                'app.kubernetes.io/name': deploymentName,
-              },
-            },
-            template: {
-              metadata: {
-                labels: {
-                  'app.kubernetes.io/name': deploymentName,
-                  'boost.redhat.com/skill-id': skillId,
-                },
-              },
-              spec: {
-                initContainers: [
-                  {
-                    name: 'oci-init',
-                    image: ociImage,
-                    command: ['cp', '-r', '/skill/.', '/shared/skill'],
-                    volumeMounts: [
-                      {
-                        name: 'shared-skill',
-                        mountPath: '/shared/skill',
-                      },
-                    ],
-                  },
-                ],
-                containers: [
-                  {
-                    name: 'skill-agent',
-                    image: ociImage,
-                    ports: [{ containerPort: 8080, name: 'http' }],
-                    resources: {
-                      requests: {
-                        cpu: resources?.cpu || '100m',
-                        memory: resources?.memory || '256Mi',
-                      },
-                      limits: {
-                        cpu: resources?.cpu || '500m',
-                        memory: resources?.memory || '512Mi',
-                      },
-                    },
-                    env: [
-                      {
-                        name: 'SKILL_ID',
-                        value: skillId,
-                      },
-                    ],
-                    volumeMounts: [
-                      {
-                        name: 'shared-skill',
-                        mountPath: '/shared/skill',
-                        readOnly: true,
-                      },
-                    ],
-                  },
-                ],
-                volumes: [
-                  {
-                    name: 'shared-skill',
-                    emptyDir: {},
-                  },
-                ],
-              },
-            },
-          },
-        };
+        // Generate K8s manifest via manifestBuilder
+        const manifest = buildDeploymentManifest({
+          deploymentId,
+          skillId,
+          image: runtime.image,
+          namespace: deploymentNamespace,
+          name: deploymentName,
+          resources,
+        });
 
         logger.info(
           `Generated K8s manifest for skill deployment ${deploymentId}`,

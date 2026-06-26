@@ -170,6 +170,51 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
+  readonly 'boost.skillsMarketplace.runtimes': {
+    readonly schema: z.ZodOptional<
+      z.ZodArray<
+        z.ZodObject<
+          {
+            id: z.ZodString;
+            name: z.ZodString;
+            description: z.ZodOptional<z.ZodString>;
+            image: z.ZodString;
+            language: z.ZodOptional<z.ZodString>;
+            footprint: z.ZodOptional<z.ZodEnum<['small', 'medium', 'large']>>;
+            features: z.ZodOptional<z.ZodArray<z.ZodString, 'many'>>;
+            status: z.ZodOptional<
+              z.ZodEnum<['active', 'deprecated', 'experimental']>
+            >;
+          },
+          'strip',
+          z.ZodTypeAny,
+          {
+            name: string;
+            id: string;
+            image: string;
+            description?: string | undefined;
+            status?: 'active' | 'deprecated' | 'experimental' | undefined;
+            language?: string | undefined;
+            footprint?: 'small' | 'medium' | 'large' | undefined;
+            features?: string[] | undefined;
+          },
+          {
+            name: string;
+            id: string;
+            image: string;
+            description?: string | undefined;
+            status?: 'active' | 'deprecated' | 'experimental' | undefined;
+            language?: string | undefined;
+            footprint?: 'small' | 'medium' | 'large' | undefined;
+            features?: string[] | undefined;
+          }
+        >,
+        'many'
+      >
+    >;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
   readonly 'boost.kagenti.auth.tokenExchange.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;

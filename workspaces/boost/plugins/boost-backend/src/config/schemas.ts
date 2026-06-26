@@ -163,6 +163,47 @@ export const boostConfigFields = {
       'URL of the external skills catalog backend service. ' +
       'Boost proxies browse/filter requests to this endpoint.',
   },
+  'boost.skillsMarketplace.runtimes': {
+    schema: z
+      .array(
+        z.object({
+          id: z.string().min(1).describe('Unique runtime identifier'),
+          name: z.string().min(1).describe('Human-readable runtime name'),
+          description: z
+            .string()
+            .optional()
+            .describe('Short description of the runtime'),
+          image: z
+            .string()
+            .min(1)
+            .describe('OCI container image for the runtime'),
+          language: z
+            .string()
+            .optional()
+            .describe('Primary programming language'),
+          footprint: z
+            .enum(['small', 'medium', 'large'])
+            .optional()
+            .describe('Resource footprint category'),
+          features: z
+            .array(z.string())
+            .optional()
+            .describe('List of supported features'),
+          status: z
+            .enum(['active', 'deprecated', 'experimental'])
+            .optional()
+            .describe('Runtime availability status'),
+        }),
+      )
+      .optional()
+      .describe('Supported skill execution runtimes'),
+    configScope: 'yaml-only' as ConfigScope,
+    description:
+      'List of supported agent execution runtimes. Each entry defines ' +
+      'a runtime framework (e.g. DocsClaw, ZeroClaw) with its container ' +
+      'image and metadata. The backend resolves runtimeId to an image ' +
+      'server-side so frontends never see registry URLs.',
+  },
   // -- Kagenti auth / token exchange --
   'boost.kagenti.auth.tokenExchange.enabled': {
     schema: z.boolean().optional().describe('Enable RFC 8693 token exchange'),

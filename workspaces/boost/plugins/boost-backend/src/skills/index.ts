@@ -15,3 +15,9 @@
  */
 
 export { createSkillsRoutes, type SkillsRoutesOptions } from './routes';
+export {
+  buildDeploymentManifest,
+  validateRfc1123Label,
+  type ManifestParams,
+  type DeploymentResources,
+} from './manifestBuilder';
