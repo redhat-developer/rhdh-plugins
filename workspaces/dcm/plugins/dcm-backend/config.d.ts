@@ -17,13 +17,24 @@
 export interface Config {
   dcm: {
     /**
-     * Base URL of the DCM API Gateway.
+     * Base URL of the DCM control plane.
      *
      * All API services (catalog, policy-manager, providers) are routed
-     * through this single gateway. The backend appends `/api/v1alpha1/<path>`
+     * through this endpoint. The backend appends `/api/v1alpha1/<path>`
      * to construct the upstream URL.
      *
-     * @example "http://localhost:9080"
+     * @example "http://localhost:8080"
+     * @visibility backend
+     */
+    apiUrl?: string;
+
+    /**
+     * Base URL of the DCM API Gateway.
+     *
+     * @deprecated Use `apiUrl` instead. This key remains supported for
+     * backward compatibility during migration.
+     *
+     * @example "http://localhost:9080" (legacy API gateway port)
      * @visibility backend
      */
     apiGatewayUrl?: string;
