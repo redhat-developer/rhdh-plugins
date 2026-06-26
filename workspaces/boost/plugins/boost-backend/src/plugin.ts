@@ -51,6 +51,7 @@ import { ConversationStore } from './chat/ConversationStore';
 import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
+import { createSkillsRoutes } from './skills/routes';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -319,6 +320,15 @@ export const boostPlugin = createBackendPlugin({
         });
         router.use(conversationRoutes);
 
+        // Skills marketplace proxy routes (section 8, tasks 8a/8b/8c)
+        const skillsRoutes = createSkillsRoutes({
+          permissions: _permissions,
+          httpAuth,
+          logger,
+          config,
+        });
+        router.use(skillsRoutes);
+
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
           res.json({ status: 'ok' });
@@ -388,6 +398,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/conversations',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/skills',
           allow: 'user-cookie',
         });
 

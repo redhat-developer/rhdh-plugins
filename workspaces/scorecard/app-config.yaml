@@ -21,6 +21,7 @@ app:
               type: website
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true
@@ -203,7 +204,6 @@ catalog:
       target: ../../examples/orgs/guest.yaml
       rules:
         - allow: [User, Group]
-
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml
 

@@ -13,12 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityScorecardContent } from './EntityScorecardContent';
-import { ScorecardEntityContentGridView } from './ScorecardEntityContentGridView';
-import { ScorecardLayoutSwitcher } from './ScorecardLayoutSwitcher';
 
-export {
-  EntityScorecardContent,
-  ScorecardEntityContentGridView,
-  ScorecardLayoutSwitcher,
-};
+export { createSkillsRoutes, type SkillsRoutesOptions } from './routes';

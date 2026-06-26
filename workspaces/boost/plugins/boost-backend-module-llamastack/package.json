@@ -37,7 +37,8 @@
     "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit": "workspace:^"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5"
+    "@backstage/cli": "^0.34.5",
+    "@red-hat-developer-hub/cli": "^1.11.1"
   },
   "sideEffects": false,
   "scripts": {
@@ -50,10 +51,13 @@
     "tsc": "tsc",
     "start": "backstage-cli package start",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "postpack": "backstage-cli package postpack",
+    "export-dynamic": "rhdh-cli plugin export"
   },
   "files": [
-    "dist"
+    "dist",
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/**"
   ],
   "repository": {
     "type": "git",
