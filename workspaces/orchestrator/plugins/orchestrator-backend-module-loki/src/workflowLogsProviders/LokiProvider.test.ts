@@ -159,7 +159,7 @@ describe('LokiProvider', () => {
             },
           }),
         ),
-      ).toThrow(/must not contain "\}"/);
+      ).toThrow(/must not contain unquoted "\{" or "\}"/);
     });
 
     it('rejects logPipelineFilters containing opening brace', () => {
@@ -171,13 +171,13 @@ describe('LokiProvider', () => {
                 loki: {
                   baseUrl: 'http://localhost:3100',
                   token: 't',
-                  logPipelineFilters: ['| pattern `{stream}`'],
+                  logPipelineFilters: ['| foo {bar="baz"}'],
                 },
               },
             },
           }),
         ),
-      ).toThrow(/must not contain "\{"/);
+      ).toThrow(/must not contain unquoted "\{" or "\}"/);
     });
 
     it('rejects logPipelineFilters entries that trim to empty (whitespace-only)', () => {
