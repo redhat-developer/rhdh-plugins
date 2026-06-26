@@ -374,24 +374,24 @@ https://github.com/redhat-developer/rhdh-plugins/issues/3309
 **Labels:** `ready-to-code`
 **Depends on:** Issue 11
 
-Implement `TokenExchangeManager` for per-user Kagenti identity delegation via RFC 8693 OAuth2 Token Exchange, with graceful fallback to service-account token on all failures.
+Implement `KeycloakTokenManager` for service-account Kagenti authentication via OAuth2 Client Credentials Grant, with token caching, streaming support, and 401 retry.
 
 ### Tasks
 
 From `openspec/changes/security-safety-governance/tasks.md` section 7:
 
-- 7.1 Create `TokenExchangeManager` implementing RFC 8693
-- 7.2 Add per-user token caching with TTL from token expiry
-- 7.3 Add concurrent exchange deduplication
-- 7.4 Add graceful fallback to service-account token
-- 7.5 Add config schema: `boost.kagenti.auth.tokenExchange.*`
-- 7.6 Integrate into `KagentiApiClient.requestCore()`
-- 7.7 Extract user OIDC token from configurable request header
+- 7.1 Create `KeycloakTokenManager` implementing OAuth2 Client Credentials Grant
+- 7.2 Add token caching with configurable expiry buffer (default 60s)
+- 7.3 Add concurrent token request deduplication (single in-flight Keycloak call)
+- 7.4 Add `getTokenForStreaming(minLifetimeMs)` for SSE connection support
+- 7.5 Add 401 retry with cache invalidation and fresh token fetch
+- 7.6 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`
+- 7.7 Integrate into `KagentiApiClient.requestCore()` — add `Authorization: Bearer` and `X-Backstage-User` headers
 
 ### Specifications
 
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Token exchange scenarios
-- `openspec/changes/security-safety-governance/design.md` — Decision 4 (backend-only with graceful fallback)
+- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `openspec/changes/security-safety-governance/design.md` — Decision 4 (service-account auth with token caching and streaming support)
 
 ---
 

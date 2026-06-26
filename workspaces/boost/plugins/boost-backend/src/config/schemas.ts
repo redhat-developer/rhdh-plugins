@@ -52,7 +52,7 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  *
  * @public
  */
-export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+export const BOOST_CONFIG_SCHEMA_VERSION = 2;
 
 // ---------------------------------------------------------------------------
 // Individual field schemas with metadata

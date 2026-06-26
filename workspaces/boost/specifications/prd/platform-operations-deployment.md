@@ -186,7 +186,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 - **Token and Turn Caps:** Maximum output tokens, tool calls per turn, agent turns
 - **Chat Experience:** Featured agents, conversation starters (Kagenti)
 - **Appearance:** Logo, colors, theme presets
-- **Kagenti Auth:** Token exchange configuration (`tokenExchange.enabled`, `audience`, `userTokenHeader`)
+- **Kagenti Auth:** Service-account Keycloak configuration (`tokenEndpoint`, `clientId`, `clientSecret`, `tokenExpiryBufferSeconds`)
 - **DevSpaces:** Workspace configuration (credentials must be stored encrypted, not plaintext)
 
 **Admin onboarding:** `AdminOnboardingCard` provides guided setup steps on first admin visit.
