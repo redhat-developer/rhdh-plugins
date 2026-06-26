@@ -365,7 +365,7 @@ From `openspec/changes/agent-creation-discovery/tasks.md` sections 1 and 2:
 
 ---
 
-## boost-backend — Token exchange via RFC 8693 per-user identity delegation (issue 13 of 15)
+## boost-backend — Service-account Keycloak authentication via OAuth2 Client Credentials (issue 13 of 15)
 
 https://github.com/redhat-developer/rhdh-plugins/issues/3309
 
