@@ -112,7 +112,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+export const BOOST_CONFIG_SCHEMA_VERSION = 2;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
