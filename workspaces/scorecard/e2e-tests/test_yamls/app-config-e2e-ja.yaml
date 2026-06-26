@@ -1,0 +1,10 @@
+# Japanese (JA) - Ports: Frontend 3003, Backend 7010
+app:
+  baseUrl: http://localhost:3003
+
+backend:
+  baseUrl: http://localhost:7010
+  listen:
+    port: 7010
+  cors:
+    origin: http://localhost:3003

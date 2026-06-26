@@ -16,9 +16,17 @@
 
 import { defineConfig } from '@playwright/test';
 
-const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
+// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
+// Config paths (absolute to work from any cwd)
+const baseConfig = `${__dirname}/app-config.yaml`;
+const testConfigDir = `${__dirname}/e2e-tests/test_yamls`;
+
+const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
+const FRONTEND_PORT_BASE = 3000;
+const BACKEND_PORT_BASE = 7007;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -29,15 +37,19 @@ export default defineConfig({
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : {
-        command: startCommand,
-        port: 3000,
-        reuseExistingServer: true,
+    : LOCALES.map((locale, i) => ({
+        command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-${locale}.yaml`,
+        url: `http://localhost:${
+          BACKEND_PORT_BASE + i
+        }/.backstage/health/v1/readiness`,
+        timeout: 120000,
+        reuseExistingServer: false,
+        cwd: __dirname,
         env: {
           JIRA_URL: 'https://issues.redhat.com',
           JIRA_TOKEN: 'my-jira-token',
         },
-      },
+      })),
 
   retries: process.env.CI ? 2 : 0,
 
@@ -49,19 +61,19 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    /* Default Playwright navigation timeout is 0 (no limit); cap to avoid hangs. */
     navigationTimeout: 60_000,
     actionTimeout: 30_000,
   },
 
   outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
-  projects: LOCALES.map(locale => ({
+  projects: LOCALES.map((locale, i) => ({
     name: locale,
     testDir: 'packages/app-legacy/e2e-tests',
     use: {
       channel: 'chrome' as const,
       locale,
+      baseURL: `http://localhost:${FRONTEND_PORT_BASE + i}`,
     },
   })),
 });

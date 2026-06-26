@@ -1,0 +1,10 @@
+# Italian (IT) - Ports: Frontend 3002, Backend 7009
+app:
+  baseUrl: http://localhost:3002
+
+backend:
+  baseUrl: http://localhost:7009
+  listen:
+    port: 7009
+  cors:
+    origin: http://localhost:3002

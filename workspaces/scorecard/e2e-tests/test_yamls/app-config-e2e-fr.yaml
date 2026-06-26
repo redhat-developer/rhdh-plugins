@@ -1,0 +1,10 @@
+# French (FR) - Ports: Frontend 3001, Backend 7008
+app:
+  baseUrl: http://localhost:3001
+
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  cors:
+    origin: http://localhost:3001

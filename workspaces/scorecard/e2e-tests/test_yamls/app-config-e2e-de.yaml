@@ -1,0 +1,10 @@
+# German (DE) - Ports: Frontend 3004, Backend 7011
+app:
+  baseUrl: http://localhost:3004
+
+backend:
+  baseUrl: http://localhost:7011
+  listen:
+    port: 7011
+  cors:
+    origin: http://localhost:3004

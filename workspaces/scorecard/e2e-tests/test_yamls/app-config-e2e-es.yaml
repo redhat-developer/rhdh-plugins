@@ -1,0 +1,10 @@
+# Spanish (ES) - Ports: Frontend 3005, Backend 7012
+app:
+  baseUrl: http://localhost:3005
+
+backend:
+  baseUrl: http://localhost:7012
+  listen:
+    port: 7012
+  cors:
+    origin: http://localhost:3005

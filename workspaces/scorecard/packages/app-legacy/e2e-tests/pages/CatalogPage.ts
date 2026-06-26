@@ -70,12 +70,14 @@ export class CatalogPage {
     if (baseLocale === 'en') return;
 
     const displayName = getLocaleDisplayName(locale);
-    await this.page.goto('/settings');
+    const settingsLink = this.page.getByRole('link', { name: 'Settings' });
+    await settingsLink.waitFor({ state: 'visible', timeout: 10000 });
+    await settingsLink.click();
     await expect(
       this.page.getByRole('button', { name: 'English' }),
     ).toBeVisible({ timeout: 10000 });
     await this.page.getByRole('button', { name: 'English' }).click();
     await this.page.getByRole('option', { name: displayName }).click();
-    await this.page.goto('/');
+    await this.page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }
