@@ -198,7 +198,6 @@ export const boostConfigFields = {
       .int()
       .min(0)
       .optional()
-      .default(60)
       .describe('Seconds before token expiry to trigger refresh'),
     configScope: 'yaml-only' as ConfigScope,
     description:

@@ -187,7 +187,7 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.kagenti.auth.tokenExpiryBufferSeconds': {
-    readonly schema: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };

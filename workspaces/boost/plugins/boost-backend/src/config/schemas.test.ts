@@ -108,6 +108,36 @@ describe('validateConfigValue', () => {
   it('validates model name requires non-empty string', () => {
     expect(() => validateConfigValue('boost.model.name', '')).toThrow(ZodError);
   });
+
+  it('validates tokenExpiryBufferSeconds accepts valid integers', () => {
+    expect(
+      validateConfigValue('boost.kagenti.auth.tokenExpiryBufferSeconds', 120),
+    ).toBe(120);
+    expect(
+      validateConfigValue('boost.kagenti.auth.tokenExpiryBufferSeconds', 0),
+    ).toBe(0);
+  });
+
+  it('rejects negative tokenExpiryBufferSeconds', () => {
+    expect(() =>
+      validateConfigValue('boost.kagenti.auth.tokenExpiryBufferSeconds', -1),
+    ).toThrow(ZodError);
+  });
+
+  it('rejects non-integer tokenExpiryBufferSeconds', () => {
+    expect(() =>
+      validateConfigValue('boost.kagenti.auth.tokenExpiryBufferSeconds', 30.5),
+    ).toThrow(ZodError);
+  });
+
+  it('accepts undefined tokenExpiryBufferSeconds (consumer applies default)', () => {
+    expect(
+      validateConfigValue(
+        'boost.kagenti.auth.tokenExpiryBufferSeconds',
+        undefined,
+      ),
+    ).toBeUndefined();
+  });
 });
 
 describe('isDbWritable', () => {
