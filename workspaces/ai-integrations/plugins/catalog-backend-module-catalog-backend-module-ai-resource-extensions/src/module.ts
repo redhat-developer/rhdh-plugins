@@ -18,6 +18,11 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 
+/**
+ * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
+ *
+ * @public
+ */
 export const catalogModuleCatalogBackendModuleAiResourceExtensions =
   createBackendModule({
     pluginId: 'catalog',

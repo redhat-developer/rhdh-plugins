@@ -15,9 +15,8 @@
  */
 
 /**
- * The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
+ * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
  *
- * @packageDocumentation
+ * @public
  */
-
 export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
