@@ -52,8 +52,10 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
-    await this.page.getByTestId('user-picker-all').getByText('All').click();
+    await this.page.goto('/catalog');
+    const allFilter = this.page.getByTestId('user-picker-all').getByText('All');
+    await allFilter.waitFor({ state: 'visible', timeout: 10000 });
+    await allFilter.click({ force: true });
   }
 
   async openComponent(componentName: string) {
@@ -78,6 +80,5 @@ export class CatalogPage {
     ).toBeVisible({ timeout: 10000 });
     await this.page.getByRole('button', { name: 'English' }).click();
     await this.page.getByRole('option', { name: displayName }).click();
-    await this.page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }
