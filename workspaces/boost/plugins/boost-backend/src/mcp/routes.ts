@@ -155,6 +155,8 @@ export function createMcpServerRoutes(options: McpServerRoutesOptions): Router {
     }
   }
 
+  // TODO GGM cross reference on gets / puts with catalog, new API entity for MCP servers
+
   // GET /mcp/servers — list registered MCP servers
   router.get('/mcp/servers', requireMcpManage, async (_req, res, next) => {
     try {

@@ -189,6 +189,8 @@ export function createSkillsRoutes(options: SkillsRoutesOptions): Router {
     return { status: response.status, body };
   }
 
+  // TODO GGM cross reference on gets / puts with catalog, AIResources entities for skills
+
   // 5.1: GET /skills — list available skills
   router.get(
     '/skills',
