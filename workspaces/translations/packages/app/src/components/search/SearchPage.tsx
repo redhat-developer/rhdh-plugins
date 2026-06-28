@@ -36,6 +36,7 @@ import {
   useSearch,
 } from '@backstage/plugin-search-react';
 
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 
@@ -71,35 +72,37 @@ const SearchPage = () => {
               ]}
             />
             <Paper sx={{ p: 2, mt: 2 }}>
-              {types.includes('techdocs') && (
-                <SearchFilter.Select
-                  label="Entity"
-                  name="name"
-                  values={async () => {
-                    const { items } = await catalogApi.getEntities({
-                      fields: ['metadata.name'],
-                      filter: {
-                        'metadata.annotations.backstage.io/techdocs-ref':
-                          CATALOG_FILTER_EXISTS,
-                      },
-                    });
+              <Box sx={{ '& > * + *': { mt: 2.5 } }}>
+                {types.includes('techdocs') && (
+                  <SearchFilter.Select
+                    label="Entity"
+                    name="name"
+                    values={async () => {
+                      const { items } = await catalogApi.getEntities({
+                        fields: ['metadata.name'],
+                        filter: {
+                          'metadata.annotations.backstage.io/techdocs-ref':
+                            CATALOG_FILTER_EXISTS,
+                        },
+                      });
 
-                    const names = items.map(entity => entity.metadata.name);
-                    names.sort();
-                    return names;
-                  }}
+                      const names = items.map(entity => entity.metadata.name);
+                      names.sort();
+                      return names;
+                    }}
+                  />
+                )}
+                <SearchFilter.Select
+                  label="Kind"
+                  name="kind"
+                  values={['Component', 'Template']}
                 />
-              )}
-              <SearchFilter.Select
-                label="Kind"
-                name="kind"
-                values={['Component', 'Template']}
-              />
-              <SearchFilter.Checkbox
-                label="Lifecycle"
-                name="lifecycle"
-                values={['experimental', 'production']}
-              />
+                <SearchFilter.Checkbox
+                  label="Lifecycle"
+                  name="lifecycle"
+                  values={['experimental', 'production']}
+                />
+              </Box>
             </Paper>
           </Grid>
           <Grid item xs={9}>
