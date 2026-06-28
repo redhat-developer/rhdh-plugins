@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ThemeConfig } from './src';
+import { ThemeConfig, BUITokens } from './src';
 
 export interface Config {
   app: {
@@ -26,6 +26,12 @@ export interface Config {
       theme?: {
         [key: string]: ThemeConfig;
       };
+      /**
+       * Raw CSS string injected as global styles. Use at your own risk --
+       * BUI class names may change between Backstage releases.
+       * @visibility frontend
+       */
+      customCSS?: string;
     };
   };
 }

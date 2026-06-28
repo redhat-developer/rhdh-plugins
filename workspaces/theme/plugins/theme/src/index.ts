@@ -27,6 +27,7 @@ export type {
   ThemeConfigPageTheme,
   ThemeConfigOptions,
   ThemeConfig,
+  BUITokens,
   Branding,
   Config,
 } from './types';

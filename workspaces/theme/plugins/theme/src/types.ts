@@ -145,12 +145,38 @@ export interface ThemeConfig {
   pageTheme?: Record<string, ThemeConfigPageTheme>;
 
   options?: ThemeConfigOptions;
+
+  bui?: {
+    tokens?: BUITokens;
+  };
+}
+
+/**
+ * Structured BUI token overrides configurable via app-config.
+ * Maps to BUI's CSS custom properties (--bui-*).
+ */
+export interface BUITokens {
+  primary?: string;
+  warning?: string;
+  error?: string;
+  success?: string;
+  info?: string;
+  fontFamily?: string;
+  fontFamilyMonospace?: string;
+  borderColor?: string;
+  backgroundColor?: string;
+  foregroundPrimary?: string;
+  foregroundSecondary?: string;
+  foregroundDisabled?: string;
+  focusRing?: string;
+  shadow?: string;
 }
 
 export interface Branding {
   theme?: {
     [key: string]: ThemeConfig;
   };
+  customCSS?: string;
 }
 
 export interface Config {
