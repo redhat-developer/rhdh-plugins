@@ -35,6 +35,7 @@ import {
   sanitizeEntityName,
 } from './entityHelpers';
 import { ANNOTATION_BOOST_LIFECYCLE_STAGE } from './KagentiAgentEntityProvider';
+import { getKagentiBearerToken } from './kagentiAuth';
 
 const PROVIDER_ID = 'kagenti-tool-entity-provider';
 
@@ -117,22 +118,29 @@ export class KagentiToolEntityProvider implements EntityProvider {
     const namespaces = this.config.namespaces ?? ['default'];
     const allTools: KagentiTool[] = [];
 
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (this.config.auth) {
+      const token = await getKagentiBearerToken(this.config.auth);
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     for (const ns of namespaces) {
-      const url = `${this.config.baseUrl}/a2a/tools?namespace=${encodeURIComponent(ns)}`;
+      const url = `${this.config.baseUrl}/api/v1/tools?namespace=${encodeURIComponent(ns)}`;
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           this.logger.warn(
             `Kagenti API returned ${response.status} for tools in namespace ${ns}`,
           );
           continue;
         }
-        const tools = (await response.json()) as KagentiTool[];
-        if (Array.isArray(tools)) {
-          allTools.push(
-            ...tools.map(t => ({ ...t, namespace: t.namespace ?? ns })),
-          );
-        }
+        const body = (await response.json()) as
+          | { items: KagentiTool[] }
+          | KagentiTool[];
+        const tools = Array.isArray(body) ? body : (body.items ?? []);
+        allTools.push(
+          ...tools.map(t => ({ ...t, namespace: t.namespace ?? ns })),
+        );
       } catch (error) {
         this.logger.warn(
           `Failed to fetch tools for namespace ${ns}`,

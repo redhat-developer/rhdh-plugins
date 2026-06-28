@@ -22,7 +22,7 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node'
 
 import { KagentiAgentEntityProvider } from './providers/KagentiAgentEntityProvider';
 import { KagentiToolEntityProvider } from './providers/KagentiToolEntityProvider';
-import type { KagentiEntityProviderConfig } from './types';
+import type { KagentiAuthConfig, KagentiEntityProviderConfig } from './types';
 
 /**
  * Default upstream refresh interval for agent entities (5 minutes).
@@ -112,9 +112,27 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
 /**
  * Read Kagenti entity provider configuration from app-config.yaml.
  */
+function readKagentiAuthConfig(
+  config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
+): KagentiAuthConfig | undefined {
+  const authConfig = config.getOptionalConfig('boost.kagenti.auth');
+  if (!authConfig) {
+    return undefined;
+  }
+  const tokenEndpoint = authConfig.getOptionalString('tokenEndpoint');
+  const clientId = authConfig.getOptionalString('clientId');
+  const clientSecret = authConfig.getOptionalString('clientSecret');
+  if (!tokenEndpoint || !clientId || !clientSecret) {
+    return undefined;
+  }
+  return { tokenEndpoint, clientId, clientSecret };
+}
+
 function readKagentiEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ): KagentiEntityProviderConfig {
+  const auth = readKagentiAuthConfig(config);
+
   // Try the entity-provider-specific config first
   const epConfig = config.getOptionalConfig('boost.entityProviders.kagenti');
 
@@ -128,6 +146,7 @@ function readKagentiEntityProviderConfig(
       toolRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'toolRefreshIntervalSeconds',
       ),
+      auth,
     };
   }
 
@@ -138,11 +157,13 @@ function readKagentiEntityProviderConfig(
     return {
       baseUrl: providerConfig.getString('baseUrl'),
       namespaces: providerConfig.getOptionalStringArray('namespaces'),
+      auth,
     };
   }
 
   // Default to localhost
   return {
     baseUrl: 'http://localhost:8080',
+    auth,
   };
 }

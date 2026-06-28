@@ -73,12 +73,26 @@ export interface KagentiTool {
 }
 
 /**
+ * Keycloak client-credentials auth configuration for the Kagenti API.
+ *
+ * @internal
+ */
+export interface KagentiAuthConfig {
+  /** Keycloak token endpoint URL. */
+  tokenEndpoint: string;
+  /** OAuth2 client ID. */
+  clientId: string;
+  /** OAuth2 client secret. */
+  clientSecret: string;
+}
+
+/**
  * Configuration for connecting to a Kagenti endpoint for entity discovery.
  *
  * @internal
  */
 export interface KagentiEntityProviderConfig {
-  /** Base URL of the Kagenti A2A gateway. */
+  /** Base URL of the Kagenti API server. */
   baseUrl: string;
   /** Namespaces to scan for agents and tools. */
   namespaces?: string[];
@@ -86,4 +100,6 @@ export interface KagentiEntityProviderConfig {
   agentRefreshIntervalSeconds?: number;
   /** Upstream refresh interval in seconds for tool entities (default: 300 = 5m). */
   toolRefreshIntervalSeconds?: number;
+  /** Keycloak auth config — required when the Kagenti API enforces authentication. */
+  auth?: KagentiAuthConfig;
 }

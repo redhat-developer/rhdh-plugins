@@ -34,6 +34,7 @@ import {
   mapOwner,
   sanitizeEntityName,
 } from './entityHelpers';
+import { getKagentiBearerToken } from './kagentiAuth';
 
 const PROVIDER_ID = 'kagenti-agent-entity-provider';
 
@@ -126,22 +127,29 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     const namespaces = this.config.namespaces ?? ['default'];
     const allAgents: AgentCard[] = [];
 
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (this.config.auth) {
+      const token = await getKagentiBearerToken(this.config.auth);
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     for (const ns of namespaces) {
-      const url = `${this.config.baseUrl}/a2a/agents?namespace=${encodeURIComponent(ns)}`;
+      const url = `${this.config.baseUrl}/api/v1/agents?namespace=${encodeURIComponent(ns)}`;
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           this.logger.warn(
             `Kagenti API returned ${response.status} for namespace ${ns}`,
           );
           continue;
         }
-        const agents = (await response.json()) as AgentCard[];
-        if (Array.isArray(agents)) {
-          allAgents.push(
-            ...agents.map(a => ({ ...a, namespace: a.namespace ?? ns })),
-          );
-        }
+        const body = (await response.json()) as
+          | { items: AgentCard[] }
+          | AgentCard[];
+        const agents = Array.isArray(body) ? body : (body.items ?? []);
+        allAgents.push(
+          ...agents.map(a => ({ ...a, namespace: a.namespace ?? ns })),
+        );
       } catch (error) {
         this.logger.warn(
           `Failed to fetch agents for namespace ${ns}`,
