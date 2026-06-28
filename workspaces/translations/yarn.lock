@@ -7116,7 +7116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1, @mui/icons-material@npm:^5.18.0":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -7132,7 +7132,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2":
+"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.18.0":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -15252,8 +15252,8 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@backstage/ui": "npm:^0.13.2"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/material": "npm:5.18.0"
+    "@mui/icons-material": "npm:^5.18.0"
+    "@mui/material": "npm:^5.18.0"
     "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
     "@red-hat-developer-hub/backstage-plugin-translations": "workspace:^"
