@@ -16,4 +16,3 @@
 
 export type { ScorecardCollectorsService } from './scorecardCollectorsService';
 export { scorecardCollectorsServiceRef } from './scorecardCollectorsService';
-export { DefaultScorecardCollectorsService } from './DefaultScorecardCollectorsService';

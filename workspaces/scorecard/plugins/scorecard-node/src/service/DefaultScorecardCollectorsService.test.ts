@@ -57,7 +57,6 @@ describe('DefaultScorecardCollectorsService', () => {
       const collector = makeCollector();
       const service = new DefaultScorecardCollectorsService();
 
-      expect(service.hasCollector(collectorId)).toBe(false);
       service.init({ collectors: [collector] });
       expect(service.hasCollector(collectorId)).toBe(true);
     });
@@ -93,9 +92,38 @@ describe('DefaultScorecardCollectorsService', () => {
         'Collector ID cannot be empty',
       );
     });
+
+    it('throws when hasCollector is called before initialization', () => {
+      const service = new DefaultScorecardCollectorsService();
+
+      expect(() => service.hasCollector(collectorId)).toThrow(
+        'Scorecard collectors service has not been initialized',
+      );
+    });
   });
 
   describe('collect', () => {
+    it('throws when collect is called before initialization', async () => {
+      const service = new DefaultScorecardCollectorsService();
+
+      await expect(
+        service.collect({
+          collectorId,
+          contract: {
+            inputSchema: contractInputSchema,
+            outputSchema: contractOutputSchema,
+          },
+          entity,
+          input: {
+            from: '2026-06-01T00:00:00.000Z',
+            to: '2026-06-08T00:00:00.000Z',
+          },
+        }),
+      ).rejects.toThrow(
+        'Scorecard collectors service has not been initialized',
+      );
+    });
+
     it('propagates lookup errors', async () => {
       const service = new DefaultScorecardCollectorsService();
       service.init({ collectors: [] });
@@ -189,6 +217,33 @@ describe('DefaultScorecardCollectorsService', () => {
           to: '2026-06-08T00:00:00.000Z',
         },
       });
+    });
+
+    it('propagates collect errors and wraps them with collector id context', async () => {
+      const collector = makeCollector({
+        collect: jest.fn(async () => {
+          throw new Error('upstream request failed');
+        }),
+      });
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [collector] });
+
+      await expect(
+        service.collect({
+          collectorId,
+          contract: {
+            inputSchema: contractInputSchema,
+            outputSchema: contractOutputSchema,
+          },
+          entity,
+          input: {
+            from: '2026-06-01T00:00:00.000Z',
+            to: '2026-06-08T00:00:00.000Z',
+          },
+        }),
+      ).rejects.toThrow(
+        `Collector "${collectorId}" failed to collect data: upstream request failed`,
+      );
     });
 
     it('fails when input does not satisfy contract input schema', async () => {
