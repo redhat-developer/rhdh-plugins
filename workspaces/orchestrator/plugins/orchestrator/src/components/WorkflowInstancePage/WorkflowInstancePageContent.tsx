@@ -29,8 +29,8 @@ import { makeStyles } from 'tss-react/mui';
 import {
   InputSchemaResponseDTO,
   orchestratorAdminViewPermission,
+  orchestratorInstanceAdminViewPermission,
   ProcessInstanceDTO,
-  WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api/api';
@@ -38,6 +38,10 @@ import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useWorkflowInstanceCardHeightMode } from '../../hooks/useWorkflowInstanceCardHeightMode';
 import { formatDuration } from '../../utils/DurationUtils';
+import {
+  getInstanceVariables,
+  hasInstanceVariables,
+} from '../../utils/instanceVariables';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
@@ -65,9 +69,14 @@ export const mapProcessInstanceToDetails = (
     processName: instance.processName || VALUE_UNAVAILABLE,
     workflowId: instance.processId,
     start: started,
+    startIso: instance.start,
     duration,
     state: instance.state,
     description: instance.description,
+    version: instance.version,
+    initiatorEntity: instance.initiatorEntity,
+    targetEntity: instance.targetEntity,
+    hasVariables: hasInstanceVariables(instance.workflowdata),
   };
 };
 
@@ -115,16 +124,7 @@ export const WorkflowInstancePageContent: React.FC<{
   );
 
   const workflowdata = instance?.workflowdata;
-  let instanceVariables: WorkflowDataDTO = {};
-  if (workflowdata) {
-    instanceVariables = {
-      /* Since we are about to remove just the top-level property, shallow copy of the object is sufficient */
-      ...workflowdata,
-    };
-    if (instanceVariables.hasOwnProperty('result')) {
-      delete instanceVariables.result;
-    }
-  }
+  const instanceVariables = getInstanceVariables(workflowdata);
   const workflowId = instance.processId;
   const instanceId = instance.id;
   const {
@@ -148,8 +148,12 @@ export const WorkflowInstancePageContent: React.FC<{
   const adminView = usePermission({
     permission: orchestratorAdminViewPermission,
   });
+  const instanceAdminView = usePermission({
+    permission: orchestratorInstanceAdminViewPermission,
+  });
+  const canViewVariables = adminView.allowed || instanceAdminView.allowed;
 
-  const viewVariables = adminView.allowed && (
+  const viewVariables = canViewVariables && (
     <Link
       to="#"
       onClick={e => {

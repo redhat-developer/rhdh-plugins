@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { FC } from 'react';
+
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import Box from '@mui/material/Box';
@@ -32,17 +34,23 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-export const WorkflowStatus = ({
-  availability,
-}: {
+export interface WorkflowStatusProps {
   availability: string | undefined | boolean;
+  compact?: boolean;
+}
+
+export const WorkflowStatus: FC<WorkflowStatusProps> = ({
+  availability,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
+  const iconSizeProps = compact ? { fontSize: 'small' as const } : undefined;
+
   if (availability === AVAILABLE || availability === true) {
     return (
       <Box display="flex" alignItems="center">
-        <CheckCircleOutlined className={classes.success} />
+        <CheckCircleOutlined className={classes.success} {...iconSizeProps} />
         &nbsp; {t('workflow.status.available')}
       </Box>
     );
@@ -50,7 +58,10 @@ export const WorkflowStatus = ({
     return (
       <Tooltip title={t('tooltips.workflowDown')}>
         <Box display="flex" alignItems="center">
-          <WarningAmberOutlined className={classes.warning} />
+          <WarningAmberOutlined
+            className={classes.warning}
+            {...iconSizeProps}
+          />
           &nbsp; {t('workflow.status.unavailable')}
         </Box>
       </Tooltip>

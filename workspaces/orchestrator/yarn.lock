@@ -16937,6 +16937,7 @@ __metadata:
     "@backstage/core-app-api": "npm:^1.20.1"
     "@backstage/core-components": "npm:^0.18.10"
     "@backstage/core-plugin-api": "npm:^1.12.6"
+    "@backstage/frontend-plugin-api": "npm:^0.17.1"
     "@backstage/integration-react": "npm:^1.2.18"
     "@backstage/plugin-api-docs": "npm:^0.14.1"
     "@backstage/plugin-catalog": "npm:^2.0.5"
