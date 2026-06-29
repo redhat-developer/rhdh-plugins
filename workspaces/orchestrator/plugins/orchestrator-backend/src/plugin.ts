@@ -27,6 +27,7 @@ import {
 
 import { WorkflowLogsProvidersRegistry } from './providers/WorkflowLogsProvidersRegistry';
 import { createRouter } from './routerWrapper';
+import { initPublicServices } from './service/initPublicServices';
 import {
   fetchWorkflowResources,
   orchestratorPermissionRules,
@@ -68,9 +69,20 @@ export const orchestratorPlugin = createBackendPlugin({
       async init(props) {
         const { http, permissionsRegistry } = props;
 
+        const publicServices = initPublicServices(
+          props.logger,
+          props.config,
+          props.scheduler,
+          workflowLogsProvidersRegistry,
+        );
+
         permissionsRegistry.addResourceType({
           resourceRef: orchestratorWorkflowResourceRef,
-          getResources: fetchWorkflowResources,
+          getResources: resourceRefs =>
+            fetchWorkflowResources(
+              publicServices.orchestratorService,
+              resourceRefs,
+            ),
           permissions: orchestratorPermissions,
           rules: orchestratorPermissionRules,
         });
@@ -78,6 +90,7 @@ export const orchestratorPlugin = createBackendPlugin({
         const router = await createRouter({
           ...props,
           workflowLogsProvidersRegistry,
+          publicServices,
         });
         http.use(router);
         http.addAuthPolicy({

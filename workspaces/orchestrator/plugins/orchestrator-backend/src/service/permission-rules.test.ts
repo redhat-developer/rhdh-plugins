@@ -16,7 +16,6 @@
 
 import type { OrchestratorService } from './OrchestratorService';
 import {
-  bindOrchestratorService,
   fetchWorkflowResources,
   isWorkflowId,
   orchestratorPermissionRules,
@@ -68,16 +67,17 @@ describe('permission-rules', () => {
 
   describe('fetchWorkflowResources', () => {
     const mockOrchestratorService = {
-      fetchWorkflowOverview: jest.fn().mockResolvedValue({ id: 'workflow-1' }),
+      fetchWorkflowOverview: jest.fn().mockResolvedValue({
+        workflowId: 'workflow-1',
+      }),
     } as unknown as OrchestratorService;
 
     beforeEach(() => {
-      bindOrchestratorService(mockOrchestratorService);
       jest.clearAllMocks();
     });
 
     it('should fetch workflow overviews for resource refs', async () => {
-      const resources = await fetchWorkflowResources([
+      const resources = await fetchWorkflowResources(mockOrchestratorService, [
         'workflow-1',
         'workflow-2',
       ]);
@@ -95,15 +95,10 @@ describe('permission-rules', () => {
       ).toHaveBeenCalledWith({
         definitionId: 'workflow-2',
       });
-      expect(resources).toEqual([{ id: 'workflow-1' }, { id: 'workflow-1' }]);
-    });
-
-    it('should throw when orchestrator service is not initialized', () => {
-      bindOrchestratorService(undefined as unknown as OrchestratorService);
-
-      expect(() => fetchWorkflowResources(['workflow-1'])).toThrow(
-        'Orchestrator service is not initialized',
-      );
+      expect(resources).toEqual([
+        { workflowId: 'workflow-1' },
+        { workflowId: 'workflow-1' },
+      ]);
     });
   });
 });
