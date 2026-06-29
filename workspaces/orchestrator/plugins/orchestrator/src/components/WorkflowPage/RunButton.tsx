@@ -30,7 +30,11 @@ import {
 
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
-import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
+import {
+  entityWorkflowRouteRef,
+  executeWorkflowRouteRef,
+  workflowRouteRef,
+} from '../../routes';
 
 export const RunButton = ({
   isAvailable,
@@ -40,7 +44,11 @@ export const RunButton = ({
   entityRef?: string;
 }) => {
   const { t } = useTranslation();
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const { workflowId: entityWorkflowId } = useRouteRefParams(
+    entityWorkflowRouteRef,
+  );
+  const { workflowId: scopedWorkflowId } = useRouteRefParams(workflowRouteRef);
+  const workflowId = entityWorkflowId ?? scopedWorkflowId;
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const buildExecuteUrl = () => {

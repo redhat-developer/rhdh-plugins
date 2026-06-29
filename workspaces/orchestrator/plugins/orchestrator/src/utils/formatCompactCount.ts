@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 
-import { TextCodeBlock } from './TextCodeBlock';
+export function formatCompactCount(count: number): string {
+  if (count < 1000) {
+    return String(count);
+  }
 
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-  fullWidth,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-  fullWidth?: boolean;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
+  const thousands = count / 1000;
+  const formatted =
+    thousands >= 10
+      ? Math.round(thousands).toString()
+      : parseFloat(thousands.toFixed(1)).toString();
 
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-      fullWidth={fullWidth}
-    />
-  );
-};
+  return `${formatted} k`;
+}

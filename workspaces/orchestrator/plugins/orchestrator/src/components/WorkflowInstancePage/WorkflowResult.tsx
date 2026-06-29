@@ -31,7 +31,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
@@ -49,6 +48,7 @@ import { orchestratorApiRef } from '../../api';
 import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef } from '../../routes';
+import { formatDuration } from '../../utils/DurationUtils';
 import {
   extractSsoReauthorizeUrl,
   isSamlSsoError,
@@ -64,6 +64,12 @@ import {
 import { WorkflowLogsDialog } from './WorkflowLogsDialog';
 
 const useStyles = makeStyles()(theme => ({
+  cardContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    width: '100%',
+  },
   outputGrid: {
     '& h2': {
       textTransform: 'none',
@@ -94,34 +100,69 @@ const ResultMessage = ({
   error,
   resultMessage,
   executionSummary: executionSummary,
+  end,
 }: {
   status?: ProcessInstanceStatusDTO;
   error?: ProcessInstanceErrorDTO;
   resultMessage?: WorkflowResultDTO['message'];
   executionSummary?: string[];
+  end?: string;
 }) => {
   const { t } = useTranslation();
   const errorMessage = error?.message || error?.toString();
   const executionSummaryArray: string[] = executionSummary ?? [];
 
-  const getTimeFromExecutionSummary = (
-    keyword: 'started' | 'failed' | 'retriggered' | 'waiting' | 'completed',
-  ): string[] => {
+  const extractIsoTimestamp = (
+    keyword:
+      | 'started'
+      | 'failed'
+      | 'retriggered'
+      | 'waiting'
+      | 'completed'
+      | 'aborted',
+  ): string | undefined => {
     const matchingMessage = executionSummaryArray.find(str =>
-      str.includes(keyword),
+      str.toLowerCase().includes(keyword),
     );
-    if (!matchingMessage) return [''];
+    if (!matchingMessage) {
+      return undefined;
+    }
 
     const timeMatch = matchingMessage.match(
       /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/,
     );
-    if (!timeMatch) return ['']; // for example 2025-06-25T16:05:18.512Z
+    return timeMatch?.[1];
+  };
 
-    const formattedDate = new Date(timeMatch[1]).toLocaleString();
+  const getTimeFromExecutionSummary = (
+    keyword: 'started' | 'failed' | 'retriggered' | 'waiting' | 'completed',
+  ): string[] => {
+    const isoTime = extractIsoTimestamp(keyword);
+    if (!isoTime) {
+      return [''];
+    }
 
-    return keyword === 'waiting'
-      ? [formattedDate, matchingMessage]
-      : [`at ${formattedDate}`];
+    const formattedDate = new Date(isoTime).toLocaleString();
+
+    if (keyword === 'waiting') {
+      const matchingMessage = executionSummaryArray.find(str =>
+        str.includes(keyword),
+      );
+      return [formattedDate, matchingMessage ?? ''];
+    }
+    return [`at ${formattedDate}`];
+  };
+
+  const getAbortTimeAgo = (): string => {
+    const isoTime = extractIsoTimestamp('aborted') ?? end;
+    if (!isoTime) {
+      return '';
+    }
+    const diffMs = Date.now() - new Date(isoTime).getTime();
+    if (diffMs < 0) {
+      return '';
+    }
+    return formatDuration(diffMs, t);
   };
 
   const checkIfWaiting = (): ReactNode => {
@@ -161,9 +202,19 @@ const ResultMessage = ({
     severity: 'warning' | 'error' | 'success' | 'info';
   };
 
-  if (error) {
+  if (status === ProcessInstanceStatusDTO.Aborted) {
+    const abortTimeAgo = getAbortTimeAgo();
+    alertProps = {
+      title: abortTimeAgo ? (
+        <Trans message="run.status.aborted" params={{ time: abortTimeAgo }} />
+      ) : (
+        t('run.status.abortedWithoutTime')
+      ),
+      message: errorMessage || '',
+      severity: 'info',
+    };
+  } else if (error) {
     if (status === ProcessInstanceStatusDTO.Completed) {
-      // Backend reports "Completed" but there's also an error
       alertProps = {
         title: (
           <Trans
@@ -186,23 +237,14 @@ const ResultMessage = ({
         severity: 'error',
       };
     }
-  } else if (status === ProcessInstanceStatusDTO.Aborted) {
-    // run aborted
-    alertProps = {
-      title: 'Run has aborted',
-      message: '',
-      severity: 'info',
-    };
   } else if (status && finalStates.includes(status)) {
     let message = t('run.status.noAdditionalInfo');
     if (resultMessage) {
-      // Workaround, an Element is still accepted by the Alert component
       message = (
         <MarkdownContent content={resultMessage} />
       ) as unknown as string;
     }
 
-    // run completed
     alertProps = {
       title: (
         <Trans
@@ -214,7 +256,6 @@ const ResultMessage = ({
       severity: 'success',
     };
   } else {
-    // Running - might be waiting
     const activeMessage = checkIfWaiting();
 
     alertProps = {
@@ -305,7 +346,7 @@ const NextWorkflows = ({
       : t('run.suggestedNextWorkflows');
 
   return (
-    <Grid item xs={12} className={classes.outputGrid}>
+    <Box className={classes.outputGrid}>
       <AboutField label={sectionLabel}>
         <List dense disablePadding>
           {nextWorkflows.map(item => (
@@ -330,7 +371,7 @@ const NextWorkflows = ({
         open={!!currentOpenedWorkflowDescriptionModalID}
         onClose={closeWorkflowDescriptionModal}
       />
-    </Grid>
+    </Box>
   );
 };
 
@@ -370,7 +411,7 @@ const WorkflowOutputs = ({
   return (
     <>
       {links?.length > 0 && (
-        <Grid item md={12} key="__links" className={classes.links}>
+        <Box key="__links" className={classes.links}>
           <AboutField label={t('common.links')}>
             <List dense disablePadding>
               {links
@@ -387,11 +428,11 @@ const WorkflowOutputs = ({
                 })}
             </List>
           </AboutField>
-        </Grid>
+        </Box>
       )}
 
       {(Object.keys(valuesAsObject).length > 0 || markdowns?.length > 0) && (
-        <Grid item md={12} key="non__links" className={classes.values}>
+        <Box key="non__links" className={classes.values}>
           <AboutField label={t('common.values')}>
             {markdowns?.length > 0 &&
               markdowns.map(item => (
@@ -407,7 +448,7 @@ const WorkflowOutputs = ({
               />
             )}
           </AboutField>
-        </Grid>
+        </Box>
       )}
     </>
   );
@@ -419,6 +460,7 @@ export const WorkflowResult: React.FC<{
   cardClassName?: string;
 }> = ({ instance, className, cardClassName }) => {
   const { t } = useTranslation();
+  const { classes } = useStyles();
   const result = instance.workflowdata?.result;
   const [isLogsDialogOpen, toggleLogsDialog] = useReducer(
     state => !state,
@@ -436,28 +478,28 @@ export const WorkflowResult: React.FC<{
     <>
       <InfoCard
         title={t('run.results')}
-        subheader={
+        divider={false}
+        className={className}
+        cardClassName={cardClassName}
+      >
+        <Box className={classes.cardContent}>
           <ResultMessage
             status={instance.state}
             error={instance.error}
             resultMessage={result?.message}
             executionSummary={instance.executionSummary}
+            end={instance.end}
           />
-        }
-        divider={false}
-        className={className}
-        cardClassName={cardClassName}
-      >
-        <Divider sx={{ '&&': { mb: 2 } }} />
-        {logsEnabled && (
-          <>
-            <Box sx={{ ml: 2 }}>
+          {logsEnabled && (
+            <>
+              <Divider />
               <Button
                 variant="text"
                 color="primary"
                 onClick={toggleLogsDialog}
                 disableRipple
                 sx={{
+                  alignSelf: 'flex-start',
                   textTransform: 'none',
                   padding: 0,
                   minWidth: 'auto',
@@ -466,22 +508,21 @@ export const WorkflowResult: React.FC<{
               >
                 {t('run.logs.viewLogs')}
               </Button>
-            </Box>
-            <Divider sx={{ '&&': { my: 2 } }} />
-          </>
-        )}
-        <Grid container alignContent="flex-start" spacing="1rem">
+              <Divider />
+            </>
+          )}
           <NextWorkflows
             instanceId={instance.id}
             nextWorkflows={result?.nextWorkflows}
           />
           <WorkflowOutputs outputs={result?.outputs} />
-        </Grid>
+        </Box>
       </InfoCard>
       <WorkflowLogsDialog
         open={isLogsDialogOpen}
         onClose={toggleLogsDialog}
         instanceId={instance.id}
+        processName={instance.processName}
       />
       <SamlSsoExpiredDialog
         open={isSamlDialogOpen}

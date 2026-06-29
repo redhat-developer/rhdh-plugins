@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-import { TextCodeBlock } from './TextCodeBlock';
+import { WorkflowDataDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-  fullWidth,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-  fullWidth?: boolean;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
+export const getInstanceVariables = (
+  workflowdata: WorkflowDataDTO | undefined,
+): WorkflowDataDTO => {
+  if (!workflowdata) {
+    return {};
+  }
 
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-      fullWidth={fullWidth}
-    />
-  );
+  const instanceVariables = { ...workflowdata };
+  if (Object.prototype.hasOwnProperty.call(instanceVariables, 'result')) {
+    delete instanceVariables.result;
+  }
+  return instanceVariables;
 };
+
+export const hasInstanceVariables = (
+  workflowdata: WorkflowDataDTO | undefined,
+): boolean => Object.keys(getInstanceVariables(workflowdata)).length > 0;

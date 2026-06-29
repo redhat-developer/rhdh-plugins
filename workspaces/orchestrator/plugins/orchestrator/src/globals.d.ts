@@ -14,27 +14,7 @@
  * limitations under the License.
  */
 
-import { TextCodeBlock } from './TextCodeBlock';
-
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-  fullWidth,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-  fullWidth?: boolean;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
-
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-      fullWidth={fullWidth}
-    />
-  );
-};
+declare module '*.png' {
+  const content: string;
+  export default content;
+}
