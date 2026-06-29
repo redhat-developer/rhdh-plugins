@@ -49,26 +49,6 @@ export type ComparisonOperator = {
 // @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
-// @public (undocumented)
-export class DefaultScorecardCollectorsService
-  implements ScorecardCollectorsService
-{
-  // (undocumented)
-  collect<
-    TInputSchema extends z.ZodTypeAny,
-    TOutputSchema extends z.ZodTypeAny,
-  >(options: {
-    collectorId: string;
-    contract: CollectorContract<TInputSchema, TOutputSchema>;
-    entity: Entity;
-    input: unknown;
-  }): Promise<z.infer<TOutputSchema>>;
-  // (undocumented)
-  hasCollector(collectorId: string): boolean;
-  // (undocumented)
-  init(options: { collectors: Collector[] }): void;
-}
-
 // @public
 export function getThresholdsFromConfig(
   config: Config,

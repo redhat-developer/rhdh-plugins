@@ -50,7 +50,11 @@ export class DefaultScorecardCollectorsService
   }
 
   hasCollector(collectorId: string): boolean {
-    return this.collectors?.has(collectorId) ?? false;
+    if (!this.collectors) {
+      throw new Error(`Scorecard collectors service has not been initialized`);
+    }
+
+    return this.collectors.has(collectorId);
   }
 
   async collect<
@@ -98,10 +102,19 @@ export class DefaultScorecardCollectorsService
       );
     }
 
-    const rawOutput = await collector.collect({
-      entity: options.entity,
-      input: collectorInput.data,
-    });
+    let rawOutput: unknown;
+    try {
+      rawOutput = await collector.collect({
+        entity: options.entity,
+        input: collectorInput.data,
+      });
+    } catch (error) {
+      throw new Error(
+        `Collector "${options.collectorId}" failed to collect data: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
 
     const collectorOutput = collector.getOutputSchema().safeParse(rawOutput);
     if (!collectorOutput.success) {
