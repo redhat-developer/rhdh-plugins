@@ -34,6 +34,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageHeaderTabs?: Component;
   BackstageSidebar?: Component;
   BackstageSidebarItem?: Component;
+  BackstageSidebarSubmenuItem?: Component;
   BackstagePage?: Component;
   BackstageContent?: Component;
   BackstageContentHeader?: Component;
@@ -644,16 +645,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
                 color: 'inherit !important',
               },
             },
-          '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
-            {
-              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-              color: `${navigationSelectedColor} !important`,
-            },
-
-          '& [class*="BackstageSidebarSubmenuItem-selected-"]': {
-            background: `${sidebarItemInteractionBackgroundColor} !important`,
-            color: `${navigationSelectedColor} !important`,
-          },
         },
       },
     };
@@ -674,8 +665,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: sidebarItemInteractionBackgroundColor,
-          color: navigationSelectedColor,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
+        },
+      },
+    };
+    components.BackstageSidebarSubmenuItem = {
+      styleOverrides: {
+        selected: {
+          background: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };
