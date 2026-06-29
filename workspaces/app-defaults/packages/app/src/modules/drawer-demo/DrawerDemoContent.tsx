@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';

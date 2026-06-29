@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
+export { useAppDrawer } from './hooks/useAppDrawer';
 
-import type { AppDrawerContent } from '../types';
+export * from './extensions';
 
-/**
- * Extension data ref carrying drawer content from a plugin to the host.
- *
- * @alpha
- */
-export const appDrawerContentDataRef =
-  createExtensionDataRef<AppDrawerContent>().with({
-    id: 'app.drawer.content',
-  });
+export type { AppDrawerContent, AppDrawerApi } from './types';

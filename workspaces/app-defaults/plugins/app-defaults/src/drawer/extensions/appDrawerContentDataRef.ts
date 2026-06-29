@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-/**
- * Shared UI components and hooks for the RHDH app shell.
- *
- * @packageDocumentation
- */
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-export { useAppDrawer } from './drawer';
-export { ApplicationDrawer } from './drawer';
-export { DrawerPanel } from './drawer';
-export type { ApplicationDrawerProps } from './drawer';
-export type { DrawerPanelProps } from './drawer';
-export type { AppDrawerContent, AppDrawerApi } from './drawer';
+import type { AppDrawerContent } from '../types';
+
+/**
+ * Extension data ref carrying drawer content from a plugin to the host.
+ *
+ * @public
+ */
+export const appDrawerContentDataRef =
+  createExtensionDataRef<AppDrawerContent>().with({
+    id: 'app.drawer.content',
+  });

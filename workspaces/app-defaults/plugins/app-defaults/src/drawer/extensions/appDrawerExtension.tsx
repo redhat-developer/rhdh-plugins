@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  createExtensionInput,
-  createFrontendModule,
-} from '@backstage/frontend-plugin-api';
+import { createExtensionInput } from '@backstage/frontend-plugin-api';
 import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 
 import { ApplicationDrawer } from '../components/ApplicationDrawer';
@@ -30,8 +27,10 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  * blueprint API while adding a custom `drawers` input for content extensions.
  * Drawer state is managed by a global singleton store (see drawerStore.ts)
  * rather than a React context provider.
+ *
+ * @public
  */
-const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
+export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
   name: 'drawer',
   inputs: {
     drawers: createExtensionInput([appDrawerContentDataRef]),
@@ -44,16 +43,4 @@ const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
       ),
     });
   },
-});
-
-/**
- * Frontend module that provides the app drawer system.
- * Registers a wrapper extension that renders the drawer and accepts
- * drawer content contributions via inputs.
- *
- * @alpha
- */
-export const appDrawerModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [appDrawerExtension],
 });

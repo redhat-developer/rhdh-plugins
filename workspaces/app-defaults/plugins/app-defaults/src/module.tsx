@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+
+import { appDrawerExtensions } from './drawer';
 
 /**
- * New Frontend System extension APIs for the RHDH app shell.
+ * Frontend module that enables all RHDH default extensions for the app.
  *
- * @packageDocumentation
+ * @public
  */
-
-export * from './drawer';
+export const appDefaults = createFrontendModule({
+  pluginId: 'app',
+  extensions: [...appDrawerExtensions],
+});

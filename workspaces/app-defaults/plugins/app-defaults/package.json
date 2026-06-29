@@ -1,39 +1,25 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-app-react",
+  "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
   "version": "0.0.5",
   "license": "Apache-2.0",
-  "description": "Shared UI components and extension APIs for the RHDH app shell",
+  "description": "Defaults app plugin extensions and extensions APIs for the RHDH app shell",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
-    "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "alpha": [
-        "src/alpha.ts"
-      ],
-      "package.json": [
-        "package.json"
-      ]
-    }
-  },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/app-defaults/plugins/app-react"
+    "directory": "workspaces/app-defaults/plugins/app-defaults"
   },
   "backstage": {
-    "role": "web-library",
+    "role": "frontend-plugin-module",
     "pluginId": "app",
-    "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-app-react"
-    ]
+    "pluginPackage": "@backstage/plugin-app"
   },
   "sideEffects": false,
   "scripts": {
@@ -46,7 +32,6 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/frontend-plugin-api": "^0.15.1",
     "@backstage/plugin-app-react": "^0.2.1",
     "@backstage/version-bridge": "^1.0.12",
