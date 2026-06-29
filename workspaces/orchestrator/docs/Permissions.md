@@ -137,7 +137,7 @@ Create conditional policies via RBAC UI:
 2. Select the role you want to configure (e.g., `role:default/developer`) from the list
 3. Click role name link
 4. Take a look permissions table and click "Edit" button
-5. Expand list plugins and select "Orchestator" plugin
+5. Expand list plugins and select "Orchestrator" plugin
 6. Select permissions `orchestrator.workflow`(with "read" action) or `orchestrator.workflow.use`(with "use" action)
 7. Click conditional button at the end of the permission row - "Configure access" dialog should appear
 8. Select condition with rule "IS_ALLOWED_WORKFLOW_ID"
