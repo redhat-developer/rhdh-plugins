@@ -3,3 +3,4 @@
 ---
 
 fix missing translations for homepage card widgets
+lazy load HomePageLayout
