@@ -335,11 +335,13 @@ import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lig
 
 ### Legacy / OFS consumers
 
+Legacy component imports from the main package path still work for backwards compatibility, but are deprecated and will be removed in a future release. New OFS consumers should use the `./legacy` subpath:
+
 ```ts
-// Before (default entry point)
+// Still works (deprecated — will be removed in a future release)
 import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-// After (legacy subpath)
+// Recommended for new OFS consumers
 import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
 ```
 

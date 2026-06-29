@@ -46,7 +46,7 @@ import {
   LightspeedChatContainer,
   LightspeedDrawerStateExposer,
   LightspeedFAB,
-} from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { Administration } from '@backstage-community/plugin-rbac';
 import { ApplicationDrawer } from './ApplicationDrawer';
 import LogoFull from './LogoFull';

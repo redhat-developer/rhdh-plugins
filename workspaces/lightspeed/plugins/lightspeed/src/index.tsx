@@ -202,3 +202,16 @@ export default createFrontendPlugin({
     lightspeedConversation: nfsConversationRouteRef,
   },
 });
+
+// Legacy (OFS) re-exports for backwards compatibility.
+// Deprecated — will be removed in a future release. Use './legacy' subpath for new OFS consumers.
+export {
+  lightspeedPlugin,
+  LightspeedPage,
+  LightspeedDrawerProvider,
+  LightspeedIcon,
+  LightspeedFAB,
+  LightspeedChatContainer,
+  LightspeedDrawerStateExposer,
+} from './legacy';
+export type { DrawerStateExposerProps, DrawerState } from './legacy';
