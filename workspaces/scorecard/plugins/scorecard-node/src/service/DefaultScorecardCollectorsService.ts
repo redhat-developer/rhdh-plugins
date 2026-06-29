@@ -35,6 +35,9 @@ export class DefaultScorecardCollectorsService
     const collectorsMap = new Map<string, Collector>();
     options.collectors.forEach(collector => {
       const collectorId = collector.getCollectorId();
+      if (collectorId === '') {
+        throw new Error(`Collector ID cannot be empty`);
+      }
       if (collectorsMap.has(collectorId)) {
         throw new ConflictError(
           `Collector with ID '${collectorId}' has already been registered`,
@@ -61,6 +64,9 @@ export class DefaultScorecardCollectorsService
   }): Promise<z.infer<TOutputSchema>> {
     if (!this.collectors) {
       throw new Error(`Scorecard collectors service has not been initialized`);
+    }
+    if (options.collectorId === '') {
+      throw new Error(`Collector ID cannot be empty`);
     }
 
     const collector = this.collectors.get(options.collectorId);

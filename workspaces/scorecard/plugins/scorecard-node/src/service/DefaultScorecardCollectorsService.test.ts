@@ -82,6 +82,17 @@ describe('DefaultScorecardCollectorsService', () => {
         `Collector with ID '${collectorId}' has already been registered`,
       );
     });
+
+    it('throws when collector id is an empty string', () => {
+      const collector = makeCollector({
+        getCollectorId: () => '',
+      });
+      const service = new DefaultScorecardCollectorsService();
+
+      expect(() => service.init({ collectors: [collector] })).toThrow(
+        'Collector ID cannot be empty',
+      );
+    });
   });
 
   describe('collect', () => {
@@ -105,6 +116,26 @@ describe('DefaultScorecardCollectorsService', () => {
       ).rejects.toThrow(
         `No collector registered for collector ID '${collectorId}'`,
       );
+    });
+
+    it('throws when collect is called with an empty collector id', async () => {
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [makeCollector()] });
+
+      await expect(
+        service.collect({
+          collectorId: '',
+          contract: {
+            inputSchema: contractInputSchema,
+            outputSchema: contractOutputSchema,
+          },
+          entity,
+          input: {
+            from: '2026-06-01T00:00:00.000Z',
+            to: '2026-06-08T00:00:00.000Z',
+          },
+        }),
+      ).rejects.toThrow('Collector ID cannot be empty');
     });
 
     it('collects successfully when collector and provider schemas are compatible', async () => {
