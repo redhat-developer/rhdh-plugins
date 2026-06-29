@@ -7298,7 +7298,6 @@ __metadata:
     knip: "npm:^5.40.0"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:3.8.4"
-    supertest: "npm:^7.2.2"
     typescript: "npm:~5.8.0"
   languageName: unknown
   linkType: soft
