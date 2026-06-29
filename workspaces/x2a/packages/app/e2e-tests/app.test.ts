@@ -15,8 +15,20 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { performGuestLogin } from './fixtures/auth';
 
-// To be implemented later
-test('noop test', async () => {
-  expect(true).toBe(true);
+const devMode = !process.env.PLAYWRIGHT_URL;
+
+test('App should render the welcome page', async ({ page }) => {
+  await performGuestLogin(page);
+
+  if (devMode) {
+    await expect(
+      page.getByRole('heading', { name: 'Red Hat Catalog' }),
+    ).toBeVisible({ timeout: 10000 });
+  } else {
+    await expect(
+      page.getByRole('heading', { name: 'Welcome back!' }),
+    ).toBeVisible({ timeout: 10000 });
+  }
 });
