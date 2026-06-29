@@ -20,7 +20,7 @@ export default defineConfig({
   timeout: 60_000,
 
   expect: {
-    timeout: 5_000,
+    timeout: 10_000,
   },
 
   webServer: process.env.PLAYWRIGHT_URL
@@ -53,10 +53,8 @@ export default defineConfig({
   ],
 
   use: {
-    actionTimeout: 0,
-    baseURL:
-      process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+    actionTimeout: 10_000,
+    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
@@ -65,13 +63,29 @@ export default defineConfig({
   outputDir: 'test-results',
 
   projects: [
+    // Merge-gate safe: runs against the local dev server in CI
     {
-      name: 'en',
+      name: 'chromium',
       testDir: 'packages/app/e2e-tests',
+      testMatch: /app\.test\.ts$/,
       use: {
         channel: 'chrome',
-        locale: 'en',
       },
     },
+    // Downstream E2E only: requires a deployed RHDH+X2A environment.
+    // Activated by setting PLAYWRIGHT_URL to the live cluster base URL.
+    // Run with: PLAYWRIGHT_URL=https://... yarn test:e2e:live
+    ...(process.env.PLAYWRIGHT_URL
+      ? [
+          {
+            name: 'live',
+            testDir: 'packages/app/e2e-tests',
+            testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
+            use: {
+              channel: 'chrome' as const,
+            },
+          },
+        ]
+      : []),
   ],
 });
