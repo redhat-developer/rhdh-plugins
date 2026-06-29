@@ -17,11 +17,17 @@
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
+
+import {
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -58,10 +64,18 @@ export const RunButton = ({
     navigate(buildExecuteUrl());
   };
 
-  // With RBAC conditional policies, permissions are enforced by the backend
-  // Frontend optimistically allows - backend will return 403 if not permitted
-  const loadingPermission = false;
-  const canRun = true;
+  const { loading: loadingConditional, allowed: conditionalAllowed } =
+    usePermission({
+      permission: orchestratorWorkflowUsePermission,
+      resourceRef: workflowId,
+    });
+  // @deprecated Remove this legacy fallback block in next release
+  const { loading: loadingLegacy, allowed: legacyAllowed } = usePermission({
+    permission: orchestratorWorkflowUseSpecificPermission(workflowId),
+  });
+
+  const loadingPermission = loadingConditional || loadingLegacy;
+  const canRun = conditionalAllowed || legacyAllowed;
 
   let tooltipText = '';
   if (!canRun) {

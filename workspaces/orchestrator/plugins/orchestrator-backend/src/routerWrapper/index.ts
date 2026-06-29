@@ -31,6 +31,7 @@ import express from 'express';
 
 import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { DevModeService } from '../service/DevModeService';
+import { PublicServices } from '../service/initPublicServices';
 import { createBackendRouter } from '../service/router';
 
 export interface RouterOptions {
@@ -45,6 +46,7 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry;
+  publicServices: PublicServices;
 }
 
 export async function createRouter(
@@ -77,5 +79,6 @@ export async function createRouter(
     httpAuth: args.httpAuth,
     userInfo: args.userInfo,
     workflowLogsProvidersRegistry: args.workflowLogsProvidersRegistry,
+    publicServices: args.publicServices,
   });
 }

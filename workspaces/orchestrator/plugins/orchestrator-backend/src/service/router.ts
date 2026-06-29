@@ -21,10 +21,8 @@ import {
   HttpAuthService,
   LoggerService,
   PermissionsService,
-  SchedulerService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { NotAllowedError } from '@backstage/errors';
 import {
   AuthorizeResult,
@@ -57,27 +55,16 @@ import {
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { RouterOptions } from '../routerWrapper';
-import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
-import { DataIndexService } from './DataIndexService';
-import { DataInputSchemaService } from './DataInputSchemaService';
+import { PublicServices } from './initPublicServices';
 import { OrchestratorService } from './OrchestratorService';
 import {
-  bindOrchestratorService,
   OrchestratorFilters,
   orchestratorWorkflowResourceRef,
   WorkflowIdParam,
 } from './permission-rules';
-import { SonataFlowService } from './SonataFlowService';
-import { WorkflowCacheService } from './WorkflowCacheService';
-
-interface PublicServices {
-  dataInputSchemaService: DataInputSchemaService;
-  orchestratorService: OrchestratorService;
-}
 
 interface RouterApi {
   openApiBackend: OpenAPIBackend;
@@ -259,19 +246,12 @@ export async function createBackendRouter(
     config,
     logger,
     auditor,
-    scheduler,
     permissions,
     permissionsRegistry,
     httpAuth,
     userInfo,
-    workflowLogsProvidersRegistry,
+    publicServices,
   } = options;
-  const publicServices = initPublicServices(
-    logger,
-    config,
-    scheduler,
-    workflowLogsProvidersRegistry,
-  );
 
   const routerApi = await initRouterApi(publicServices.orchestratorService);
 
@@ -344,54 +324,6 @@ export async function createBackendRouter(
   router.use(middleware.error({ logAllErrors: true })); // log also openapi errors
 
   return router;
-}
-
-function initPublicServices(
-  logger: LoggerService,
-  config: Config,
-  scheduler: SchedulerService,
-  workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
-): PublicServices {
-  const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
-  const orchestratorKafka: OrchestratorKafkaServiceOptions | undefined =
-    config.getOptional('orchestrator.kafka');
-  const dataIndexService = new DataIndexService(dataIndexUrl, logger);
-  const sonataFlowService = new SonataFlowService(
-    dataIndexService,
-    logger,
-    orchestratorKafka,
-  );
-
-  const workflowCacheService = new WorkflowCacheService(
-    logger,
-    dataIndexService,
-    sonataFlowService,
-  );
-  workflowCacheService.schedule({ scheduler: scheduler });
-
-  const isWorkflowLogProviderAdded = config.getOptional(
-    'orchestrator.workflowLogProvider',
-  );
-  let workflowLogProvider;
-  if (isWorkflowLogProviderAdded) {
-    workflowLogProvider = workflowLogsProvidersRegistry.getProvider('loki');
-  }
-
-  const orchestratorService = new OrchestratorService(
-    sonataFlowService,
-    dataIndexService,
-    workflowCacheService,
-    workflowLogProvider,
-  );
-
-  bindOrchestratorService(orchestratorService);
-
-  const dataInputSchemaService = new DataInputSchemaService();
-
-  return {
-    orchestratorService,
-    dataInputSchemaService,
-  };
 }
 
 async function initRouterApi(

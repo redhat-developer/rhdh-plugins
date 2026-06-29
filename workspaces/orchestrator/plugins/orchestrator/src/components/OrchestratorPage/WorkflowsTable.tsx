@@ -33,7 +33,13 @@ import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
 import TablePagination from '@mui/material/TablePagination';
 
-import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import {
+  orchestratorWorkflowPermission,
+  orchestratorWorkflowSpecificPermission,
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
+  WorkflowOverviewDTO,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import {
   DEFAULT_TABLE_PAGE_SIZE,
@@ -44,6 +50,7 @@ import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useWorkflowPermissionBatch } from '../../hooks/useWorkflowPermissionBatch';
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
@@ -70,25 +77,6 @@ export interface WorkflowsTableProps {
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
 }
-
-const usePermittedToUseBatch = (
-  items: WorkflowOverviewDTO[],
-): { allowed: boolean[] } => {
-  // With RBAC conditional policies, the backend filters workflows by permission.
-  // For "use" permission, optimistically allow — the backend will deny if not permitted.
-  return {
-    allowed: items.map(() => true),
-  };
-};
-
-const usePermittedToViewBatch = (
-  items: WorkflowOverviewDTO[],
-): { allowed: boolean[] } => {
-  // If a workflow is returned in the list, the user has permission to view it.
-  return {
-    allowed: items.map(() => true),
-  };
-};
 
 export const WorkflowsTable = ({
   items,
@@ -118,8 +106,16 @@ export const WorkflowsTable = ({
 
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
 
-  const { allowed: permittedToUse } = usePermittedToUseBatch(items);
-  const { allowed: permittedToView } = usePermittedToViewBatch(items);
+  const { allowed: permittedToUse } = useWorkflowPermissionBatch(
+    items,
+    orchestratorWorkflowUsePermission,
+    orchestratorWorkflowUseSpecificPermission,
+  );
+  const { allowed: permittedToView } = useWorkflowPermissionBatch(
+    items,
+    orchestratorWorkflowPermission,
+    orchestratorWorkflowSpecificPermission,
+  );
 
   const initialState = useMemo(
     () => items.map(WorkflowOverviewFormatter.format),

@@ -25,8 +25,6 @@ import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/back
 
 import type { OrchestratorService } from './OrchestratorService';
 
-let orchestratorService: OrchestratorService | undefined;
-
 export type OrchestratorFilter = {
   key: string;
   values: unknown[];
@@ -87,17 +85,15 @@ export const isWorkflowId = createPermissionRule<
  */
 export const orchestratorPermissionRules = [isWorkflowId];
 
-export function bindOrchestratorService(service: OrchestratorService): void {
-  orchestratorService = service;
-}
-
-export function fetchWorkflowResources(resourceRefs: string[]) {
-  if (!orchestratorService) {
-    throw new Error('Orchestrator service is not initialized');
-  }
+export function fetchWorkflowResources(
+  orchestratorService: OrchestratorService,
+  resourceRefs: string[],
+) {
   return Promise.all(
-    resourceRefs.map(ref =>
-      orchestratorService!.fetchWorkflowOverview({ definitionId: ref }),
+    resourceRefs.map(resourceRef =>
+      orchestratorService.fetchWorkflowOverview({
+        definitionId: resourceRef,
+      }),
     ),
   );
 }

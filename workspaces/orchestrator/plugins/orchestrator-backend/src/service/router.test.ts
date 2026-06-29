@@ -41,6 +41,7 @@ import request from 'supertest';
 
 import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { initPublicServices } from './initPublicServices';
 import {
   orchestratorPermissionRules,
   orchestratorWorkflowResourceRef,
@@ -330,22 +331,33 @@ describe('Router Authorization Tests', () => {
       .fn()
       .mockResolvedValue([{ result: AuthorizeResult.DENY }]);
 
-    const router = await createBackendRouter({
-      config: mockServices.rootConfig({
-        data: {
-          orchestrator: {
-            dataIndexService: { url: 'http://localhost:8080' },
-          },
+    const config = mockServices.rootConfig({
+      data: {
+        orchestrator: {
+          dataIndexService: { url: 'http://localhost:8080' },
         },
-      }),
-      logger: mockServices.logger.mock(),
+      },
+    });
+    const logger = mockServices.logger.mock();
+    const scheduler = mockServices.scheduler.mock();
+    const workflowLogsProvidersRegistry = { getProvider: jest.fn() } as any;
+    const publicServices = initPublicServices(
+      logger,
+      config,
+      scheduler,
+      workflowLogsProvidersRegistry,
+    );
+
+    const router = await createBackendRouter({
+      config,
+      logger,
       auditor: {
         createEvent: jest.fn().mockResolvedValue({
           success: jest.fn(),
           fail: jest.fn(),
         }),
       } as any,
-      scheduler: mockServices.scheduler.mock(),
+      scheduler,
       permissions: mockPermissions,
       permissionsRegistry: {
         registerPermissions: jest.fn(),
@@ -376,7 +388,8 @@ describe('Router Authorization Tests', () => {
           ownershipEntityRefs: [],
         }),
       }),
-      workflowLogsProvidersRegistry: { getProvider: jest.fn() } as any,
+      workflowLogsProvidersRegistry,
+      publicServices,
       discovery: mockServices.discovery.mock(),
       urlReader: mockServices.urlReader.mock(),
     });
