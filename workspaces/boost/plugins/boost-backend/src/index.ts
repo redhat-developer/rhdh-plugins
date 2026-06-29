@@ -81,6 +81,7 @@ export {
   DocumentSyncService,
   type DocumentSyncServiceOptions,
 } from './documents';
+export { createSkillsRoutes, type SkillsRoutesOptions } from './skills';
 export {
   createChatRoutes,
   ConversationAgentCache,
