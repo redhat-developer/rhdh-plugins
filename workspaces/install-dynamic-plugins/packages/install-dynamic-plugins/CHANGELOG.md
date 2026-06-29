@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/cli-module-install-dynamic-plugins
 
+## 0.3.0
+
+### Minor Changes
+
+- 8ba3661: Add enabled field in dynamic plugin config with backwards compatibility for disabled field
+
 ## 0.2.0
 
 ### Minor Changes
