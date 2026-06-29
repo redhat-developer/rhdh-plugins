@@ -24,10 +24,10 @@
     ]
   },
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.9.7"
+    "@backstage/plugin-permission-common": "^0.9.9"
   },
   "peerDependencies": {
-    "@backstage/plugin-permission-common": "^0.9.7"
+    "@backstage/plugin-permission-common": "^0.9.9"
   },
   "sideEffects": false,
   "scripts": {
@@ -39,7 +39,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5"
+    "@backstage/cli": "^0.36.3"
   },
   "files": [
     "dist"
