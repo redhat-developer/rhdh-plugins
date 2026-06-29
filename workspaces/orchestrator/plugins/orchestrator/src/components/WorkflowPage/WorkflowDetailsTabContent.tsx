@@ -30,19 +30,27 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';
 import { entityWorkflowRouteRef, workflowRouteRef } from '../../routes';
+import { InputSchemaCard } from './InputSchemaCard';
 import ServerlessWorkflowEditor from './ServerlessWorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
+import { WorkflowSuccessRatioCard } from './WorkflowSuccessRatioCard';
 
 interface Props {
   loadingWorkflowOverview: boolean;
   workflowOverviewDTO: WorkflowOverviewDTO | undefined;
   errorWorkflowOverview: Error | undefined;
+  showInputSchema?: boolean;
+  showSuccessRatio?: boolean;
+  detailsLayout?: 'default' | 'entity';
 }
 
 export const WorkflowDetailsTabContent = ({
   loadingWorkflowOverview,
   workflowOverviewDTO,
   errorWorkflowOverview,
+  showInputSchema = true,
+  showSuccessRatio = true,
+  detailsLayout = 'default',
 }: Props) => {
   const { t } = useTranslation();
   const adminView = usePermission({
@@ -62,30 +70,63 @@ export const WorkflowDetailsTabContent = ({
   }
 
   return (
-    <Grid container item direction="column" xs={12} spacing={2} wrap="nowrap">
-      {errorWorkflowOverview && (
-        <Grid item>
-          <ResponseErrorPanel error={errorWorkflowOverview} />
+    <Grid item xs={12}>
+      <Grid container spacing={2}>
+        {errorWorkflowOverview && (
+          <Grid item xs={12}>
+            <ResponseErrorPanel error={errorWorkflowOverview} />
+          </Grid>
+        )}
+        <Grid item xs={12} md={showInputSchema ? 6 : 12} zeroMinWidth>
+          <Grid container direction="column" spacing={2} zeroMinWidth>
+            <Grid item xs={12}>
+              <WorkflowDefinitionDetailsCard
+                workflowOverview={workflowOverviewDTO}
+                loading={loadingWorkflowOverview}
+                entityName={entityRef ? name : undefined}
+                entityCatalogLink={
+                  entityRef
+                    ? `/catalog/${namespace}/${kind}/${name}`
+                    : undefined
+                }
+                layout={detailsLayout}
+              />
+            </Grid>
+            {showSuccessRatio ? (
+              <Grid item xs={12}>
+                <WorkflowSuccessRatioCard
+                  workflowOverview={workflowOverviewDTO}
+                  loading={loadingWorkflowOverview}
+                />
+              </Grid>
+            ) : null}
+            {workflowOverviewDTO &&
+              adminView.allowed &&
+              value &&
+              !entityRef && (
+                <Grid
+                  item
+                  xs={12}
+                  sx={{ minWidth: 0, maxWidth: '100%', width: '100%' }}
+                >
+                  <InfoCard title={t('workflow.definition')}>
+                    <ServerlessWorkflowEditor
+                      format={workflowOverviewDTO.format}
+                      loadingWorkflowSource={loading}
+                      workflowSource={value.data}
+                      errorWorkflowSource={error}
+                    />
+                  </InfoCard>
+                </Grid>
+              )}
+          </Grid>
         </Grid>
-      )}
-      <Grid item>
-        <WorkflowDefinitionDetailsCard
-          workflowOverview={workflowOverviewDTO}
-          loading={loadingWorkflowOverview}
-        />
+        {showInputSchema ? (
+          <Grid item xs={12} md={6} zeroMinWidth>
+            <InputSchemaCard workflowId={workflowId} />
+          </Grid>
+        ) : null}
       </Grid>
-      {workflowOverviewDTO && adminView.allowed && value && !entityRef && (
-        <Grid item>
-          <InfoCard title={t('workflow.definition')}>
-            <ServerlessWorkflowEditor
-              format={workflowOverviewDTO.format}
-              loadingWorkflowSource={loading}
-              workflowSource={value.data}
-              errorWorkflowSource={error}
-            />
-          </InfoCard>
-        </Grid>
-      )}
     </Grid>
   );
 };

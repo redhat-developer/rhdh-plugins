@@ -49,6 +49,39 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.format).toBe('yaml'); // Adjust based on your expected value
   });
 
+  it('should format workflow run stats when provided', () => {
+    const mockWorkflowOverview: WorkflowOverviewDTO = {
+      workflowId: 'wf-stats',
+      format: 'yaml',
+      workflowRunStats: {
+        runsLastMonth: 5300,
+        successRatio: 0.91,
+        successCount: 91,
+        errorCount: 9,
+        totalCount: 100,
+      },
+    };
+
+    const adaptedData = WorkflowOverviewFormatter.format(mockWorkflowOverview);
+
+    expect(adaptedData.runsLastMonth).toBe('5.3 k');
+    expect(adaptedData.successRatio).toBe(0.91);
+    expect(adaptedData.successRatioDisplay).toBe('91%');
+  });
+
+  it('should use unavailable placeholders when workflow run stats are missing', () => {
+    const mockWorkflowOverview: WorkflowOverviewDTO = {
+      workflowId: 'wf-no-stats',
+      format: 'yaml',
+    };
+
+    const adaptedData = WorkflowOverviewFormatter.format(mockWorkflowOverview);
+
+    expect(adaptedData.runsLastMonth).toBe('---');
+    expect(adaptedData.successRatio).toBeUndefined();
+    expect(adaptedData.successRatioDisplay).toBe('---');
+  });
+
   it('should include version when provided', () => {
     const mockWorkflowOverview: WorkflowOverviewDTO = {
       workflowId: 'wf-1',

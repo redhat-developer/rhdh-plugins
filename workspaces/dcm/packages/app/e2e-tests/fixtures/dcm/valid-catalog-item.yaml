@@ -1,0 +1,22 @@
+display_name: E2E Import Test Item
+api_version: v1alpha1
+spec:
+  service_type: container
+  fields:
+    - path: config.replicas
+      display_name: Replicas
+      editable: true
+      default: 3
+      validation_schema:
+        type: integer
+        minimum: 1
+    - path: config.region
+      display_name: Region
+      editable: true
+      default: us-east-1
+      validation_schema:
+        type: string
+        enum:
+          - us-east-1
+          - us-west-2
+          - eu-west-1

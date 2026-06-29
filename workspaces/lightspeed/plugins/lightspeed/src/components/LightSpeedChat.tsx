@@ -1126,7 +1126,9 @@ export const LightspeedChat = ({
 
   const onNewChat = useCallback(() => {
     (async () => {
-      setIsMcpSettingsOpen(false);
+      if (!isFullscreenMode) {
+        setIsMcpSettingsOpen(false);
+      }
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
         setFileContents([]);
@@ -1357,7 +1359,9 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
-      setIsMcpSettingsOpen(false);
+      if (!isFullscreenMode) {
+        setIsMcpSettingsOpen(false);
+      }
       setNewChatCreated(false);
       const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
@@ -1380,6 +1384,7 @@ export const LightspeedChat = ({
       scrollToBottomRef,
       setCurrentConversationId,
       setIsMcpSettingsOpen,
+      isFullscreenMode,
     ],
   );
 
@@ -1794,7 +1799,9 @@ export const LightspeedChat = ({
               selectedModel={selectedModel}
               models={models}
               onSelect={item => {
-                setIsMcpSettingsOpen(false);
+                if (!isFullscreenMode) {
+                  setIsMcpSettingsOpen(false);
+                }
                 onNewChat();
                 handleSelectedModel(item);
               }}
@@ -1962,7 +1969,9 @@ export const LightspeedChat = ({
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
             handleSelectedModel={item => {
-              setIsMcpSettingsOpen(false);
+              if (!isFullscreenMode) {
+                setIsMcpSettingsOpen(false);
+              }
               onNewChat();
               handleSelectedModel(item);
             }}
