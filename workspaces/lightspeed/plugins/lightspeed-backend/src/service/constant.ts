@@ -199,3 +199,14 @@ export const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
 
 // default number of message history being loaded
 export const DEFAULT_HISTORY_LENGTH = 10;
+
+/**
+ * Minimal 1x1 pixel JPEG image for testing model vision capabilities.
+ * Base64-encoded JPEG with minimal headers.
+ */
+export const TEST_VISION_JPEG =
+  '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a' +
+  'HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy' +
+  'MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIA' +
+  'AhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEB' +
+  'AQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAA//2Q==';

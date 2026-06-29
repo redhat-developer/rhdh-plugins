@@ -58,4 +58,11 @@ export interface QueryRequestBody {
 
   // System prompt to override the default value
   system_prompt?: string;
+
+  // Attachments array (e.g. DOM context, screenshots)
+  attachments?: Array<{
+    attachment_type: string;
+    content_type: string;
+    content: string;
+  }>;
 }
