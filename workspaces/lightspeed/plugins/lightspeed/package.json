@@ -9,8 +9,8 @@
   },
   "exports": {
     ".": "./src/index.tsx",
-    "./alpha": "./src/alphaExports.ts",
-    "./legacy": "./src/legacyExports.ts",
+    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacy.ts",
     "./lightspeed-fab-module": "./src/lightspeedFABModuleExport.ts",
     "./lightspeed-translations-module": "./src/lightspeedTranslationsModuleExport.ts",
     "./dev": "./dev/CustomDrawer.tsx",
@@ -19,10 +19,10 @@
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alphaExports.ts"
+        "src/alpha.ts"
       ],
       "legacy": [
-        "src/legacyExports.ts"
+        "src/legacy.ts"
       ],
       "lightspeed-fab-module": [
         "src/lightspeedFABModuleExport.ts"
@@ -122,8 +122,8 @@
     "name": "red-hat-developer-hub.backstage-plugin-lightspeed",
     "exposedModules": {
       "PluginRoot": "./src/index.tsx",
-      "Alpha": "./src/alphaExports.ts",
-      "Legacy": "./src/legacyExports.ts",
+      "Alpha": "./src/alpha.ts",
+      "Legacy": "./src/legacy.ts",
       "LightspeedFABModule": "./src/lightspeedFABModuleExport.ts",
       "LightspeedTranslationsModule": "./src/lightspeedTranslationsModuleExport.ts"
     }

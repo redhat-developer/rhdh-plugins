@@ -1,6 +1,13 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
+      # NFS (New Frontend System) deployment requires these extensions in app-config.yaml:
+      # app:
+      #   extensions:
+      #     - app-root-wrapper:app/drawer
+      #     - app-root-wrapper:app/lightspeed-fab
+      #     - app-drawer-content:lightspeed/lightspeed
+      #     - translation:app/lightspeed-translations
       translationResources:
         - importName: lightspeedTranslations
           module: Alpha
