@@ -13,10 +13,10 @@ Use collectors when:
 Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecard-node`:
 
 - `Collector`
-- `CollectorRegistry`
 - `CollectorContract`
-- `collectWithContract`
 - `scorecardCollectorsExtensionPoint`
+- `ScorecardCollectorsService`
+- `scorecardCollectorsServiceRef`
 
 ## Collector ID convention
 
@@ -109,13 +109,39 @@ export const scorecardModuleMySource = createBackendModule({
 
 ## Use collectors from a metric provider
 
-Use `collectWithContract` to validate both sides of the contract (provider and collector expected input and output):
+To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetric`:
+
+```ts
+import { createBackendModule } from '@backstage/backend-plugin-api';
+import {
+  scorecardCollectorsServiceRef,
+  scorecardMetricsExtensionPoint,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MyMetricProvider } from './metricProviders/MyMetricProvider';
+
+export const scorecardModuleMySource = createBackendModule({
+  pluginId: 'scorecard',
+  moduleId: 'my-source',
+  register(reg) {
+    reg.registerInit({
+      deps: {
+        collectorsService: scorecardCollectorsServiceRef,
+        metrics: scorecardMetricsExtensionPoint,
+      },
+      async init({ collectorsService, metrics }) {
+        metrics.addMetricProvider(new MyMetricProvider(collectorsService));
+      },
+    });
+  },
+});
+```
+
+Use `collectorsService.collect(...)` to validate both sides of the contract (provider and collector expected input and output):
 
 ```ts
 import type { Entity } from '@backstage/catalog-model';
 import {
-  collectWithContract,
-  type CollectorRegistry,
+  type ScorecardCollectorsService,
   type MetricProvider,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { z } from 'zod';
@@ -130,13 +156,12 @@ const outputSchema = z.object({
 });
 
 export class MyMetricProvider implements MetricProvider<'number'> {
-  constructor(private readonly collectorRegistry: CollectorRegistry) {}
+  constructor(private readonly collectorsService: ScorecardCollectorsService) {}
 
   // Other MetricProvider methods omitted
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const collected = await collectWithContract({
-      collectorRegistry: this.collectorRegistry,
+    const collected = await this.collectorsService.collect({
       collectorId: 'my-source:deployments',
       contract: {
         inputSchema,

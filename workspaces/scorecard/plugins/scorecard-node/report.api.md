@@ -11,6 +11,7 @@ import type { JsonValue } from '@backstage/types';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ServiceRef } from '@backstage/backend-plugin-api';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { z } from 'zod';
@@ -40,26 +41,6 @@ export type CollectorContract<
 };
 
 // @public
-export interface CollectorRegistry {
-  // (undocumented)
-  getCollector(collectorId: string): Collector;
-  // (undocumented)
-  hasCollector(collectorId: string): boolean;
-}
-
-// @public
-export const collectWithContract: <
-  TInputSchema extends z.ZodTypeAny,
-  TOutputSchema extends z.ZodTypeAny,
->(options: {
-  collectorRegistry: CollectorRegistry;
-  collectorId: string;
-  contract: CollectorContract<TInputSchema, TOutputSchema>;
-  entity: Entity;
-  input: unknown;
-}) => Promise<z.infer<TOutputSchema>>;
-
-// @public
 export type ComparisonOperator = {
   operator: ComparisonSign;
   value: MetricValue;
@@ -67,6 +48,26 @@ export type ComparisonOperator = {
 
 // @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
+
+// @public (undocumented)
+export class DefaultScorecardCollectorsService
+  implements ScorecardCollectorsService
+{
+  // (undocumented)
+  collect<
+    TInputSchema extends z.ZodTypeAny,
+    TOutputSchema extends z.ZodTypeAny,
+  >(options: {
+    collectorId: string;
+    contract: CollectorContract<TInputSchema, TOutputSchema>;
+    entity: Entity;
+    input: unknown;
+  }): Promise<z.infer<TOutputSchema>>;
+  // (undocumented)
+  hasCollector(collectorId: string): boolean;
+  // (undocumented)
+  init(options: { collectors: Collector[] }): void;
+}
 
 // @public
 export function getThresholdsFromConfig(
@@ -105,14 +106,35 @@ export type RangeOperator = {
 export interface ScorecardCollectorsExtensionPoint {
   // (undocumented)
   addCollector(...collectors: Array<Collector>): void;
-  // (undocumented)
-  getCollector(collectorId: string): Collector;
-  // (undocumented)
-  hasCollector(collectorId: string): boolean;
 }
 
 // @public
 export const scorecardCollectorsExtensionPoint: ExtensionPoint<ScorecardCollectorsExtensionPoint>;
+
+// @public
+export interface ScorecardCollectorsService {
+  // (undocumented)
+  collect<
+    TInputSchema extends z.ZodTypeAny,
+    TOutputSchema extends z.ZodTypeAny,
+  >(options: {
+    collectorId: string;
+    contract: CollectorContract<TInputSchema, TOutputSchema>;
+    entity: Entity;
+    input: unknown;
+  }): Promise<z.infer<TOutputSchema>>;
+  // (undocumented)
+  hasCollector(collectorId: string): boolean;
+  // (undocumented)
+  init(options: { collectors: Array<Collector> }): void;
+}
+
+// @public
+export const scorecardCollectorsServiceRef: ServiceRef<
+  ScorecardCollectorsService,
+  'plugin',
+  'singleton'
+>;
 
 // @public
 export interface ScorecardMetricsExtensionPoint {

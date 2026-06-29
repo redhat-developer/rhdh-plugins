@@ -73,7 +73,7 @@ The Scorecard plugin collects metrics from third-party data sources using metric
 
 ### Collectors
 
-Collectors are reusable data-fetching contracts used by metric providers. They are registered through `scorecardCollectorsExtensionPoint` and consumed via `collectWithContract`.
+Collectors are reusable data-fetching contracts used by metric providers. They are registered through `scorecardCollectorsExtensionPoint` and consumed through `scorecardCollectorsServiceRef`.
 
 For details and examples, see [collectors.md](./docs/collectors.md).
 
