@@ -595,6 +595,7 @@ export const WorkflowRunsTabContent = ({
       {
         title: t('table.headers.version'),
         field: 'version',
+        sorting: false,
         render: (data: WorkflowRunDetail) => data.version ?? VALUE_UNAVAILABLE,
       },
       {
