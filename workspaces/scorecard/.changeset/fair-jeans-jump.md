@@ -3,4 +3,4 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-node': minor
 ---
 
-Introduce collectors extension point to use by metric providers to collect data from different datasources.
+Introduce `scorecardCollectorsExtensionPoint` for registering collectors to fetch data from different datasources, and `scorecardCollectorsServiceRef` for consuming collected data in metric providers `calculateMetrics` through `collect(...)`.
