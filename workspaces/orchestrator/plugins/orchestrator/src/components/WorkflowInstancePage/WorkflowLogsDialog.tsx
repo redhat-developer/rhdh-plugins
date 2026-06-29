@@ -28,6 +28,7 @@ import { WorkflowLogEntry } from '@red-hat-developer-hub/backstage-plugin-orches
 import { orchestratorApiRef } from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useIsDarkMode } from '../../utils/isDarkMode';
+import { Trans } from '../Trans';
 import { InfoDialog } from '../ui/InfoDialog';
 import { TextCodeBlock } from '../ui/TextCodeBlock';
 
@@ -35,12 +36,14 @@ export interface WorkflowLogsDialogProps {
   open: boolean;
   onClose: () => void;
   instanceId: string;
+  processName?: string;
 }
 
 export const WorkflowLogsDialog = ({
   open,
   onClose,
   instanceId,
+  processName,
 }: WorkflowLogsDialogProps) => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
@@ -101,7 +104,12 @@ export const WorkflowLogsDialog = ({
 
   return (
     <InfoDialog
-      title={t('run.logs.title')}
+      title={
+        <Trans
+          message="run.logs.title"
+          params={{ processName: processName || instanceId }}
+        />
+      }
       onClose={onClose}
       open={open}
       dialogActions={

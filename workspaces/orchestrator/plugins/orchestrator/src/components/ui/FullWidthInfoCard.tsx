@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-import { TextCodeBlock } from './TextCodeBlock';
+import { PropsWithChildren, ReactNode } from 'react';
 
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-  fullWidth,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-  fullWidth?: boolean;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
+import { InfoCard } from '@backstage/core-components';
 
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-      fullWidth={fullWidth}
-    />
-  );
-};
+import Box from '@mui/material/Box';
+
+export const FullWidthInfoCard = ({
+  title,
+  children,
+}: PropsWithChildren<{ title: ReactNode }>) => (
+  <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0 }}>
+    <InfoCard
+      title={title}
+      titleTypographyProps={{ component: 'div', style: { width: '100%' } }}
+    >
+      {children}
+    </InfoCard>
+  </Box>
+);
