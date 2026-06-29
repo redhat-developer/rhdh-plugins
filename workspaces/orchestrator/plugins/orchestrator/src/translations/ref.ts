@@ -70,6 +70,8 @@ export const orchestratorMessages = {
       started: 'Started',
       entity: 'Entity',
       runBy: 'Run by',
+      placeholder: 'Filter',
+      clearAll: 'Clear all',
       startedOptions: {
         today: 'Today',
         yesterday: 'Yesterday',
@@ -88,6 +90,7 @@ export const orchestratorMessages = {
     successRatioDescription:
       'Share of completed runs versus failed runs for this workflow.',
     runSuccess: 'Run success',
+    ofTotal: 'of {{totalCount}}',
     statsSuccess: 'Success',
     statsFailed: 'Failed',
     progress: 'Workflow progress',

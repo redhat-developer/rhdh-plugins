@@ -244,10 +244,12 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.actions.viewRuns': string;
     readonly 'table.actions.viewInputSchema': string;
     readonly 'table.actions.viewRunVariables': string;
+    readonly 'table.filters.placeholder': string;
     readonly 'table.filters.status': string;
     readonly 'table.filters.entity': string;
     readonly 'table.filters.started': string;
     readonly 'table.filters.runBy': string;
+    readonly 'table.filters.clearAll': string;
     readonly 'table.filters.startedOptions.today': string;
     readonly 'table.filters.startedOptions.yesterday': string;
     readonly 'table.filters.startedOptions.last7days': string;
@@ -332,6 +334,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.inputSchemaDescription': string;
     readonly 'workflow.successRatioDescription': string;
     readonly 'workflow.runSuccess': string;
+    readonly 'workflow.ofTotal': string;
     readonly 'workflow.statsSuccess': string;
     readonly 'workflow.statsFailed': string;
     readonly 'workflow.fields.description': string;

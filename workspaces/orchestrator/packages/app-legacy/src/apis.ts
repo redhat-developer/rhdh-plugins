@@ -52,6 +52,8 @@ const toastStatusToSeverity = (message: ToastApiMessage) => {
       return 'warning';
     case 'danger':
       return 'error';
+    case 'success':
+      return 'success';
     default:
       return 'info';
   }

@@ -67,30 +67,34 @@ export const WorkflowsTabContentView = ({
   onSearchChange,
   onPageChange,
   onPageSizeChange,
-}: WorkflowsTabContentViewProps) => (
-  <Content noPadding>
-    {loading ? <Progress /> : null}
-    {error ? <ResponseErrorPanel error={error} /> : null}
-    {isReady && (overviews?.length ?? 0) === 0 && page === 0 ? (
-      <OrchestratorEmptyState variant="workflows" />
-    ) : null}
-    {isReady && ((overviews?.length ?? 0) > 0 || page > 0) ? (
-      <WorkflowsTable
-        items={overviews ?? []}
-        totalCount={totalCount}
-        isLoading={tableLoading}
-        isPaginated={isPaginated}
-        page={page}
-        pageSize={pageSize}
-        hasNextPage={hasNextPage}
-        search={search}
-        onSearchChange={onSearchChange}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-      />
-    ) : null}
-  </Content>
-);
+}: WorkflowsTabContentViewProps) => {
+  const isSearching = search.trim().length > 0;
+  const hasTableRows = (overviews?.length ?? 0) > 0 || page > 0;
+  const showEmptyState = isReady && !hasTableRows && page === 0 && !isSearching;
+
+  return (
+    <Content noPadding>
+      {loading ? <Progress /> : null}
+      {error ? <ResponseErrorPanel error={error} /> : null}
+      {showEmptyState ? <OrchestratorEmptyState variant="workflows" /> : null}
+      {isReady && (hasTableRows || isSearching) ? (
+        <WorkflowsTable
+          items={overviews ?? []}
+          totalCount={totalCount}
+          isLoading={tableLoading}
+          isPaginated={isPaginated}
+          page={page}
+          pageSize={pageSize}
+          hasNextPage={hasNextPage}
+          search={search}
+          onSearchChange={onSearchChange}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      ) : null}
+    </Content>
+  );
+};
 
 const slicePaginatedPage = (
   overviews: WorkflowOverviewDTO[],

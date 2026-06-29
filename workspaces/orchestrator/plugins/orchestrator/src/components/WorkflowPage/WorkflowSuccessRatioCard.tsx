@@ -25,6 +25,7 @@ import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orc
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatCompactCount } from '../../utils/formatCompactCount';
+import { translateMessage } from '../Trans';
 import { FullWidthInfoCard } from '../ui/FullWidthInfoCard';
 import { InfoCardTitleWithTooltip } from '../ui/InfoCardTitleWithTooltip';
 
@@ -48,6 +49,7 @@ const SuccessRatioDonut = ({
   successCount: number;
   totalCount: number;
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const successColor = theme.palette.success.main;
   const errorColor = theme.palette.error.main;
@@ -111,7 +113,9 @@ const SuccessRatioDonut = ({
           {formatCompactCount(successCount)}
         </Typography>
         <Typography variant="caption" color="text.secondary" component="div">
-          of {formatCompactCount(totalCount)}
+          {translateMessage(t, 'workflow.ofTotal', {
+            totalCount: formatCompactCount(totalCount),
+          })}
         </Typography>
       </Box>
     </Box>

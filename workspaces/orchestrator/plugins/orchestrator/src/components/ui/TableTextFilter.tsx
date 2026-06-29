@@ -20,38 +20,44 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 export const TableTextFilter = ({
   value,
   onChange,
 }: {
   value: string;
   onChange: (value: string) => void;
-}) => (
-  <TextField
-    variant="standard"
-    size="small"
-    placeholder="Filter"
-    value={value}
-    onChange={event => onChange(event.target.value)}
-    inputProps={{ 'aria-label': 'Filter' }}
-    sx={{ minWidth: { xs: '12rem', sm: '16rem' } }}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon fontSize="small" />
-        </InputAdornment>
-      ),
-      endAdornment: value ? (
-        <InputAdornment position="end">
-          <IconButton
-            size="small"
-            aria-label="Clear all"
-            onClick={() => onChange('')}
-          >
-            <ClearIcon fontSize="small" />
-          </IconButton>
-        </InputAdornment>
-      ) : null,
-    }}
-  />
-);
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <TextField
+      variant="standard"
+      size="small"
+      placeholder={t('table.filters.placeholder')}
+      value={value}
+      onChange={event => onChange(event.target.value)}
+      inputProps={{ 'aria-label': t('table.filters.placeholder') }}
+      sx={{ minWidth: { xs: '12rem', sm: '16rem' } }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon fontSize="small" />
+          </InputAdornment>
+        ),
+        endAdornment: value ? (
+          <InputAdornment position="end">
+            <IconButton
+              size="small"
+              aria-label={t('table.filters.clearAll')}
+              onClick={() => onChange('')}
+            >
+              <ClearIcon fontSize="small" />
+            </IconButton>
+          </InputAdornment>
+        ) : null,
+      }}
+    />
+  );
+};

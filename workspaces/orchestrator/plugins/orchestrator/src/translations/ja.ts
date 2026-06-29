@@ -148,6 +148,8 @@ const orchestratorTranslationJa = createTranslationMessages({
     'table.filters.startedOptions.today': '今日',
     'table.filters.startedOptions.yesterday': '昨日',
     'table.filters.status': 'ステータス',
+    'table.filters.placeholder': 'フィルター',
+    'table.filters.clearAll': 'すべてクリア',
     'table.headers.description': '説明',
     'table.headers.duration': '期間',
     'table.headers.lastRun': '最終実行',
@@ -201,6 +203,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.successRatioDescription':
       'このワークフローの成功した実行と失敗した実行の比率です。',
     'workflow.runSuccess': '実行成功率',
+    'workflow.ofTotal': '/ {{totalCount}}',
     'workflow.statsSuccess': '成功',
     'workflow.statsFailed': '失敗',
     'workflow.details': '詳細',

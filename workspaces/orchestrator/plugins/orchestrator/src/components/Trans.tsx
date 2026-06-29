@@ -18,6 +18,13 @@ import { useTranslation } from '../hooks/useTranslation';
 import { orchestratorTranslationRef } from '../translations';
 
 type Messages = typeof orchestratorTranslationRef.T;
+type MessageKey = keyof Messages;
+
+export const translateMessage = (
+  t: ReturnType<typeof useTranslation>['t'],
+  message: MessageKey,
+  params?: Record<string, string | number>,
+): string => t(message, params as any);
 
 interface TransProps<TMessages extends { [key in string]: string }> {
   message: keyof TMessages;
@@ -26,5 +33,5 @@ interface TransProps<TMessages extends { [key in string]: string }> {
 
 export const Trans = ({ message, params }: TransProps<Messages>) => {
   const { t } = useTranslation();
-  return t(message, params);
+  return translateMessage(t, message, params);
 };

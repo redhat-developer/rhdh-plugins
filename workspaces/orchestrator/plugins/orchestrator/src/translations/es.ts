@@ -152,6 +152,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'table.filters.startedOptions.today': 'Hoy',
     'table.filters.startedOptions.yesterday': 'Ayer',
     'table.filters.status': 'Estado',
+    'table.filters.placeholder': 'Filtrar',
+    'table.filters.clearAll': 'Borrar todo',
     'table.headers.description': 'Descripción',
     'table.headers.duration': 'Duración',
     'table.headers.lastRun': 'Última ejecución',
@@ -207,6 +209,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.successRatioDescription':
       'Proporción de ejecuciones completadas frente a ejecuciones fallidas de este flujo de trabajo.',
     'workflow.runSuccess': 'Éxito de ejecución',
+    'workflow.ofTotal': 'de {{totalCount}}',
     'workflow.statsSuccess': 'Éxito',
     'workflow.statsFailed': 'Fallido',
     'workflow.details': 'Detalles',

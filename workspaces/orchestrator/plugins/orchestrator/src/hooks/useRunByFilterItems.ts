@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { Entity } from '@backstage/catalog-model';
 import { SelectItem } from '@backstage/core-components';
@@ -82,6 +82,12 @@ export const useRunByFilterItems = (options: {
   const additionalInitiatorsKey = (options.additionalInitiators ?? []).join(
     '|',
   );
+  const additionalInitiators = useMemo(
+    () => options.additionalInitiators ?? [],
+    // additionalInitiatorsKey tracks initiator content, not array reference.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [additionalInitiatorsKey],
+  );
 
   useEffect(() => {
     if (!enabled) {
@@ -108,7 +114,7 @@ export const useRunByFilterItems = (options: {
 
         const refs = collectDistinctInitiatorEntities(
           response.data.items ?? [],
-          options.additionalInitiators,
+          additionalInitiators,
         );
 
         if (refs.length === 0) {
@@ -159,8 +165,7 @@ export const useRunByFilterItems = (options: {
     catalogApi,
     enabled,
     options.filters,
-    additionalInitiatorsKey,
-    options.additionalInitiators,
+    additionalInitiators,
   ]);
 
   return { items, loading };

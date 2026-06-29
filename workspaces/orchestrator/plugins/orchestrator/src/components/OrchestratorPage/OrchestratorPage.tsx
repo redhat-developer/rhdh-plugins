@@ -29,6 +29,7 @@ import { useAllWorkflowOverviews } from '../../hooks/useWorkflowsCount';
 import { workflowInstancesRouteRef } from '../../routes';
 import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
 import { useIsDarkMode } from '../../utils/isDarkMode';
+import { translateMessage } from '../Trans';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 import { WorkflowsTabContent } from './WorkflowsTabContent';
@@ -98,10 +99,9 @@ export const OrchestratorPage = () => {
 
   const workflowsTabTitle =
     displayedWorkflowsCount !== undefined
-      ? t('table.title.workflows').replace(
-          '{{count}}',
-          String(displayedWorkflowsCount),
-        )
+      ? translateMessage(t, 'table.title.workflows', {
+          count: displayedWorkflowsCount,
+        })
       : t('page.tabs.workflows');
 
   return (
