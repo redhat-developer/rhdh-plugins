@@ -7,4 +7,4 @@
 
 Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
 
-**BREAKING CHANGE:** Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
