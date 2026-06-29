@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
