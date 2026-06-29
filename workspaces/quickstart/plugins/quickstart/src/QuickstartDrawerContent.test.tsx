@@ -39,14 +39,14 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-app-react', () => ({
   }),
 }));
 
-jest.mock('../hooks/useQuickstartRole', () => ({
+jest.mock('./hooks/useQuickstartRole', () => ({
   useQuickstartRole: jest.fn(() => ({
     isLoading: false,
     userRole: 'admin',
   })),
 }));
 
-const { useQuickstartRole } = jest.requireMock('../hooks/useQuickstartRole');
+const { useQuickstartRole } = jest.requireMock('./hooks/useQuickstartRole');
 
 describe('QuickstartDrawerContent', () => {
   const adminConfigApi = mockApis.config({
