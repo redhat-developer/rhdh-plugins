@@ -765,14 +765,20 @@ export class ResourceOptimizationPage {
     // The secure proxy may return 403 (Forbidden) or filter data to empty.
     // The UI may render an alert banner OR an empty table with 0 containers.
     // Accept either pattern as valid "unauthorized" behavior.
+    //
+    // RHDH 1.10+ takes significantly longer to resolve RBAC permissions
+    // for unauthorized users — the alert may not render for 30-40s.
+    // Wait for network to settle before asserting (FLPATH-4427).
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+
     const errorAlert = this.page
       .getByRole('alert')
-      .filter({ hasText: /unauthorized|forbidden|error/i });
+      .filter({ hasText: /unauthorized|forbidden|error|access denied/i });
 
     const emptyTable = this.page.getByText(/Optimizable containers \(0\)/);
 
     const unauthorizedIndicator = errorAlert.or(emptyTable);
-    await expect(unauthorizedIndicator).toBeVisible({ timeout: 20000 });
+    await expect(unauthorizedIndicator).toBeVisible({ timeout: 60000 });
   }
 
   /**

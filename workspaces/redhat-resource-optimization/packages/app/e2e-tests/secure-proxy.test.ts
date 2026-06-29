@@ -116,10 +116,12 @@ test.describe('Secure Proxy & RBAC Security @live @ro @security', () => {
       });
 
       // Should show Forbidden, NOT a 500 Internal Server Error
+      // RHDH 1.10+ RBAC checks take longer to resolve (FLPATH-4427)
+      await page.waitForLoadState('networkidle').catch(() => {});
       const errorAlert = page.getByRole('alert').filter({
-        hasText: /forbidden|unauthorized|error/i,
+        hasText: /forbidden|unauthorized|error|access denied/i,
       });
-      await expect(errorAlert).toBeVisible({ timeout: 15000 });
+      await expect(errorAlert).toBeVisible({ timeout: 30000 });
 
       // Specifically should NOT contain "500" or "Internal Server Error"
       const internalError = page.getByText(/500|Internal Server Error/);
