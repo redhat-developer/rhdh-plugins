@@ -24,7 +24,6 @@ import {
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
-import { AngleDownIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -37,9 +36,6 @@ type MessageBarModelSelectorProps = {
 
 const useStyles = makeStyles(theme => ({
   selectorToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
     color: theme.palette.text.secondary,
     fontSize: 14,
     fontWeight: 500,
@@ -54,6 +50,11 @@ const useStyles = makeStyles(theme => ({
     '&:disabled': {
       cursor: 'not-allowed',
       opacity: 0.5,
+    },
+    // PF v6 dual-mapped icons render default + rh-ui SVGs; hide rh-ui so only
+    // one caret shows (matches prototype toggle-icon structure).
+    '& .pf-v6-c-menu-toggle__toggle-icon .pf-v6-icon-rh-ui': {
+      display: 'none',
     },
   },
   dropdown: {
@@ -83,12 +84,11 @@ export const MessageBarModelSelector = ({
       onClick={() => setIsOpen(!isOpen)}
       isExpanded={isOpen}
       isDisabled={disabled}
-      variant="plain"
+      variant="plainText"
       className={classes.selectorToggle}
       aria-label={t('aria.chatbotSelector')}
     >
       {selectedModelLabel}
-      <AngleDownIcon />
     </MenuToggle>
   );
 
