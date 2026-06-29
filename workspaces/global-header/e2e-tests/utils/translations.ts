@@ -26,24 +26,21 @@ import globalHeaderTranslationJa from '../../plugins/global-header/src/translati
 
 export type GlobalHeaderMessages = typeof globalHeaderMessages;
 
-function transform(messages: typeof globalHeaderTranslationDe.messages) {
-  const result = Object.keys(messages).reduce<Record<string, any>>(
-    (res, key) => {
-      const path = key.split('.');
-      const lastIndex = path.length - 1;
-      path.reduce<Record<string, any>>((acc, currentPath, i) => {
-        acc[currentPath] =
-          lastIndex === i
-            ? messages[key as keyof typeof messages]
-            : acc[currentPath] || {};
-        return acc[currentPath] as Record<string, any>;
-      }, res);
-      return res;
-    },
-    {},
-  );
-
-  return result as GlobalHeaderMessages;
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof globalHeaderTranslationDe.messages,
+) {
+  const messages = {} as Record<string, any>;
+  for (const key of Object.keys(flatMessages)) {
+    const path = key.split('.');
+    let current = messages;
+    for (let i = 0; i < path.length - 1; i++) {
+      current[path[i]] = current[path[i]] || {};
+      current = current[path[i]] as Record<string, any>;
+    }
+    current[path[path.length - 1]] =
+      flatMessages[key as keyof typeof flatMessages];
+  }
+  return messages as GlobalHeaderMessages;
 }
 
 export function getTranslations(locale: string) {
@@ -51,15 +48,15 @@ export function getTranslations(locale: string) {
     case 'en':
       return globalHeaderMessages;
     case 'de':
-      return transform(globalHeaderTranslationDe.messages);
+      return transformFlatMessagesIntoTree(globalHeaderTranslationDe.messages);
     case 'es':
-      return transform(globalHeaderTranslationEs.messages);
+      return transformFlatMessagesIntoTree(globalHeaderTranslationEs.messages);
     case 'fr':
-      return transform(globalHeaderTranslationFr.messages);
+      return transformFlatMessagesIntoTree(globalHeaderTranslationFr.messages);
     case 'it':
-      return transform(globalHeaderTranslationIt.messages);
+      return transformFlatMessagesIntoTree(globalHeaderTranslationIt.messages);
     case 'ja':
-      return transform(globalHeaderTranslationJa.messages);
+      return transformFlatMessagesIntoTree(globalHeaderTranslationJa.messages);
     default:
       return globalHeaderMessages;
   }
