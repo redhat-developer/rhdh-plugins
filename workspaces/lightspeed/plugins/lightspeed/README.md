@@ -261,7 +261,7 @@ Expected: entries for `LightspeedFABModule` and `LightspeedTranslationsModule`.
 
 ### OFS Mode (Scalprum / Legacy)
 
-OFS mode uses Scalprum for dynamic plugin loading. The plugin configuration **must** include `module: Legacy` on all OFS mount points and routes, and `module: Alpha` on translation resources:
+OFS mode uses Scalprum for dynamic plugin loading. Legacy exports are also available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity. Translation resources require `module: Alpha`:
 
 ```yaml
 plugins:
@@ -347,26 +347,20 @@ import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub
 
 ### Dynamic plugin configuration (OFS)
 
-All mount points and dynamic routes now require `module: Legacy`. Without it, the scalprum loader cannot distinguish legacy components from NFS extensions:
+Legacy exports are available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity:
 
 ```yaml
-# Before (no module specified — resolved from default PluginRoot)
 dynamicRoutes:
   - path: /intelligent-assistant
     importName: LightspeedPage
-
-# After (explicit module targeting)
-dynamicRoutes:
-  - path: /intelligent-assistant
-    importName: LightspeedPage
-    module: Legacy
+    module: Legacy # advisable for clarity, but not mandatory
 ```
 
 ### Dynamic plugin module name change
 
 The `LightspeedPlugin` scalprum module has been removed. Configurations that previously used `module: LightspeedPlugin` should be updated:
 
-- **OFS/Legacy** — use `module: Legacy`
+- **OFS/Legacy** — omit `module` (defaults to PluginRoot which has legacy exports) or use `module: Legacy` for clarity
 - **NFS** — use the default `module: PluginRoot` (or omit `module` entirely)
 
 ```yaml
@@ -376,9 +370,9 @@ dynamicRoutes:
     importName: LightspeedPage
     module: LightspeedPlugin
 
-# After (OFS)
+# After (OFS — either works)
 dynamicRoutes:
   - path: /intelligent-assistant
     importName: LightspeedPage
-    module: Legacy
+    module: Legacy  # or omit module entirely
 ```
