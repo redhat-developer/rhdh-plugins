@@ -21,6 +21,11 @@ const materialUiMigrationEslintConfig = {
       message: 'Use @mui/material instead of Material UI v4.',
     },
     {
+      name: '@material-ui/icons',
+      message:
+        "Use '@mui/icons-material/<Icon>' instead of Material UI v4 (e.g. import MenuIcon from '@mui/icons-material/Menu').",
+    },
+    {
       name: '@material-ui/lab',
       message: 'Use @mui/material instead of Material UI v4.',
     },
