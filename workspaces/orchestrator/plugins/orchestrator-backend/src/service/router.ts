@@ -142,6 +142,41 @@ const legacyAuthorize = async (
   return false;
 };
 
+// @deprecated Remove in next release — batched legacy fallback for list filtering
+const legacyAuthorizeBatch = async (
+  credentials: Awaited<ReturnType<HttpAuthService['credentials']>>,
+  workflowIds: string[],
+  specificPermissionFactory: (workflowId: string) => BasicPermission,
+  permissionsSvc: PermissionsService,
+  logger: LoggerService,
+): Promise<string[]> => {
+  if (workflowIds.length === 0) {
+    return [];
+  }
+
+  const specificWorkflowRequests = workflowIds.map(workflowId => ({
+    permission: specificPermissionFactory(workflowId),
+  }));
+
+  const decisions = await permissionsSvc.authorize(specificWorkflowRequests, {
+    credentials,
+  });
+
+  const legacyAllowed: string[] = [];
+  workflowIds.forEach((workflowId, idx) => {
+    if (decisions[idx]?.result === AuthorizeResult.ALLOW) {
+      const permission = specificPermissionFactory(workflowId);
+      logger.warn(
+        `Dynamic permission "${permission.name}" granted access. ` +
+          `This permission is deprecated. Migrate to conditional policies with IS_ALLOWED_WORKFLOW_ID rule.`,
+      );
+      legacyAllowed.push(workflowId);
+    }
+  });
+
+  return legacyAllowed;
+};
+
 const isUserAuthorizedForInstanceAdminViewPermission = async (
   request: HttpRequest,
   permissionsSvc: PermissionsService,
@@ -187,21 +222,13 @@ const filterAuthorizedWorkflowIds = async (
 
   // @deprecated Remove this legacy fallback block in next release
   if (remainingIds.length > 0) {
-    const legacyResults = await Promise.all(
-      remainingIds.map(async workflowId => {
-        const allowed = await legacyAuthorize(
-          request,
-          orchestratorWorkflowSpecificPermission(workflowId),
-          permissionsSvc,
-          httpAuth,
-          logger,
-        );
-        return { workflowId, allowed };
-      }),
+    const legacyAllowed = await legacyAuthorizeBatch(
+      credentials,
+      remainingIds,
+      orchestratorWorkflowSpecificPermission,
+      permissionsSvc,
+      logger,
     );
-    const legacyAllowed = legacyResults
-      .filter(r => r.allowed)
-      .map(r => r.workflowId);
     return [...conditionallyAllowed, ...legacyAllowed];
   }
 

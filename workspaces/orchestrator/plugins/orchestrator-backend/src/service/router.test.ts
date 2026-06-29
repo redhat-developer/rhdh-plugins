@@ -329,7 +329,9 @@ describe('Router Authorization Tests', () => {
       .mockResolvedValue([{ result: AuthorizeResult.DENY }]);
     mockPermissions.authorize = jest
       .fn()
-      .mockResolvedValue([{ result: AuthorizeResult.DENY }]);
+      .mockImplementation((requests: { permission: unknown }[]) =>
+        Promise.resolve(requests.map(() => ({ result: AuthorizeResult.DENY }))),
+      );
 
     const config = mockServices.rootConfig({
       data: {
@@ -524,8 +526,8 @@ describe('Router Authorization Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.overviews).toHaveLength(0);
-      // @deprecated legacy fallback calls authorize for all 3 unmatched workflows
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(3);
+      // @deprecated legacy fallback batches authorize for unmatched workflows
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
 
     it('GET /v2/workflows/:workflowId/source allows when workflowId matches condition', async () => {
@@ -612,8 +614,8 @@ describe('Router Authorization Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual([]);
-      // @deprecated legacy fallback called for all 3 unmatched workflows
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(3);
+      // @deprecated legacy fallback batches authorize for unmatched workflows
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1000,8 +1002,8 @@ describe('Router Authorization Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body).toEqual([]);
       expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
-      // @deprecated 3 legacy fallback calls for all unmatched workflows
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(3);
+      // @deprecated legacy fallback batches authorize for unmatched workflows
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1301,10 +1303,11 @@ describe('Router Authorization Tests', () => {
         { result: AuthorizeResult.DENY },
       ]);
       // Legacy dynamic permission allows workflow1 and workflow2
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]) // workflow1
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]) // workflow2
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]); // workflow3
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.ALLOW },
+        { result: AuthorizeResult.DENY },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
@@ -1317,7 +1320,7 @@ describe('Router Authorization Tests', () => {
           .map((o: { workflowId: string }) => o.workflowId)
           .sort(),
       ).toEqual(['workflow1', 'workflow2']);
-      expect(mockPermissions.authorize).toHaveBeenCalledTimes(3);
+      expect(mockPermissions.authorize).toHaveBeenCalledTimes(1);
     });
 
     it('POST /v2/workflows/overview combines conditional and legacy access', async () => {
@@ -1326,9 +1329,10 @@ describe('Router Authorization Tests', () => {
         rbacConditionalRead(['workflow1']),
       ]);
       // Legacy allows workflow3 (workflow2 denied by both)
-      mockPermissions.authorize
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]) // workflow2
-        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]); // workflow3
+      mockPermissions.authorize.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.ALLOW },
+      ]);
 
       const response = await request(app)
         .post('/v2/workflows/overview')
