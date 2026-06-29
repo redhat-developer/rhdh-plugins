@@ -43,6 +43,10 @@ All specs are currently in **draft** status (pre-implementation). They will be m
 | ------------- | ----------- |
 | _coming soon_ |             |
 
+## Compatibility
+
+This workspace is aligned with **Backstage 1.52.0** (see [`backstage.json`](backstage.json)).
+
 ## Development
 
 ```bash
