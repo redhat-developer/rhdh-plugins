@@ -25,27 +25,8 @@ import { ERRORS_KEY, ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { evaluateTemplateString } from './evaluateTemplate';
 import { getRequestInit } from './useRequestInit';
+import { parseValidationErrorBody } from './parseValidationErrorBody';
 import { safeSet } from './safeSet';
-
-const parseValidationErrorBody = async (
-  response: Response,
-): Promise<JsonObject | undefined> => {
-  try {
-    if (typeof response.text === 'function') {
-      const text = await response.text();
-      if (!text) {
-        return undefined;
-      }
-      return JSON.parse(text) as JsonObject;
-    }
-    if (typeof response.json === 'function') {
-      return (await response.json()) as JsonObject;
-    }
-  } catch {
-    return undefined;
-  }
-  return undefined;
-};
 
 // Walks through the uiSchema and calls the "callback" for every field which is backed by the dynamic ui:widget.
 // The callback is provided with the uiSchema path, content of the uiSchema part and the corresponding entered formData value.

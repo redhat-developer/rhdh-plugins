@@ -23,6 +23,11 @@ import unset from 'lodash/unset';
 /**
  * Maps an RJSF field id (e.g. `root_stepOne_xParams_name`) to a dotted form
  * path used in extraErrors (e.g. `stepOne.xParams.name`).
+ *
+ * Assumes schema property names do not contain underscores. RJSF encodes nested
+ * paths in ids using the configured id separator (default `_`), so an
+ * underscore inside a field name would be indistinguishable from a path segment
+ * and cannot be mapped back reliably.
  */
 export function rjsfIdToFieldPath(id?: string): string | undefined {
   if (!id || id === 'root') {
