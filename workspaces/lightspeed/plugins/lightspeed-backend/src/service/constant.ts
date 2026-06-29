@@ -104,7 +104,7 @@ export const SSRF_BLOCKED_HOSTNAMES = [
   'metadata.google.internal', // GCP metadata endpoint
   'kubernetes.default.svc', // Kubernetes internal DNS
   'host.docker.internal', // Docker host access
-  '169.254.169.254', // AWS/Azure/GCP metadata IP
+  '169.254.169.254', // NOSONAR local netwok, used by AWS/Azure/GCP metadata IP
   '127.0.0.1', // IPv4 loopback
   '0.0.0.0', // IPv4 any address
   '::1', // IPv6 loopback
