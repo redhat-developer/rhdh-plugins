@@ -14,7 +14,5 @@
  * limitations under the License.
  */
 
-export type { Collector, CollectorRegistry } from './Collector';
-export { collectWithContract } from './collectWithContract';
-export type { CollectorContract } from './collectWithContract';
+export type { Collector, CollectorContract } from './Collector';
 export type { MetricProvider } from './MetricProvider';

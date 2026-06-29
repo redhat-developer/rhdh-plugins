@@ -56,10 +56,13 @@ export interface Collector<
 }
 
 /**
- * Minimal collector registry to resolve collectors by ID.
+ * Collector contract expected by caller.
  * @public
  */
-export interface CollectorRegistry {
-  getCollector(collectorId: string): Collector;
-  hasCollector(collectorId: string): boolean;
-}
+export type CollectorContract<
+  TInputSchema extends z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny,
+> = {
+  inputSchema: TInputSchema;
+  outputSchema: TOutputSchema;
+};

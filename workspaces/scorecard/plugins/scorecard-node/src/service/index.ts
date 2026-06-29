@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Node.js library for the scorecard plugin.
- *
- * @packageDocumentation
- */
-
-export * from './extensions';
-export * from './api';
-export * from './service';
-export * from './utils';
-export * from './errors';
+export type { ScorecardCollectorsService } from './scorecardCollectorsService';
+export { scorecardCollectorsServiceRef } from './scorecardCollectorsService';
+export { DefaultScorecardCollectorsService } from './DefaultScorecardCollectorsService';

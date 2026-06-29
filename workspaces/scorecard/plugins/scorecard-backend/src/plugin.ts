@@ -22,12 +22,13 @@ import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createScorecardActions } from './actions';
 import {
-  MetricProvider,
+  type Collector,
+  type MetricProvider,
   scorecardCollectorsExtensionPoint,
+  scorecardCollectorsServiceRef,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
-import { CollectorRegistry } from './providers/CollectorRegistry';
 import { CatalogMetricService } from './service/CatalogMetricService';
 import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
 import { scorecardPermissions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -50,8 +51,14 @@ import { ThresholdResolver } from './threshold/ThresholdResolver';
 export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
+    const collectors: Collector[] = [];
     const metricProvidersRegistry = new MetricProvidersRegistry();
-    const collectorRegistry = new CollectorRegistry();
+
+    env.registerExtensionPoint(scorecardCollectorsExtensionPoint, {
+      addCollector(...newCollectors: Collector[]) {
+        collectors.push(...newCollectors);
+      },
+    });
 
     env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
       addMetricProvider(...newMetricProviders: MetricProvider[]) {
@@ -60,25 +67,13 @@ export const scorecardPlugin = createBackendPlugin({
         });
       },
     });
-    env.registerExtensionPoint(scorecardCollectorsExtensionPoint, {
-      addCollector(...collectors) {
-        collectors.forEach(collector => {
-          collectorRegistry.register(collector);
-        });
-      },
-      getCollector(collectorId: string) {
-        return collectorRegistry.getCollector(collectorId);
-      },
-      hasCollector(collectorId: string) {
-        return collectorRegistry.hasCollector(collectorId);
-      },
-    });
 
     env.registerInit({
       deps: {
         actionsRegistry: actionsRegistryServiceRef,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
+        collectorsService: scorecardCollectorsServiceRef,
         config: coreServices.rootConfig,
         database: coreServices.database,
         httpRouter: coreServices.httpRouter,
@@ -92,6 +87,7 @@ export const scorecardPlugin = createBackendPlugin({
         actionsRegistry,
         auth,
         catalog,
+        collectorsService,
         config,
         database,
         httpRouter,
@@ -101,6 +97,8 @@ export const scorecardPlugin = createBackendPlugin({
         permissionsRegistry,
         scheduler,
       }) {
+        collectorsService.init({ collectors });
+
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
           getResources: async (resourceRefs: string[]) => {
