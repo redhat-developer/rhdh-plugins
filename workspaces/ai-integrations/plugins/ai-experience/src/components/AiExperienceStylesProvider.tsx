@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { PropsWithChildren } from 'react';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('ai-experience-')
-    ? componentName
-    : `ai-experience-${componentName}`;
+const generateClassName = createGenerateClassName({
+  seed: 'ai-experience',
 });
 
-export * from './plugin';
-export * from './alpha';
+export const AiExperienceStylesProvider = ({
+  children,
+}: PropsWithChildren<{}>) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);
