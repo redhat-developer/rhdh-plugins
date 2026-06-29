@@ -7,6 +7,7 @@ import { AnyApiFactory } from '@backstage/frontend-plugin-api';
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
@@ -14,10 +15,15 @@ import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
+import { JSX as JSX_3 } from 'react/jsx-runtime';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { PathParams } from '@backstage/core-plugin-api';
+import { PropsWithChildren } from 'react';
 import { RouteRef } from '@backstage/frontend-plugin-api';
+import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/frontend-plugin-api';
+import { SubRouteRef as SubRouteRef_2 } from '@backstage/core-plugin-api';
 
 // @public
 const _default: OverridableFrontendPlugin<
@@ -162,8 +168,56 @@ const _default: OverridableFrontendPlugin<
 >;
 export default _default;
 
+// @public
+export type DrawerState = {
+  id: string;
+  isDrawerOpen: boolean;
+  drawerWidth: number;
+  setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
+};
+
+// @public
+export type DrawerStateExposerProps = {
+  onStateChange: (state: DrawerState) => void;
+};
+
+// @public (undocumented)
+export const LightspeedChatContainer: () => JSX_3.Element;
+
+// @public
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
+
+// @public
+export const LightspeedDrawerStateExposer: (
+  input: DrawerStateExposerProps,
+) => null;
+
+// @public
+export const LightspeedFAB: () => JSX_3.Element | null;
+
 // @public (undocumented)
 export const lightspeedFABModule: FrontendModule;
+
+// @public
+export const LightspeedIcon: () => JSX_3.Element;
+
+// @public
+export const LightspeedPage: () => JSX_3.Element;
+
+// @public
+export const lightspeedPlugin: BackstagePlugin<
+  {
+    root: RouteRef_2<undefined>;
+    lightspeedConversation: SubRouteRef_2<
+      PathParams<'/conversation/:conversationId'>
+    >;
+    lightspeedNotebooks: SubRouteRef_2<undefined>;
+    lightspeedNotebookView: SubRouteRef_2<PathParams<'/notebooks/:notebookId'>>;
+  },
+  {},
+  {}
+>;
 
 // @public (undocumented)
 export const lightspeedRedirectModule: FrontendModule;
