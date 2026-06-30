@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 
-export const AiCatalogIcon = () => <StorefrontIcon />;
+export const AiCatalogIcon = (props: SvgIconProps) => (
+  <StorefrontIcon {...props} />
+);

@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { boostPlugin } from './plugin';
+import { coreExtensionData } from '@backstage/frontend-plugin-api';
+import { createExtensionTester } from '@backstage/frontend-test-utils';
+
+import { boostPage, boostPlugin } from './plugin';
 
 describe('boost', () => {
   it('should export plugin', () => {
     expect(boostPlugin).toBeDefined();
+  });
+
+  it('should define ai catalog page at /ai-catalog', () => {
+    const tester = createExtensionTester(boostPage);
+
+    expect(tester.get(coreExtensionData.routePath)).toBe('/ai-catalog');
+    expect(tester.get(coreExtensionData.title)).toBe('AI Catalog');
   });
 });

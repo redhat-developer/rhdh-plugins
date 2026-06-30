@@ -65,9 +65,11 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 | Package                           | Type            | Description                                                                                                   |
 | --------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
-| `boost-frontend`                  | Frontend plugin | Chat UI, agent gallery, admin panels, composable extensions                                                   |
+| `boost`                           | Frontend plugin | Chat UI, agent gallery, admin panels, composable extensions                                                   |
 | `boost-common`                    | Common library  | Shared types (`AgenticProvider`, `NormalizedStreamEvent`, permissions) — browser-safe, no backend API imports |
 | `boost-node`                      | Node library    | `boostAiProviderServiceRef`, `boostProviderExtensionPoint` — service refs and extension points                |
+| `boost-responses-api-toolkit`     | Node library    | Shared Responses API utilities                                                                                |
+| `boost-toolscope`                 | Node library    | Injectable cache adapter for tool scope                                                                       |
 | `boost-backend`                   | Backend plugin  | Core routes, services, middleware, `ProviderManager`, cross-cutting entity providers (MCP, vector stores)     |
 | `boost-backend-module-llamastack` | Backend module  | Llama Stack agentic provider (composes `llamastack-entity-provider`)                                          |
 | `boost-backend-module-kagenti`    | Backend module  | Kagenti agentic provider (composes `kagenti-entity-provider`)                                                 |
@@ -82,14 +84,14 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 4. RHDH loads plugins dynamically via Scalprum — no code changes or rebuilds
 5. Boost appears as a sidebar entry in RHDH
 
-**Full portal deployment** installs `boost-frontend`, `boost-common`, `boost-node`, `boost-backend`, plus one or both provider modules. Provider modules compose their entity providers internally.
+**Full portal deployment** installs `boost`, `boost-common`, `boost-node`, `boost-backend`, plus one or both provider modules. Provider modules compose their entity providers internally.
 
 **Entity-provider-only deployment** installs `llamastack-entity-provider` or `kagenti-entity-provider` as standalone dynamic plugins — gets AI domain objects in the Backstage catalog without the rest of boost.
 
 **Backstage — Static Plugin:**
 
-1. Install npm packages: `@boost/plugin-boost-frontend`, `@boost/plugin-boost-backend`, `@boost/plugin-boost-common`, `@boost/plugin-boost-node`
-2. Optionally install provider modules: `@boost/plugin-boost-backend-module-llamastack`, `@boost/plugin-boost-backend-module-kagenti`
+1. Install npm packages: `@red-hat-developer-hub/backstage-plugin-boost`, `@red-hat-developer-hub/backstage-plugin-boost-backend`, `@red-hat-developer-hub/backstage-plugin-boost-common`, `@red-hat-developer-hub/backstage-plugin-boost-node`
+2. Optionally install provider modules: `@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack`, `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti`
 3. Register frontend route, sidebar entry, and icon
 4. Register backend plugin and provider modules in backend startup
 5. Configure `app-config.yaml`
@@ -248,14 +250,14 @@ Backend services + Frontend via admin API
 
 ```
 RHDH Dynamic Plugin (full portal):
-  boost-frontend + boost-common + boost-node + boost-backend + provider module(s)
+  boost + boost-common + boost-node + boost-backend + provider module(s)
   OCI images → dynamic-plugins.override.yaml → Scalprum → sidebar entry
   No code changes, no rebuilds
 
 RHDH Dynamic Plugin (entity providers only):
   llamastack-entity-provider and/or kagenti-entity-provider
   Catalog entities without the full portal
-  No boost-backend or boost-frontend needed
+  No boost-backend or boost needed
 
 Backstage Static Plugin:
   npm packages → manual registration → rebuild → deploy

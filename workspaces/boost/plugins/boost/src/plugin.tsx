@@ -21,7 +21,7 @@ import {
 import { rootRouteRef } from './routes';
 import { AiCatalogIcon } from './components/AiCatalogIcon';
 
-export const page = PageBlueprint.make({
+export const boostPage = PageBlueprint.make({
   params: {
     path: '/ai-catalog',
     routeRef: rootRouteRef,
@@ -39,7 +39,7 @@ export const page = PageBlueprint.make({
  */
 export const boostPlugin = createFrontendPlugin({
   pluginId: 'boost',
-  extensions: [page],
+  extensions: [boostPage],
   routes: {
     root: rootRouteRef,
   },

@@ -20,10 +20,10 @@ import plugin from '../src';
 const defaultPage = '/ai-catalog';
 
 if (
-  typeof global.window !== 'undefined' &&
-  global.window.location.pathname === '/'
+  globalThis.window !== undefined &&
+  globalThis.window.location.pathname === '/'
 ) {
-  global.window.location.pathname = defaultPage;
+  globalThis.window.location.pathname = defaultPage;
 }
 
 createDevApp({ features: [plugin] });

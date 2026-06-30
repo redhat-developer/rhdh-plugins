@@ -49,7 +49,8 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend'));
-// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
+// Local dev only: allow-all-policy grants every permission to every caller.
+// Production deployments must register a real permission policy instead.
 backend.add(
   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
 );

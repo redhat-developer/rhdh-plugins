@@ -17,7 +17,8 @@ organization:
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
+  # information on the format.
+  # Enable backend.auth.keys before any non-local deployment.
   # auth:
   #   keys:
   #     - secret: ${BACKEND_SECRET}
@@ -79,6 +80,8 @@ techdocs:
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
+  # Local dev only: guest provider with auto sign-in (see packages/app sign-in module).
+  # Do not use this configuration in production deployments.
   environment: development
   providers:
     # See https://backstage.io/docs/auth/guest/provider

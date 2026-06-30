@@ -51,4 +51,4 @@ Two built-in provider modules, each as an independent `createBackendModule`:
 - `plugins/boost-backend/src/plugin.ts` — serviceRef factory registration, ProviderManager
 - `plugins/boost-backend-module-llamastack/` — Llama Stack provider module
 - `plugins/boost-backend-module-kagenti/` — Kagenti provider module
-- `plugins/boost-frontend/src/` — capability-based rendering throughout
+- `plugins/boost/src/` — capability-based rendering throughout

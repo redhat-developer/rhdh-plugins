@@ -17,6 +17,7 @@
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "boost",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost",
     "supported-versions": "1.52.0",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost",
