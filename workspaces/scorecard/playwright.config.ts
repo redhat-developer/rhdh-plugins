@@ -34,6 +34,7 @@ export default defineConfig({
         port: 3000,
         reuseExistingServer: true,
         env: {
+          NODE_ENV: 'development',
           JIRA_URL: 'https://issues.redhat.com',
           JIRA_TOKEN: 'my-jira-token',
         },
