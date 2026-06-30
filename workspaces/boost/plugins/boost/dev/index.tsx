@@ -17,4 +17,10 @@ import { createDevApp } from '@backstage/frontend-dev-utils';
 
 import plugin from '../src';
 
+const defaultPage = '/boost';
+
+if (typeof window !== 'undefined' && window.location.pathname === '/') {
+  window.location.pathname = defaultPage;
+}
+
 createDevApp({ features: [plugin] });
