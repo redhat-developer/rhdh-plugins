@@ -30,6 +30,9 @@ workspaces/boost/
 │           ├── design.md          # Architecture decisions
 │           ├── tasks.md           # Implementation task breakdown
 │           └── specs/             # Behavioral specs (Given/When/Then)
+├── packages/                      # Full-stack local dev shell
+│   ├── app/                       # New Frontend System app
+│   └── backend/                   # Backstage backend
 └── plugins/                       # Plugin packages (implementation target)
 ```
 
@@ -39,6 +42,22 @@ When implementing an issue:
 2. Find the relevant PRD in `specifications/prd/` for product requirements
 3. Find the matching change in `openspec/changes/` for design decisions, task breakdown, and behavioral specs
 4. The `specs/` subdirectories contain acceptance criteria as scenarios — implementation must satisfy these
+
+## Local development
+
+All registerable Boost plugins are wired into the dev shell:
+
+- **Frontend:** `packages/app/src/App.tsx` registers `@red-hat-developer-hub/backstage-plugin-boost` via `createApp({ features: [...] })`.
+- **Backend:** `packages/backend/src/index.ts` registers the core plugin, `boostAiProviderServiceFactory`, both provider modules, and both entity providers via `backend.add()`.
+
+Configuration lives in `app-config.yaml` under the `boost.*` namespace (security mode, model, providers, entity providers). The dev backend uses `@backstage/plugin-permission-backend-module-allow-all-policy`; fine-grained RBAC integration is deferred per the security specs.
+
+Two dev workflows:
+
+- `yarn start` — full app (packages/app + packages/backend) with all Boost plugins; navigate to `/boost`.
+- `yarn dev` — isolated frontend and backend plugin dev servers for faster iteration on a single plugin.
+
+For RHDH production deployment, see `dynamic-plugins-filesystem-reference.yaml` and `dynamic-plugins-image-reference.yaml`.
 
 ## Architecture rules
 
@@ -72,9 +91,11 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 | Package                           | Purpose                                                              |
 | --------------------------------- | -------------------------------------------------------------------- |
-| `boost-frontend`                  | Chat UI, agent gallery, admin panels, composable routable extensions |
+| `boost`                           | Chat UI, agent gallery, admin panels, composable routable extensions |
 | `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)      |
 | `boost-node`                      | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
+| `boost-responses-api-toolkit`     | Shared Responses API utilities (`node-library` role)                 |
+| `boost-toolscope`                 | Injectable cache adapter for tool scope (`node-library` role)        |
 | `boost-backend`                   | Core routes, services, middleware, ProviderManager                   |
 | `boost-backend-module-llamastack` | Llama Stack provider module                                          |
 | `boost-backend-module-kagenti`    | Kagenti provider module                                              |

@@ -15,6 +15,7 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
+import { boostAiProviderServiceFactory } from '@red-hat-developer-hub/backstage-plugin-boost-backend';
 
 const backend = createBackend();
 
@@ -73,5 +74,21 @@ backend.add(import('@backstage/plugin-signals-backend'));
 
 // mcp actions plugin
 backend.add(import('@backstage/plugin-mcp-actions-backend'));
+
+// boost plugins
+backend.add(import('@red-hat-developer-hub/backstage-plugin-boost-backend'));
+backend.add(boostAiProviderServiceFactory);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider'),
+);
 
 backend.start();

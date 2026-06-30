@@ -10584,7 +10584,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti@workspace:plugins/boost-backend-module-kagenti":
+"@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti@workspace:plugins/boost-backend-module-kagenti":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti@workspace:plugins/boost-backend-module-kagenti"
   dependencies:
@@ -10596,7 +10596,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:plugins/boost-backend-module-llamastack":
+"@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:plugins/boost-backend-module-llamastack":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack@workspace:plugins/boost-backend-module-llamastack"
   dependencies:
@@ -10609,7 +10609,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-boost-backend@workspace:plugins/boost-backend":
+"@red-hat-developer-hub/backstage-plugin-boost-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-backend@workspace:plugins/boost-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-backend@workspace:plugins/boost-backend"
   dependencies:
@@ -10666,7 +10666,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-boost@workspace:plugins/boost":
+"@red-hat-developer-hub/backstage-plugin-boost@workspace:^, @red-hat-developer-hub/backstage-plugin-boost@workspace:plugins/boost":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost@workspace:plugins/boost"
   dependencies:
@@ -10693,7 +10693,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider":
+"@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:^, @red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider"
   dependencies:
@@ -10705,7 +10705,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider@workspace:plugins/llamastack-entity-provider":
+"@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider@workspace:^, @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider@workspace:plugins/llamastack-entity-provider":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider@workspace:plugins/llamastack-entity-provider"
   dependencies:
@@ -15076,6 +15076,7 @@ __metadata:
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:^1.32.3"
+    "@red-hat-developer-hub/backstage-plugin-boost": "workspace:^"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -15659,6 +15660,11 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.4.5"
     "@backstage/plugin-signals-backend": "npm:^0.3.16"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.1"
+    "@red-hat-developer-hub/backstage-plugin-boost-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider": "workspace:^"
     app: "link:../app"
     better-sqlite3: "npm:^12.0.0"
     node-gyp: "npm:^10.0.0"

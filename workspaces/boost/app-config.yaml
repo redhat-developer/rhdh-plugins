@@ -144,3 +144,22 @@ permission:
 mcpActions:
   name: 'Boost Dev'
   description: 'Tools for managing your software catalog, creating new services from templates, and exploring your developer portal' # optional
+
+boost:
+  security:
+    mode: development-only-no-auth
+  model:
+    baseUrl: http://localhost:8321
+    name: meta-llama/Llama-3.1-8B-Instruct
+  providers:
+    llamastack:
+      baseUrl: http://localhost:8321
+    kagenti:
+      baseUrl: http://localhost:8080
+  entityProviders:
+    llamastack:
+      baseUrl: http://localhost:8321
+    kagenti:
+      baseUrl: http://localhost:8080
+      namespaces:
+        - default

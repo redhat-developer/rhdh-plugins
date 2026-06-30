@@ -1,20 +1,29 @@
 # boost
 
-Welcome to the boost plugin!
-
-_This plugin was created through the Backstage CLI_
+Welcome to the boost frontend plugin!
 
 ## Getting started
 
-Your plugin has been added to the app in this repository, meaning you'll be able
-to access it by running `yarn start` in the root directory, and then navigating
-to [/boost](http://localhost:3000/boost).
+### Full app (recommended)
 
-This plugin is built with Backstage's [frontend
-system](https://backstage.io/docs/frontend-system/architecture/index), and you
-can find more information about building plugins in the [plugin builder
-documentation](https://backstage.io/docs/frontend-system/building-plugins/index).
+The plugin is registered in `packages/app`. From the workspace root:
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+```bash
+yarn start
+```
+
+Navigate to [/boost](http://localhost:3000/boost).
+
+### Isolated development
+
+For faster iteration on the frontend plugin alone, run from this directory:
+
+```bash
+yarn start
+```
+
+This uses the dev app in [`dev/`](./dev/) with quicker startup and hot reloads. The backend plugin can be developed in isolation from `plugins/boost-backend` via `yarn dev` at the workspace root.
+
+## Architecture
+
+This plugin is built with Backstage's [frontend system](https://backstage.io/docs/frontend-system/architecture/index). See the [plugin builder documentation](https://backstage.io/docs/frontend-system/building-plugins/index) for extension patterns.

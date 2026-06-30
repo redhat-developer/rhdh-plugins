@@ -15,8 +15,9 @@
  */
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import boostPlugin from '@red-hat-developer-hub/backstage-plugin-boost';
 import { navModule } from './modules/nav';
 
 export default createApp({
-  features: [catalogPlugin, navModule],
+  features: [catalogPlugin, navModule, boostPlugin],
 });

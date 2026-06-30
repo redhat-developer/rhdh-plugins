@@ -27,21 +27,27 @@ The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is 
 
 ## Workspace Structure
 
-All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
+Plugin packages live at `rhdh-plugins/workspaces/boost/plugins/`. The local dev shell lives at `packages/`:
 
 ```
-workspace/boost/plugins/
-├── boost-frontend                    — Chat UI, agent gallery, admin panels, composable extensions
-├── boost-common                      — Shared types, permissions (browser-safe, common-library role)
-├── boost-node                        — Service refs, extension points (node-library role)
-├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
-├── boost-backend-module-llamastack   — Llama Stack agentic provider (composes llamastack-entity-provider)
-├── boost-backend-module-kagenti      — Kagenti agentic provider (composes kagenti-entity-provider)
-├── llamastack-entity-provider        — Backstage backend service: Llama Stack catalog entities (independently deployable)
-└── kagenti-entity-provider           — Backstage backend service: Kagenti catalog entities (independently deployable)
+workspaces/boost/
+├── packages/
+│   ├── app/                          — New Frontend System dev app (registers boost frontend plugin)
+│   └── backend/                      — Backstage backend (registers all boost backend plugins)
+└── plugins/
+    ├── boost                         — Chat UI, agent gallery, admin panels, composable extensions
+    ├── boost-common                  — Shared types, permissions (browser-safe, common-library role)
+    ├── boost-node                    — Service refs, extension points (node-library role)
+    ├── boost-responses-api-toolkit   — Shared Responses API utilities (node-library role)
+    ├── boost-toolscope               — Injectable cache adapter for tool scope (node-library role)
+    ├── boost-backend                 — Core routes, services, middleware, ProviderManager
+    ├── boost-backend-module-llamastack — Llama Stack agentic provider (will compose llamastack-entity-provider)
+    ├── boost-backend-module-kagenti  — Kagenti agentic provider (will compose kagenti-entity-provider)
+    ├── llamastack-entity-provider    — Llama Stack catalog entities (independently deployable)
+    └── kagenti-entity-provider       — Kagenti catalog entities (independently deployable)
 ```
 
-The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
+The core packages (`boost`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
 
 ## Design Principles (Learned from Augment)
 
