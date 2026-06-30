@@ -125,3 +125,4 @@ This extensions plugin is part of the Red Hat Developer Hub plugins ecosystem. F
 ## License
 
 Licensed under the Apache License, Version 2.0.
+1
