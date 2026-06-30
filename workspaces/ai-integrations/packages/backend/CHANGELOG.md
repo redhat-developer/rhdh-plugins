@@ -1,5 +1,16 @@
 # backend
 
+## 0.0.14
+
+### Patch Changes
+
+- Updated dependencies [c2e3749]
+- Updated dependencies [67be6ce]
+  - @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog@0.9.2
+  - @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend@0.5.2
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.4.2
+  - @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@0.2.0
+
 ## 0.0.13
 
 ### Patch Changes
