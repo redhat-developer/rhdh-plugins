@@ -54,8 +54,12 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
-    await this.page.getByTestId('user-picker-all').getByText('All').click();
+    await this.page.goto('/catalog');
+    // "My Groups" sidebar item can overlap the catalog toolbar; force bypasses the check.
+    await this.page
+      .getByTestId('user-picker-all')
+      .getByText('All')
+      .click({ force: true });
   }
 
   async openComponent(componentName: string) {
