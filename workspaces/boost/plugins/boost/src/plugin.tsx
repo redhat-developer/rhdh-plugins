@@ -28,6 +28,11 @@ export const page = PageBlueprint.make({
   },
 });
 
+/**
+ * The boost frontend plugin instance.
+ *
+ * @public
+ */
 export const boostPlugin = createFrontendPlugin({
   pluginId: 'boost',
   extensions: [page],

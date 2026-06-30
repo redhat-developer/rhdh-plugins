@@ -13,4 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * Boost frontend plugin for Red Hat Developer Hub.
+ *
+ * @packageDocumentation
+ */
+
 export { boostPlugin as default } from './plugin';

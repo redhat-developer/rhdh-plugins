@@ -6,10 +6,11 @@
     "node": "22 || 24"
   },
   "scripts": {
+    "dev": "NODE_OPTIONS=--no-node-snapshot ; yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-boost --include @red-hat-developer-hub/backstage-plugin-boost-backend --parallel -v -i run start",
     "start": "backstage-cli repo start",
     "start:debug": "backstage-cli repo start --inspect",
     "build:all": "backstage-cli repo build --all",
-    "build:api-reports": "yarn build:api-reports:only --tsc",
+    "build:api-reports": "yarn tsc:full; yarn build:api-reports:only",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "tsc": "tsc",
@@ -22,7 +23,7 @@
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
+    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn openspec:validate && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "openspec:validate": "openspec validate --all --json",
     "postinstall": "cd ../../ && yarn install"
@@ -46,13 +47,20 @@
     "@changesets/cli": "^2.27.1",
     "@fission-ai/openspec": "^1.4.1",
     "knip": "^5.27.4",
-    "node-gyp": "^9.0.0",
+    "node-gyp": "^10.0.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.0"
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "react": "^18",
+    "react-dom": "^18",
+    "node-gyp": "^10.0.0",
+    "@backstage/backend-plugin-api": "1.9.2",
+    "@backstage/plugin-permission-common": "0.9.9",
+    "@backstage/plugin-permission-node": "0.11.1",
+    "@backstage/plugin-catalog-node": "2.2.2"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
