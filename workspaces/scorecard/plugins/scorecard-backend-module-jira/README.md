@@ -198,9 +198,9 @@ scorecard:
         thresholds:
           rules:
             - key: success
-              expression: '<=50'
+              expression: '<10'
             - key: warning
-              expression: '>50'
+              expression: '10-50'
             - key: error
-              expression: '>100'
+              expression: '>50'
 ```

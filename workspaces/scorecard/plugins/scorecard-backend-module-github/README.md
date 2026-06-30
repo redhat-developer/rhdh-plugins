@@ -77,12 +77,12 @@ This metric counts all pull requests that are currently in an "open" state for t
         open_prs:
           thresholds:
             rules:
-              - key: error
-                expression: '>50'
-              - key: warning
-                expression: '10-50'
               - key: success
                 expression: '<10'
+              - key: warning
+                expression: '10-50'
+              - key: error
+                expression: '>50'
   ```
 
 ## Configuration

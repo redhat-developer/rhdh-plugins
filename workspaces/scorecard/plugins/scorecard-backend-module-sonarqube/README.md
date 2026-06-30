@@ -57,6 +57,117 @@ metadata:
 
 When no instance prefix is provided, the default instance configuration is used.
 
+## Default thresholds
+
+Built-in defaults are defined in code. Override per metric under `scorecard.plugins.sonarqube.<metric>`. See [threshold docs](../scorecard-backend/docs/thresholds.md).
+
+### `sonarqube.quality_gate` (boolean)
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      quality_gate:
+        thresholds:
+          rules:
+            - key: success
+              expression: '==true'
+            - key: error
+              expression: '==false'
+```
+
+### Count metrics (lower is better)
+
+`sonarqube.open_issues`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      open_issues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<1'
+            - key: warning
+              expression: '1-10'
+            - key: error
+              expression: '>10'
+```
+
+| Metric                             | Success | Warning | Error |
+| ---------------------------------- | ------- | ------- | ----- |
+| `sonarqube.security_issues`        | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.security_hotspots`      | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.reliability_issues`     | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.maintainability_issues` | `<10`   | `10-50` | `>50` |
+
+Use the same `scorecard.plugins.sonarqube.<metric>.thresholds` structure as `open_issues` for the metrics above.
+
+### Rating metrics (`security_rating`, `security_review_rating`, `reliability_rating`, `maintainability_rating`)
+
+Example for `sonarqube.security_rating`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      security_rating:
+        thresholds:
+          rules:
+            - key: A
+              expression: '==1'
+            - key: B
+              expression: '==2'
+            - key: C
+              expression: '==3'
+            - key: D
+              expression: '==4'
+            - key: E
+              expression: '==5'
+```
+
+### Percentage metrics
+
+`sonarqube.code_coverage` (higher is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      code_coverage:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>80'
+            - key: warning
+              expression: '50-80'
+            - key: error
+              expression: '<50'
+```
+
+`sonarqube.code_duplications` (lower is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      code_duplications:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<3'
+            - key: warning
+              expression: '3-10'
+            - key: error
+              expression: '>10'
+```
+
 ## Configuration
 
 Configuration is optional for public SonarCloud projects. The base URL defaults to `https://sonarcloud.io`.

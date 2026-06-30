@@ -95,10 +95,18 @@ Each configured file produces one boolean metric.
 - **Datasource**: `filecheck`
 - **Default thresholds**:
 
-  | Threshold key | Expression | Description            |
-  | ------------- | ---------- | ---------------------- |
-  | `exist`       | `==true`   | File exists (success)  |
-  | `missing`     | `==false`  | File is absent (error) |
+  ```yaml
+  # app-config.yaml
+  scorecard:
+    plugins:
+      filecheck:
+        thresholds:
+          rules:
+            - key: exist
+              expression: '==true'
+            - key: missing
+              expression: '==false'
+  ```
 
 ### Threshold Configuration
 
