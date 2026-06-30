@@ -26,14 +26,6 @@ export const orchestratorWorkflowPermission = createPermission({
   resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
-export const orchestratorWorkflowUsePermission = createPermission({
-  name: 'orchestrator.workflow.use',
-  attributes: {
-    action: 'update',
-  },
-  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
-});
-
 /**
  * @deprecated Use conditional policies with IS_ALLOWED_WORKFLOW_ID rule instead.
  * These permissions could only be created via CSV policy files or REST API, not through the RBAC UI.
@@ -46,6 +38,14 @@ export const orchestratorWorkflowSpecificPermission = (workflowId: string) =>
       action: 'read',
     },
   });
+
+export const orchestratorWorkflowUsePermission = createPermission({
+  name: 'orchestrator.workflow.use',
+  attributes: {
+    action: 'update',
+  },
+  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+});
 
 /**
  * @deprecated Use conditional policies with IS_ALLOWED_WORKFLOW_ID rule instead.
