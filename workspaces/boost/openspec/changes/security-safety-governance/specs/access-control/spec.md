@@ -94,6 +94,14 @@ Kagenti requests MUST be authenticated using a dedicated service-account via OAu
 - **AND** concurrent token requests share a single in-flight Keycloak call
 - **AND** the `Authorization: Bearer <token>` header is added to all Kagenti API calls
 
+#### Scenario: Kagenti REST API endpoints
+
+- **WHEN** the entity provider or `KagentiApiClient` calls the Kagenti API
+- **THEN** it uses the `/api/v1/` REST API prefix — **not** `/a2a/` (which is the A2A protocol path, not the management API)
+- **AND** agent discovery calls `GET /api/v1/agents?namespace={ns}` returning `{ items: AgentCard[] }`
+- **AND** tool discovery calls `GET /api/v1/tools?namespace={ns}` returning `{ items: KagentiTool[] }`
+- **AND** the `Authorization: Bearer <token>` header is included on every request
+
 #### Scenario: Streaming token lifecycle
 
 - **WHEN** a streaming (SSE) request is initiated
