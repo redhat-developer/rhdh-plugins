@@ -37,11 +37,13 @@ workspace/boost/plugins/
 ├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
 ├── boost-backend-module-llamastack   — Llama Stack agentic provider (composes llamastack-entity-provider)
 ├── boost-backend-module-kagenti      — Kagenti agentic provider (composes kagenti-entity-provider)
+├── boost-responses-api-toolkit       — Shared Responses API utilities (zero Backstage dependencies)
+├── boost-toolscope                   — Standalone tool-scope resolution (zero Backstage dependencies, injectable CacheAdapter)
 ├── llamastack-entity-provider        — Backstage backend service: Llama Stack catalog entities (independently deployable)
 └── kagenti-entity-provider           — Backstage backend service: Kagenti catalog entities (independently deployable)
 ```
 
-The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
+The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). `boost-responses-api-toolkit` and `boost-toolscope` are standalone utility packages with zero Backstage dependencies — they can be consumed by provider modules or used outside Backstage entirely. Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
 
 ## Design Principles (Learned from Augment)
 

@@ -71,6 +71,8 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 | `boost-backend`                   | Backend plugin  | Core routes, services, middleware, `ProviderManager`, cross-cutting entity providers (MCP, vector stores)     |
 | `boost-backend-module-llamastack` | Backend module  | Llama Stack agentic provider (composes `llamastack-entity-provider`)                                          |
 | `boost-backend-module-kagenti`    | Backend module  | Kagenti agentic provider (composes `kagenti-entity-provider`)                                                 |
+| `boost-responses-api-toolkit`     | Utility library | Shared Responses API utilities (zero Backstage dependencies)                                                  |
+| `boost-toolscope`                 | Utility library | Standalone tool-scope resolution (zero Backstage dependencies, injectable `CacheAdapter`)                     |
 | `llamastack-entity-provider`      | Backend service | Llama Stack model + agent catalog entities (independently deployable)                                         |
 | `kagenti-entity-provider`         | Backend service | Kagenti agent + tool catalog entities (independently deployable)                                              |
 
