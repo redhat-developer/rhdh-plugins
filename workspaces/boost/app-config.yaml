@@ -1,0 +1,59 @@
+app:
+  title: Red Hat Developer Hub - Boost
+  baseUrl: http://localhost:3000
+
+organization:
+  name: Red Hat
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+auth:
+  environment: development
+  providers:
+    guest: {}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template]
+
+boost:
+  security:
+    mode: 'development-only-no-auth'
+    adminUsers:
+      - 'user:default/admin'
+      - 'user:default/guest'
+  providers:
+    llamastack:
+      baseUrl: ${BOOST_LLAMA_STACK_URL:-https://llamastack-llamastack.apps.gmontero420.rhdh-pai.devfile-ci.com}
+      defaultModel: ${BOOST_MODEL:-vllm-inference/gpt-4.1}
+    kagenti:
+      baseUrl: ${KAGENTI_BASE_URL:-https://kagenti-api-kagenti-system.apps.gmontero420.rhdh-pai.devfile-ci.com}
+      defaultAgent: default
+      namespaces:
+        - team1
+        - team2
+  kagenti:
+    baseUrl: ${KAGENTI_BASE_URL:-https://kagenti-api-kagenti-system.apps.gmontero420.rhdh-pai.devfile-ci.com}
+    namespace: ${KAGENTI_NAMESPACE:-team1}
+    auth:
+      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-https://keycloak-keycloak.apps.gmontero420.rhdh-pai.devfile-ci.com/realms/kagenti/protocol/openid-connect/token}
+      clientId: ${KAGENTI_CLIENT_ID:-spiffe://apps.gmontero420.rhdh-pai.devfile-ci.com/sa/kagenti-keycloak-client}
+      clientSecret: ${KAGENTI_CLIENT_SECRET}
+    showAllNamespaces: true
+    skipTlsVerify: true
+    verboseStreamLogging: true
