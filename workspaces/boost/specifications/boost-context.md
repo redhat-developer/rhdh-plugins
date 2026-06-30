@@ -77,6 +77,28 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 _Augment lesson: Four separate in-memory caches storing what should be catalog entities. Duplicate model caches across providers. No discoverability, ownership, or catalog-level RBAC for AI domain objects._
 
+### External API Contracts
+
+Entity providers and provider modules call upstream REST APIs. The exact paths and response shapes are documented here so implementations use the correct endpoints.
+
+**Kagenti API** (base URL from `boost.providers.kagenti.baseUrl` or `boost.kagenti.baseUrl`):
+
+| Method | Path                            | Auth                            | Response                   |
+| ------ | ------------------------------- | ------------------------------- | -------------------------- |
+| `GET`  | `/api/v1/agents?namespace={ns}` | `Authorization: Bearer <token>` | `{ items: AgentCard[] }`   |
+| `GET`  | `/api/v1/tools?namespace={ns}`  | `Authorization: Bearer <token>` | `{ items: KagentiTool[] }` |
+
+- Auth tokens are obtained via OAuth2 Client Credentials Grant against the Keycloak token endpoint configured at `boost.kagenti.auth.tokenEndpoint`.
+- The `/api/v1/` prefix is the correct Kagenti REST API path. Do **not** use `/a2a/` — that is the A2A protocol path, not the management API.
+
+**Llama Stack API** (base URL from `boost.providers.llamastack.baseUrl`):
+
+| Method | Path         | Auth                 | Response                           |
+| ------ | ------------ | -------------------- | ---------------------------------- |
+| `GET`  | `/v1/models` | None (network-level) | `{ data: LlamaStackModelEntry[] }` |
+
+- Llama Stack uses the OpenAI-compatible `/v1/models` endpoint. No bearer token auth — access is controlled at the network/TLS level.
+
 ### 6. Schema-Driven Configuration Validation
 
 Runtime configuration uses Zod schemas as single source of truth. TypeScript types are derived from schemas. DB-stored overrides are validated by the same rules as YAML values. Each field is annotated with its scope: `yaml-only`, `db-overridable`, or `db-only`.
