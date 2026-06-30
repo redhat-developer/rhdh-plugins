@@ -1,6 +1,13 @@
 app:
   title: Boost Dev
   baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - app/routes:
+        config:
+          redirects:
+            - from: /
+              to: /ai-catalog
 
 organization:
   name: Red Hat
@@ -9,28 +16,49 @@ backend:
   baseUrl: http://localhost:7007
   listen:
     port: 7007
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
   database:
     client: better-sqlite3
     connection: ':memory:'
+  cache:
+    store: memory
   auth:
     dangerouslyDisableDefaultAuthPolicy: true
 
 auth:
+  environment: development
   providers:
     guest: {}
 
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
 catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
   rules:
     - allow:
         - Component
-        - Resource
-        - API
         - System
-        - Domain
+        - Group
+        - Resource
         - Location
         - Template
-        - Group
-        - User
+        - API
+        - AiResource
+  locations:
+    - type: file
+      target: ../../fixtures/ai-catalog-fixtures.yaml
+      rules:
+        - allow: [AiResource, API, Component, Resource]
 
 boost:
   security:

@@ -56,20 +56,22 @@ Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when t
 
 Backstage v1.51.0 introduced `AiResource` kind and `API` with `spec.type: mcp-server` via `@backstage/plugin-catalog-backend-module-ai-model`. Boost uses upstream kinds where available:
 
-| Category | Entity Kind | spec.type | Notes |
-|---|---|---|---|
-| Skills | AiResource | skill | Upstream. disciplines, categories, agents, dependsOn |
-| Rules | AiResource | rule | Upstream. category (required), rationale (required) |
-| MCP Servers | API | mcp-server | Upstream. spec.remotes list |
-| Agents | Component | ai-agent | Boost-defined |
-| Models | Resource | ai-model | Boost-defined. RFC #33060 pending |
-| Tools | Resource | ai-tool | Boost-defined (Kagenti) |
-| Vector Stores | Resource | vector-store | Boost-defined |
+| Category      | Entity Kind | spec.type    | Notes                                                |
+| ------------- | ----------- | ------------ | ---------------------------------------------------- |
+| Skills        | AiResource  | skill        | Upstream. disciplines, categories, agents, dependsOn |
+| Rules         | AiResource  | rule         | Upstream. category (required), rationale (required)  |
+| MCP Servers   | API         | mcp-server   | Upstream. spec.remotes list                          |
+| Agents        | Component   | ai-agent     | Boost-defined                                        |
+| Models        | Resource    | ai-model     | Boost-defined. RFC #33060 pending                    |
+| Tools         | Resource    | ai-tool      | Boost-defined (Kagenti)                              |
+| Vector Stores | Resource    | vector-store | Boost-defined                                        |
 
 ## Components
 
 ### AiCatalogPage
+
 Browse page with card grid, search, and filters. PluginHeader provided by the framework.
+
 - Card grid grouped by category with responsive layout
 - Debounced keyword search (300ms)
 - Filter controls: category, lifecycle, tags, owner, source connector (AND logic)
@@ -78,28 +80,38 @@ Browse page with card grid, search, and filters. PluginHeader provided by the fr
 - Loading skeletons, empty state with clear-filters, error state with retry
 
 ### AiAssetCard
+
 Card displaying key metadata for one AI asset. Used in the browse grid.
+
 - Name, truncated description, category icon/badge, lifecycle badge
 - Tags, owner, version, source connector indicator
 - Click navigates to catalog entity detail page
 
 ### AiAssetSummaryCard
+
 EntityCardBlueprint on entity overview. Shows AI-specific metadata.
+
 - Category badge, current/recommended version, source attribution, lifecycle
 
 ### DownloadAdoptCard
+
 EntityCardBlueprint on entity overview. Conditional on spec.location.type.
+
 - git: Download button triggers ZIP download via backend proxy
 - oci: docker/podman toggle with copyable pull command
 - Absent: card not rendered
 
 ### VersionListCard
+
 EntityCardBlueprint on entity overview. Shows all versions of the asset.
+
 - Current/recommended highlighted
 - Click navigates to that version's entity page
 
 ### UsageTab
+
 EntityContentBlueprint tab. RBAC-gated usage documentation.
+
 - With usage-docs permission: TechDocs content or external links
 - Without permission: "Contact owner for access" affordance
 
@@ -110,6 +122,7 @@ UX prototype: https://agentic-524bde.pages.redhat.com/skill-marketplace/overview
 ## Acceptance Criteria
 
 ### AiCatalogPage
+
 - Developer sees card grid grouped by category at /ai-catalog
 - Search filters cards within 300ms
 - Multiple filters narrow results with AND logic
@@ -118,23 +131,28 @@ UX prototype: https://agentic-524bde.pages.redhat.com/skill-marketplace/overview
 - Keyboard navigable through all interactive elements
 
 ### AiAssetCard
+
 - Card displays all metadata fields from entity
 - Click navigates to catalog entity detail page
 
 ### AiAssetSummaryCard
+
 - Renders on AI asset entity pages only
 - Shows category, version, source, lifecycle
 
 ### DownloadAdoptCard
+
 - Download button on git assets triggers ZIP download
 - Docker/podman toggle on OCI assets with copyable pull command
 - Not rendered when spec.location.type absent
 
 ### VersionListCard
+
 - Shows all versions; current highlighted
 - Click navigates to version's entity page
 
 ### UsageTab
+
 - Renders TechDocs when annotation present; external links as fallback
 - Shows "Contact owner" when user lacks usage-docs permission
 - Tab only appears on AI asset entities

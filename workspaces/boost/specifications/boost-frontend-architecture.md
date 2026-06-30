@@ -14,15 +14,15 @@ The boost backend already provides 30+ API routes across chat/streaming, convers
 
 The plugin extends existing RHDH/Backstage pages wherever possible. Standalone pages are created only when no existing surface fits the interaction pattern.
 
-| Surface Type | Blueprint | When to use |
-|---|---|---|
-| Standalone page | `PageBlueprint` | Fundamentally new interaction (chat, marketplace browse) |
-| Entity overview card | `EntityCardBlueprint` | Summary widget on catalog entity pages |
-| Entity tab | `EntityContentBlueprint` | Full content panel on entity pages |
-| App drawer panel | `AppDrawerContentBlueprint` | Persistent side panel in RHDH shell |
-| Global header action | `GlobalHeaderMenuItemBlueprint` | Quick-access button in header |
-| Search result | Search collator | Domain-specific results in global search |
-| Scaffolder template | Catalog entity | Workflow-driven creation (agent templates) |
+| Surface Type         | Blueprint                       | When to use                                              |
+| -------------------- | ------------------------------- | -------------------------------------------------------- |
+| Standalone page      | `PageBlueprint`                 | Fundamentally new interaction (chat, marketplace browse) |
+| Entity overview card | `EntityCardBlueprint`           | Summary widget on catalog entity pages                   |
+| Entity tab           | `EntityContentBlueprint`        | Full content panel on entity pages                       |
+| App drawer panel     | `AppDrawerContentBlueprint`     | Persistent side panel in RHDH shell                      |
+| Global header action | `GlobalHeaderMenuItemBlueprint` | Quick-access button in header                            |
+| Search result        | Search collator                 | Domain-specific results in global search                 |
+| Scaffolder template  | Catalog entity                  | Workflow-driven creation (agent templates)               |
 
 ### 2. Consistent AI Experience via PatternFly AI Chatbot
 
@@ -126,27 +126,27 @@ flowchart LR
 
 ### Conversation History (future)
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/conversations` | List sessions (with `?q=` search, `?allUsers=true` for admin) |
-| `POST` | `/conversations` | Create session |
-| `GET` | `/conversations/:id` | Session + messages |
-| `DELETE` | `/conversations/:id` | Delete session |
-| `POST` | `/conversations/:id/messages` | Persist message |
-| `POST` | `/conversations/:id/feedback` | Submit feedback |
-| `GET` | `/conversations/:id/export` | Export session JSON |
+| Method   | Path                          | Purpose                                                       |
+| -------- | ----------------------------- | ------------------------------------------------------------- |
+| `GET`    | `/conversations`              | List sessions (with `?q=` search, `?allUsers=true` for admin) |
+| `POST`   | `/conversations`              | Create session                                                |
+| `GET`    | `/conversations/:id`          | Session + messages                                            |
+| `DELETE` | `/conversations/:id`          | Delete session                                                |
+| `POST`   | `/conversations/:id/messages` | Persist message                                               |
+| `POST`   | `/conversations/:id/feedback` | Submit feedback                                               |
+| `GET`    | `/conversations/:id/export`   | Export session JSON                                           |
 
 ### Agent Lifecycle (future)
 
-| Method | Path | Transition |
-|---|---|---|
-| `GET` | `/agents` | List all agents |
-| `PUT` | `/agents/:id/register` | Create governance record (draft) |
-| `PUT` | `/agents/:id/promote` | draft -> pending |
-| `PUT` | `/agents/:id/approve` | pending -> published |
-| `PUT` | `/agents/:id/request-unpublish` | published -> archived |
-| `PUT` | `/agents/:id/withdraw` | pending -> draft |
-| `DELETE` | `/agents/:id` | Delete (draft/archived only) |
+| Method   | Path                            | Transition                       |
+| -------- | ------------------------------- | -------------------------------- |
+| `GET`    | `/agents`                       | List all agents                  |
+| `PUT`    | `/agents/:id/register`          | Create governance record (draft) |
+| `PUT`    | `/agents/:id/promote`           | draft -> pending                 |
+| `PUT`    | `/agents/:id/approve`           | pending -> published             |
+| `PUT`    | `/agents/:id/request-unpublish` | published -> archived            |
+| `PUT`    | `/agents/:id/withdraw`          | pending -> draft                 |
+| `DELETE` | `/agents/:id`                   | Delete (draft/archived only)     |
 
 Lifecycle actions are permission-gated per agent ID. Self-approval is prevented (`IS_NOT_CREATOR` rule).
 
@@ -164,12 +164,12 @@ Read-only `GET /config/status` currently. Frontend-visible config keys include `
 
 ### Backend Gaps (stores exist, routes not yet wired)
 
-| Area | Status | Impact on frontend |
-|---|---|---|
-| HITL approval REST API | `BackendApprovalStore` exists | Chat can receive `approval` stream events but cannot approve/reject via REST yet |
-| Documents/RAG REST API | `DocumentSyncService` exists | RAG results come via chat stream; admin upload/sync UI waits for routes |
-| Admin config write API | Read-only `/config/status` | Admin panels can display config but not modify via UI yet |
-| Provider listing endpoint | No `/providers` route | Provider switcher needs this; can fall back to config-derived list |
+| Area                      | Status                        | Impact on frontend                                                               |
+| ------------------------- | ----------------------------- | -------------------------------------------------------------------------------- |
+| HITL approval REST API    | `BackendApprovalStore` exists | Chat can receive `approval` stream events but cannot approve/reject via REST yet |
+| Documents/RAG REST API    | `DocumentSyncService` exists  | RAG results come via chat stream; admin upload/sync UI waits for routes          |
+| Admin config write API    | Read-only `/config/status`    | Admin panels can display config but not modify via UI yet                        |
+| Provider listing endpoint | No `/providers` route         | Provider switcher needs this; can fall back to config-derived list               |
 
 ---
 
@@ -177,14 +177,14 @@ Read-only `GET /config/status` currently. Frontend-visible config keys include `
 
 The frontend consumes 23 permissions from `boost-common`:
 
-| Scope | Permissions |
-|---|---|
-| Top-level gates | `boost.access`, `boost.admin` |
-| Chat | `boost.chat.read`, `boost.chat.create` |
+| Scope                | Permissions                                                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Top-level gates      | `boost.access`, `boost.admin`                                                                                                      |
+| Chat                 | `boost.chat.read`, `boost.chat.create`                                                                                             |
 | Agent lifecycle (10) | `boost.agent.list`, `.register`, `.configure`, `.promote`, `.approve`, `.demote`, `.publish`, `.unpublish`, `.withdraw`, `.delete` |
-| Tool lifecycle (5) | `boost.tool.promote`, `.approve`, `.demote`, `.publish`, `.unpublish` |
-| Infrastructure | `boost.kagenti.admin` |
-| Functional | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage` |
+| Tool lifecycle (5)   | `boost.tool.promote`, `.approve`, `.demote`, `.publish`, `.unpublish`                                                              |
+| Infrastructure       | `boost.kagenti.admin`                                                                                                              |
+| Functional           | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage`                                                                |
 
 For AI Catalog specifically, RHDHPLAN-1508 defines two additional permissions: `ai-catalog.asset.read` and `ai-catalog.asset.read.usage-docs`. These are not yet in `boost-common` — they will be added as part of the RBAC feature (RHDHPLAN-1508).
 
@@ -193,20 +193,21 @@ For AI Catalog specifically, RHDHPLAN-1508 defines two additional permissions: `
 ## AI Asset Entity Model
 
 Backstage v1.51.0 introduced two AI-related additions via `@backstage/plugin-catalog-backend-module-ai-model`:
+
 - **`AiResource`** kind — for AI tools and governance rules. Built-in types: `skill` (with `disciplines`, `categories`, `agents`, `dependsOn`) and `rule` (with `category`, `rationale`). Any other `spec.type` string is accepted with the base spec (`type`, `lifecycle`, `owner`, `system`).
 - **`API` with `spec.type: mcp-server`** — MCP servers as a structured subtype of the existing API kind, with `spec.remotes` list (RFC #32062).
 
 Boost's entity model (Decision 1 in the agent-creation-discovery design) uses upstream kinds where available and existing kinds as fallback:
 
-| Category | Entity Kind | `spec.type` | Notes |
-|---|---|---|---|
-| Skills | `AiResource` | `skill` | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn` |
-| Rules | `AiResource` | `rule` | Upstream. Has `category` (required), `rationale` (required) |
-| MCP Servers | `API` | `mcp-server` | Upstream. Has `spec.remotes` list |
-| Agents | `Component` | `ai-agent` | Boost-defined. No upstream kind yet |
-| Models | `Resource` | `ai-model` | Boost-defined. RFC #33060 pending — may move to `API` with `ai-model-server` type |
-| Tools | `Resource` | `ai-tool` | Boost-defined (Kagenti-specific) |
-| Vector Stores | `Resource` | `vector-store` | Boost-defined |
+| Category      | Entity Kind  | `spec.type`    | Notes                                                                             |
+| ------------- | ------------ | -------------- | --------------------------------------------------------------------------------- |
+| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn`                  |
+| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)                       |
+| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                                 |
+| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                                               |
+| Models        | `Resource`   | `ai-model`     | Boost-defined. RFC #33060 pending — may move to `API` with `ai-model-server` type |
+| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                                  |
+| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                                     |
 
 Boost-defined entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations as an interim bridge (RHDHPLAN-1507). Custom `CatalogProcessor` validators support both current and future kinds during upstream transitions.
 
@@ -256,18 +257,18 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
+| Layer             | Technology                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons |
-| Chat UI | `@patternfly/chatbot` for conversational interfaces |
-| Styling | CSS Modules with `--bui-*` CSS variables |
-| Frontend system | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.) |
-| State | React hooks + URL params for filters; streaming reducer for chat events |
-| API | `catalogApiRef` for entity queries; `BoostApiClient` for `/api/boost` routes; `fetchApi` for auth |
-| Testing | `TestApiProvider` + `renderInTestApp` from `@backstage/test-utils` |
-| i18n | `TranslationBlueprint` + `useTranslationRef` (English-only initially) |
-| Dynamic plugins | Scalprum federation, `dist-scalprum` build |
-| Accessibility | WCAG 2.1 AA, keyboard navigation, screen reader support |
+| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                          |
+| Styling           | CSS Modules with `--bui-*` CSS variables                                                                     |
+| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                        |
+| State             | React hooks + URL params for filters; streaming reducer for chat events                                      |
+| API               | `catalogApiRef` for entity queries; `BoostApiClient` for `/api/boost` routes; `fetchApi` for auth            |
+| Testing           | `TestApiProvider` + `renderInTestApp` from `@backstage/test-utils`                                           |
+| i18n              | `TranslationBlueprint` + `useTranslationRef` (English-only initially)                                        |
+| Dynamic plugins   | Scalprum federation, `dist-scalprum` build                                                                   |
+| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                      |
 
 ---
 
