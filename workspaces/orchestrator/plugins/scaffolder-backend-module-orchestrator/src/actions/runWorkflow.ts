@@ -73,14 +73,14 @@ export function createRunWorkflowAction(
         );
       }
 
-      const api = await getOrchestratorApi(discoveryService);
-      const reqConfigOption = await getRequestConfigOption(authService, ctx);
-
       // If this is a dry run, log and return
       if (ctx.isDryRun) {
         ctx.logger.info(`Dry run complete`);
         return;
       }
+
+      const api = await getOrchestratorApi(discoveryService);
+      const reqConfigOption = await getRequestConfigOption(authService, ctx);
 
       try {
         const { data } = await api.executeWorkflow(
