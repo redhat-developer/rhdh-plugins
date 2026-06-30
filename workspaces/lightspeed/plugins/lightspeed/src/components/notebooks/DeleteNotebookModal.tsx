@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -29,52 +28,6 @@ import Typography from '@mui/material/Typography';
 import { useDeleteNotebook } from '../../hooks/notebooks/useDeleteNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  dialogContent: {
-    paddingTop: 0,
-    paddingBottom: theme.spacing(5),
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  errorBox: {
-    maxWidth: 650,
-    marginLeft: theme.spacing(2.5),
-    marginRight: theme.spacing(2.5),
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  deleteButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
-
 export const DeleteNotebookModal = ({
   isOpen,
   onClose,
@@ -88,7 +41,6 @@ export const DeleteNotebookModal = ({
   sessionId: string;
   name: string;
 }) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const { mutateAsync: deleteNotebook, isError, error } = useDeleteNotebook();
 
@@ -111,12 +63,12 @@ export const DeleteNotebookModal = ({
       aria-describedby="delete-notebook-modal-body"
       fullWidth
       PaperProps={{
-        className: classes.dialogPaper,
+        sx: { borderRadius: 4 },
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+      <DialogTitle sx={{ padding: '16px 20px', fontStyle: 'inherit' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebooks.delete.title', { name } as any)}
           </Typography>
           <IconButton
@@ -124,7 +76,12 @@ export const DeleteNotebookModal = ({
             onClick={onClose}
             title={t('common.close')}
             size="large"
-            className={classes.closeButton}
+            sx={{
+              position: 'absolute',
+              right: theme => theme.spacing(1),
+              top: theme => theme.spacing(1),
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -132,20 +89,20 @@ export const DeleteNotebookModal = ({
       </DialogTitle>
       <DialogContent
         id="delete-notebook-modal-body"
-        className={classes.dialogContent}
+        sx={{ paddingTop: 0, paddingBottom: theme => theme.spacing(5) }}
       >
         <Typography variant="body2">{t('notebooks.delete.message')}</Typography>
       </DialogContent>
       {isError && (
-        <Box className={classes.errorBox}>
+        <Box sx={{ maxWidth: 650, mx: 2.5 }}>
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions sx={{ justifyContent: 'left', padding: 2.5, gap: 1 }}>
         <Button
           variant="contained"
           color="error"
-          className={classes.deleteButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={handleDelete}
         >
           {t('notebooks.delete.action')}
@@ -153,7 +110,7 @@ export const DeleteNotebookModal = ({
         <Button
           key="cancel"
           variant="outlined"
-          className={classes.cancelButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onClose}
         >
           {t('common.cancel')}

@@ -16,8 +16,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -27,66 +25,21 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    paddingTop: 0,
-    paddingLeft: theme.spacing(2.5),
-  },
-  description: {
-    marginBottom: theme.spacing(3),
-  },
-  textField: {
-    marginTop: 0,
-  },
-  errorBox: {
-    maxWidth: 650,
-    marginLeft: theme.spacing(2.5),
-    marginRight: theme.spacing(2.5),
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  submitButton: {
-    textTransform: 'none',
-    borderRadius: 999,
+const SubmitButton = styled(Button)({
+  textTransform: 'none',
+  borderRadius: 999,
+  backgroundColor: 'var(--pf-t--global--color--brand--default)',
+  '&:hover': {
     backgroundColor: 'var(--pf-t--global--color--brand--default)',
-    '&:hover': {
-      backgroundColor: 'var(--pf-t--global--color--brand--default)',
-    },
   },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
+});
 
 export const RenameNotebookModal = ({
   isOpen,
@@ -99,7 +52,6 @@ export const RenameNotebookModal = ({
   sessionId: string;
   currentName: string;
 }) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const { mutateAsync: renameNotebook, isError, error } = useRenameNotebook();
   const [name, setName] = useState<string>('');
@@ -130,12 +82,12 @@ export const RenameNotebookModal = ({
       aria-describedby="rename-notebook-modal-body"
       fullWidth
       PaperProps={{
-        className: classes.dialogPaper,
+        sx: { borderRadius: 4 },
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+      <DialogTitle sx={{ padding: '16px 20px', fontStyle: 'inherit' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebooks.rename.title').replace('{{name}}', currentName)}
           </Typography>
           <IconButton
@@ -143,7 +95,12 @@ export const RenameNotebookModal = ({
             onClick={onClose}
             title={t('common.close')}
             size="large"
-            className={classes.closeButton}
+            sx={{
+              position: 'absolute',
+              right: theme => theme.spacing(1),
+              top: theme => theme.spacing(1),
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -151,13 +108,9 @@ export const RenameNotebookModal = ({
       </DialogTitle>
       <DialogContent
         id="rename-notebook-modal-body"
-        className={classes.dialogContent}
+        sx={{ paddingTop: 0, paddingLeft: 2.5 }}
       >
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          className={classes.description}
-        >
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
           {t('notebooks.rename.description')}
         </Typography>
         <TextField
@@ -166,32 +119,31 @@ export const RenameNotebookModal = ({
           onChange={event => setName(event.target.value)}
           fullWidth
           value={name}
-          className={classes.textField}
+          sx={{ marginTop: 0 }}
           variant="outlined"
           placeholder={t('notebooks.rename.placeholder')}
-          InputProps={{
+          inputProps={{
             autoFocus: true,
           }}
         />
       </DialogContent>
       {isError && (
-        <Box className={classes.errorBox}>
+        <Box sx={{ maxWidth: 650, mx: 2.5 }}>
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
-      <DialogActions className={classes.dialogActions}>
-        <Button
+      <DialogActions sx={{ justifyContent: 'left', padding: 2.5, gap: 1 }}>
+        <SubmitButton
           variant="contained"
-          className={classes.submitButton}
           disabled={name.trim() === '' || name.trim() === originalName.trim()}
           onClick={handleRename}
         >
           {t('notebooks.rename.action')}
-        </Button>
+        </SubmitButton>
         <Button
           key="cancel"
           variant="outlined"
-          className={classes.cancelButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onClose}
         >
           {t('common.cancel')}

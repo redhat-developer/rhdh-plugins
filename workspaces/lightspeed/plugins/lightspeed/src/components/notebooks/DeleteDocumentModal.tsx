@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,46 +26,6 @@ import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
-
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  dialogContent: {
-    paddingTop: 0,
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  removeButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
 
 type DeleteDocumentModalProps = {
   isOpen: boolean;
@@ -81,7 +40,6 @@ export const DeleteDocumentModal = ({
   onConfirm,
   documentName,
 }: DeleteDocumentModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -92,12 +50,12 @@ export const DeleteDocumentModal = ({
       aria-describedby="delete-document-modal-body"
       fullWidth
       PaperProps={{
-        className: classes.dialogPaper,
+        sx: { borderRadius: 4 },
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+      <DialogTitle sx={{ padding: '16px 20px', fontStyle: 'inherit' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebook.document.delete.title')}
           </Typography>
           <IconButton
@@ -105,16 +63,18 @@ export const DeleteDocumentModal = ({
             onClick={onClose}
             title={t('common.close')}
             size="large"
-            className={classes.closeButton}
+            sx={{
+              position: 'absolute',
+              right: theme => theme.spacing(1),
+              top: theme => theme.spacing(1),
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent
-        id="delete-document-modal-body"
-        className={classes.dialogContent}
-      >
+      <DialogContent id="delete-document-modal-body" sx={{ paddingTop: 0 }}>
         <Typography variant="body2">
           <Trans
             message="notebook.document.delete.description"
@@ -124,18 +84,18 @@ export const DeleteDocumentModal = ({
           />
         </Typography>
       </DialogContent>
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions sx={{ justifyContent: 'left', padding: 2.5, gap: 1 }}>
         <Button
           variant="contained"
           color="error"
-          className={classes.removeButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onConfirm}
         >
           {t('notebook.document.delete.action')}
         </Button>
         <Button
           variant="outlined"
-          className={classes.cancelButton}
+          sx={{ textTransform: 'none', borderRadius: 999 }}
           onClick={onClose}
         >
           {t('common.cancel')}
