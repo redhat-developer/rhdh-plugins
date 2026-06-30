@@ -448,8 +448,8 @@ function getWelcomeHeader(t: LightspeedMessages): string {
 }
 
 const buttonGroup = `
-      - button
-      - text: ''`;
+      - button /.+/
+      - text: /.+/`;
 
 const buttonCounts: Record<DisplayMode, number> = {
   Overlay: 1,

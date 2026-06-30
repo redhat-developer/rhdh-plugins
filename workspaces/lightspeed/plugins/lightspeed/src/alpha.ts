@@ -14,11 +14,4 @@
  * limitations under the License.
  */
 
-import { LightspeedDrawerProvider } from '../components/LightspeedDrawerProvider';
-
-/**
- * This file is exported as LightspeedProvider from the alpha entry point.
- * @alpha
- */
-
-export const LightspeedProvider = LightspeedDrawerProvider;
+export * from './translations';

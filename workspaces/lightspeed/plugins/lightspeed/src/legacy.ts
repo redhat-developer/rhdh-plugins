@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import '@patternfly/chatbot/dist/css/main.css';
+
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 ClassNameGenerator.configure(componentName =>

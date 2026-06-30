@@ -154,7 +154,13 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__content': {
       backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
+        'var(--pf-t--global--background--color--floating--default) !important',
+    },
+    '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
+      display: 'none !important',
+      width: 0,
+      height: 0,
+      overflow: 'hidden',
     },
   },
   header: {
@@ -175,6 +181,8 @@ const useStyles = makeStyles(theme => ({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
   headerMenu: {
     // align hamburger icon with title
@@ -236,6 +244,9 @@ const useStyles = makeStyles(theme => ({
     fontSize: 48,
     color: 'var(--pf-t--global--icon--color--subtle)',
     marginBottom: theme.spacing(1.5),
+    '& > .pf-v6-icon-rh-ui': {
+      display: 'none !important',
+    },
   },
   notebooksDescription: {
     marginTop: theme.spacing(1),
@@ -350,11 +361,15 @@ const useStyles = makeStyles(theme => ({
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
+    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
+      {
+        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+      },
   },
   fullscreenFooter: {
     '&>.pf-chatbot__footer-container': {
       width: '100% !important',
-      padding: theme.spacing(1.5),
+      padding: `${theme.spacing(1.5)}px !important`,
       maxWidth: 'unset !important',
       margin: '0 auto',
     },
@@ -407,7 +422,7 @@ const useStyles = makeStyles(theme => ({
   },
   chatbotContentScrollNewChat: {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+      'var(--pf-t--global--background--color--floating--default) !important',
   },
   toastAlertGroup: {
     '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,

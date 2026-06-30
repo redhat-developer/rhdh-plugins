@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import '@patternfly/chatbot/dist/css/main.css';
+
 import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -35,19 +40,23 @@ import {
 
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 
-import { lightspeedApiRef } from '../api/api';
-import { LightspeedApiClient } from '../api/LightspeedApiClient';
-import { notebooksApiRef } from '../api/notebooksApi';
-import { NotebooksApiClient } from '../api/NotebooksApiClient';
-import { LightspeedChatContainer } from '../components/LightspeedChatContainer';
+import { lightspeedApiRef } from './api/api';
+import { LightspeedApiClient } from './api/LightspeedApiClient';
+import { notebooksApiRef } from './api/notebooksApi';
+import { NotebooksApiClient } from './api/NotebooksApiClient';
+import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainer';
+import { LightspeedDrawerProvider as LightspeedProvider } from './components/LightspeedDrawerProvider';
+import { LightspeedFABContent as LightspeedFABComponent } from './components/LightspeedFABContent';
 import {
   LIGHTSPEED_APP_DRAWER_ID,
   LIGHTSPEED_LEGACY_PATH,
   LIGHTSPEED_PATH,
-} from '../const';
-import { lightspeedTranslations } from '../translations';
-import { LightspeedFAB } from './LightspeedFAB';
-import { LightspeedProvider } from './LightspeedProvider';
+} from './const';
+import { lightspeedTranslations } from './translations';
+
+ClassNameGenerator.configure(componentName =>
+  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
+);
 
 const nfsRootRouteRef = createRouteRef();
 const nfsConversationRouteRef = createSubRouteRef({
@@ -92,7 +101,7 @@ const lightspeedPage = PageBlueprint.make({
     path: LIGHTSPEED_PATH,
     routeRef: nfsRootRouteRef,
     noHeader: true,
-    loader: () => import('../components/Router').then(m => <m.Router />),
+    loader: () => import('./components/Router').then(m => <m.Router />),
   },
 });
 
@@ -100,7 +109,7 @@ const lightspeedDrawer = AppDrawerContentBlueprint.make({
   name: 'lightspeed',
   params: {
     id: LIGHTSPEED_APP_DRAWER_ID,
-    element: <LightspeedChatContainer />,
+    element: <LightspeedChatContainerElement />,
     resizable: false,
     defaultWidth: 400,
     priority: 100,
@@ -132,7 +141,7 @@ const lightspeedRedirect = AppRootWrapperBlueprint.make({
 });
 
 /**
- *  @alpha
+ * @public
  */
 export const lightspeedRedirectModule = createFrontendModule({
   pluginId: 'app',
@@ -141,14 +150,14 @@ export const lightspeedRedirectModule = createFrontendModule({
 
 /**
  * Lightspeed FAB module
- *  @alpha
+ * @public
  */
-const lightspeedFAB = AppRootWrapperBlueprint.make({
+const lightspeedFABExtension = AppRootWrapperBlueprint.make({
   name: 'lightspeed-fab',
   params: {
     component: ({ children }) => (
       <LightspeedProvider>
-        <LightspeedFAB />
+        <LightspeedFABComponent />
         {children}
       </LightspeedProvider>
     ),
@@ -156,17 +165,17 @@ const lightspeedFAB = AppRootWrapperBlueprint.make({
 });
 
 /**
- *  @alpha
+ * @public
  */
 export const lightspeedFABModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [lightspeedFAB],
+  extensions: [lightspeedFABExtension, lightspeedRedirect],
 });
 
 /**
  * Translation wiring for the language selector (app-config `app.extensions`).
  *
- *  @alpha
+ * @public
  */
 export const lightspeedTranslationsModule = createFrontendModule({
   pluginId: 'app',
@@ -183,7 +192,7 @@ export const lightspeedTranslationsModule = createFrontendModule({
 /**
  * Lightspeed plugin for the Backstage new frontend system.
  *
- * @alpha
+ * @public
  */
 export default createFrontendPlugin({
   pluginId: 'lightspeed',
@@ -194,4 +203,15 @@ export default createFrontendPlugin({
   },
 });
 
-export * from '../translations';
+// Legacy (OFS) re-exports for backwards compatibility.
+// Deprecated — will be removed in a future release. Use './legacy' subpath for new OFS consumers.
+export {
+  lightspeedPlugin,
+  LightspeedPage,
+  LightspeedDrawerProvider,
+  LightspeedIcon,
+  LightspeedFAB,
+  LightspeedChatContainer,
+  LightspeedDrawerStateExposer,
+} from './legacy';
+export type { DrawerStateExposerProps, DrawerState } from './legacy';

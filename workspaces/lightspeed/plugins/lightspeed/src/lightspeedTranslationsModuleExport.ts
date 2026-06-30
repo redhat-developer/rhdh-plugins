@@ -13,11 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { LightspeedFABContent } from '../components/LightspeedFABContent';
-
-/**
- * @alpha
- * Lightspeed Floating action button to open/close the lightspeed chatbot
- */
-export const LightspeedFAB = LightspeedFABContent;
+export { lightspeedTranslationsModule as default } from './index';

@@ -1,22 +1,34 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-lightspeed",
   "version": "2.9.1",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./alpha": "./src/alpha/index.tsx",
+    ".": "./src/index.tsx",
+    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacy.ts",
+    "./lightspeed-fab-module": "./src/lightspeedFABModuleExport.ts",
+    "./lightspeed-translations-module": "./src/lightspeedTranslationsModuleExport.ts",
     "./dev": "./dev/CustomDrawer.tsx",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha/index.tsx"
+        "src/alpha.ts"
+      ],
+      "legacy": [
+        "src/legacy.ts"
+      ],
+      "lightspeed-fab-module": [
+        "src/lightspeedFABModuleExport.ts"
+      ],
+      "lightspeed-translations-module": [
+        "src/lightspeedTranslationsModuleExport.ts"
       ],
       "dev": [
         "dev/CustomDrawer.tsx"
@@ -109,9 +121,11 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-lightspeed",
     "exposedModules": {
-      "Alpha": "./src/alpha/index.tsx",
-      "PluginRoot": "./src/index.ts",
-      "LightspeedPlugin": "./src/index.ts"
+      "PluginRoot": "./src/index.tsx",
+      "Alpha": "./src/alpha.ts",
+      "Legacy": "./src/legacy.ts",
+      "LightspeedFABModule": "./src/lightspeedFABModuleExport.ts",
+      "LightspeedTranslationsModule": "./src/lightspeedTranslationsModuleExport.ts"
     }
   },
   "configSchema": "config.d.ts",
