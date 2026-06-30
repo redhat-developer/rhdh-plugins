@@ -73,8 +73,8 @@ export const RunButton = ({
   let tooltipText = '';
   if (!canRun) {
     tooltipText = t('workflow.messages.userNotAuthorizedExecute');
-  } else if (!isAvailable) {
-    tooltipText = t('workflow.messages.workflowDown');
+  } else if (isAvailable === false) {
+    tooltipText = t('workflow.unavailable.runTooltip');
   }
 
   return (
@@ -91,7 +91,7 @@ export const RunButton = ({
               variant="contained"
               color="primary"
               onClick={handleExecute}
-              disabled={!canRun}
+              disabled={!canRun || isAvailable === false}
             >
               {t('workflow.buttons.run')}
             </Button>
