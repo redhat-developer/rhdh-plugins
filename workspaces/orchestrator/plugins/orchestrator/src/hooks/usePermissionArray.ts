@@ -39,6 +39,7 @@ export type AsyncPermissionBatchResult = Omit<
 /**
  * Like usePermission() from '@backstage/plugin-permission-react' but for multiple permissions at once.
  *
+ * @deprecated Only used for legacy dynamic permissions. Remove in next release.
  * @param permissions
  * @returns Object similar to AsyncPermissionResult but the "allowed" is a boolean array.
  */
@@ -66,23 +67,5 @@ export const usePermissionArray = (
   return {
     loading: false,
     allowed: data.map(d => d.result === AuthorizeResult.ALLOW),
-  };
-};
-
-/**
- * Handy function returning AsyncPermissionResult which is ALLOWED if at least one of the permission is allowed.
- *
- * @param permissions
- */
-export const usePermissionArrayDecision = (
-  permissions: InputType[],
-): AsyncPermissionResult => {
-  const result = usePermissionArray(permissions);
-
-  return {
-    loading: result.loading,
-    error: result.error,
-    // Allow if any permission grants it
-    allowed: !!result.allowed.find(d => d),
   };
 };
