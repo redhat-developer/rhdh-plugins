@@ -14,6 +14,7 @@ workspaces/boost/
 │   ├── boost-context.md           # Project rationale, 12 design principles, upstream monitoring
 │   └── prd/                       # Product Requirements Documents (one per capability area)
 │       ├── use-case-index.md      # All 25 use cases at a glance
+│       ├── ai-catalog-foundation.md  # NFS plugin bootstrap, /ai-catalog route, dev shell
 │       ├── ai-chat-interaction-experience.md
 │       ├── agent-creation-discovery.md
 │       ├── pluggable-ai-platform-architecture.md

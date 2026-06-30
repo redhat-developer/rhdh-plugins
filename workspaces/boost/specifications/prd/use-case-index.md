@@ -1,11 +1,17 @@
 # Use Case Index
 
 **Product:** Boost — Agentic Developer Portal for Red Hat Developer Hub
-**Updated:** 2026-06-02
+**Updated:** 2026-06-30
 
-Concise reference for all use cases across the five PRDs. For detailed descriptions, see the owning PRD.
+Concise reference for all use cases across the PRDs. For detailed descriptions, see the owning PRD.
 
 ---
+
+## Foundation
+
+| Item | Title                 | Priority | Description                                                                                                                                                           |
+| ---- | --------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| —    | AI Catalog Foundation | P0       | NFS frontend plugin, `/ai-catalog` route scaffold, local dev shell — prerequisite for UC-4/UC-9 gallery UX. See [ai-catalog-foundation.md](ai-catalog-foundation.md). |
 
 ## AI Chat & Interaction Experience
 
@@ -63,6 +69,7 @@ Concise reference for all use cases across the five PRDs. For detailed descripti
 
 | PRD                                | Use Cases                                          | P0 Count  |
 | ---------------------------------- | -------------------------------------------------- | --------- |
+| AI Catalog Foundation              | (prerequisite for UC-4, UC-9, UC-15)               | 1         |
 | AI Chat & Interaction Experience   | UC-1, UC-2, UC-3, UC-5, UC-6                       | 4         |
 | Agent Creation & Discovery         | UC-4, UC-7, UC-8, UC-9, UC-10, UC-11, UC-12, UC-13 | 3         |
 | Pluggable AI Platform Architecture | UC-14, UC-16                                       | 1         |
