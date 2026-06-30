@@ -54,7 +54,7 @@ Configuration lives in `app-config.yaml` under the `boost.*` namespace (security
 
 Two dev workflows:
 
-- `yarn start` — full app (packages/app + packages/backend) with all Boost plugins; navigate to `/boost`.
+- `yarn start` — full app (packages/app + packages/backend) with all Boost plugins; navigate to `/ai-catalog`.
 - `yarn dev` — isolated frontend and backend plugin dev servers for faster iteration on a single plugin.
 
 For RHDH production deployment, see `dynamic-plugins-filesystem-reference.yaml` and `dynamic-plugins-image-reference.yaml`.

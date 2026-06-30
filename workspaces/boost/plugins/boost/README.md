@@ -12,7 +12,7 @@ The plugin is registered in `packages/app`. From the workspace root:
 yarn start
 ```
 
-Navigate to [/boost](http://localhost:3000/boost).
+Navigate to [/ai-catalog](http://localhost:3000/ai-catalog).
 
 ### Isolated development
 
@@ -22,7 +22,7 @@ For faster iteration on the frontend plugin alone, run from this directory:
 yarn start
 ```
 
-This uses the dev app in [`dev/`](./dev/) with quicker startup and hot reloads. The backend plugin can be developed in isolation from `plugins/boost-backend` via `yarn dev` at the workspace root.
+This uses the dev app in [`dev/`](./dev/) with quicker startup and hot reloads; it also lands on `/ai-catalog`. The backend plugin can be developed in isolation from `plugins/boost-backend` via `yarn dev` at the workspace root.
 
 ## Architecture
 

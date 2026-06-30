@@ -16,8 +16,16 @@
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import boostPlugin from '@red-hat-developer-hub/backstage-plugin-boost';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
+import { signInModule } from './modules/signIn';
 
 export default createApp({
-  features: [catalogPlugin, navModule, boostPlugin],
+  features: [
+    rhdhThemeModule,
+    navModule,
+    signInModule,
+    catalogPlugin,
+    boostPlugin,
+  ],
 });

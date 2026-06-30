@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/frontend-dev-utils';
 
-import plugin from '../src';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 
-const defaultPage = '/ai-catalog';
-
-if (
-  typeof global.window !== 'undefined' &&
-  global.window.location.pathname === '/'
-) {
-  global.window.location.pathname = defaultPage;
-}
-
-createDevApp({ features: [plugin] });
+export const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    SignInPageBlueprint.make({
+      params: {
+        loader: () =>
+          import('./SignInPageComponent').then(m => m.SignInPageComponent),
+      },
+    }),
+  ],
+});

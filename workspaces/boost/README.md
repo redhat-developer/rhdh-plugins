@@ -72,7 +72,7 @@ yarn install
 
 # Start the full app (frontend + backend with all Boost plugins)
 yarn start
-# Navigate to http://localhost:3000/boost
+# Navigate to http://localhost:3000/ai-catalog
 
 # Isolated plugin development (frontend + backend plugins only, faster iteration)
 yarn dev

@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import StorefrontIcon from '@material-ui/icons/Storefront';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 
 export const AiCatalogIcon = () => <StorefrontIcon />;
