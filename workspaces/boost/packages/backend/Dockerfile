@@ -1,9 +1,10 @@
 # This dockerfile builds an image for the backend package.
 # It should be executed with the root of the repo as docker context.
 #
-# WARNING: This image bundles the workspace dev app-config.yaml (guest auth,
-# allow-all permissions, in-memory database). It is not production-ready
-# without supplying production app-config overrides.
+# WARNING: This image bundles the workspace dev app-config.yaml layered with
+# app-config.production.yaml (PostgreSQL, production auth environment, full
+# boost security mode). Override URLs, credentials, and auth providers for
+# your deployment.
 #
 # Before building this image, be sure to have run the following commands in the repo root:
 #
@@ -63,4 +64,6 @@ COPY --chown=node:node examples ./examples
 COPY --chown=node:node packages/backend/dist/bundle.tar.gz app-config*.yaml ./
 RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
 
-CMD ["node", "packages/backend", "--config", "app-config.yaml"]
+CMD ["node", "packages/backend", \
+    "--config", "app-config.yaml", \
+    "--config", "app-config.production.yaml"]
