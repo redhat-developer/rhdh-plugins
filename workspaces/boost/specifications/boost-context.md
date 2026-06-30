@@ -45,6 +45,24 @@ workspace/boost/plugins/
 
 The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). `boost-responses-api-toolkit` and `boost-toolscope` are standalone utility packages with zero Backstage dependencies — they can be consumed by provider modules or used outside Backstage entirely. Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
 
+## Local Development
+
+### Host Packages
+
+Backstage workspace convention requires `packages/app` and `packages/backend` as host packages — these are standard Backstage scaffolding, not boost product code. Even for backend-only development, `backstage-cli package start` requires a minimal `packages/app` scaffold because `@backstage/plugin-app-backend` (registered in `packages/backend`) serves frontend assets.
+
+The stock Backstage scaffold (catalog, search UI) is useful for verifying that entity providers emit correct catalog entities. When `boost-frontend` is implemented, it will be a plugin registered _into_ the app host — the same way `boost-backend` is a plugin wired into `packages/backend/src/index.ts`.
+
+### Metrics Compatibility Shim
+
+`packages/backend/src/index.ts` requires a no-op `metricsServiceRef` factory because `@backstage/plugin-catalog-backend` depends on a metrics service that `@backstage/backend-defaults` does not yet provide (still absent as of Backstage 1.52 / `backend-defaults` 0.17.3). The import uses `@backstage/backend-plugin-api/alpha` — an unstable API surface. This shim should be removed when `backend-defaults` adds a default metrics service factory.
+
+### TLS and IDE Environment Caveats
+
+When developing against OpenShift routes with self-signed certificates, set `NODE_TLS_REJECT_UNAUTHORIZED=0` in the process environment.
+
+IDE "Before Launch" shell scripts (e.g. WebStorm) run in a subprocess — `export` statements do not propagate to the debugger process. Environment variables without `:-` defaults in `app-config.yaml` (such as `KAGENTI_CLIENT_SECRET`) must be set directly in the IDE's Run/Debug Configuration environment variables, not in shell scripts.
+
 ## Design Principles (Learned from Augment)
 
 These principles are derived from augment's tech debt analysis. Each represents a pattern that augment got wrong or accumulated as debt, and that boost will implement correctly from the start.
