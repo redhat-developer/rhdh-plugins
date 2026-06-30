@@ -19,12 +19,16 @@ import {
 } from '@backstage/frontend-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { AiCatalogIcon } from './components/AiCatalogIcon';
 
 export const page = PageBlueprint.make({
   params: {
-    path: '/boost',
+    path: '/ai-catalog',
     routeRef: rootRouteRef,
-    loader: () => import('./components/TodoPage').then(m => <m.TodoPage />),
+    title: 'AI Catalog',
+    icon: <AiCatalogIcon />,
+    loader: () =>
+      import('./components/AiCatalogPage').then(m => <m.AiCatalogPage />),
   },
 });
 

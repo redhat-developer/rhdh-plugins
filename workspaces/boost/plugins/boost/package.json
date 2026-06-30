@@ -25,11 +25,10 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.18.11",
     "@backstage/frontend-plugin-api": "^0.17.2",
     "@backstage/theme": "^0.7.3",
     "@backstage/ui": "^0.16.0",
-    "react-use": "^17.2.4"
+    "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -44,7 +43,6 @@
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
-    "msw": "^1.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0"

@@ -13,5 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { TodoList } from './TodoList';
-export type { TodoItem } from './TodoList';
+import StorefrontIcon from '@material-ui/icons/Storefront';
+
+export const AiCatalogIcon = () => <StorefrontIcon />;

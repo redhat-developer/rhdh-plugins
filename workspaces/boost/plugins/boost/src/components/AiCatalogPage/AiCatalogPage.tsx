@@ -13,4 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { TodoPage } from './TodoPage';
+import { Header, Container } from '@backstage/ui';
+
+export const AiCatalogPage = () => (
+  <>
+    <Header title="AI Catalog" />
+    <Container />
+  </>
+);

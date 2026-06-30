@@ -13,14 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/frontend-dev-utils';
-
-import plugin from '../src';
-
-const defaultPage = '/ai-catalog';
-
-if (typeof window !== 'undefined' && window.location.pathname === '/') {
-  window.location.pathname = defaultPage;
-}
-
-createDevApp({ features: [plugin] });
+export { AiCatalogPage } from './AiCatalogPage';
