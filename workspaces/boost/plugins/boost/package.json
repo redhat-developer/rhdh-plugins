@@ -9,10 +9,23 @@
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/boost/plugins/boost"
+  },
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "boost",
-    "supported-versions": "1.52.0"
+    "supported-versions": "1.52.0",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
+      "@red-hat-developer-hub/backstage-plugin-boost-backend",
+      "@red-hat-developer-hub/backstage-plugin-boost-common",
+      "@red-hat-developer-hub/backstage-plugin-boost-node",
+      "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+      "@red-hat-developer-hub/backstage-plugin-boost-toolscope"
+    ]
   },
   "sideEffects": false,
   "scripts": {
