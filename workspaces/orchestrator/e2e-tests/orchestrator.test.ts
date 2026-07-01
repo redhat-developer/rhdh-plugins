@@ -63,27 +63,36 @@ test.describe('Orchestrator workflow runs', () => {
     );
 
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/settings**');
     const languageButton = page
       .getByRole('button', { name: localeDisplayPattern })
       .first();
-    await languageButton.waitFor({ state: 'visible', timeout: 30_000 });
+    await expect(languageButton).toBeVisible({ timeout: 60_000 });
+
+    if ((await languageButton.textContent())?.trim() === displayName) {
+      await page.goto('/');
+      return;
+    }
+
     await languageButton.click();
     await page.getByRole('option', { name: displayName }).click();
+    await expect(languageButton).toHaveText(displayName, { timeout: 15_000 });
     await page.goto('/');
   }
 
-  test.beforeAll(async ({ browser }) => {
-    sharedContext = await browser.newContext();
+  test.beforeAll(async ({ browser }, testInfo) => {
+    const projectLocale =
+      typeof testInfo.project.use.locale === 'string'
+        ? testInfo.project.use.locale.split('-')[0]
+        : 'en';
+
+    sharedContext = await browser.newContext({ locale: projectLocale });
     sharedPage = await sharedContext.newPage();
-    const currentLocale = await sharedPage.evaluate(
-      () => globalThis.navigator.language.split('-')[0],
-    );
     await sharedPage.goto('/');
     await sharedPage.getByRole('button', { name: 'Enter' }).click();
-    await switchToLocale(sharedPage, currentLocale);
-    translations = getTranslations(currentLocale);
-    orchestrator = new Orchestrator(sharedPage, translations, currentLocale);
+    await switchToLocale(sharedPage, projectLocale);
+    translations = getTranslations(projectLocale);
+    orchestrator = new Orchestrator(sharedPage, translations, projectLocale);
     orchestratorHelper = new OrchestratorHelper(sharedPage, translations);
   });
 

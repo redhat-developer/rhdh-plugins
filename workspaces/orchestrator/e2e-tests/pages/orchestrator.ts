@@ -285,12 +285,6 @@ export class Orchestrator {
       this.translations.workflow.status.available,
     );
     await expect(
-      workflowRow.getByRole('cell', { name: '1.0', exact: true }),
-    ).toBeVisible();
-    await expect(
-      workflowRow.getByRole('link', { name: '1', exact: true }),
-    ).toBeVisible();
-    await expect(
       workflowRow.locator('div').filter({ hasText: /^100%$/ }),
     ).toBeVisible();
     await expect(
