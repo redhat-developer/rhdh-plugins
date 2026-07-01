@@ -83,7 +83,7 @@ Inference responses are not stored on the server when ZDR is enabled.
 
 ### Requirement: Service-Account Keycloak Authentication for Kagenti
 
-Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant using `KeycloakAuthClient` for service-account authentication. User identity is propagated via the `X-Backstage-User` header for audit purposes.
+Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant using `KeycloakAuthClient` for service-account authentication. For user-initiated requests (chat, agent operations via `KagentiApiClient`), user identity is propagated via the `X-Backstage-User` header for audit purposes. Entity provider background polling has no user context and omits this header.
 
 #### Scenario: Token acquisition
 
@@ -105,11 +105,12 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 - **AND** the request is retried with the new token
 - **AND** if the retried request also returns 401, the error is propagated to the caller
 
-#### Scenario: User identity propagation
+#### Scenario: User identity propagation (KagentiApiClient only)
 
-- **WHEN** a Kagenti API call is made on behalf of a user
-- **THEN** the `X-Backstage-User` header is set to the user's identity
+- **WHEN** a user-initiated Kagenti API call is made via `KagentiApiClient` (chat, agent operations)
+- **THEN** the `X-Backstage-User` header is set to the user's Backstage identity
 - **AND** the service-account bearer token is used for authentication (not the user's token)
+- **AND** entity provider background polling omits this header (no user context available)
 
 #### Scenario: Service-account auth configuration
 

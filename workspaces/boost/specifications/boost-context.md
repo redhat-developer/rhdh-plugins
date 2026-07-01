@@ -105,7 +105,7 @@ _Augment lesson: Pivoted from 5-stage to 4-stage model mid-development, requirin
 
 ### 10. Service-Account Keycloak Authentication
 
-Kagenti authentication uses OAuth2 Client Credentials Grant via `KeycloakAuthClient` for service-account authentication from the start. The token manager handles token acquisition, caching with configurable expiry buffer, and automatic refresh. User identity is propagated via the `X-Backstage-User` header for audit purposes.
+Kagenti authentication uses OAuth2 Client Credentials Grant via `KeycloakAuthClient` for service-account authentication from the start. The token manager handles token acquisition, caching with configurable expiry buffer, and automatic refresh. For user-initiated requests via `KagentiApiClient`, user identity is propagated via the `X-Backstage-User` header for audit purposes; entity provider background polling omits this header.
 
 _Augment lesson: All Kagenti requests used a shared service-account token. `X-Backstage-User` header was informational only. Per-user audit trail impossible at the provider level._
 

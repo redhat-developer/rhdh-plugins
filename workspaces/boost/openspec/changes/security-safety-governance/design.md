@@ -42,7 +42,7 @@ The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. A rou
 
 ### Decision 4: Service-account auth with KeycloakAuthClient
 
-`KeycloakAuthClient` acquires tokens via OAuth2 Client Credentials Grant, caches them with a configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatically refreshes before expiry. On 401 responses, the token is refreshed and the request retried once (max-1-retry). User identity is propagated via `X-Backstage-User` header for audit trails. This is deliberately simple: service-account auth provides consistent authentication without per-user token management complexity.
+`KeycloakAuthClient` acquires tokens via OAuth2 Client Credentials Grant, caches them with a configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatically refreshes before expiry. On 401 responses, the token is refreshed and the request retried once (max-1-retry). For user-initiated requests via `KagentiApiClient`, user identity is propagated via `X-Backstage-User` header for audit trails; entity provider background polling omits this header (no user context). This is deliberately simple: service-account auth provides consistent authentication without per-user token management complexity.
 
 ### Decision 5: Separation of authorization concerns
 

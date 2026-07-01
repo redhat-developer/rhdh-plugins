@@ -508,7 +508,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/3654
 **Labels:** `ready-to-code`
 **Depends on:** Issue 13 (#3309)
 
-Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cacheService` for token caching instead of private instance fields. Aligns with design principle 1 and the PRD cache migration table.
+Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cacheService` for token caching instead of private instance fields, and add HTTPS validation for `tokenEndpoint`. Aligns with design principle 1 and the PRD cache migration table.
 
 ### Tasks
 
@@ -518,6 +518,7 @@ Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cac
 - 17.4 Update `module.ts` to pass `cache` (with namespace) to `KeycloakAuthClient`
 - 17.5 Update tests to mock `cacheService` instead of relying on in-memory state
 - 17.6 Consider extracting `KeycloakAuthClient` to a shared location (e.g., `boost-node`) so `boost-backend-module-kagenti` can reuse it for task 7.5b
+- 17.7 Add HTTPS validation for `tokenEndpoint` in `KeycloakAuthClient` constructor — reject HTTP URLs unless security mode is `development-only-no-auth`
 
 ### Specifications
 
