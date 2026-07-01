@@ -137,7 +137,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 #### Scenario: LlamaStack provider unaffected
 
 - **WHEN** Kagenti auth is configured
-- **THEN** `ResponsesApiProvider` is not modified — `setUserContext` is optional and not implemented
+- **THEN** `ResponsesApiProvider` is not modified — `ChatOptions` is optional and the provider omits it
 - **AND** Keycloak auth is Kagenti-specific
 
 ### Requirement: CSRF Protection
