@@ -202,7 +202,7 @@ Draft → Pending → Published → Archived
 - Max-1-retry on 401: if a request returns 401, the token is refreshed and the request retried once; if the retried request also returns 401, the error is propagated to the caller
 - User identity propagated via `X-Backstage-User` header for audit trail
 - Configuration: `boost.kagenti.auth.tokenEndpoint`, `boost.kagenti.auth.clientId`, `boost.kagenti.auth.clientSecret` (visibility: secret), `boost.kagenti.auth.tokenExpiryBufferSeconds`
-- `ResponsesApiProvider` (Llama Stack) is unaffected: `setUserContext` method is optional and not implemented
+- `ResponsesApiProvider` (Llama Stack) is unaffected: `ChatOptions` parameter is optional and the provider omits it
 
 **Separation of authorization concerns:**
 
