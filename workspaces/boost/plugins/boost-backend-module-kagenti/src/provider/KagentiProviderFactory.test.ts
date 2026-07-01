@@ -52,6 +52,7 @@ function createMockCache(): CacheService {
 
 function createMockConfig(
   values: Record<string, string | undefined> = {},
+  authValues?: Record<string, string | number | undefined>,
 ): RootConfigService {
   const providerConfig = values.baseUrl
     ? {
@@ -66,6 +67,17 @@ function createMockConfig(
       }
     : undefined;
 
+  const authConfig = authValues
+    ? {
+        getOptionalString: jest.fn(
+          (key: string) => authValues[key] as string | undefined,
+        ),
+        getOptionalNumber: jest.fn(
+          (key: string) => authValues[key] as number | undefined,
+        ),
+      }
+    : undefined;
+
   return {
     getString: jest.fn(),
     getOptionalString: jest.fn(),
@@ -73,7 +85,9 @@ function createMockConfig(
       if (path === 'boost.providers.kagenti') {
         return providerConfig;
       }
-      // Return undefined for other config paths (e.g., boost.kagenti.auth)
+      if (path === 'boost.kagenti.auth') {
+        return authConfig;
+      }
       return undefined;
     }),
     getConfig: jest.fn(),
@@ -143,5 +157,97 @@ describe('KagentiProviderFactory', () => {
     expect(config.getOptionalConfig).toHaveBeenCalledWith(
       'boost.providers.kagenti',
     );
+  });
+
+  describe('readKagentiAuthConfig', () => {
+    it('creates auth client when all three fields are present', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: 'secret',
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      const bundle = factory.create();
+
+      expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Keycloak service-account auth configured for Kagenti provider',
+      );
+    });
+
+    it('passes tokenExpiryBufferSeconds to auth client', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: 'secret',
+            tokenExpiryBufferSeconds: 120,
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      const bundle = factory.create();
+
+      expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Keycloak service-account auth configured for Kagenti provider',
+      );
+    });
+
+    it('warns on partial auth config (missing clientSecret)', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: undefined,
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      factory.create();
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Partial Kagenti auth config'),
+      );
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('clientSecret'),
+      );
+    });
+
+    it('silently skips auth when config section is absent', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig({ baseUrl: 'http://kagenti:8080' }),
+        cache: createMockCache(),
+        logger,
+      });
+
+      factory.create();
+
+      expect(logger.warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('Partial Kagenti auth config'),
+      );
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Keycloak service-account auth configured'),
+      );
+    });
   });
 });

@@ -154,6 +154,32 @@ describe('KeycloakAuthClient', () => {
     expect(token).toBe('token');
   });
 
+  it('deduplicates concurrent token fetches', async () => {
+    let resolveToken: (value: Response) => void;
+    const fetchPromise = new Promise<Response>(resolve => {
+      resolveToken = resolve;
+    });
+    const mockFetch = jest.spyOn(global, 'fetch').mockReturnValue(fetchPromise);
+
+    const client = new KeycloakAuthClient(defaultConfig, 60);
+
+    const p1 = client.getBearerToken();
+    const p2 = client.getBearerToken();
+    const p3 = client.getBearerToken();
+
+    resolveToken!({
+      ok: true,
+      json: async () => ({ access_token: 'shared-token', expires_in: 300 }),
+    } as Response);
+
+    const [t1, t2, t3] = await Promise.all([p1, p2, p3]);
+
+    expect(t1).toBe('shared-token');
+    expect(t2).toBe('shared-token');
+    expect(t3).toBe('shared-token');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
   it('defaults expires_in to 300 when not in response', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,

@@ -44,17 +44,17 @@ export class KeycloakAuthClient {
   private readonly expiryBufferSeconds: number;
   private cachedToken: string | undefined;
   private tokenExpiresAt: number = 0;
+  private pendingFetch: Promise<string> | undefined;
 
   constructor(config: KeycloakAuthConfig, expiryBufferSeconds?: number) {
     this.config = config;
-    // Consumer-applied default (constraint 2): raw config resolution
-    // bypasses Zod defaults, so the consumer applies the fallback.
     this.expiryBufferSeconds = expiryBufferSeconds ?? 60;
   }
 
   /**
    * Get a valid bearer token, fetching a fresh one if the cached
-   * token is expired or about to expire.
+   * token is expired or about to expire. Concurrent callers share
+   * a single in-flight fetch to avoid redundant Keycloak requests.
    */
   async getBearerToken(): Promise<string> {
     const now = Date.now() / 1000;
@@ -62,6 +62,19 @@ export class KeycloakAuthClient {
       return this.cachedToken;
     }
 
+    if (this.pendingFetch) {
+      return this.pendingFetch;
+    }
+
+    this.pendingFetch = this.fetchToken().finally(() => {
+      this.pendingFetch = undefined;
+    });
+
+    return this.pendingFetch;
+  }
+
+  private async fetchToken(): Promise<string> {
+    const now = Date.now() / 1000;
     const credentials = Buffer.from(
       `${this.config.clientId}:${this.config.clientSecret}`,
     ).toString('base64');
