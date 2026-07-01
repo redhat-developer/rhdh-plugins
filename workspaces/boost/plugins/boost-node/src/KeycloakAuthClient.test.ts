@@ -44,7 +44,7 @@ describe('KeycloakAuthClient', () => {
       defaultConfig.tokenEndpoint,
       expect.objectContaining({
         method: 'POST',
-        body: 'grant_type=client_credentials',
+        body: 'grant_type=client_credentials&client_id=boost-client&client_secret=boost-secret',
       }),
     );
   });

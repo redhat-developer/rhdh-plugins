@@ -89,6 +89,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 
 - **WHEN** `boost.kagenti.auth.tokenEndpoint`, `clientId`, and `clientSecret` are all configured
 - **THEN** `KeycloakAuthClient` acquires a bearer token via OAuth2 Client Credentials Grant
+- **AND** credentials are sent as `client_id` and `client_secret` in the POST form body (not via HTTP Basic auth), as required by the Keycloak client configuration
 - **AND** the token is cached until `expires_in - tokenExpiryBufferSeconds` seconds
 - **AND** the bearer token is included in all Kagenti API requests as `Authorization: Bearer <token>`
 

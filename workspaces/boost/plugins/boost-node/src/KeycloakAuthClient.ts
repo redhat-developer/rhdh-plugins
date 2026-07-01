@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { Buffer } from 'node:buffer';
-
 /**
  * Configuration for Keycloak service-account authentication.
  *
@@ -75,17 +73,18 @@ export class KeycloakAuthClient {
 
   private async fetchToken(): Promise<string> {
     const now = Date.now() / 1000;
-    const credentials = Buffer.from(
-      `${this.config.clientId}:${this.config.clientSecret}`,
-    ).toString('base64');
+    const body = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: this.config.clientId,
+      client_secret: this.config.clientSecret,
+    });
 
     const response = await fetch(this.config.tokenEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${credentials}`,
       },
-      body: 'grant_type=client_credentials',
+      body: body.toString(),
     });
 
     if (!response.ok) {
