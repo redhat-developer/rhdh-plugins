@@ -33,7 +33,9 @@ import {
   mapLifecycleStage,
   mapOwner,
   sanitizeEntityName,
+  unwrapItems,
 } from './entityHelpers';
+import type { KeycloakAuthClient } from './kagentiAuth';
 import { ANNOTATION_BOOST_LIFECYCLE_STAGE } from './KagentiAgentEntityProvider';
 
 const PROVIDER_ID = 'kagenti-tool-entity-provider';
@@ -52,6 +54,7 @@ const PROVIDER_ID = 'kagenti-tool-entity-provider';
 export class KagentiToolEntityProvider implements EntityProvider {
   private readonly config: KagentiEntityProviderConfig;
   private readonly logger: LoggerService;
+  private readonly authClient?: KeycloakAuthClient;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
   private cachedEntities: Entity[] = [];
@@ -60,9 +63,11 @@ export class KagentiToolEntityProvider implements EntityProvider {
     config: KagentiEntityProviderConfig;
     logger: LoggerService;
     taskRunner: SchedulerServiceTaskRunner;
+    authClient?: KeycloakAuthClient;
   }) {
     this.config = options.config;
     this.logger = options.logger.child({ target: this.getProviderName() });
+    this.authClient = options.authClient;
     this.scheduleFn = this.createScheduleFn(options.taskRunner);
   }
 
@@ -117,22 +122,27 @@ export class KagentiToolEntityProvider implements EntityProvider {
     const namespaces = this.config.namespaces ?? ['default'];
     const allTools: KagentiTool[] = [];
 
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (this.authClient) {
+      const token = await this.authClient.getBearerToken();
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     for (const ns of namespaces) {
-      const url = `${this.config.baseUrl}/a2a/tools?namespace=${encodeURIComponent(ns)}`;
+      const url = `${this.config.baseUrl}/api/v1/tools?namespace=${encodeURIComponent(ns)}`;
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           this.logger.warn(
             `Kagenti API returned ${response.status} for tools in namespace ${ns}`,
           );
           continue;
         }
-        const tools = (await response.json()) as KagentiTool[];
-        if (Array.isArray(tools)) {
-          allTools.push(
-            ...tools.map(t => ({ ...t, namespace: t.namespace ?? ns })),
-          );
-        }
+        const data: unknown = await response.json();
+        const tools = unwrapItems<KagentiTool>(data);
+        allTools.push(
+          ...tools.map(t => ({ ...t, namespace: t.namespace ?? ns })),
+        );
       } catch (error) {
         this.logger.warn(
           `Failed to fetch tools for namespace ${ns}`,
