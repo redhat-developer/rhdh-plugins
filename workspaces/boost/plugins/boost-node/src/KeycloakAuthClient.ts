@@ -19,7 +19,7 @@ import { Buffer } from 'node:buffer';
 /**
  * Configuration for Keycloak service-account authentication.
  *
- * @internal
+ * @public
  */
 export interface KeycloakAuthConfig {
   /** Keycloak token endpoint URL. */
@@ -37,7 +37,7 @@ export interface KeycloakAuthConfig {
  * configurable buffer (default: 60 seconds). Supports token invalidation
  * for 401 retry flows (task 7.3).
  *
- * @internal
+ * @public
  */
 export class KeycloakAuthClient {
   private readonly config: KeycloakAuthConfig;

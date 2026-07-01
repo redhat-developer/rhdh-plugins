@@ -15,7 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { KeycloakAuthClient } from './KeycloakAuthClient';
+import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 
 /**
  * Options for creating a {@link KagentiApiClient}.

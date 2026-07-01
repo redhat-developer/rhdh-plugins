@@ -16,7 +16,7 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { KagentiApiClient } from './KagentiApiClient';
-import { KeycloakAuthClient } from './KeycloakAuthClient';
+import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 
 function createMockLogger(): LoggerService {
   return {

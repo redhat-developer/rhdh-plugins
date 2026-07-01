@@ -24,7 +24,7 @@ import { KagentiProvider } from './KagentiProvider';
 import { AgentCardCache } from './AgentCardCache';
 import { KeycloakTokenCache } from './KeycloakTokenCache';
 import { SessionMap } from './SessionMap';
-import { KeycloakAuthClient } from './KeycloakAuthClient';
+import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 import { KagentiApiClient } from './KagentiApiClient';
 
 /**
