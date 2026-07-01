@@ -89,22 +89,16 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 // Boost plugins
 backend.add(import('@red-hat-developer-hub/backstage-plugin-boost-backend'));
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti'),
 );
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider'),
 );
 
 backend.start();

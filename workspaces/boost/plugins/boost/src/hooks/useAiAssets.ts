@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { isAiAsset } from '../utils/isAiAsset';
+import { AI_ASSET_SPEC_TYPES, isAiAsset } from '../utils/isAiAsset';
 
 export interface AiAssetFilters {
   search?: string;
@@ -29,142 +29,129 @@ export interface AiAssetFilters {
 }
 
 export interface UseAiAssetsResult {
+  /** Entities after all client-side filters. */
   entities: Entity[];
+  /** All AI asset entities before client-side filters — stable for deriving filter options. */
+  allEntities: Entity[];
   loading: boolean;
   error: Error | undefined;
   retry: () => void;
 }
 
 /**
- * Builds catalog entity filter expressions for all AI asset kind/type
- * combinations. Returns an OR query across all valid pairs.
+ * Builds the static catalog filter for all AI asset kind/type pairs.
+ * Returns an OR query (array of filter objects).
  */
-function buildCatalogFilter(
+function buildCatalogFilter(): Record<string, string | string[]>[] {
+  return Object.entries(AI_ASSET_SPEC_TYPES).map(([kind, types]) => ({
+    kind,
+    'spec.type': [...types],
+  }));
+}
+
+function applyClientFilters(
+  items: Entity[],
   filters: AiAssetFilters,
-): Record<string, string | string[]>[] {
-  const kindTypeMap: [string, string[]][] = [
-    ['AiResource', ['skill', 'rule']],
-    ['API', ['mcp-server']],
-    ['Component', ['ai-agent']],
-    ['Resource', ['ai-model', 'ai-tool', 'vector-store']],
-  ];
+): Entity[] {
+  let results = items;
 
-  const filterSets: Record<string, string | string[]>[] = [];
-
-  for (const [kind, types] of kindTypeMap) {
-    const base: Record<string, string | string[]> = {
-      kind,
-      'spec.type': types,
-    };
-    if (filters.lifecycle?.length) {
-      base['spec.lifecycle'] = filters.lifecycle;
-    }
-    if (filters.owner) {
-      base['spec.owner'] = filters.owner;
-    }
-    filterSets.push(base);
+  if (filters.search) {
+    const term = filters.search.toLowerCase();
+    results = results.filter(
+      e =>
+        e.metadata.name.toLowerCase().includes(term) ||
+        (e.metadata.description ?? '').toLowerCase().includes(term) ||
+        (e.metadata.tags ?? []).some(t => t.toLowerCase().includes(term)),
+    );
   }
 
-  return filterSets;
+  if (filters.tags?.length) {
+    const tagSet = new Set(filters.tags.map(t => t.toLowerCase()));
+    results = results.filter(e =>
+      (e.metadata.tags ?? []).some(t => tagSet.has(t.toLowerCase())),
+    );
+  }
+
+  if (filters.category?.length) {
+    const cats = new Set(filters.category.map(c => c.toLowerCase()));
+    results = results.filter(e => {
+      const specType = (e.spec as Record<string, unknown> | undefined)?.type as
+        | string
+        | undefined;
+      return specType !== undefined && cats.has(specType.toLowerCase());
+    });
+  }
+
+  if (filters.lifecycle?.length) {
+    const vals = new Set(filters.lifecycle.map(v => v.toLowerCase()));
+    results = results.filter(e => {
+      const lc = (e.spec as Record<string, unknown> | undefined)?.lifecycle as
+        | string
+        | undefined;
+      return lc !== undefined && vals.has(lc.toLowerCase());
+    });
+  }
+
+  if (filters.owner) {
+    const ownerLower = filters.owner.toLowerCase();
+    results = results.filter(e => {
+      const o = (e.spec as Record<string, unknown> | undefined)?.owner as
+        | string
+        | undefined;
+      return o !== undefined && o.toLowerCase() === ownerLower;
+    });
+  }
+
+  return results;
 }
 
 /**
- * Wraps catalogApiRef to query AI asset entities with optional filtering.
- * Uses client-side filtering for search, tags, and category (post-fetch).
+ * Fetches all AI asset entities from the catalog and applies filters
+ * client-side. The catalog API is called once on mount (and on retry);
+ * all filtering is a pure memo over the cached result.
+ *
+ * When catalogs grow beyond ~500 assets, the internals can switch to
+ * cursor-based queryEntities without changing the consumer API.
  */
 export function useAiAssets(filters: AiAssetFilters = {}): UseAiAssetsResult {
   const catalogApi = useApi(catalogApiRef);
-  const [entities, setEntities] = useState<Entity[]>([]);
+  const [allEntities, setAllEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
   const [retryCount, setRetryCount] = useState(0);
 
   const retry = useCallback(() => setRetryCount(c => c + 1), []);
 
-  const { search, owner } = filters;
-  const categoryKey = filters.category?.join(',') ?? '';
-  const lifecycleKey = filters.lifecycle?.join(',') ?? '';
-  const tagsKey = filters.tags?.join(',') ?? '';
-
-  // Only lifecycle and owner are passed to the catalog API filter.
-  // Other filter dimensions (search, category, tags) are applied client-side.
-  const catalogFilter = useMemo(
-    () => buildCatalogFilter(filters),
-    [lifecycleKey, owner], // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(undefined);
 
-    async function fetchEntities() {
-      setLoading(true);
-      setError(undefined);
-
-      try {
-        const response = await catalogApi.getEntities({
-          filter: catalogFilter,
-        });
-
-        if (cancelled) return;
-
-        let results = response.items.filter(isAiAsset);
-
-        if (search) {
-          const term = search.toLowerCase();
-          results = results.filter(
-            e =>
-              e.metadata.name.toLowerCase().includes(term) ||
-              (e.metadata.description ?? '').toLowerCase().includes(term) ||
-              (e.metadata.tags ?? []).some(t => t.toLowerCase().includes(term)),
-          );
-        }
-
-        if (tagsKey) {
-          const tagSet = new Set(tagsKey.split(',').map(t => t.toLowerCase()));
-          results = results.filter(e =>
-            (e.metadata.tags ?? []).some(t => tagSet.has(t.toLowerCase())),
-          );
-        }
-
-        if (categoryKey) {
-          const cats = new Set(
-            categoryKey.split(',').map(c => c.toLowerCase()),
-          );
-          results = results.filter(e => {
-            const specType = (e.spec as Record<string, unknown> | undefined)
-              ?.type as string | undefined;
-            return specType !== undefined && cats.has(specType.toLowerCase());
-          });
-        }
-
-        setEntities(results);
-      } catch (err) {
+    catalogApi
+      .getEntities({ filter: buildCatalogFilter() })
+      .then(response => {
+        if (!cancelled) setAllEntities(response.items.filter(isAiAsset));
+      })
+      .catch(err => {
         if (!cancelled) {
           setError(
             err instanceof Error ? err : new Error('Failed to load AI assets'),
           );
         }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchEntities();
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [
-    catalogApi,
-    catalogFilter,
-    search,
-    categoryKey,
-    tagsKey,
-    owner,
-    retryCount,
-  ]);
+  }, [catalogApi, retryCount]);
 
-  return { entities, loading, error, retry };
+  const entities = useMemo(
+    () => applyClientFilters(allEntities, filters),
+    [allEntities, filters],
+  );
+
+  return { entities, allEntities, loading, error, retry };
 }
