@@ -83,7 +83,7 @@ Inference responses are not stored on the server when ZDR is enabled.
 
 ### Requirement: Service-Account Keycloak Authentication for Kagenti
 
-Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant using `KeycloakTokenManager` for service-account authentication. User identity is propagated via the `X-Backstage-User` header for audit purposes.
+Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant using `KeycloakAuthClient` for service-account authentication. User identity is propagated via the `X-Backstage-User` header for audit purposes.
 
 #### Scenario: Token acquisition
 

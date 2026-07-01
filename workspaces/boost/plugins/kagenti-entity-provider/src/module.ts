@@ -74,7 +74,7 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
         const providerConfig = readKagentiEntityProviderConfig(config);
 
         // Read auth config from boost.kagenti.auth.*
-        const authConfig = readKagentiAuthConfig(config);
+        const authConfig = readKagentiAuthConfig(config, logger);
 
         // Construct KeycloakAuthClient when all 3 auth fields are present
         let authClient: KeycloakAuthClient | undefined;
@@ -133,6 +133,7 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
  */
 function readKagentiAuthConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
+  logger: { warn: (msg: string) => void },
 ):
   | {
       tokenEndpoint: string;
@@ -155,6 +156,20 @@ function readKagentiAuthConfig(
 
   if (tokenEndpoint && clientId && clientSecret) {
     return { tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds };
+  }
+
+  const present = [
+    tokenEndpoint && 'tokenEndpoint',
+    clientId && 'clientId',
+    clientSecret && 'clientSecret',
+  ].filter(Boolean);
+  if (present.length > 0) {
+    const missing = ['tokenEndpoint', 'clientId', 'clientSecret'].filter(
+      k => !present.includes(k),
+    );
+    logger.warn(
+      `Partial Kagenti auth config: found ${present.join(', ')} but missing ${missing.join(', ')}. Auth disabled.`,
+    );
   }
 
   return undefined;

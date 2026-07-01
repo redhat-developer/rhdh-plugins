@@ -198,7 +198,7 @@ Draft → Pending → Published → Archived
 
 **Architecture:**
 
-- `KeycloakTokenManager` service: implements OAuth2 Client Credentials Grant against Keycloak, with token caching, configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatic refresh
+- `KeycloakAuthClient` service: implements OAuth2 Client Credentials Grant against Keycloak, with token caching, configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatic refresh
 - Max-1-retry on 401: if a request returns 401, the token is refreshed and the request retried once; if the retried request also returns 401, the error is propagated to the caller
 - User identity propagated via `X-Backstage-User` header for audit trail
 - Configuration: `boost.kagenti.auth.tokenEndpoint`, `boost.kagenti.auth.clientId`, `boost.kagenti.auth.clientSecret` (visibility: secret), `boost.kagenti.auth.tokenExpiryBufferSeconds`
@@ -281,7 +281,7 @@ Agent Lifecycle Governance
 
 Provider Authentication
 ├── Llama Stack              — static token/TLS → Token/TLS → Token/TLS + MCP OAuth chain
-└── Kagenti                  — no auth → client_credentials (KeycloakTokenManager) + SPIRE mTLS
+└── Kagenti                  — no auth → client_credentials (KeycloakAuthClient) + SPIRE mTLS
 
 Cross-Cutting Protections (all modes)
 ├── SsrfGuard               — blocks SSRF on all HTTP paths
@@ -293,7 +293,7 @@ Cross-Cutting Protections (all modes)
 
 - `middleware/security.ts`: security mode enforcement, `requirePluginAccess`, `authorizeLifecycleAction`
 - `permissions.ts`: 16 fine-grained permissions, 2 resource types, 3 conditional rules
-- `KeycloakTokenManager`: OAuth2 Client Credentials Grant for Kagenti service-account auth
+- `KeycloakAuthClient`: OAuth2 Client Credentials Grant for Kagenti service-account auth
 - `AgentApprovalWorkflowService`: SonataFlow integration
 - `services/SafetyService`: safety shield delegation
 - `services/McpAuthService`: 4-level auth chain

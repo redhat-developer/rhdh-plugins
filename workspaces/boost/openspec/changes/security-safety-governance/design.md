@@ -4,7 +4,7 @@
 
 Boost builds the security and governance layer with Backstage fine-grained permissions as the sole authorization mechanism from day one. The Augment reference prototype's governance system grew into a parallel authorization layer where authorization decisions bypassed `permissions.authorize()`. Boost avoids this entirely.
 
-Boost also implements OAuth2 Client Credentials Grant via `KeycloakTokenManager` for service-account authentication to Kagenti, with user identity propagated via `X-Backstage-User` header for audit trails.
+Boost also implements OAuth2 Client Credentials Grant via `KeycloakAuthClient` for service-account authentication to Kagenti, with user identity propagated via `X-Backstage-User` header for audit trails.
 
 ## Goals
 
@@ -40,9 +40,9 @@ These rules are evaluated against loaded resources via `createConditionalDecisio
 
 The `IS_NOT_CREATOR` permission rule is the primary enforcement mechanism. A route-level guard remains as defense-in-depth (belt and suspenders). Both layers are active in `security.mode === 'full'`.
 
-### Decision 4: Service-account auth with KeycloakTokenManager
+### Decision 4: Service-account auth with KeycloakAuthClient
 
-`KeycloakTokenManager` acquires tokens via OAuth2 Client Credentials Grant, caches them with a configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatically refreshes before expiry. On 401 responses, the token is refreshed and the request retried once (max-1-retry). User identity is propagated via `X-Backstage-User` header for audit trails. This is deliberately simple: service-account auth provides consistent authentication without per-user token management complexity.
+`KeycloakAuthClient` acquires tokens via OAuth2 Client Credentials Grant, caches them with a configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60), and automatically refreshes before expiry. On 401 responses, the token is refreshed and the request retried once (max-1-retry). User identity is propagated via `X-Backstage-User` header for audit trails. This is deliberately simple: service-account auth provides consistent authentication without per-user token management complexity.
 
 ### Decision 5: Separation of authorization concerns
 

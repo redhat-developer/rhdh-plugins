@@ -390,7 +390,7 @@ From `openspec/changes/security-safety-governance/tasks.md` section 7:
 ### Specifications
 
 - `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
-- `openspec/changes/security-safety-governance/design.md` — Decision 4 (KeycloakTokenManager with max-1-retry)
+- `openspec/changes/security-safety-governance/design.md` — Decision 4 (KeycloakAuthClient with max-1-retry)
 
 ---
 

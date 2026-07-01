@@ -21,7 +21,7 @@ Enterprise AI platforms must treat security, safety, and governance as foundatio
 ### Identity & Authentication
 
 - RBAC via Keycloak OIDC + Backstage permissions (`boost.access`, `boost.admin` as top-level gates)
-- OAuth2 Client Credentials Grant for Kagenti service-account authentication via `KeycloakTokenManager`
+- OAuth2 Client Credentials Grant for Kagenti service-account authentication via `KeycloakAuthClient`
 - Token caching with configurable expiry buffer and max-1-retry on 401
 - MCP 4-level auth chain
 - Kagenti SPIRE integration for infrastructure mTLS

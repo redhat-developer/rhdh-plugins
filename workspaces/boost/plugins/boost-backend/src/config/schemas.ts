@@ -200,7 +200,7 @@ export const boostConfigFields = {
     configScope: 'yaml-only' as ConfigScope,
     description:
       'Number of seconds before token expiry to proactively refresh. ' +
-      'Defaults to 60 when not set (applied by KeycloakTokenManager).',
+      'Defaults to 60 when not set (applied by KeycloakAuthClient).',
   },
 
   // -- Encryption --
