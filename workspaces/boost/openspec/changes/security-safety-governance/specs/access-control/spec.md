@@ -102,6 +102,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 
 - **WHEN** a Kagenti API call returns HTTP 401
 - **THEN** the cached token is invalidated and a fresh token is acquired
+- **AND** a brief backoff (100 ms) is applied before the retry to avoid hammering the token endpoint under load
 - **AND** the request is retried with the new token
 - **AND** if the retried request also returns 401, the error is propagated to the caller
 
