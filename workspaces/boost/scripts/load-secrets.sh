@@ -41,8 +41,8 @@ export BOOST_MODEL
 BOOST_MODEL=$(kubectl get secret "${SECRET_NAME}" \
   -n "${NAMESPACE}" -o jsonpath='{.data.BOOST_MODEL}' | base64 -d)
 
-# Accept self-signed certs from OpenShift routes
-export NODE_TLS_REJECT_UNAUTHORIZED=0
+# Accept self-signed certs from OpenShift routes (override with 1 to enforce)
+export NODE_TLS_REJECT_UNAUTHORIZED="${NODE_TLS_REJECT_UNAUTHORIZED:-0}"
 
 echo "Environment loaded:"
 echo "  KAGENTI_CLIENT_SECRET=<set>"

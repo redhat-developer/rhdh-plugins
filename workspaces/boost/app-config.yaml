@@ -17,8 +17,7 @@ backend:
 
 auth:
   providers:
-    guest:
-      dangerouslyAllowOutsideDevelopment: true
+    guest: {}
 
 catalog:
   rules:
