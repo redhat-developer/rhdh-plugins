@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
+import { KeycloakAuthClient } from './KeycloakAuthClient';
 
 describe('KeycloakAuthClient', () => {
   afterEach(() => {
