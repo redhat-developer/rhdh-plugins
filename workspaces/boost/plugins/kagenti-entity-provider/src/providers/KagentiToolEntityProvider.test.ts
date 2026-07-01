@@ -112,6 +112,58 @@ describe('KagentiToolEntityProvider', () => {
     expect(entity.metadata.title).toBe('Code Search');
   });
 
+  it('should fetch from /api/v1/tools URL', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:8080/api/v1/tools?namespace=default',
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+  });
+
+  it('should handle { items: [...] } response shape', async () => {
+    const tools: KagentiTool[] = [
+      {
+        id: 'wrapped-tool',
+        name: 'Wrapped Tool',
+        description: 'A wrapped tool',
+        namespace: 'default',
+        lifecycleStage: 'published',
+      },
+    ];
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ items: tools }),
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    expect(mutation.entities).toHaveLength(1);
+    expect(mutation.entities[0].entity.metadata.title).toBe('Wrapped Tool');
+  });
+
   it('should handle empty tool list', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,

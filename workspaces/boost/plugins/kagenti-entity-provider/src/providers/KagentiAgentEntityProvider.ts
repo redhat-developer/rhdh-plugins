@@ -33,8 +33,9 @@ import {
   mapLifecycleStage,
   mapOwner,
   sanitizeEntityName,
+  unwrapItems,
 } from './entityHelpers';
-import { getKagentiBearerToken } from './kagentiAuth';
+import { KagentiAuthClient } from './kagentiAuth';
 
 const PROVIDER_ID = 'kagenti-agent-entity-provider';
 
@@ -61,6 +62,7 @@ export class KagentiAgentEntityProvider implements EntityProvider {
   private readonly config: KagentiEntityProviderConfig;
   private readonly logger: LoggerService;
   private readonly scheduleFn: () => Promise<void>;
+  private readonly authClient?: KagentiAuthClient;
   private connection?: EntityProviderConnection;
   private cachedEntities: Entity[] = [];
 
@@ -72,6 +74,9 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     this.config = options.config;
     this.logger = options.logger.child({ target: this.getProviderName() });
     this.scheduleFn = this.createScheduleFn(options.taskRunner);
+    if (options.config.auth) {
+      this.authClient = new KagentiAuthClient(options.config.auth);
+    }
   }
 
   getProviderName(): string {
@@ -128,8 +133,8 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     const allAgents: AgentCard[] = [];
 
     const headers: Record<string, string> = { Accept: 'application/json' };
-    if (this.config.auth) {
-      const token = await getKagentiBearerToken(this.config.auth);
+    if (this.authClient) {
+      const token = await this.authClient.getBearerToken();
       headers.Authorization = `Bearer ${token}`;
     }
 
@@ -146,7 +151,7 @@ export class KagentiAgentEntityProvider implements EntityProvider {
         const body = (await response.json()) as
           | { items: AgentCard[] }
           | AgentCard[];
-        const agents = Array.isArray(body) ? body : (body.items ?? []);
+        const agents = unwrapItems(body);
         allAgents.push(
           ...agents.map(a => ({ ...a, namespace: a.namespace ?? ns })),
         );

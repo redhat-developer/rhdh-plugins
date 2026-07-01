@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+export type { KagentiAuthConfig } from './providers/kagentiAuth';
+import type { KagentiAuthConfig } from './providers/kagentiAuth';
+
 /**
- * An A2A agent card describing a remote agent's capabilities.
+ * A Kagenti agent card describing a remote agent's capabilities.
  *
  * @internal
  */
@@ -26,7 +29,7 @@ export interface AgentCard {
   name: string;
   /** Optional description of the agent. */
   description?: string;
-  /** The A2A endpoint URL for this agent. */
+  /** The endpoint URL for this agent. */
   url: string;
   /** Capabilities declared by the agent. */
   capabilities?: AgentCardCapabilities;
@@ -39,7 +42,7 @@ export interface AgentCard {
 }
 
 /**
- * Capability declarations from an A2A agent card.
+ * Capability declarations from a Kagenti agent card.
  *
  * @internal
  */
@@ -70,20 +73,6 @@ export interface KagentiTool {
   createdBy?: string;
   /** Lifecycle stage of the tool. */
   lifecycleStage?: 'draft' | 'pending' | 'published' | 'archived';
-}
-
-/**
- * Keycloak client-credentials auth configuration for the Kagenti API.
- *
- * @internal
- */
-export interface KagentiAuthConfig {
-  /** Keycloak token endpoint URL. */
-  tokenEndpoint: string;
-  /** OAuth2 client ID. */
-  clientId: string;
-  /** OAuth2 client secret. */
-  clientSecret: string;
 }
 
 /**

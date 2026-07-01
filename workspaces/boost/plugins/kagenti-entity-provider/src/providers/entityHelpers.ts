@@ -72,3 +72,13 @@ export function mapOwner(createdBy?: string): string {
   // Otherwise wrap as a user entity ref
   return `user:default/${createdBy}`;
 }
+
+/**
+ * Unwraps a Kagenti API response that may be either a plain array
+ * or an object with an `items` array.
+ *
+ * @internal
+ */
+export function unwrapItems<T>(body: { items: T[] } | T[]): T[] {
+  return Array.isArray(body) ? body : (body.items ?? []);
+}

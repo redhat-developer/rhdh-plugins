@@ -33,9 +33,10 @@ import {
   mapLifecycleStage,
   mapOwner,
   sanitizeEntityName,
+  unwrapItems,
 } from './entityHelpers';
 import { ANNOTATION_BOOST_LIFECYCLE_STAGE } from './KagentiAgentEntityProvider';
-import { getKagentiBearerToken } from './kagentiAuth';
+import { KagentiAuthClient } from './kagentiAuth';
 
 const PROVIDER_ID = 'kagenti-tool-entity-provider';
 
@@ -54,6 +55,7 @@ export class KagentiToolEntityProvider implements EntityProvider {
   private readonly config: KagentiEntityProviderConfig;
   private readonly logger: LoggerService;
   private readonly scheduleFn: () => Promise<void>;
+  private readonly authClient?: KagentiAuthClient;
   private connection?: EntityProviderConnection;
   private cachedEntities: Entity[] = [];
 
@@ -65,6 +67,9 @@ export class KagentiToolEntityProvider implements EntityProvider {
     this.config = options.config;
     this.logger = options.logger.child({ target: this.getProviderName() });
     this.scheduleFn = this.createScheduleFn(options.taskRunner);
+    if (options.config.auth) {
+      this.authClient = new KagentiAuthClient(options.config.auth);
+    }
   }
 
   getProviderName(): string {
@@ -119,8 +124,8 @@ export class KagentiToolEntityProvider implements EntityProvider {
     const allTools: KagentiTool[] = [];
 
     const headers: Record<string, string> = { Accept: 'application/json' };
-    if (this.config.auth) {
-      const token = await getKagentiBearerToken(this.config.auth);
+    if (this.authClient) {
+      const token = await this.authClient.getBearerToken();
       headers.Authorization = `Bearer ${token}`;
     }
 
@@ -137,7 +142,7 @@ export class KagentiToolEntityProvider implements EntityProvider {
         const body = (await response.json()) as
           | { items: KagentiTool[] }
           | KagentiTool[];
-        const tools = Array.isArray(body) ? body : (body.items ?? []);
+        const tools = unwrapItems(body);
         allTools.push(
           ...tools.map(t => ({ ...t, namespace: t.namespace ?? ns })),
         );
