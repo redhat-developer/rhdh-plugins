@@ -498,3 +498,30 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 8:
 
 - `openspec/changes/pluggable-ai-platform-architecture/tasks.md` — Section 8 (Skills Marketplace Integration)
 - `openspec/changes/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
+
+---
+
+## kagenti-entity-provider — Migrate KeycloakAuthClient to Backstage cacheService (issue 17 after 15)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/3654
+
+**Labels:** `ready-to-code`
+**Depends on:** Issue 13 (#3309)
+
+Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cacheService` for token caching instead of private instance fields. Aligns with design principle 1 and the PRD cache migration table.
+
+### Tasks
+
+- 17.1 Add `coreServices.cache` to the `kagenti-entity-provider` module deps
+- 17.2 Refactor `KeycloakAuthClient` constructor to accept a `CacheService` instance
+- 17.3 Replace private `cachedToken`/`tokenExpiresAt` fields with `cacheService.get()`/`cacheService.set()` using TTL derived from token expiry minus buffer
+- 17.4 Update `module.ts` to pass `cache` (with namespace) to `KeycloakAuthClient`
+- 17.5 Update tests to mock `cacheService` instead of relying on in-memory state
+- 17.6 Consider extracting `KeycloakAuthClient` to a shared location (e.g., `boost-node`) so `boost-backend-module-kagenti` can reuse it for task 7.5b
+
+### Specifications
+
+- `specifications/boost-context.md` — Design Principle 1 (Backstage cacheService from Day One)
+- `specifications/prd/pluggable-ai-platform-architecture.md` — Cache migration table
+- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md`
