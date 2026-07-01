@@ -17,6 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type {
   AgenticProvider,
+  ChatOptions,
   InputItem,
   NormalizedStreamEvent,
   ProviderDescriptor,
@@ -28,6 +29,7 @@ import type {
   A2AStreamEvent,
   A2AMessagePart,
 } from '../types';
+import type { KagentiApiClient } from './KagentiApiClient';
 
 /**
  * Options for creating a {@link KagentiProvider}.
@@ -37,6 +39,8 @@ import type {
 export interface KagentiProviderOptions {
   connection: KagentiConnectionConfig;
   logger: LoggerService;
+  /** Optional API client for authenticated requests with 401 retry. */
+  apiClient?: KagentiApiClient;
 }
 
 /**
@@ -64,23 +68,26 @@ export class KagentiProvider implements AgenticProvider {
 
   private readonly connection: KagentiConnectionConfig;
   private readonly logger: LoggerService;
+  private readonly apiClient?: KagentiApiClient;
 
   constructor(options: KagentiProviderOptions) {
     this.connection = options.connection;
     this.logger = options.logger;
+    this.apiClient = options.apiClient;
   }
 
   /**
    * Send a chat message and receive a complete response via the A2A protocol.
    */
-  async chat(messages: InputItem[]): Promise<string> {
+  async chat(messages: InputItem[], options?: ChatOptions): Promise<string> {
     const request = this.buildTaskRequest(messages);
 
     if (request.message.parts.length === 0) {
       throw new Error('No text input items provided');
     }
 
-    const url = `${this.connection.baseUrl}/a2a/tasks`;
+    const path = '/a2a/tasks';
+    const url = `${this.connection.baseUrl}${path}`;
 
     this.logger.debug(
       `Sending A2A task request to ${url} (agent: ${request.agentId})`,
@@ -88,11 +95,20 @@ export class KagentiProvider implements AgenticProvider {
 
     let response: Response;
     try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
-      });
+      if (this.apiClient) {
+        response = await this.apiClient.requestCore({
+          method: 'POST',
+          path,
+          body: request,
+          userRef: options?.userRef,
+        });
+      } else {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request),
+        });
+      }
     } catch (err) {
       this.logger.error(
         `Fetch failed for request to ${url}`,
@@ -127,6 +143,7 @@ export class KagentiProvider implements AgenticProvider {
    */
   async *chatStream(
     messages: InputItem[],
+    options?: ChatOptions,
   ): AsyncIterable<NormalizedStreamEvent> {
     const request = this.buildTaskRequest(messages);
 
@@ -135,7 +152,8 @@ export class KagentiProvider implements AgenticProvider {
       return;
     }
 
-    const url = `${this.connection.baseUrl}/a2a/tasks/stream`;
+    const path = '/a2a/tasks/stream';
+    const url = `${this.connection.baseUrl}${path}`;
 
     this.logger.debug(
       `Sending A2A streaming task request to ${url} (agent: ${request.agentId})`,
@@ -143,11 +161,20 @@ export class KagentiProvider implements AgenticProvider {
 
     let response: Response;
     try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
-      });
+      if (this.apiClient) {
+        response = await this.apiClient.requestCore({
+          method: 'POST',
+          path,
+          body: request,
+          userRef: options?.userRef,
+        });
+      } else {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request),
+        });
+      }
     } catch (err) {
       this.logger.error(
         `Fetch failed for streaming request to ${url}`,

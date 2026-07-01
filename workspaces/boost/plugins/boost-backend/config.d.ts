@@ -123,6 +123,23 @@ export interface Config {
       };
     };
 
+    /** AI provider connection settings. */
+    providers?: {
+      /** Kagenti A2A provider connection. */
+      kagenti?: {
+        /**
+         * Base URL for the Kagenti A2A endpoint.
+         * @configScope yaml-only
+         */
+        baseUrl?: string;
+        /**
+         * Default agent ID for task routing.
+         * @configScope yaml-only
+         */
+        defaultAgent?: string;
+      };
+    };
+
     /** DevSpaces integration. */
     devSpaces?: {
       /**

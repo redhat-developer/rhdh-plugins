@@ -22,7 +22,7 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node'
 
 import { KagentiAgentEntityProvider } from './providers/KagentiAgentEntityProvider';
 import { KagentiToolEntityProvider } from './providers/KagentiToolEntityProvider';
-import { KeycloakAuthClient } from './providers/kagentiAuth';
+import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 import type { KagentiEntityProviderConfig } from './types';
 
 /**
