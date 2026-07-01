@@ -86,6 +86,7 @@ export class KagentiApiClient {
         'Received 401 from Kagenti, invalidating token and retrying',
       );
       this.authClient.invalidateToken();
+      await new Promise(resolve => setTimeout(resolve, 100));
       const retryResponse = await this.doFetch(options);
 
       if (retryResponse.status === 401) {
