@@ -69,7 +69,13 @@ function createMockConfig(
   return {
     getString: jest.fn(),
     getOptionalString: jest.fn(),
-    getOptionalConfig: jest.fn((_path: string) => providerConfig),
+    getOptionalConfig: jest.fn((path: string) => {
+      if (path === 'boost.providers.kagenti') {
+        return providerConfig;
+      }
+      // Return undefined for other config paths (e.g., boost.kagenti.auth)
+      return undefined;
+    }),
     getConfig: jest.fn(),
     getConfigArray: jest.fn(),
     getOptionalConfigArray: jest.fn(),
