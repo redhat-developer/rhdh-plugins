@@ -99,24 +99,27 @@ export interface Config {
     kagenti?: {
       /** Authentication configuration. */
       auth?: {
-        /** RFC 8693 token exchange. */
-        tokenExchange?: {
-          /**
-           * Enable RFC 8693 token exchange for Kagenti.
-           * @configScope yaml-only
-           */
-          enabled?: boolean;
-          /**
-           * Target audience for exchanged token.
-           * @configScope yaml-only
-           */
-          audience?: string;
-          /**
-           * Header containing user OIDC token.
-           * @configScope yaml-only
-           */
-          userTokenHeader?: string;
-        };
+        /**
+         * Keycloak token endpoint URL for OAuth2 Client Credentials Grant.
+         * @configScope yaml-only
+         */
+        tokenEndpoint?: string;
+        /**
+         * OAuth2 client ID for service-account authentication.
+         * @configScope yaml-only
+         */
+        clientId?: string;
+        /**
+         * OAuth2 client secret for service-account authentication.
+         * @visibility secret
+         * @configScope yaml-only
+         */
+        clientSecret?: string;
+        /**
+         * Seconds before token expiry to proactively refresh.
+         * @configScope yaml-only
+         */
+        tokenExpiryBufferSeconds?: number;
       };
     };
 

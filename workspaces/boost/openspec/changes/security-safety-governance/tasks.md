@@ -43,15 +43,14 @@
 - [ ] 6.4 Gate MCP panel with `boost.mcp.manage`
 - [ ] 6.5 Gate config panel with `boost.config.manage`
 
-## 7. Token Exchange (P1)
+## 7. Keycloak Service-Account Auth (P1)
 
-- [ ] 7.1 Create `TokenExchangeManager` implementing RFC 8693 exchange
-- [ ] 7.2 Add per-user token caching with TTL from token expiry
-- [ ] 7.3 Add concurrent exchange deduplication
-- [ ] 7.4 Add graceful fallback to service-account token on all failures
-- [ ] 7.5 Add config schema: `boost.kagenti.auth.tokenExchange.{enabled, audience, userTokenHeader}`
-- [ ] 7.6 Integrate into `KagentiApiClient.requestCore()` — inject per-user token when available
-- [ ] 7.7 Extract user OIDC token from configurable request header in route handlers
+- [ ] 7.1 Create `KeycloakAuthClient` implementing OAuth2 Client Credentials Grant
+- [ ] 7.2 Add token caching with configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60)
+- [ ] 7.3 Add max-1-retry on 401 (refresh token and retry once)
+- [ ] 7.4 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`
+- [ ] 7.5 Integrate into entity providers and `KagentiApiClient` — inject bearer token
+- [ ] 7.6 Propagate user identity via `X-Backstage-User` header for audit
 
 ## 8. CSRF and Credential Security (P2)
 
@@ -70,7 +69,7 @@
 - [ ] 10.2 Verify IS_OWNER blocks non-owner promote/delete/withdraw
 - [ ] 10.3 Verify IS_NOT_CREATOR blocks self-approval
 - [ ] 10.4 Verify `boost.admin` works as coarse-grained alternative to fine-grained permissions
-- [ ] 10.5 Verify token exchange fallback: disabled config → service-account token
-- [ ] 10.6 Verify token exchange fallback: Keycloak error → service-account token
-- [ ] 10.7 Verify token exchange fallback: missing header → service-account token
+- [ ] 10.5 Verify KeycloakAuthClient: token acquisition and caching
+- [ ] 10.6 Verify KeycloakAuthClient: max-1-retry on 401
+- [ ] 10.7 Verify entity providers include bearer token when auth is configured
 - [ ] 10.8 Verify `none` is rejected with a clear error pointing to `development-only-no-auth`

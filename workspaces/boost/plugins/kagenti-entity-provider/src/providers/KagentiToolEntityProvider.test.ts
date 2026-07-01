@@ -132,6 +132,112 @@ describe('KagentiToolEntityProvider', () => {
     expect(mutation.entities).toHaveLength(0);
   });
 
+  it('should use correct API URL pattern /api/v1/tools', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:8080/api/v1/tools?namespace=default',
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+  });
+
+  it('should handle { items: KagentiTool[] } response shape', async () => {
+    const tools: KagentiTool[] = [
+      {
+        id: 'tool-1',
+        name: 'Code Search',
+        namespace: 'default',
+      },
+    ];
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ items: tools }),
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    expect(mutation.entities).toHaveLength(1);
+    expect(mutation.entities[0].entity.metadata.title).toBe('Code Search');
+  });
+
+  it('should include bearer token header when authClient is provided', async () => {
+    const mockAuthClient = {
+      getBearerToken: jest.fn().mockResolvedValue('test-tool-token'),
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+      authClient: mockAuthClient as any,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-tool-token',
+        }),
+      }),
+    );
+  });
+
+  it('should handle auth failure gracefully', async () => {
+    const mockAuthClient = {
+      getBearerToken: jest
+        .fn()
+        .mockRejectedValue(new Error('Keycloak unavailable')),
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    const provider = new KagentiToolEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+      authClient: mockAuthClient as any,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+  });
+
   it('should handle API errors gracefully', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,

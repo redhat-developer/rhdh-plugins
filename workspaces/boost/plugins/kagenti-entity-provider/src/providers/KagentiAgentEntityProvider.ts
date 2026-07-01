@@ -33,7 +33,9 @@ import {
   mapLifecycleStage,
   mapOwner,
   sanitizeEntityName,
+  unwrapItems,
 } from './entityHelpers';
+import type { KeycloakAuthClient } from './kagentiAuth';
 
 const PROVIDER_ID = 'kagenti-agent-entity-provider';
 
@@ -59,6 +61,7 @@ export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
 export class KagentiAgentEntityProvider implements EntityProvider {
   private readonly config: KagentiEntityProviderConfig;
   private readonly logger: LoggerService;
+  private readonly authClient?: KeycloakAuthClient;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
   private cachedEntities: Entity[] = [];
@@ -67,9 +70,11 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     config: KagentiEntityProviderConfig;
     logger: LoggerService;
     taskRunner: SchedulerServiceTaskRunner;
+    authClient?: KeycloakAuthClient;
   }) {
     this.config = options.config;
     this.logger = options.logger.child({ target: this.getProviderName() });
+    this.authClient = options.authClient;
     this.scheduleFn = this.createScheduleFn(options.taskRunner);
   }
 
@@ -126,22 +131,34 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     const namespaces = this.config.namespaces ?? ['default'];
     const allAgents: AgentCard[] = [];
 
-    for (const ns of namespaces) {
-      const url = `${this.config.baseUrl}/a2a/agents?namespace=${encodeURIComponent(ns)}`;
+    const headers: Record<string, string> = {};
+    if (this.authClient) {
       try {
-        const response = await fetch(url);
+        const token = await this.authClient.getBearerToken();
+        headers.Authorization = `Bearer ${token}`;
+      } catch (error) {
+        this.logger.warn(
+          'Failed to acquire Keycloak bearer token for agent fetch',
+          error instanceof Error ? error : undefined,
+        );
+      }
+    }
+
+    for (const ns of namespaces) {
+      const url = `${this.config.baseUrl}/api/v1/agents?namespace=${encodeURIComponent(ns)}`;
+      try {
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           this.logger.warn(
             `Kagenti API returned ${response.status} for namespace ${ns}`,
           );
           continue;
         }
-        const agents = (await response.json()) as AgentCard[];
-        if (Array.isArray(agents)) {
-          allAgents.push(
-            ...agents.map(a => ({ ...a, namespace: a.namespace ?? ns })),
-          );
-        }
+        const data: unknown = await response.json();
+        const agents = unwrapItems<AgentCard>(data);
+        allAgents.push(
+          ...agents.map(a => ({ ...a, namespace: a.namespace ?? ns })),
+        );
       } catch (error) {
         this.logger.warn(
           `Failed to fetch agents for namespace ${ns}`,

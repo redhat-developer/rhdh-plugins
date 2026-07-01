@@ -22,6 +22,7 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node'
 
 import { KagentiAgentEntityProvider } from './providers/KagentiAgentEntityProvider';
 import { KagentiToolEntityProvider } from './providers/KagentiToolEntityProvider';
+import { KeycloakAuthClient } from './providers/kagentiAuth';
 import type { KagentiEntityProviderConfig } from './types';
 
 /**
@@ -72,6 +73,18 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
 
         const providerConfig = readKagentiEntityProviderConfig(config);
 
+        // Read auth config from boost.kagenti.auth.*
+        const authConfig = readKagentiAuthConfig(config);
+
+        // Construct KeycloakAuthClient when all 3 auth fields are present
+        let authClient: KeycloakAuthClient | undefined;
+        if (authConfig) {
+          authClient = new KeycloakAuthClient(authConfig);
+          logger.info(
+            'Keycloak service-account auth configured for Kagenti entity providers',
+          );
+        }
+
         const agentRefreshSeconds =
           providerConfig.agentRefreshIntervalSeconds ??
           DEFAULT_AGENT_REFRESH_SECONDS;
@@ -87,6 +100,7 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
               frequency: { seconds: agentRefreshSeconds },
               timeout: { minutes: 5 },
             }),
+            authClient,
           }),
         );
 
@@ -98,6 +112,7 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
               frequency: { seconds: toolRefreshSeconds },
               timeout: { minutes: 5 },
             }),
+            authClient,
           }),
         );
 
@@ -108,6 +123,31 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
     });
   },
 });
+
+/**
+ * Read Keycloak service-account auth config from app-config.yaml.
+ * Returns the config only when all three required fields are present.
+ */
+function readKagentiAuthConfig(
+  config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
+):
+  | { tokenEndpoint: string; clientId: string; clientSecret: string }
+  | undefined {
+  const authConfig = config.getOptionalConfig('boost.kagenti.auth');
+  if (!authConfig) {
+    return undefined;
+  }
+
+  const tokenEndpoint = authConfig.getOptionalString('tokenEndpoint');
+  const clientId = authConfig.getOptionalString('clientId');
+  const clientSecret = authConfig.getOptionalString('clientSecret');
+
+  if (tokenEndpoint && clientId && clientSecret) {
+    return { tokenEndpoint, clientId, clientSecret };
+  }
+
+  return undefined;
+}
 
 /**
  * Read Kagenti entity provider configuration from app-config.yaml.

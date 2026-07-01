@@ -86,4 +86,13 @@ export interface KagentiEntityProviderConfig {
   agentRefreshIntervalSeconds?: number;
   /** Upstream refresh interval in seconds for tool entities (default: 300 = 5m). */
   toolRefreshIntervalSeconds?: number;
+  /** Optional Keycloak service-account auth configuration. */
+  auth?: {
+    /** Keycloak token endpoint URL. */
+    tokenEndpoint: string;
+    /** OAuth2 client ID. */
+    clientId: string;
+    /** OAuth2 client secret. */
+    clientSecret: string;
+  };
 }

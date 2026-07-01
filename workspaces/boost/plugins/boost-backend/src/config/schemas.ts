@@ -52,7 +52,7 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  *
  * @public
  */
-export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+export const BOOST_CONFIG_SCHEMA_VERSION = 2;
 
 // ---------------------------------------------------------------------------
 // Individual field schemas with metadata
@@ -163,33 +163,44 @@ export const boostConfigFields = {
       'URL of the external skills catalog backend service. ' +
       'Boost proxies browse/filter requests to this endpoint.',
   },
-  // -- Kagenti auth / token exchange --
-  'boost.kagenti.auth.tokenExchange.enabled': {
-    schema: z.boolean().optional().describe('Enable RFC 8693 token exchange'),
+  // -- Kagenti auth / Keycloak service-account --
+  'boost.kagenti.auth.tokenEndpoint': {
+    schema: z.string().url().optional().describe('Keycloak token endpoint URL'),
     configScope: 'yaml-only' as ConfigScope,
     description:
-      'Enable RFC 8693 token exchange for Kagenti. When enabled, the ' +
-      'user OIDC token is exchanged for a Kagenti-scoped token.',
+      'Keycloak token endpoint URL for OAuth2 Client Credentials Grant ' +
+      '(e.g. "https://keycloak.example.com/realms/boost/protocol/openid-connect/token").',
   },
-  'boost.kagenti.auth.tokenExchange.audience': {
+  'boost.kagenti.auth.clientId': {
     schema: z
       .string()
       .optional()
-      .describe('Target audience for exchanged token'),
+      .describe('OAuth2 client ID for service-account'),
     configScope: 'yaml-only' as ConfigScope,
-    description:
-      'Target audience claim for the exchanged token, typically the ' +
-      'Kagenti service identifier in the identity provider.',
+    description: 'OAuth2 client ID for Kagenti service-account authentication.',
   },
-  'boost.kagenti.auth.tokenExchange.userTokenHeader': {
+  'boost.kagenti.auth.clientSecret': {
     schema: z
       .string()
       .optional()
-      .describe('Request header containing the user OIDC token'),
+      .describe('OAuth2 client secret for service-account'),
     configScope: 'yaml-only' as ConfigScope,
     description:
-      'Name of the HTTP request header that carries the user OIDC token ' +
-      'for token exchange (e.g. "x-user-oidc-token").',
+      'OAuth2 client secret for Kagenti service-account authentication. ' +
+      'Stored securely and never logged.',
+    sensitive: true,
+  },
+  'boost.kagenti.auth.tokenExpiryBufferSeconds': {
+    schema: z
+      .number()
+      .int()
+      .min(0)
+      .optional()
+      .describe('Seconds before expiry to refresh token'),
+    configScope: 'yaml-only' as ConfigScope,
+    description:
+      'Number of seconds before token expiry to proactively refresh. ' +
+      'Defaults to 60 when not set (applied by KeycloakTokenManager).',
   },
 
   // -- Encryption --
