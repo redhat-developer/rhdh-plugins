@@ -1,54 +1,51 @@
 #!/usr/bin/env bash
-# Load development secrets from a Kubernetes secret into environment
-# variables for local boost backend development.
+# Load boost dev secrets from a K8s namespace.
+# Source this before launching the debugger:
+#   source workspaces/boost/scripts/load-secrets.sh
 #
-# Usage:
-#   source scripts/load-secrets.sh [secret-name] [namespace]
+# Override defaults via env vars:
+#   BOOST_SECRET_NAMESPACE  (default: rolling-demo-ns)
+#   BOOST_SECRET_NAME       (default: augment-secrets)
 #
-# Defaults:
-#   secret-name: boost-dev-secrets
-#   namespace:   boost-dev
+# Requires: kubectl access to the cluster (KUBECONFIG set)
 
-set -euo pipefail
-
-SECRET_NAME="${1:-boost-dev-secrets}"
-NAMESPACE="${2:-boost-dev}"
+NAMESPACE="${BOOST_SECRET_NAMESPACE:-rolling-demo-ns}"
+SECRET_NAME="${BOOST_SECRET_NAME:-augment-secrets}"
 
 echo "Loading secrets from ${NAMESPACE}/${SECRET_NAME}..."
 
-# Read fields from the K8s secret
-export KAGENTI_CLIENT_SECRET
-KAGENTI_CLIENT_SECRET=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.KAGENTI_CLIENT_SECRET}' | base64 -d)
+_load_field() {
+  local val
+  val=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" \
+    -o jsonpath="{.data.$1}" 2>/dev/null) || {
+    echo "  WARNING: failed to read $1 from secret ${NAMESPACE}/${SECRET_NAME}" >&2
+    return 1
+  }
+  if [ -z "${val}" ]; then
+    echo "  WARNING: $1 is empty in secret ${NAMESPACE}/${SECRET_NAME}" >&2
+    return 1
+  fi
+  echo "${val}" | base64 -d
+}
 
-export KAGENTI_CLIENT_ID
-KAGENTI_CLIENT_ID=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.KAGENTI_CLIENT_ID}' | base64 -d)
+KAGENTI_CLIENT_SECRET=$(_load_field KAGENTI_CLIENT_SECRET)      || { echo "Aborting." >&2; unset -f _load_field; return 1; }
+KAGENTI_CLIENT_ID=$(_load_field KAGENTI_CLIENT_ID)              || { echo "Aborting." >&2; unset -f _load_field; return 1; }
+KAGENTI_TOKEN_ENDPOINT=$(_load_field KAGENTI_TOKEN_ENDPOINT)    || { echo "Aborting." >&2; unset -f _load_field; return 1; }
+KAGENTI_BASE_URL=$(_load_field KAGENTI_BASE_URL)                || { echo "Aborting." >&2; unset -f _load_field; return 1; }
+KAGENTI_NAMESPACE=$(_load_field KAGENTI_NAMESPACE)              || { echo "Aborting." >&2; unset -f _load_field; return 1; }
+BOOST_MODEL=$(_load_field AUGMENT_MODEL)                        || { echo "Aborting." >&2; unset -f _load_field; return 1; }
 
-export KAGENTI_TOKEN_ENDPOINT
-KAGENTI_TOKEN_ENDPOINT=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.KAGENTI_TOKEN_ENDPOINT}' | base64 -d)
+unset -f _load_field
 
-export KAGENTI_BASE_URL
-KAGENTI_BASE_URL=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.KAGENTI_BASE_URL}' | base64 -d)
+export KAGENTI_CLIENT_SECRET KAGENTI_CLIENT_ID KAGENTI_TOKEN_ENDPOINT
+export KAGENTI_BASE_URL KAGENTI_NAMESPACE BOOST_MODEL
+export NODE_TLS_REJECT_UNAUTHORIZED=0
 
-export KAGENTI_NAMESPACE
-KAGENTI_NAMESPACE=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.KAGENTI_NAMESPACE}' | base64 -d)
-
-export BOOST_MODEL
-BOOST_MODEL=$(kubectl get secret "${SECRET_NAME}" \
-  -n "${NAMESPACE}" -o jsonpath='{.data.BOOST_MODEL}' | base64 -d)
-
-# Accept self-signed certs from OpenShift routes (override with 1 to enforce)
-export NODE_TLS_REJECT_UNAUTHORIZED="${NODE_TLS_REJECT_UNAUTHORIZED:-0}"
-
-echo "Environment loaded:"
-echo "  KAGENTI_CLIENT_SECRET=<set>"
-echo "  KAGENTI_CLIENT_ID=<set>"
-echo "  KAGENTI_TOKEN_ENDPOINT=${KAGENTI_TOKEN_ENDPOINT}"
-echo "  KAGENTI_BASE_URL=${KAGENTI_BASE_URL}"
-echo "  KAGENTI_NAMESPACE=${KAGENTI_NAMESPACE}"
-echo "  BOOST_MODEL=${BOOST_MODEL}"
-echo "  NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED}"
+echo "Loaded: KAGENTI_BASE_URL=$KAGENTI_BASE_URL"
+echo "Loaded: KAGENTI_NAMESPACE=$KAGENTI_NAMESPACE"
+echo "Loaded: KAGENTI_CLIENT_ID=$KAGENTI_CLIENT_ID"
+echo "Loaded: KAGENTI_CLIENT_SECRET=<set>"
+echo "Loaded: KAGENTI_TOKEN_ENDPOINT=$KAGENTI_TOKEN_ENDPOINT"
+echo "Loaded: BOOST_MODEL=$BOOST_MODEL"
+echo "Set:    NODE_TLS_REJECT_UNAUTHORIZED=0 (for self-signed OpenShift route certs)"
+echo "Ready — launch the debugger in this shell."
