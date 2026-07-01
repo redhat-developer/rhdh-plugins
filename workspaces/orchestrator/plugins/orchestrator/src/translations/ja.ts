@@ -235,6 +235,12 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.progress': 'ワークフロー進捗',
     'workflow.status.available': '利用可能',
     'workflow.status.unavailable': '利用不可',
+    'workflow.unavailable.title': '利用できないワークフロー',
+    'workflow.unavailable.runTooltip': '利用できないワークフロー',
+    'workflow.unavailable.requestFailed':
+      'HTTP GET リクエスト {{url}} は失敗しました。',
+    'workflow.unavailable.statusCodeLine': 'ステータスコード: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'ステータステキスト: {{reason}}',
     'samlSso.title': 'GitHub SAML SSO セッションの有効期限切れ',
     'samlSso.reauthorizeButton': 'SSO を再認証',
     'samlSso.body':

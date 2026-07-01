@@ -153,6 +153,11 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.ofTotal': string;
     readonly 'workflow.statsSuccess': string;
     readonly 'workflow.statsFailed': string;
+    readonly 'workflow.unavailable.title': string;
+    readonly 'workflow.unavailable.runTooltip': string;
+    readonly 'workflow.unavailable.requestFailed': string;
+    readonly 'workflow.unavailable.statusCodeLine': string;
+    readonly 'workflow.unavailable.statusTextLine': string;
     readonly 'workflow.fields.description': string;
     readonly 'workflow.fields.version': string;
     readonly 'workflow.fields.workflowId': string;

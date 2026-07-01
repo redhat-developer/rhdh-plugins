@@ -44,6 +44,7 @@ import {
 import {
   DEFAULT_TABLE_PAGE_SIZE,
   ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL,
+  UNAVAILABLE,
   VALUE_UNAVAILABLE,
 } from '../../constants';
 import WorkflowOverviewFormatter, {
@@ -180,8 +181,13 @@ export const WorkflowsTable = ({
     const actionItems: TableProps<FormattedWorkflowOverview>['actions'] = [
       rowData => ({
         icon: () => <PlayArrow />,
-        tooltip: t('table.actions.run'),
-        disabled: !canExecuteWorkflow(rowData.id),
+        tooltip:
+          rowData.availability === UNAVAILABLE
+            ? t('workflow.unavailable.runTooltip')
+            : t('table.actions.run'),
+        disabled:
+          !canExecuteWorkflow(rowData.id) ||
+          rowData.availability === UNAVAILABLE,
         onClick: () => handleExecute(rowData),
       }),
     ];
@@ -257,7 +263,10 @@ export const WorkflowsTable = ({
         title: t('table.headers.workflowStatus'),
         field: 'availability',
         render: rowData => (
-          <WorkflowStatus availability={rowData.availability} />
+          <WorkflowStatus
+            availability={rowData.availability}
+            availabilityDetails={rowData.availabilityDetails}
+          />
         ),
       },
       {
