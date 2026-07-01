@@ -17,6 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type {
   AgenticProvider,
+  ChatOptions,
   InputItem,
   NormalizedStreamEvent,
   ProviderDescriptor,
@@ -78,7 +79,7 @@ export class KagentiProvider implements AgenticProvider {
   /**
    * Send a chat message and receive a complete response via the A2A protocol.
    */
-  async chat(messages: InputItem[]): Promise<string> {
+  async chat(messages: InputItem[], options?: ChatOptions): Promise<string> {
     const request = this.buildTaskRequest(messages);
 
     if (request.message.parts.length === 0) {
@@ -99,6 +100,7 @@ export class KagentiProvider implements AgenticProvider {
           method: 'POST',
           path,
           body: request,
+          userRef: options?.userRef,
         });
       } else {
         response = await fetch(url, {
@@ -141,6 +143,7 @@ export class KagentiProvider implements AgenticProvider {
    */
   async *chatStream(
     messages: InputItem[],
+    options?: ChatOptions,
   ): AsyncIterable<NormalizedStreamEvent> {
     const request = this.buildTaskRequest(messages);
 
@@ -163,6 +166,7 @@ export class KagentiProvider implements AgenticProvider {
           method: 'POST',
           path,
           body: request,
+          userRef: options?.userRef,
         });
       } else {
         response = await fetch(url, {
