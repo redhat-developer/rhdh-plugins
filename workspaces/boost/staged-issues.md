@@ -380,12 +380,15 @@ Implement `KeycloakAuthClient` for service-account Kagenti authentication via OA
 
 From `openspec/changes/security-safety-governance/tasks.md` section 7:
 
-- 7.1 Create `KeycloakAuthClient` implementing OAuth2 Client Credentials Grant
-- 7.2 Add token caching with configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60)
+- ~~7.1 Create `KeycloakAuthClient` implementing OAuth2 Client Credentials Grant~~ ✅ PR #3648
+- ~~7.2 Add token caching with configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60)~~ ✅ PR #3648
 - 7.3 Add max-1-retry on 401 (refresh token and retry once)
-- 7.4 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`
-- 7.5 Integrate into entity providers and `KagentiApiClient`
+- ~~7.4 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`~~ ✅ PR #3648
+- ~~7.5a Integrate into entity providers — inject bearer token~~ ✅ PR #3648
+- 7.5b Integrate into `KagentiApiClient` — inject bearer token
 - 7.6 Propagate user identity via `X-Backstage-User` header
+
+**Note:** `KeycloakAuthClient` was implemented in `kagenti-entity-provider/src/providers/kagentiAuth.ts` for entity provider use. The remaining tasks (7.3, 7.5b, 7.6) target the `KagentiApiClient` in `boost-backend-module-kagenti` for user-facing provider module use.
 
 ### Specifications
 
