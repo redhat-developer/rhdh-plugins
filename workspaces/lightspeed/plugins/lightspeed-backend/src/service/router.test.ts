@@ -1149,16 +1149,8 @@ describe('lightspeed router tests', () => {
 
     it('returns true when model supports vision', async () => {
       rcs.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-4o',
-                provider_resource_id: 'gpt-4o',
-                supports_vision: true,
-              },
-            ],
-          });
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return HttpResponse.json({ output: 'hi' });
         }),
       );
 
@@ -1168,21 +1160,20 @@ describe('lightspeed router tests', () => {
         .send({ model: 'gpt-4o', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({ supports_vision: true });
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
+      });
     });
 
     it('returns false when model lacks vision', async () => {
       rcs.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return HttpResponse.json(
+            { error: 'model does not support images' },
+            { status: 400 },
+          );
         }),
       );
 
@@ -1192,24 +1183,26 @@ describe('lightspeed router tests', () => {
         .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({ supports_vision: false });
+      expect(response.body).toEqual({
+        model: 'gpt-3.5-turbo',
+        provider: 'test-server',
+        supportsVision: false,
+      });
     });
 
-    it('returns 400 when model is not found', async () => {
-      rcs.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({ models: [] });
-        }),
-      );
+    it('returns cached result on subsequent calls', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/lightspeed/v1/validate-model-vision')
-        .send({ model: 'unknown-model', provider: 'test-server' });
+        .send({ model: 'gpt-4o', provider: 'test-server' });
 
-      expect(response.statusCode).toEqual(400);
+      expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual({
-        error: 'Model unknown-model not found',
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
       });
     });
   });
@@ -1220,19 +1213,7 @@ describe('lightspeed router tests', () => {
     });
 
     it('rejects attachments when model lacks vision', async () => {
-      rcs.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
-        }),
-      );
+      ModelCapabilitiesCache.set('test-server/gpt-3.5-turbo', false);
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
@@ -1252,24 +1233,12 @@ describe('lightspeed router tests', () => {
 
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toContain(
-        'Model gpt-3.5-turbo does not support image attachments',
+        'This model does not support JPEG images',
       );
     });
 
     it('accepts attachments when model supports vision', async () => {
-      rcs.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-4o',
-                provider_resource_id: 'gpt-4o',
-                supports_vision: true,
-              },
-            ],
-          });
-        }),
-      );
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
