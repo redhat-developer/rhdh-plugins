@@ -113,8 +113,8 @@ export class KeycloakAuthClient {
 
   /**
    * Invalidate the cached token, forcing a fresh token fetch on the
-   * next call to {@link getBearerToken}. Used by the 401 retry flow
-   * (task 7.3).
+   * next call to {@link KeycloakAuthClient.getBearerToken}. Used by
+   * the 401 retry flow.
    */
   invalidateToken(): void {
     this.cachedToken = undefined;
