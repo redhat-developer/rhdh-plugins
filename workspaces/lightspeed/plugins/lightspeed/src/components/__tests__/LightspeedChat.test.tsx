@@ -31,6 +31,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -156,7 +157,7 @@ const mockUseLightspeedDrawerContext =
 
 const configAPi = mockApis.config({
   data: {
-    lightspeed: {
+    'intelligent-assistant': {
       notebooks: {
         enabled: true,
         queryDefaults: {
@@ -196,7 +197,7 @@ const mockNotebooksApi = {
   }),
 };
 
-const setupLightspeedChat = (initialPath = '/lightspeed') => (
+const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
   <MemoryRouter initialEntries={[initialPath]}>
     <TestApiProvider
       apis={[
@@ -237,6 +238,10 @@ describe('LightspeedChat', () => {
     } as Partial<ReturnType<typeof useConversations>> as ReturnType<
       typeof useConversations
     >);
+    mockUseNotebookSessions.mockReturnValue({
+      data: [],
+      refetch: jest.fn(),
+    });
     mockUseLightspeedDrawerContext.mockReturnValue({
       isChatbotActive: false,
       toggleChatbot: jest.fn(),
@@ -271,7 +276,9 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Developer Hub Intelligent Assistant'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -296,7 +303,9 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Developer Hub Intelligent Assistant'),
+      ).toBeInTheDocument();
 
       expect(screen.queryByText('New chat')).toBeInTheDocument();
 
@@ -313,9 +322,11 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Developer Hub Intelligent Assistant'),
+      ).toBeInTheDocument();
 
-      expect(screen.queryByText('New chat')).not.toBeInTheDocument();
+      expect(screen.getByText('New chat').closest('button')).toBeDisabled();
       expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});
     });
   });
@@ -372,7 +383,9 @@ describe('LightspeedChat', () => {
       });
       render(setupLightspeedChat());
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
       await user.click(notebooksTab);
@@ -471,7 +484,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -486,7 +501,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -508,7 +525,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -519,7 +538,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -530,7 +551,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -541,7 +564,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText('Search');
@@ -556,7 +581,7 @@ describe('LightspeedChat', () => {
     it('should open settings dropdown when clicking the settings button', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       expect(settingsButton).toBeInTheDocument();
 
       await userEvent.click(settingsButton);
@@ -570,7 +595,7 @@ describe('LightspeedChat', () => {
     it('should show all display mode options in the dropdown', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -584,7 +609,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with default when clicking Overlay option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -602,7 +627,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with docked when clicking Dock to window option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -620,7 +645,7 @@ describe('LightspeedChat', () => {
     it('should call setDisplayMode with embedded when clicking Fullscreen option', async () => {
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -654,13 +679,15 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
       });
 
-      render(setupLightspeedChat('/lightspeed/notebooks'));
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(screen.getByText('My Notebooks')).toBeInTheDocument();
       });
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = within(
+        screen.getByRole('region', { name: 'Chatbot' }),
+      ).getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -696,7 +723,7 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
       expect(
@@ -729,7 +756,7 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByLabelText('Chatbot options')).toBeInTheDocument();
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
       expect(
@@ -761,7 +788,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -795,7 +822,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -829,7 +856,7 @@ describe('LightspeedChat', () => {
 
       render(setupLightspeedChat());
 
-      const settingsButton = screen.getByLabelText('Chatbot options');
+      const settingsButton = screen.getByLabelText('Options');
       await userEvent.click(settingsButton);
 
       await waitFor(() => {
@@ -846,7 +873,7 @@ describe('LightspeedChat', () => {
   describe('notebooks permission denied', () => {
     beforeEach(() => {
       mockUsePermission.mockImplementation((args: any) => {
-        if (args.permission.name === 'lightspeed.notebooks.use') {
+        if (args.permission.name === 'intelligent-assistant.notebooks.use') {
           return { loading: false, allowed: false };
         }
         return { loading: false, allowed: true };
@@ -857,7 +884,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
@@ -875,7 +904,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
@@ -918,11 +949,13 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should initialize to chat tab when path is /lightspeed', async () => {
-      render(setupLightspeedChat('/lightspeed'));
+    it('should initialize to chat tab when path is /intelligent-assistant', async () => {
+      render(setupLightspeedChat('/intelligent-assistant'));
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const chatTab = screen.getByRole('tab', { name: 'Chat' });
@@ -932,7 +965,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('redirects /lightspeed to /lightspeed/notebooks in fullscreen when shellViewTab is 1', async () => {
+    it('redirects /intelligent-assistant to /intelligent-assistant/notebooks in fullscreen when shellViewTab is 1', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
@@ -951,17 +984,20 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
       });
 
-      render(setupLightspeedChat('/lightspeed'));
+      render(setupLightspeedChat('/intelligent-assistant'));
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/lightspeed/notebooks', {
-          replace: true,
-        });
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/intelligent-assistant/notebooks',
+          {
+            replace: true,
+          },
+        );
       });
     });
 
-    it('should initialize to notebooks tab when path is /lightspeed/notebooks', async () => {
-      render(setupLightspeedChat('/lightspeed/notebooks'));
+    it('should initialize to notebooks tab when path is /intelligent-assistant/notebooks', async () => {
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(screen.getByText('My Notebooks')).toBeInTheDocument();
@@ -974,21 +1010,25 @@ describe('LightspeedChat', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('should navigate to /lightspeed/notebooks when clicking the Notebooks tab', async () => {
-      render(setupLightspeedChat('/lightspeed'));
+    it('should navigate to /intelligent-assistant/notebooks when clicking the Notebooks tab', async () => {
+      render(setupLightspeedChat('/intelligent-assistant'));
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
       await userEvent.click(notebooksTab);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/lightspeed/notebooks');
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/intelligent-assistant/notebooks',
+      );
     });
 
-    it('should navigate to /lightspeed when clicking Chat tab from notebooks view', async () => {
-      render(setupLightspeedChat('/lightspeed/notebooks'));
+    it('should navigate to /intelligent-assistant when clicking Chat tab from notebooks view', async () => {
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(screen.getByText('My Notebooks')).toBeInTheDocument();
@@ -997,7 +1037,7 @@ describe('LightspeedChat', () => {
       const chatTab = screen.getByRole('tab', { name: 'Chat' });
       await userEvent.click(chatTab);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/lightspeed');
+      expect(mockNavigate).toHaveBeenCalledWith('/intelligent-assistant');
     });
 
     it('should navigate to conversation URL when switching to chat tab with an active conversation', async () => {
@@ -1019,7 +1059,7 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
       });
 
-      render(setupLightspeedChat('/lightspeed/notebooks'));
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(screen.getByText('My Notebooks')).toBeInTheDocument();
@@ -1029,7 +1069,7 @@ describe('LightspeedChat', () => {
       await userEvent.click(chatTab);
 
       expect(mockNavigate).toHaveBeenCalledWith(
-        '/lightspeed/conversation/conv-123',
+        '/intelligent-assistant/conversation/conv-123',
       );
     });
   });
@@ -1084,7 +1124,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       expect(
@@ -1095,7 +1137,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show PencilIcon in new chat button in fullscreen mode', async () => {
+    it('should show PenIcon in new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {
@@ -1113,7 +1155,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       expect(
@@ -1125,7 +1169,9 @@ describe('LightspeedChat', () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
-        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Developer Hub Intelligent Assistant'),
+        ).toBeInTheDocument();
       });
 
       expect(

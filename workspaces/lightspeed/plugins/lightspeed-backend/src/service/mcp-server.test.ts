@@ -38,7 +38,7 @@ import { lightspeedPlugin } from '../plugin';
 const mockUserId = 'user:default/user1';
 
 const BASE_CONFIG = {
-  lightspeed: {
+  'intelligent-assistant': {
     servers: [
       {
         id: 'test-server',
@@ -52,8 +52,8 @@ const BASE_CONFIG = {
 // URLs are not in app-config — they come from LCS (GET /v1/mcp-servers).
 // The LCS mock in lcsHandlers returns URLs for 'static-mcp' and 'no-token-server'.
 const MCP_CONFIG = {
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',
@@ -64,8 +64,8 @@ const MCP_CONFIG = {
 };
 
 const MCP_CONFIG_MULTI = {
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',
@@ -84,8 +84,8 @@ const MCP_CONFIG_ENCRYPTED = {
       keys: [{ secret: 'EXAMPLE-key-EXAMPLE-key-EXAMPLE!' }], // notsecret
     },
   },
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',

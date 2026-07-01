@@ -19,7 +19,6 @@ import { Link } from '@backstage/core-components';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
@@ -38,12 +37,10 @@ import CatalogInfoAction from './CatalogInfoAction';
 import DeleteRepository from './DeleteRepository';
 import SyncRepository from './SyncRepository';
 
-const useStyles = makeStyles(() => ({
-  tableCellStyle: {
-    lineHeight: '1.5rem',
-    fontSize: '0.875rem',
-  },
-}));
+const tableCellSx = {
+  lineHeight: '1.5rem',
+  fontSize: '0.875rem',
+};
 
 const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
   const { t } = useTranslation();
@@ -81,12 +78,11 @@ export const AddedRepositoryTableRow = ({
 }: {
   data: AddRepositoryData;
 }) => {
-  const classes = useStyles();
   const importFlow = useImportFlow();
 
   return (
     <TableRow hover>
-      <TableCell component="th" scope="row" className={classes.tableCellStyle}>
+      <TableCell component="th" scope="row" sx={tableCellSx}>
         {importFlow === ImportFlow.Scaffolder ||
         importFlow === ImportFlow.Orchestrator ? (
           <Link
@@ -100,7 +96,7 @@ export const AddedRepositoryTableRow = ({
           data.repoName
         )}
       </TableCell>
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         {data?.repoUrl ? (
           <Link to={data.repoUrl || ''}>
             {urlHelper(data.repoUrl || '')}
@@ -112,7 +108,7 @@ export const AddedRepositoryTableRow = ({
           <>-</>
         )}
       </TableCell>
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         {data?.organizationUrl ? (
           <Link to={data.organizationUrl || ''}>
             {data.orgName}
@@ -124,14 +120,14 @@ export const AddedRepositoryTableRow = ({
           <>-</>
         )}
       </TableCell>
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         <ImportStatusComponent data={data} />
       </TableCell>
 
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         <LastUpdated data={data} />
       </TableCell>
-      <TableCell align="left" className={classes.tableCellStyle}>
+      <TableCell align="left" sx={tableCellSx}>
         <CatalogInfoAction data={data} />
         <DeleteRepository data={data} />
         <SyncRepository data={data} />

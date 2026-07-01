@@ -21,10 +21,18 @@ import multer from 'multer';
 export const DEFAULT_CHUNKING_STRATEGY_TYPE = 'auto'; // auto chunking
 export const DEFAULT_MAX_CHUNK_SIZE_TOKENS = 512; // 512 tokens
 export const DEFAULT_CHUNK_OVERLAP_TOKENS = 50; // 50 tokens
-export const DEFAULT_LLAMA_STACK_PORT = 8321; // Llama Stack port
 export const DEFAULT_LIGHTSPEED_SERVICE_HOST = '127.0.0.1'; // Lightspeed core service host
 export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
+
+/**
+ * Input validation limits for query endpoints
+ */
+export const MAX_QUERY_LENGTH = 32000; // 32K characters (reasonable for LLM context)
+export const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024; // 20MB (matches notebooks limit)
+export const MAX_TOTAL_ATTACHMENTS_SIZE_BYTES = 50 * 1024 * 1024; // 50MB total
+export const EXPRESS_JSON_BODY_LIMIT = '60mb';
+
 export const NOTEBOOKS_SYSTEM_PROMPT = `
 You are a helpful, analytical Research Analyst assistant. Your primary objective is to synthesize cross-document information to answer user queries with 100% fidelity to the provided documents.
 
@@ -96,7 +104,7 @@ export const SSRF_BLOCKED_HOSTNAMES = [
   'metadata.google.internal', // GCP metadata endpoint
   'kubernetes.default.svc', // Kubernetes internal DNS
   'host.docker.internal', // Docker host access
-  '169.254.169.254', // AWS/Azure/GCP metadata IP
+  '169.254.169.254', // NOSONAR local netwok, used by AWS/Azure/GCP metadata IP
   '127.0.0.1', // IPv4 loopback
   '0.0.0.0', // IPv4 any address
   '::1', // IPv6 loopback

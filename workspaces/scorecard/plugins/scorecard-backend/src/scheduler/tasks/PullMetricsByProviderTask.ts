@@ -26,8 +26,8 @@ import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { isMetricIdDisabled } from '../../utils/metricUtils';
+import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
-import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
@@ -93,7 +93,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         const logger = this.logger.child({
           class: this.constructor.name,
           taskId: this.providerId,
-          taskInstanceId: uuid(),
+          taskInstanceId: randomUUID(),
         });
 
         try {

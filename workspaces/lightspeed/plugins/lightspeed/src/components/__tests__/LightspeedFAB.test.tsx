@@ -68,7 +68,9 @@ describe('LightspeedFAB', () => {
     );
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
-    expect(screen.getByLabelText('Open Lightspeed')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Open intelligent assistant'),
+    ).toBeInTheDocument();
   });
 
   it('should render FAB button when displayMode is docked', () => {
@@ -79,7 +81,9 @@ describe('LightspeedFAB', () => {
     );
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
-    expect(screen.getByLabelText('Open Lightspeed')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Open intelligent assistant'),
+    ).toBeInTheDocument();
   });
 
   it('should not render FAB button when displayMode is embedded', () => {
@@ -99,13 +103,13 @@ describe('LightspeedFAB', () => {
       }),
     );
 
-    const fabButton = screen.getByLabelText('Open Lightspeed');
+    const fabButton = screen.getByLabelText('Open intelligent assistant');
     fireEvent.click(fabButton);
 
     expect(mockToggleChatbot).toHaveBeenCalledTimes(1);
   });
 
-  it('should show close icon when chatbot is active', () => {
+  it('should show chevron-down icon when chatbot is active', () => {
     renderWithContext(
       createContextValue({
         isChatbotActive: true,
@@ -113,7 +117,7 @@ describe('LightspeedFAB', () => {
       }),
     );
 
-    expect(screen.getByTestId('CloseIcon')).toBeInTheDocument();
+    expect(screen.getByTestId('lightspeed-fab-open-icon')).toBeInTheDocument();
   });
 
   it('should show LightspeedFABIcon when chatbot is not active', () => {

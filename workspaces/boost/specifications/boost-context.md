@@ -10,7 +10,7 @@ Boost is a new workspace delivering a clean-slate implementation of the agentic 
 
 ## Relationship to Augment
 
-The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is the **reference prototype**. It was the first implementation of the agentic developer portal and served as the basis for customer engagements (notably the Citi "Cloud Concierge" engagement). Boost's requirements, architecture decisions, and design principles are drawn from augment's experience — both what worked and what didn't.
+The Augment plugin (in `redhat-developer/rhdh-plugins`, workspace `augment`) is the **reference prototype**. It was the first implementation of the agentic developer portal and served as the basis for customer engagements (notably an early enterprise engagement). Boost's requirements, architecture decisions, and design principles are drawn from augment's experience — both what worked and what didn't.
 
 **Augment is the source of requirements.** The PRDs and OpenSpec changes in this directory were originally written as retroactive documentation of augment's capabilities. They have been reframed as forward-looking requirements for boost, informed by augment's implementation experience and three rounds of tech debt analysis (May 13, May 26, May 30 2026).
 
@@ -32,15 +32,18 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 ```
 workspace/boost/plugins/
 ├── boost-frontend                    — Chat UI, agent gallery, admin panels, composable extensions
-├── boost-common                      — Shared types, permissions, boostAiProviderServiceRef
+├── boost-common                      — Shared types, permissions (browser-safe, common-library role)
+├── boost-node                        — Service refs, extension points (node-library role)
 ├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
 ├── boost-backend-module-llamastack   — Llama Stack agentic provider (composes llamastack-entity-provider)
 ├── boost-backend-module-kagenti      — Kagenti agentic provider (composes kagenti-entity-provider)
+├── boost-responses-api-toolkit       — Shared Responses API request/response utilities (minimal Backstage deps)
+├── boost-toolscope                   — Standalone tool-scope management (zero Backstage deps, injectable CacheAdapter)
 ├── llamastack-entity-provider        — Backstage backend service: Llama Stack catalog entities (independently deployable)
 └── kagenti-entity-provider           — Backstage backend service: Kagenti catalog entities (independently deployable)
 ```
 
-The core three packages (`boost-frontend`, `boost-common`, `boost-backend`) mirror augment's structure. Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases.
+The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases. `boost-toolscope` has zero Backstage dependencies and uses an injectable `CacheAdapter` interface. `boost-responses-api-toolkit` has minimal Backstage dependencies and provides shared Responses API request/response utilities.
 
 ## Design Principles (Learned from Augment)
 
@@ -60,7 +63,7 @@ _Augment lesson: 2,132 lines of custom governance code implementing 12 authoriza
 
 ### 3. Providers as Independent RHDH Dynamic Plugins
 
-Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in the common package. Cross-plugin consumption via `boostAiProviderServiceRef`.
+Each AI platform provider is a separate `createBackendModule` packaged as an RHDH dynamic plugin. Provider types live in `boost-common`; `boostAiProviderServiceRef` and the extension point live in `boost-node`. Cross-plugin consumption via the service ref.
 
 _Augment lesson: Monolithic plugin with providers locked inside. No serviceRef for cross-plugin consumption. 559 lines of Kagenti-specific types polluting the common package. 13+ provider ID string checks coupling frontend to specific providers._
 
@@ -100,9 +103,9 @@ Agent lifecycle uses the 4-stage model (Draft → Pending → Published → Arch
 
 _Augment lesson: Pivoted from 5-stage to 4-stage model mid-development, requiring `LEGACY_STAGE_MAP` and `normalizeLifecycleStage` compatibility layers._
 
-### 10. Per-User Identity Delegation
+### 10. Service-Account Keycloak Authentication
 
-Kagenti authentication uses RFC 8693 token exchange for per-user authorization from the start (when enabled). No shared service-account-only authentication presenting all users as the same identity.
+Kagenti authentication uses OAuth2 Client Credentials Grant via `KeycloakAuthClient` for service-account authentication from the start. The token manager handles token acquisition, caching with configurable expiry buffer, and automatic refresh. For user-initiated requests via `KagentiApiClient`, user identity is propagated via the `X-Backstage-User` header for audit purposes; entity provider background polling omits this header.
 
 _Augment lesson: All Kagenti requests used a shared service-account token. `X-Backstage-User` header was informational only. Per-user audit trail impossible at the provider level._
 
@@ -117,6 +120,22 @@ _Augment lesson: Zero tests for lifecycle routes, WorkflowBuilder (3,000+ lines)
 Metrics, structured logging, and trace context propagation are implemented alongside features, not bolted on after. Provider health, cache hit rates, permission decision latency, lifecycle transition counts, and streaming pipeline throughput are observable from the start.
 
 _Augment lesson: No metrics, no dashboards, no alerting, no SLO tracking. Provider offline detection existed but no systematic observability framework for operations teams._
+
+---
+
+## Local Development
+
+### Host Packages
+
+The `packages/app` and `packages/backend` directories are standard Backstage scaffolding for running a development instance. They are **not** product code — they exist solely to provide a working host application for integration testing. The backend host registers all core Backstage plugins plus all boost plugins.
+
+### Metrics Compatibility Shim
+
+The `packages/backend/src/index.ts` registers a no-op `metricsServiceRef` factory. This is needed because `@backstage/plugin-catalog-backend` depends on `coreServices.metrics`, but `@backstage/backend-defaults` does not yet provide an implementation (as of Backstage 1.52). The shim uses the `@backstage/backend-plugin-api/alpha` entrypoint and will be removed once backend-defaults ships a metrics provider.
+
+### TLS and IDE Environment Caveats
+
+When connecting to OpenShift routes with self-signed certificates, set `NODE_TLS_REJECT_UNAUTHORIZED=0` in the shell environment before starting the backend. Note that IDEs (VS Code, IntelliJ) may spawn the backend process without inheriting shell environment variables — configure the env var in the IDE's run configuration or `.env` file.
 
 ---
 

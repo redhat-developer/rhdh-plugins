@@ -1,3 +1,5 @@
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
 # harness/code.yaml — code agent with pre/post script pipeline.
 #
 # Flow: pre_script → sandbox (agent) → post_script
@@ -13,6 +15,7 @@
 #   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
 #   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
 #   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
+role: coder
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
@@ -41,7 +44,7 @@ host_files:
 
 skills:
   - skills/code-implementation
-  - skills/monorepo-workspace-routing
+  - skills/rhdh-workspace
 
 plugins:
   - plugins/gopls-lsp
@@ -56,4 +59,4 @@ runner_env:
   REPO_DIR: "${GITHUB_WORKSPACE}/target-repo"
   TARGET_BRANCH: "${TARGET_BRANCH}"
 
-timeout_minutes: 35
+timeout_minutes: 45

@@ -81,7 +81,6 @@ export const WorkflowPage = () => {
             title={t('page.tabs.workflowRuns')}
           >
             <Grid container spacing={2}>
-              <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
               <Grid item xs={12}>
                 <WorkflowRunsTabContent />
               </Grid>

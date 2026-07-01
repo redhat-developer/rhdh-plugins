@@ -17,8 +17,10 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { createScorecardActions } from './actions';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
@@ -58,6 +60,7 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
+        actionsRegistry: actionsRegistryServiceRef,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
         config: coreServices.rootConfig,
@@ -70,6 +73,7 @@ export const scorecardPlugin = createBackendPlugin({
         scheduler: coreServices.scheduler,
       },
       async init({
+        actionsRegistry,
         auth,
         catalog,
         config,
@@ -136,6 +140,15 @@ export const scorecardPlugin = createBackendPlugin({
           aggregationsService: aggregationsService,
           catalogMetricService: catalogMetricService,
         };
+
+        createScorecardActions({
+          actionsRegistry,
+          auth,
+          permissions,
+          catalog,
+          metricProvidersRegistry,
+          catalogMetricService,
+        });
 
         httpRouter.use(
           await createRouter({

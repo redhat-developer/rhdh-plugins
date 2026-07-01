@@ -15,9 +15,13 @@
  */
 import { createDevApp } from '@backstage/dev-utils';
 import { dcmPlugin, DcmPage } from '../src/plugin';
+import { dcmTranslations } from '../src/translations';
 
 createDevApp()
   .registerPlugin(dcmPlugin)
+  .addTranslationResource(dcmTranslations)
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
+  .setDefaultLanguage('en')
   .addPage({
     element: <DcmPage />,
     title: 'Root Page',

@@ -81,45 +81,67 @@ Inference responses are not stored on the server when ZDR is enabled.
 
 ## ADDED Requirements
 
-### Requirement: Per-User Kagenti Identity via Token Exchange
+### Requirement: Service-Account Keycloak Authentication for Kagenti
 
-User identity is delegated to Kagenti via RFC 8693 OAuth2 Token Exchange so agent operations are authorized per-user.
+Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant using `KeycloakAuthClient` for service-account authentication. For user-initiated requests (chat, agent operations via `KagentiApiClient`), user identity is propagated via the `X-Backstage-User` header for audit purposes. Entity provider background polling has no user context and omits this header.
 
-#### Scenario: Token exchange enabled
+#### Scenario: Token acquisition
 
-- **WHEN** `boost.kagenti.auth.tokenExchange.enabled` is `true`
-- **AND** a user's OIDC token is available via the configured header (default: `X-Forwarded-Access-Token`)
-- **THEN** `TokenExchangeManager` exchanges the user's token for a Kagenti-scoped token via RFC 8693
-- **AND** the exchanged token is cached per-user with TTL from token expiry
-- **AND** concurrent exchanges for the same user are deduplicated
-- **AND** the per-user token is used for all Kagenti API calls on behalf of that user
+- **WHEN** `boost.kagenti.auth.tokenEndpoint`, `clientId`, and `clientSecret` are all configured
+- **THEN** `KeycloakAuthClient` acquires a bearer token via OAuth2 Client Credentials Grant
+- **AND** the token is cached until `expires_in - tokenExpiryBufferSeconds` seconds
+- **AND** the bearer token is included in all Kagenti API requests as `Authorization: Bearer <token>`
 
-#### Scenario: Token exchange graceful fallback
+#### Scenario: Streaming lifecycle with token refresh
 
-- **WHEN** token exchange fails (missing header, Keycloak error, exchange failure, disabled config)
-- **THEN** the system silently falls back to the shared service-account token
-- **AND** no request is blocked due to token exchange failure
-- **AND** the fallback is logged for debugging
+- **WHEN** a cached token is about to expire (within `tokenExpiryBufferSeconds`)
+- **THEN** a fresh token is acquired before the next API call
+- **AND** in-flight requests continue with the previously cached token
 
-#### Scenario: Token exchange configuration
+#### Scenario: 401 retry with max-1-retry constraint
 
-- **WHEN** token exchange is configured
-- **THEN** the following config is used:
+- **WHEN** a Kagenti API call returns HTTP 401
+- **THEN** the cached token is invalidated and a fresh token is acquired
+- **AND** the request is retried with the new token
+- **AND** if the retried request also returns 401, the error is propagated to the caller
+
+#### Scenario: User identity propagation (KagentiApiClient only)
+
+- **WHEN** a user-initiated Kagenti API call is made via `KagentiApiClient` (chat, agent operations)
+- **THEN** the `X-Backstage-User` header is set to the user's Backstage identity
+- **AND** the service-account bearer token is used for authentication (not the user's token)
+- **AND** entity provider background polling omits this header (no user context available)
+
+#### Scenario: Service-account auth configuration
+
+- **WHEN** Kagenti auth is configured
+- **THEN** the following config keys are used:
   | Key | Default | Description |
   |---|---|---|
-  | `boost.kagenti.auth.tokenExchange.enabled` | `false` | Enable per-user token exchange |
-  | `boost.kagenti.auth.tokenExchange.audience` | — | Target audience for exchanged token |
-  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | `X-Forwarded-Access-Token` | Header containing user's OIDC token |
+  | `boost.kagenti.auth.tokenEndpoint` | — | Keycloak token endpoint URL |
+  | `boost.kagenti.auth.clientId` | — | OAuth2 client ID |
+  | `boost.kagenti.auth.clientSecret` | — | OAuth2 client secret (visibility: secret) |
+  | `boost.kagenti.auth.tokenExpiryBufferSeconds` | `60` | Seconds before expiry to refresh |
+
+#### Scenario: Kagenti REST API endpoints
+
+- **WHEN** fetching agents from Kagenti
+- **THEN** the URL pattern is `GET /api/v1/agents?namespace={ns}` (not `/a2a/`)
+- **AND** the response is unwrapped via `unwrapItems` to handle both `{ items: T[] }` and `T[]` shapes
+
+- **WHEN** fetching tools from Kagenti
+- **THEN** the URL pattern is `GET /api/v1/tools?namespace={ns}` (not `/a2a/`)
+- **AND** the response is unwrapped via `unwrapItems` to handle both response shapes
 
 #### Scenario: LlamaStack provider unaffected
 
-- **WHEN** token exchange is configured
+- **WHEN** Kagenti auth is configured
 - **THEN** `ResponsesApiProvider` is not modified — `setUserContext` is optional and not implemented
-- **AND** token exchange is Kagenti-specific
+- **AND** Keycloak auth is Kagenti-specific
 
 ### Requirement: CSRF Protection
 
-All mutating requests include CSRF protection headers.
+All frontend mutating requests MUST include CSRF protection headers.
 
 #### Scenario: X-Backstage-Request header enforcement
 
@@ -129,7 +151,7 @@ All mutating requests include CSRF protection headers.
 
 ### Requirement: Credential Storage
 
-Sensitive credentials are stored encrypted in the admin config database.
+Sensitive credentials MUST be stored encrypted in the admin config database.
 
 #### Scenario: DevSpaces token encryption
 
@@ -141,7 +163,7 @@ Sensitive credentials are stored encrypted in the admin config database.
 
 ### Requirement: Security Mode Naming
 
-The development security mode uses an explicit name that communicates its purpose. The legacy name `none` is not accepted.
+The development security mode MUST use an explicit name that communicates its purpose. The legacy name `none` MUST NOT be accepted.
 
 #### Scenario: Only valid mode names accepted
 
@@ -151,7 +173,7 @@ The development security mode uses an explicit name that communicates its purpos
 
 ### Requirement: Identity Resolution
 
-User identity resolution uses real OIDC credentials in all security modes.
+User identity resolution MUST use real OIDC credentials in all security modes.
 
 #### Scenario: getUserRef reads real credentials
 

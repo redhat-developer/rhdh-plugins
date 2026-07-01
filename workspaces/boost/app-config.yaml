@@ -1,0 +1,64 @@
+app:
+  title: Boost Dev
+  baseUrl: http://localhost:3000
+
+organization:
+  name: Red Hat
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+
+auth:
+  providers:
+    guest: {}
+
+catalog:
+  rules:
+    - allow:
+        - Component
+        - Resource
+        - API
+        - System
+        - Domain
+        - Location
+        - Template
+        - Group
+        - User
+
+boost:
+  security:
+    mode: 'development-only-no-auth'
+
+  model:
+    baseUrl: ${BOOST_MODEL_BASE_URL:-http://localhost:8080/v1}
+    name: ${BOOST_MODEL:-default}
+
+  providers:
+    llamastack:
+      baseUrl: ${LLAMASTACK_BASE_URL:-http://localhost:8321}
+
+    kagenti:
+      baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+      namespaces:
+        - ${KAGENTI_NAMESPACE:-default}
+
+  kagenti:
+    auth:
+      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-}
+      clientId: ${KAGENTI_CLIENT_ID:-}
+      clientSecret: ${KAGENTI_CLIENT_SECRET:-}
+
+  entityProviders:
+    kagenti:
+      baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+      namespaces:
+        - ${KAGENTI_NAMESPACE:-default}
+      agentRefreshIntervalSeconds: 300
+      toolRefreshIntervalSeconds: 300

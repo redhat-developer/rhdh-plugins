@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createContext } from 'react';
+import React, { createContext } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
@@ -108,9 +108,18 @@ export interface LightspeedDrawerContextType {
   setShellViewTab: (tab: number) => void;
 }
 
+const CONTEXT_KEY = '__lightspeed_drawer_context__' as keyof typeof globalThis;
+
+function getOrCreateContext() {
+  const existing = (globalThis as any)[CONTEXT_KEY];
+  if (existing)
+    return existing as React.Context<LightspeedDrawerContextType | undefined>;
+  const ctx = createContext<LightspeedDrawerContextType | undefined>(undefined);
+  (globalThis as any)[CONTEXT_KEY] = ctx;
+  return ctx;
+}
+
 /**
  * @public
  */
-export const LightspeedDrawerContext = createContext<
-  LightspeedDrawerContextType | undefined
->(undefined);
+export const LightspeedDrawerContext = getOrCreateContext();

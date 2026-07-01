@@ -15,3 +15,4 @@
  */
 export * from './apis';
 export * from './plugin';
+export { PseudoLocalizationProvider } from './components/PseudoLocalizationProvider';

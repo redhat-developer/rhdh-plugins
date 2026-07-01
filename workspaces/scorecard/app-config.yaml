@@ -21,6 +21,7 @@ app:
               type: website
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true
@@ -122,6 +123,17 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  # Uncomment this when MCP Actions are needed
+  # actions:
+  #   pluginSources:
+  #     - 'scorecard'
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
+
 integrations:
   github:
     - host: github.com
@@ -192,7 +204,6 @@ catalog:
       target: ../../examples/orgs/guest.yaml
       rules:
         - allow: [User, Group]
-
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml
 

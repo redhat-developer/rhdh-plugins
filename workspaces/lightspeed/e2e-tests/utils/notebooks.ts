@@ -20,7 +20,8 @@ import path from 'node:path';
 export const NOTEBOOK_SESSION_MAX_DOCUMENTS = 10;
 
 /** Playwright URL match when a notebook editor session route is active. */
-export const NOTEBOOK_EDITOR_URL_RE = /\/lightspeed\/notebooks\/[^/]+$/;
+export const NOTEBOOK_EDITOR_URL_RE =
+  /\/intelligent-assistant\/notebooks\/[^/]+$/;
 
 /** Chat upload JSON fixtures shared with conversational upload e2e (`fixtures/uploads`). */
 const UPLOAD_FIXTURE_DIR = path.join(__dirname, '..', 'fixtures', 'uploads');

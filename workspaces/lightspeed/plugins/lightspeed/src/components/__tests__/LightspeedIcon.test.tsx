@@ -17,34 +17,40 @@
 import { render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
-import { LightspeedFABIcon, LightspeedIcon } from '../LightspeedIcon';
+import {
+  LightspeedFABIcon,
+  LightspeedFABOpenIcon,
+  LightspeedIcon,
+} from '../LightspeedIcon';
 
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
 describe('LightspeedIcon', () => {
-  it('should render the lightspeed icon with correct alt text', () => {
+  it('should render the intelligent assistant icon with correct aria-label', () => {
     render(<LightspeedIcon />);
 
-    const img = screen.getByRole('img');
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('alt', 'lightspeed icon');
-    expect(img).toHaveStyle({ height: '25px' });
+    const svg = screen.getByLabelText('intelligent assistant icon');
+    expect(svg).toBeInTheDocument();
   });
 });
 
 describe('LightspeedFABIcon', () => {
-  it('should render the FAB icon with correct alt text', () => {
+  it('should render the FAB icon with correct test id', () => {
     render(<LightspeedFABIcon />);
 
-    const img = screen.getByRole('img');
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('data-testid', 'lightspeed-fab-icon');
-    expect(img).toHaveStyle({
-      width: '100%',
-      height: '100%',
-      display: 'block',
-    });
+    const svg = screen.getByTestId('lightspeed-fab-icon');
+    expect(svg).toBeInTheDocument();
+  });
+});
+
+describe('LightspeedFABOpenIcon', () => {
+  it('should render the chevron-down icon with correct test id', () => {
+    render(<LightspeedFABOpenIcon />);
+
+    const svg = screen.getByTestId('lightspeed-fab-open-icon');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 });

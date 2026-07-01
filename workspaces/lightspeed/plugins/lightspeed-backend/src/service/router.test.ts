@@ -43,7 +43,7 @@ const mockModel = 'test-model';
 const mockToken = 'dummy-token';
 
 const BASE_CONFIG = {
-  lightspeed: {
+  'intelligent-assistant': {
     servers: [
       {
         id: 'test-server',
@@ -635,8 +635,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [
             { name: 'mcp-server-1', token: 'token-1' },
             { name: 'mcp-server-2', token: 'token-2' },
@@ -741,8 +741,8 @@ describe('lightspeed router tests', () => {
       );
 
       const backendServer = await startBackendServer({
-        lightspeed: {
-          ...BASE_CONFIG.lightspeed,
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
           mcpServers: [{ name: 'single-mcp-server', token: 'single-token' }],
         },
       });
@@ -980,6 +980,64 @@ describe('lightspeed router tests', () => {
       expect(response.body.error).toBe(
         'query is required and must be a non-empty string',
       );
+    });
+  });
+
+  describe('POST /v1/query input size validation', () => {
+    it('returns 400 when query exceeds maximum length', async () => {
+      const backendServer = await startBackendServer();
+      const longQuery = 'a'.repeat(32001);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: longQuery,
+        });
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'query exceeds maximum length of 32000 characters',
+      );
+    });
+
+    it('accepts query at exactly maximum length', async () => {
+      const backendServer = await startBackendServer();
+      const maxQuery = 'a'.repeat(32000);
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: maxQuery,
+        });
+      expect(response.statusCode).not.toEqual(400);
+    });
+  });
+
+  describe('POST /v1/query stream error handling', () => {
+    it('returns 500 when upstream stream errors', async () => {
+      const backendServer = await startBackendServer();
+      rcs.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query`, () => {
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.error(new Error('Connection reset'));
+            },
+          });
+          return new HttpResponse(stream, {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }),
+      );
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          provider: 'test-server',
+          query: 'Hello',
+        });
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain('Stream error occurred');
     });
   });
 

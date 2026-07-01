@@ -37,6 +37,7 @@ import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
+  EXPRESS_JSON_BODY_LIMIT,
   TEST_VISION_JPEG,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
@@ -113,9 +114,11 @@ export async function createRouter(
   router.use(express.json());
 
   const port =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
-  const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  const system_prompt = config.getOptionalString(
+    'intelligent-assistant.systemPrompt',
+  );
   const lightspeedCoreBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${port}`;
 
   const apiProxy = createProxyMiddleware({
@@ -142,7 +145,7 @@ export async function createRouter(
   // Only name is required; token is optional (users can provide their own via the UI).
   // URLs come from LCS (GET /v1/mcp-servers), not from app-config.
   const mcpServersConfig = config.getOptionalConfigArray(
-    'lightspeed.mcpServers',
+    'intelligent-assistant.mcpServers',
   );
   const staticServers: StaticMcpServer[] = [];
   if (mcpServersConfig) {
@@ -309,7 +312,7 @@ export async function createRouter(
         const server = staticServers.find(s => s.name === name);
         if (!server) {
           res.status(404).json({
-            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
           });
           return;
         }
@@ -374,7 +377,7 @@ export async function createRouter(
         const server = staticServers.find(s => s.name === name);
         if (!server) {
           res.status(404).json({
-            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under lightspeed.mcpServers in app-config`,
+            error: `MCP server '${name}' is not configured — it must be defined in the Lightspeed Stack config and listed under intelligent-assistant.mcpServers in app-config`,
           });
           return;
         }
@@ -593,6 +596,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query',
+    express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     validateCompletionsRequest,
     validateAttachmentsForModel,
     requirePermission(lightspeedChatCreatePermission),
@@ -654,6 +658,8 @@ export async function createRouter(
           userEntityRef,
         );
 
+        const abortController = new AbortController();
+
         const fetchResponse = await fetch(
           `${lightspeedCoreBaseUrl}/v1/streaming_query?${userQueryParam}`,
           {
@@ -663,6 +669,7 @@ export async function createRouter(
               'MCP-HEADERS': mcpHeadersValue,
             },
             body: requestBody,
+            signal: abortController.signal,
           },
         );
 
@@ -679,6 +686,27 @@ export async function createRouter(
         // Pipe the response back to the original response
         if (fetchResponse.body) {
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+
+          nodeStream.on('error', (error: Error) => {
+            logger.error(
+              `Upstream stream error while processing query: ${error}`,
+            );
+            if (response.headersSent) {
+              response.destroy();
+            } else {
+              response.status(500).json({ error: 'Stream error occurred' });
+            }
+            abortController.abort();
+          });
+
+          response.on('close', () => {
+            if (!response.writableFinished) {
+              logger.warn('Client disconnected while processing query');
+              nodeStream.destroy();
+              abortController.abort();
+            }
+          });
+
           nodeStream.pipe(response);
         }
       } catch (error) {

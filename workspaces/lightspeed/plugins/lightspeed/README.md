@@ -1,10 +1,28 @@
 # Lightspeed plugin for Backstage
 
-Red Hat Developer Lightspeed for Red Hat Developer Hub (Developer Lightspeed for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+Red Hat Developer Hub Intelligent Assistant (Intelligent Assistant for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
 
-Developer Lightspeed for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+The Intelligent Assistant for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
+
+## Plugin Architecture
+
+This plugin supports two frontend systems:
+
+| Entry Point    | System                        | Import Path                                                 |
+| -------------- | ----------------------------- | ----------------------------------------------------------- |
+| `./` (default) | **NFS** (New Frontend System) | `@red-hat-developer-hub/backstage-plugin-lightspeed`        |
+| `./legacy`     | **OFS** (Old Frontend System) | `@red-hat-developer-hub/backstage-plugin-lightspeed/legacy` |
+| `./alpha`      | Translations only             | `@red-hat-developer-hub/backstage-plugin-lightspeed/alpha`  |
+
+NFS is the primary and recommended mode. OFS is preserved for community consumers until Backstage 2.x drops OFS support.
 
 ## For administrators
+
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed. See the [backend plugin migration guide](../lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant) for the full list of renamed config keys and permission policies.
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
 
 ### Prerequisites
 
@@ -19,13 +37,17 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
-p, role:default/team_a, lightspeed.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -43,33 +65,80 @@ permission:
 
 ### Installation
 
-1. Install the Lightspeed plugin using the following command:
-
-   ```console
-   yarn workspace app add @red-hat-developer-hub/backstage-plugin-lightspeed
-   ```
+```console
+yarn workspace app add @red-hat-developer-hub/backstage-plugin-lightspeed
+```
 
 ### Configuration
 
-1. Add a new nav item **Lightspeed** in App `packages/app/src/App.tsx`:
+#### NFS (New Frontend System) — Recommended
 
-   ```tsx title="packages/app/src/components/App.tsx"
-   /* highlight-add-next-line */ import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+NFS is the default export. Import modules directly from the package root and register them as features in `createApp`:
 
-   <Route path="/lightspeed" element={<LightspeedPage />} />;
-   ```
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
 
-2. Enable **Lightspeed** page in `packages/app/src/components/Root/Root.tsx`:
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  lightspeedFABModule,
+  lightspeedRedirectModule,
+  lightspeedTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-   ```tsx title="packages/app/src/components/Root/Root.tsx"
-   /* highlight-add-next-line */ import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+export default createApp({
+  features: [
+    appDrawerModule,
+    lightspeedFABModule,
+    lightspeedRedirectModule,
+    lightspeedTranslationsModule,
+    // ...other modules
+  ],
+});
+```
 
-   <SidebarItem
-     icon={LightspeedIcon as IconComponent}
-     to="lightspeed"
-     text="Lightspeed"
-   />;
-   ```
+Enable the extensions in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - app-root-wrapper:app/drawer
+    - app-root-wrapper:app/lightspeed-fab
+    - translation:app/lightspeed-translations
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+```
+
+> **Important:** The order of `app-root-wrapper` extensions matters. `app/drawer` must come before `app/lightspeed-fab` to ensure correct React Context nesting.
+
+#### OFS (Old Frontend System / Legacy)
+
+Legacy components are available at the `./legacy` subpath:
+
+```tsx
+import {
+  LightspeedDrawerProvider,
+  LightspeedIcon,
+  LightspeedPage,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
+```
+
+Add a route in `packages/app/src/App.tsx`:
+
+```tsx
+<Route path="/intelligent-assistant" element={<LightspeedPage />} />
+```
+
+Add a sidebar entry in `packages/app/src/components/Root/Root.tsx`:
+
+```tsx
+<SidebarItem
+  icon={LightspeedIcon as IconComponent}
+  to="intelligent-assistant"
+  text="Intelligent assistant"
+/>
+```
 
 ## For users
 
@@ -84,16 +153,16 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 #### Procedure
 
-1. Open your Backstage application and select a Lightspeed nav item from the **Navigation**.
-2. Ask your questions to the Lightspeed chatbot.
+1. Open your Backstage application and select the **Intelligent assistant** nav item from the **Navigation**.
+2. Ask your questions to the intelligent assistant chatbot.
 
 ### Display modes and chat continuity
 
-Lightspeed supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
+Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### MCP servers settings
 
-Lightspeed includes an MCP servers settings panel where users can:
+Intelligent assistant includes an MCP servers settings panel where users can:
 
 - View configured MCP servers and current status
 - Enable or disable eligible servers
@@ -140,7 +209,7 @@ Notebooks is an experimental feature that enables **document-based conversations
 #### Using Notebooks
 
 1. Ensure Notebooks is enabled in your Backstage instance
-2. Navigate to the Lightspeed page
+2. Navigate to the Intelligent assistant page
 3. Create a new notebook session or select an existing one
 4. Upload documents you want to query
 5. Start asking questions about your uploaded documents
@@ -149,98 +218,161 @@ For backend configuration and API details, administrators should refer to the [L
 
 ## Loading as Dynamic Plugin
 
-#### To configure Lightspeed plugin into Red Hat Developer Hub use this configuration:
+### NFS Mode (Module Federation)
 
-- Load the lightspeed plugin from the npm registry
+NFS mode uses standard Module Federation for dynamic plugin loading. Set the following environment variables on the RHDH instance:
 
-```
-global:
-  dynamic:
-    includes:
-      - dynamic-plugins.default.yaml
-    plugins:
-    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.6.1!red-hat-developer-hub-backstage-plugin-lightspeed
-      disabled: false
-      pluginConfig:
-        lightspeed:
-          # OPTIONAL: Custom users prompts displayed to users
-          # If not provided, the plugin uses built-in default prompts
-          prompts:
-            - title: 'Getting Started with Red Hat Developer Hub'
-              message: Can you guide me through the first steps to start using Developer Hub
-                as a developer, like exploring the Software Catalog and adding my
-                service?
-        dynamicPlugins:
-          frontend:
-            red-hat-developer-hub.backstage-plugin-lightspeed:
-              translationResources:
-                - importName: lightspeedTranslations
-                  module: Alpha
-                  ref: lightspeedTranslationRef
-              dynamicRoutes:
-                - path: /lightspeed
-                  importName: LightspeedPage
-              mountPoints:
-                - mountPoint: application/listener
-                  importName: LightspeedFAB
-                - mountPoint: application/provider
-                  importName: LightspeedDrawerProvider
-                - mountPoint: application/internal/drawer-state
-                  importName: LightspeedDrawerStateExposer
-                - mountPoint: application/internal/drawer-content
-                  importName: LightspeedChatContainer
-                  config:
-                    id: lightspeed
-                    priority: 100
+```env
+APP_CONFIG_app_packageName=app-next
+ENABLE_STANDARD_MODULE_FEDERATION=true
 ```
 
-- add the lightspeed configuration in the `app-config.yaml`
+Enable the plugin and its extensions in your dynamic plugins configuration:
+
+```yaml
+plugins:
+  - package: './local-plugins/red-hat-developer-hub-backstage-plugin-lightspeed'
+    disabled: false
+```
+
+Then configure extensions in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - app-root-wrapper:app/drawer
+    - app-root-wrapper:app/lightspeed-fab
+    - translation:app/lightspeed-translations
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+```
+
+**Verify** the modules are exposed by checking:
 
 ```
-  prompts: # optional
-    - title: <prompt_title>
-      message: <prompt_message>
+http://localhost:7007/.backstage/dynamic-features/remotes
+```
+
+Expected: entries for `LightspeedFABModule` and `LightspeedTranslationsModule`.
+
+---
+
+### OFS Mode (Scalprum / Legacy)
+
+OFS mode uses Scalprum for dynamic plugin loading. Legacy exports are also available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity. Translation resources require `module: Alpha`:
+
+```yaml
+plugins:
+  - package: './local-plugins/red-hat-developer-hub-backstage-plugin-lightspeed'
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-lightspeed:
+            translationResources:
+              - importName: lightspeedTranslations
+                module: Alpha
+                ref: lightspeedTranslationRef
+            dynamicRoutes:
+              - path: /intelligent-assistant
+                importName: LightspeedPage
+                module: Legacy
+            mountPoints:
+              - mountPoint: application/listener
+                importName: LightspeedFAB
+                module: Legacy
+              - mountPoint: application/provider
+                importName: LightspeedDrawerProvider
+                module: Legacy
+              - mountPoint: application/internal/drawer-state
+                importName: LightspeedDrawerStateExposer
+                module: Legacy
+              - mountPoint: application/internal/drawer-content
+                importName: LightspeedChatContainer
+                module: Legacy
+                config:
+                  id: lightspeed
+                  priority: 100
+```
+
+**Verify** the plugin is loaded via:
+
+```
+http://localhost:7007/api/scalprum/plugins
 ```
 
 ---
 
-#### To install this plugin locally in [RHDH](https://github.com/redhat-developer/rhdh) application as a dynamic plugin.
+### Installing locally
 
-Follow the below steps -
+Export the dynamic plugin assets and install into your RHDH instance:
 
-- Export dynamic plugin assets. This will build and create the static assets for the plugin and put it inside dynamic-plugins-root folder.
+```bash
+cd workspaces/lightspeed/plugins/lightspeed
+yarn install
+yarn tsc
+yarn build
+npx @red-hat-developer-hub/cli plugin export --dev --dynamic-plugins-root <path-to-dynamic-plugins-root>
+```
 
-`yarn install`
+Then configure the plugin for either NFS or OFS mode as described above.
 
-`yarn tsc`
+---
 
-`yarn build`
+## Migration Guide
 
-`npx @red-hat-developer-hub/cli plugin export --dynamic-plugins-root <path-to>/rhdh/dynamic-plugins-root`
+### NFS consumers
 
-- Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
+```ts
+// Before (alpha subpath)
+import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+
+// After (default entry point)
+import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+```
+
+### Legacy / OFS consumers
+
+Legacy component imports from the main package path still work for backwards compatibility, but are deprecated and will be removed in a future release. New OFS consumers should use the `./legacy` subpath:
+
+```ts
+// Still works (deprecated — will be removed in a future release)
+import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+
+// Recommended for new OFS consumers
+import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
+```
+
+### Dynamic plugin configuration (OFS)
+
+Legacy exports are available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity:
 
 ```yaml
-dynamicPlugins:
-  frontend:
-    red-hat-developer-hub.backstage-plugin-lightspeed:
-      translationResources:
-        - importName: lightspeedTranslations
-          module: Alpha
-          ref: lightspeedTranslationRef
-      dynamicRoutes:
-        - path: /lightspeed
-          importName: LightspeedPage
-      mountPoints:
-        - mountPoint: application/listener
-          importName: LightspeedFAB
-        - mountPoint: application/provider
-          importName: LightspeedDrawerProvider
-        - mountPoint: application/internal/drawer-state
-          importName: LightspeedDrawerStateExposer
-        - mountPoint: application/internal/drawer-content
-          importName: LightspeedChatContainer
-          config:
-            id: lightspeed
-            priority: 100
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: Legacy # advisable for clarity, but not mandatory
+```
+
+### Dynamic plugin module name change
+
+The `LightspeedPlugin` scalprum module has been removed. Configurations that previously used `module: LightspeedPlugin` should be updated:
+
+- **OFS/Legacy** — omit `module` (defaults to PluginRoot which has legacy exports) or use `module: Legacy` for clarity
+- **NFS** — use the default `module: PluginRoot` (or omit `module` entirely)
+
+```yaml
+# Before
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: LightspeedPlugin
+
+# After (OFS — either works)
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: Legacy  # or omit module entirely
 ```

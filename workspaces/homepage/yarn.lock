@@ -5827,7 +5827,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/cache@npm:*, @emotion/cache@npm:^11.13.0, @emotion/cache@npm:^11.13.5":
+"@emotion/cache@npm:^11.13.0, @emotion/cache@npm:^11.13.5":
   version: 11.14.0
   resolution: "@emotion/cache@npm:11.14.0"
   dependencies:
@@ -5907,7 +5907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/serialize@npm:*, @emotion/serialize@npm:^1.2.0, @emotion/serialize@npm:^1.3.0, @emotion/serialize@npm:^1.3.1, @emotion/serialize@npm:^1.3.3":
+"@emotion/serialize@npm:^1.2.0, @emotion/serialize@npm:^1.3.0, @emotion/serialize@npm:^1.3.1, @emotion/serialize@npm:^1.3.3":
   version: 1.3.3
   resolution: "@emotion/serialize@npm:1.3.3"
   dependencies:
@@ -5963,7 +5963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/utils@npm:*, @emotion/utils@npm:^1.4.0, @emotion/utils@npm:^1.4.2":
+"@emotion/utils@npm:^1.4.0, @emotion/utils@npm:^1.4.2":
   version: 1.4.2
   resolution: "@emotion/utils@npm:1.4.2"
   checksum: 10c0/7d0010bf60a2a8c1a033b6431469de4c80e47aeb8fd856a17c1d1f76bbc3a03161a34aeaa78803566e29681ca551e7bf9994b68e9c5f5c796159923e44f78d9a
@@ -9689,52 +9689,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:^, @red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:plugins/dynamic-home-page":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-dynamic-home-page@workspace:plugins/dynamic-home-page"
-  dependencies:
-    "@backstage/catalog-client": "npm:^1.15.1"
-    "@backstage/catalog-model": "npm:^1.9.0"
-    "@backstage/cli": "npm:^0.36.2"
-    "@backstage/core-app-api": "npm:^1.20.1"
-    "@backstage/core-components": "npm:^0.18.10"
-    "@backstage/core-plugin-api": "npm:^1.12.6"
-    "@backstage/dev-utils": "npm:^1.1.23"
-    "@backstage/frontend-defaults": "npm:^0.5.2"
-    "@backstage/frontend-plugin-api": "npm:^0.17.0"
-    "@backstage/plugin-app-react": "npm:^0.2.3"
-    "@backstage/plugin-catalog": "npm:^2.0.5"
-    "@backstage/plugin-catalog-react": "npm:^3.0.0"
-    "@backstage/plugin-home": "npm:^0.9.6"
-    "@backstage/plugin-home-react": "npm:^0.1.38"
-    "@backstage/plugin-search": "npm:^1.7.4"
-    "@backstage/plugin-search-react": "npm:^1.11.4"
-    "@backstage/plugin-user-settings": "npm:^0.9.3"
-    "@backstage/test-utils": "npm:^1.7.18"
-    "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.15.0"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/material": "npm:5.18.0"
-    "@mui/styles": "npm:5.18.0"
-    "@openshift/dynamic-plugin-sdk": "npm:5.0.1"
-    "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
-    "@scalprum/react-core": "npm:0.11.1"
-    "@testing-library/jest-dom": "npm:6.9.1"
-    "@testing-library/react": "npm:14.3.1"
-    "@testing-library/user-event": "npm:14.6.1"
-    "@types/react-grid-layout": "npm:1.3.6"
-    msw: "npm:1.3.5"
-    react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
-    react-grid-layout: "npm:1.5.3"
-    react-use: "npm:17.6.0"
-    tss-react: "npm:4.9.20"
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.2.0
-    react-router-dom: 6.30.3
-  languageName: unknown
-  linkType: soft
-
 "@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-homepage-backend@workspace:plugins/homepage-backend"
@@ -9766,6 +9720,53 @@ __metadata:
   dependencies:
     "@backstage/cli": "npm:^0.36.2"
     "@backstage/plugin-permission-common": "npm:^0.9.9"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-homepage@workspace:^, @red-hat-developer-hub/backstage-plugin-homepage@workspace:plugins/homepage":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@workspace:plugins/homepage"
+  dependencies:
+    "@backstage/catalog-client": "npm:^1.15.1"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.2"
+    "@backstage/core-app-api": "npm:^1.20.1"
+    "@backstage/core-compat-api": "npm:^0.5.11"
+    "@backstage/core-components": "npm:^0.18.10"
+    "@backstage/core-plugin-api": "npm:^1.12.6"
+    "@backstage/dev-utils": "npm:^1.1.23"
+    "@backstage/frontend-defaults": "npm:^0.5.2"
+    "@backstage/frontend-plugin-api": "npm:^0.17.0"
+    "@backstage/plugin-app-react": "npm:^0.2.3"
+    "@backstage/plugin-catalog": "npm:^2.0.5"
+    "@backstage/plugin-catalog-react": "npm:^3.0.0"
+    "@backstage/plugin-home": "npm:^0.9.6"
+    "@backstage/plugin-home-react": "npm:^0.1.38"
+    "@backstage/plugin-search": "npm:^1.7.4"
+    "@backstage/plugin-search-react": "npm:^1.11.4"
+    "@backstage/plugin-user-settings": "npm:^0.9.3"
+    "@backstage/test-utils": "npm:^1.7.18"
+    "@backstage/theme": "npm:^0.7.3"
+    "@backstage/ui": "npm:^0.15.0"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
+    "@mui/styles": "npm:5.18.0"
+    "@openshift/dynamic-plugin-sdk": "npm:5.0.1"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
+    "@scalprum/react-core": "npm:0.11.3"
+    "@testing-library/jest-dom": "npm:6.9.1"
+    "@testing-library/react": "npm:14.3.1"
+    "@testing-library/user-event": "npm:14.6.1"
+    "@types/react-grid-layout": "npm:1.3.6"
+    msw: "npm:1.3.5"
+    react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
+    react-grid-layout: "npm:1.5.3"
+    react-use: "npm:17.6.1"
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.2.0
+    react-dom: "*"
+    react-router-dom: 6.30.4
   languageName: unknown
   linkType: soft
 
@@ -10449,27 +10450,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@scalprum/core@npm:0.9.0"
+"@scalprum/core@npm:^0.9.1":
+  version: 0.9.3
+  resolution: "@scalprum/core@npm:0.9.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/7eb93a9f32883f737203d12663d17248c57d68c90f23addb58b400eaa78aa015396f2655d16423190c195c6e75b3828b2dd84a7cd19706ebbd3e507fedc85b88
+  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.11.1":
-  version: 0.11.1
-  resolution: "@scalprum/react-core@npm:0.11.1"
+"@scalprum/react-core@npm:0.11.3":
+  version: 0.11.3
+  resolution: "@scalprum/react-core@npm:0.11.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.0"
+    "@scalprum/core": "npm:^0.9.1"
     lodash: "npm:^4.17.0"
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/61094ddfcef1547bb4f43ef794f555ee625e0aa1b5479ad1fa056fa00301fe96c7b96c53ef7c1ece8f8bc0be0859404507887f3109163c8a2025558ec30f364a
+  checksum: 10c0/6de3f4b624fb3e0cf1a7785154dfd6cd589809b0d44dbf0e065531729320ea918b17b673744fe60f4bdf3ef0602af87e857bf98109e03f6cc7634b4893269ff6
   languageName: node
   linkType: hard
 
@@ -13254,10 +13255,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-cookie@npm:^2.2.6":
-  version: 2.2.7
-  resolution: "@types/js-cookie@npm:2.2.7"
-  checksum: 10c0/29196c6829982b5efa79117122a7d62cf4bc2f6397ce8eac1539319ff5dce3b44b2d86f2ac064f2ed3488fb24439358f24af6914fde5c5c4bab9a85728a13a6f
+"@types/js-cookie@npm:^3.0.0":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10c0/173afaf5ea9d86c22395b9d2a00b6adb0006dcfef165d6dcb0395cdc32f5a5dcf9c3c60f97194119963a15849b8f85121e1ae730b03e40bc0c29b84396ba22f9
   languageName: node
   linkType: hard
 
@@ -14860,9 +14861,9 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     "@playwright/test": "npm:1.60.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
-    "@scalprum/react-core": "npm:0.11.1"
+    "@scalprum/react-core": "npm:0.11.3"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -14873,7 +14874,7 @@ __metadata:
     react-dom: "npm:^18.0.2"
     react-router: "npm:^6.3.0"
     react-router-dom: "npm:^6.3.0"
-    react-use: "npm:17.6.0"
+    react-use: "npm:17.6.1"
     yaml: "npm:^2.8.3"
   languageName: unknown
   linkType: soft
@@ -14922,10 +14923,10 @@ __metadata:
     "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.36"
     "@backstage/plugin-user-settings": "npm:^0.9.3"
     "@backstage/ui": "npm:^0.15.0"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
+    "@mui/icons-material": "npm:5.18.0"
+    "@mui/material": "npm:5.18.0"
     "@playwright/test": "npm:1.60.0"
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.1"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
@@ -23551,10 +23552,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "js-cookie@npm:2.2.1"
-  checksum: 10c0/ee67fc0f8495d0800b851910b5eb5bf49d3033adff6493d55b5c097ca6da46f7fe666b10e2ecb13cfcaf5b88d71c205ce00a7e646de791689bfd053bbb36a376
+"js-cookie@npm:^3.0.0":
+  version: 3.0.8
+  resolution: "js-cookie@npm:3.0.8"
+  checksum: 10c0/421912a4a55535bda32b3059835864e1182c3af5b4516df00a060edc1fa5a53d38bb8d5a91d5d305e396206f4fd11e829f17850aa5aa8164118c04d8ebf1ff5d
   languageName: node
   linkType: hard
 
@@ -29621,16 +29622,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use@npm:17.6.0, react-use@npm:^17.2.4, react-use@npm:^17.3.2, react-use@npm:^17.4.0":
-  version: 17.6.0
-  resolution: "react-use@npm:17.6.0"
+"react-use@npm:17.6.1, react-use@npm:^17.2.4, react-use@npm:^17.3.2, react-use@npm:^17.4.0":
+  version: 17.6.1
+  resolution: "react-use@npm:17.6.1"
   dependencies:
-    "@types/js-cookie": "npm:^2.2.6"
+    "@types/js-cookie": "npm:^3.0.0"
     "@xobotyi/scrollbar-width": "npm:^1.9.5"
     copy-to-clipboard: "npm:^3.3.1"
     fast-deep-equal: "npm:^3.1.3"
     fast-shallow-equal: "npm:^1.0.0"
-    js-cookie: "npm:^2.2.1"
+    js-cookie: "npm:^3.0.0"
     nano-css: "npm:^5.6.2"
     react-universal-interface: "npm:^0.6.2"
     resize-observer-polyfill: "npm:^1.5.1"
@@ -29642,7 +29643,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 10c0/d122199f3edd056bfd866837b0f19a44366e77c7535c6c2c5eb5f400409eae4c9b1fe73c9d35073c8434080eee388ca8fe49a68d09d6f794ccaa35a4ae2112a9
+  checksum: 10c0/8b3babd9f7db14624e172d22c2fb30f091d785e97d0aed84e47e52a3ca8dbdc0c094ab797bbd0e754ff2f92be82357c7a46e08dbc85244edfefa21475f760cdf
   languageName: node
   linkType: hard
 
@@ -32964,28 +32965,6 @@ __metadata:
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: 10c0/69ae09c49eea644bc5ebe1bca4fa4cc2c82b7b3e02f43b84bd891504edf66dbc6b2ec0eef31a957042de2269139e4acff911e6d186a258fb14069cd7f6febce2
-  languageName: node
-  linkType: hard
-
-"tss-react@npm:4.9.20":
-  version: 4.9.20
-  resolution: "tss-react@npm:4.9.20"
-  dependencies:
-    "@emotion/cache": "npm:*"
-    "@emotion/serialize": "npm:*"
-    "@emotion/utils": "npm:*"
-  peerDependencies:
-    "@emotion/react": ^11.4.1
-    "@emotion/server": ^11.4.0
-    "@mui/material": ^5.0.0 || ^6.0.0 || ^7.0.0
-    "@types/react": ^16.8.0 || ^17.0.2 || ^18.0.0 || ^19.0.0
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/server":
-      optional: true
-    "@mui/material":
-      optional: true
-  checksum: 10c0/90095c969eaa6db893ea9ddb078b76e9668740a55aa8efc95086097cc818c5fc0b48c003d44892980db7665256487db19a39dad46e2952c3d554f7e1e361e8d9
   languageName: node
   linkType: hard
 

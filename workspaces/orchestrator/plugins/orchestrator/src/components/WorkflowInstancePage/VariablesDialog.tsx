@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { Progress, ResponseErrorPanel } from '@backstage/core-components';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -28,18 +30,44 @@ import { useIsDarkMode } from '../../utils/isDarkMode';
 import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
+export type VariablesDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  instanceVariables: WorkflowDataDTO;
+  loading?: boolean;
+  error?: Error;
+};
+
 export const VariablesDialog = ({
   open,
   onClose,
   instanceVariables,
-}: {
-  open: boolean;
-  onClose: () => void;
-  instanceVariables: WorkflowDataDTO;
-}) => {
+  loading,
+  error,
+}: VariablesDialogProps) => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const hasVariables = Object.keys(instanceVariables).length > 0;
+
+  const renderContent = () => {
+    if (loading) {
+      return <Progress />;
+    }
+    if (error) {
+      return <ResponseErrorPanel error={error} />;
+    }
+    if (hasVariables) {
+      return Object.entries(instanceVariables).map(([key, value]) => (
+        <Box key={key} mt={2} mb={2}>
+          <Typography variant="h6" mb={1}>
+            {capitalize(key)}
+          </Typography>
+          <JsonCodeBlock isDarkMode={isDarkMode} value={value} />
+        </Box>
+      ));
+    }
+    return <Typography>{t('messages.noVariablesFound')}</Typography>;
+  };
 
   return (
     <InfoDialog
@@ -53,18 +81,7 @@ export const VariablesDialog = ({
       }
       wideDialog
     >
-      {hasVariables ? (
-        Object.entries(instanceVariables).map(([key, value]) => (
-          <Box key={key} mt={2} mb={2}>
-            <Typography variant="h6" mb={1}>
-              {capitalize(key)}
-            </Typography>
-            <JsonCodeBlock isDarkMode={isDarkMode} value={value} />
-          </Box>
-        ))
-      ) : (
-        <Typography>{t('messages.noVariablesFound')}</Typography>
-      )}
+      {renderContent()}
     </InfoDialog>
   );
 };

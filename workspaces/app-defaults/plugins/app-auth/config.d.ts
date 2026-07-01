@@ -16,7 +16,8 @@
 
 export interface Config {
   /**
-   * Sign-in provider id(s) to show on the RHDH sign-in page.
+   * Optional override for which sign-in provider buttons appear and in what order.
+   * When omitted, provider ids are taken from the keys of `auth.providers`.
    * @visibility frontend
    */
   signInPage?: string | string[];

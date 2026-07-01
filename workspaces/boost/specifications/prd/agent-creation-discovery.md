@@ -325,7 +325,7 @@ Home Dashboard, Agents, Tools, Build Pipelines, Sandbox, Platform Links, Dashboa
 
 ## Customer Context
 
-Derived from the Citi engagement. Success outcomes addressed:
+Derived from early enterprise engagement experience. Success outcomes addressed:
 
 - Specialist agents collaborate on complex, multi-step tasks (UC-7, UC-8, UC-10, UC-11, UC-12)
 - Teams bring their own agents built in any framework (UC-10, UC-11, UC-12)

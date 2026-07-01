@@ -186,7 +186,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 - Provider modules have IDs: `llamastack` and `kagenti`
 - Both are exported as OCI images for RHDH dynamic plugin loading
 - Deployers install only the providers they need — no unused provider code loaded
-- Provider modules depend on `boost-common` for shared types and `boostAiProviderServiceRef`
+- Provider modules depend on `boost-common` for shared types and `boost-node` for `boostAiProviderServiceRef`
 - Boost ships modular from day one — no monolithic fallback needed
 
 **RHDH deployment example:**
@@ -214,7 +214,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 | RuntimeConfigResolver              | `services/RuntimeConfigResolver.ts`                             | 30s                 | P0       | Immediate invalidation on write via `cache.delete()` |
 | ResponsesApiProvider.\_modelsCache | `providers/llamastack/ResponsesApiProvider.ts`                  | Match Kagenti       | P1       | Eliminates model cache asymmetry                     |
 | McpAuthService tokens              | `providers/llamastack/auth/McpAuthService.ts`                   | From token expiry   | P1       | Security-sensitive                                   |
-| KeycloakTokenManager               | `providers/kagenti/client/KeycloakTokenManager.ts`              | From token expiry   | P1       | Security-sensitive                                   |
+| KeycloakAuthClient                 | `kagenti-entity-provider/src/providers/kagentiAuth.ts`          | From token expiry   | P1       | Security-sensitive                                   |
 | BackendToolExecutor                | `providers/responses-api/tools/BackendToolExecutor.ts`          | 5 min               | P1       | Add max size limit                                   |
 | ConversationRegistry               | `providers/responses-api/conversations/ConversationRegistry.ts` | 24h                 | P1       | Replaces unbounded Map                               |
 | DocumentSyncService                | `providers/responses-api/documents/DocumentSyncService.ts`      | No expiry           | P2       | Content hash tracking                                |
@@ -245,7 +245,7 @@ AgenticProvider (in boost-common)
 ├── evaluation?               — optional
 └── conversation?             — optional
 
-boostAiProviderServiceRef (in boost-common)
+boostAiProviderServiceRef (in boost-node)
 └── enables cross-plugin consumption of the active provider
 
 ProviderManager
@@ -333,6 +333,6 @@ ChatInput → BoostApiClient → POST /chat/stream
 
 ## Customer Context
 
-Derived from the Citi engagement. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
+Derived from early enterprise engagement experience. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
 
-Citi runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.
+The customer runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.

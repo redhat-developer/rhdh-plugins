@@ -26,6 +26,7 @@
     "@backstage/core-app-api": "^1.20.1",
     "@backstage/core-components": "^0.18.10",
     "@backstage/core-plugin-api": "^1.12.6",
+    "@backstage/frontend-plugin-api": "^0.17.1",
     "@backstage/integration-react": "^1.2.18",
     "@backstage/plugin-api-docs": "^0.14.1",
     "@backstage/plugin-catalog": "^2.0.5",
@@ -57,13 +58,13 @@
     "history": "^5.3.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
-    "react-router": "^6.3.0",
+    "react-router": "^6.30.4",
     "react-router-dom": "^6.3.0",
     "react-use": "^17.4.0"
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.18",
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.60.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

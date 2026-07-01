@@ -21,10 +21,10 @@ import { getTokenFromApi } from '../util/tokenUtil';
 const API_BASE_PATH = '/api/v1alpha1';
 
 /**
- * Proxies all `ALL /proxy/*` requests to the DCM API Gateway.
+ * Proxies all `ALL /proxy/*` requests to the DCM control plane.
  *
  * The wildcard path segment is appended to:
- *   `{dcm.apiGatewayUrl}/api/v1alpha1/<wildcardPath>`
+ *   `{dcm.apiUrl}/api/v1alpha1/<wildcardPath>`
  *
  * An SSO bearer token is injected automatically via `tokenUtil`.
  */
@@ -32,24 +32,24 @@ export function createDcmProxy(options: RouterOptions) {
   return async (req: Request, res: Response): Promise<void> => {
     const { logger, config } = options;
 
-    const apiGatewayUrl = config.getOptionalString('dcm.apiGatewayUrl');
-    if (!apiGatewayUrl) {
+    // Prefer dcm.apiUrl (DCM_API_URL); legacy apiGatewayUrl eases migration.
+    const apiUrl =
+      config.getOptionalString('dcm.apiUrl') ??
+      config.getOptionalString('dcm.apiGatewayUrl');
+    if (!apiUrl) {
       logger.error(
-        'dcm.apiGatewayUrl is not configured — cannot proxy DCM API requests.',
+        'dcm.apiUrl is not configured — cannot proxy DCM API requests.',
       );
       res
         .status(503)
-        .json({ error: 'DCM API gateway is not configured on the server.' });
+        .json({ error: 'DCM API is not configured on the server.' });
       return;
     }
 
     // req.params[0] is the captured wildcard after /proxy/
     const wildcardPath = (req.params as Record<string, string>)[0] ?? '';
 
-    const targetUrl = new URL(
-      `${API_BASE_PATH}/${wildcardPath}`,
-      apiGatewayUrl,
-    );
+    const targetUrl = new URL(`${API_BASE_PATH}/${wildcardPath}`, apiUrl);
 
     // Forward all query parameters from the original request
     const incomingParams = new URLSearchParams(
@@ -80,7 +80,7 @@ export function createDcmProxy(options: RouterOptions) {
 
     // Only attach the Authorization header when an SSO token was obtained.
     // When clientId/clientSecret are not configured the token is empty and
-    // the request is forwarded without auth (open/unauthenticated gateway).
+    // the request is forwarded without auth (open/unauthenticated API).
     if (tokenResult.accessToken) {
       requestHeaders.Authorization = `Bearer ${tokenResult.accessToken}`;
     }
@@ -104,7 +104,7 @@ export function createDcmProxy(options: RouterOptions) {
       });
     } catch (err) {
       logger.error(`DCM proxy: upstream fetch failed — ${err}`);
-      res.status(502).json({ error: 'Failed to reach the DCM API gateway.' });
+      res.status(502).json({ error: 'Failed to reach the DCM API.' });
       return;
     }
 

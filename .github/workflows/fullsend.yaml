@@ -49,12 +49,13 @@ jobs:
           || github.event.comment.author_association == 'COLLABORATOR'
         )
       )
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@v0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@32f73a4f93301493d2c31be3970aa4c51a26acc7 # v0
     with:
       event_action: ${{ github.event.action }}
       install_mode: per-repo
       mint_url: ${{ vars.FULLSEND_MINT_URL }}
       gcp_region: ${{ vars.FULLSEND_GCP_REGION }}
+      fullsend_ai_ref: v0
     secrets:
       FULLSEND_GCP_WIF_PROVIDER: ${{ secrets.FULLSEND_GCP_WIF_PROVIDER }}
       FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}

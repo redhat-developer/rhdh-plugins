@@ -51,32 +51,31 @@ export const lightspeedPlugin = createBackendPlugin({
       }) {
         await migrate(database);
 
-        http.use(
-          await createRouter({
-            config,
-            logger,
-            database,
-            httpAuth,
-            userInfo,
-            permissions,
-          }),
-        );
+        if (config.has('lightspeed')) {
+          logger.warn(
+            'DEPRECATED: The "lightspeed" configuration key has been renamed to "intelligent-assistant". ' +
+              'Please update your app-config.yaml. The old "lightspeed" key is no longer read. ' +
+              'Migration guide: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant',
+          );
+        }
 
         const aiNotebooksEnabled =
-          config.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
+          config.getOptionalBoolean(
+            'intelligent-assistant.notebooks.enabled',
+          ) ?? false;
 
         if (aiNotebooksEnabled) {
           const queryModel = config.getOptionalString(
-            'lightspeed.notebooks.queryDefaults.model',
+            'intelligent-assistant.notebooks.queryDefaults.model',
           );
           const queryProvider = config.getOptionalString(
-            'lightspeed.notebooks.queryDefaults.provider_id',
+            'intelligent-assistant.notebooks.queryDefaults.provider_id',
           );
 
           if (!queryModel || !queryProvider) {
             logger.warn(
               'AI Notebooks feature is enabled but required configuration is missing. ' +
-                'Please configure lightspeed.notebooks.queryDefaults.model and lightspeed.notebooks.queryDefaults.provider_id. ' +
+                'Please configure intelligent-assistant.notebooks.queryDefaults.model and intelligent-assistant.notebooks.queryDefaults.provider_id. ' +
                 'Notebooks will not be available until these are set.',
             );
           } else {
@@ -97,6 +96,17 @@ export const lightspeedPlugin = createBackendPlugin({
             });
           }
         }
+
+        http.use(
+          await createRouter({
+            config,
+            logger,
+            database,
+            httpAuth,
+            userInfo,
+            permissions,
+          }),
+        );
 
         // Configure authentication policies
         http.addAuthPolicy({

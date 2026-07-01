@@ -1,12 +1,29 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
+      # NFS (New Frontend System) deployment requires these extensions in app-config.yaml:
+      # app:
+      #   extensions:
+      #     - app-root-wrapper:app/drawer
+      #     - app-root-wrapper:app/lightspeed-fab
+      #     - app-drawer-content:lightspeed/lightspeed
+      #     - translation:app/lightspeed-translations
+      #     - api:app/app-language:
+      #         config:
+      #           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+      #           defaultLanguage: 'en'
+      # ------------------------------------------------------------
+
+      # OFS (Old Frontend System) deployment configuration:
+
+      # Note: Legacy exports are also available from the default module (PluginRoot),
+      # but it is advisable to add `module: Legacy` for clarity.
       translationResources:
         - importName: lightspeedTranslations
           module: Alpha
           ref: lightspeedTranslationRef
       dynamicRoutes:
-        - path: /lightspeed
+        - path: /intelligent-assistant
           importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener

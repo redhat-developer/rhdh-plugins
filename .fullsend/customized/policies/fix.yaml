@@ -3,10 +3,14 @@ version: 1
 
 # Sandbox policy for the fix agent.
 #
-# Based on the upstream fix policy (baseline 2025-06-05) with additions:
+# forked-from: fullsend v0.17.0 scaffold
+# last-synced: 2026-06-16
+# Based on upstream fix policy with additions:
 #   - repo.yarnpkg.com endpoint in package_registries (corepack downloads
 #     yarn binary from repo.yarnpkg.com, not registry.yarnpkg.com)
 #   - pnpm binary in package_registries (present in sandbox image)
+#   - allow_encoded_slash on registry.npmjs.org (yarn scoped packages use
+#     @scope%2Fpkg URLs; without this the L7 proxy rejects and retries)
 #
 # The fix agent needs the same network access as the code agent (Vertex AI,
 # GitHub API for gh pr view/diff, package registries) because it runs tests
@@ -89,6 +93,7 @@ network_policies:
         protocol: rest
         enforcement: enforce
         access: read-only
+        allow_encoded_slash: true
       - host: "registry.yarnpkg.com"
         port: 443
         protocol: rest

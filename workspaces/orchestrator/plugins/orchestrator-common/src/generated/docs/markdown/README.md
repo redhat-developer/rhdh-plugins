@@ -46,6 +46,7 @@ All URIs are relative to *http://localhost*
  - [ProcessInstanceStatusDTO](./Models/ProcessInstanceStatusDTO.md)
  - [RetriggerInstanceRequestDTO](./Models/RetriggerInstanceRequestDTO.md)
  - [SearchRequest](./Models/SearchRequest.md)
+ - [WorkflowAvailabilityResponseDTO](./Models/WorkflowAvailabilityResponseDTO.md)
  - [WorkflowDTO](./Models/WorkflowDTO.md)
  - [WorkflowDataDTO](./Models/WorkflowDataDTO.md)
  - [WorkflowFormatDTO](./Models/WorkflowFormatDTO.md)
@@ -58,6 +59,7 @@ All URIs are relative to *http://localhost*
  - [WorkflowResultDTO_nextWorkflows_inner](./Models/WorkflowResultDTO_nextWorkflows_inner.md)
  - [WorkflowResultDTO_outputs_inner](./Models/WorkflowResultDTO_outputs_inner.md)
  - [WorkflowResultDTO_outputs_inner_value](./Models/WorkflowResultDTO_outputs_inner_value.md)
+ - [WorkflowRunStatsDTO](./Models/WorkflowRunStatsDTO.md)
  - [WorkflowRunStatusDTO](./Models/WorkflowRunStatusDTO.md)
  - [getWorkflowsOverviewForEntity_request](./Models/getWorkflowsOverviewForEntity_request.md)
 

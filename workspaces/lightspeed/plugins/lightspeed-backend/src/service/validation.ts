@@ -17,7 +17,40 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import { ModelCapabilitiesCache } from './attachment-validation';
+import {
+  MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_QUERY_LENGTH,
+  MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
+} from './constant';
 import { QueryRequestBody } from './types';
+
+function validateAttachments(
+  attachments: Array<{
+    attachment_type: string;
+    content_type: string;
+    content: string;
+  }>,
+): string | null {
+  let totalSize = 0;
+
+  for (const attachment of attachments) {
+    const attachmentSize = attachment.content
+      ? Buffer.byteLength(attachment.content, 'utf8')
+      : 0;
+
+    if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
+      return `Attachment with type "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+    }
+
+    totalSize += attachmentSize;
+  }
+
+  if (totalSize > MAX_TOTAL_ATTACHMENTS_SIZE_BYTES) {
+    return `Total attachments size exceeds maximum of ${MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)}MB`;
+  }
+
+  return null;
+}
 
 export const validateCompletionsRequest = (
   req: Request,
@@ -42,6 +75,12 @@ export const validateCompletionsRequest = (
     return res
       .status(400)
       .json({ error: 'query is required and must be a non-empty string' });
+  }
+
+  if (reqData.query.length > MAX_QUERY_LENGTH) {
+    return res.status(400).json({
+      error: `query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`,
+    });
   }
 
   return next();
@@ -72,6 +111,11 @@ export const validateAttachmentsForModel = (
 
   if (!attachments || attachments.length === 0) {
     return next();
+  }
+
+  const attachmentError = validateAttachments(attachments);
+  if (attachmentError) {
+    return res.status(400).json({ error: attachmentError });
   }
 
   const hasImages = attachments.some(
