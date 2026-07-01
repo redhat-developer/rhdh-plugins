@@ -59,9 +59,11 @@ When no instance prefix is provided, the default instance configuration is used.
 
 ## Default thresholds
 
-Built-in defaults are defined in code. Override per metric under `scorecard.plugins.sonarqube.<metric>`. See [threshold docs](../scorecard-backend/docs/thresholds.md).
+Default thresholds vary by metric. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ### `sonarqube.quality_gate` (boolean)
+
+Default thresholds for `sonarqube.quality_gate`:
 
 ```yaml
 # app-config.yaml
@@ -79,7 +81,7 @@ scorecard:
 
 ### Count metrics (lower is better)
 
-`sonarqube.open_issues`:
+Default thresholds for `sonarqube.open_issues`:
 
 ```yaml
 # app-config.yaml
@@ -104,11 +106,11 @@ scorecard:
 | `sonarqube.reliability_issues`     | `<1`    | `1-5`   | `>5`  |
 | `sonarqube.maintainability_issues` | `<10`   | `10-50` | `>50` |
 
-Use the same `scorecard.plugins.sonarqube.<metric>.thresholds` structure as `open_issues` for the metrics above.
+Replace the metric name in the path above for the metrics in this table (e.g. `security_issues`, `security_hotspots`). Use the same `scorecard.plugins.sonarqube.<metric>.thresholds` structure as `open_issues`.
 
 ### Rating metrics (`security_rating`, `security_review_rating`, `reliability_rating`, `maintainability_rating`)
 
-Example for `sonarqube.security_rating`:
+All four rating metrics share the same default thresholds. Default thresholds for `sonarqube.security_rating` (custom keys `A`–`E` require `color` and `icon` in app-config):
 
 ```yaml
 # app-config.yaml
@@ -120,19 +122,31 @@ scorecard:
           rules:
             - key: A
               expression: '==1'
+              color: 'success.main'
+              icon: scorecardSuccessStatusIcon
             - key: B
               expression: '==2'
+              color: '#bdcb28'
+              icon: scorecardSuccessStatusIcon
             - key: C
               expression: '==3'
+              color: 'warning.main'
+              icon: scorecardWarningStatusIcon
             - key: D
               expression: '==4'
+              color: '#cf5813'
+              icon: scorecardErrorStatusIcon
             - key: E
               expression: '==5'
+              color: 'error.main'
+              icon: scorecardErrorStatusIcon
 ```
+
+Replace `security_rating` with `security_review_rating`, `reliability_rating`, or `maintainability_rating` for the other rating metrics.
 
 ### Percentage metrics
 
-`sonarqube.code_coverage` (higher is better):
+Default thresholds for `sonarqube.code_coverage` (higher is better):
 
 ```yaml
 # app-config.yaml
@@ -150,7 +164,7 @@ scorecard:
               expression: '<50'
 ```
 
-`sonarqube.code_duplications` (lower is better):
+Default thresholds for `sonarqube.code_duplications` (lower is better):
 
 ```yaml
 # app-config.yaml

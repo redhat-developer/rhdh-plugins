@@ -187,7 +187,10 @@ This metric counts all jira issues that match the filter condition specified in 
 - **Metric ID**: `jira.open_issues`
 - **Type**: `Number`
 - **Datasource**: `jira`
-- **Default thresholds**:
+
+## Default thresholds
+
+Default thresholds for `jira.open_issues`:
 
 ```yaml
 # app-config.yaml
@@ -204,3 +207,5 @@ scorecard:
             - key: error
               expression: '>50'
 ```
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
