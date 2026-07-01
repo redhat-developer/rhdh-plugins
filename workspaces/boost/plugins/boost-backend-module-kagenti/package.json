@@ -8,6 +8,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "boost",
