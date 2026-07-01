@@ -131,17 +131,10 @@ export class KagentiAgentEntityProvider implements EntityProvider {
     const namespaces = this.config.namespaces ?? ['default'];
     const allAgents: AgentCard[] = [];
 
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { Accept: 'application/json' };
     if (this.authClient) {
-      try {
-        const token = await this.authClient.getBearerToken();
-        headers.Authorization = `Bearer ${token}`;
-      } catch (error) {
-        this.logger.warn(
-          'Failed to acquire Keycloak bearer token for agent fetch',
-          error instanceof Error ? error : undefined,
-        );
-      }
+      const token = await this.authClient.getBearerToken();
+      headers.Authorization = `Bearer ${token}`;
     }
 
     for (const ns of namespaces) {

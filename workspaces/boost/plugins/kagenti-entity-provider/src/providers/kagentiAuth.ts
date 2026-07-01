@@ -82,13 +82,18 @@ export class KeycloakAuthClient {
     }
 
     const data = (await response.json()) as {
-      access_token: string;
+      access_token?: string;
       expires_in?: number;
     };
 
+    if (!data.access_token) {
+      throw new Error('Keycloak token response missing access_token');
+    }
+
     this.cachedToken = data.access_token;
     const expiresIn = data.expires_in ?? 300;
-    this.tokenExpiresAt = now + expiresIn - this.expiryBufferSeconds;
+    this.tokenExpiresAt =
+      now + Math.max(0, expiresIn - this.expiryBufferSeconds);
 
     return this.cachedToken;
   }

@@ -212,17 +212,12 @@ describe('KagentiToolEntityProvider', () => {
     );
   });
 
-  it('should handle auth failure gracefully', async () => {
+  it('should serve cached entities on auth failure', async () => {
     const mockAuthClient = {
       getBearerToken: jest
         .fn()
         .mockRejectedValue(new Error('Keycloak unavailable')),
     };
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => [],
-    } as Response);
 
     const provider = new KagentiToolEntityProvider({
       config: defaultConfig,
@@ -234,8 +229,13 @@ describe('KagentiToolEntityProvider', () => {
     await provider.connect(mockConnection);
     await taskRunner.runAll();
 
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+    // Auth failure propagates to refresh() catch — no fetch attempted,
+    // applyMutation called with empty cached entities
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockConnection.applyMutation).toHaveBeenCalledWith({
+      type: 'full',
+      entities: [],
+    });
   });
 
   it('should handle API errors gracefully', async () => {

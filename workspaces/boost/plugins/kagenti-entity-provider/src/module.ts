@@ -79,7 +79,10 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
         // Construct KeycloakAuthClient when all 3 auth fields are present
         let authClient: KeycloakAuthClient | undefined;
         if (authConfig) {
-          authClient = new KeycloakAuthClient(authConfig);
+          authClient = new KeycloakAuthClient(
+            authConfig,
+            authConfig.tokenExpiryBufferSeconds,
+          );
           logger.info(
             'Keycloak service-account auth configured for Kagenti entity providers',
           );
@@ -131,7 +134,12 @@ export const catalogModuleKagentiEntityProvider = createBackendModule({
 function readKagentiAuthConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ):
-  | { tokenEndpoint: string; clientId: string; clientSecret: string }
+  | {
+      tokenEndpoint: string;
+      clientId: string;
+      clientSecret: string;
+      tokenExpiryBufferSeconds?: number;
+    }
   | undefined {
   const authConfig = config.getOptionalConfig('boost.kagenti.auth');
   if (!authConfig) {
@@ -141,9 +149,12 @@ function readKagentiAuthConfig(
   const tokenEndpoint = authConfig.getOptionalString('tokenEndpoint');
   const clientId = authConfig.getOptionalString('clientId');
   const clientSecret = authConfig.getOptionalString('clientSecret');
+  const tokenExpiryBufferSeconds = authConfig.getOptionalNumber(
+    'tokenExpiryBufferSeconds',
+  );
 
   if (tokenEndpoint && clientId && clientSecret) {
-    return { tokenEndpoint, clientId, clientSecret };
+    return { tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds };
   }
 
   return undefined;
