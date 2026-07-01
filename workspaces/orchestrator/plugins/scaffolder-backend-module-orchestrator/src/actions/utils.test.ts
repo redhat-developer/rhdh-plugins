@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 
@@ -87,9 +88,9 @@ describe('utils', () => {
       const axiosInstance = { request: jest.fn() };
       const apiInstance = { executeWorkflow: jest.fn() };
 
-      mockedAxios.create.mockReturnValue(axiosInstance as never);
-      MockedConfiguration.mockImplementation(() => ({}) as never);
-      MockedDefaultApi.mockImplementation(() => apiInstance as never);
+      mockedAxios.create.mockReturnValue(axiosInstance as any);
+      MockedConfiguration.mockImplementation(() => ({}) as any);
+      MockedDefaultApi.mockImplementation(() => apiInstance as any);
 
       const api = await getOrchestratorApi(discoveryService);
 
@@ -149,6 +150,28 @@ describe('utils', () => {
         getPluginRequestToken: jest.fn().mockResolvedValue({
           token: undefined,
         }),
+      } as unknown as jest.Mocked<AuthService>;
+
+      const config = await getRequestConfigOption(authService, ctx);
+
+      expect(config).toEqual({
+        headers: {
+          Authorization: 'Bearer fallback-token',
+        },
+      });
+    });
+
+    it('falls back to the backstage secret when the auth service returns undefined', async () => {
+      const ctx = {
+        getInitiatorCredentials: jest.fn().mockResolvedValue({
+          principal: 'user:default/bob',
+        }),
+        secrets: {
+          backstageToken: 'fallback-token',
+        },
+      };
+      const authService = {
+        getPluginRequestToken: jest.fn().mockResolvedValue(undefined),
       } as unknown as jest.Mocked<AuthService>;
 
       const config = await getRequestConfigOption(authService, ctx);

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createMockActionContext } from '@backstage/plugin-scaffolder-node-test-utils';
 import { JsonObject } from '@backstage/types';
 
@@ -25,6 +26,7 @@ jest.mock('axios', () => ({
 }));
 
 jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
   getOrchestratorApi: jest.fn(),
   getRequestConfigOption: jest.fn(),
 }));

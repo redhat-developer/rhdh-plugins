@@ -17,21 +17,7 @@ import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 
-import { isAxiosError } from 'axios';
-
-import { getOrchestratorApi, getRequestConfigOption } from './utils';
-
-const getError = (err: unknown): Error => {
-  if (
-    isAxiosError<{ error: { message: string; name: string } }>(err) &&
-    err.response?.data?.error?.message
-  ) {
-    const error = new Error(err.response?.data?.error?.message);
-    error.name = err.response?.data?.error?.name || 'Error';
-    return error;
-  }
-  return err as Error;
-};
+import { getError, getOrchestratorApi, getRequestConfigOption } from './utils';
 
 export function createRunWorkflowAction(
   discoveryService: DiscoveryApi,

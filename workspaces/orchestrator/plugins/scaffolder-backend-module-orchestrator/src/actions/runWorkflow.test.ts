@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createMockActionContext } from '@backstage/plugin-scaffolder-node-test-utils';
 
 import { createRunWorkflowAction } from './runWorkflow';
@@ -24,6 +25,7 @@ jest.mock('axios', () => ({
 }));
 
 jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
   getOrchestratorApi: jest.fn(),
   getRequestConfigOption: jest.fn(),
 }));
@@ -92,7 +94,6 @@ describe('createRunWorkflowAction', () => {
       templateInfo: {
         entityRef: 'component:default/sample-service',
       },
-      isDryRun: true,
       logger: {
         ...createMockActionContext().logger,
         info: loggerInfo,
