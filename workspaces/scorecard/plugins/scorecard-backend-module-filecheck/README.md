@@ -98,8 +98,6 @@ Each configured file produces one boolean metric.
 
 All configured file checks share the same default thresholds. Default thresholds for `filecheck` (applies to every `filecheck.<id>` metric):
 
-Custom threshold keys other than `success`, `warning`, or `error` must include `color` and `icon` in app-config.
-
 ```yaml
 # app-config.yaml
 scorecard:
@@ -116,6 +114,8 @@ scorecard:
             icon: scorecardErrorStatusIcon
             color: 'error.main'
 ```
+
+Custom threshold keys other than `success`, `warning`, or `error` must include `color` and `icon` in app-config.
 
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
