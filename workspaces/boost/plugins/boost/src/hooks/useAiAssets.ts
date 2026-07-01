@@ -110,6 +110,10 @@ function applyClientFilters(
  * client-side. The catalog API is called once on mount (and on retry);
  * all filtering is a pure memo over the cached result.
  *
+ * Callers must pass a memoized `filters` object (e.g. from useMemo or
+ * useUrlFilters) — an inline object literal will defeat the memo and
+ * recompute on every render.
+ *
  * When catalogs grow beyond ~500 assets, the internals can switch to
  * cursor-based queryEntities without changing the consumer API.
  */
