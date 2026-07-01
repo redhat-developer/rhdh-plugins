@@ -190,13 +190,26 @@ export class KagentiProviderFactory {
     );
 
     if (!providerConfig) {
-      this.logger.warn(
-        'No boost.providers.kagenti config found. ' +
-          'Using default connection settings (http://localhost:8080).',
+      const securityMode =
+        this.config.getOptionalString('boost.security.mode') ??
+        'development-only-no-auth';
+
+      if (securityMode === 'development-only-no-auth') {
+        this.logger.warn(
+          'No boost.providers.kagenti config found. ' +
+            'Using default connection settings (http://localhost:8080). ' +
+            'This is only permitted in development-only-no-auth mode.',
+        );
+        return {
+          baseUrl: 'http://localhost:8080',
+        };
+      }
+
+      throw new Error(
+        'Missing required config: boost.providers.kagenti.baseUrl. ' +
+          'The Kagenti provider module requires connection configuration ' +
+          'when security mode is not development-only-no-auth.',
       );
-      return {
-        baseUrl: 'http://localhost:8080',
-      };
     }
 
     return {

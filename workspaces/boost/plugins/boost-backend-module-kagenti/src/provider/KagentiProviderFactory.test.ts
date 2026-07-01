@@ -53,6 +53,7 @@ function createMockCache(): CacheService {
 function createMockConfig(
   values: Record<string, string | undefined> = {},
   authValues?: Record<string, string | number | undefined>,
+  securityMode?: string,
 ): RootConfigService {
   const providerConfig = values.baseUrl
     ? {
@@ -80,7 +81,10 @@ function createMockConfig(
 
   return {
     getString: jest.fn(),
-    getOptionalString: jest.fn(),
+    getOptionalString: jest.fn((key: string) => {
+      if (key === 'boost.security.mode') return securityMode;
+      return undefined;
+    }),
     getOptionalConfig: jest.fn((path: string) => {
       if (path === 'boost.providers.kagenti') {
         return providerConfig;
@@ -125,7 +129,23 @@ describe('KagentiProviderFactory', () => {
     expect(bundle.sessionMap).toBeInstanceOf(SessionMap);
   });
 
-  it('falls back to default connection when no config is set', () => {
+  it('falls back to localhost in development-only-no-auth mode', () => {
+    const logger = createMockLogger();
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'development-only-no-auth'),
+      cache: createMockCache(),
+      logger,
+    });
+
+    const bundle = factory.create();
+
+    expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('No boost.providers.kagenti config found'),
+    );
+  });
+
+  it('falls back to localhost when security mode is unset (defaults to dev)', () => {
     const logger = createMockLogger();
     const factory = new KagentiProviderFactory({
       config: createMockConfig(),
@@ -138,6 +158,30 @@ describe('KagentiProviderFactory', () => {
     expect(bundle.provider).toBeInstanceOf(KagentiProvider);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('No boost.providers.kagenti config found'),
+    );
+  });
+
+  it('throws when connection config missing in non-dev security mode', () => {
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'full'),
+      cache: createMockCache(),
+      logger: createMockLogger(),
+    });
+
+    expect(() => factory.create()).toThrow(
+      'Missing required config: boost.providers.kagenti.baseUrl',
+    );
+  });
+
+  it('throws when connection config missing in plugin-only mode', () => {
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'plugin-only'),
+      cache: createMockCache(),
+      logger: createMockLogger(),
+    });
+
+    expect(() => factory.create()).toThrow(
+      'Missing required config: boost.providers.kagenti.baseUrl',
     );
   });
 
