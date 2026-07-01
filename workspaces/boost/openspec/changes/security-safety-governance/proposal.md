@@ -45,4 +45,4 @@ Enterprise AI platforms must treat security, safety, and governance as foundatio
 - `plugins/boost-common/src/permissions.ts` — 16 permission definitions with resource types
 - `plugins/boost-backend/src/middleware/security.ts` — `authorizeLifecycleAction` middleware
 - `plugins/boost-frontend/src/components/SecurityGate.tsx` — granular permission checks
-- `plugins/kagenti-entity-provider/src/providers/kagentiAuth.ts` — `KeycloakAuthClient` (OAuth2 Client Credentials Grant)
+- `plugins/boost-node/src/KeycloakAuthClient.ts` — `KeycloakAuthClient` (OAuth2 Client Credentials Grant)

@@ -118,5 +118,6 @@ export class KeycloakAuthClient {
   invalidateToken(): void {
     this.cachedToken = undefined;
     this.tokenExpiresAt = 0;
+    this.pendingFetch = undefined;
   }
 }
