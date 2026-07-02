@@ -198,7 +198,7 @@ const Scorecard = ({
       role="article"
       title={cardTitle}
       description={description}
-      width="371px"
+      width="100%"
     >
       <Box
         width="100%"
@@ -227,7 +227,7 @@ const Scorecard = ({
             {isErrorState && (
               <g>
                 <circle
-                  cx="22%"
+                  cx={82}
                   cy="50%"
                   r={74}
                   fill="transparent"
@@ -248,7 +248,7 @@ const Scorecard = ({
               data={pieData}
               dataKey="value"
               nameKey="name"
-              cx="22%"
+              cx={82}
               cy="50%"
               innerRadius={64}
               outerRadius={74}
