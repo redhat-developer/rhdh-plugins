@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 0.0.4
+
+### Patch Changes
+
+- d7f7899: Make signInPage config optional and derive signInPage cards from configs defined under auth.providers
+
 ## 0.0.3
 
 ### Patch Changes
