@@ -42,7 +42,7 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm"
   },
-  "packageManager": "yarn@4.15.0",
+  "packageManager": "yarn@4.17.0",
   "devDependencies": {
     "@backstage/cli": "^0.35.2",
     "@backstage/e2e-test-utils": "^0.1.1",
