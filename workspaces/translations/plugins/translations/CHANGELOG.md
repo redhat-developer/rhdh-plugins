@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.4.0
+
+### Minor Changes
+
+- 6456930: Add pseudo-localization support using `i18next-pseudo` to help identify untranslated or hardcoded strings in the UI. Strings are transformed with diacritical marks and brackets (e.g., `"Settings"` → `"[Ṣḛḛţţḭḭṇḡṡ]"`). Activate via `?pseudolocalization=true` URL parameter or `i18n.pseudolocalization.enabled: true` in app-config. Includes a `PseudoLocalizationProvider` component for use as a dynamic plugin at the `application/provider` mount point.
+
 ## 0.3.1
 
 ### Patch Changes
