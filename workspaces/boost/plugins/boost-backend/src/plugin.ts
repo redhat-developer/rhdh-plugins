@@ -86,11 +86,13 @@ export const boostAiProviderServiceFactory = createServiceFactory({
       get descriptor() {
         return providerManager.getActiveProvider().descriptor;
       },
-      chat(messages) {
-        return providerManager.getActiveProvider().chat(messages);
+      chat(messages, options) {
+        return providerManager.getActiveProvider().chat(messages, options);
       },
-      chatStream(messages) {
-        return providerManager.getActiveProvider().chatStream(messages);
+      chatStream(messages, options) {
+        return providerManager
+          .getActiveProvider()
+          .chatStream(messages, options);
       },
     };
   },
