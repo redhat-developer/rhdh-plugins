@@ -24,6 +24,8 @@ import { KagentiProvider } from './KagentiProvider';
 import { AgentCardCache } from './AgentCardCache';
 import { KeycloakTokenCache } from './KeycloakTokenCache';
 import { SessionMap } from './SessionMap';
+import { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
+import { KagentiApiClient } from './KagentiApiClient';
 
 /**
  * Options for creating a {@link KagentiProviderFactory}.
@@ -86,9 +88,28 @@ export class KagentiProviderFactory {
       logger: this.logger,
     });
 
+    // Read Keycloak auth config and construct auth client + API client
+    const authConfig = this.readKagentiAuthConfig();
+    let apiClient: KagentiApiClient | undefined;
+    if (authConfig) {
+      const authClient = new KeycloakAuthClient(
+        authConfig,
+        authConfig.tokenExpiryBufferSeconds,
+      );
+      apiClient = new KagentiApiClient({
+        baseUrl: connection.baseUrl,
+        logger: this.logger,
+        authClient,
+      });
+      this.logger.info(
+        'Keycloak service-account auth configured for Kagenti provider',
+      );
+    }
+
     const provider = new KagentiProvider({
       connection,
       logger: this.logger,
+      apiClient,
     });
 
     return {
@@ -97,6 +118,58 @@ export class KagentiProviderFactory {
       keycloakTokenCache,
       sessionMap,
     };
+  }
+
+  /**
+   * Read Keycloak service-account auth config from app-config.yaml.
+   *
+   * Returns the config only when all three required fields are present.
+   * Logs a warning when a partial set of fields is found (constraint 3).
+   */
+  private readKagentiAuthConfig():
+    | {
+        tokenEndpoint: string;
+        clientId: string;
+        clientSecret: string;
+        tokenExpiryBufferSeconds?: number;
+      }
+    | undefined {
+    const authConfig = this.config.getOptionalConfig('boost.kagenti.auth');
+    if (!authConfig) {
+      return undefined;
+    }
+
+    const tokenEndpoint = authConfig.getOptionalString('tokenEndpoint');
+    const clientId = authConfig.getOptionalString('clientId');
+    const clientSecret = authConfig.getOptionalString('clientSecret');
+    const tokenExpiryBufferSeconds = authConfig.getOptionalNumber(
+      'tokenExpiryBufferSeconds',
+    );
+
+    if (tokenEndpoint && clientId && clientSecret) {
+      return {
+        tokenEndpoint,
+        clientId,
+        clientSecret,
+        tokenExpiryBufferSeconds,
+      };
+    }
+
+    const present = [
+      tokenEndpoint && 'tokenEndpoint',
+      clientId && 'clientId',
+      clientSecret && 'clientSecret',
+    ].filter(Boolean);
+    if (present.length > 0) {
+      const missing = ['tokenEndpoint', 'clientId', 'clientSecret'].filter(
+        k => !present.includes(k),
+      );
+      this.logger.warn(
+        `Partial Kagenti auth config: found ${present.join(', ')} but missing ${missing.join(', ')}. Auth disabled.`,
+      );
+    }
+
+    return undefined;
   }
 
   /**
@@ -117,13 +190,26 @@ export class KagentiProviderFactory {
     );
 
     if (!providerConfig) {
-      this.logger.warn(
-        'No boost.providers.kagenti config found. ' +
-          'Using default connection settings (http://localhost:8080).',
+      const securityMode =
+        this.config.getOptionalString('boost.security.mode') ??
+        'development-only-no-auth';
+
+      if (securityMode === 'development-only-no-auth') {
+        this.logger.warn(
+          'No boost.providers.kagenti config found. ' +
+            'Using default connection settings (http://localhost:8080). ' +
+            'This is only permitted in development-only-no-auth mode.',
+        );
+        return {
+          baseUrl: 'http://localhost:8080',
+        };
+      }
+
+      throw new Error(
+        'Missing required config: boost.providers.kagenti.baseUrl. ' +
+          'The Kagenti provider module requires connection configuration ' +
+          'when security mode is not development-only-no-auth.',
       );
-      return {
-        baseUrl: 'http://localhost:8080',
-      };
     }
 
     return {

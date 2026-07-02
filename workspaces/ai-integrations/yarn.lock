@@ -3601,6 +3601,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-catalog-backend-module-ai-model@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@backstage/plugin-catalog-backend-module-ai-model@npm:0.1.1"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+  checksum: 10c0/058c1ed2cec3996bac840f552bb3b99e47e50b5e60770a733c00c991efcd913b1f9935bca7abe36e2992df8a4d78c74e01fb733d7755abe1947ff9ea3b7f8869
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-catalog-backend-module-logs@npm:^0.1.23":
   version: 0.1.23
   resolution: "@backstage/plugin-catalog-backend-module-logs@npm:0.1.23"
@@ -6467,6 +6478,7 @@ __metadata:
   resolution: "@internal/ai-integrations@workspace:."
   dependencies:
     "@backstage/cli": "npm:^0.36.3"
+    "@backstage/cli-defaults": "npm:^0.1.3"
     "@backstage/e2e-test-utils": "npm:^0.1.2"
     "@backstage/repo-tools": "npm:^0.17.3"
     "@changesets/cli": "npm:^2.27.1"
@@ -9726,6 +9738,16 @@ __metadata:
   peerDependencies:
     react: ^16.14.0 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-catalog-backend-module-ai-resource-extensions":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-catalog-backend-module-ai-resource-extensions"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/backend-test-utils": "npm:^1.11.4"
+    "@backstage/cli": "npm:^0.36.3"
   languageName: unknown
   linkType: soft
 
@@ -14935,6 +14957,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": "npm:^0.2.20"
     "@backstage/plugin-auth-node": "npm:^0.7.2"
     "@backstage/plugin-catalog-backend": "npm:^3.8.0"
+    "@backstage/plugin-catalog-backend-module-ai-model": "npm:^0.1.1"
     "@backstage/plugin-catalog-backend-module-logs": "npm:^0.1.23"
     "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": "npm:^0.2.21"
     "@backstage/plugin-kubernetes-backend": "npm:^0.21.5"
@@ -14952,6 +14975,7 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.4.5"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.1"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^"
     app: "link:../app"

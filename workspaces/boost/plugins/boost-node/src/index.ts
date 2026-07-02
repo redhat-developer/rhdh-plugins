@@ -25,3 +25,7 @@ export {
   boostProviderExtensionPoint,
   type BoostProviderExtensionPoint,
 } from './extensions';
+export {
+  KeycloakAuthClient,
+  type KeycloakAuthConfig,
+} from './KeycloakAuthClient';

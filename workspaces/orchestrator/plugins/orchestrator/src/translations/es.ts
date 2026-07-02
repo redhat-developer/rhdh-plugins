@@ -241,6 +241,12 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
+    'workflow.unavailable.title': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.runTooltip': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.requestFailed':
+      'La solicitud HTTP GET a {{url}} falló.',
+    'workflow.unavailable.statusCodeLine': 'Código de estado: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texto de estado: {{reason}}',
     'samlSso.title': 'Sesión de GitHub SAML SSO expirada',
     'samlSso.reauthorizeButton': 'Reautorizar SSO',
     'samlSso.body':

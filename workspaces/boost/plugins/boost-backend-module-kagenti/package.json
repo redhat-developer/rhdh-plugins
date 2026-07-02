@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "Apache-2.0",
   "description": "Kagenti provider module for the boost AI platform",
   "main": "src/index.ts",
@@ -8,11 +8,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-backend",
     "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
@@ -31,12 +33,12 @@
     }
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.9.1",
+    "@backstage/backend-plugin-api": "^1.9.2",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
+    "@backstage/cli": "^0.36.3",
     "@red-hat-developer-hub/cli": "^1.11.1"
   },
   "sideEffects": false,

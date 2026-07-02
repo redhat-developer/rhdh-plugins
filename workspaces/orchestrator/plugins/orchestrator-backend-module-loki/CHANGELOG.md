@@ -22,6 +22,12 @@
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.0
 
+## 1.2.7
+
+### Patch Changes
+
+- b124bb5: Fix to allow properly quoted LoqQL querys in the selector field
+
 ## 1.2.6
 
 ### Patch Changes

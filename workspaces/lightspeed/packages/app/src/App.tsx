@@ -20,7 +20,7 @@ import {
   lightspeedFABModule,
   lightspeedRedirectModule,
   lightspeedTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';

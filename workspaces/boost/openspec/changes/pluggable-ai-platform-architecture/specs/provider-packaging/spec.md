@@ -61,7 +61,7 @@ The Kagenti provider MUST be packaged as an independent Backstage backend module
 
 #### Scenario: Keycloak token cache uses Backstage cacheService
 
-- **WHEN** the Kagenti module caches Keycloak access tokens (currently `KeycloakTokenManager`)
+- **WHEN** the Kagenti module caches Keycloak access tokens (currently `KeycloakAuthClient`)
 - **THEN** it uses `coreServices.cache` with TTL derived from token expiry
 - **AND** the token cache is Redis-backed in production for multi-instance safety
 
