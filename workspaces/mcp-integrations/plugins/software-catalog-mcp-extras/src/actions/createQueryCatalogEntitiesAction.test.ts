@@ -23,6 +23,7 @@ describe('createQueryCatalogEntitiesAction', () => {
   describe('fetchCatalogEntities', () => {
     const mockCatalogService = {
       getEntities: jest.fn(),
+      queryEntities: jest.fn(),
     } as unknown as CatalogService;
 
     const mockCredentials = {
@@ -34,6 +35,218 @@ describe('createQueryCatalogEntitiesAction', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
+    });
+
+    it('should search entities using fullTextFilter when search is provided', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'my-gitops-infra',
+            tags: ['gitops'],
+            description: 'GitOps infrastructure service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-platform',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      (mockCatalogService.queryEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+        totalItems: 1,
+        pageInfo: {},
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockCredentials,
+        mockLoggerService,
+        { search: 'gitops' },
+      );
+
+      expect(mockCatalogService.queryEntities).toHaveBeenCalledWith(
+        {
+          filter: undefined,
+          fullTextFilter: {
+            term: 'gitops',
+            fields: [
+              'metadata.name',
+              'metadata.title',
+              'metadata.description',
+            ],
+          },
+          limit: 500,
+          fields: [
+            'metadata.name',
+            'metadata.title',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+        },
+        {
+          credentials: mockCredentials,
+        },
+      );
+
+      expect(mockCatalogService.getEntities).not.toHaveBeenCalled();
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'my-gitops-infra',
+            title: undefined,
+            kind: 'Component',
+            tags: 'gitops',
+            description: 'GitOps infrastructure service',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'team-platform',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should combine search with kind filter', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'auth-service',
+            tags: ['auth'],
+            description: 'Authentication service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-platform',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      (mockCatalogService.queryEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+        totalItems: 1,
+        pageInfo: {},
+      });
+
+      await fetchCatalogEntities(
+        mockCatalogService,
+        mockCredentials,
+        mockLoggerService,
+        { search: 'auth', kind: 'Component' },
+      );
+
+      expect(mockCatalogService.queryEntities).toHaveBeenCalledWith(
+        {
+          filter: { kind: 'Component' },
+          fullTextFilter: {
+            term: 'auth',
+            fields: [
+              'metadata.name',
+              'metadata.title',
+              'metadata.description',
+            ],
+          },
+          limit: 500,
+          fields: [
+            'metadata.name',
+            'metadata.title',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+        },
+        {
+          credentials: mockCredentials,
+        },
+      );
+    });
+
+    it('should use getEntities when search is not provided', async () => {
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: [],
+      });
+
+      await fetchCatalogEntities(
+        mockCatalogService,
+        mockCredentials,
+        mockLoggerService,
+        { kind: 'Component' },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalled();
+      expect(mockCatalogService.queryEntities).not.toHaveBeenCalled();
+    });
+
+    it('should return verbose results with search', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'my-service',
+            tags: ['java'],
+            description: 'A service',
+            uid: 'component:default/my-service',
+            namespace: 'default',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-a',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      (mockCatalogService.queryEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+        totalItems: 1,
+        pageInfo: {},
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockCredentials,
+        mockLoggerService,
+        { search: 'service', verbose: true },
+      );
+
+      expect(mockCatalogService.queryEntities).toHaveBeenCalledWith(
+        {
+          filter: undefined,
+          fullTextFilter: {
+            term: 'service',
+            fields: [
+              'metadata.name',
+              'metadata.title',
+              'metadata.description',
+            ],
+          },
+          limit: 500,
+        },
+        {
+          credentials: mockCredentials,
+        },
+      );
+
+      expect(result).toEqual({
+        entities: mockEntities,
+      });
     });
 
     it('should fetch catalog entities successfully', async () => {
@@ -98,6 +311,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -120,6 +334,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'my-service',
+            title: undefined,
             kind: 'Component',
             tags: 'java,spring',
             description: 'A Spring-based microservice',
@@ -130,6 +345,7 @@ describe('createQueryCatalogEntitiesAction', () => {
           },
           {
             name: 'my-api',
+            title: undefined,
             kind: 'API',
             tags: 'rest,openapi',
             description: 'REST API for data access',
@@ -140,6 +356,7 @@ describe('createQueryCatalogEntitiesAction', () => {
           },
           {
             name: 'my-system',
+            title: undefined,
             kind: 'System',
             tags: '',
             description: 'Core business system',
@@ -183,6 +400,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'service-no-tags',
+            title: undefined,
             kind: 'Component',
             tags: '',
             description: 'Service without tags',
@@ -274,6 +492,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -331,6 +550,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -358,6 +578,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'specific-service',
+            title: undefined,
             kind: 'Component',
             tags: 'javascript',
             description: 'A specific web service',
@@ -403,6 +624,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -425,6 +647,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'my-service',
+            title: undefined,
             kind: 'Component',
             tags: 'java,spring',
             description: 'A Spring-based microservice',
@@ -470,6 +693,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -492,6 +716,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'platform-service',
+            title: undefined,
             kind: 'Component',
             tags: 'platform,core',
             description: 'A platform service',
@@ -536,6 +761,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'minimal-service',
+            title: undefined,
             kind: 'Component',
             tags: 'minimal',
             description: 'A minimal service',
@@ -643,6 +869,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -665,6 +892,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'abridged-service',
+            title: undefined,
             kind: 'Component',
             tags: 'java',
             description: 'An abridged service entity',
@@ -709,6 +937,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         {
           fields: [
             'metadata.name',
+            'metadata.title',
             'kind',
             'metadata.tags',
             'metadata.description',
@@ -731,6 +960,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         entities: [
           {
             name: 'default-service',
+            title: undefined,
             kind: 'Component',
             tags: 'default',
             description: 'A default service entity',
@@ -747,6 +977,7 @@ describe('createQueryCatalogEntitiesAction', () => {
   describe('MCP Action validation and error handling', () => {
     const mockCatalogService = {
       getEntities: jest.fn(),
+      queryEntities: jest.fn(),
     } as unknown as CatalogService;
 
     const mockCredentials = {
@@ -803,6 +1034,54 @@ describe('createQueryCatalogEntitiesAction', () => {
 
       expect(result.output.error).toBe(
         'entity type cannot be specified without an entity kind specified',
+      );
+      expect(result.output.entities).toEqual([]);
+    });
+
+    it('should return error when both name and search are specified', async () => {
+      const fetchCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: {
+          kind?: string;
+          type?: string;
+          name?: string;
+          search?: string;
+          owner?: string;
+          lifecycle?: string;
+          tags?: string;
+          verbose?: boolean;
+        };
+      }) => {
+        if (input.name && input.search) {
+          return {
+            output: {
+              entities: [],
+              error:
+                "cannot specify both 'name' (exact match) and 'search' (partial match) together",
+            },
+          };
+        }
+        const result = await fetchCatalogEntities(
+          mockCatalogService,
+          mockCredentials,
+          mockLoggerService,
+          input,
+        );
+        return {
+          output: {
+            ...result,
+            error: undefined,
+          },
+        };
+      };
+
+      const result = await fetchCatalogEntitiesAction({
+        input: { name: 'my-service', search: 'service' },
+      });
+
+      expect(result.output.error).toBe(
+        "cannot specify both 'name' (exact match) and 'search' (partial match) together",
       );
       expect(result.output.entities).toEqual([]);
     });
@@ -873,6 +1152,7 @@ describe('createQueryCatalogEntitiesAction', () => {
       expect(result.output.entities).toEqual([
         {
           name: 'test-service',
+          title: undefined,
           kind: 'Component',
           tags: 'test',
           description: 'A test service',
@@ -950,6 +1230,7 @@ describe('createQueryCatalogEntitiesAction', () => {
       expect(result.output.entities).toEqual([
         {
           name: 'test-component',
+          title: undefined,
           kind: 'Component',
           tags: 'test',
           description: 'A test component',
@@ -983,6 +1264,7 @@ describe('createQueryCatalogEntitiesAction', () => {
               },
             ],
           }),
+          queryEntities: jest.fn(),
         } as unknown as CatalogService;
 
         const mockCredentials = {
@@ -1014,6 +1296,7 @@ describe('createQueryCatalogEntitiesAction', () => {
         expect(result.output.entities).toHaveLength(1);
         expect(result.output.entities[0]).toEqual({
           name: 'test-component',
+          title: undefined,
           kind: 'Component',
           tags: 'test',
           description: 'A test component',

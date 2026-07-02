@@ -37,12 +37,18 @@ export const createQueryCatalogEntitiesAction = ({
     },
     description: `Search and retrieve catalog entities from the Backstage server.
 
-List all Backstage entities such as Components, Systems, Resources, APIs, Locations, Users, and Groups. 
+List all Backstage entities such as Components, Systems, Resources, APIs, Locations, Users, and Groups.
 By default, results are returned in JSON array format, where each entry in the JSON array is an entity with the following fields: 'name', 'description','type', 'owner', 'tags', 'dependsOn' and 'kind'.
 Setting 'verbose' to true will return the full Backstage entity objects, but should only be used if the reduced output is not sufficient, as this will significantly impact context usage (especially on smaller models).
 Note: 'type' can only be filtered on if a specified entity 'kind' is also specified.
 
+Use the 'search' parameter for partial/substring matching across entity name, title, and description. Use the 'name' parameter only when you know the exact entity name.
+
 Example invocations and the output from those invocations:
+  # Search for entities by partial name or description
+  query-catalog-entities search:postgres
+  # Combine search with kind filter
+  query-catalog-entities kind:Component search:auth
   # Find all Resources of type storage
   query-catalog-entities kind:Resource type:storage
   Output: {
@@ -78,7 +84,13 @@ Example invocations and the output from those invocations:
             .describe(
               'Filter entities by type (e.g., ai-model, library, website).',
             ),
-          name: z.string().optional().describe('Filter entities by name'),
+          name: z.string().optional().describe('Filter entities by exact name'),
+          search: z
+            .string()
+            .optional()
+            .describe(
+              'Full-text search term to match against entity name, title, and description. Supports partial/substring matching unlike the exact-match name filter.',
+            ),
           owner: z
             .string()
             .optional()
@@ -114,6 +126,12 @@ Example invocations and the output from those invocations:
                     .string()
                     .describe(
                       'The name field for each Backstage entity in the catalog',
+                    ),
+                  title: z
+                    .string()
+                    .optional()
+                    .describe(
+                      'The human-friendly display title of the Backstage entity',
                     ),
                   kind: z
                     .string()
@@ -180,6 +198,15 @@ Example invocations and the output from those invocations:
           },
         };
       }
+      if (input.name && input.search) {
+        return {
+          output: {
+            entities: [],
+            error:
+              "cannot specify both 'name' (exact match) and 'search' (partial match) together",
+          },
+        };
+      }
       try {
         const result = await fetchCatalogEntities(
           catalog,
@@ -209,6 +236,102 @@ Example invocations and the output from those invocations:
   });
 };
 
+const ABRIDGED_FIELDS = [
+  'metadata.name',
+  'metadata.title',
+  'kind',
+  'metadata.tags',
+  'metadata.description',
+  'spec.type',
+  'spec.owner',
+  'spec.lifecycle',
+  'relations',
+];
+
+function buildFilter(input?: {
+  kind?: string;
+  type?: string;
+  name?: string;
+  owner?: string;
+  tags?: string;
+  lifecycle?: string;
+}): Record<string, any> {
+  const filter: Record<string, any> = {};
+  if (input?.kind) filter.kind = input.kind;
+  if (input?.type) filter['spec.type'] = input.type;
+  if (input?.name) filter['metadata.name'] = input.name;
+  if (input?.owner) filter['spec.owner'] = input.owner;
+  if (input?.lifecycle) filter['spec.lifecycle'] = input.lifecycle;
+  if (input?.tags) {
+    filter['metadata.tags'] = input.tags.split(',').map(tag => tag.trim());
+  }
+  return filter;
+}
+
+function redactFilters(filter: Record<string, any>): Record<string, any> {
+  const redacted = { ...filter };
+  if (Object.hasOwn(redacted, 'metadata.name')) {
+    redacted['metadata.name'] = '[REDACTED]';
+  }
+  if (Object.hasOwn(redacted, 'spec.owner')) {
+    redacted['spec.owner'] = '[REDACTED]';
+  }
+  return redacted;
+}
+
+function toAbridgedEntity(entity: Entity) {
+  return {
+    name: entity.metadata.name,
+    title: entity.metadata.title,
+    kind: entity.kind,
+    tags: entity.metadata.tags?.join(',') || '',
+    description: entity.metadata.description,
+    lifecycle:
+      typeof entity.spec?.lifecycle === 'string'
+        ? entity.spec.lifecycle
+        : undefined,
+    type:
+      typeof entity.spec?.type === 'string' ? entity.spec.type : undefined,
+    owner:
+      typeof entity.spec?.owner === 'string' ? entity.spec.owner : undefined,
+    dependsOn:
+      entity.relations
+        ?.filter(relation => relation.type === 'dependsOn')
+        .map(relation => relation.targetRef)
+        .join(',') || '',
+  };
+}
+
+async function searchEntities(
+  catalog: CatalogService,
+  credentials: any,
+  search: string,
+  filter: Record<string, any>,
+  fields?: string[],
+): Promise<Entity[]> {
+  const queryOptions: any = {
+    filter: Object.keys(filter).length > 0 ? filter : undefined,
+    fullTextFilter: {
+      term: search,
+      fields: ['metadata.name', 'metadata.title', 'metadata.description'],
+    },
+    limit: 500,
+  };
+  if (fields) {
+    queryOptions.fields = fields;
+  }
+
+  const items: Entity[] = [];
+  let cursor: string | undefined;
+  do {
+    const request: any = cursor ? { cursor, limit: 500 } : queryOptions;
+    const response = await catalog.queryEntities(request, { credentials });
+    items.push(...response.items);
+    cursor = response.pageInfo?.nextCursor;
+  } while (cursor);
+  return items;
+}
+
 export async function fetchCatalogEntities(
   catalog: CatalogService,
   credentials: any,
@@ -217,95 +340,44 @@ export async function fetchCatalogEntities(
     kind?: string;
     type?: string;
     name?: string;
+    search?: string;
     owner?: string;
     tags?: string;
     lifecycle?: string;
     verbose?: boolean;
   },
 ) {
-  const filter: any = {};
-  if (input?.kind) {
-    filter.kind = input.kind;
-  }
-  if (input?.type) {
-    filter['spec.type'] = input.type;
-  }
-  if (input?.name) {
-    filter['metadata.name'] = input.name;
-  }
-  if (input?.owner) {
-    filter['spec.owner'] = input.owner;
-  }
-  if (input?.lifecycle) {
-    filter['spec.lifecycle'] = input.lifecycle;
-  }
-  if (input?.tags) {
-    filter['metadata.tags'] = input.tags.split(',').map(tag => tag.trim());
-  }
-
-  const getEntitiesOptions: any = {
-    filter,
-  };
-
-  if (!input?.verbose) {
-    getEntitiesOptions.fields = [
-      'metadata.name',
-      'kind',
-      'metadata.tags',
-      'metadata.description',
-      'spec.type',
-      'spec.owner',
-      'spec.lifecycle',
-      'relations',
-    ];
-  }
-
+  const filter = buildFilter(input);
+  const fields = input?.verbose ? undefined : ABRIDGED_FIELDS;
   const logEntityNames = process.env.LOG_ENTITY_NAMES === 'true';
-  const loggedFilters = {
-    ...getEntitiesOptions.filter,
-  };
-  if (!logEntityNames) {
-    if (Object.prototype.hasOwnProperty.call(loggedFilters, 'metadata.name')) {
-      loggedFilters['metadata.name'] = '[REDACTED]';
-    }
-    if (Object.prototype.hasOwnProperty.call(loggedFilters, 'spec.owner')) {
-      loggedFilters['spec.owner'] = '[REDACTED]';
-    }
-  }
-  logger.info(
-    'query-catalog-entities: Fetching catalog entities with options:',
-    loggedFilters,
-  );
+  const loggedFilters = logEntityNames ? filter : redactFilters(filter);
 
-  const { items } = await catalog.getEntities(getEntitiesOptions, {
-    credentials,
-  });
+  let items: Entity[];
+
+  if (input?.search) {
+    logger.info(
+      'query-catalog-entities: Searching catalog entities with fullTextFilter:',
+      { search: logEntityNames ? input.search : '[REDACTED]', ...loggedFilters },
+    );
+    items = await searchEntities(catalog, credentials, input.search, filter, fields);
+  } else {
+    logger.info(
+      'query-catalog-entities: Fetching catalog entities with options:',
+      loggedFilters,
+    );
+
+    const getEntitiesOptions: any = { filter };
+    if (fields) {
+      getEntitiesOptions.fields = fields;
+    }
+
+    const response = await catalog.getEntities(getEntitiesOptions, {
+      credentials,
+    });
+    items = response.items;
+  }
 
   return {
-    entities: input?.verbose
-      ? items
-      : items.map(entity => ({
-          name: entity.metadata.name,
-          kind: entity.kind,
-          tags: entity.metadata.tags?.join(',') || '',
-          description: entity.metadata.description,
-          lifecycle:
-            typeof entity.spec?.lifecycle === 'string'
-              ? entity.spec.lifecycle
-              : undefined,
-          type:
-            typeof entity.spec?.type === 'string'
-              ? entity.spec.type
-              : undefined,
-          owner:
-            typeof entity.spec?.owner === 'string'
-              ? entity.spec.owner
-              : undefined,
-          dependsOn:
-            entity.relations
-              ?.filter(relation => relation.type === 'dependsOn')
-              .map(relation => relation.targetRef)
-              .join(',') || '',
-        })),
+    entities: input?.verbose ? items : items.map(toAbridgedEntity),
   };
 }
