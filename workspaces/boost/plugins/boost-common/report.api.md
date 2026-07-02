@@ -8,8 +8,11 @@ import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public
 export interface AgenticProvider {
-  chat(messages: InputItem[]): Promise<string>;
-  chatStream(messages: InputItem[]): AsyncIterable<NormalizedStreamEvent>;
+  chat(messages: InputItem[], options?: ChatOptions): Promise<string>;
+  chatStream(
+    messages: InputItem[],
+    options?: ChatOptions,
+  ): AsyncIterable<NormalizedStreamEvent>;
   readonly descriptor: ProviderDescriptor;
 }
 
@@ -218,6 +221,11 @@ export const boostToolResourcePermissions: ResourcePermission<
 
 // @public
 export const boostToolUnpublishPermission: ResourcePermission<'boost-tool'>;
+
+// @public
+export interface ChatOptions {
+  userRef?: string;
+}
 
 // @public
 export interface ConversationDetails {

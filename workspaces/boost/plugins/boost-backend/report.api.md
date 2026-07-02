@@ -112,7 +112,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+export const BOOST_CONFIG_SCHEMA_VERSION = 2;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -170,18 +170,24 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
-  readonly 'boost.kagenti.auth.tokenExchange.enabled': {
-    readonly schema: z.ZodOptional<z.ZodBoolean>;
-    readonly configScope: ConfigScope;
-    readonly description: string;
-  };
-  readonly 'boost.kagenti.auth.tokenExchange.audience': {
+  readonly 'boost.kagenti.auth.tokenEndpoint': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
-  readonly 'boost.kagenti.auth.tokenExchange.userTokenHeader': {
+  readonly 'boost.kagenti.auth.clientId': {
     readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: 'OAuth2 client ID for Kagenti service-account authentication.';
+  };
+  readonly 'boost.kagenti.auth.clientSecret': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly sensitive: true;
+  };
+  readonly 'boost.kagenti.auth.tokenExpiryBufferSeconds': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };

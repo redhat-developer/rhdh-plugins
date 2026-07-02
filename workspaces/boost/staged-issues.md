@@ -365,7 +365,7 @@ From `openspec/changes/agent-creation-discovery/tasks.md` sections 1 and 2:
 
 ---
 
-## boost-backend — Token exchange via RFC 8693 per-user identity delegation (issue 13 of 15)
+## boost-backend — Keycloak service-account authentication for Kagenti (issue 13 of 15)
 
 https://github.com/redhat-developer/rhdh-plugins/issues/3309
 
@@ -374,24 +374,26 @@ https://github.com/redhat-developer/rhdh-plugins/issues/3309
 **Labels:** `ready-to-code`
 **Depends on:** Issue 11
 
-Implement `TokenExchangeManager` for per-user Kagenti identity delegation via RFC 8693 OAuth2 Token Exchange, with graceful fallback to service-account token on all failures.
+Implement `KeycloakAuthClient` for service-account Kagenti authentication via OAuth2 Client Credentials Grant, with token caching, configurable expiry buffer, and max-1-retry on 401.
 
 ### Tasks
 
 From `openspec/changes/security-safety-governance/tasks.md` section 7:
 
-- 7.1 Create `TokenExchangeManager` implementing RFC 8693
-- 7.2 Add per-user token caching with TTL from token expiry
-- 7.3 Add concurrent exchange deduplication
-- 7.4 Add graceful fallback to service-account token
-- 7.5 Add config schema: `boost.kagenti.auth.tokenExchange.*`
-- 7.6 Integrate into `KagentiApiClient.requestCore()`
-- 7.7 Extract user OIDC token from configurable request header
+- ~~7.1 Create `KeycloakAuthClient` implementing OAuth2 Client Credentials Grant~~ ✅ PR #3648
+- ~~7.2 Add token caching with configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60)~~ ✅ PR #3648
+- 7.3 Add max-1-retry on 401 (refresh token and retry once)
+- ~~7.4 Add config schema: `boost.kagenti.auth.{tokenEndpoint, clientId, clientSecret, tokenExpiryBufferSeconds}`~~ ✅ PR #3648
+- ~~7.5a Integrate into entity providers — inject bearer token~~ ✅ PR #3648
+- 7.5b Integrate into `KagentiApiClient` — inject bearer token
+- 7.6 Propagate user identity via `X-Backstage-User` header
+
+**Note:** `KeycloakAuthClient` was implemented in `boost-node/src/KeycloakAuthClient.ts` for entity provider use. The remaining tasks (7.3, 7.5b, 7.6) target the `KagentiApiClient` in `boost-backend-module-kagenti` for user-facing provider module use.
 
 ### Specifications
 
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Token exchange scenarios
-- `openspec/changes/security-safety-governance/design.md` — Decision 4 (backend-only with graceful fallback)
+- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `openspec/changes/security-safety-governance/design.md` — Decision 4 (KeycloakAuthClient with max-1-retry)
 
 ---
 
@@ -473,6 +475,8 @@ From `openspec/changes/platform-operations-deployment/tasks.md` section 3:
 
 ## boost-skills-routes — Skills marketplace route improvements and runtime config (issue 16 after 15)
 
+https://github.com/redhat-developer/rhdh-plugins/issues/3597
+
 **Labels:** `ready-to-code`
 **Depends on:** Issue 15 (#3311)
 
@@ -494,3 +498,31 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 8:
 
 - `openspec/changes/pluggable-ai-platform-architecture/tasks.md` — Section 8 (Skills Marketplace Integration)
 - `openspec/changes/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
+
+---
+
+## kagenti-entity-provider — Migrate KeycloakAuthClient to Backstage cacheService (issue 17 after 15)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/3654
+
+**Labels:** `ready-to-code`
+**Depends on:** Issue 13 (#3309)
+
+Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cacheService` for token caching instead of private instance fields, and add HTTPS validation for `tokenEndpoint`. Aligns with design principle 1 and the PRD cache migration table.
+
+### Tasks
+
+- 17.1 Add `coreServices.cache` to the `kagenti-entity-provider` module deps
+- 17.2 Refactor `KeycloakAuthClient` constructor to accept a `CacheService` instance
+- 17.3 Replace private `cachedToken`/`tokenExpiresAt` fields with `cacheService.get()`/`cacheService.set()` using TTL derived from token expiry minus buffer
+- 17.4 Update `module.ts` to pass `cache` (with namespace) to `KeycloakAuthClient`
+- 17.5 Update tests to mock `cacheService` instead of relying on in-memory state
+- 17.6 Consider extracting `KeycloakAuthClient` to a shared location (e.g., `boost-node`) so `boost-backend-module-kagenti` can reuse it for task 7.5b
+- 17.7 Add HTTPS validation for `tokenEndpoint` in `KeycloakAuthClient` constructor — reject HTTP URLs unless security mode is `development-only-no-auth`
+
+### Specifications
+
+- `specifications/boost-context.md` — Design Principle 1 (Backstage cacheService from Day One)
+- `specifications/prd/pluggable-ai-platform-architecture.md` — Cache migration table
+- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md`

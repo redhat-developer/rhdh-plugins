@@ -65,6 +65,9 @@ export interface McpServerRoutesOptions {
   logger: LoggerService;
 }
 
+// TODO: Cross-reference registered MCP servers with catalog entities
+// for discovery and access control via catalog-based RBAC.
+
 /**
  * Creates an Express router with MCP server registration routes.
  *
