@@ -6,6 +6,7 @@ metadata:
   description: A collection of all the scorecards
 spec:
   targets:
+    - ./components/codecov-scorecard-only.yaml
     - ./components/dependabot-scorecard-only.yaml
     - ./components/github-scorecard-only.yaml
     - ./components/jira-scorecard-only.yaml

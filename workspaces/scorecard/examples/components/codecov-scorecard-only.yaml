@@ -1,0 +1,13 @@
+---
+# Component with Codecov Scorecard only
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: codecov-scorecard-only
+  annotations:
+    codecov.io/repo: redhat-developer/rhdh-plugins
+    github.com/project-slug: redhat-developer/rhdh-plugins
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

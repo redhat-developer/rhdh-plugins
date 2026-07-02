@@ -63,34 +63,25 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'),
 );
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube'),
 );
 backend.add(import('@backstage/plugin-mcp-actions-backend'));
 backend.start();
