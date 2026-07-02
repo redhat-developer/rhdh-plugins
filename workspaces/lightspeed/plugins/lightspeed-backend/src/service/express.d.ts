@@ -16,10 +16,13 @@
 
 import type { BackstageCredentials } from '@backstage/backend-plugin-api';
 
+import type { RateLimitInfo } from 'express-rate-limit';
+
 // Populated by the identity middleware for use in route handlers.
 declare module 'express-serve-static-core' {
   interface Request {
     credentials?: BackstageCredentials;
     userEntityRef?: string;
+    rateLimit?: RateLimitInfo;
   }
 }
