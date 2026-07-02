@@ -47,19 +47,21 @@ function entity(projectKey = 'my-project'): Entity {
 }
 
 describe('SonarQubeBooleanMetricProvider', () => {
-  describe('getMetricThresholds', () => {
-    it('should create provider with default thresholds', () => {
+  describe('getMetrics', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
         'quality_gate',
       );
-      expect(provider.getMetricThresholds()).toBeDefined();
-      expect(provider.getMetricThresholds().rules).toHaveLength(2);
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].threshold).toBeDefined();
+      expect(metrics[0].threshold.rules).toHaveLength(2);
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('should return true when quality gate passes', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
@@ -68,9 +70,9 @@ describe('SonarQubeBooleanMetricProvider', () => {
         'quality_gate',
       );
 
-      const result = await provider.calculateMetric(entity());
+      const results = await provider.calculateMetrics(entity());
 
-      expect(result).toBe(true);
+      expect(results.get(provider.getProviderId())).toBe(true);
       expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
         'my-project',
         undefined,
@@ -85,9 +87,9 @@ describe('SonarQubeBooleanMetricProvider', () => {
         'quality_gate',
       );
 
-      const result = await provider.calculateMetric(entity());
+      const results = await provider.calculateMetrics(entity());
 
-      expect(result).toBe(false);
+      expect(results.get(provider.getProviderId())).toBe(false);
     });
 
     it('should pass instanceName when annotation has instance prefix', async () => {
@@ -98,7 +100,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
         'quality_gate',
       );
 
-      await provider.calculateMetric(entity('internal/my-project'));
+      await provider.calculateMetrics(entity('internal/my-project'));
 
       expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
         'my-project',
@@ -115,7 +117,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const e = entity();
       delete e.metadata.annotations!['sonarqube.org/project-key'];
 
-      await expect(provider.calculateMetric(e)).rejects.toThrow(
+      await expect(provider.calculateMetrics(e)).rejects.toThrow(
         "Missing annotation 'sonarqube.org/project-key'",
       );
     });

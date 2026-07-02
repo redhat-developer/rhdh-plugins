@@ -43,23 +43,18 @@ export class SonarQubeBasicMetricProvider<T extends 'boolean' | 'number'> {
     return SONARQUBE_METRIC_CONFIG[this.metricId].id;
   }
 
-  getMetricType(): T {
-    return this.metricType;
-  }
-
-  getMetric(): Metric<T> {
+  getMetrics(): Metric<T>[] {
     const meta = SONARQUBE_METRIC_CONFIG[this.metricId];
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return [
+      {
+        id: meta.id,
+        title: meta.title,
+        description: meta.description,
+        type: this.metricType,
+        threshold: this.thresholds,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {

@@ -66,48 +66,6 @@ describe('MetricProvidersRegistry', () => {
       );
     });
 
-    it('should throw error when provider ID does not match metric ID', () => {
-      class InvalidProvider extends MockNumberProvider {
-        getMetric() {
-          const metric = super.getMetric();
-          return { ...metric, id: 'different.id' };
-        }
-      }
-
-      const invalidProvider = new InvalidProvider(
-        'github.test_metric',
-        'github',
-      );
-
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider: metric ID 'github.test_metric' returned by getMetricIds() " +
-            'does not have a corresponding metric in getMetrics()',
-        ),
-      );
-    });
-
-    it('should throw error when metric type does not match metricType', () => {
-      class InvalidProvider extends MockNumberProvider {
-        // @ts-expect-error - put wrong metric type for testing
-        getMetricType() {
-          return 'boolean';
-        }
-      }
-
-      const invalidProvider = new InvalidProvider(
-        'github.test_metric',
-        'github',
-      );
-
-      // @ts-expect-error - expect error to be thrown
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider with ID github.test_metric, getMetricType() must match getMetric().type. Expected 'boolean', but got 'number'",
-        ),
-      );
-    });
-
     it('should throw error when provider ID does not start with datasource ID', () => {
       const invalidProvider = new MockNumberProvider(
         'invalid_format',
@@ -146,10 +104,18 @@ describe('MetricProvidersRegistry', () => {
 
     it('should throw error when provider default thresholds are invalid', () => {
       class InvalidThresholdFormatProvider extends MockNumberProvider {
-        getMetricThresholds() {
-          return {
-            rules: [{ key: 'error', expression: 'Invalid expression' }],
-          } as any;
+        getMetrics() {
+          return [
+            {
+              id: this.getProviderId(),
+              title: 'Invalid Threshold Metric',
+              description: 'Test',
+              type: 'number' as const,
+              threshold: {
+                rules: [{ key: 'error', expression: 'Invalid expression' }],
+              },
+            },
+          ];
         }
       }
 
@@ -159,7 +125,7 @@ describe('MetricProvidersRegistry', () => {
       );
 
       expect(() => registry.register(invalidProvider)).toThrow(
-        'Invalid default thresholds for metric provider \'github.invalid_threshold_format\'; caused by ThresholdConfigFormatError: Invalid threshold expression: "Invalid expression"',
+        /Invalid default thresholds for metric provider 'github.invalid_threshold_format'/,
       );
     });
 
@@ -197,40 +163,8 @@ describe('MetricProvidersRegistry', () => {
         );
       });
 
-      it('should throw error when metric ID from getMetricIds has no corresponding metric', () => {
-        class InvalidBatchProvider extends MockBatchBooleanProvider {
-          getMetricIds(): string[] {
-            return ['filecheck.readme', 'filecheck.nonexistent'];
-          }
-          getMetrics() {
-            return [
-              {
-                id: 'filecheck.readme',
-                title: 'README',
-                description: 'README check',
-                type: 'boolean' as const,
-              },
-            ];
-          }
-        }
-
-        const invalidProvider = new InvalidBatchProvider(
-          'filecheck',
-          'filecheck',
-          [],
-        );
-
-        expect(() => registry.register(invalidProvider)).toThrow(
-          "Invalid metric provider: metric ID 'filecheck.nonexistent' returned by getMetricIds() " +
-            'does not have a corresponding metric in getMetrics()',
-        );
-      });
-
       it('should throw error when batch provider metric ID has wrong format', () => {
         class InvalidBatchProvider extends MockBatchBooleanProvider {
-          getMetricIds(): string[] {
-            return ['invalid_format'];
-          }
           getMetrics() {
             return [
               {
@@ -238,6 +172,12 @@ describe('MetricProvidersRegistry', () => {
                 title: 'Invalid',
                 description: 'Invalid',
                 type: 'boolean' as const,
+                threshold: {
+                  rules: [
+                    { key: 'success', expression: '==true' },
+                    { key: 'error', expression: '==false' },
+                  ],
+                },
               },
             ];
           }
