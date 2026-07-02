@@ -58,17 +58,33 @@ if (metricsServiceRef) {
   );
 }
 
-// Core Backstage plugins — uncomment when host backend dependencies
-// are added to package.json:
-// backend.add(import('@backstage/plugin-auth-backend'));
-// backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-// backend.add(import('@backstage/plugin-catalog-backend/alpha'));
-// backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
-// backend.add(import('@backstage/plugin-permission-backend/alpha'));
-// backend.add(
-//   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-// );
-// backend.add(import('@backstage/plugin-proxy-backend/alpha'));
+backend.add(import('@backstage/plugin-app-backend'));
+
+// auth
+backend.add(import('@backstage/plugin-auth-backend'));
+backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+
+// catalog
+backend.add(import('@backstage/plugin-catalog-backend'));
+backend.add(
+  import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
+);
+backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
+backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
+
+// techdocs
+backend.add(import('@backstage/plugin-techdocs-backend'));
+
+// permission (allow-all for dev)
+backend.add(import('@backstage/plugin-permission-backend'));
+backend.add(
+  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+);
+
+// search
+backend.add(import('@backstage/plugin-search-backend'));
+backend.add(import('@backstage/plugin-search-backend-module-catalog'));
+backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
 // Boost plugins
 backend.add(import('@red-hat-developer-hub/backstage-plugin-boost-backend'));
