@@ -99,6 +99,11 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
           '& .v5-MuiTablePagination-select:focus': {
             backgroundColor: 'transparent',
           },
+          '& .v5-MuiTablePagination-select:focus-visible': {
+            outline: theme => `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: '-2px',
+            borderRadius: 1,
+          },
         }}
         rowsPerPageOptions={rowsPerPageOptions}
         component="div"
@@ -115,6 +120,12 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
             MenuProps: {
               MenuListProps: {
                 autoFocusItem: false,
+                sx: {
+                  '& .MuiMenuItem-root:focus-visible': {
+                    outline: theme => `2px solid ${theme.palette.primary.main}`,
+                    outlineOffset: '-2px',
+                  },
+                },
               },
               PaperProps: {
                 sx: {
