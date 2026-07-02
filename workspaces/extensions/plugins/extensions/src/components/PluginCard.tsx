@@ -140,12 +140,26 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
 
   return (
     <Card
+      component="article"
       variant="outlined"
+      role="link"
+      tabIndex={0}
+      aria-label={plugin.metadata.title ?? plugin.metadata.name}
       sx={{
         position: 'relative',
-        '&:hover': { backgroundColor: 'background.default', cursor: 'pointer' },
+        '&:hover, &:focus-visible': {
+          backgroundColor: 'background.default',
+          cursor: 'pointer',
+          outline: theme => `2px solid ${theme.palette.primary.main}`,
+        },
       }}
       onClick={() => navigate(pluginPath)}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(pluginPath);
+        }
+      }}
     >
       <BadgeTriange plugin={plugin} />
       <CardContent sx={{ backgroundColor: 'transparent' }}>

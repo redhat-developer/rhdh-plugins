@@ -38,20 +38,24 @@ const testPlugin: ExtensionsPlugin = {
 describe('PluginIcon', () => {
   it('should render without error', () => {
     const { getByRole } = render(<PluginIcon plugin={testPlugin} size={40} />);
-    expect(getByRole('img')).toBeInTheDocument();
-    expect(getByRole('img').style.backgroundImage).toEqual(
+    const img = getByRole('img');
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('aria-label', 'APIs with Test plugin');
+    expect(img.style.backgroundImage).toEqual(
       'url("https://backstage.io/icons/test-plugin.png")',
     );
   });
 
-  it('should render no image when icon is missing', () => {
+  it('should render fallback icon when icon is missing', () => {
     const testPluginWithoutIcon = {
       ...testPlugin,
       spec: { ...testPlugin.spec, icon: undefined },
     };
-    const { queryAllByRole } = render(
+    const { getByRole } = render(
       <PluginIcon plugin={testPluginWithoutIcon} size={40} />,
     );
-    expect(queryAllByRole('img')).toHaveLength(0);
+    const img = getByRole('img');
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('aria-label', 'APIs with Test plugin');
   });
 });

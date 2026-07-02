@@ -28,9 +28,13 @@ export const PluginIcon = ({
 }) => {
   const icon = plugin?.spec?.icon;
 
+  const title = plugin?.metadata?.title ?? plugin?.metadata?.name ?? '';
+
   if (!icon) {
     return (
       <CardMedia
+        role="img"
+        aria-label={title}
         sx={{
           width: size,
           height: size,
@@ -39,6 +43,7 @@ export const PluginIcon = ({
         }}
       >
         <NoIconIcon
+          aria-hidden="true"
           sx={{
             width: size,
             height: size,
@@ -52,6 +57,8 @@ export const PluginIcon = ({
 
   return (
     <CardMedia
+      role="img"
+      aria-label={title}
       image={icon}
       sx={{
         width: size,
