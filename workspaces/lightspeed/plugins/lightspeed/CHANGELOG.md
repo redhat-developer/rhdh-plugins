@@ -1,5 +1,33 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 3.0.0
+
+### Major Changes
+
+- 859ee5a: BREAKING CHANGE: The configuration namespace has been renamed from `lightspeed` to `intelligent-assistant`. Update your `app-config.yaml` to replace `lightspeed:` with `intelligent-assistant:`. RBAC permission policy names have also been renamed (e.g., `lightspeed.chat.read` → `intelligent-assistant.chat.read`). Update your `rbac-policy.csv` accordingly. See the migration guide in the lightspeed-backend plugin's README for full details.
+
+### Minor Changes
+
+- f2a4ef9: Graduate the New Frontend System (NFS) plugin from the `./alpha` export to the primary `./` entry point. Legacy (OFS) component exports are still available from the main path (deprecated, will be removed in a future release) and also accessible at `./legacy`. Translations remain at `./alpha`.
+
+  Existing OFS dynamic plugin configurations continue to work without changes — `module: Legacy` is advised but not mandatory.
+
+- 761b256: Rebrand Lightspeed to Intelligent Assistant: update UI text, translations, URL route, icons, and bot avatar assets to align with Red Hat Developer Hub branding guidelines.
+
+### Patch Changes
+
+- aa23f4a: Fix MCP settings panel and options dropdown behavior:
+
+  - Keep MCP settings panel open during navigation in fullscreen mode
+  - Prevent options dropdown from auto-focusing first item on open
+
+- 68be3de: Improve chat history sidebar UI: add icons to chat action menu, fix sidebar icon alignment, improve delete modal styling with rounded corners and chat name in title, keep New Chat button always visible but disabled, and update empty state messages.
+- 8431385: Polish MCP settings and chatbot options menu: remove the settings button hover tooltip, relabel it to "Options", show MCP server edit actions on row hover only, display token-required status with a red warning icon, and align the MCP servers table background with the panel in dark mode.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [859ee5a]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@3.0.0
+
 ## 2.9.1
 
 ### Patch Changes
