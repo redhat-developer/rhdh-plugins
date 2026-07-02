@@ -46,7 +46,7 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  * });
  * ```
  *
- * @alpha
+ * @public
  */
 export const AppDrawerContentBlueprint = createExtensionBlueprint({
   kind: 'app-drawer-content',

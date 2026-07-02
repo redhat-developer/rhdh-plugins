@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * New Frontend System extension APIs for the RHDH app shell.
- *
- * @packageDocumentation
- */
-
-export * from './drawer';
+export { appDrawerExtensions } from './extensions';

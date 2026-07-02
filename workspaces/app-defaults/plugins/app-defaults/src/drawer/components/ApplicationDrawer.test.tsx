@@ -16,10 +16,13 @@
 
 import { render, screen, act } from '@testing-library/react';
 
-import { useAppDrawer } from '../hooks/useAppDrawer';
-import { drawerStore } from '../utils/drawerStore';
+import {
+  useAppDrawer,
+  drawerStore,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+import type { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
 import { ApplicationDrawer } from './ApplicationDrawer';
-import type { AppDrawerContent } from '../types';
 
 function OpenButton({ id }: { id: string }) {
   const { openDrawer } = useAppDrawer();

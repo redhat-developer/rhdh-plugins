@@ -13,17 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
-
-import type { AppDrawerContent } from '../types';
-
-/**
- * Extension data ref carrying drawer content from a plugin to the host.
- *
- * @public
- */
-export const appDrawerContentDataRef =
-  createExtensionDataRef<AppDrawerContent>().with({
-    id: 'app.drawer.content',
-  });
+import '@testing-library/jest-dom';

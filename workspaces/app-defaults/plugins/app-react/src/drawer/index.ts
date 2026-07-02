@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-export { useAppDrawer } from './hooks/useAppDrawer';
-export { ApplicationDrawer } from './components/ApplicationDrawer';
-export { DrawerPanel } from './components/DrawerPanel';
-
 export { appDrawerContentDataRef } from './extensions/appDrawerContentDataRef';
 export { AppDrawerContentBlueprint } from './extensions/AppDrawerContentBlueprint';
-export { appDrawerModule } from './extensions/appDrawerModule';
 
-export type { ApplicationDrawerProps } from './components/ApplicationDrawer';
-export type { DrawerPanelProps } from './components/DrawerPanel';
+export { useAppDrawer } from './hooks/useAppDrawer';
+export { drawerStore } from './utils/drawerStore';
+
 export type { AppDrawerContent, AppDrawerApi } from './types';

@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
-import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { appDrawerExtensions } from './drawer';
 
-import type { AppDrawerContent } from '../types';
+export { appDrawerExtensions } from './drawer';
 
-/**
- * Extension data ref carrying drawer content from a plugin to the host.
- *
- * @public
- */
-export const appDrawerContentDataRef =
-  createExtensionDataRef<AppDrawerContent>().with({
-    id: 'app.drawer.content',
-  });
+export const appDefaults = createFrontendModule({
+  pluginId: 'app',
+  extensions: [...appDrawerExtensions],
+});

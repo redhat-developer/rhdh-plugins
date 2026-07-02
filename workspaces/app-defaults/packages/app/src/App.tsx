@@ -18,7 +18,7 @@ import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import appDefaultsModule from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
@@ -32,7 +32,7 @@ export default createApp({
     navModule,
     appAuthModule,
     appIntegrationsModule,
-    appDrawerModule,
+    appDefaultsModule,
     drawerDemoModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,
