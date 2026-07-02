@@ -16,6 +16,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
@@ -24,7 +25,11 @@ import {
 import { QueryRequestBody } from './types';
 
 function validateAttachments(
-  attachments: Array<{ name: string; content?: string }>,
+  attachments: Array<{
+    attachment_type: string;
+    content_type: string;
+    content: string;
+  }>,
 ): string | null {
   let totalSize = 0;
 
@@ -34,7 +39,7 @@ function validateAttachments(
       : 0;
 
     if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
-      return `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+      return `Attachment with type "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
     }
 
     totalSize += attachmentSize;
@@ -78,13 +83,6 @@ export const validateCompletionsRequest = (
     });
   }
 
-  if (reqData.attachments && Array.isArray(reqData.attachments)) {
-    const attachmentError = validateAttachments(reqData.attachments);
-    if (attachmentError) {
-      return res.status(400).json({ error: attachmentError });
-    }
-  }
-
   return next();
 };
 
@@ -100,6 +98,54 @@ export const validateLoadHistoryRequest = (
   }
 
   // TODO: Need to extract out the user_id from conversation_id, and verify with the login user entity
+
+  return next();
+};
+
+export const validateAttachmentsForModel = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { model, provider, attachments } = req.body;
+
+  if (!attachments || attachments.length === 0) {
+    return next();
+  }
+
+  const attachmentError = validateAttachments(attachments);
+  if (attachmentError) {
+    return res.status(400).json({ error: attachmentError });
+  }
+
+  const hasImages = attachments.some(
+    (att: { attachment_type: string }) => att.attachment_type === 'image',
+  );
+
+  if (!hasImages) {
+    return next();
+  }
+
+  const cacheKey = `${provider}/${model}`;
+
+  // Check if model has been validated
+  if (!ModelCapabilitiesCache.has(cacheKey)) {
+    return res.status(400).json({
+      error:
+        'Model vision capability not validated. Please call /v1/validate-model-vision first.',
+      model,
+    });
+  }
+
+  // Check if model supports vision
+  const supportsVision = ModelCapabilitiesCache.get(cacheKey);
+  if (!supportsVision) {
+    return res.status(400).json({
+      error:
+        'This model does not support JPEG images. Please select a vision-capable model.',
+      model,
+    });
+  }
 
   return next();
 };
