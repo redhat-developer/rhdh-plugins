@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 1.16.0
+
+### Minor Changes
+
+- ef8da5a: Change plugin id to homepage
+
 ## 1.15.0
 
 ### Minor Changes
