@@ -60,14 +60,12 @@ test.describe('Admin > Extensions', () => {
       `^(${Object.values(LOCALE_DISPLAY_NAMES).map(escapeRegExp).join('|')})$`,
     );
 
-    // Navigating directly avoids flaky duplicate "Settings" links in sidebar.
-    await page.goto('/settings');
+    await page.locator('nav').getByRole('link', { name: 'Settings' });
     await page
       .getByRole('button', { name: localeDisplayPattern })
       .first()
       .click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.goto('/');
   }
 
   test.beforeAll(async ({ browser }) => {
