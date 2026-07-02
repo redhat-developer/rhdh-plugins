@@ -25,7 +25,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { useEffect, useState } from 'react';
 import { QuickstartItemIcon } from './QuickstartItemIcon';
 import { QuickstartCtaLink } from './QuickstartCtaLink';
-import IconButton from '@mui/material/IconButton';
 import { QuickstartItemData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
@@ -121,20 +120,20 @@ export const QuickstartItem = ({
               : { color: theme => theme.palette.text.secondary }),
           }}
         />
-        <IconButton
-          aria-label={
-            open
-              ? t('item.collapseButtonAriaLabel')
-              : t('item.expandButtonAriaLabel')
-          }
+        <Box
+          component="span"
+          aria-hidden="true"
           sx={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '8px',
             ...(open
               ? { color: theme => theme.palette.text.primary }
               : { color: theme => theme.palette.text.secondary }),
           }}
         >
           {open ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
+        </Box>
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List

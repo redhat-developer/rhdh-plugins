@@ -48,6 +48,7 @@ const quickstartTranslationJa = createTranslationMessages({
     'footer.hide': '非表示',
     'footer.notStarted': '開始されていません',
     'footer.progress': '進捗 {{progress}}%',
+    'footer.progressBarAriaLabel': 'クイックスタートの進捗',
     'header.subtitle': 'いくつかの簡単なステップをご案内します',
     'header.title': 'Developer Hub を使い始めましょう',
     'item.collapseAriaLabel': '{{title}} の詳細を折りたたむ',

@@ -109,7 +109,6 @@ test.describe('Test Quick Start plugin', () => {
       page,
       testInfo,
       'quick-start-user-accessibility.json',
-      { skipViolationsAssert: true },
     );
 
     await uiHelper.verifyText(translations.header.subtitle);

@@ -102,6 +102,7 @@ export const quickstartMessages = {
     progress: '{{progress}}% progress',
     notStarted: 'Not started',
     hide: 'Hide',
+    progressBarAriaLabel: 'Quick start progress',
   },
   content: {
     emptyState: {
