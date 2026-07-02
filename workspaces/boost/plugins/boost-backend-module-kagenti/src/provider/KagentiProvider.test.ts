@@ -17,6 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { InputItem } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { KagentiProvider } from './KagentiProvider';
+import type { KagentiApiClient } from './KagentiApiClient';
 
 function createMockLogger(): LoggerService {
   return {
@@ -167,6 +168,45 @@ describe('KagentiProvider', () => {
 
       const result = await provider.chat([{ type: 'text', text: 'Hello' }]);
       expect(result).toBe('');
+    });
+
+    it('passes userRef to apiClient.requestCore', async () => {
+      const mockRequestCore = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'task-1',
+          status: { state: 'completed' },
+          message: {
+            role: 'agent',
+            parts: [{ type: 'text', text: 'Hi Alice' }],
+          },
+        }),
+      } as Response);
+
+      const apiClient = {
+        requestCore: mockRequestCore,
+      } as unknown as KagentiApiClient;
+
+      const authedProvider = new KagentiProvider({
+        connection: {
+          baseUrl: 'http://kagenti:8080',
+          defaultAgent: 'test-agent',
+        },
+        logger: createMockLogger(),
+        apiClient,
+      });
+
+      const result = await authedProvider.chat(
+        [{ type: 'text', text: 'Hello' }],
+        { userRef: 'user:default/alice' },
+      );
+
+      expect(result).toBe('Hi Alice');
+      expect(mockRequestCore).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userRef: 'user:default/alice',
+        }),
+      );
     });
   });
 
@@ -321,6 +361,51 @@ describe('KagentiProvider', () => {
         { type: 'text', text: 'Final answer' },
         { type: 'done' },
       ]);
+    });
+
+    it('passes userRef to apiClient.requestCore in streaming', async () => {
+      const sseData = JSON.stringify({
+        type: 'task.status.update',
+        taskId: 'task-1',
+        status: { state: 'completed' },
+        message: {
+          role: 'agent',
+          parts: [{ type: 'text', text: 'Streamed' }],
+        },
+      });
+
+      const mockRequestCore = jest.fn().mockResolvedValue({
+        ok: true,
+        body: createSSEStream([sseData]),
+      } as Response);
+
+      const apiClient = {
+        requestCore: mockRequestCore,
+      } as unknown as KagentiApiClient;
+
+      const authedProvider = new KagentiProvider({
+        connection: {
+          baseUrl: 'http://kagenti:8080',
+          defaultAgent: 'test-agent',
+        },
+        logger: createMockLogger(),
+        apiClient,
+      });
+
+      const events = [];
+      for await (const event of authedProvider.chatStream(
+        [{ type: 'text', text: 'Hello' }],
+        { userRef: 'user:default/bob' },
+      )) {
+        events.push(event);
+      }
+
+      expect(mockRequestCore).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userRef: 'user:default/bob',
+        }),
+      );
+      expect(events).toContainEqual({ type: 'text', text: 'Streamed' });
     });
   });
 });

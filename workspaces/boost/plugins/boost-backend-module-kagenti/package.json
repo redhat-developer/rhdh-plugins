@@ -8,11 +8,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-backend",
     "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
