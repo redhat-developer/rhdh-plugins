@@ -52,6 +52,7 @@ backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
 // permission plugin
+backend.add(import('@backstage/plugin-permission-backend'));
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // orchestrator

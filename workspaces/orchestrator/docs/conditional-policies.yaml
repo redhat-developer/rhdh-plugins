@@ -1,0 +1,29 @@
+result: CONDITIONAL
+pluginId: orchestrator
+resourceType: orchestrator-workflow
+conditions:
+  rule: IS_ALLOWED_WORKFLOW_ID
+  resourceType: orchestrator-workflow
+  params:
+    workflowIds:
+      - yamlgreet
+      - wait-or-error
+      - hello_world
+roleEntityRef: 'role:default/workflowUser'
+permissionMapping:
+  - read
+---
+result: CONDITIONAL
+pluginId: orchestrator
+resourceType: orchestrator-workflow
+conditions:
+  rule: IS_ALLOWED_WORKFLOW_ID
+  resourceType: orchestrator-workflow
+  params:
+    workflowIds:
+      - yamlgreet
+      # - wait-or-error
+      - hello_world
+roleEntityRef: 'role:default/workflowUser'
+permissionMapping:
+  - update

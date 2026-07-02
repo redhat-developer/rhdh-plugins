@@ -14,32 +14,34 @@
  * limitations under the License.
  */
 
-import { BasicPermission } from '@backstage/plugin-permission-common';
-import { usePermission } from '@backstage/plugin-permission-react';
+import {
+  BasicPermission,
+  ResourcePermission,
+} from '@backstage/plugin-permission-common';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { usePermissionArray } from './usePermissionArray';
+import { useResourcePermissionBatch } from './useResourcePermissionBatch';
 
 export const useWorkflowPermissionBatch = (
   items: WorkflowOverviewDTO[],
-  genericPermission: BasicPermission,
-  specificPermissionFactory: (workflowId: string) => BasicPermission,
-): { allowed: boolean[] } => {
-  const generic = usePermission({
-    permission: genericPermission,
-  });
+  resourcePermission: ResourcePermission,
+  // @deprecated Remove legacySpecificPermissionFactory in next release
+  legacySpecificPermissionFactory: (workflowId: string) => BasicPermission,
+): { allowed: boolean[]; loading: boolean } => {
+  const workflowIds = items.map(item => item.workflowId);
 
-  let workflowIds: string[] = [];
-  if (!generic.loading && !generic.allowed) {
-    workflowIds = items.map(item => item.workflowId);
-  }
-
-  const specific = usePermissionArray(
-    workflowIds.map(workflowId => specificPermissionFactory(workflowId)),
+  const resource = useResourcePermissionBatch(resourcePermission, workflowIds);
+  // @deprecated Remove this legacy fallback block in next release
+  const legacy = usePermissionArray(
+    workflowIds.map(legacySpecificPermissionFactory),
   );
 
   return {
-    allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
+    loading: resource.loading || legacy.loading,
+    allowed: items.map(
+      (_, idx) => resource.allowed[idx] || legacy.allowed[idx],
+    ),
   };
 };
