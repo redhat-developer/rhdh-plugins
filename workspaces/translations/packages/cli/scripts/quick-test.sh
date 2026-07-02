@@ -14,7 +14,7 @@ yarn build
 echo ""
 echo "🧪 Testing help command..."
 if [ -f "dist/index.cjs.js" ]; then
-    node bin/translations-cli i18n --help > /dev/null && echo "✓ Help command works"
+    node bin/translations-cli --help > /dev/null && echo "✓ Help command works"
 else
     echo "⚠ Build output not found, skipping help test"
 fi

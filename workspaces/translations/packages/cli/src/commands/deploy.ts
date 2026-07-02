@@ -52,7 +52,7 @@ export async function deployCommand(opts: OptionValues): Promise<void> {
           '   Make sure you have downloaded translations first using:',
         ),
       );
-      console.log(chalk.gray('   translations-cli i18n download'));
+      console.log(chalk.gray('   translations-cli memsource download'));
       return;
     }
 

@@ -26,7 +26,7 @@ import {
   createDefaultAuthFile,
 } from '../lib/i18n/config';
 
-import { setupMemsourceCommand } from './setupMemsource';
+import { setupMemsourceCommand } from './memsource/setup';
 
 export async function initCommand(opts: OptionValues): Promise<void> {
   console.log(chalk.blue('🔧 Initializing i18n configuration...'));
@@ -78,9 +78,7 @@ export async function initCommand(opts: OptionValues): Promise<void> {
       console.log(
         chalk.cyan('   2. Set up Memsource authentication (recommended):'),
       );
-      console.log(
-        chalk.gray('      Run: translations-cli i18n setup-memsource'),
-      );
+      console.log(chalk.gray('      Run: translations-cli memsource setup'));
       console.log(
         chalk.gray(
           "      This creates ~/.memsourcerc following the localization team's format",
@@ -121,7 +119,7 @@ export async function initCommand(opts: OptionValues): Promise<void> {
     } else if (!hasMemsourceRc) {
       console.log(
         chalk.yellow(
-          '\n💡 Tip: Run "translations-cli i18n setup-memsource" to set up .memsourcerc file',
+          '\n💡 Tip: Run "translations-cli memsource setup" to set up .memsourcerc file',
         ),
       );
       console.log(

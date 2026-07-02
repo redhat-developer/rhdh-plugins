@@ -16,10 +16,10 @@ Commands:
   i18n [command]
 ```
 
-### `translations-cli i18n`
+### `translations-cli`
 
 ```
-Usage: translations-cli i18n [options] [command] [command]
+Usage: translations-cli [options] [command] [command]
 
 Options:
   -h, --help
@@ -38,10 +38,10 @@ Commands:
   upload [options]
 ```
 
-### `translations-cli i18n clean`
+### `translations-cli clean`
 
 ```
-Usage: translations-cli i18n clean [options]
+Usage: translations-cli clean [options]
 
 Options:
   --backup-dir <path>
@@ -51,20 +51,20 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n deploy`
+### `translations-cli deploy`
 
 ```
-Usage: translations-cli i18n deploy [options]
+Usage: translations-cli deploy [options]
 
 Options:
   --source-dir <path>
   -h, --help
 ```
 
-### `translations-cli i18n download`
+### `translations-cli memsource download`
 
 ```
-Usage: translations-cli i18n download [options]
+Usage: translations-cli memsource download [options]
 
 Options:
   --include-incomplete
@@ -76,10 +76,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n generate`
+### `translations-cli generate`
 
 ```
-Usage: translations-cli i18n generate [options]
+Usage: translations-cli generate [options]
 
 Options:
   --backstage-repo-path <path>
@@ -96,10 +96,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n init`
+### `translations-cli init`
 
 ```
-Usage: translations-cli i18n init [options]
+Usage: translations-cli init [options]
 
 Options:
   --memsource-venv <path>
@@ -107,10 +107,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n list`
+### `translations-cli memsource list`
 
 ```
-Usage: translations-cli i18n list [options]
+Usage: translations-cli memsource list [options]
 
 Options:
   --format <format>
@@ -120,10 +120,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n setup-memsource`
+### `translations-cli memsource setup`
 
 ```
-Usage: translations-cli i18n setup-memsource [options]
+Usage: translations-cli memsource setup [options]
 
 Options:
   --memsource-url <url>
@@ -134,10 +134,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n status`
+### `translations-cli status`
 
 ```
-Usage: translations-cli i18n status [options]
+Usage: translations-cli status [options]
 
 Options:
   --format <format>
@@ -148,10 +148,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n sync`
+### `translations-cli memsource sync`
 
 ```
-Usage: translations-cli i18n sync [options]
+Usage: translations-cli memsource sync [options]
 
 Options:
   --dry-run
@@ -169,10 +169,10 @@ Options:
   -h, --help
 ```
 
-### `translations-cli i18n upload`
+### `translations-cli memsource upload`
 
 ```
-Usage: translations-cli i18n upload [options]
+Usage: translations-cli memsource upload [options]
 
 Options:
   --dry-run

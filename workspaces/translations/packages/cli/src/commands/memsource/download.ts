@@ -19,8 +19,8 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
 
-import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
-import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
+import { loadI18nConfig, mergeConfigWithOptions } from '../../lib/i18n/config';
+import { commandExists, safeExecSyncOrThrow } from '../../lib/utils/exec';
 
 /**
  * Build memsource job download command arguments
@@ -421,7 +421,7 @@ export async function downloadCommand(opts: OptionValues): Promise<void> {
     );
     console.error('');
     console.error(chalk.blue('📋 Quick Setup Guide:'));
-    console.error(chalk.gray('   1. Run: translations-cli i18n init'));
+    console.error(chalk.gray('   1. Run: translations-cli init'));
     console.error(chalk.gray('   2. Edit .i18n.config.json to add Project ID'));
     console.error(
       chalk.gray('   3. Source ~/.memsourcerc: source ~/.memsourcerc'),

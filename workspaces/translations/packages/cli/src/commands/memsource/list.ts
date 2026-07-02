@@ -17,8 +17,8 @@
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 
-import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
-import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
+import { loadI18nConfig, mergeConfigWithOptions } from '../../lib/i18n/config';
+import { commandExists, safeExecSyncOrThrow } from '../../lib/utils/exec';
 
 /**
  * Build memsource job list command arguments
