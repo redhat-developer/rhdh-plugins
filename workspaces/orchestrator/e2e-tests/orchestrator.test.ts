@@ -1,0 +1,303 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { test, expect, Page, type BrowserContext } from '@playwright/test';
+import { Orchestrator } from './pages/orchestrator';
+import { runAccessibilityTests } from './utils/accessibility';
+import { OrchestratorHelper } from './utils/helper';
+import { OrchestratorMessages, getTranslations } from './utils/translations';
+
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function countHeadingPattern(template: string): RegExp {
+  const regexBody = template.split('{{count}}').map(escapeRegExp).join('\\d+');
+  return new RegExp(`^${regexBody}$`);
+}
+
+/**
+ * Get the display name for a locale code
+ */
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
+test.describe('Orchestrator workflow runs', () => {
+  let orchestrator: Orchestrator;
+  let orchestratorHelper: OrchestratorHelper;
+  let translations: OrchestratorMessages;
+  let sharedPage!: Page;
+  let sharedContext!: BrowserContext;
+
+  async function switchToLocale(page: Page, locale: string): Promise<void> {
+    const baseLocale = locale.split('-')[0];
+    if (baseLocale === 'en') return;
+
+    const displayName = getLocaleDisplayName(locale);
+    const localeDisplayPattern = new RegExp(
+      `^(${Object.values(LOCALE_DISPLAY_NAMES).map(escapeRegExp).join('|')})$`,
+    );
+
+    await page.goto('/settings');
+    await page.waitForURL('**/settings**');
+    const languageButton = page
+      .getByRole('button', { name: localeDisplayPattern })
+      .first();
+    await expect(languageButton).toBeVisible({ timeout: 60_000 });
+
+    if ((await languageButton.textContent())?.trim() === displayName) {
+      await page.goto('/');
+      return;
+    }
+
+    await languageButton.click();
+    await page.getByRole('option', { name: displayName }).click();
+    await expect(languageButton).toHaveText(displayName, { timeout: 15_000 });
+    await page.goto('/');
+  }
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    const projectLocale =
+      typeof testInfo.project.use.locale === 'string'
+        ? testInfo.project.use.locale.split('-')[0]
+        : 'en';
+
+    sharedContext = await browser.newContext({ locale: projectLocale });
+    sharedPage = await sharedContext.newPage();
+    await sharedPage.goto('/');
+    await sharedPage.getByRole('button', { name: 'Enter' }).click();
+    await switchToLocale(sharedPage, projectLocale);
+    translations = getTranslations(projectLocale);
+    orchestrator = new Orchestrator(sharedPage, translations, projectLocale);
+    orchestratorHelper = new OrchestratorHelper(sharedPage, translations);
+  });
+
+  test.beforeEach(async () => {
+    await orchestrator.navigateToOrchestrator();
+  });
+
+  test.afterAll(async () => {
+    if (sharedContext) {
+      await sharedContext.close();
+    }
+  });
+
+  test.describe('Orchestrator > Workflow runs page', () => {
+    test.beforeEach(async () => {
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflows,
+      );
+    });
+
+    test('Verify workflow runs table', async ({
+      browser: _browser,
+    }, testInfo) => {
+      await runAccessibilityTests(sharedPage, testInfo);
+      await orchestratorHelper.verifyTableHeadingAndRows([
+        translations.table.headers.name,
+        translations.table.headers.workflowStatus,
+        translations.table.headers.version,
+        translations.table.headers.runsLastMonth,
+        translations.table.headers.successRatio,
+        'Actions',
+      ]);
+
+      await orchestratorHelper.searchInputPlaceholder('Hello World workflow');
+      await expect(
+        sharedPage
+          .getByRole('row', { name: 'Hello World workflow' })
+          .getByRole('button', {
+            name: translations.table.actions.run,
+            exact: true,
+          })
+          .first(),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByRole('row', { name: 'Hello World workflow' }),
+      ).toContainText(translations.workflow.status.available);
+      await expect(
+        sharedPage.getByRole('row', { name: 'Hello World workflow' }),
+      ).toContainText('1.0');
+    });
+
+    test('Run Test Object Type Support in ui:props workflow', async ({
+      browser: _browser,
+    }) => {
+      const workflowName = 'Test Object Type Support in ui:props';
+      const workflowInputs = {
+        name: 'test-name',
+        email: 'test@test.com',
+        simpleText: 'sample testing',
+        objectExample: '{"kind":"demo","id":42,"tags":["a","b"]}',
+      };
+
+      await orchestrator.runUiPropsWorkflow(workflowName, workflowInputs);
+
+      await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/);
+      await orchestratorHelper.verifyBreadcrumbLink(workflowName);
+      await orchestrator.verifyUiPropsWorkflowInstanceDetails(workflowName);
+      await orchestrator.verifyUiPropsWorkflowRunVariables(workflowInputs);
+    });
+
+    test('Greeting workflow execution and workflow tab validation', async ({
+      browser: _browser,
+    }) => {
+      const workflowName = 'Greeting workflow';
+
+      await orchestrator.runGreetingWorkflow(workflowName);
+      await orchestrator.navigateToOrchestrator();
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflows,
+      );
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.validateGreetingWorkflowTableRow(workflowName);
+      await sharedPage
+        .getByRole('row', { name: 'Greeting workflow' })
+        .getByRole('link', { name: workflowName })
+        .first()
+        .click();
+      await orchestrator.validateWorkflowDetails(workflowName);
+    });
+
+    test('Greeting workflow re-run and run details validation', async ({
+      browser: _browser,
+    }) => {
+      const workflowName = 'Greeting workflow';
+
+      await orchestrator.runGreetingWorkflow(workflowName);
+      await orchestrator.reRunGreetingWorkflow();
+      await orchestrator.verifyWorkflowRunDetails();
+    });
+
+    test('Sample Retry Test', async ({ browser: _browser }) => {
+      const workflowName = 'Sample Retry Test';
+
+      await orchestrator.runSampleRetryTest(workflowName);
+      await orchestrator.verifySampleRetryTest();
+    });
+
+    test('Add workflow run by entity', async ({ browser: _browser }) => {
+      await orchestrator.navigateToCatalog();
+      await expect(
+        sharedPage
+          .getByRole('row', { name: 'my-component' })
+          .getByRole('link', {
+            name: 'user:guest',
+          })
+          .first(),
+      ).toBeVisible();
+      await sharedPage.getByRole('link', { name: 'my-component' }).click();
+      await expect(sharedPage.getByText('my-component')).toBeVisible();
+      await sharedPage.getByRole('tab', { name: 'Workflows' }).first().click();
+      await expect(
+        sharedPage
+          .getByRole('row', { name: 'Hello World Workflow' })
+          .locator('button'),
+      ).toBeVisible();
+      await sharedPage
+        .getByRole('row', { name: 'Hello World Workflow' })
+        .locator('button')
+        .first()
+        .click();
+      await orchestratorHelper.clickButton(translations.workflow.buttons.run);
+      await orchestratorHelper.verifyBreadcrumbLink('Hello World Workflow');
+    });
+  });
+
+  test.describe('Orchestrator > All runs page', () => {
+    test.beforeEach(async () => {
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.allRuns,
+      );
+    });
+
+    test('Verify all runs tab', async ({ browser: _browser }, testInfo) => {
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflows,
+      );
+      await orchestrator.searchWorkflow('Hello World workflow');
+      await sharedPage
+        .getByRole('row', { name: 'Hello World workflow' })
+        .getByRole('button', {
+          name: translations.table.actions.run,
+          exact: true,
+        })
+        .click();
+      await orchestrator.submitWorkflowRunFromReview();
+      await orchestratorHelper.verifyBreadcrumbLink('Hello World workflow');
+      await orchestrator.navigateToOrchestrator();
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.allRuns,
+      );
+      await expect(
+        sharedPage.getByText(
+          countHeadingPattern(translations.table.title.allRuns),
+        ),
+      ).toBeVisible();
+      await runAccessibilityTests(sharedPage, testInfo);
+      await orchestrator.verifyWorkflowRunTabDetails();
+    });
+
+    // Remove the fixme with the fix of bug https://redhat.atlassian.net/browse/RHDHBUGS-3401
+    test.fixme('All runs tab workflow details validation', async ({
+      browser: _browser,
+    }) => {
+      await sharedPage
+        .getByRole('link', { name: 'Hello World workflow' })
+        .first()
+        .click();
+      await orchestratorHelper.verifyHeading('Hello World workflow');
+      await orchestrator.verifyWorkflowDetails();
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflowRuns,
+      );
+      await orchestrator.verifyWorkflowRunTab();
+      const runLocator = await sharedPage
+        .getByText(
+          countHeadingPattern(translations.table.title.allWorkflowRuns),
+        )
+        .textContent();
+      const runCount = parseInt(runLocator?.match(/\d+/)?.[0] || '0');
+      await sharedPage
+        .getByRole('button', {
+          name: translations.table.actions.run,
+          exact: true,
+        })
+        .first()
+        .click();
+      await orchestrator.submitWorkflowRunFromReview();
+      await orchestratorHelper.verifyHeading(
+        translations.run.pageTitle.replace(
+          '{{processName}}',
+          'Hello World workflow',
+        ),
+      );
+      await sharedPage.goto(`/orchestrator/workflows/hello_world/runs`);
+      await orchestrator.verifyWorkflowRunTab(runCount + 1);
+    });
+  });
+});
