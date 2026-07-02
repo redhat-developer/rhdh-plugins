@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 7.3.7
+
+### Patch Changes
+
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.7
+
 ## 7.3.6
 
 ### Patch Changes
