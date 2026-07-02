@@ -207,14 +207,14 @@ export const openIssuesKpiMetadataResponse = {
 export const openPrsWeightedKpiMetadataResponse = {
   title: 'GitHub Open PRs (weighted health)',
   description:
-    'Weighted health average for open PRs by threshold status across your entities.',
+    'Weighted health score for open PRs by threshold status across your entities.',
   type: 'number',
   history: true,
-  aggregationType: aggregationTypes.average,
+  aggregationType: aggregationTypes.weightedStatusScore,
 };
 
 /**
- * Average KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
+ * WeightedStatusScore KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
  * Includes `critical` as a non-threshold status name (no `thresholds.critical` copy).
  * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
@@ -236,9 +236,9 @@ export const openPrsWeightedAggregatedResponse = {
     calculationErrorCount: 0,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 51.5,
-    averageWeightedSum: 515,
-    averageMaxPossible: 1000,
+    weightedStatusScore: 51.5,
+    weightedStatusSum: 515,
+    weightedStatusMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',
   },
 };
@@ -259,8 +259,8 @@ export const gitHubWeightedPartiallyAggregatedResponse = {
     total: 8,
     entitiesConsidered: 6,
     calculationErrorCount: 2,
-    averageScore: 46.7,
-    averageWeightedSum: 466.67,
+    weightedStatusScore: 46.7,
+    weightedStatusSum: 466.67,
   },
 };
 
@@ -279,9 +279,9 @@ export const emptyOpenPrsWeightedAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 0,
-    averageWeightedSum: 0,
-    averageMaxPossible: 0,
+    weightedStatusScore: 0,
+    weightedStatusSum: 0,
+    weightedStatusMaxPossible: 0,
     aggregationChartDisplayColor: '#6bb300',
   },
 };

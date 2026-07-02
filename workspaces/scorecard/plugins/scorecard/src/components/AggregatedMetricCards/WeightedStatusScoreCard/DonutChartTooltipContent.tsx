@@ -38,11 +38,11 @@ export const DonutChartTooltipContent = ({
     <Stack spacing={0.5} sx={{ minWidth: 220 }}>
       <Stack direction="row" spacing={3}>
         <TooltipContent
-          label={t('metric.averageCenterTooltipTotalLabel')}
+          label={t('metric.weightedStatusScoreCenterTooltipTotalLabel')}
           value={weightedSum}
         />
         <TooltipContent
-          label={t('metric.averageCenterTooltipMaxLabel')}
+          label={t('metric.weightedStatusScoreCenterTooltipMaxLabel')}
           value={maxPossible}
         />
       </Stack>
@@ -61,7 +61,7 @@ export const DonutChartTooltipContent = ({
                 variant="body2"
                 sx={{ color: 'text.primary', fontWeight: 500 }}
               >
-                {t('metric.averageCenterTooltipBreakdownRow', {
+                {t('metric.weightedStatusScoreCenterTooltipBreakdownRow', {
                   count: row.count,
                   status: getTranslatedStatus(row.name, t),
                   score: formatAggregationScoreDetail(row.score ?? 0),

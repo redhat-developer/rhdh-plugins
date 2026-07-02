@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-const STATUS_GROUPED = 'statusGrouped' as const;
-const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
-
-/**
- * Supported aggregation types
- * @public
- */
-export const aggregationTypes = Object.freeze({
-  statusGrouped: STATUS_GROUPED,
-  weightedStatusScore: WEIGHTED_STATUS_SCORE,
-});
+export type AggregatedMetricCardBaseProps = {
+  cardTitle: string;
+  description: string;
+  aggregationId: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+  dataTestId?: string;
+};

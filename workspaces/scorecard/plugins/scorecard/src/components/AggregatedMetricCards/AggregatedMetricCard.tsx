@@ -14,35 +14,48 @@
  * limitations under the License.
  */
 
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  aggregationTypes,
+  AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { StatusGroupedCardComponent } from './StatusGroupedCard/StatusGroupedCardComponent';
-import { AverageCardComponent } from './AverageCard/AverageCardComponent';
-import type { AverageCardComponentProps } from './AverageCard/types';
-import type { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
+import { WeightedStatusScoreCardComponent } from './WeightedStatusScoreCard/WeightedStatusScoreCardComponent';
 import { UnsupportedAggregationType } from './UnsupportedAggregationType';
 
-export type AggregatedMetricCardProps =
-  | StatusGroupedCardComponentProps
-  | AverageCardComponentProps;
+import { WeightedStatusScoreCardComponentProps } from './WeightedStatusScoreCard/types';
+import { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
+import { AggregatedMetricCardBaseProps } from './types';
+
+type AggregatedMetricCardProps = AggregatedMetricCardBaseProps & {
+  scorecard: AggregatedMetricResult;
+};
+
+const isStatusGroupedCardProps = (
+  props: AggregatedMetricCardProps,
+): props is StatusGroupedCardComponentProps =>
+  props.scorecard.metadata.aggregationType === aggregationTypes.statusGrouped;
+
+const isWeightedStatusScoreCardProps = (
+  props: AggregatedMetricCardProps,
+): props is WeightedStatusScoreCardComponentProps =>
+  props.scorecard.metadata.aggregationType ===
+  aggregationTypes.weightedStatusScore;
 
 export const AggregatedMetricCard = (props: AggregatedMetricCardProps) => {
-  switch (props.scorecard.metadata.aggregationType) {
-    case aggregationTypes.statusGrouped:
-      return (
-        <StatusGroupedCardComponent
-          {...(props as StatusGroupedCardComponentProps)}
-        />
-      );
-    case aggregationTypes.average:
-      return <AverageCardComponent {...(props as AverageCardComponentProps)} />;
-    default:
-      return (
-        <UnsupportedAggregationType
-          cardTitle={props.cardTitle}
-          description={props.description}
-          dataTestId={props.dataTestId}
-          aggregationType={String(props.scorecard.metadata.aggregationType)}
-        />
-      );
+  const { cardTitle, description, dataTestId, scorecard } = props;
+
+  if (isStatusGroupedCardProps(props)) {
+    return <StatusGroupedCardComponent {...props} />;
   }
+  if (isWeightedStatusScoreCardProps(props)) {
+    return <WeightedStatusScoreCardComponent {...props} />;
+  }
+  return (
+    <UnsupportedAggregationType
+      cardTitle={cardTitle}
+      description={description}
+      dataTestId={dataTestId}
+      aggregationType={String(scorecard.metadata.aggregationType)}
+    />
+  );
 };

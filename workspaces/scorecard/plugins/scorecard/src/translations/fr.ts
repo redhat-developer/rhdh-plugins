@@ -73,17 +73,17 @@ const scorecardTranslationFr = createTranslationMessages({
       "Ce tableau de bord utilise un type d'agrégation qui n'est pas pris en charge par cette version du plugin.",
     'errors.userNotFoundInCatalogMessage':
       'Entité utilisateur introuvable dans le catalogue.',
-    'metric.averageCenterTooltipMaxLabel': 'Score maximal possible',
-    'metric.averageCenterTooltipTotalLabel': 'Score total',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel': 'Score maximal possible',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Score total',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       'Entité {{count}}, chaque {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} entités, chacune {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Score total {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal': 'Score total {{total}}',
     'metric.drillDownCalculationFailures':
       'Une ou plusieurs entités ont rencontré une erreur lors du calcul de cette métrique.',
     'metric.filecheck.description':

@@ -246,8 +246,8 @@ scorecard:
       metricId: github.open_prs
     openPrsWeightedKpi:
       title: GitHub Open PRs (weighted health)
-      type: average
-      description: Weighted health average for open PRs by threshold status across your entities.
+      type: weightedStatusScore
+      description: Weighted health score for open PRs by threshold status across your entities.
       metricId: github.open_prs
       options:
         statusScores:

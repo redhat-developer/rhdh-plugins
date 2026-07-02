@@ -72,17 +72,19 @@ const scorecardTranslationEs = createTranslationMessages({
       'Esta tarjeta de puntuación utiliza un tipo de agregación que no es compatible con esta versión del complemento.',
     'errors.userNotFoundInCatalogMessage':
       'No se encontró la entidad de usuario en el catálogo.',
-    'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
-    'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel':
+      'Puntuación máxima posible',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Puntuación total',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entidad, cada una con {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} entidades, cada una con {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Puntuación total {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal':
+      'Puntuación total {{total}}',
     'metric.drillDownCalculationFailures':
       'No se pudieron validar una o más entidades cuando se calculó esta métrica.',
     'metric.filecheck.description':

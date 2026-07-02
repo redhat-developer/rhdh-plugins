@@ -20,11 +20,11 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
-import { AverageAggregationStrategy } from './AverageAggregationStrategy';
+import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
 
-describe('AverageAggregationStrategy', () => {
+describe('WeightedStatusScoreAggregationStrategy', () => {
   const metric = {
     id: 'github.open_prs',
     title: 'Open PRs',
@@ -40,7 +40,7 @@ describe('AverageAggregationStrategy', () => {
     ],
   };
 
-  it('computes weighted average fields from loader output', async () => {
+  it('computes weighted status score fields from loader output', async () => {
     const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
       values: { error: 1, warning: 1, success: 1 },
       total: 3,
@@ -54,14 +54,14 @@ describe('AverageAggregationStrategy', () => {
     } as unknown as AggregatedMetricLoader;
 
     const logger = mockServices.logger.mock();
-    const strategy = new AverageAggregationStrategy(loader, logger);
+    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
     const aggregationConfig = {
-      id: 'avgKpi',
+      id: 'weightedKpi',
       metricId: metric.id,
-      type: aggregationTypes.average,
+      type: aggregationTypes.weightedStatusScore,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
       },
     } as const;
 
@@ -77,9 +77,9 @@ describe('AverageAggregationStrategy', () => {
         total: 3,
         entitiesConsidered: 5,
         calculationErrorCount: 2,
-        averageWeightedSum: 150,
-        averageMaxPossible: 300,
-        averageScore: 50,
+        weightedStatusSum: 150,
+        weightedStatusMaxPossible: 300,
+        weightedStatusScore: 50,
         aggregationChartDisplayColor: 'warning.main',
       }),
     );
@@ -101,16 +101,16 @@ describe('AverageAggregationStrategy', () => {
     } as unknown as AggregatedMetricLoader;
 
     const logger = mockServices.logger.mock();
-    const strategy = new AverageAggregationStrategy(loader, logger);
+    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
 
     const out = await strategy.aggregate({
       metric,
       entityRefs: ['component:default/a'],
       thresholds,
       aggregationConfig: {
-        id: 'avgKpi',
+        id: 'weightedKpi',
         metricId: metric.id,
-        type: aggregationTypes.average,
+        type: aggregationTypes.weightedStatusScore,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
         },
@@ -119,7 +119,7 @@ describe('AverageAggregationStrategy', () => {
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining(
-        'options.thresholds" is not configured for average aggregation',
+        'options.thresholds" is not configured for weightedStatusScore aggregation',
       ),
     );
     expect(out.result).toEqual(
@@ -141,7 +141,7 @@ describe('AverageAggregationStrategy', () => {
     } as unknown as AggregatedMetricLoader;
 
     const logger = mockServices.logger.mock();
-    const strategy = new AverageAggregationStrategy(loader, logger);
+    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
 
     await expect(
       strategy.aggregate({
@@ -149,12 +149,14 @@ describe('AverageAggregationStrategy', () => {
         entityRefs: ['component:default/a'],
         thresholds,
         aggregationConfig: {
-          id: 'avgKpi',
+          id: 'weightedKpi',
           metricId: metric.id,
-          type: aggregationTypes.average,
+          type: aggregationTypes.weightedStatusScore,
         } as any,
       }),
-    ).rejects.toThrow(/statusScores.*required for average aggregation/);
+    ).rejects.toThrow(
+      /statusScores.*required for weightedStatusScore aggregation/,
+    );
   });
 
   it('warns and ignores when loader returns a status not in the metric threshold rules', async () => {
@@ -171,15 +173,15 @@ describe('AverageAggregationStrategy', () => {
     } as unknown as AggregatedMetricLoader;
 
     const logger = mockServices.logger.mock();
-    const strategy = new AverageAggregationStrategy(loader, logger);
+    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
 
     const aggregationConfig = {
-      id: 'avgKpi',
+      id: 'weightedKpi',
       metricId: metric.id,
-      type: aggregationTypes.average,
+      type: aggregationTypes.weightedStatusScore,
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
       },
     } as const;
 
@@ -195,9 +197,9 @@ describe('AverageAggregationStrategy', () => {
       expect.objectContaining({
         entitiesConsidered: 4,
         calculationErrorCount: 1,
-        averageWeightedSum: 100,
-        averageMaxPossible: 300,
-        averageScore: 33.3,
+        weightedStatusSum: 100,
+        weightedStatusMaxPossible: 300,
+        weightedStatusScore: 33.3,
       }),
     );
   });

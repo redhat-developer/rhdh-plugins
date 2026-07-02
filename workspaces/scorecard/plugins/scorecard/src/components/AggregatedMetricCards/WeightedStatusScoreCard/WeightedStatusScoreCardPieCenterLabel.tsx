@@ -18,14 +18,14 @@ import { PieLabelRenderProps } from 'recharts';
 
 import { TooltipPosition } from './types';
 
-type AverageCardPieCenterLabelProps = PieLabelRenderProps & {
+type WeightedStatusScoreCardPieCenterLabelProps = PieLabelRenderProps & {
   centerPercentLabel: string;
   arcResolvedColor: string;
   updateCenterTooltipPosition: (e: React.MouseEvent<SVGCircleElement>) => void;
   setCenterTooltipPosition: (position: TooltipPosition | null) => void;
 };
 
-export function AverageCardPieCenterLabel({
+export function WeightedStatusScoreCardPieCenterLabel({
   cx,
   cy,
   index,
@@ -33,7 +33,7 @@ export function AverageCardPieCenterLabel({
   arcResolvedColor,
   updateCenterTooltipPosition,
   setCenterTooltipPosition,
-}: AverageCardPieCenterLabelProps) {
+}: WeightedStatusScoreCardPieCenterLabelProps) {
   if (
     cx === undefined ||
     cx === null ||
@@ -55,7 +55,7 @@ export function AverageCardPieCenterLabel({
         fill="transparent"
         stroke="none"
         pointerEvents="all"
-        data-testid="average-card-center-percent-hit-area"
+        data-testid="weighted-status-score-card-center-percent-hit-area"
         onMouseEnter={e => {
           updateCenterTooltipPosition(e);
         }}
@@ -71,7 +71,7 @@ export function AverageCardPieCenterLabel({
         fontSize={24}
         fontWeight={500}
         pointerEvents="none"
-        data-testid="average-card-center-percent"
+        data-testid="weighted-status-score-card-center-percent"
       >
         {centerPercentLabel}
       </text>
