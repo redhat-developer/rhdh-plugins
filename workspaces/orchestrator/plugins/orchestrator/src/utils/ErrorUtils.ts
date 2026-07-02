@@ -48,6 +48,6 @@ export const extractSsoReauthorizeUrl = (
   error: Error | undefined,
 ): string | undefined => {
   if (!error?.message) return undefined;
-  const match = error.message.match(/Re-authorize at:\s*(\S+)/i);
+  const match = /Re-authorize at:\s*(\S+)/i.exec(error.message);
   return match?.[1];
 };

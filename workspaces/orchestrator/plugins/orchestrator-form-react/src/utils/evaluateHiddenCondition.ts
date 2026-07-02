@@ -131,9 +131,10 @@ function evaluateConditionObject(
   // Check 'notContains' condition (hide when array does not include value)
   if (condition.notContains !== undefined) {
     hasCondition = true;
+    const notContainsTarget = condition.notContains;
     const notContainsValue =
       Array.isArray(fieldValue) &&
-      !fieldValue.some(item => matchesAny(item, condition.notContains!));
+      !fieldValue.some(item => matchesAny(item, notContainsTarget));
     if (!notContainsValue) {
       shouldHide = false;
     }

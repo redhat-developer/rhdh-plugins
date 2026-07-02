@@ -178,7 +178,7 @@ export const useFetch = (
           if (!response.ok) {
             const ssoHeader = response.headers.get('x-github-sso');
             if (response.status === 403 && ssoHeader) {
-              const urlMatch = ssoHeader.match(/url=(\S+)/);
+              const urlMatch = /url=(\S+)/.exec(ssoHeader);
               const reauthorizeUrl = urlMatch?.[1];
               const samlError = new Error(
                 `GitHub SAML SSO session expired.${reauthorizeUrl ? ` Re-authorize at: ${reauthorizeUrl}` : ''}`,
