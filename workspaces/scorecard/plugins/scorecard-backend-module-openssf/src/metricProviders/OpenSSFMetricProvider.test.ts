@@ -77,7 +77,7 @@ describe('OpenSSFMetricProvider', () => {
 
     it('normalizes hyphenated check names for provider id', () => {
       const provider = new OpenSSFMetricProvider(hyphenatedCheckConfig);
-      expect(provider.getProviderId()).toBe('openssf.code_review');
+      expect(provider.getProviderId()).toBe('openssf.codeReview');
     });
 
     it('returns openssf as provider datasource id', () => {
@@ -228,7 +228,9 @@ describe('OpenSSFMetricProvider', () => {
 
       const providerIds = providers.map(provider => provider.getProviderId());
       const expectedProviderIds = OPENSSF_METRICS.map(metric => {
-        const normalizedName = metric.name.toLowerCase().replace(/-/g, '_');
+        const normalizedName = metric.name
+          .replace(/-([a-zA-Z])/g, (_, c) => c.toUpperCase())
+          .replace(/^[A-Z]/, c => c.toLowerCase());
         return `openssf.${normalizedName}`;
       });
 

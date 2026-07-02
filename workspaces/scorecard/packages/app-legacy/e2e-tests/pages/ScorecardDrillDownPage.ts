@@ -26,7 +26,7 @@ import {
   getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
-type MetricId = 'github.open_prs' | 'jira.open_issues';
+type MetricId = 'github.openPrs' | 'jira.openIssues';
 
 export type DrillDownCardLocatorOptions = {
   aggregationId?: string;

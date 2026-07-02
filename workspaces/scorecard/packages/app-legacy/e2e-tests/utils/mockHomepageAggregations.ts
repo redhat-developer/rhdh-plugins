@@ -41,10 +41,10 @@ function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openPrsWeightedKpi')) {
     return openPrsWeightedKpiMetadataResponse;
   }
-  if (url.includes('jira.open_issues')) {
+  if (url.includes('jira.openIssues')) {
     return jiraAggregatedResponse.metadata;
   }
-  if (url.includes('github.open_prs')) {
+  if (url.includes('github.openPrs')) {
     return githubAggregatedResponse.metadata;
   }
   return openPrsKpiMetadataResponse;

@@ -24,7 +24,7 @@ type ScorecardTranslationFunction = TranslationFunction<
 /**
  * Resolves a metric's translated title or description using a cascading lookup:
  *
- * 1. Exact key: metric.<metricId>.<field> (e.g. metric.github.open_prs.title)
+ * 1. Exact key: metric.<metricId>.<field> (e.g. metric.github.openPrs.title)
  * 2. Template key: metric.<provider>.<field> with name = <rest of metricId>
  *    The first dot-separated segment is always the provider/namespace.
  *    E.g. filecheck.codeowners -> metric.filecheck.title with name = codeowners
