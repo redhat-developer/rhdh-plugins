@@ -174,7 +174,7 @@ describe('GitService', () => {
       mockGit.checkout.mockResolvedValue(undefined);
       mockGit.add.mockResolvedValue(undefined);
       mockGit.commit.mockResolvedValue('commit-sha');
-      mockGit.push.mockResolvedValue(undefined);
+      mockGit.push.mockResolvedValue({} as any);
 
       const service = new GitService(mockLogger, mockConfig);
       const dir = '/tmp/test-repo';
@@ -248,7 +248,7 @@ describe('GitService', () => {
 
       mockGit.fetch.mockResolvedValue(undefined);
       mockGit.checkout.mockResolvedValue(undefined);
-      mockGit.merge.mockResolvedValue(undefined);
+      mockGit.merge.mockResolvedValue({} as any);
 
       const service = new GitService(mockLogger, mockConfig);
       const localPath = '/tmp/test-repo';

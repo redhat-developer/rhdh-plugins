@@ -67,6 +67,9 @@ describe('WorkflowCacheService', () => {
       });
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: true,
+        statusCode: 200,
+        urlToFetch: 'http://service',
+        reason: '',
       });
 
       const mockScheduler = {
@@ -96,8 +99,18 @@ describe('WorkflowCacheService', () => {
         'workflow-2': 'http://service2',
       });
       mockSonataFlowService.pingWorkflowService
-        .mockResolvedValueOnce({ isAvailable: true })
-        .mockResolvedValueOnce({ isAvailable: false });
+        .mockResolvedValueOnce({
+          isAvailable: true,
+          statusCode: 200,
+          urlToFetch: 'http://service',
+          reason: '',
+        })
+        .mockResolvedValueOnce({
+          isAvailable: false,
+          statusCode: 500,
+          urlToFetch: 'http://service',
+          reason: 'not available',
+        });
 
       const mockScheduler = {
         scheduleTask: jest.fn(({ fn }) => {
@@ -129,6 +142,9 @@ describe('WorkflowCacheService', () => {
       });
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: true,
+        statusCode: 200,
+        urlToFetch: 'http://service',
+        reason: '',
       });
 
       const mockScheduler = {
@@ -147,6 +163,9 @@ describe('WorkflowCacheService', () => {
       mockDataIndexService.fetchWorkflowServiceUrls.mockResolvedValue({});
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: true,
+        statusCode: 200,
+        urlToFetch: 'http://service',
+        reason: '',
       });
 
       const mockScheduler = {
@@ -214,6 +233,9 @@ describe('WorkflowCacheService', () => {
       });
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: true,
+        statusCode: 200,
+        urlToFetch: 'http://service',
+        reason: '',
       });
 
       const mockScheduler = {
@@ -244,6 +266,9 @@ describe('WorkflowCacheService', () => {
         });
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: true,
+        statusCode: 200,
+        urlToFetch: 'http://service',
+        reason: '',
       });
 
       let taskFn: () => Promise<void>;
@@ -269,6 +294,9 @@ describe('WorkflowCacheService', () => {
       });
       mockSonataFlowService.pingWorkflowService.mockResolvedValue({
         isAvailable: false,
+        statusCode: 500,
+        urlToFetch: 'http://service',
+        reason: 'not available',
       });
 
       const mockScheduler = {
