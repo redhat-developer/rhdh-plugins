@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.11.0
+
+### Minor Changes
+
+- 033a0b5: Graduate the New Frontend System (NFS) plugin from the `./alpha` export to the primary `./` entry point. OFS (legacy) exports are now available at `./legacy`. Translations remain at `./alpha`.
+
 ## 1.10.0
 
 ### Minor Changes
