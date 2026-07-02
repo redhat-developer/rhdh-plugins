@@ -88,10 +88,10 @@ export interface ExtensionsApi {
     configYaml: string,
   ): Promise<{ status: string }>;
 
-  disablePackage?(
+  enablePackage?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{ status: string }>;
 
   getPlugins(
@@ -124,10 +124,10 @@ export interface ExtensionsApi {
     configYaml: string,
   ): Promise<{ status: string }>;
 
-  disablePlugin?(
+  enablePlugin?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{ status: string }>;
 
   getPluginPackages(
