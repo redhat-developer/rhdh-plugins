@@ -71,6 +71,12 @@ This policy would allow users to read only the GitHub Open PRs metric, while res
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. For detailed information on creating metric providers, see [providers.md](./docs/providers.md).
 
+### Collectors
+
+Collectors are reusable data-fetching contracts used by metric providers. They are registered through `scorecardCollectorsExtensionPoint` and consumed through `scorecardCollectorsServiceRef`.
+
+For details and examples, see [collectors.md](./docs/collectors.md).
+
 ### Metric Collection Scheduling
 
 The Scorecard plugin automatically collects metrics on a scheduled basis. You can customize the schedule for any metric provider in your `app-config.yaml`. If no schedule is configured, metric providers use the following default schedule:
