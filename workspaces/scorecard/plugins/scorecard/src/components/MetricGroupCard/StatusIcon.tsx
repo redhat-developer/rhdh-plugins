@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
+import { useTheme } from '@mui/material/styles';
 
-/**
- * Grid view layout extension for the Scorecard entity tab.
- *
- * Extension ID: scorecard-layout:catalog/scorecard-entity-layout-grid
- * @alpha
- */
-export const scorecardEntityLayoutGrid =
-  ScorecardEntityContentLayoutBlueprint.make({
-    name: 'scorecard-entity-layout-grid',
-    disabled: true,
-    params: {
-      title: 'Grid',
-      loader: () =>
-        import(
-          '../../components/Scorecard/ScorecardEntityContentGridView'
-        ).then(m => m.ScorecardEntityContentGridView),
-    },
-  });
+import { resolveStatusColor } from '../../utils';
+import { ScorecardIcon } from '../ScorecardIcon/ScorecardIcon';
+
+interface StatusIconProps {
+  icon: string;
+  color: string;
+}
+
+export function StatusIcon({ icon, color }: StatusIconProps) {
+  const theme = useTheme();
+  const resolvedColor = resolveStatusColor(theme, color);
+
+  if (!icon) return null;
+
+  return (
+    <ScorecardIcon
+      icon={icon}
+      size="small"
+      sx={{ fontSize: 18, color: resolvedColor }}
+    />
+  );
+}

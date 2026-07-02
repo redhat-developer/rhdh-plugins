@@ -216,6 +216,17 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
+    readonly 'dataSourcesDialog.title': string;
+    readonly 'dataSourcesDialog.close': string;
+    readonly 'dataSourcesDialog.unknownPlugin': string;
+    readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.columns.plugin': string;
+    readonly 'dataSourcesDialog.columns.check': string;
+    readonly 'dataSourcesDialog.columns.value': string;
+    readonly 'dataSourcesDialog.columns.status': string;
+    readonly 'dataSourcesDialog.columns.lastSynced': string;
+    readonly 'metricGroupCard.menuAriaLabel': string;
+    readonly 'metricGroupCard.viewDataSources': string;
     readonly 'entitiesPage.missingPermission': string;
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;
@@ -224,8 +235,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.unavailable': string;
     readonly 'entitiesPage.entitiesTable.titleWithCount': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
-    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;

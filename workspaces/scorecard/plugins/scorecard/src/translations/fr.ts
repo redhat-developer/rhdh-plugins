@@ -25,6 +25,16 @@ const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Chargement',
+    'dataSourcesDialog.title': '{{title}} sources',
+    'dataSourcesDialog.close': 'Fermer',
+    'dataSourcesDialog.unknownPlugin': 'Inconnu',
+    'dataSourcesDialog.statusTooltip':
+      'Valeur {{value}} correspond au seuil {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'VÉRIFICATION',
+    'dataSourcesDialog.columns.value': 'VALEUR',
+    'dataSourcesDialog.columns.status': 'STATUT',
+    'dataSourcesDialog.columns.lastSynced': 'DERNIÈRE SYNCHRONISATION',
     'emptyState.altText': 'Pas de tableaux de score',
     'emptyState.button': 'Afficher la documentation',
     'emptyState.description':
@@ -73,6 +83,8 @@ const scorecardTranslationFr = createTranslationMessages({
       "Ce tableau de bord utilise un type d'agrégation qui n'est pas pris en charge par cette version du plugin.",
     'errors.userNotFoundInCatalogMessage':
       'Entité utilisateur introuvable dans le catalogue.',
+    'metricGroupCard.menuAriaLabel': "Plus d'options",
+    'metricGroupCard.viewDataSources': 'Voir les sources',
     'metric.averageCenterTooltipMaxLabel': 'Score maximal possible',
     'metric.averageCenterTooltipTotalLabel': 'Score total',
     'metric.averageCenterTooltipBreakdownRow_one':

@@ -25,6 +25,16 @@ const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Ladevorgang',
+    'dataSourcesDialog.title': '{{title}} Quellen',
+    'dataSourcesDialog.close': 'Schließen',
+    'dataSourcesDialog.unknownPlugin': 'Unbekannt',
+    'dataSourcesDialog.statusTooltip':
+      'Wert {{value}} entspricht Schwellenwert {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'PRÜFUNG',
+    'dataSourcesDialog.columns.value': 'WERT',
+    'dataSourcesDialog.columns.status': 'STATUS',
+    'dataSourcesDialog.columns.lastSynced': 'LETZTE SYNC',
     'emptyState.altText': 'Keine Scorecards',
     'emptyState.button': 'Dokumentation anzeigen',
     'emptyState.description':
@@ -71,6 +81,8 @@ const scorecardTranslationDe = createTranslationMessages({
       'Diese Scorecard verwendet einen Aggregationstyp, der von dieser Version des Plugins nicht unterstützt wird.',
     'errors.userNotFoundInCatalogMessage':
       'Benutzerentität im Katalog nicht gefunden.',
+    'metricGroupCard.menuAriaLabel': 'Weitere Optionen',
+    'metricGroupCard.viewDataSources': 'Quellen anzeigen',
     'metric.averageCenterTooltipMaxLabel': 'Maximal erreichbare Punktzahl',
     'metric.averageCenterTooltipTotalLabel': 'Gesamtpunktzahl',
     'metric.averageCenterTooltipBreakdownRow_one':

@@ -25,6 +25,16 @@ const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': '読み込み中',
+    'dataSourcesDialog.title': '{{title}} ソース',
+    'dataSourcesDialog.close': '閉じる',
+    'dataSourcesDialog.unknownPlugin': '不明',
+    'dataSourcesDialog.statusTooltip':
+      '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'チェック',
+    'dataSourcesDialog.columns.value': '値',
+    'dataSourcesDialog.columns.status': 'ステータス',
+    'dataSourcesDialog.columns.lastSynced': '最終同期',
     'emptyState.altText': 'スコアカードなし',
     'emptyState.button': 'ドキュメントの表示',
     'emptyState.description':
@@ -72,6 +82,8 @@ const scorecardTranslationJa = createTranslationMessages({
       'このスコアカードは、このバージョンのプラグインでサポートされていない集計タイプを使用しています。',
     'errors.userNotFoundInCatalogMessage':
       'カタログにユーザーエンティティーが見つかりません。',
+    'metricGroupCard.menuAriaLabel': 'その他のオプション',
+    'metricGroupCard.viewDataSources': 'ソースを表示',
     'metric.averageCenterTooltipMaxLabel': '最高スコア',
     'metric.averageCenterTooltipTotalLabel': '合計スコア',
     'metric.averageCenterTooltipBreakdownRow_one':
