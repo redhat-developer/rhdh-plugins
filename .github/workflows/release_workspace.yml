@@ -162,3 +162,28 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN}}
+
+  build-next-image:
+    name: Build "next" image for ${{ inputs.workspace }}
+    # Build the rolling "next" image for every merge into main, independent of
+    # whether the changesets resulted in a release.
+    if: inputs.branch == 'main'
+    uses: ./.github/workflows/build-container-image.yml
+    with:
+      workspace: ${{ inputs.workspace }}
+      ref: ${{ inputs.branch }}
+      tags: ${{ inputs.workspace }}-next
+      expires_after: 4w
+    secrets: inherit
+
+  build-latest-image:
+    name: Build "latest" image for ${{ inputs.workspace }}
+    # Only build the "latest" image once a release of the workspace happened.
+    needs: release
+    uses: ./.github/workflows/build-container-image.yml
+    with:
+      workspace: ${{ inputs.workspace }}
+      ref: ${{ inputs.branch }}
+      tags: ${{ inputs.workspace }}-latest
+      expires_after: 4w
+    secrets: inherit

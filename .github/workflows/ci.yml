@@ -174,6 +174,24 @@ jobs:
             exit 1
           fi
 
+  build-image:
+    name: Workspace ${{ matrix.workspace }}, Build container image
+    if: github.repository == 'redhat-developer/rhdh-plugins'
+    needs: find-changed-workspaces
+    strategy:
+      matrix:
+        workspace: ${{ fromJSON(needs.find-changed-workspaces.outputs.workspaces) }}
+      fail-fast: false
+    uses: ./.github/workflows/build-container-image.yml
+    with:
+      workspace: ${{ matrix.workspace }}
+      ref: ${{ github.event.pull_request.head.sha }}
+      tags: |
+        ${{ matrix.workspace }}-pr-${{ github.event.pull_request.number }}
+        ${{ matrix.workspace }}-pr-${{ github.event.pull_request.number }}-${SHORT_SHA}
+      expires_after: 2w
+    secrets: inherit
+
   verify:
     name: Workspace ${{ matrix.workspace }}, Verify step
     runs-on: ubuntu-latest
@@ -201,7 +219,7 @@ jobs:
     if: ${{ always() }}
     name: check all required jobs
     runs-on: ubuntu-latest
-    needs: [ci, verify]
+    needs: [ci, build-image, verify]
     steps:
       - run: exit 1
         if: >-
