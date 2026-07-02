@@ -11568,7 +11568,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
     luxon: "npm:^3.7.2"
-    undici: "npm:^7.24.0"
+    undici: "npm:7.28.0"
   languageName: unknown
   linkType: soft
 
@@ -37016,10 +37016,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.1.1, undici@npm:^7.16.0, undici@npm:^7.2.3, undici@npm:^7.24.0, undici@npm:^7.24.5":
-  version: 7.27.0
-  resolution: "undici@npm:7.27.0"
-  checksum: 10c0/6fd15a81b0ca177b2667738b830ed175363e5e2164e992251d03aaee6c6517098b930085bd68b8fe5911920371076526657de035e07dc72377b9c5c731b90f0b
+"undici@npm:7.28.0, undici@npm:^7.1.1, undici@npm:^7.16.0, undici@npm:^7.2.3, undici@npm:^7.24.5":
+  version: 7.28.0
+  resolution: "undici@npm:7.28.0"
+  checksum: 10c0/fe781983a26098795e99bb1f64906cbb7d0bcaa029a26baade007b53ea67f2631d189b8f9671a31f4c8d0cb3773b7559608628ba54452fef51fec90e7c78bb0d
   languageName: node
   linkType: hard
 
