@@ -22,3 +22,5 @@ yarn install
 | Drill-down (entity list for a metric)                                   | [plugins/scorecard-backend/docs/drill-down.md](plugins/scorecard-backend/docs/drill-down.md)   |
 | Metric thresholds, annotations, **average KPI result colors**           | [plugins/scorecard-backend/docs/thresholds.md](plugins/scorecard-backend/docs/thresholds.md)   |
 | Frontend (homepage cards, NFS)                                          | [plugins/scorecard/README.md](plugins/scorecard/README.md)                                     |
+
+1

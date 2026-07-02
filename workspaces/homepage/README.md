@@ -2,3 +2,4 @@
 
 Initially written to add Dynamic Plugin (mount point) support does it adds now
 some custom widgets and a backend to configure the default layout in the `app-config.yaml`.
+1

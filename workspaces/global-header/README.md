@@ -141,3 +141,4 @@ Increasing the `height` also increases the overall height of the Global Header.
 - The image is never cropped or distorted.
 - If the configured `width` would result in a height greater than the allowed maximum (default: 40px), it is **automatically scaled down**.
 - This means: in some cases, changing only the width may **not visibly affect** the logo unless height is also adjusted.
+  1
