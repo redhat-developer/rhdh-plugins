@@ -44,6 +44,9 @@ export interface SkillsRoutesOptions {
   config: RootConfigService;
 }
 
+// TODO: Cross-reference deployed skill agents with catalog entities
+// for discovery and access control via catalog-based RBAC.
+
 /**
  * Creates an Express router with skills marketplace proxy routes.
  *

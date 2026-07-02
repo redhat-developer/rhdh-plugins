@@ -98,6 +98,13 @@ export const orchestratorMessages = {
       available: 'Available',
       unavailable: 'Unavailable',
     },
+    unavailable: {
+      title: 'Unavailable workflow',
+      runTooltip: 'Unavailable workflow',
+      requestFailed: 'HTTP GET request to {{url}} failed.',
+      statusCodeLine: 'Status Code: {{statusCode}}',
+      statusTextLine: 'Status Text: {{reason}}',
+    },
     fields: {
       entity: 'Entity',
       workflow: 'Workflow',

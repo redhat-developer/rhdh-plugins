@@ -239,6 +239,13 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Le flux de travail est actuellement interrompu ou en état d'erreur. Son exécution maintenant peut échouer ou produire des résultats inattendus.",
     'workflow.progress': 'Avancement du flux de travail',
     'workflow.status.available': 'Disponible',
+    'workflow.status.unavailable': 'Indisponible',
+    'workflow.unavailable.title': 'Flux de travail indisponible',
+    'workflow.unavailable.runTooltip': 'Flux de travail indisponible',
+    'workflow.unavailable.requestFailed':
+      'La requête HTTP GET vers {{url}} a échoué.',
+    'workflow.unavailable.statusCodeLine': 'Code de statut : {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texte de statut : {{reason}}',
     'samlSso.title': 'Session GitHub SAML SSO expirée',
     'samlSso.reauthorizeButton': 'Réautoriser SSO',
     'samlSso.body':
