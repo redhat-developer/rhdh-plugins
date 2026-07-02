@@ -56,6 +56,27 @@ export function sanitizeEntityName(name: string): string {
 }
 
 /**
+ * Unwrap a Kagenti API response that may return either
+ * `{ items: T[] }` or `T[]` directly.
+ *
+ * @internal
+ */
+export function unwrapItems<T>(data: unknown): T[] {
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+  if (
+    data !== null &&
+    typeof data === 'object' &&
+    'items' in data &&
+    Array.isArray((data as { items: unknown }).items)
+  ) {
+    return (data as { items: T[] }).items;
+  }
+  return [];
+}
+
+/**
  * Maps createdBy user reference to a catalog owner ref.
  * Falls back to 'unknown' if not provided.
  *

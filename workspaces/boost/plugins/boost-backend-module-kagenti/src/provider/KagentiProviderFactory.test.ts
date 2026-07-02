@@ -52,6 +52,8 @@ function createMockCache(): CacheService {
 
 function createMockConfig(
   values: Record<string, string | undefined> = {},
+  authValues?: Record<string, string | number | undefined>,
+  securityMode?: string,
 ): RootConfigService {
   const providerConfig = values.baseUrl
     ? {
@@ -66,10 +68,32 @@ function createMockConfig(
       }
     : undefined;
 
+  const authConfig = authValues
+    ? {
+        getOptionalString: jest.fn(
+          (key: string) => authValues[key] as string | undefined,
+        ),
+        getOptionalNumber: jest.fn(
+          (key: string) => authValues[key] as number | undefined,
+        ),
+      }
+    : undefined;
+
   return {
     getString: jest.fn(),
-    getOptionalString: jest.fn(),
-    getOptionalConfig: jest.fn((_path: string) => providerConfig),
+    getOptionalString: jest.fn((key: string) => {
+      if (key === 'boost.security.mode') return securityMode;
+      return undefined;
+    }),
+    getOptionalConfig: jest.fn((path: string) => {
+      if (path === 'boost.providers.kagenti') {
+        return providerConfig;
+      }
+      if (path === 'boost.kagenti.auth') {
+        return authConfig;
+      }
+      return undefined;
+    }),
     getConfig: jest.fn(),
     getConfigArray: jest.fn(),
     getOptionalConfigArray: jest.fn(),
@@ -105,7 +129,23 @@ describe('KagentiProviderFactory', () => {
     expect(bundle.sessionMap).toBeInstanceOf(SessionMap);
   });
 
-  it('falls back to default connection when no config is set', () => {
+  it('falls back to localhost in development-only-no-auth mode', () => {
+    const logger = createMockLogger();
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'development-only-no-auth'),
+      cache: createMockCache(),
+      logger,
+    });
+
+    const bundle = factory.create();
+
+    expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('No boost.providers.kagenti config found'),
+    );
+  });
+
+  it('falls back to localhost when security mode is unset (defaults to dev)', () => {
     const logger = createMockLogger();
     const factory = new KagentiProviderFactory({
       config: createMockConfig(),
@@ -118,6 +158,30 @@ describe('KagentiProviderFactory', () => {
     expect(bundle.provider).toBeInstanceOf(KagentiProvider);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('No boost.providers.kagenti config found'),
+    );
+  });
+
+  it('throws when connection config missing in non-dev security mode', () => {
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'full'),
+      cache: createMockCache(),
+      logger: createMockLogger(),
+    });
+
+    expect(() => factory.create()).toThrow(
+      'Missing required config: boost.providers.kagenti.baseUrl',
+    );
+  });
+
+  it('throws when connection config missing in plugin-only mode', () => {
+    const factory = new KagentiProviderFactory({
+      config: createMockConfig({}, undefined, 'plugin-only'),
+      cache: createMockCache(),
+      logger: createMockLogger(),
+    });
+
+    expect(() => factory.create()).toThrow(
+      'Missing required config: boost.providers.kagenti.baseUrl',
     );
   });
 
@@ -137,5 +201,97 @@ describe('KagentiProviderFactory', () => {
     expect(config.getOptionalConfig).toHaveBeenCalledWith(
       'boost.providers.kagenti',
     );
+  });
+
+  describe('readKagentiAuthConfig', () => {
+    it('creates auth client when all three fields are present', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: 'secret',
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      const bundle = factory.create();
+
+      expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Keycloak service-account auth configured for Kagenti provider',
+      );
+    });
+
+    it('passes tokenExpiryBufferSeconds to auth client', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: 'secret',
+            tokenExpiryBufferSeconds: 120,
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      const bundle = factory.create();
+
+      expect(bundle.provider).toBeInstanceOf(KagentiProvider);
+      expect(logger.info).toHaveBeenCalledWith(
+        'Keycloak service-account auth configured for Kagenti provider',
+      );
+    });
+
+    it('warns on partial auth config (missing clientSecret)', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig(
+          { baseUrl: 'http://kagenti:8080' },
+          {
+            tokenEndpoint: 'http://keycloak/token',
+            clientId: 'boost',
+            clientSecret: undefined,
+          },
+        ),
+        cache: createMockCache(),
+        logger,
+      });
+
+      factory.create();
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Partial Kagenti auth config'),
+      );
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('clientSecret'),
+      );
+    });
+
+    it('silently skips auth when config section is absent', () => {
+      const logger = createMockLogger();
+      const factory = new KagentiProviderFactory({
+        config: createMockConfig({ baseUrl: 'http://kagenti:8080' }),
+        cache: createMockCache(),
+        logger,
+      });
+
+      factory.create();
+
+      expect(logger.warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('Partial Kagenti auth config'),
+      );
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Keycloak service-account auth configured'),
+      );
+    });
   });
 });

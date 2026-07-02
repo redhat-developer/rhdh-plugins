@@ -481,6 +481,16 @@ export interface McpServerRecord {
 }
 
 /**
+ * Options for chat and streaming calls on {@link AgenticProvider}.
+ *
+ * @public
+ */
+export interface ChatOptions {
+  /** Backstage user entity ref for audit headers (e.g. 'user:default/jane'). */
+  userRef?: string;
+}
+
+/**
  * The contract between Boost and any AI platform backend.
  * Chat and streaming are required; other capabilities are optional.
  *
@@ -494,15 +504,20 @@ export interface AgenticProvider {
    * Send a chat message and receive a complete response.
    *
    * @param messages - The conversation messages to send.
+   * @param options - Optional chat options (e.g. user identity for audit).
    * @returns The assistant's response content.
    */
-  chat(messages: InputItem[]): Promise<string>;
+  chat(messages: InputItem[], options?: ChatOptions): Promise<string>;
 
   /**
    * Send a chat message and receive a streaming response.
    *
    * @param messages - The conversation messages to send.
+   * @param options - Optional chat options (e.g. user identity for audit).
    * @returns An async iterable of normalized stream events.
    */
-  chatStream(messages: InputItem[]): AsyncIterable<NormalizedStreamEvent>;
+  chatStream(
+    messages: InputItem[],
+    options?: ChatOptions,
+  ): AsyncIterable<NormalizedStreamEvent>;
 }
