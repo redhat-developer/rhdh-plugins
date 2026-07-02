@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.5.2
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+
 ## 0.5.1
 
 ### Patch Changes

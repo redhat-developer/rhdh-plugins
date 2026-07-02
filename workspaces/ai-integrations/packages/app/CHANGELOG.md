@@ -1,5 +1,12 @@
 # app
 
+## 0.0.11
+
+### Patch Changes
+
+- Updated dependencies [c2e3749]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience@0.5.5
+
 ## 0.0.10
 
 ### Patch Changes

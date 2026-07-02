@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.9.2
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+
 ## 0.9.1
 
 ### Patch Changes

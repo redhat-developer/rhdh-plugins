@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.5.5
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+- Updated dependencies [c2e3749]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.4.2
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.4.2
+
 ## 0.5.4
 
 ### Patch Changes
