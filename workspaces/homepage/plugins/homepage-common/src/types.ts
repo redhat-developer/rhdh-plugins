@@ -45,7 +45,6 @@ export interface VisibleDefaultWidget {
   ref: string;
   props?: Record<string, unknown>;
   layout?: unknown;
-  tags?: string[];
 }
 
 /**

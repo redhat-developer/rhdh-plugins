@@ -15,7 +15,7 @@
  */
 
 import { VisibleDefaultWidget } from '../defaultWidgets/types';
-import { filterAuthorizedWidgets, matches } from './permissionUtils';
+import { matches } from './permissionUtils';
 
 const widget = (id: string, tags?: string[]): VisibleDefaultWidget => ({
   id,
@@ -58,14 +58,14 @@ describe('matches', () => {
     ).toBe(true);
   });
 
-  it('does not match HAS_TAG when widget has no tags', () => {
+  it('does match HAS_TAG when widget has no tags', () => {
     expect(
-      matches(widget('dashboard'), {
+      matches(widget('search'), {
         rule: 'HAS_TAG',
         resourceType: 'homepage-default-widget',
         params: { tags: ['admin'] },
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('does not match HAS_TAG when no tag overlaps', () => {
@@ -118,14 +118,23 @@ describe('matches', () => {
 
   it('handles not combinator', () => {
     expect(
-      matches(widget('public'), {
+      matches(widget('admin-panel', ['admin']), {
+        not: {
+          rule: 'HAS_TAG',
+          resourceType: 'homepage-default-widget',
+          params: { tags: ['user'] },
+        },
+      }),
+    ).toBe(true);
+    expect(
+      matches(widget('admin-panel', ['admin']), {
         not: {
           rule: 'HAS_TAG',
           resourceType: 'homepage-default-widget',
           params: { tags: ['admin'] },
         },
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('returns false for unknown rule', () => {
@@ -136,75 +145,5 @@ describe('matches', () => {
         params: {},
       }),
     ).toBe(false);
-  });
-});
-
-describe('filterAuthorizedWidgets', () => {
-  const widgets = [
-    widget('search'),
-    widget('admin-panel', ['admin']),
-    widget('dev-tools', ['developer']),
-    widget('onboarding'),
-  ];
-
-  it('returns all widgets when no filter is provided', () => {
-    expect(filterAuthorizedWidgets(widgets, undefined)).toEqual(widgets);
-  });
-
-  it('filters by widget ID', () => {
-    const result = filterAuthorizedWidgets(widgets, {
-      rule: 'HAS_WIDGET_ID',
-      resourceType: 'homepage-default-widget',
-      params: { widgetIds: ['search', 'onboarding'] },
-    });
-    expect(result.map(w => w.id)).toEqual(['search', 'onboarding']);
-  });
-
-  it('filters by tag (tagless widgets bypass filter)', () => {
-    const result = filterAuthorizedWidgets(widgets, {
-      rule: 'HAS_TAG',
-      resourceType: 'homepage-default-widget',
-      params: { tags: ['admin'] },
-    });
-    expect(result.map(w => w.id)).toEqual([
-      'search',
-      'admin-panel',
-      'onboarding',
-    ]);
-  });
-
-  it('filters with anyOf combining tags (tagless widgets bypass filter)', () => {
-    const result = filterAuthorizedWidgets(widgets, {
-      anyOf: [
-        {
-          rule: 'HAS_TAG',
-          resourceType: 'homepage-default-widget',
-          params: { tags: ['admin'] },
-        },
-        {
-          rule: 'HAS_TAG',
-          resourceType: 'homepage-default-widget',
-          params: { tags: ['developer'] },
-        },
-      ],
-    });
-    expect(result.map(w => w.id)).toEqual([
-      'search',
-      'admin-panel',
-      'dev-tools',
-      'onboarding',
-    ]);
-  });
-
-  it('tagless widgets always included regardless of filter', () => {
-    const result = filterAuthorizedWidgets(
-      [widget('no-tags'), widget('tagged', ['secret'])],
-      {
-        rule: 'HAS_TAG',
-        resourceType: 'homepage-default-widget',
-        params: { tags: ['admin'] },
-      },
-    );
-    expect(result.map(w => w.id)).toEqual(['no-tags']);
   });
 });

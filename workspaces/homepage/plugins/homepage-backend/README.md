@@ -126,17 +126,6 @@ homepage:
             xl: { w: 12, h: 4 }
 ```
 
-### Three filtering layers
-
-```
-Config (if/unless)  -->  Permission check (ALLOW/DENY/CONDITIONAL)  -->  Conditional rules (HAS_TAG/HAS_WIDGET_ID)
-     Layer 1                        Layer 2                                        Layer 3
-```
-
-- **Layer 1** always runs—identity and group based (`if`/`unless`).
-- **Layer 2**—RBAC returns ALLOW (pass all), DENY (block all), or CONDITIONAL (apply Layer 3).
-- **Layer 3**—rule-based filtering on survivors from Layer 1 using `HAS_TAG` and/or `HAS_WIDGET_ID`.
-
 ### Permission rules
 
 The plugin registers two permission rules for the `homepage-default-widget` resource type:

@@ -19,11 +19,11 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
-import { VisibleDefaultWidget } from '../defaultWidgets/types';
+import { DefaultWidgetNode } from '../defaultWidgets/types';
 import { rules as homepageRules } from './rules';
 
 export const matches = (
-  widget: VisibleDefaultWidget,
+  defaultWidget: DefaultWidgetNode,
   filters?: PermissionCriteria<
     PermissionCondition<string, PermissionRuleParams>
   >,
@@ -33,32 +33,19 @@ export const matches = (
   }
 
   if ('allOf' in filters) {
-    return filters.allOf.every(filter => matches(widget, filter));
+    return filters.allOf.every(filter => matches(defaultWidget, filter));
   }
 
   if ('anyOf' in filters) {
-    return filters.anyOf.some(filter => matches(widget, filter));
+    return filters.anyOf.some(filter => matches(defaultWidget, filter));
   }
 
   if ('not' in filters) {
-    return !matches(widget, filters.not);
+    return !matches(defaultWidget, filters.not);
   }
 
   const matchedRule = Object.values(homepageRules).find(
     r => r.name === filters.rule,
-  ) as any;
-  return matchedRule?.apply(widget, filters.params ?? {}) ?? false;
-};
-
-export const filterAuthorizedWidgets = (
-  widgets: VisibleDefaultWidget[],
-  filter?: PermissionCriteria<
-    PermissionCondition<string, PermissionRuleParams>
-  >,
-): VisibleDefaultWidget[] => {
-  if (!filter) return widgets;
-  return widgets.filter(
-    widget =>
-      !widget.tags || widget.tags.length === 0 || matches(widget, filter),
   );
+  return matchedRule?.apply(defaultWidget, filters.params ?? {}) ?? false;
 };

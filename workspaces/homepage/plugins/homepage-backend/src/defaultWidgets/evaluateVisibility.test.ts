@@ -19,7 +19,6 @@ import {
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import {
-  filterToVisibleLeafIds,
   filterToVisibleLeaves,
   isExcluded,
   isVisible,
@@ -30,7 +29,8 @@ function makeCtx(partial?: Partial<UserContext>): UserContext {
   return {
     userEntityRef: 'user:default/alice',
     groupEntityRefs: new Set(),
-    policyDecisions: new Map(),
+    defaultWidgetsReadDecision: { result: AuthorizeResult.DENY },
+    otherPolicyDecisions: new Map(),
     ...partial,
   };
 }
@@ -38,7 +38,7 @@ function makeCtx(partial?: Partial<UserContext>): UserContext {
 describe('isVisible', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    policyDecisions: new Map<string, PolicyDecision>([
+    otherPolicyDecisions: new Map<string, PolicyDecision>([
       ['perm.allowed', { result: AuthorizeResult.ALLOW }],
       ['perm.denied', { result: AuthorizeResult.DENY }],
     ]),
@@ -157,7 +157,7 @@ describe('isVisible', () => {
 
     it('visible when CONDITIONAL decision matches widget id', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           ['perm.cond', conditionalDecision(conditionFor(['my-widget']))],
         ]),
       });
@@ -171,7 +171,7 @@ describe('isVisible', () => {
 
     it('hidden when CONDITIONAL decision does not match widget id', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           ['perm.cond', conditionalDecision(conditionFor(['other-widget']))],
         ]),
       });
@@ -185,7 +185,7 @@ describe('isVisible', () => {
 
     it('visible when CONDITIONAL uses allOf and all conditions match', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({
@@ -204,7 +204,7 @@ describe('isVisible', () => {
 
     it('hidden when CONDITIONAL uses allOf and one condition fails', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({
@@ -226,7 +226,7 @@ describe('isVisible', () => {
 
     it('visible when CONDITIONAL uses anyOf and one condition matches', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({
@@ -248,7 +248,7 @@ describe('isVisible', () => {
 
     it('hidden when CONDITIONAL uses not and the inner condition matches', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({ not: conditionFor(['my-widget']) }),
@@ -265,7 +265,7 @@ describe('isVisible', () => {
 
     it('visible when CONDITIONAL uses not and the inner condition does not match', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({ not: conditionFor(['other-widget']) }),
@@ -282,7 +282,7 @@ describe('isVisible', () => {
 
     it('hidden when CONDITIONAL references an unknown rule', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map<string, PolicyDecision>([
+        otherPolicyDecisions: new Map<string, PolicyDecision>([
           [
             'perm.cond',
             {
@@ -311,7 +311,7 @@ describe('isVisible', () => {
 describe('isExcluded', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    policyDecisions: new Map<string, PolicyDecision>([
+    otherPolicyDecisions: new Map<string, PolicyDecision>([
       ['perm.allowed', { result: AuthorizeResult.ALLOW }],
       ['perm.denied', { result: AuthorizeResult.DENY }],
     ]),
@@ -389,7 +389,7 @@ describe('isExcluded', () => {
 
     it('excluded when CONDITIONAL decision matches widget id', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           ['perm.cond', conditionalDecision(conditionFor(['my-widget']))],
         ]),
       });
@@ -403,7 +403,7 @@ describe('isExcluded', () => {
 
     it('not excluded when CONDITIONAL decision does not match widget id', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           ['perm.cond', conditionalDecision(conditionFor(['other-widget']))],
         ]),
       });
@@ -417,7 +417,7 @@ describe('isExcluded', () => {
 
     it('not excluded when CONDITIONAL uses not and the inner condition matches', () => {
       const ctxCond = makeCtx({
-        policyDecisions: new Map([
+        otherPolicyDecisions: new Map([
           [
             'perm.cond',
             conditionalDecision({ not: conditionFor(['my-widget']) }),
@@ -434,192 +434,10 @@ describe('isExcluded', () => {
   });
 });
 
-describe('filterToVisibleLeafIds', () => {
-  const ctx = makeCtx({
-    groupEntityRefs: new Set(['group:default/developers']),
-    policyDecisions: new Map<string, PolicyDecision>([
-      ['perm.admin', { result: AuthorizeResult.DENY }],
-    ]),
-  });
-
-  it('returns an empty list for an empty tree', () => {
-    expect(filterToVisibleLeafIds([], ctx)).toEqual([]);
-  });
-
-  it('prunes an entire subtree when the parent group is hidden', () => {
-    const tree: DefaultWidgetNode[] = [
-      {
-        if: { permissions: ['perm.admin'] },
-        children: [
-          { id: 'user-management', ref: 'user-management' },
-          { id: 'audit-log', ref: 'audit-log' },
-        ],
-      },
-      { id: 'onboarding', ref: 'onboarding' },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['onboarding']);
-  });
-
-  it('returns only visible children of a visible group', () => {
-    const tree: DefaultWidgetNode[] = [
-      {
-        if: { groups: ['group:default/developers'] },
-        children: [
-          { id: 'visible-child', ref: 'visible-child' },
-          {
-            id: 'hidden-child',
-            ref: 'hidden-child',
-            if: { users: ['user:default/bob'] },
-          },
-        ],
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['visible-child']);
-  });
-
-  it('preserves depth-first pre-order', () => {
-    const tree: DefaultWidgetNode[] = [
-      { id: 'a', ref: 'a' },
-      {
-        children: [
-          { id: 'b', ref: 'b' },
-          {
-            children: [
-              { id: 'c', ref: 'c' },
-              { id: 'd', ref: 'd' },
-            ],
-          },
-          { id: 'e', ref: 'e' },
-        ],
-      },
-      { id: 'f', ref: 'f' },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual([
-      'a',
-      'b',
-      'c',
-      'd',
-      'e',
-      'f',
-    ]);
-  });
-
-  it('handles deep nesting with mixed permissions across levels', () => {
-    const tree: DefaultWidgetNode[] = [
-      {
-        if: { groups: ['group:default/developers'] },
-        children: [
-          {
-            if: { users: ['user:default/alice'] },
-            children: [
-              { id: 'deeply-visible', ref: 'deeply-visible' },
-              {
-                id: 'deeply-hidden',
-                ref: 'deeply-hidden',
-                if: { permissions: ['perm.admin'] },
-              },
-            ],
-          },
-          {
-            if: { users: ['user:default/bob'] },
-            children: [{ id: 'unreachable', ref: 'unreachable' }],
-          },
-        ],
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['deeply-visible']);
-  });
-
-  it('returns all leaves when no node has visibility constraints', () => {
-    const tree: DefaultWidgetNode[] = [
-      { id: 'a', ref: 'a' },
-      {
-        children: [
-          { id: 'b', ref: 'b' },
-          { id: 'c', ref: 'c' },
-        ],
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['a', 'b', 'c']);
-  });
-
-  it('excludes a leaf when unless matches the user', () => {
-    const tree: DefaultWidgetNode[] = [
-      { id: 'a', ref: 'a' },
-      {
-        id: 'b',
-        ref: 'b',
-        unless: { users: ['user:default/alice'] },
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['a']);
-  });
-
-  it('unless takes precedence over if (deny wins)', () => {
-    const tree: DefaultWidgetNode[] = [
-      {
-        id: 'a',
-        ref: 'a',
-        if: { groups: ['group:default/developers'] },
-        unless: { users: ['user:default/alice'] },
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual([]);
-  });
-
-  it('prunes entire subtree when unless on group node matches', () => {
-    const tree: DefaultWidgetNode[] = [
-      {
-        unless: { groups: ['group:default/developers'] },
-        children: [
-          { id: 'a', ref: 'a' },
-          { id: 'b', ref: 'b' },
-        ],
-      },
-      { id: 'c', ref: 'c' },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctx)).toEqual(['c']);
-  });
-
-  it('excludes a leaf when unless matches a permission', () => {
-    const ctxWithPerm = makeCtx({
-      policyDecisions: new Map<string, PolicyDecision>([
-        ['perm.exclude', { result: AuthorizeResult.ALLOW }],
-      ]),
-    });
-    const tree: DefaultWidgetNode[] = [
-      { id: 'a', ref: 'a' },
-      {
-        id: 'b',
-        ref: 'b',
-        unless: { permissions: ['perm.exclude'] },
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctxWithPerm)).toEqual(['a']);
-  });
-
-  it('keeps a leaf when unless permission is DENY', () => {
-    const ctxWithPerm = makeCtx({
-      policyDecisions: new Map<string, PolicyDecision>([
-        ['perm.exclude', { result: AuthorizeResult.DENY }],
-      ]),
-    });
-    const tree: DefaultWidgetNode[] = [
-      { id: 'a', ref: 'a' },
-      {
-        id: 'b',
-        ref: 'b',
-        unless: { permissions: ['perm.exclude'] },
-      },
-    ];
-    expect(filterToVisibleLeafIds(tree, ctxWithPerm)).toEqual(['a', 'b']);
-  });
-});
-
 describe('filterToVisibleLeaves', () => {
   const ctx = makeCtx({
     groupEntityRefs: new Set(['group:default/developers']),
-    policyDecisions: new Map<string, PolicyDecision>([
+    otherPolicyDecisions: new Map<string, PolicyDecision>([
       ['perm.admin', { result: AuthorizeResult.DENY }],
     ]),
   });
@@ -704,22 +522,6 @@ describe('filterToVisibleLeaves', () => {
     ]);
   });
 
-  it('includes tags in output when present', () => {
-    const tree: DefaultWidgetNode[] = [
-      { id: 'tagged', ref: 'tagged', tags: ['admin', 'management'] },
-    ];
-    expect(filterToVisibleLeaves(tree, ctx)).toEqual([
-      { id: 'tagged', ref: 'tagged', tags: ['admin', 'management'] },
-    ]);
-  });
-
-  it('omits tags from output when empty array', () => {
-    const tree: DefaultWidgetNode[] = [{ id: 'x', ref: 'x', tags: [] }];
-    const result = filterToVisibleLeaves(tree, ctx);
-    expect(result).toEqual([{ id: 'x', ref: 'x' }]);
-    expect(Object.keys(result[0])).toEqual(['id', 'ref']);
-  });
-
   it('excludes widget when unless matches', () => {
     const tree: DefaultWidgetNode[] = [
       { id: 'a', ref: 'a' },
@@ -746,7 +548,7 @@ describe('filterToVisibleLeaves', () => {
 
   it('excludes widget when unless matches a permission', () => {
     const ctxWithPerm = makeCtx({
-      policyDecisions: new Map<string, PolicyDecision>([
+      otherPolicyDecisions: new Map<string, PolicyDecision>([
         ['perm.exclude', { result: AuthorizeResult.ALLOW }],
       ]),
     });
