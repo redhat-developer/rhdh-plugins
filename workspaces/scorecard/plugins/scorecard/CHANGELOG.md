@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.8.0
+
+### Minor Changes
+
+- 71cfae4: Add blueprint architecture for grouped scorecard layouts
+
+  Implement blueprint pattern enabling platform engineers to configure grouped scorecard metrics via app-config.yaml. Layout extensions are auto-discovered through Backstage's New Frontend System (NFS).
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
 ## 2.7.9
 
 ### Patch Changes
