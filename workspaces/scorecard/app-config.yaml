@@ -103,6 +103,10 @@ backend:
   # auth:
   #   keys:
   #     - secret: ${BACKEND_SECRET}
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+    keys:
+      - secret: 'gh'
   baseUrl: http://localhost:7007
   listen:
     port: 7007
@@ -183,8 +187,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:development/guest
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
