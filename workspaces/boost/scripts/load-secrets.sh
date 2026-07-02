@@ -50,7 +50,7 @@ _discover_llama_stack_route() {
       | grep -i "llama" \
       | head -1 \
       | awk '{print $2}')
-    if [ -n "$route_host" ]; then
+    if [[ -n "$route_host" ]]; then
       echo "https://${route_host}"
       return 0
     fi
