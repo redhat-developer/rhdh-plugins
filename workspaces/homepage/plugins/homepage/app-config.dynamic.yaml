@@ -42,8 +42,8 @@ dynamicPlugins:
         - mountPoint: home.page/widgets
           importName: RecentlyVisitedCard
           config:
-            title: 'Recently Visited'
-            description: 'Quick access to recently viewed entities and pages'
+            titleKey: recentlyVisited.title
+            descriptionKey: recentlyVisited.description
             priority: 2
             layouts:
               xl: { w: 4, h: 3 }
@@ -55,8 +55,8 @@ dynamicPlugins:
         - mountPoint: home.page/widgets
           importName: TopVisitedCard
           config:
-            title: 'Most Visited'
-            description: 'Your most frequently accessed entities and services'
+            titleKey: topVisited.title
+            descriptionKey: topVisited.description
             priority: 1
             layouts:
               xl: { w: 4, h: 3 }
@@ -65,3 +65,16 @@ dynamicPlugins:
               sm: { w: 12, h: 3 }
               xs: { w: 12, h: 3 }
               xxs: { w: 12, h: 3 }
+        - mountPoint: home.page/widgets
+          importName: JokeCard
+          config:
+            titleKey: randomJoke.title
+            descriptionKey: randomJoke.description
+            priority: 3
+            layouts:
+              xl: { w: 4, h: 4 }
+              lg: { w: 4, h: 4 }
+              md: { w: 6, h: 4 }
+              sm: { w: 12, h: 4 }
+              xs: { w: 12, h: 4 }
+              xxs: { w: 12, h: 4 }

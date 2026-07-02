@@ -33,6 +33,8 @@ export const homepageMessages = {
   },
   search: {
     placeholder: 'Search',
+    title: 'Search',
+    clearButton: 'Clear',
   },
   quickAccess: {
     title: 'Quick Access',
@@ -48,9 +50,15 @@ export const homepageMessages = {
   },
   recentlyVisited: {
     title: 'Recently Visited',
+    description: 'Quick access to recently viewed entities and pages',
   },
   topVisited: {
     title: 'Top Visited',
+    description: 'Your most frequently accessed entities and services',
+  },
+  randomJoke: {
+    title: 'Random Joke',
+    description: 'Shows a random programming joke',
   },
   templates: {
     title: 'Explore Templates',
@@ -63,6 +71,7 @@ export const homepageMessages = {
     viewAll: 'View all {{count}} templates',
   },
   onboarding: {
+    title: 'Red Hat Developer Hub - Onboarding',
     greeting: {
       goodMorning: 'Good morning',
       goodAfternoon: 'Good afternoon',

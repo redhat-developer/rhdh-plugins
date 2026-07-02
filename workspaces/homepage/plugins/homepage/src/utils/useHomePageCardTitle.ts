@@ -17,6 +17,11 @@
 import { useTranslation } from '../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../translations/utils';
 
+/**
+ * Props for home page cards that support translated titles.
+ *
+ * @public
+ */
 export interface TranslatableCardTitleProps {
   title?: string;
   titleKey?: string;

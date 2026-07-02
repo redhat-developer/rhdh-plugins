@@ -66,6 +66,8 @@ export type { MarkdownCardProps } from './components/MarkdownCard';
 export type { PlaceholderProps } from './components/Placeholder';
 export type { LocalClockProps } from './components/LocalClock';
 export type { WorldClockProps } from './components/WorldClock';
+export type { JokeCardProps } from './components/legacy/TranslatedUpstreamHomePageCards';
+export type { TranslatableCardTitleProps } from './utils/useHomePageCardTitle';
 export type {
   HomePageCardMountPoint,
   HomePageCardMountPointConfig,
@@ -346,6 +348,21 @@ export const TemplateSection = dynamicHomePagePlugin.provide(
     component: {
       lazy: () =>
         import('./components/TemplateSection').then(m => m.TemplateSection),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const JokeCard = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'JokeCard',
+    component: {
+      lazy: () =>
+        import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+          m => m.JokeCard,
+        ),
     },
   }),
 );

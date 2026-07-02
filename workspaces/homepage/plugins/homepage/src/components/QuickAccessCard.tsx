@@ -17,7 +17,7 @@
 import type { ReactNode } from 'react';
 
 import { CodeSnippet, WarningPanel } from '@backstage/core-components';
-import { ComponentAccordion, HomePageToolkit } from '@backstage/plugin-home';
+import { ComponentAccordion } from '@backstage/plugin-home';
 
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -25,6 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
 import { useTranslation } from '../hooks/useTranslation';
 import { QuickAccessIcon } from './QuickAccessIcon';
+import { QuickAccessToolkitList } from './QuickAccessToolkitList';
 
 /** @public */
 export interface QuickAccessCardProps {
@@ -67,21 +68,22 @@ export const QuickAccessCardContent = ({
   } else {
     content = (
       <>
-        {data.map(item => (
-          <HomePageToolkit
-            key={item.title}
-            title={item.title}
-            tools={item.links.map(link => ({
-              ...link,
-              icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
-            }))}
-            Renderer={(
-              renderProps, // NOSONAR
-            ) => (
-              <ComponentAccordion expanded={item.isExpanded} {...renderProps} />
-            )}
-          />
-        ))}
+        {data.map(item => {
+          const tools = item.links.map(link => ({
+            label: link.label,
+            url: link.url,
+            icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
+          }));
+
+          return (
+            <ComponentAccordion
+              key={item.title}
+              title={item.title}
+              expanded={item.isExpanded}
+              Content={() => <QuickAccessToolkitList tools={tools} />}
+            />
+          );
+        })}
       </>
     );
   }

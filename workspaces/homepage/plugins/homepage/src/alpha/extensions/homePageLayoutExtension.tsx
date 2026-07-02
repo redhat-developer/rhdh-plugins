@@ -15,8 +15,19 @@
  */
 
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
-import { HomePageLayout } from '../components/HomePageLayout';
-import { HomePageCardConfig } from '../../types';
+import { z } from 'zod';
+
+const breakpointLayoutSchema = z.object({
+  w: z.number().optional(),
+  h: z.number().optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
+});
+
+const widgetLayoutEntrySchema = z.object({
+  priority: z.number().optional(),
+  breakpoints: z.record(z.string(), breakpointLayoutSchema).optional(),
+});
 
 /**
  * Custom home page layout extension for the New Frontend System.
@@ -29,63 +40,21 @@ import { HomePageCardConfig } from '../../types';
 export const homePageLayoutExtension =
   HomePageLayoutBlueprint.makeWithOverrides({
     name: 'dynamic-homepage-layout',
-    config: {
-      schema: {
-        customizable: z => z.boolean().optional(),
-        widgetLayout: z =>
-          z
-            .record(
-              z.object({
-                priority: z.number().optional(),
-                breakpoints: z
-                  .record(
-                    z.object({
-                      w: z.number().optional(),
-                      h: z.number().optional(),
-                      x: z.number().optional(),
-                      y: z.number().optional(),
-                    }),
-                  )
-                  .optional(),
-              }),
-            )
-            .optional(),
-      },
+    configSchema: {
+      customizable: z.boolean().optional(),
+      widgetLayout: z.record(z.string(), widgetLayoutEntrySchema).optional(),
     },
     factory(originalFactory, { config }) {
       const customizable = config.customizable ?? true;
       const layoutConfig = config.widgetLayout ?? {};
 
       return originalFactory({
-        loader: async () =>
-          function CustomHomePageLayout({ widgets }) {
-            const processedWidgets: HomePageCardConfig[] = widgets
-              .map(widget => {
-                const widgetConfig = layoutConfig[widget.name ?? ''];
-                const configBreakpoints = widgetConfig?.breakpoints;
-
-                if (!configBreakpoints) return widget;
-
-                return {
-                  ...widget,
-                  breakpointLayouts: configBreakpoints,
-                };
-              })
-              .sort((a, b) => {
-                if (customizable) return 0; // keep original order
-
-                const priorityA = layoutConfig[a.name ?? '']?.priority ?? 0;
-                const priorityB = layoutConfig[b.name ?? '']?.priority ?? 0;
-                return priorityB - priorityA;
-              });
-
-            return (
-              <HomePageLayout
-                widgets={processedWidgets}
-                customizable={customizable}
-              />
-            );
-          },
+        loader: async () => {
+          const { createCustomHomePageLayout } = await import(
+            '../components/CustomHomePageLayout'
+          );
+          return createCustomHomePageLayout({ customizable, layoutConfig });
+        },
       });
     },
   });

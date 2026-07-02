@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
-import { homepageTranslationRef } from './ref';
+/**
+ * Lightweight translation callback used by homepage utilities and tests.
+ * Compatible with `TranslationFunction` from `useTranslation`, without
+ * pulling in its expensive generic instantiation during full typechecks.
+ */
+export type HomepageTranslateFn = (key: string, options?: any) => string;
 
 /**
  * Utility function to get translated text with fallback to original text
@@ -26,7 +30,7 @@ import { homepageTranslationRef } from './ref';
  * @returns Translated text or fallback text
  */
 export const getTranslatedTextWithFallback = (
-  t: TranslationFunction<typeof homepageTranslationRef.T>,
+  t: HomepageTranslateFn,
   translationKey: string | undefined,
   fallbackText: string | undefined,
 ): string | undefined => {
@@ -34,6 +38,6 @@ export const getTranslatedTextWithFallback = (
     return fallbackText;
   }
 
-  const translation = t(translationKey as keyof typeof t, {});
+  const translation = t(translationKey, {});
   return translation !== translationKey ? translation : fallbackText;
 };

@@ -16,13 +16,12 @@
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { LearningSectionItem } from '../types';
-import { homepageTranslationRef } from '../translations';
+import type { HomepageTranslateFn } from '../translations/utils';
 
 export const getLearningItems = (
-  t: TranslationFunction<typeof homepageTranslationRef.T>,
+  t: HomepageTranslateFn,
 ): LearningSectionItem[] => [
   {
     title: t('onboarding.getStarted.title'),

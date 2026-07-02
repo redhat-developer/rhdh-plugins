@@ -27,6 +27,7 @@ import {
   searchBarWidget,
   templateSectionWidget,
   TopVisitedWidget,
+  randomJokeWidget,
 } from './extensions/homePageCards';
 import { homepageTranslations } from '../translations';
 
@@ -57,6 +58,7 @@ export const homePageModule = createFrontendModule({
     TopVisitedWidget,
     RecentlyVisitedWidget,
     catalogStarredWidget,
+    randomJokeWidget,
     disableToolkit,
   ],
 });
