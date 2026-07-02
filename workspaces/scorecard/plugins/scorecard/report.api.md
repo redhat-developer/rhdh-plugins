@@ -4,7 +4,7 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { JSX as JSX_2 } from 'react';
 import { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
 import { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
 import { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
@@ -36,9 +36,9 @@ export { ScorecardSuccessStatusIcon };
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
+    readonly 'emptyState.button': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
-    readonly 'emptyState.button': string;
     readonly 'emptyState.altText': string;
     readonly 'notFound.title': string;
     readonly 'notFound.description': string;
@@ -46,9 +46,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'notFound.readMore': string;
     readonly 'notFound.goBack': string;
     readonly 'notFound.contactSupport': string;
+    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
-    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
@@ -120,19 +120,19 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;
     readonly 'entitiesPage.metricProviderNotRegistered': string;
-    readonly 'entitiesPage.entitiesTable.title': string;
-    readonly 'entitiesPage.entitiesTable.unavailable': string;
-    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
+    readonly 'entitiesPage.entitiesTable.footer.of': string;
+    readonly 'entitiesPage.entitiesTable.footer.allRows': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
+    readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
     readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
     readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.value': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;
-    readonly 'entitiesPage.entitiesTable.footer.of': string;
-    readonly 'entitiesPage.entitiesTable.footer.allRows': string;
-    readonly 'entitiesPage.entitiesTable.footer.rows_one': string;
-    readonly 'entitiesPage.entitiesTable.footer.rows_other': string;
+    readonly 'entitiesPage.entitiesTable.title': string;
+    readonly 'entitiesPage.entitiesTable.unavailable': string;
+    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
   }
 >;
 

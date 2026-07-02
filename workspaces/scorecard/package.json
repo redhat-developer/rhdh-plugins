@@ -45,16 +45,16 @@
     "directory": "workspaces/scorecard"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.0",
-    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/cli": "^0.36.2",
+    "@backstage/cli-defaults": "^0.1.2",
     "@backstage/e2e-test-utils": "^0.1.2",
-    "@backstage/repo-tools": "^0.17.0",
+    "@backstage/repo-tools": "^0.17.2",
     "@changesets/cli": "^2.27.1",
-    "@jest/environment-jsdom-abstract": "^30.3.0",
+    "@jest/environment-jsdom-abstract": "30.3.0",
     "@playwright/test": "1.60.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
-    "jest": "^30.3.0",
+    "jest": "30.3.0",
     "jsdom": "^27.1.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -65,8 +65,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
-    "@backstage/backend-plugin-api": "1.9.0",
-    "@backstage/plugin-catalog-node": "2.1.0"
+    "@backstage/backend-plugin-api": "1.9.2",
+    "@backstage/plugin-catalog-node": "2.2.2"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {

@@ -43,39 +43,7 @@ describe('ScorecardEntityContentLayoutBlueprint', () => {
         },
         "configSchema": {
           "parse": [Function],
-          "schema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "additionalProperties": false,
-            "properties": {
-              "groups": {
-                "additionalProperties": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "description": {
-                      "type": "string",
-                    },
-                    "metrics": {
-                      "items": {
-                        "type": "string",
-                      },
-                      "type": "array",
-                    },
-                    "title": {
-                      "type": "string",
-                    },
-                  },
-                  "required": [
-                    "title",
-                    "metrics",
-                  ],
-                  "type": "object",
-                },
-                "default": {},
-                "type": "object",
-              },
-            },
-            "type": "object",
-          },
+          "schema": [Function],
         },
         "disabled": false,
         "factory": [Function],

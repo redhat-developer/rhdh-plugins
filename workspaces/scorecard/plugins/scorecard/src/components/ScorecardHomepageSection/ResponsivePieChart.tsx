@@ -22,6 +22,7 @@ import {
   Legend,
   Tooltip,
   PieLabelRenderProps,
+  type TooltipProps,
 } from 'recharts';
 import type { PieData } from '../types';
 
@@ -134,7 +135,13 @@ export const ResponsivePieChart = ({
           />
         ) : null}
 
-        <Tooltip content={isTooltipEnabled ? tooltipContent : () => null} />
+        <Tooltip
+          content={
+            (isTooltipEnabled
+              ? tooltipContent
+              : () => null) as TooltipProps['content']
+          }
+        />
       </PieChart>
     </ResponsiveContainer>
   );
