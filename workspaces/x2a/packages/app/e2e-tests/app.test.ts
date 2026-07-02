@@ -16,7 +16,12 @@
 
 import { test, expect } from '@playwright/test';
 
-// To be implemented later
-test('noop test', async () => {
-  expect(true).toBe(true);
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+  const nav = page.getByRole('navigation');
+  await expect(nav.getByRole('link', { name: 'APIs' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Docs' })).toBeVisible();
 });

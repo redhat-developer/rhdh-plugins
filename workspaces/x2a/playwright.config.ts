@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 import { defineConfig } from '@playwright/test';
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   timeout: 60_000,
 
   expect: {
-    timeout: 5_000,
+    timeout: 10_000,
   },
 
-  // Run your local dev server before starting the tests
-  webServer: process.env.CI
+  webServer: process.env.PLAYWRIGHT_URL
     ? []
     : [
         {
@@ -46,29 +42,50 @@ export default defineConfig({
 
   forbidOnly: !!process.env.CI,
 
+  workers: process.env.CI ? 2 : 1,
+
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'e2e-test-report' }],
+    ['junit', { outputFile: 'playwright-results.xml' }],
+  ],
 
   use: {
-    actionTimeout: 0,
-    baseURL:
-      process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+    actionTimeout: 10_000,
+    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    ignoreHTTPSErrors: true,
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: 'test-results',
 
   projects: [
+    // Merge-gate safe: runs against the local dev server in CI
     {
-      name: 'en',
+      name: 'chromium',
       testDir: 'packages/app/e2e-tests',
+      testMatch: /app\.test\.ts$/,
       use: {
         channel: 'chrome',
-        locale: 'en',
       },
     },
+    // Downstream E2E only: requires a deployed RHDH+X2A environment.
+    // Activated by setting PLAYWRIGHT_URL to the live cluster base URL.
+    // Run with: PLAYWRIGHT_URL=https://... yarn test:e2e:live
+    ...(process.env.PLAYWRIGHT_URL
+      ? [
+          {
+            name: 'live',
+            testDir: 'packages/app/e2e-tests',
+            testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
+            use: {
+              channel: 'chrome' as const,
+            },
+          },
+        ]
+      : []),
   ],
 });
