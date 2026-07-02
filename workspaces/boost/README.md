@@ -28,7 +28,7 @@ workspaces/boost/
 │       ├── design.md            #   Architecture decisions
 │       ├── tasks.md             #   Implementation task breakdown
 │       └── specs/               #   Behavioral specs (Given/When/Then scenarios)
-└── plugins/                     # Plugin packages (not yet created)
+└── plugins/                     # Plugin packages
 ```
 
 **`specifications/`** contains the product-level requirements — what Boost must do and why. The PRDs are organized by capability area: AI chat, agent discovery, platform architecture, security, and operations.
@@ -39,9 +39,16 @@ All specs are currently in **draft** status (pre-implementation). They will be m
 
 ## Plugins
 
-| Plugin        | Description |
-| ------------- | ----------- |
-| _coming soon_ |             |
+| Plugin                          | Package                                                                   | Description                                                    |
+| ------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| boost                           | `@red-hat-developer-hub/backstage-plugin-boost`                           | Frontend plugin — AI Catalog browse page and entity extensions |
+| boost-backend                   | `@red-hat-developer-hub/backstage-plugin-boost-backend`                   | Backend plugin — chat, agent lifecycle, MCP, admin APIs        |
+| boost-common                    | `@red-hat-developer-hub/backstage-plugin-boost-common`                    | Shared types and permissions                                   |
+| boost-node                      | `@red-hat-developer-hub/backstage-plugin-boost-node`                      | Node library — service refs and extension points               |
+| boost-backend-module-llamastack | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack` | Llama Stack provider module                                    |
+| boost-backend-module-kagenti    | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti`    | Kagenti provider module                                        |
+| llamastack-entity-provider      | `@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider`      | Llama Stack catalog entity provider                            |
+| kagenti-entity-provider         | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`         | Kagenti catalog entity provider                                |
 
 ## Compatibility
 
@@ -49,12 +56,16 @@ This workspace is aligned with **Backstage 1.52.0** (see [`backstage.json`](back
 
 ## Development
 
+The workspace includes a dev app (`packages/app`) and dev backend (`packages/backend`) for local development.
+
 ```bash
 # Install dependencies
 yarn install
 
-# Start the dev server
+# Start the dev app + backend
 yarn start
+# Frontend: http://localhost:3000 (AI Catalog at /ai-catalog)
+# Backend: http://localhost:7007
 
 # Run tests
 yarn test:all
