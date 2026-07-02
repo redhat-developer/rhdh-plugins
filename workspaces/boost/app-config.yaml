@@ -63,30 +63,27 @@ catalog:
 boost:
   security:
     mode: 'development-only-no-auth'
-
-  model:
-    baseUrl: ${BOOST_MODEL_BASE_URL:-http://localhost:8080/v1}
-    name: ${BOOST_MODEL:-default}
+    adminUsers:
+      - 'user:default/admin'
+      - 'user:default/guest'
 
   providers:
     llamastack:
-      baseUrl: ${LLAMASTACK_BASE_URL:-http://localhost:8321}
-
+      baseUrl: ${BOOST_LLAMA_STACK_URL:-http://localhost:8321}
+      defaultModel: ${BOOST_MODEL:-default}
     kagenti:
       baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+      defaultAgent: default
       namespaces:
         - ${KAGENTI_NAMESPACE:-default}
 
   kagenti:
+    baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+    namespace: ${KAGENTI_NAMESPACE:-default}
     auth:
       tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-}
       clientId: ${KAGENTI_CLIENT_ID:-}
       clientSecret: ${KAGENTI_CLIENT_SECRET:-}
-
-  entityProviders:
-    kagenti:
-      baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
-      namespaces:
-        - ${KAGENTI_NAMESPACE:-default}
-      agentRefreshIntervalSeconds: 300
-      toolRefreshIntervalSeconds: 300
+    showAllNamespaces: true
+    skipTlsVerify: true
+    verboseStreamLogging: true
