@@ -134,7 +134,7 @@ const Techdocs = () => {
           {loading ? (
             <TableRow>
               <TableCell colSpan={TECHDOCS_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
+                <CircularProgress aria-label={t('common.loading')} />
               </TableCell>
             </TableRow>
           ) : (

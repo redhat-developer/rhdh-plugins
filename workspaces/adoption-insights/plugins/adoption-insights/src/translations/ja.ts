@@ -39,6 +39,7 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'catalogEntities.topNTitle': '上位 {{count}} 件のカタログエンティティー',
     'common.csvFilename': 'active_users',
     'common.downloading': 'ダウンロード中...',
+    'common.loading': '読み込み中',
     'common.exportCSV': 'CSV エクスポート',
     'common.filteredBy': 'フィルタリング条件',
     'common.invalidDateFormat': '無効な日付形式',
