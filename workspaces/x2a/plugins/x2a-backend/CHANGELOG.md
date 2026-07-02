@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.6.1
+
+### Patch Changes
+
+- a408de5: Add gitignore detection logging in x2a job script cleanup
+
 ## 1.6.0
 
 ### Minor Changes
