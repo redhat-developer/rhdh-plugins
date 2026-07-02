@@ -52,3 +52,24 @@ export function resolveMetricTranslation(
 
   return fallback ?? translated;
 }
+
+/**
+ * Extracts the plugin name from a metric ID.
+ * The plugin name is the first segment of the metric ID.
+ * E.g. filecheck.codeowners -> Filecheck
+ *      github.open_prs -> Github
+ *      gitlab.open_issues -> Gitlab
+ *      sonarqube.code_smells -> Sonarqube
+ *      etc.
+ * @param metricId - The metric ID.
+ * @param fallback - The fallback value if the metric ID is undefined.
+ * @returns The plugin name.
+ */
+export function extractPluginName(
+  metricId: string | undefined,
+  fallback: string,
+): string {
+  if (!metricId) return fallback;
+  const prefix = metricId.split('.')[0] ?? metricId;
+  return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+}

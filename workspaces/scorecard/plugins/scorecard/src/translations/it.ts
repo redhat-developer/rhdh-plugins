@@ -25,6 +25,16 @@ const scorecardTranslationIt = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Caricamento',
+    'dataSourcesDialog.title': '{{title}} sorgenti',
+    'dataSourcesDialog.close': 'Chiudere',
+    'dataSourcesDialog.unknownPlugin': 'Sconosciuto',
+    'dataSourcesDialog.statusTooltip':
+      'Valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'VERIFICA',
+    'dataSourcesDialog.columns.value': 'VALORE',
+    'dataSourcesDialog.columns.status': 'STATO',
+    'dataSourcesDialog.columns.lastSynced': 'ULTIMA SINCRONIZZAZIONE',
     'emptyState.altText': 'Nessuna scorecard',
     'emptyState.button': 'Visualizza documentazione',
     'emptyState.description':
@@ -73,6 +83,8 @@ const scorecardTranslationIt = createTranslationMessages({
       'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
     'errors.userNotFoundInCatalogMessage':
       'Entità utente non trovata nel catalogo.',
+    'metricGroupCard.menuAriaLabel': 'Altre opzioni',
+    'metricGroupCard.viewDataSources': 'Visualizza sorgenti',
     'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
     'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
     'metric.averageCenterTooltipBreakdownRow_one':

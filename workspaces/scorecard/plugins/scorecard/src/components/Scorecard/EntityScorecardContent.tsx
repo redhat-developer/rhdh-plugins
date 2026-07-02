@@ -50,10 +50,14 @@ const EntityScorecardContentInner = () => {
 
   return (
     <Box
-      display="flex"
-      flexWrap="wrap"
+      display="grid"
+      gridTemplateColumns={{
+        xs: '1fr',
+        sm: 'repeat(2, 1fr)',
+        lg: 'repeat(3, 1fr)',
+      }}
       gap={2}
-      sx={{ alignItems: 'flex-start' }}
+      sx={{ alignItems: 'start' }}
     >
       {scorecards?.map((metric: MetricResult) => {
         // Check if metric data unavailable
@@ -66,7 +70,7 @@ const EntityScorecardContentInner = () => {
           evaluation: metric.result?.thresholdResult?.evaluation,
           thresholdStatus: metric.result?.thresholdResult?.status,
           metricStatus: metric.status,
-          thresholdRules: metric.result.thresholdResult.definition?.rules,
+          thresholdRules: metric.result?.thresholdResult?.definition?.rules,
         });
 
         const title = resolveMetricTranslation(

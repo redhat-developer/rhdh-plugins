@@ -25,6 +25,16 @@ const scorecardTranslationEs = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Cargando',
+    'dataSourcesDialog.title': '{{title}} fuentes',
+    'dataSourcesDialog.close': 'Cerrar',
+    'dataSourcesDialog.unknownPlugin': 'Desconocido',
+    'dataSourcesDialog.statusTooltip':
+      'Valor {{value}} coincide con umbral {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'VERIFICACIÓN',
+    'dataSourcesDialog.columns.value': 'VALOR',
+    'dataSourcesDialog.columns.status': 'ESTADO',
+    'dataSourcesDialog.columns.lastSynced': 'ÚLTIMA SINCRONIZACIÓN',
     'emptyState.altText': 'No hay tarjetas de puntuación',
     'emptyState.button': 'Ver documentación',
     'emptyState.description':
@@ -72,6 +82,8 @@ const scorecardTranslationEs = createTranslationMessages({
       'Esta tarjeta de puntuación utiliza un tipo de agregación que no es compatible con esta versión del complemento.',
     'errors.userNotFoundInCatalogMessage':
       'No se encontró la entidad de usuario en el catálogo.',
+    'metricGroupCard.menuAriaLabel': 'Más opciones',
+    'metricGroupCard.viewDataSources': 'Ver fuentes',
     'metric.averageCenterTooltipMaxLabel': 'Puntuación máxima posible',
     'metric.averageCenterTooltipTotalLabel': 'Puntuación total',
     'metric.averageCenterTooltipBreakdownRow_one':
