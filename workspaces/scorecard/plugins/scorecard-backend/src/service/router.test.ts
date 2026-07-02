@@ -34,6 +34,7 @@ import {
   AggregatedMetric,
   AggregatedMetricResult,
   aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -1187,14 +1188,14 @@ describe('createRouter', () => {
       );
     });
 
-    it('should use KPI type average when configured', async () => {
+    it('should use KPI type weightedStatusScore when configured', async () => {
       const kpiConfig = new ConfigReader({
         scorecard: {
           aggregationKPIs: {
-            avgKpi: {
+            weightedKpi: {
               title: 'Weighted health KPI',
-              description: 'Weighted average',
-              type: 'average',
+              description: 'Weighted status score',
+              type: 'weightedStatusScore',
               metricId: 'github.open_prs',
               options: {
                 statusScores: {
@@ -1245,12 +1246,96 @@ describe('createRouter', () => {
       kpiApp.use(router);
       kpiApp.use(mockErrorHandler());
 
-      await request(kpiApp).get('/aggregations/avgKpi');
+      await request(kpiApp).get('/aggregations/weightedKpi');
 
       expect(getSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         'github.open_prs',
       );
+    });
+
+    it('should use KPI type sum and return scalar result', async () => {
+      const kpiConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            totalOpenPrs: {
+              title: 'Total Open PRs',
+              description: 'Sum of open PRs',
+              type: aggregationTypes.sum,
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
+      const kpiService = new CatalogMetricService({
+        catalog: mockCatalog,
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            token: 'test-token',
+          }),
+        }),
+        registry: metricRegistry,
+        database: mockDatabaseMetricValues,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+
+      const getSpy = jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricByEntityRefs',
+        )
+        .mockResolvedValue({
+          metric_id: 'github.open_prs',
+          value: 847,
+          total: 42,
+          latest_entity_count: 45,
+          calculation_error_count: 3,
+          max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+        });
+
+      jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockRestore();
+
+      const aggregationsServiceSum = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        kpiConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceSum,
+          catalogMetricService: kpiService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const kpiApp = express();
+      kpiApp.use(router);
+      kpiApp.use(mockErrorHandler());
+
+      const response = await request(kpiApp).get('/aggregations/totalOpenPrs');
+
+      expect(response.status).toBe(200);
+      expect(getSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.open_prs',
+        'sum',
+      );
+      expect(response.body.metadata.aggregationType).toBe(aggregationTypes.sum);
+      expect(response.body.result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2025-01-01T10:30:00.000Z',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      });
     });
   });
 

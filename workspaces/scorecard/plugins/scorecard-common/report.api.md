@@ -15,14 +15,6 @@ export type AggregatedMetric = {
 };
 
 // @public (undocumented)
-export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
-  averageScore: number;
-  averageWeightedSum: number;
-  averageMaxPossible: number;
-  aggregationChartDisplayColor: string;
-};
-
-// @public (undocumented)
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
@@ -49,7 +41,7 @@ export type AggregationConfig = {
 
 // @public (undocumented)
 export type AggregationConfigOptions = {
-  statusScores: Record<string, number>;
+  statusScores?: Record<string, number>;
   thresholds?: ThresholdConfig;
 };
 
@@ -65,7 +57,8 @@ export type AggregationMetadata = {
 // @public (undocumented)
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | AggregatedMetricAverageResult;
+  | WeightedStatusScoreAggregationResult
+  | ScalarAggregationResult;
 
 // @public
 export type AggregationThresholdRule = Pick<
@@ -80,7 +73,12 @@ export type AggregationType =
 // @public
 export const aggregationTypes: Readonly<{
   statusGrouped: 'statusGrouped';
+  weightedStatusScore: 'weightedStatusScore';
+  sum: 'sum';
   average: 'average';
+  max: 'max';
+  min: 'min';
+  count: 'count';
 }>;
 
 // @public
@@ -157,6 +155,30 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 // @public (undocumented)
 export const RESOURCE_TYPE_SCORECARD_METRIC = 'scorecard-metric';
 
+// @public (undocumented)
+export type ScalarAggregatedMetric = {
+  value: number;
+  total: number;
+  timestamp: string;
+  entitiesConsidered: number;
+  calculationErrorCount: number;
+};
+
+// @public (undocumented)
+export type ScalarAggregationResult = Omit<AggregatedMetric, 'values'> & {
+  value: number;
+  thresholds: ThresholdConfig;
+};
+
+// @public
+export const scalarAggregationTypes: readonly [
+  'sum',
+  'average',
+  'max',
+  'min',
+  'count',
+];
+
 // @public
 export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
   | 'success.main'
@@ -218,6 +240,15 @@ export type ThresholdRule = {
   color?: string;
   icon?: string;
 };
+
+// @public (undocumented)
+export type WeightedStatusScoreAggregationResult =
+  StatusGroupedAggregationResult & {
+    weightedStatusScore: number;
+    weightedStatusSum: number;
+    weightedStatusMaxPossible: number;
+    aggregationChartDisplayColor: string;
+  };
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -1356,4 +1356,253 @@ describe('DatabaseMetricValues', () => {
       },
     );
   });
+
+  describe('readScalarAggregatedMetricByEntityRefs', () => {
+    describe.each(databases.eachSupportedId())(
+      'should %p raw metric values across latest rows',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          await client('metric_values').insert([
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 10,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 25,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              value: 5,
+              status: 'error',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 2,
+              status: 'success',
+            }),
+          ]);
+        });
+
+        it('should sum raw metric values across latest rows', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            [
+              'component:default/service1',
+              'component:default/service2',
+              'component:default/service3',
+            ],
+            'github.metric1',
+            'sum',
+          );
+
+          expect(result).toEqual({
+            metric_id: 'github.metric1',
+            value: 17,
+            total: 3,
+            latest_entity_count: 3,
+            calculation_error_count: 0,
+            max_timestamp: baseTimestamp,
+          });
+        });
+
+        it('should average raw metric values across latest rows', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            [
+              'component:default/service1',
+              'component:default/service2',
+              'component:default/service3',
+            ],
+            'github.metric1',
+            'average',
+          );
+
+          expect(result).toEqual({
+            metric_id: 'github.metric1',
+            value: 5.666666666666667,
+            total: 3,
+            latest_entity_count: 3,
+            calculation_error_count: 0,
+            max_timestamp: baseTimestamp,
+          });
+        });
+
+        it('should count raw metric values across latest rows', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            [
+              'component:default/service1',
+              'component:default/service2',
+              'component:default/service3',
+            ],
+            'github.metric1',
+            'count',
+          );
+
+          expect(result).toEqual({
+            metric_id: 'github.metric1',
+            value: 3,
+            total: 3,
+            latest_entity_count: 3,
+            calculation_error_count: 0,
+            max_timestamp: baseTimestamp,
+          });
+        });
+
+        it('should max raw metric values across latest rows', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            [
+              'component:default/service1',
+              'component:default/service2',
+              'component:default/service3',
+            ],
+            'github.metric1',
+            'max',
+          );
+
+          expect(result).toEqual({
+            metric_id: 'github.metric1',
+            value: 10,
+            total: 3,
+            latest_entity_count: 3,
+            calculation_error_count: 0,
+            max_timestamp: baseTimestamp,
+          });
+        });
+
+        it('should min raw metric values across latest rows', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            [
+              'component:default/service1',
+              'component:default/service2',
+              'component:default/service3',
+            ],
+            'github.metric1',
+            'min',
+          );
+
+          expect(result).toEqual({
+            metric_id: 'github.metric1',
+            value: 2,
+            total: 3,
+            latest_entity_count: 3,
+            calculation_error_count: 0,
+            max_timestamp: baseTimestamp,
+          });
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should exclude calculation failures and use latest row per entity - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const olderTime = new Date('2023-01-01T00:00:00Z');
+        const newerTime = new Date('2023-01-01T01:00:00Z');
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: olderTime,
+            value: 5,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: newerTime,
+            value: 15,
+            status: 'warning',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: null,
+            status: null,
+            errorMessage: 'Failed to fetch',
+          }),
+        ]);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          value: 15,
+          total: 1,
+          latest_entity_count: 2,
+          calculation_error_count: 1,
+          max_timestamp: newerTime,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when entity refs have no metric rows - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service-without-data'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should exclude rows with null value from aggregate - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            value: 10,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: null,
+            status: null,
+          }),
+        ]);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result?.value).toBe(10);
+        expect(result?.total).toBe(1);
+        expect(result?.latest_entity_count).toBe(2);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+  });
 });

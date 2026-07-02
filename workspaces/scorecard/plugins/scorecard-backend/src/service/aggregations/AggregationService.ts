@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import type { AggregationRuntimeConfig } from './types';
+import { parseValidatedAggregationConfig } from '../../validation/validateAggregationConfig';
 import {
   type AggregatedMetricResult,
-  type AggregationConfig,
   type AggregationType,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -52,7 +53,7 @@ export class AggregationsService {
     );
   }
 
-  getAggregationConfig(aggregationId: string): AggregationConfig {
+  getAggregationConfig(aggregationId: string): AggregationRuntimeConfig {
     const config = this.config.getOptionalConfig(
       `${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}`,
     );
@@ -67,12 +68,14 @@ export class AggregationsService {
         id: aggregationId,
         type: aggregationTypes.statusGrouped,
         metricId: aggregationId,
-      } as AggregationConfig;
+      };
     }
 
-    return buildAggregationConfig(aggregationId, {
-      config,
-    });
+    return parseValidatedAggregationConfig(
+      buildAggregationConfig(aggregationId, {
+        config,
+      }),
+    );
   }
 
   async getAggregatedMetricByEntityRefs(

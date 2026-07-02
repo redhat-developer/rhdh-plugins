@@ -19,7 +19,10 @@ import { InputError } from '@backstage/errors';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateAggregationConfig } from './validateAggregationConfig';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { MockNumberProvider } from '../../__fixtures__/mockProviders';
+import {
+  MockBooleanProvider,
+  MockNumberProvider,
+} from '../../__fixtures__/mockProviders';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
 
 describe('validateAggregationConfig', () => {
@@ -122,7 +125,7 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should not throw when average KPI has options.statusScores (app-config shape)', () => {
+  it('should not throw when weightedStatusScore KPI has options.statusScores (app-config shape)', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
@@ -131,8 +134,8 @@ describe('validateAggregationConfig', () => {
         aggregationKPIs: {
           openPrsWeightedKpi: {
             title: 'GitHub Open PRs (weighted health)',
-            type: aggregationTypes.average,
-            description: 'Weighted health average for open PRs.',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score for open PRs.',
             metricId: 'github.open_prs',
             options: {
               statusScores: {
@@ -151,17 +154,17 @@ describe('validateAggregationConfig', () => {
     ).not.toThrow();
   });
 
-  it('should throw when type is average but required options block is missing', () => {
+  it('should throw when type is weightedStatusScore but required options block is missing', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
             metricId: 'github.open_prs',
           },
         },
@@ -173,17 +176,17 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should throw InputError when type is average but options.statusScores is empty', () => {
+  it('should throw InputError when type is weightedStatusScore but options.statusScores is empty', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
             metricId: 'github.open_prs',
             options: { statusScores: {} },
           },
@@ -196,17 +199,17 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should not throw when average KPI includes optional thresholds', () => {
+  it('should not throw when weightedStatusScore KPI includes optional thresholds', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
             metricId: 'github.open_prs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
@@ -243,10 +246,10 @@ describe('validateAggregationConfig', () => {
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
             metricId: 'github.open_prs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
@@ -270,17 +273,17 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should throw when average KPI thresholds leave a gap on the number line', () => {
+  it('should throw when weightedStatusScore KPI thresholds leave a gap on the number line', () => {
     const registry = new MetricProvidersRegistry();
     registry.register(new MockNumberProvider('github.open_prs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
+          weightedKpi: {
             title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
             metricId: 'github.open_prs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
@@ -295,6 +298,146 @@ describe('validateAggregationConfig', () => {
                     key: 'warning',
                     expression: '11-20',
                     color: 'warning.main',
+                  },
+                  {
+                    key: 'error',
+                    expression: '>20',
+                    color: 'error.main',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /do not cover the entire real line/,
+    );
+  });
+
+  it('should not throw when scalar sum KPI is valid for a number metric', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          totalOpenPrs: {
+            title: 'Total Open PRs',
+            description: 'Sum of open PRs',
+            type: aggregationTypes.sum,
+            metricId: 'github.open_prs',
+          },
+        },
+      },
+    });
+
+    expect(() =>
+      validateAggregationConfig({ rootConfig, registry }),
+    ).not.toThrow();
+  });
+
+  it('should throw InputError when sum KPI targets a boolean metric', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockBooleanProvider('jira.license', 'jira'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          badSumKpi: {
+            title: 'Bad sum',
+            description: 'Sum on boolean metric',
+            type: aggregationTypes.sum,
+            metricId: 'jira.license',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      InputError,
+    );
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /requires a number metric/,
+    );
+  });
+
+  it('should throw when count KPI targets a boolean metric', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockBooleanProvider('jira.license', 'jira'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          licenseCount: {
+            title: 'License count',
+            description: 'Count entities with license metric',
+            type: aggregationTypes.count,
+            metricId: 'jira.license',
+          },
+        },
+      },
+    });
+
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      InputError,
+    );
+    expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
+      /requires a number metric/,
+    );
+  });
+
+  it.each([
+    aggregationTypes.average,
+    aggregationTypes.max,
+    aggregationTypes.min,
+    aggregationTypes.count,
+  ])(
+    'should not throw when scalar %s KPI is valid for a number metric',
+    type => {
+      const registry = new MetricProvidersRegistry();
+      registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+      const rootConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            scalarKpi: {
+              title: 'Scalar KPI',
+              description: 'Scalar aggregation',
+              type,
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
+
+      expect(() =>
+        validateAggregationConfig({ rootConfig, registry }),
+      ).not.toThrow();
+    },
+  );
+
+  it('should throw when scalar KPI thresholds leave a gap on the real line', () => {
+    const registry = new MetricProvidersRegistry();
+    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+
+    const rootConfig = new ConfigReader({
+      scorecard: {
+        aggregationKPIs: {
+          badScalarKpi: {
+            title: 'Bad scalar',
+            description: 'Scalar with gap thresholds',
+            type: aggregationTypes.sum,
+            metricId: 'github.open_prs',
+            options: {
+              thresholds: {
+                rules: [
+                  {
+                    key: 'success',
+                    expression: '<10',
+                    color: 'success.main',
                   },
                   {
                     key: 'error',

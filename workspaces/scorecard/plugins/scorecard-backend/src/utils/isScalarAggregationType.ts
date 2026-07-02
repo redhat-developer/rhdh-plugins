@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  AggregatedMetricResult,
-  AggregationMetadata,
-  aggregationTypes,
-  StatusGroupedAggregationResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { AggregatedMetricCardBaseProps } from '../types';
+import { scalarAggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { AggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type StatusGroupedCardComponentProps = AggregatedMetricCardBaseProps & {
-  scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
-    metadata: AggregationMetadata & {
-      aggregationType: typeof aggregationTypes.statusGrouped;
-    };
-    result: StatusGroupedAggregationResult;
-  };
-};
+export function isScalarAggregationType(type: AggregationType): boolean {
+  return (scalarAggregationTypes as readonly string[]).includes(type);
+}

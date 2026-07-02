@@ -63,9 +63,11 @@ export class HomePage {
       cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
     } else if (cardName === 'Scorecard: Jira open blocking') {
       cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
-    } else if (cardName === AGGREGATED_CARDS_WIDGET_TITLES.openPrsWeightedKpi) {
+    } else if (
+      cardName === AGGREGATED_CARDS_WIDGET_TITLES.gitHubOpenPrsWeightedKpi
+    ) {
       cardPattern =
-        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardOpenPrsWeightedKpi/i;
+        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardGitHubOpenPrsWeightedKpi/i;
     } else {
       cardPattern = new RegExp(escapeRegex(cardName), 'i');
     }

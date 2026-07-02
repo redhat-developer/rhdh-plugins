@@ -16,13 +16,13 @@
 
 import {
   type AggregatedMetric,
-  type AggregatedMetricAverageResult,
+  type WeightedStatusScoreAggregationResult,
   type AggregatedMetricResult,
   type ThresholdConfig,
   ThresholdRule,
-  type AggregationConfigOptions,
+  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
 import { AggregatedMetricMapper } from '../../mappers';
 import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import type { AggregationOptions } from '../types';
@@ -30,7 +30,9 @@ import type { AggregationStrategy } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
 
-export class AverageAggregationStrategy implements AggregationStrategy {
+export class WeightedStatusScoreAggregationStrategy
+  implements AggregationStrategy
+{
   constructor(
     private readonly loader: AggregatedMetricLoader,
     private readonly logger: LoggerService,
@@ -42,23 +44,24 @@ export class AverageAggregationStrategy implements AggregationStrategy {
     thresholds,
     aggregationConfig,
   }: AggregationOptions): Promise<AggregatedMetricResult> {
-    const { options } = aggregationConfig;
-
-    if (!options?.statusScores) {
+    if (aggregationConfig.type !== aggregationTypes.weightedStatusScore) {
       throw new Error(
-        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.statusScores" is required for average aggregation`,
+        `Expected aggregation type "${aggregationTypes.weightedStatusScore}" but received "${aggregationConfig.type}"`,
       );
     }
 
-    if (!options.thresholds) {
+    const { statusScores } = aggregationConfig.options;
+
+    if (!aggregationConfig.options.thresholds) {
       this.logger.info(
-        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds" is not configured for average aggregation; ` +
+        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds" is not configured for weightedStatusScore aggregation; ` +
           'using the default 0–100% health scale (higher is better).',
       );
     }
 
     const headlineThresholds =
-      options.thresholds ?? DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS;
+      aggregationConfig.options.thresholds ??
+      DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS;
 
     const aggregatedMetric =
       await this.loader.loadStatusGroupedMetricByEntityRefs(
@@ -68,25 +71,26 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
     const weightedSum = this.calculateWeightedSum(
       aggregatedMetric.values,
-      options.statusScores,
+      statusScores,
       metric.id,
     );
 
-    const { averageScore, maxPossibleScore } = this.prepareScoreValues(
-      aggregatedMetric.total,
-      options.statusScores,
-      thresholds.rules,
-      weightedSum,
-    );
+    const { weightedStatusScore, maxPossibleScore } =
+      this.prepareWeightedStatusScoreValues(
+        aggregatedMetric.total,
+        statusScores,
+        thresholds.rules,
+        weightedSum,
+      );
 
     const aggregationChartDisplayColor = this.getAggregationChartDisplayColor(
-      averageScore,
+      weightedStatusScore,
       headlineThresholds,
     );
 
     if (!aggregationChartDisplayColor) {
       throw new Error(
-        `The color for percentage '${averageScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
+        `The color for percentage '${weightedStatusScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
       );
     }
 
@@ -98,14 +102,14 @@ export class AverageAggregationStrategy implements AggregationStrategy {
       values: thresholds.rules.map(rule => ({
         name: rule.key,
         count: aggregatedMetric.values[rule.key] ?? 0,
-        score: options.statusScores[rule.key] ?? 0,
+        score: statusScores[rule.key] ?? 0,
       })),
       thresholds,
-      averageScore,
-      averageWeightedSum: weightedSum,
-      averageMaxPossible: maxPossibleScore,
+      weightedStatusScore,
+      weightedStatusSum: weightedSum,
+      weightedStatusMaxPossible: maxPossibleScore,
       aggregationChartDisplayColor,
-    } as AggregatedMetricAverageResult;
+    } as WeightedStatusScoreAggregationResult;
 
     return AggregatedMetricMapper.toAggregatedMetricResult(
       metric,
@@ -116,7 +120,7 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
   private calculateWeightedSum(
     values: Pick<AggregatedMetric, 'values'>['values'],
-    statusScores: AggregationConfigOptions['statusScores'],
+    statusScores: Record<string, number>,
     metricId: string,
   ): number {
     let weightedSum = 0;
@@ -125,7 +129,7 @@ export class AverageAggregationStrategy implements AggregationStrategy {
 
       if (score === undefined) {
         this.logger.warn(
-          `The status "${status}" is not in the statusScores for average aggregation of metric "${metricId}"`,
+          `The status "${status}" is not in the statusScores for weightedStatusScore aggregation of metric "${metricId}"`,
         );
       }
       weightedSum += count * (score ?? 0);
@@ -148,23 +152,23 @@ export class AverageAggregationStrategy implements AggregationStrategy {
     return thresholds.rules.find(r => r.key === matchedThresholdKey)?.color;
   }
 
-  private prepareScoreValues(
+  private prepareWeightedStatusScoreValues(
     numberOfEntities: Pick<AggregatedMetric, 'total'>['total'],
-    statusScores: AggregationConfigOptions['statusScores'],
+    statusScores: Record<string, number>,
     rules: ThresholdRule[],
     weightedSum: number,
-  ): { averageScore: number; maxPossibleScore: number } {
+  ): { weightedStatusScore: number; maxPossibleScore: number } {
     const statusScoresValues = rules.map(r => statusScores[r.key] ?? 0);
 
     const maxScore = Math.max(0, ...statusScoresValues);
 
     const maxPossibleScore = maxScore * numberOfEntities;
 
-    const averageScore =
+    const weightedStatusScore =
       numberOfEntities > 0 && maxPossibleScore > 0
         ? Math.round((weightedSum / maxPossibleScore) * 1000) / 10
         : 0;
 
-    return { averageScore, maxPossibleScore };
+    return { weightedStatusScore, maxPossibleScore };
   }
 }

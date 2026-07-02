@@ -15,11 +15,14 @@
  */
 
 import { AggregatedMetricLoader } from './AggregatedMetricLoader';
-import type { DbAggregatedMetric } from '../../database/types';
+import type {
+  DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+} from '../../database/types';
 import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 
 describe('AggregatedMetricLoader', () => {
-  it('returns empty aggregation when entityRefs is empty without calling DB', async () => {
+  it('should return empty aggregation when entityRefs is empty without calling DB', async () => {
     const readAggregatedMetricByEntityRefs = jest.fn();
     const loader = new AggregatedMetricLoader({
       readAggregatedMetricByEntityRefs,
@@ -36,7 +39,7 @@ describe('AggregatedMetricLoader', () => {
     expect(typeof result.timestamp).toBe('string');
   });
 
-  it('reads DB and maps rows', async () => {
+  it('should read DB and map rows', async () => {
     const row: DbAggregatedMetric = {
       metric_id: 'm',
       total: 3,
@@ -62,5 +65,88 @@ describe('AggregatedMetricLoader', () => {
     );
     expect(result.total).toBe(3);
     expect(result.values).toEqual({ success: 3 });
+  });
+
+  it('should return empty scalar aggregation when entityRefs is empty without calling DB', async () => {
+    const readScalarAggregatedMetricByEntityRefs = jest.fn();
+
+    const loader = new AggregatedMetricLoader({
+      readScalarAggregatedMetricByEntityRefs,
+    } as unknown as DatabaseMetricValues);
+
+    const result = await loader.loadScalarMetricByEntityRefs(
+      [],
+      'metric.id',
+      'sum',
+    );
+
+    expect(readScalarAggregatedMetricByEntityRefs).not.toHaveBeenCalled();
+    expect(result.value).toBe(0);
+    expect(result.total).toBe(0);
+    expect(result.entitiesConsidered).toBe(0);
+  });
+
+  it('should read scalar DB row and maps result', async () => {
+    const row: DbScalarAggregatedMetric = {
+      metric_id: 'm',
+      value: 847,
+      total: 42,
+      latest_entity_count: 45,
+      calculation_error_count: 3,
+      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+    };
+
+    const readScalarAggregatedMetricByEntityRefs = jest
+      .fn()
+      .mockResolvedValue(row);
+
+    const loader = new AggregatedMetricLoader({
+      readScalarAggregatedMetricByEntityRefs,
+    } as unknown as DatabaseMetricValues);
+
+    const result = await loader.loadScalarMetricByEntityRefs(
+      ['component:default/a'],
+      'metric.id',
+      'sum',
+    );
+
+    expect(readScalarAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+      ['component:default/a'],
+      'metric.id',
+      'sum',
+    );
+    expect(result.value).toBe(847);
+    expect(result.total).toBe(42);
+    expect(result.entitiesConsidered).toBe(45);
+    expect(result.calculationErrorCount).toBe(3);
+  });
+
+  it('should map undefined scalar DB row to zero defaults', async () => {
+    const readScalarAggregatedMetricByEntityRefs = jest
+      .fn()
+      .mockResolvedValue(undefined);
+
+    const loader = new AggregatedMetricLoader({
+      readScalarAggregatedMetricByEntityRefs,
+    } as unknown as DatabaseMetricValues);
+
+    const result = await loader.loadScalarMetricByEntityRefs(
+      ['component:default/a'],
+      'metric.id',
+      'sum',
+    );
+
+    expect(readScalarAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+      ['component:default/a'],
+      'metric.id',
+      'sum',
+    );
+    expect(result).toEqual({
+      value: 0,
+      total: 0,
+      entitiesConsidered: 0,
+      calculationErrorCount: 0,
+      timestamp: expect.any(String),
+    });
   });
 });

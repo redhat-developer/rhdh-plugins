@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  AggregatedMetricResult,
-  AggregationMetadata,
-  aggregationTypes,
-  StatusGroupedAggregationResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { AggregatedMetricCardBaseProps } from '../types';
+export function normalizeTimestamp(timestamp?: unknown): Date {
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
 
-export type StatusGroupedCardComponentProps = AggregatedMetricCardBaseProps & {
-  scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
-    metadata: AggregationMetadata & {
-      aggregationType: typeof aggregationTypes.statusGrouped;
-    };
-    result: StatusGroupedAggregationResult;
-  };
-};
+  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+
+  return new Date();
+}

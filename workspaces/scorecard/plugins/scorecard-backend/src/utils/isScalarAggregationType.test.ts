@@ -16,26 +16,22 @@
 
 import {
   aggregationTypes,
-  type Metric,
-  type ThresholdConfig,
+  scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { isScalarAggregationType } from './isScalarAggregationType';
 
-/** Default when no scorecard.aggregationKPIs block exists for the id. */
-export type FallbackStatusGroupedAggregationConfig = {
-  id: string;
-  type: typeof aggregationTypes.statusGrouped;
-  metricId: string;
-};
+describe('isScalarAggregationType', () => {
+  it.each(scalarAggregationTypes)('returns true for scalar type %s', type => {
+    expect(isScalarAggregationType(type)).toBe(true);
+  });
 
-/** Config passed into aggregation strategies at request time. */
-export type AggregationRuntimeConfig =
-  | ValidatedAggregationConfig
-  | FallbackStatusGroupedAggregationConfig;
+  it('returns false for statusGrouped', () => {
+    expect(isScalarAggregationType(aggregationTypes.statusGrouped)).toBe(false);
+  });
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: AggregationRuntimeConfig;
-};
+  it('returns false for weightedStatusScore', () => {
+    expect(isScalarAggregationType(aggregationTypes.weightedStatusScore)).toBe(
+      false,
+    );
+  });
+});

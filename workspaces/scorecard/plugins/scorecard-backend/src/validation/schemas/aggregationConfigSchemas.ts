@@ -15,7 +15,20 @@
  */
 
 import { z } from 'zod';
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  aggregationTypes,
+  scalarAggregationTypes,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+const thresholdsConfigSchema = z.object({
+  rules: z.array(
+    z.object({
+      key: z.string(),
+      expression: z.string(),
+      color: z.string(),
+    }),
+  ),
+});
 
 const baseAggregationConfigSchema = z.object({
   id: z.string().min(1).max(128),
@@ -29,30 +42,59 @@ const statusGroupedAggregationConfigSchema = z.object({
   type: z.literal(aggregationTypes.statusGrouped),
 });
 
-const averageAggregationConfigSchema = z.object({
+const weightedStatusScoreAggregationConfigSchema = z.object({
   ...baseAggregationConfigSchema.shape,
-  type: z.literal(aggregationTypes.average),
+  type: z.literal(aggregationTypes.weightedStatusScore),
   options: z.strictObject({
     statusScores: z
       .record(z.string(), z.number().finite())
       .refine(scores => Object.keys(scores).length > 0, {
         message: 'options.statusScores must contain at least one weight value',
       }),
-    thresholds: z
-      .object({
-        rules: z.array(
-          z.object({
-            key: z.string(),
-            expression: z.string(),
-            color: z.string(),
-          }),
-        ),
-      })
-      .optional(),
+    thresholds: thresholdsConfigSchema.optional(),
   }),
 });
 
+function scalarAggregationConfigSchema(
+  type: (typeof scalarAggregationTypes)[number],
+) {
+  return z.object({
+    ...baseAggregationConfigSchema.shape,
+    type: z.literal(type),
+    options: z
+      .strictObject({
+        thresholds: thresholdsConfigSchema.optional(),
+      })
+      .optional(),
+  });
+}
+
 export const aggregationConfigSchema = z.discriminatedUnion('type', [
   statusGroupedAggregationConfigSchema,
-  averageAggregationConfigSchema,
+  weightedStatusScoreAggregationConfigSchema,
+  scalarAggregationConfigSchema(aggregationTypes.sum),
+  scalarAggregationConfigSchema(aggregationTypes.average),
+  scalarAggregationConfigSchema(aggregationTypes.max),
+  scalarAggregationConfigSchema(aggregationTypes.min),
+  scalarAggregationConfigSchema(aggregationTypes.count),
 ]);
+
+/** Post-validation aggregation KPI config (Zod discriminated union). */
+export type ValidatedAggregationConfig = z.infer<
+  typeof aggregationConfigSchema
+>;
+
+export type WeightedStatusScoreAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: typeof aggregationTypes.weightedStatusScore }
+>;
+
+export type ScalarAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: (typeof scalarAggregationTypes)[number] }
+>;
+
+export type StatusGroupedAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: typeof aggregationTypes.statusGrouped }
+>;

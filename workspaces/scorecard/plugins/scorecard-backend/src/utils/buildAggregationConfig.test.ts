@@ -38,11 +38,11 @@ describe('buildAggregationConfig', () => {
     });
   });
 
-  it('maps average KPI config including statusScores', () => {
+  it('maps weightedStatusScore KPI config including statusScores', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
       metricId: 'github.open_prs',
       options: {
         statusScores: {
@@ -53,13 +53,13 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result).toEqual({
-      id: 'avgKpi',
+      id: 'weightedKpi',
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
       metricId: 'github.open_prs',
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
@@ -68,11 +68,11 @@ describe('buildAggregationConfig', () => {
     expect(result.options?.thresholds).toBeUndefined();
   });
 
-  it('maps optional thresholds for average KPIs', () => {
+  it('maps optional thresholds for weightedStatusScore KPIs', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
       metricId: 'github.open_prs',
       options: {
         statusScores: { success: 100, warning: 50, error: 0 },
@@ -86,12 +86,81 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result.options?.thresholds?.rules).toEqual([
       { key: 'success', expression: '>=75', color: 'success.main' },
       { key: 'warning', expression: '10-75', color: 'warning.main' },
       { key: 'error', expression: '<10', color: 'error.main' },
     ]);
+  });
+
+  it('should map optional thresholds for scalar KPIs', () => {
+    const config = new ConfigReader({
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+      options: {
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '>=80', color: 'success.main' },
+          ],
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('totalOpenPrsKpi', { config });
+
+    expect(result.options?.thresholds?.rules).toEqual([
+      { key: 'success', expression: '>=80', color: 'success.main' },
+    ]);
+  });
+
+  it('should not map options for statusGrouped KPIs even when thresholds are configured', () => {
+    const config = new ConfigReader({
+      title: 'Status breakdown',
+      description: 'Counts by status',
+      type: aggregationTypes.statusGrouped,
+      metricId: 'github.open_prs',
+      options: {
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '>=80', color: 'success.main' },
+          ],
+        },
+      },
+    });
+
+    const result = buildAggregationConfig('statusKpi', { config });
+
+    expect(result).toEqual({
+      id: 'statusKpi',
+      title: 'Status breakdown',
+      description: 'Counts by status',
+      type: aggregationTypes.statusGrouped,
+      metricId: 'github.open_prs',
+    });
+    expect(result.options).toBeUndefined();
+  });
+
+  it('should map scalar KPI config without options', () => {
+    const config = new ConfigReader({
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+    });
+
+    const result = buildAggregationConfig('totalOpenPrsKpi', { config });
+
+    expect(result).toEqual({
+      id: 'totalOpenPrsKpi',
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.open_prs',
+    });
+    expect(result.options).toBeUndefined();
   });
 });

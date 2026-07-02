@@ -21,6 +21,7 @@ import {
   type AggregationConfigOptions,
   type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { isScalarAggregationType } from './isScalarAggregationType';
 
 function buildStatusScores(
   config: Config,
@@ -54,6 +55,14 @@ function buildAggregationThresholdsConfig(
   return undefined;
 }
 
+function buildWeightedStatusScoreOptions(
+  config: Config,
+): AggregationConfigOptions | undefined {
+  const statusScores = buildStatusScores(config);
+  const thresholds = buildAggregationThresholdsConfig(config);
+  return { statusScores, ...(thresholds ? { thresholds } : {}) };
+}
+
 export function buildAggregationConfig(
   aggregationId: string,
   options: {
@@ -70,11 +79,14 @@ export function buildAggregationConfig(
     description: config.getString('description'),
   } as AggregationConfig;
 
-  if (aggregationConfig.type === aggregationTypes.average) {
-    aggregationConfig.options = {
-      statusScores: buildStatusScores(config),
-      thresholds: buildAggregationThresholdsConfig(config),
-    };
+  if (aggregationConfig.type === aggregationTypes.weightedStatusScore) {
+    aggregationConfig.options = buildWeightedStatusScoreOptions(config);
+  } else if (isScalarAggregationType(aggregationConfig.type)) {
+    const thresholds = buildAggregationThresholdsConfig(config);
+
+    if (thresholds) {
+      aggregationConfig.options = { thresholds };
+    }
   }
 
   return aggregationConfig;

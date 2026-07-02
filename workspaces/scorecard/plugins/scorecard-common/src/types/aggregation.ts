@@ -30,7 +30,7 @@ export type AggregationType =
 export type AggregatedMetricValue = {
   count: number;
   name: string;
-  /** Present when the API includes per-status weights (e.g. average aggregation). */
+  /** Present when the API includes per-status weights (e.g. weightedStatusScore aggregation). */
   score?: number;
 };
 
@@ -40,6 +40,25 @@ export type AggregatedMetricValue = {
 export type AggregatedMetric = {
   /** Counts by status name */
   values: Record<string, number>;
+  total: number;
+  timestamp: string;
+  /**
+   * Entities in aggregation scope that have at least one latest stored `metric_values` row for this metric
+   * (aligned with the drill-down list total when the same ownership filters apply).
+   */
+  entitiesConsidered: number;
+  /**
+   * How many of those entities have a latest stored row that is a metric **calculation** failure
+   * (`error_message` set and `value` null), distinct from threshold status counts in `values` / `total`.
+   */
+  calculationErrorCount: number;
+};
+
+/**
+ * @public
+ */
+export type ScalarAggregatedMetric = {
+  value: number;
   total: number;
   timestamp: string;
   /**
@@ -70,11 +89,20 @@ export type StatusGroupedAggregationResult = Omit<
   'values'
 > & { values: AggregatedMetricValue[]; thresholds: ThresholdConfig };
 
-export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
-  averageScore: number;
-  averageWeightedSum: number;
-  averageMaxPossible: number;
-  aggregationChartDisplayColor: string;
+export type WeightedStatusScoreAggregationResult =
+  StatusGroupedAggregationResult & {
+    weightedStatusScore: number;
+    weightedStatusSum: number;
+    weightedStatusMaxPossible: number;
+    aggregationChartDisplayColor: string;
+  };
+
+/**
+ * @public
+ */
+export type ScalarAggregationResult = Omit<AggregatedMetric, 'values'> & {
+  value: number;
+  thresholds: ThresholdConfig;
 };
 
 /**
@@ -82,7 +110,8 @@ export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
  */
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | AggregatedMetricAverageResult;
+  | WeightedStatusScoreAggregationResult
+  | ScalarAggregationResult;
 
 /**
  * @public
@@ -98,7 +127,7 @@ export type AggregatedMetricResult = {
  * @public
  */
 export type AggregationConfigOptions = {
-  statusScores: Record<string, number>;
+  statusScores?: Record<string, number>;
   thresholds?: ThresholdConfig;
 };
 

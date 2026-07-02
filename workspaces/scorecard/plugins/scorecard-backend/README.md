@@ -116,9 +116,9 @@ Thresholds define conditions to assign metric values to specific visual categori
 - **App Configuration**: Override defaults through `app-config.yaml`
 - **Entity Annotations**: Override specific thresholds per entity using catalog annotations
 
-Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals); **`average`** KPI **`options.thresholds`** follow the same rule.
+Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals); **`weightedStatusScore`** KPI **`options.thresholds`** follow the same rule.
 
-For comprehensive threshold configuration guide, examples, best practices, interval validation, and **aggregation KPI result thresholds** for **`type: average`**, see [thresholds.md](./docs/thresholds.md).
+For comprehensive threshold configuration guide, examples, best practices, interval validation, and **aggregation KPI result thresholds** for **`weightedStatusScore`** and **scalar** KPI types, see [thresholds.md](./docs/thresholds.md).
 
 ## Aggregation KPIs (homepage and `GET /aggregations`)
 
@@ -140,14 +140,14 @@ scorecard:
     openPrsWeightedKpi:
       title: 'GitHub open PRs (weighted health)'
       description: 'Weighted health from status counts using configurable scores.'
-      type: average
+      type: weightedStatusScore
       metricId: github.open_prs
       options:
         statusScores:
           success: 100
           warning: 50
           error: 0
-        # Optional: colors for the average-score donut (expressions apply to percentage 0–100)
+        # Optional: colors for the weightedStatusScore donut (expressions apply to percentage 0–100)
         thresholds:
           rules:
             - key: success
@@ -159,19 +159,44 @@ scorecard:
             - key: error
               expression: '<10'
               color: error.main
+    totalOpenBugs:
+      title: 'Total Open Bugs'
+      description: 'Sum of open issues across owned entities'
+      type: sum
+      metricId: jira.open_issues
+    avgOpenPrs:
+      title: 'Average Open PRs'
+      description: 'Mean open PR count per entity'
+      type: average
+      metricId: github.open_prs
+    criticalProjects:
+      title: 'Entities with Open Issues'
+      description: 'Count of entities with a stored open-issues value'
+      type: count
+      metricId: jira.open_issues
+    maxOpenPrs:
+      title: 'Maximum Open PRs'
+      description: 'Maximum open PR count across owned entities'
+      type: max
+      metricId: github.open_prs
+    minOpenPrs:
+      title: 'Minimum Open PRs'
+      description: 'Minimum open PR count across owned entities'
+      type: min
+      metricId: github.open_prs
 ```
 
-| Field         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `title`       | Display title for this aggregation (returned in API metadata).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `description` | Display description for this aggregation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `type`        | Aggregation algorithm: `statusGrouped` (counts per threshold status) or `average` (normalized weighted score).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `metricId`    | Metric provider id used to load thresholds and compute counts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `options`     | Optional for `statusGrouped`. **Required** for `average`: must include **`options.statusScores`** — map status keys to numeric weights (typically one entry per **metric threshold rule key**). Optionally **`options.thresholds`** (same shape as metric thresholds; see [thresholds.md — Aggregation KPI result thresholds](./docs/thresholds.md#4-aggregation-kpi-result-thresholds-average-type)); evaluated on **`averageScore`** (**0–100** portfolio percentage, **one decimal**); first match sets **`aggregationChartDisplayColor`**. The API includes **`averageScore`**, **`averageWeightedSum`**, **`averageMaxPossible`**, and **`aggregationChartDisplayColor`** (from configured or default result thresholds). |
+| Field         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | Display title for this aggregation (returned in API metadata).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `description` | Display description for this aggregation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `type`        | Aggregation algorithm: `statusGrouped` (counts per threshold status), `weightedStatusScore` (normalized weighted score), or scalar types `sum`, `average`, `max`, `min`, `count` (numeric rollup over latest metric values).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `metricId`    | Metric provider id used to load thresholds and compute counts or values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `options`     | Type-specific options. For **`weightedStatusScore`**: **required** **`options.statusScores`** (status key → weight); optional **`options.thresholds`** (see [thresholds.md — Aggregation KPI result thresholds (weightedStatusScore)](./docs/thresholds.md#4-aggregation-kpi-result-thresholds-weightedstatusscore-type)). For **scalar types**: optional **`options.thresholds`** (see [thresholds.md — Aggregation KPI result thresholds (scalar types)](./docs/thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types)). All scalar types require a **number** metric. Scalar responses include **`value`**, **`total`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**, and **`thresholds`** — see [aggregation.md — Scalar result fields](./docs/aggregation.md#scalar-result-fields). |
 
 - **Path**: `scorecard.aggregationKPIs.<aggregationId>`.
 - If **`aggregationKPIs` is omitted** or a given id is not listed, **`GET /aggregations/:aggregationId`** still works when **`aggregationId` equals the metric id** (e.g. `github.open_prs`): the backend uses that metric with the default `statusGrouped` aggregation and metric-defined title/description.
-- **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`average`** KPIs without **`options.statusScores`**, bad expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
+- **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`weightedStatusScore`** KPIs without **`options.statusScores`**, scalar types on boolean metrics, bad threshold expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
 
 **Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../scorecard/README.md#homepage-scorecard-cards).
 
