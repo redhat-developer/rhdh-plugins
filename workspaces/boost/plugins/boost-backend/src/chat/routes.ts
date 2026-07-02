@@ -231,11 +231,17 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
           );
         }
 
+        const credentials = await httpAuth.credentials(req);
+        const principal = credentials.principal as
+          | { userEntityRef?: string }
+          | undefined;
+        const userRef = principal?.userEntityRef;
+
         logger.debug(
           `Chat request via provider ${provider.descriptor.id} (${messages.length} messages)`,
         );
 
-        const response = await provider.chat(messages);
+        const response = await provider.chat(messages, { userRef });
 
         res.json({
           response,
@@ -278,6 +284,12 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
           );
         }
 
+        const credentials = await httpAuth.credentials(req);
+        const principal = credentials.principal as
+          | { userEntityRef?: string }
+          | undefined;
+        const userRef = principal?.userEntityRef;
+
         logger.debug(
           `Stream request via provider ${provider.descriptor.id} (${messages.length} messages)`,
         );
@@ -293,7 +305,7 @@ export function createChatRoutes(options: ChatRoutesOptions): Router {
         // Flush headers immediately
         res.flushHeaders();
 
-        const stream = provider.chatStream(messages);
+        const stream = provider.chatStream(messages, { userRef });
 
         try {
           let providerSentDone = false;
