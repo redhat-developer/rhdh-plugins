@@ -18,6 +18,7 @@ import {
   mapLifecycleStage,
   mapOwner,
   sanitizeEntityName,
+  unwrapItems,
 } from './entityHelpers';
 
 describe('entityHelpers', () => {
@@ -77,6 +78,34 @@ describe('entityHelpers', () => {
 
     it('should wrap plain usernames', () => {
       expect(mapOwner('admin')).toBe('user:default/admin');
+    });
+  });
+
+  describe('unwrapItems', () => {
+    it('should return array directly when data is an array', () => {
+      const data = [{ id: '1' }, { id: '2' }];
+      expect(unwrapItems(data)).toEqual(data);
+    });
+
+    it('should unwrap { items: T[] } response shape', () => {
+      const items = [{ id: '1' }, { id: '2' }];
+      expect(unwrapItems({ items })).toEqual(items);
+    });
+
+    it('should return empty array for null', () => {
+      expect(unwrapItems(null)).toEqual([]);
+    });
+
+    it('should return empty array for undefined', () => {
+      expect(unwrapItems(undefined)).toEqual([]);
+    });
+
+    it('should return empty array for object without items', () => {
+      expect(unwrapItems({ foo: 'bar' })).toEqual([]);
+    });
+
+    it('should return empty array for non-array items field', () => {
+      expect(unwrapItems({ items: 'not-an-array' })).toEqual([]);
     });
   });
 });

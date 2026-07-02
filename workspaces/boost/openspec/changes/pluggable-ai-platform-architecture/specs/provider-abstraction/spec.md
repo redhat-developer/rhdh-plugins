@@ -13,7 +13,8 @@ The `AgenticProvider` interface defines the contract between Boost and any AI pl
 #### Scenario: Provider implements required capabilities
 
 - **WHEN** a provider is registered with `boostProviderExtensionPoint`
-- **THEN** it must implement `chat()` and `chatStream()` methods
+- **THEN** it must implement `chat(messages, options?)` and `chatStream(messages, options?)` methods
+- **AND** `options` is an optional `ChatOptions` object with `userRef?: string` for user identity audit
 - **AND** it must provide a `ProviderDescriptor` declaring its ID, name, and supported capabilities
 
 #### Scenario: Provider declares optional capabilities
