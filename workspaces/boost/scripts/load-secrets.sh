@@ -37,8 +37,36 @@ BOOST_MODEL=$(_load_field AUGMENT_MODEL)                        || { echo "Abort
 
 unset -f _load_field
 
+# Discover Llama Stack route via OGX operator labels (best-effort)
+_discover_llama_stack_route() {
+  local route_host=""
+  local label
+  for label in "ogx.io/watch=true" \
+               "app.kubernetes.io/managed-by=ogx-operator" \
+               "app.kubernetes.io/part-of=ogx"; do
+    route_host=$(kubectl get routes --all-namespaces \
+      -l "$label" \
+      -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.host}{"\n"}{end}' 2>/dev/null \
+      | grep -i "llama" \
+      | head -1 \
+      | awk '{print $2}')
+    if [ -n "$route_host" ]; then
+      echo "https://${route_host}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+BOOST_LLAMA_STACK_URL=$(_discover_llama_stack_route) || {
+  echo "  WARNING: no Llama Stack route found via OGX labels — set BOOST_LLAMA_STACK_URL manually" >&2
+}
+
+unset -f _discover_llama_stack_route
+
 export KAGENTI_CLIENT_SECRET KAGENTI_CLIENT_ID KAGENTI_TOKEN_ENDPOINT
 export KAGENTI_BASE_URL KAGENTI_NAMESPACE BOOST_MODEL
+export BOOST_LLAMA_STACK_URL
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 echo "Loaded: KAGENTI_BASE_URL=$KAGENTI_BASE_URL"
@@ -47,5 +75,6 @@ echo "Loaded: KAGENTI_CLIENT_ID=$KAGENTI_CLIENT_ID"
 echo "Loaded: KAGENTI_CLIENT_SECRET=<set>"
 echo "Loaded: KAGENTI_TOKEN_ENDPOINT=$KAGENTI_TOKEN_ENDPOINT"
 echo "Loaded: BOOST_MODEL=$BOOST_MODEL"
+echo "Loaded: BOOST_LLAMA_STACK_URL=${BOOST_LLAMA_STACK_URL:-<not discovered>}"
 echo "Set:    NODE_TLS_REJECT_UNAUTHORIZED=0 (for self-signed OpenShift route certs)"
 echo "Ready — launch the debugger in this shell."
