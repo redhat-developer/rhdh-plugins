@@ -100,5 +100,27 @@ describe('permission-rules', () => {
         { workflowId: 'workflow-1' },
       ]);
     });
+
+    it('should filter out undefined results from fetchWorkflowOverview', async () => {
+      const service = {
+        fetchWorkflowOverview: jest
+          .fn()
+          .mockResolvedValueOnce({ workflowId: 'workflow-1' })
+          .mockResolvedValueOnce(undefined)
+          .mockResolvedValueOnce({ workflowId: 'workflow-3' }),
+      } as unknown as OrchestratorService;
+
+      const resources = await fetchWorkflowResources(service, [
+        'workflow-1',
+        'nonexistent',
+        'workflow-3',
+      ]);
+
+      expect(service.fetchWorkflowOverview).toHaveBeenCalledTimes(3);
+      expect(resources).toEqual([
+        { workflowId: 'workflow-1' },
+        { workflowId: 'workflow-3' },
+      ]);
+    });
   });
 });
