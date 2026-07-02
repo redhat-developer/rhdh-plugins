@@ -57,6 +57,131 @@ metadata:
 
 When no instance prefix is provided, the default instance configuration is used.
 
+## Default thresholds
+
+Default thresholds vary by metric. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+
+### `sonarqube.quality_gate` (boolean)
+
+Default thresholds for `sonarqube.quality_gate`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      quality_gate:
+        thresholds:
+          rules:
+            - key: success
+              expression: '==true'
+            - key: error
+              expression: '==false'
+```
+
+### Count metrics (lower is better)
+
+Default thresholds for `sonarqube.open_issues`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      open_issues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<1'
+            - key: warning
+              expression: '1-10'
+            - key: error
+              expression: '>10'
+```
+
+| Metric                             | Success | Warning | Error |
+| ---------------------------------- | ------- | ------- | ----- |
+| `sonarqube.security_issues`        | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.security_hotspots`      | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.reliability_issues`     | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.maintainability_issues` | `<10`   | `10-50` | `>50` |
+
+Replace the metric name in the path above for the metrics in this table (e.g. `security_issues`, `security_hotspots`). Use the same `scorecard.plugins.sonarqube.<metric>.thresholds` structure as `open_issues`.
+
+### Rating metrics (`security_rating`, `security_review_rating`, `reliability_rating`, `maintainability_rating`)
+
+All four rating metrics share the same default thresholds. Default thresholds for `sonarqube.security_rating` (custom keys `A`–`E` require `color` and `icon` in app-config):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      security_rating:
+        thresholds:
+          rules:
+            - key: A
+              expression: '==1'
+              color: 'success.main'
+              icon: scorecardSuccessStatusIcon
+            - key: B
+              expression: '==2'
+              color: '#bdcb28'
+              icon: scorecardSuccessStatusIcon
+            - key: C
+              expression: '==3'
+              color: 'warning.main'
+              icon: scorecardWarningStatusIcon
+            - key: D
+              expression: '==4'
+              color: '#cf5813'
+              icon: scorecardErrorStatusIcon
+            - key: E
+              expression: '==5'
+              color: 'error.main'
+              icon: scorecardErrorStatusIcon
+```
+
+Replace `security_rating` with `security_review_rating`, `reliability_rating`, or `maintainability_rating` for the other rating metrics.
+
+### Percentage metrics
+
+Default thresholds for `sonarqube.code_coverage` (higher is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      code_coverage:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>80'
+            - key: warning
+              expression: '50-80'
+            - key: error
+              expression: '<50'
+```
+
+Default thresholds for `sonarqube.code_duplications` (lower is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      code_duplications:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<3'
+            - key: warning
+              expression: '3-10'
+            - key: error
+              expression: '>10'
+```
+
 ## Configuration
 
 Configuration is optional for public SonarCloud projects. The base URL defaults to `https://sonarcloud.io`.

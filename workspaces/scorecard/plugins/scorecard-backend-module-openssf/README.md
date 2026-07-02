@@ -42,9 +42,27 @@ metadata:
     openssf/scorecard-location: https://api.securityscorecards.dev/projects/github.com/owner/repo
 ```
 
-### Thresholds
+### Default thresholds
 
-All OpenSSF metrics use default thresholds: **Error** &lt;2, **Warning** 2–7, **Success** &gt;7. You can configure custom thresholds, see [threshold docs](../scorecard-backend/docs/thresholds.md).
+All OpenSSF metrics share the same default thresholds. Default thresholds for `openssf.maintained`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    openssf:
+      maintained:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>7'
+            - key: warning
+              expression: '2-7'
+            - key: error
+              expression: '<2'
+```
+
+Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branch_protection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Metrics
 
