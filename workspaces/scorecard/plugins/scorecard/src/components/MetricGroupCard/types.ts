@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
+import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-/**
- * Grid view layout extension for the Scorecard entity tab.
- *
- * Extension ID: scorecard-layout:catalog/scorecard-entity-layout-grid
- * @alpha
- */
-export const scorecardEntityLayoutGrid =
-  ScorecardEntityContentLayoutBlueprint.make({
-    name: 'scorecard-entity-layout-grid',
-    disabled: true,
-    params: {
-      title: 'Grid',
-      loader: () =>
-        import(
-          '../../components/Scorecard/ScorecardEntityContentGridView'
-        ).then(m => m.ScorecardEntityContentGridView),
-    },
-  });
+export interface MetricGroupCardProps {
+  title: string;
+  description?: string;
+  metrics: MetricResult[];
+}
+
+export type ThresholdBucket = {
+  key: string;
+  label: string;
+  expression: string;
+  count: number;
+  color: string;
+};
