@@ -21,7 +21,10 @@ import {
 
 import { z } from 'zod/v3';
 
-import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import {
+  ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+  WorkflowOverview,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import type { OrchestratorService } from './OrchestratorService';
 
@@ -85,15 +88,16 @@ export const isWorkflowId = createPermissionRule<
  */
 export const orchestratorPermissionRules = [isWorkflowId];
 
-export function fetchWorkflowResources(
+export async function fetchWorkflowResources(
   orchestratorService: OrchestratorService,
   resourceRefs: string[],
-) {
-  return Promise.all(
+): Promise<WorkflowOverview[]> {
+  const results = await Promise.all(
     resourceRefs.map(resourceRef =>
       orchestratorService.fetchWorkflowOverview({
         definitionId: resourceRef,
       }),
     ),
   );
+  return results.filter(r => r !== undefined);
 }

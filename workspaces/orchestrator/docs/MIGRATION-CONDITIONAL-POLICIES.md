@@ -54,6 +54,20 @@ If you created dynamic permissions via REST API, delete them via REST API and re
 
 There is **no automatic migration**. You must manually create the new configuration.
 
+### Performance note on legacy fallback
+
+During this deprecation release, the backend checks conditional policies first. If the conditional policy covers the requested workflow(s), access is resolved immediately — no legacy fallback runs.
+
+Conditional policies are faster than deprecated dynamic permissions. With conditional policies, the backend makes a single `authorizeConditional` call and then filters workflows locally using `matches()` — regardless of how many workflows exist. With deprecated dynamic permissions, the backend makes a separate `authorize` call per workflow, so latency grows linearly with the number of workflows.
+
+The legacy fallback only runs for workflows **not covered** by conditional policies. For each uncovered workflow, an individual `authorize` call is made to check the deprecated dynamic permission. This means:
+
+- **After a complete migration** (conditional policies cover all workflows your users need): the legacy fallback is never triggered. Performance is the same as if dynamic permissions were already removed.
+- **During partial migration** (some workflows still rely on deprecated CSV/REST API permissions): the fallback runs only for the uncovered workflows. You may see additional per-workflow authorize calls for those IDs.
+- **No migration done yet** (all access via deprecated dynamic permissions): the fallback runs for every workflow, similar to the old behavior.
+
+To avoid unnecessary fallback calls, ensure your conditional policies cover all workflows before this deprecation period ends. You can verify by checking the backend logs — a deprecation warning is logged each time the legacy fallback grants access.
+
 ## New Authorization Model
 
 Conditional policies restrict access to specific workflows using the `IS_ALLOWED_WORKFLOW_ID` rule.
