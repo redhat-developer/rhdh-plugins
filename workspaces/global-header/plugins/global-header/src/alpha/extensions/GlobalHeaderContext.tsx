@@ -56,7 +56,7 @@ export const GlobalHeaderProvider = ({
 /**
  * Returns all toolbar-level header components, sorted by priority (highest first).
  *
- * @alpha
+ * @public
  */
 export function useGlobalHeaderComponents(): GlobalHeaderComponentData[] {
   return useContext(GlobalHeaderContext).components;
@@ -65,7 +65,7 @@ export function useGlobalHeaderComponents(): GlobalHeaderComponentData[] {
 /**
  * Returns menu items for a specific dropdown target, sorted by priority (highest first).
  *
- * @alpha
+ * @public
  */
 export function useGlobalHeaderMenuItems(
   target: string,

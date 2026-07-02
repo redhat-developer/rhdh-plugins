@@ -37,7 +37,7 @@ import {
  * (`icon`, `title`, `link`/`onClick`) and let the framework render a
  * consistent `HeaderIconButton` automatically (tier 1).
  *
- * @alpha
+ * @public
  */
 export interface ToolbarComponentParams {
   icon?: string;
@@ -67,7 +67,7 @@ export interface ToolbarComponentParams {
  * Items with data fields (with or without a custom component) are grouped
  * by `sectionLabel` and rendered inside `MenuSection`.
  *
- * @alpha
+ * @public
  */
 export interface MenuItemParams {
   target: string;
@@ -156,7 +156,7 @@ function createDataDrivenToolbarComponent(
  *           priority: 200
  * ```
  *
- * @alpha
+ * @public
  */
 export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
   kind: 'gh-component',
@@ -206,7 +206,7 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
  *           sectionLabel: mySection
  * ```
  *
- * @alpha
+ * @public
  */
 export const GlobalHeaderMenuItemBlueprint = createExtensionBlueprint({
   kind: 'gh-menu-item',
