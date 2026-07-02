@@ -21,7 +21,7 @@ _load_field() {
     echo "  WARNING: failed to read $1 from secret ${NAMESPACE}/${SECRET_NAME}" >&2
     return 1
   }
-  if [ -z "${val}" ]; then
+  if [[ -z "${val}" ]]; then
     echo "  WARNING: $1 is empty in secret ${NAMESPACE}/${SECRET_NAME}" >&2
     return 1
   fi
@@ -66,7 +66,9 @@ unset -f _discover_llama_stack_route
 
 export KAGENTI_CLIENT_SECRET KAGENTI_CLIENT_ID KAGENTI_TOKEN_ENDPOINT
 export KAGENTI_BASE_URL KAGENTI_NAMESPACE BOOST_MODEL
-export BOOST_LLAMA_STACK_URL
+if [[ -n "$BOOST_LLAMA_STACK_URL" ]]; then
+  export BOOST_LLAMA_STACK_URL
+fi
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 echo "Loaded: KAGENTI_BASE_URL=$KAGENTI_BASE_URL"
