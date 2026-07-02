@@ -78,6 +78,22 @@ const MCP_CONFIG_MULTI = {
   },
 };
 
+const MCP_CONFIG_DCR = {
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
+    mcpServers: [
+      {
+        name: 'static-mcp',
+        token: MOCK_MCP_VALID_TOKEN,
+      },
+      {
+        name: 'no-token-server',
+        auth: 'dcr',
+      },
+    ],
+  },
+};
+
 const MCP_CONFIG_ENCRYPTED = {
   backend: {
     auth: {
@@ -256,6 +272,28 @@ describe('MCP server management endpoints', () => {
       );
 
       expect(response.status).toBe(403);
+    });
+
+    it('returns auth field for DCR-configured servers', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+      const response = await request(backendServer).get(
+        '/api/lightspeed/mcp-servers',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.servers).toHaveLength(2);
+
+      const dcrServer = response.body.servers.find(
+        (s: any) => s.name === 'no-token-server',
+      );
+      expect(dcrServer.auth).toBe('dcr');
+      expect(dcrServer.hasToken).toBe(true);
+
+      const staticServer = response.body.servers.find(
+        (s: any) => s.name === 'static-mcp',
+      );
+      expect(staticServer.auth).toBeUndefined();
+      expect(staticServer.hasToken).toBe(true);
     });
   });
 
