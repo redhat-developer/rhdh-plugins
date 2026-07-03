@@ -47,10 +47,9 @@ export class OrchestratorHelper {
   }
 
   async searchInputPlaceholder(searchTerm: string) {
-    await this.page.fill(
-      `input[placeholder="${this.translations.table.filters.placeholder}"]`,
-      searchTerm,
-    );
+    await this.page
+      .getByPlaceholder(this.translations.table.filters.placeholder)
+      .fill(searchTerm);
   }
 
   async verifyHeading(heading: string | RegExp, timeout: number = 20000) {
@@ -76,19 +75,8 @@ export class OrchestratorHelper {
     await barButton.click();
   }
 
-  async clickLink(options: string | { href: string } | { ariaLabel: string }) {
-    let linkLocator: Locator;
-
-    if (typeof options === 'string') {
-      linkLocator = this.page.locator('a').filter({ hasText: options }).first();
-    } else if ('href' in options) {
-      linkLocator = this.page.locator(`a[href*="${options.href}"]`).first();
-    } else {
-      linkLocator = this.page
-        .locator(`div[aria-label='${options.ariaLabel}'] a`)
-        .first();
-    }
-
+  async clickLink(options: string | RegExp) {
+    const linkLocator = this.page.getByRole('link', { name: options });
     await linkLocator.waitFor({ state: 'visible' });
     await linkLocator.click();
   }

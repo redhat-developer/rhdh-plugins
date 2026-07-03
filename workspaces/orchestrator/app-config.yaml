@@ -161,9 +161,10 @@ orchestrator:
   # Uncomment to set the content length limit for the requests. Defaults to 102400 bytes (100kb)
   # contentLengthLimit: 10mb
   # Uncomment and configure to use the log viewer
-  # workflowLogProvider:
-  #   loki:
-  #     baseUrl: http://localhost:3100
+  workflowLogProvider:
+    loki:
+      baseUrl: http://localhost:3100
+      token: secret-token
   # Uncomment if using a custom log stream selector
   # logStreamSelectors:
   #   - label: 'selector'

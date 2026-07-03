@@ -113,9 +113,7 @@ test.describe('Orchestrator workflow runs', () => {
       );
     });
 
-    test('Verify workflow runs table', async ({
-      browser: _browser,
-    }, testInfo) => {
+    test('Verify workflow runs table', async ({}, testInfo) => {
       await runAccessibilityTests(sharedPage, testInfo);
       await orchestratorHelper.verifyTableHeadingAndRows([
         translations.table.headers.name,
@@ -125,11 +123,11 @@ test.describe('Orchestrator workflow runs', () => {
         translations.table.headers.successRatio,
         'Actions',
       ]);
-
-      await orchestratorHelper.searchInputPlaceholder('Hello World workflow');
+      const workflowName = 'Hello World workflow';
+      await orchestratorHelper.searchInputPlaceholder(workflowName);
       await expect(
         sharedPage
-          .getByRole('row', { name: 'Hello World workflow' })
+          .getByRole('row', { name: workflowName })
           .getByRole('button', {
             name: translations.table.actions.run,
             exact: true,
@@ -137,16 +135,14 @@ test.describe('Orchestrator workflow runs', () => {
           .first(),
       ).toBeVisible();
       await expect(
-        sharedPage.getByRole('row', { name: 'Hello World workflow' }),
+        sharedPage.getByRole('row', { name: workflowName }),
       ).toContainText(translations.workflow.status.available);
       await expect(
-        sharedPage.getByRole('row', { name: 'Hello World workflow' }),
+        sharedPage.getByRole('row', { name: workflowName }),
       ).toContainText('1.0');
     });
 
-    test('Run Test Object Type Support in ui:props workflow', async ({
-      browser: _browser,
-    }) => {
+    test('Run Test Object Type Support in ui:props workflow', async () => {
       const workflowName = 'Test Object Type Support in ui:props';
       const workflowInputs = {
         name: 'test-name',
@@ -163,9 +159,7 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.verifyUiPropsWorkflowRunVariables(workflowInputs);
     });
 
-    test('Greeting workflow execution and workflow tab validation', async ({
-      browser: _browser,
-    }) => {
+    test('Greeting workflow execution and workflow tab validation', async () => {
       const workflowName = 'Greeting workflow';
 
       await orchestrator.runGreetingWorkflow(workflowName);
@@ -176,16 +170,14 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.searchWorkflow(workflowName);
       await orchestrator.validateGreetingWorkflowTableRow(workflowName);
       await sharedPage
-        .getByRole('row', { name: 'Greeting workflow' })
+        .getByRole('row', { name: workflowName })
         .getByRole('link', { name: workflowName })
         .first()
         .click();
       await orchestrator.validateWorkflowDetails(workflowName);
     });
 
-    test('Greeting workflow re-run and run details validation', async ({
-      browser: _browser,
-    }) => {
+    test('Greeting workflow re-run and run details validation', async () => {
       const workflowName = 'Greeting workflow';
 
       await orchestrator.runGreetingWorkflow(workflowName);
@@ -193,14 +185,14 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.verifyWorkflowRunDetails();
     });
 
-    test('Sample Retry Test', async ({ browser: _browser }) => {
+    test('Sample Retry Test', async () => {
       const workflowName = 'Sample Retry Test';
 
       await orchestrator.runSampleRetryTest(workflowName);
       await orchestrator.verifySampleRetryTest();
     });
 
-    test('Add workflow run by entity', async ({ browser: _browser }) => {
+    test('Add workflow run by entity', async () => {
       await orchestrator.navigateToCatalog();
       await expect(
         sharedPage
@@ -235,7 +227,7 @@ test.describe('Orchestrator workflow runs', () => {
       );
     });
 
-    test('Verify all runs tab', async ({ browser: _browser }, testInfo) => {
+    test('Verify all runs tab', async ({}, testInfo) => {
       await orchestrator.navigateToWorkflowRunTab(
         translations.page.tabs.workflows,
       );
@@ -263,9 +255,7 @@ test.describe('Orchestrator workflow runs', () => {
     });
 
     // Remove the fixme with the fix of bug https://redhat.atlassian.net/browse/RHDHBUGS-3401
-    test.fixme('All runs tab workflow details validation', async ({
-      browser: _browser,
-    }) => {
+    test.fixme('All runs tab workflow details validation', async () => {
       await sharedPage
         .getByRole('link', { name: 'Hello World workflow' })
         .first()

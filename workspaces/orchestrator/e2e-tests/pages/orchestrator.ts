@@ -79,13 +79,6 @@ export class Orchestrator {
       .waitFor({ state: 'visible', timeout: 30_000 });
   }
 
-  async verifyKeyValueRowElements(rowTitle: string, rowValue: string) {
-    const rowLocator = this.page.locator('.v5-MuiTableRow-root');
-    await expect(rowLocator.filter({ hasText: rowTitle })).toContainText(
-      rowValue,
-    );
-  }
-
   async searchWorkflow(workflowName: string) {
     await this.orchestratorHelper.searchInputPlaceholder(workflowName);
     await expect(
@@ -150,50 +143,33 @@ export class Orchestrator {
         `${this.translations.workflow.fields.runStatus} ${this.translations.table.status.completed}`,
       ),
     ).toBeVisible({ timeout: 60_000 });
-    // TODO: Remove the if statement for japanese language tests with solving bug https://redhat.atlassian.net/browse/RHDHBUGS-3406
-    if (this.locale === 'ja') {
+
+    // TODO: Remove the ja branch when bug https://redhat.atlassian.net/browse/RHDHBUGS-3406 is fixed
+    const resultsText =
+      this.locale === 'ja'
+        ? `${this.translations.run.results}${this.translations.table.actions.run}`
+        : `${this.translations.run.results}${this.translations.run.status.completed}`;
+
+    const instanceDetailTexts = [
+      resultsText,
+      `${this.translations.workflow.fields.workflow}${displayWorkflowName}`,
+      `${this.translations.workflow.fields.workflowStatus} ${this.translations.workflow.status.available}`,
+    ];
+    for (const text of instanceDetailTexts) {
+      await expect(this.page.getByText(text)).toBeVisible();
+    }
+
+    const instanceDetailHeadings = [
+      this.translations.workflow.fields.workflowId,
+      this.translations.workflow.fields.duration,
+      this.translations.workflow.fields.started,
+      this.translations.workflow.fields.description,
+    ];
+    for (const heading of instanceDetailHeadings) {
       await expect(
-        this.page.getByText(
-          `${this.translations.run.results}${this.translations.table.actions.run}`,
-        ),
-      ).toBeVisible();
-    } else {
-      await expect(
-        this.page.getByText(
-          `${this.translations.run.results}${this.translations.run.status.completed}`,
-        ),
+        this.page.getByRole('heading', { name: heading }),
       ).toBeVisible();
     }
-    await expect(
-      this.page.getByText(
-        `${this.translations.workflow.fields.workflow}${displayWorkflowName}`,
-      ),
-    ).toBeVisible();
-    await expect(
-      this.page.getByText(
-        `${this.translations.workflow.fields.workflowStatus} ${this.translations.workflow.status.available}`,
-      ),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('heading', {
-        name: this.translations.workflow.fields.workflowId,
-      }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('heading', {
-        name: this.translations.workflow.fields.duration,
-      }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('heading', {
-        name: this.translations.workflow.fields.started,
-      }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('heading', {
-        name: this.translations.workflow.fields.description,
-      }),
-    ).toBeVisible();
   }
 
   private formatRunVariablesStringField(
@@ -260,7 +236,7 @@ export class Orchestrator {
     await this.runGreetingWorkflowFromExecuteForm();
   }
 
-  async reRunGreetingWorkflow(language = 'english') {
+  async reRunGreetingWorkflow(language = 'English') {
     await expect(
       this.page.getByText(this.translations.workflow.buttons.runAgain),
     ).toBeVisible();
@@ -321,7 +297,7 @@ export class Orchestrator {
         name: this.translations.workflow.inputSchemaDescription,
       })
       .click();
-    expect(
+    await expect(
       this.page.getByRole('tooltip', {
         name: this.translations.workflow.inputSchemaDescription,
       }),
@@ -355,17 +331,17 @@ export class Orchestrator {
         exact: true,
       }),
     ).toBeVisible();
-    expect(
+    await expect(
       this.page.getByText(this.translations.workflow.statsSuccess, {
         exact: true,
       }),
     ).toBeVisible();
-    expect(
+    await expect(
       this.page.getByText(this.translations.workflow.statsFailed, {
         exact: true,
       }),
     ).toBeVisible();
-    expect(
+    await expect(
       this.page.getByText(this.translations.workflow.runSuccess, {
         exact: true,
       }),
@@ -380,7 +356,7 @@ export class Orchestrator {
         name: this.translations.workflow.successRatioDescription,
       })
       .click();
-    expect(
+    await expect(
       this.page.getByRole('tooltip', {
         name: this.translations.workflow.successRatioDescription,
       }),

@@ -47,8 +47,6 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  workers: process.env.CI ? 2 : 1,
-
   reporter: [
     ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
   ],

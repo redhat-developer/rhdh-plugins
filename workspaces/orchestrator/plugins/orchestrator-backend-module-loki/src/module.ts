@@ -36,12 +36,6 @@ export const orchestratorModuleLoki = createBackendModule({
         workflowLogs: workflowLogsExtensionEndpoint,
       },
       async init({ config, logger, workflowLogs }) {
-        if (!config.has('orchestrator.workflowLogProvider.loki')) {
-          logger.info(
-            'Loki workflow log provider is not configured, skipping module initialization',
-          );
-          return;
-        }
         logger.info('Initialize the Loki orchestrator backend module');
         workflowLogs.addWorkflowLogProvider(LokiProvider.fromConfig(config));
       },
