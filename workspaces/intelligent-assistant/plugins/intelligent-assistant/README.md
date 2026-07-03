@@ -39,7 +39,7 @@ The Lightspeed plugin has support for the permission framework.
 ```CSV
 p, role:default/team_a, intelligent-assistant.conversations.access, read, allow
 p, role:default/team_a, intelligent-assistant.chat.create, create, allow
-p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.conversations.manage, delete, allow
 p, role:default/team_a, intelligent-assistant.chat.update, update, allow
 
 # Required for Notebooks feature (if enabled)
