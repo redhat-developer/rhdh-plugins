@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { PropsWithChildren } from 'react';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+const generateClassName = createGenerateClassName({
+  seed: 'ai-experience',
+});
+
+export const AiExperienceStylesProvider = ({
+  children,
+}: PropsWithChildren<{}>) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);
