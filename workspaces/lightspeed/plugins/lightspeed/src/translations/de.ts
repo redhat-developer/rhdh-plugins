@@ -171,6 +171,8 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Administratoranmeldedaten werden verwendet. Geben Sie einen persönlichen Token ein, um ihn für Ihr Konto zu überschreiben.',
     'menu.newConversation': 'Neuer Chat',
     'message.options.label': 'Optionen',
+    'modelSelector.disabled.tooltip':
+      'Jede Chat-Sitzung unterstützt nur ein Modell. Um das Modell zu wechseln, starten Sie einen neuen Chat.',
     'modal.cancel': 'Abbrechen',
     'modal.close': 'Schließen',
     'modal.edit': 'Bearbeiten',

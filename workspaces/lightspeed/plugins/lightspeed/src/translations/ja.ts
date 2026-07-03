@@ -166,6 +166,8 @@ const lightspeedTranslationJa = createTranslationMessages({
       '管理者が提供した認証情報を使用しています。アカウント用に上書きするには個人トークンを入力してください。',
     'menu.newConversation': '新しいチャット',
     'message.options.label': 'オプション',
+    'modelSelector.disabled.tooltip':
+      '各チャットセッションは1つのモデルのみをサポートしています。モデルを切り替えるには、新しいチャットを開いてください。',
     'modal.cancel': 'キャンセル',
     'modal.close': '閉じる',
     'modal.edit': '編集',

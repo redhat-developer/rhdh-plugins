@@ -167,6 +167,8 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
+    'modelSelector.disabled.tooltip':
+      'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abre un nuevo chat.',
     'modal.cancel': 'Cancelar',
     'modal.close': 'Cerrar',
     'modal.edit': 'Modificar',

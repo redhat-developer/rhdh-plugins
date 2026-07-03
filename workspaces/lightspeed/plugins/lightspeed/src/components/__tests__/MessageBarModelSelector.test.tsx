@@ -235,4 +235,28 @@ describe('MessageBarModelSelector', () => {
 
     expect(screen.getByText('granite-3.3')).toBeInTheDocument();
   });
+
+  it('should show tooltip when disabled', async () => {
+    render(
+      <MessageBarModelSelector
+        selectedModel="granite-3.3"
+        models={mockModels}
+        onSelect={mockOnSelect}
+        disabled
+      />,
+    );
+
+    const toggleButton = screen.getByRole('button', {
+      name: 'Chatbot selector',
+    });
+    await userEvent.hover(toggleButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Each chat session supports only one model. To switch models, open a new chat.',
+        ),
+      ).toBeInTheDocument();
+    });
+  });
 });

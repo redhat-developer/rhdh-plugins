@@ -23,6 +23,7 @@ import {
   DropdownList,
   MenuToggle,
   MenuToggleElement,
+  Tooltip,
 } from '@patternfly/react-core';
 import { AngleDownIcon } from '@patternfly/react-icons';
 
@@ -77,20 +78,32 @@ export const MessageBarModelSelector = ({
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
 
-  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
-      ref={toggleRef}
-      onClick={() => setIsOpen(!isOpen)}
-      isExpanded={isOpen}
-      isDisabled={disabled}
-      variant="plain"
-      className={classes.selectorToggle}
-      aria-label={t('aria.chatbotSelector')}
-    >
-      {selectedModelLabel}
-      <AngleDownIcon />
-    </MenuToggle>
-  );
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => {
+    const menuToggle = (
+      <MenuToggle
+        ref={toggleRef}
+        onClick={() => setIsOpen(!isOpen)}
+        isExpanded={isOpen}
+        isDisabled={disabled}
+        variant="plain"
+        className={classes.selectorToggle}
+        aria-label={t('aria.chatbotSelector')}
+      >
+        {selectedModelLabel}
+        <AngleDownIcon />
+      </MenuToggle>
+    );
+
+    if (disabled) {
+      return (
+        <Tooltip content={t('modelSelector.disabled.tooltip')}>
+          <span>{menuToggle}</span>
+        </Tooltip>
+      );
+    }
+
+    return menuToggle;
+  };
 
   return (
     <Dropdown

@@ -169,6 +169,8 @@ const lightspeedTranslationIt = createTranslationMessages({
       "Sono in uso le credenziali fornite dall'amministratore. Inserisci un token personale per sovrascriverle per il tuo account.",
     'menu.newConversation': 'Nuova chat',
     'message.options.label': 'Opzioni',
+    'modelSelector.disabled.tooltip':
+      'Ogni sessione di chat supporta un solo modello. Per cambiare modello, apri una nuova chat.',
     'modal.cancel': 'Cancella',
     'modal.close': 'Chiudi',
     'modal.edit': 'Modifica',

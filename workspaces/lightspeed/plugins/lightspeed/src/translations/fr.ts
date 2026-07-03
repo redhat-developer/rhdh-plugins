@@ -171,6 +171,8 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les identifiants fournis par l’administrateur sont utilisés. Saisissez un jeton personnel pour les remplacer pour votre compte.',
     'menu.newConversation': 'Nouvelle Conversation',
     'message.options.label': 'Options',
+    'modelSelector.disabled.tooltip':
+      "Chaque session de chat ne prend en charge qu'un seul modèle. Pour changer de modèle, ouvrez un nouveau chat.",
     'modal.cancel': 'Annuler',
     'modal.close': 'Fermer',
     'modal.edit': 'Modifier',

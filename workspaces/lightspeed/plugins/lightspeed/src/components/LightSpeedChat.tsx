@@ -1805,7 +1805,7 @@ export const LightspeedChat = ({
                 onNewChat();
                 handleSelectedModel(item);
               }}
-              disabled={isSendButtonDisabled}
+              disabled={isSendButtonDisabled || messages.length > 0}
             />
           }
           forceMultilineLayout
@@ -1977,7 +1977,9 @@ export const LightspeedChat = ({
             }}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
-            isModelSelectorDisabled={isSendButtonDisabled}
+            isModelSelectorDisabled={
+              isSendButtonDisabled || messages.length > 0
+            }
             hideModelSelector
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}
