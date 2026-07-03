@@ -1,6 +1,13 @@
 # Create PR for rhdh-plugins
 
-You are automating the full PR workflow for the `redhat-developer/rhdh-plugins` monorepo. Follow every step below **in order**. Do not skip steps. Where an approval gate is marked, you **must** ask the user before proceeding.
+You are automating the full PR workflow for the `redhat-developer/rhdh-plugins` monorepo. Follow every step below **in order**. Do not skip steps.
+
+## Mode: check for `--a` flag
+
+Check if the user invoked this command with `--a` (auto-approve mode).
+
+- **If `--a` is present:** set **auto-approve mode**. All approval gates (Steps 3, 7, and 8) are skipped — proceed automatically without asking the user.
+- **If `--a` is NOT present (default):** where an approval gate is marked, you **must** ask the user before proceeding.
 
 ---
 
@@ -20,16 +27,14 @@ Run `git status --porcelain` and save the full output as the **baseline snapshot
 
 ---
 
-## Step 3 — Create a new branch (only if on `main`)
+## Step 3 — Create a new branch (only if on `main`) (APPROVAL REQUIRED unless `--a`)
 
 1. Run `git branch --show-current` to determine the current branch.
 2. **If the current branch is `main`:**
    a. Analyze the staged diff (`git diff --cached`) to understand the nature of the changes.
    b. Generate a descriptive branch name in the format: `feat/<workspace-name>-<short-description>` (use `fix/` prefix for bug fixes). If multiple workspaces are affected, use a general description instead of a single workspace name.
-   c. **Ask the user for approval** before proceeding. Present:
-   - The proposed branch name
-   - A one-line summary of the changes
-     d. Only after approval, run: `git checkout -b <branch-name>`
+   c. **If NOT in auto-approve mode:** ask the user for approval before proceeding. Present the proposed branch name and a one-line summary of the changes. **If in auto-approve mode (`--a`):** skip approval and proceed immediately.
+   d. Run: `git checkout -b <branch-name>`
 3. **If the current branch is NOT `main`:** skip branch creation and continue on the current branch. Inform the user: "Already on branch `<branch-name>`, skipping branch creation."
 
 ---
@@ -39,6 +44,20 @@ Run `git status --porcelain` and save the full output as the **baseline snapshot
 For **each** workspace detected in Step 1, run the following commands **sequentially** inside that workspace's directory (e.g., `workspaces/bulk-import`). If any command fails, **stop immediately** and report the error to the user with the failing command, workspace, and its output.
 
 Repeat this block for every workspace:
+
+0. **Pre-build cleanup** — remove stale `dist/` directories that may contain root-owned files from previous Docker or sudo builds. Run:
+
+   ```
+   rm -rf plugins/*/dist packages/*/dist
+   ```
+
+   If this fails with a permission error (`EACCES`), automatically escalate to:
+
+   ```
+   sudo rm -rf plugins/*/dist packages/*/dist
+   ```
+
+   This is safe because the glob is scoped strictly to plugin/package dist directories within the workspace — it **never** touches `node_modules`. **Never** use `find -name dist` or any broad recursive search that could delete `dist/` inside `node_modules`.
 
 1. `yarn` — install dependencies
 2. `yarn prettier:fix` — format code
@@ -86,22 +105,20 @@ If multiple packages within the same workspace are affected, list each on its ow
 
 ---
 
-## Step 7 — Stage build-generated files (APPROVAL REQUIRED)
+## Step 7 — Stage build-generated files (APPROVAL REQUIRED unless `--a`)
 
 1. Present the filtered list of build-generated files (from Step 6) to the user.
-2. **Ask the user for approval** before staging.
-3. Only after approval, run `git add` for each approved file.
+2. **If NOT in auto-approve mode:** ask the user for approval before staging. **If in auto-approve mode (`--a`):** skip approval and stage all build-generated files automatically.
+3. Run `git add` for each approved/auto-approved file.
 
 ---
 
-## Step 8 — Commit (APPROVAL REQUIRED)
+## Step 8 — Commit (APPROVAL REQUIRED unless `--a`)
 
 1. Run `git diff --cached --stat` to review all staged changes (original + build-generated).
 2. Generate a commit message based on the full staged diff. Follow conventional commit format: `<type>(<workspace>): <short description>` (e.g., `feat(bulk-import): add support for batch repository imports`).
-3. **Ask the user for approval**. Present:
-   - The proposed commit message
-   - A summary of staged files
-4. Only after approval, commit with the **`-s` flag** (Signed-off-by):
+3. **If NOT in auto-approve mode:** ask the user for approval. Present the proposed commit message and a summary of staged files. **If in auto-approve mode (`--a`):** skip approval and commit immediately with the generated message.
+4. Commit with the **`-s` flag** (Signed-off-by):
 
 ```
 git commit -s -m "<approved-message>"
