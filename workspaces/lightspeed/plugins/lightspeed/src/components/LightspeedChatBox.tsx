@@ -44,6 +44,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
 import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
+import { SourcesChipModal } from './SourcesChipModal';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -114,6 +115,8 @@ type LightspeedChatBoxProps = {
   conversationId: string;
   isStreaming: boolean;
   displayMode?: ChatbotDisplayMode;
+  /** When true, sources are shown as a compact chip + modal instead of the inline SourcesCard. */
+  useSourcesChipModal?: boolean;
 };
 
 export interface ScrollContainerHandle {
@@ -132,6 +135,7 @@ export const LightspeedChatBox = forwardRef(
       isStreaming,
       topicRestrictionEnabled,
       displayMode,
+      useSourcesChipModal: showSourcesChipModal = false,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
@@ -262,6 +266,7 @@ export const LightspeedChatBox = forwardRef(
           const extraContentParts: {
             beforeMainContent?: React.ReactNode;
             afterMainContent?: React.ReactNode;
+            endContent?: React.ReactNode;
           } = {};
 
           let deepThinking: DeepThinkingProps | undefined = undefined;
@@ -331,17 +336,33 @@ export const LightspeedChatBox = forwardRef(
             );
           }
 
-          const extraContent =
-            extraContentParts.beforeMainContent ||
-            extraContentParts.afterMainContent
-              ? extraContentParts
-              : undefined;
-
-          const finalMessage =
+          const messageToPrepare =
             parsedReasoning.hasReasoning ||
             parsedReasoning.isReasoningInProgress
               ? { ...message, content: parsedReasoning.mainContent }
               : message;
+
+          let finalMessage = messageToPrepare;
+
+          if (showSourcesChipModal) {
+            const { sources: messageSources, ...messageWithoutSources } =
+              messageToPrepare;
+
+            if (messageSources?.sources?.length) {
+              extraContentParts.endContent = (
+                <SourcesChipModal sources={messageSources} />
+              );
+            }
+
+            finalMessage = messageWithoutSources;
+          }
+
+          const extraContent =
+            extraContentParts.beforeMainContent ||
+            extraContentParts.afterMainContent ||
+            extraContentParts.endContent
+              ? extraContentParts
+              : undefined;
 
           return (
             <Message

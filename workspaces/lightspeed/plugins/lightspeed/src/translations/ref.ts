@@ -393,6 +393,13 @@ export const lightspeedMessages = {
   'sort.oldest': 'Date (oldest first)',
   'sort.alphabeticalAsc': 'Name (A-Z)',
   'sort.alphabeticalDesc': 'Name (Z-A)',
+  // Sources
+  'sources.chip.label': '{{count}} Sources',
+  'sources.modal.title': 'Sources',
+  'sources.modal.description':
+    'The following sources were used to generate this AI response and provide supporting information:',
+  'sources.popover.closeAriaLabel': 'Close sources',
+
   // Deep thinking
   'reasoning.thinking': 'Show thinking',
 };
