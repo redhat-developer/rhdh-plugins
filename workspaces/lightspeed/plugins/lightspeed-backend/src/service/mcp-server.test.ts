@@ -554,6 +554,19 @@ describe('MCP server management endpoints', () => {
 
       expect(response.status).toBe(403);
     });
+
+    it('validates a DCR server using a minted token', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+      const response = await request(backendServer).post(
+        '/api/lightspeed/mcp-servers/no-token-server/validate',
+      );
+
+      // DCR path mints a token successfully (no 502), but the mock MCP server
+      // rejects it (only accepts MOCK_MCP_VALID_TOKEN), so validation reports error.
+      expect(response.status).toBe(200);
+      expect(response.body.name).toBe('no-token-server');
+      expect(response.body.validation).toBeDefined();
+    });
   });
 
   // ─── Token encryption integration ─────────────────────────────────

@@ -210,7 +210,7 @@ export async function createRouter(
   const staticServers: StaticMcpServer[] = [];
   if (mcpServersConfig) {
     for (const mcpServer of mcpServersConfig) {
-      const authValue = mcpServer.getOptionalString('auth');
+      const authValue = mcpServer.getOptionalString('auth')?.toLowerCase();
       if (authValue && authValue !== 'dcr') {
         logger.warn(
           `MCP server '${mcpServer.getString('name')}' has unsupported auth value '${authValue}'; ` +
