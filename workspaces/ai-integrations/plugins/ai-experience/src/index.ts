@@ -16,9 +16,9 @@
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
+  return componentName.startsWith('ai-experience-')
     ? componentName
-    : `v5-${componentName}`;
+    : `ai-experience-${componentName}`;
 });
 
 export * from './plugin';
