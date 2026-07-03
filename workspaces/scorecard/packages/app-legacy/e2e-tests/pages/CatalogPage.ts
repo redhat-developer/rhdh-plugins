@@ -51,8 +51,11 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
-    await this.page.getByTestId('user-picker-all').getByText('All').click();
+    // Select the "All" user filter via URL instead of clicking the picker:
+    // on CI the picker item's container <li> intercepts pointer events and
+    // the click times out (rendering/font metrics differ from local runs).
+    await this.page.goto('/catalog?filters[user]=all');
+    await expect(this.page.getByTestId('user-picker-all')).toBeVisible();
   }
 
   async openComponent(componentName: string) {
