@@ -266,6 +266,8 @@ export const lightspeedMessages = {
   'tooltip.close': 'Close',
   'tooltip.fab.open': 'Open intelligent assistant',
   'tooltip.fab.close': 'Close intelligent assistant',
+  'tooltip.modelSelector.disabled':
+    'Each chat session supports only one model. To switch models, open a new chat.',
 
   // Attach menu
   'attach.menu.title': 'Attach',

@@ -1805,7 +1805,12 @@ export const LightspeedChat = ({
                 onNewChat();
                 handleSelectedModel(item);
               }}
-              disabled={isSendButtonDisabled}
+              disabled={isSendButtonDisabled || messages.length > 0}
+              disabledTooltip={
+                messages.length > 0
+                  ? t('tooltip.modelSelector.disabled')
+                  : undefined
+              }
             />
           }
           forceMultilineLayout

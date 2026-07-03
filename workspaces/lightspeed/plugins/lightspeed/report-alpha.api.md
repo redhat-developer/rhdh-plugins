@@ -179,6 +179,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'tooltip.close': string;
     readonly 'tooltip.fab.open': string;
     readonly 'tooltip.fab.close': string;
+    readonly 'tooltip.modelSelector.disabled': string;
     readonly 'attach.menu.title': string;
     readonly 'attach.menu.description': string;
     readonly 'modal.title.preview': string;

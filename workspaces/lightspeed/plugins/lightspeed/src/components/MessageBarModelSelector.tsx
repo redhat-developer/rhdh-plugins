@@ -23,6 +23,7 @@ import {
   DropdownList,
   MenuToggle,
   MenuToggleElement,
+  Tooltip,
 } from '@patternfly/react-core';
 import { AngleDownIcon } from '@patternfly/react-icons';
 
@@ -33,6 +34,7 @@ type MessageBarModelSelectorProps = {
   models: { label: string; value: string; provider: string }[];
   onSelect: (model: string) => void;
   disabled?: boolean;
+  disabledTooltip?: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -69,6 +71,7 @@ export const MessageBarModelSelector = ({
   models,
   onSelect,
   disabled = false,
+  disabledTooltip,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const classes = useStyles();
@@ -77,7 +80,7 @@ export const MessageBarModelSelector = ({
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
 
-  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
+  const toggleButton = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
       ref={toggleRef}
       onClick={() => setIsOpen(!isOpen)}
@@ -91,6 +94,17 @@ export const MessageBarModelSelector = ({
       <AngleDownIcon />
     </MenuToggle>
   );
+
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => {
+    if (disabled && disabledTooltip) {
+      return (
+        <Tooltip content={disabledTooltip}>
+          <span>{toggleButton(toggleRef)}</span>
+        </Tooltip>
+      );
+    }
+    return toggleButton(toggleRef);
+  };
 
   return (
     <Dropdown
