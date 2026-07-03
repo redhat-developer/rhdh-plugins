@@ -307,7 +307,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'sort.label': '会話を並べ替え',
     'sort.newest': '日付（新しい順）',
     'sort.oldest': '日付（古い順）',
-    'sources.chip.label': '{{count}} ソース',
+    'sources.chip.label_one': '{{count}} ソース',
+    'sources.chip.label_other': '{{count}} ソース',
     'sources.modal.description':
       '以下のソースは、この AI 応答の生成と補足情報の提供に使用されました:',
     'sources.modal.title': 'ソース',

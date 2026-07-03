@@ -315,7 +315,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'sort.label': 'Ordina conversazioni',
     'sort.newest': 'Data (più recente prima)',
     'sort.oldest': 'Data (meno recente prima)',
-    'sources.chip.label': '{{count}} Fonti',
+    'sources.chip.label_one': '{{count}} Fonte',
+    'sources.chip.label_other': '{{count}} Fonti',
     'sources.modal.description':
       'Le seguenti fonti sono state utilizzate per generare questa risposta IA e fornire informazioni di supporto:',
     'sources.modal.title': 'Fonti',

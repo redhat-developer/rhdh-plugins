@@ -121,7 +121,7 @@ describe('SourcesChipModal', () => {
 
     render(<SourcesChipModal sources={sourcesWithoutLink} />);
 
-    fireEvent.click(screen.getByText('1 Sources'));
+    fireEvent.click(screen.getByText('1 Source'));
 
     expect(screen.getByText('local-doc.yaml')).toBeInTheDocument();
   });
@@ -164,7 +164,7 @@ describe('SourcesChipModal', () => {
 
     render(<SourcesChipModal sources={sourcesWithoutTitle} />);
 
-    fireEvent.click(screen.getByText('1 Sources'));
+    fireEvent.click(screen.getByText('1 Source'));
 
     expect(screen.getByText('Source 1')).toBeInTheDocument();
   });

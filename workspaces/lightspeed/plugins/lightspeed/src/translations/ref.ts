@@ -394,7 +394,8 @@ export const lightspeedMessages = {
   'sort.alphabeticalAsc': 'Name (A-Z)',
   'sort.alphabeticalDesc': 'Name (Z-A)',
   // Sources
-  'sources.chip.label': '{{count}} Sources',
+  'sources.chip.label_one': '{{count}} Source',
+  'sources.chip.label_other': '{{count}} Sources',
   'sources.modal.title': 'Sources',
   'sources.modal.description':
     'The following sources were used to generate this AI response and provide supporting information:',

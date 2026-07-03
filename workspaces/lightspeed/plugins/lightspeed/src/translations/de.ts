@@ -317,7 +317,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'sort.label': 'Unterhaltungen sortieren',
     'sort.newest': 'Datum (neuestes zuerst)',
     'sort.oldest': 'Datum (ältestes zuerst)',
-    'sources.chip.label': '{{count}} Quellen',
+    'sources.chip.label_one': '{{count}} Quelle',
+    'sources.chip.label_other': '{{count}} Quellen',
     'sources.modal.description':
       'Die folgenden Quellen wurden verwendet, um diese KI-Antwort zu generieren und ergänzende Informationen bereitzustellen:',
     'sources.modal.title': 'Quellen',

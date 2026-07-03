@@ -193,7 +193,7 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
       }
     >
       <Button variant="link" icon={<LinkIcon />} className={classes.chipButton}>
-        {(t as Function)('sources.chip.label', { count: String(count) })}
+        {(t as Function)('sources.chip.label', { count })}
       </Button>
     </Popover>
   );
