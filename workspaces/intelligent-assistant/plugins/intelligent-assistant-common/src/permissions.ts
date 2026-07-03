@@ -39,8 +39,8 @@ export const lightspeedChatCreatePermission = createPermission({
 /** This permission is used to access the lightspeed delete endpoint
  * @public
  */
-export const lightspeedChatDeletePermission = createPermission({
-  name: 'intelligent-assistant.chat.delete',
+export const lightspeedConversationsManagePermission = createPermission({
+  name: 'intelligent-assistant.conversations.manage',
   attributes: {
     action: 'delete',
   },
@@ -104,7 +104,7 @@ export const lightspeedSavedPromptsManagePermission = createPermission({
 export const lightspeedPermissions = [
   lightspeedConversationsAccessPermission,
   lightspeedChatCreatePermission,
-  lightspeedChatDeletePermission,
+  lightspeedConversationsManagePermission,
   lightspeedChatUpdatePermission,
   lightspeedMcpReadPermission,
   lightspeedMcpManagePermission,
