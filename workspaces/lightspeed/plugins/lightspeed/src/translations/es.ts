@@ -173,6 +173,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'modal.save': 'Guardar',
     'modal.title.edit': 'Modificar archivo adjunto',
     'modal.title.preview': 'Previsualizar archivo adjunto',
+    'modelSelector.disabled.tooltip':
+      'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
     'notebook.document.delete.description':

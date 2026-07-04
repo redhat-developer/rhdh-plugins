@@ -177,6 +177,8 @@ const lightspeedTranslationDe = createTranslationMessages({
     'modal.save': 'Speichern',
     'modal.title.edit': 'Anhang bearbeiten',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
+    'modelSelector.disabled.tooltip':
+      'Jede Chat-Sitzung unterstützt nur ein Modell. Um das Modell zu wechseln, starten Sie einen neuen Chat.',
     'notebook.document.delete': 'Löschen',
     'notebook.document.delete.action': 'Entfernen',
     'notebook.document.delete.description':

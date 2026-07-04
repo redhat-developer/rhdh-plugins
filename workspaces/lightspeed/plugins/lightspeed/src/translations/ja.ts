@@ -172,6 +172,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'modal.save': '保存',
     'modal.title.edit': '添付ファイルの編集',
     'modal.title.preview': '添付ファイルのプレビュー',
+    'modelSelector.disabled.tooltip':
+      '各チャットセッションは1つのモデルのみサポートしています。モデルを切り替えるには、新しいチャットを開いてください。',
     'notebook.document.delete': '削除',
     'notebook.document.delete.action': '削除',
     'notebook.document.delete.description':

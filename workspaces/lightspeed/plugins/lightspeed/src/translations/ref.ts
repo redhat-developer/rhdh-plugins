@@ -393,6 +393,10 @@ export const lightspeedMessages = {
   'sort.oldest': 'Date (oldest first)',
   'sort.alphabeticalAsc': 'Name (A-Z)',
   'sort.alphabeticalDesc': 'Name (Z-A)',
+  // Model selector
+  'modelSelector.disabled.tooltip':
+    'Each chat session supports only one model. To switch models, open a new chat.',
+
   // Deep thinking
   'reasoning.thinking': 'Show thinking',
 };

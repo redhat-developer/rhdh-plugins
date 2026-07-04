@@ -272,6 +272,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'sort.oldest': string;
     readonly 'sort.alphabeticalAsc': string;
     readonly 'sort.alphabeticalDesc': string;
+    readonly 'modelSelector.disabled.tooltip': string;
     readonly 'reasoning.thinking': string;
   }
 >;
