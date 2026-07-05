@@ -635,7 +635,7 @@ case "${PHASE}" in
     # This ensures AAP syncs the latest commit with the new playbooks
     echo ""
     echo "=== Committing and pushing Ansible project to git ==="
-    local commit_msg=$(build_commit_message)
+    commit_msg=$(build_commit_message)
     git_commit_and_push "${commit_msg}"
 
     # Step 2: publish-aap — register with AAP and sync
