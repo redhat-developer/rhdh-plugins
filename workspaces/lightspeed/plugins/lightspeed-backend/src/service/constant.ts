@@ -26,6 +26,13 @@ export const DEFAULT_LIGHTSPEED_SERVICE_PORT = 8080; // Lightspeed service port
 export const DEFAULT_MAX_FILE_SIZE_MB = 20 * 1024 * 1024; // 20MB
 
 /**
+ * Rate limiting defaults (window is fixed at 1 minute)
+ */
+export const RATE_LIMIT_WINDOW_MS = 60000;
+export const DEFAULT_EXPENSIVE_RATE_LIMIT_MAX = 25;
+export const DEFAULT_GENERAL_RATE_LIMIT_MAX = 200;
+
+/**
  * Input validation limits for query endpoints
  */
 export const MAX_QUERY_LENGTH = 32000; // 32K characters (reasonable for LLM context)

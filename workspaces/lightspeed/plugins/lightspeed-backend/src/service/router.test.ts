@@ -1140,4 +1140,102 @@ describe('lightspeed router tests', () => {
       expect(response.statusCode).toEqual(403);
     });
   });
+
+  describe('rate limiting', () => {
+    const RATE_LIMIT_CONFIG = {
+      'intelligent-assistant': {
+        ...BASE_CONFIG['intelligent-assistant'],
+        rateLimit: {
+          expensive: { max: 1 },
+          general: { max: 1 },
+        },
+      },
+    };
+
+    it('returns 429 on expensive endpoint when limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const body = {
+        model: mockModel,
+        query: 'Hello',
+        provider: 'test-server',
+      };
+
+      const first = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(body);
+      const second = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(body);
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(429);
+      expect(second.headers['retry-after']).toBeDefined();
+      expect(second.body.error).toEqual({
+        name: 'RateLimitExceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter: expect.any(Number),
+      });
+    });
+
+    it('returns 429 on repeated invalid /v1/query requests after limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const invalidBody = {
+        model: mockModel,
+        query: 'Hello',
+      };
+
+      const first = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(invalidBody);
+      const second = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(invalidBody);
+
+      expect(first.statusCode).toBe(400);
+      expect(first.body.error).toBe(
+        'provider is required and must be a non-empty string',
+      );
+      expect(second.statusCode).toBe(429);
+    });
+
+    it('returns 429 on general endpoint when limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+
+      const first = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+      const second = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(429);
+    });
+
+    it('does not rate limit health endpoint', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+
+      const first = await request(backendServer).get('/api/lightspeed/health');
+      const second = await request(backendServer).get('/api/lightspeed/health');
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(200);
+    });
+
+    it('uses separate counters for expensive and general tiers', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const body = {
+        model: mockModel,
+        query: 'Hello',
+        provider: 'test-server',
+      };
+
+      await request(backendServer).post('/api/lightspeed/v1/query').send(body);
+      const modelsResponse = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+
+      expect(modelsResponse.statusCode).toBe(200);
+    });
+  });
 });

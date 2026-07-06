@@ -46,6 +46,7 @@ import {
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
 import { createPermissionMiddleware } from './middleware/createPermissionMiddleware';
+import { createRateLimitMiddleware } from './middleware/createRateLimitMiddleware';
 import {
   createIdentityMiddleware,
   getIdentity,
@@ -222,12 +223,24 @@ export async function createRouter(
     return createPermissionMiddleware(authorizer, permission, logger);
   }
 
+  const expensiveRateLimiter = createRateLimitMiddleware(
+    config,
+    'expensive',
+    logger,
+  );
+  const generalRateLimiter = createRateLimitMiddleware(
+    config,
+    'general',
+    logger,
+  );
+
   // ─── MCP Server Management Endpoints ────────────────────────────────
   // All MCP servers are admin-configured (static). Users can view the
   // list, toggle servers on/off, and provide personal access tokens.
 
   router.get(
     '/mcp-servers',
+    generalRateLimiter,
     requirePermission(lightspeedMcpReadPermission),
     async (req, res) => {
       try {
@@ -264,6 +277,7 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/validate',
+    generalRateLimiter,
     requirePermission(lightspeedMcpReadPermission),
     async (req, res) => {
       try {
@@ -298,6 +312,7 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/:name/validate',
+    generalRateLimiter,
     requirePermission(lightspeedMcpManagePermission),
     async (req, res) => {
       try {
@@ -363,6 +378,7 @@ export async function createRouter(
 
   router.patch(
     '/mcp-servers/:name',
+    generalRateLimiter,
     requirePermission(lightspeedMcpManagePermission),
     async (req, res) => {
       try {
@@ -444,75 +460,88 @@ export async function createRouter(
   );
 
   // Returns conversation IDs associated with notebook sessions for filtering
-  router.get('/notebook-conversation-ids', async (req, res) => {
-    try {
-      const { userEntityRef } = getIdentity(req);
+  router.get(
+    '/notebook-conversation-ids',
+    generalRateLimiter,
+    async (req, res) => {
+      try {
+        const { userEntityRef } = getIdentity(req);
 
-      const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
-      const vectorStores = vectorStoresPage.data || [];
+        const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
+        const vectorStores = vectorStoresPage.data || [];
 
-      const conversationIds: string[] = [];
+        const conversationIds: string[] = [];
 
-      for (const store of vectorStores) {
-        const sessionUserId = store.metadata?.user_id as string;
-        const conversationId = store.metadata?.conversation_id as string | null;
+        for (const store of vectorStores) {
+          const sessionUserId = store.metadata?.user_id as string;
+          const conversationId = store.metadata?.conversation_id as
+            | string
+            | null;
 
-        // Only include this user's sessions with a conversation_id
-        if (sessionUserId === userEntityRef && conversationId) {
-          conversationIds.push(conversationId);
+          // Only include this user's sessions with a conversation_id
+          if (sessionUserId === userEntityRef && conversationId) {
+            conversationIds.push(conversationId);
+          }
+        }
+
+        res.json({
+          conversation_ids: conversationIds,
+        });
+      } catch (error) {
+        const errormsg = `Error fetching notebook conversation IDs: ${error}`;
+        logger.error(errormsg);
+
+        if (error instanceof NotAllowedError) {
+          res.status(403).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: errormsg });
         }
       }
-
-      res.json({
-        conversation_ids: conversationIds,
-      });
-    } catch (error) {
-      const errormsg = `Error fetching notebook conversation IDs: ${error}`;
-      logger.error(errormsg);
-
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: errormsg });
-      }
-    }
-  });
+    },
+  );
 
   // ─── Proxy Routes ───────────────────────────────────────────────────
 
   router.get(
     '/v1/models',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatDeletePermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
@@ -555,6 +584,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query/interrupt',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
@@ -592,6 +622,7 @@ export async function createRouter(
   router.post(
     '/v1/query',
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
+    expensiveRateLimiter,
     validateCompletionsRequest,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
@@ -692,6 +723,7 @@ export async function createRouter(
 
   router.put(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {

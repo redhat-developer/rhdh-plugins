@@ -80,8 +80,7 @@ export const WorkflowInstanceStatusIndicator = ({
       title = t('table.status.pending');
       break;
     default:
-      icon = VALUE_UNAVAILABLE;
-      break;
+      return <>{VALUE_UNAVAILABLE}</>;
   }
 
   return (
