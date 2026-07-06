@@ -2,7 +2,7 @@
 # Routes events to agent workflows via reusable-dispatch.yml.
 #
 # Agents enabled: triage, coder, review, fix
-# Review auto-triggers on PRs touching workspaces/boost/ or workspaces/scorecard/.
+# Review auto-triggers on PRs touching workspaces/boost/, workspaces/scorecard/ and workspaces/ai-integrations
 # All other agents are reachable via /fs-* slash commands.
 #
 # Auth gate: slash commands are restricted to org members/collaborators.
@@ -31,6 +31,7 @@ on:
     paths:
       - "workspaces/boost/**"
       - "workspaces/scorecard/**"
+      - "workspaces/ai-integrations/**"
   pull_request_review:
     types: [submitted]
 

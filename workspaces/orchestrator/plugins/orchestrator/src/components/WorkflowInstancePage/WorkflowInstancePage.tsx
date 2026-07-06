@@ -34,7 +34,6 @@ import { JsonObject } from '@backstage/types';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import Close from '@mui/icons-material/Close';
 import Error from '@mui/icons-material/Error';
-import ReplayOutlined from '@mui/icons-material/ReplayOutlined';
 import Start from '@mui/icons-material/Start';
 import SwipeRightAltOutlined from '@mui/icons-material/SwipeRightAltOutlined';
 import Alert from '@mui/material/Alert';
@@ -424,12 +423,7 @@ export const WorkflowInstancePage = () => {
   const handleOptionClick = (option: 'retrigger' | 'rerun') => {
     handleCloseMenu();
     if (option === 'rerun') handleRerun();
-    else if (
-      option === 'retrigger' &&
-      value?.state !== ProcessInstanceStatusDTO.Aborted
-    ) {
-      handleRetrigger();
-    }
+    else if (option === 'retrigger') handleRetrigger();
   };
 
   const combinedError: Error | undefined = error || inputSchemaError;
@@ -471,27 +465,7 @@ export const WorkflowInstancePage = () => {
     return <ResponseErrorPanel error={combinedError} />;
   };
 
-  const showRerunMenu =
-    value?.state === ProcessInstanceStatusDTO.Error ||
-    value?.state === ProcessInstanceStatusDTO.Aborted;
-
-  const fromRecoveryPointLabel =
-    value?.state === ProcessInstanceStatusDTO.Aborted
-      ? t('workflow.buttons.fromAbortedPoint')
-      : t('workflow.buttons.fromFailurePoint');
-
-  const fromRecoveryPointIcon =
-    value?.state === ProcessInstanceStatusDTO.Aborted ? (
-      <ReplayOutlined />
-    ) : (
-      <SwipeRightAltOutlined />
-    );
-
-  const isAbortedRun = value?.state === ProcessInstanceStatusDTO.Aborted;
-  const retriggerFromPointDisabled = isAbortedRun || !inputSchema;
-  const retriggerFromPointTooltip = isAbortedRun
-    ? t('tooltips.retriggerNotSupportedForAborted')
-    : '';
+  const showRerunMenu = value?.state === ProcessInstanceStatusDTO.Error;
 
   return (
     <BaseOrchestratorPage
@@ -583,20 +557,13 @@ export const WorkflowInstancePage = () => {
                     <Start />
                     {t('workflow.buttons.entireWorkflow')}
                   </MenuItem>
-                  <Tooltip
-                    title={retriggerFromPointTooltip}
-                    disableHoverListener={!retriggerFromPointTooltip}
+                  <MenuItem
+                    onClick={() => handleOptionClick('retrigger')}
+                    disabled={!inputSchema}
                   >
-                    <Box component="span" sx={{ display: 'inline-flex' }}>
-                      <MenuItem
-                        onClick={() => handleOptionClick('retrigger')}
-                        disabled={retriggerFromPointDisabled}
-                      >
-                        {fromRecoveryPointIcon}
-                        {fromRecoveryPointLabel}
-                      </MenuItem>
-                    </Box>
-                  </Tooltip>
+                    <SwipeRightAltOutlined />
+                    {t('workflow.buttons.fromFailurePoint')}
+                  </MenuItem>
                 </Menu>
               </Grid>
             </Grid>

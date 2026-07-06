@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-import { PolicyDecision } from '@backstage/plugin-permission-common';
+import { JsonObject } from '@backstage/types';
 
-export type {
-  DefaultWidgetNode,
-  DefaultWidgetVisibility,
-  DefaultWidgetsResponse,
-  VisibleDefaultWidget,
-} from '@red-hat-developer-hub/backstage-plugin-homepage-common';
-
-export interface UserContext {
-  userEntityRef: string;
-  groupEntityRefs: Set<string>;
-  defaultWidgetsReadDecision: PolicyDecision;
-  otherPolicyDecisions: Map<string, PolicyDecision>;
-}
+export const parseValidationErrorBody = async (
+  response: Response,
+): Promise<JsonObject | undefined> => {
+  try {
+    if (typeof response.text === 'function') {
+      const text = await response.text();
+      if (!text) {
+        return undefined;
+      }
+      return JSON.parse(text) as JsonObject;
+    }
+    if (typeof response.json === 'function') {
+      return (await response.json()) as JsonObject;
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+};

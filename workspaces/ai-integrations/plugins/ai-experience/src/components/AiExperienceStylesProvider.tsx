@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { PropsWithChildren } from 'react';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
-import { PolicyDecision } from '@backstage/plugin-permission-common';
+const generateClassName = createGenerateClassName({
+  seed: 'ai-experience',
+});
 
-export type {
-  DefaultWidgetNode,
-  DefaultWidgetVisibility,
-  DefaultWidgetsResponse,
-  VisibleDefaultWidget,
-} from '@red-hat-developer-hub/backstage-plugin-homepage-common';
-
-export interface UserContext {
-  userEntityRef: string;
-  groupEntityRefs: Set<string>;
-  defaultWidgetsReadDecision: PolicyDecision;
-  otherPolicyDecisions: Map<string, PolicyDecision>;
-}
+export const AiExperienceStylesProvider = ({
+  children,
+}: PropsWithChildren<{}>) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);

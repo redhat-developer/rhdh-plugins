@@ -89,6 +89,11 @@ import { VariablesDialog } from '../WorkflowInstancePage/VariablesDialog';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowLogsDialog } from '../WorkflowInstancePage/WorkflowLogsDialog';
 
+type WorkflowRunsFetchResult = {
+  items: WorkflowRunDetail[];
+  totalCount?: number;
+};
+
 const EntityRefTableCell = ({
   entityRef,
   defaultKind,
@@ -450,11 +455,14 @@ export const WorkflowRunsTabContent = ({
       filter,
     );
 
-    const clonedData: WorkflowRunDetail[] =
+    const items: WorkflowRunDetail[] =
       instances.data.items?.map(instance =>
         mapProcessInstanceToDetails(instance, t),
       ) || [];
-    return clonedData;
+    return {
+      items,
+      totalCount: instances.data.totalCount,
+    };
   }, [
     orchestratorApi,
     page,
@@ -491,9 +499,14 @@ export const WorkflowRunsTabContent = ({
     ],
   );
 
-  const { loading, error, value } = usePolling(fetchInstances, {
-    cacheKey: pollingCacheKey,
-  });
+  const { loading, error, value } = usePolling<WorkflowRunsFetchResult>(
+    fetchInstances,
+    {
+      cacheKey: pollingCacheKey,
+    },
+  );
+
+  const runItems = value?.items;
 
   const filterForRunByOptions = useMemo(
     () => getFilter({ includeRunByFilter: false }),
@@ -502,10 +515,10 @@ export const WorkflowRunsTabContent = ({
 
   const additionalInitiators = useMemo(
     () =>
-      (value ?? [])
+      (runItems ?? [])
         .map(run => run.initiatorEntity)
         .filter((initiator): initiator is string => Boolean(initiator)),
-    [value],
+    [runItems],
   );
 
   const { items: runByFilterItems } = useRunByFilterItems({
@@ -541,16 +554,16 @@ export const WorkflowRunsTabContent = ({
       // Should be resolved when upgrading backstage and all plugins to material6
       // The workaround is to configure the FE sorting material-table applies to be according to order received from backend
       // TODO: resolve when upgrading to material 6
-      if (!value) {
+      if (!runItems) {
         return 0;
       }
-      const item1Index = value?.findIndex(curItem => curItem.id === item1.id);
-      const item2Index = value?.findIndex(curItem => curItem.id === item2.id);
+      const item1Index = runItems.findIndex(curItem => curItem.id === item1.id);
+      const item2Index = runItems.findIndex(curItem => curItem.id === item2.id);
       return orderDirection === 'asc'
         ? item1Index - item2Index
         : item2Index - item1Index;
     },
-    [value, orderDirection],
+    [runItems, orderDirection],
   );
 
   const columns = useMemo(
@@ -686,13 +699,13 @@ export const WorkflowRunsTabContent = ({
   }, [canViewRunVariables, handleViewRunVariables, t]);
 
   const data = useMemo(() => {
-    const items = value || [];
+    const items = runItems ?? [];
     if (items.length === pageSize + 1) {
       return items.slice(0, -1);
     }
     return items;
-  }, [value, pageSize]);
-  const hasNextPage = (value?.length ?? 0) === pageSize + 1;
+  }, [runItems, pageSize]);
+  const hasNextPage = (runItems?.length ?? 0) === pageSize + 1;
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) {
@@ -710,6 +723,12 @@ export const WorkflowRunsTabContent = ({
         row.start.toLowerCase().includes(query),
     );
   }, [data, search]);
+  const displayedRunCount = useMemo(() => {
+    if (search.trim()) {
+      return filteredData.length;
+    }
+    return value?.totalCount ?? data.length;
+  }, [search, filteredData.length, value?.totalCount, data.length]);
   const enablePaging = page > 0 || hasNextPage;
   const isDefaultFilters =
     statusSelectorValue === Selector.AllItems &&
@@ -863,12 +882,12 @@ export const WorkflowRunsTabContent = ({
                 workflowId ? (
                   <Trans
                     message="table.title.allWorkflowRuns"
-                    params={{ count: filteredData.length }}
+                    params={{ count: displayedRunCount }}
                   />
                 ) : (
                   <Trans
                     message="table.title.allRuns"
-                    params={{ count: filteredData.length }}
+                    params={{ count: displayedRunCount }}
                   />
                 )
               }
@@ -903,7 +922,7 @@ export const WorkflowRunsTabContent = ({
               {enablePaging && (
                 <TablePagination
                   component="div"
-                  count={-1}
+                  count={value?.totalCount ?? -1}
                   page={page}
                   onPageChange={(_, page_) => setPage(page_)}
                   onRowsPerPageChange={e => {
