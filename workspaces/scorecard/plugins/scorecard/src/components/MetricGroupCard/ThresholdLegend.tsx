@@ -54,18 +54,10 @@ export function ThresholdLegend({
       sx={{
         flex: 1,
         minWidth: 0,
-        overflowX: 'auto',
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 1,
         alignItems: 'center',
-        '&::-webkit-scrollbar': { height: 4 },
-        '&::-webkit-scrollbar-thumb': {
-          borderRadius: 2,
-          backgroundColor: 'transparent',
-        },
-        '&:hover::-webkit-scrollbar-thumb': {
-          backgroundColor: 'action.disabled',
-        },
       }}
     >
       {buckets.map(bucket => {

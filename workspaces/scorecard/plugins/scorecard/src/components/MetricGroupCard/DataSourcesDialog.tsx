@@ -407,7 +407,13 @@ export const DataSourcesDialog = ({
             <Table columnConfig={columnConfig} {...tableProps} />
           </Box>
         </DialogBody>
-        <DialogFooter style={{ justifyContent: 'space-between' }}>
+        <DialogFooter
+          style={{
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.5rem',
+          }}
+        >
           <ThresholdLegend
             buckets={buckets}
             activeFilters={activeFilters}
