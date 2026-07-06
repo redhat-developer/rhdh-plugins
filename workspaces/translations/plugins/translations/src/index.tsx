@@ -49,8 +49,8 @@ const translationsPage = PageBlueprint.make({
   },
 });
 
-const translationsTranslation = TranslationBlueprint.make({
-  name: 'translations-translations',
+const i18nTranslation = TranslationBlueprint.make({
+  name: 'translations-i18n',
   params: {
     resource: translationsPluginTranslations,
   },
@@ -99,7 +99,7 @@ const pseudoLocalizationWrapper = AppRootWrapperBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'translations',
-  extensions: [translationsPage, translationsTranslation],
+  extensions: [translationsPage, i18nTranslation],
 });
 
 /**

@@ -98,9 +98,9 @@ const _default: OverridableFrontendPlugin<
         noHeader?: boolean;
       };
     }>;
-    'translation:translations/translations-translations': OverridableExtensionDefinition<{
+    'translation:translations/translations-i18n': OverridableExtensionDefinition<{
       kind: 'translation';
-      name: 'translations-translations';
+      name: 'translations-i18n';
       config: {};
       configInput: {};
       output: ExtensionDataRef<
