@@ -50,6 +50,23 @@ const paperStyle = (theme: Theme) => ({
       : '0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px 0 rgba(0,0,0,0.30)',
   maxHeight: '60vh',
   overflow: 'auto',
+  scrollbarWidth: 'none',
+  '&:hover': {
+    scrollbarWidth: 'thin',
+  },
+  '&::-webkit-scrollbar': {
+    width: 0,
+  },
+  '&:hover::-webkit-scrollbar': {
+    width: '8px',
+  },
+  '&:hover::-webkit-scrollbar-thumb': {
+    backgroundColor: theme.palette.action.disabled,
+    borderRadius: '4px',
+  },
+  '&:hover::-webkit-scrollbar-track': {
+    backgroundColor: 'transparent',
+  },
 });
 
 const menuListStyle = (theme: Theme) => ({
