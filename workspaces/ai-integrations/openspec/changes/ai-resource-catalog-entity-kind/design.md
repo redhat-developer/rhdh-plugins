@@ -1,6 +1,8 @@
+# Design: AIResource Catalog Entity Kind
+
 ## Canonical Touchpoints
 
-- `specifications/prd/ai-resource-catalog-entity-kind.md`
+- None
 
 ## Context
 

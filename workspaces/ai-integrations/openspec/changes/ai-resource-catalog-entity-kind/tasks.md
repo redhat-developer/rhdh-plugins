@@ -1,3 +1,5 @@
+# Tasks: AIResource Catalog Entity Kind
+
 ## 1. Upstream Investigation & Schema Foundation
 
 - [ ] 1.1 Investigate the upstream `AIResource` kind to confirm the merged model, schema shape, and extension points used by this workspace

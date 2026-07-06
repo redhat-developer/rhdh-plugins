@@ -1,3 +1,5 @@
+# Proposal: AIResource Catalog Entity Kind
+
 ## Why
 
 AI coding tools consume reusable assets such as skills, rules, prompts, and agent definitions that teams publish in source repositories or OCI images. There is no standard way in this workspace to register those assets as catalog entities, validate their location metadata safely, and make them discoverable through standard RHDH catalog APIs and entity pages.
@@ -39,7 +41,7 @@ _(none - this is a net-new capability area in this workspace)_
 
 ## Canonical Touchpoints
 
-- **PRDs**: `specifications/prd/ai-resource-catalog-entity-kind.md`
+- **PRDs**: None
 - **ADRs**: None
 - **Long-lived specs (`openspec/specs/`)**: None yet
 
@@ -51,4 +53,4 @@ _(none - this is a net-new capability area in this workspace)_
 - **Schema handling**: Extends upstream AIResource behavior with RHDH-specific validation
 - **Frontend**: Reuses the standard entity page layout for AIResource entities
 - **Catalog API**: No breaking API changes; AIResource appears through standard entity and search endpoints
-- **Documentation**: Adds local PRD and OpenSpec materials to make the workspace self-contained for implementation
+- **Documentation**: Adds local OpenSpec materials to make the workspace self-contained for implementation
