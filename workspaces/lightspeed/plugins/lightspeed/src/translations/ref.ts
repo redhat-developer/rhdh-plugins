@@ -217,6 +217,10 @@ export const lightspeedMessages = {
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',
 
+  // Model selector
+  'modelSelector.disabledTooltip':
+    'Each chat session supports only one model. To switch models, open a new chat.',
+
   // Accessibility and ARIA labels
   'aria.chatbotSelector': 'Chatbot selector',
   'aria.important': 'Important',

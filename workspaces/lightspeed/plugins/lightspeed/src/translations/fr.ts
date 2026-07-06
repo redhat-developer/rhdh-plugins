@@ -26,6 +26,8 @@ const lightspeedTranslationFr = createTranslationMessages({
   ref: lightspeedTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu de l’historique de conversations',
+    'modelSelector.disabledTooltip':
+      "Chaque session de chat ne prend en charge qu'un seul modèle. Pour changer de modèle, ouvrez un nouveau chat.",
     'aria.chatbotSelector': 'Sélecteur Chatbot',
     'aria.close': 'Fermer le chatbot',
     'aria.closeDrawerPanel': 'Fermer le panneau de tiroirs',

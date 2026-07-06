@@ -26,6 +26,8 @@ const lightspeedTranslationJa = createTranslationMessages({
   ref: lightspeedTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'チャット履歴メニュー',
+    'modelSelector.disabledTooltip':
+      '各チャットセッションは1つのモデルのみをサポートしています。モデルを切り替えるには、新しいチャットを開いてください。',
     'aria.chatbotSelector': 'チャットボットセレクター',
     'aria.close': 'チャットボットを閉じる',
     'aria.closeDrawerPanel': 'ドロワーパネルを閉じる',
