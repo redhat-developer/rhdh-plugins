@@ -188,12 +188,9 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Usuario no autorizado para cancelar el flujo de trabajo',
     'tooltips.userNotAuthorizedExecute':
       'Usuario no autorizado para ejecutar el flujo de trabajo',
-    'tooltips.retriggerNotSupportedForAborted':
-      'No se admite la reactivación desde el punto de cancelación. Use Flujo de trabajo completo para iniciar una nueva ejecución con las mismas entradas.',
     'tooltips.workflowDown':
       'El flujo de trabajo está actualmente inactivo o en estado de error',
     'workflow.buttons.entireWorkflow': 'Flujo de trabajo completo',
-    'workflow.buttons.fromAbortedPoint': 'Desde el punto de cancelación',
     'workflow.buttons.fromFailurePoint': 'Desde el punto de fallo',
     'workflow.buttons.run': 'Ejecutar',
     'workflow.buttons.runAgain': 'Ejecutar nuevamente',

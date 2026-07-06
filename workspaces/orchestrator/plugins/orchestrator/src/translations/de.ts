@@ -184,12 +184,9 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Benutzer nicht berechtigt, den Workflow abzubrechen',
     'tooltips.userNotAuthorizedExecute':
       'Benutzer nicht berechtigt, Workflow auszuführen',
-    'tooltips.retriggerNotSupportedForAborted':
-      'Erneutes Auslösen vom Abbruchpunkt wird nicht unterstützt. Verwenden Sie „Gesamter Workflow“, um einen neuen Lauf mit denselben Eingaben zu starten.',
     'tooltips.workflowDown':
       'Der Workflow ist momentan nicht verfügbar oder befindet sich in einem Fehlerzustand.',
     'workflow.buttons.entireWorkflow': 'Gesamter Workflow',
-    'workflow.buttons.fromAbortedPoint': 'Vom Abbruchpunkt',
     'workflow.buttons.fromFailurePoint': 'Vom Versagenspunkt',
     'workflow.buttons.run': 'Laufen',
     'workflow.buttons.runAgain': 'Lauf erneut',
