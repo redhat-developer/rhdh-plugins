@@ -24,6 +24,13 @@ import type { i18n as I18n, Resource } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 
+function getI18nInstance(translationApi: unknown): I18n | undefined {
+  const api = translationApi as { getI18nInstance?: () => I18n };
+  return typeof api.getI18nInstance === 'function'
+    ? api.getI18nInstance()
+    : undefined;
+}
+
 interface Row {
   ref: string;
   key: string;
@@ -63,37 +70,43 @@ export const LoadedTranslationsTable = () => {
   const { t } = useTranslation();
   const appLanguageApi = useApi(appLanguageApiRef);
   const translationApi = useApi(translationApiRef);
-  const i18n: I18n = (translationApi as any).getI18nInstance();
+  const i18n = getI18nInstance(translationApi);
 
-  const resources = i18n.store.data;
+  const resources = i18n?.store.data;
 
   // FIXME: the available languages are not yet loaded...
   const showLanguages = useMemo(
-    () => [
-      'en',
-      ...appLanguageApi
-        .getAvailableLanguages()
-        .languages.filter(lang => lang !== 'en'),
-    ],
-    [appLanguageApi],
+    () =>
+      i18n
+        ? [
+            'en',
+            ...appLanguageApi
+              .getAvailableLanguages()
+              .languages.filter(lang => lang !== 'en'),
+          ]
+        : [],
+    [appLanguageApi, i18n],
   );
 
   const columns = useMemo(
-    () => [
-      { title: t('table.headers.refId'), field: 'ref' },
-      { title: t('table.headers.key'), field: 'key' },
-      ...showLanguages.map(lang => ({
-        title: getLanguageDisplayName(lang),
-        field: lang,
-      })),
-    ],
-    [showLanguages, t],
+    () =>
+      i18n
+        ? [
+            { title: t('table.headers.refId'), field: 'ref' },
+            { title: t('table.headers.key'), field: 'key' },
+            ...showLanguages.map(lang => ({
+              title: getLanguageDisplayName(lang),
+              field: lang,
+            })),
+          ]
+        : [],
+    [showLanguages, t, i18n],
   );
 
   const data = useMemo(() => {
+    if (!resources) return [];
     const rows: Row[] = [];
 
-    // Iterate first over primary language english
     if (resources.en) {
       for (const ref of Object.keys(resources.en)) {
         for (const key of Object.keys(resources.en[ref])) {
@@ -113,21 +126,17 @@ export const LoadedTranslationsTable = () => {
       }
     }
 
-    // Check if other languages have additional keys
     for (const otherLang of Object.keys(resources)) {
       if (otherLang === 'en') {
         continue;
       }
       for (const ref of Object.keys(resources[otherLang])) {
         for (const key of Object.keys(resources[otherLang][ref])) {
-          // if the key exists in english, then it was already added
           const resourceLang = resources.en;
           const resourceKey = resourceLang?.[ref];
           if (typeof resourceKey === 'object' && resourceKey?.[key]) {
             continue;
           }
-          // Check if we already have a row for this ref/key combination
-          // from another language. If yes, then we can skip this as well.
           const existingRow = rows.find(r => r.ref === ref && r.key === key);
           if (existingRow) {
             showLanguages.forEach(lang => {
@@ -135,7 +144,6 @@ export const LoadedTranslationsTable = () => {
             });
             continue;
           }
-          // Otherwise add a new row and include all languages
           rows.push(
             showLanguages.reduce(
               (row, lang) => {
@@ -154,6 +162,22 @@ export const LoadedTranslationsTable = () => {
 
     return rows;
   }, [resources, showLanguages]);
+
+  if (!i18n) {
+    return (
+      <Table
+        title={t('table.title' as any, { count: '0' })}
+        columns={[]}
+        data={[]}
+        emptyContent={
+          <span>
+            Translation resource data is not available with the built-in
+            TranslationApi.
+          </span>
+        }
+      />
+    );
+  }
 
   return (
     <Table

@@ -1,6 +1,15 @@
 app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
+  extensions:
+    - app/routes:
+        config:
+          redirects:
+            - from: /
+              to: /catalog
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
 
 organization:
   name: My Company

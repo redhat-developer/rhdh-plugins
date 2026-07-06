@@ -13,24 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { translationsPluginTranslationRef } from './ref';
 
-/**
- * @public
- */
-export const translationsPluginTranslations = createTranslationResource({
-  ref: translationsPluginTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
-
-/**
- * @public
- */
-export { translationsPluginTranslationRef };
+export { translationsApiModule as default } from './index';
