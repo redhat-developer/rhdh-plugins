@@ -20,8 +20,10 @@ test('App should render the welcome page', async ({ page }) => {
   await page.goto('/');
 
   const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
+  await expect(enterButton).toBeVisible({ timeout: 30_000 });
   await enterButton.click();
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Home' }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 });

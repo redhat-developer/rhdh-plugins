@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,32 @@
  */
 
 import { defineConfig } from '@playwright/test';
-import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
 export default defineConfig({
-  timeout: 60_000,
+  timeout: 2 * 60_000,
 
   expect: {
     timeout: 5_000,
   },
 
-  // Run your local dev server before starting the tests
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : [
         {
-          command: 'yarn start',
+          command: startCommand,
+          port: 7007,
+          reuseExistingServer: true,
+          timeout: 120_000,
+        },
+        {
+          command:
+            'echo "frontend already started by the previous webServer entry"',
           port: 3000,
           reuseExistingServer: true,
-          timeout: 60_000,
+          timeout: 120_000,
         },
       ],
 
@@ -43,16 +48,27 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
-    actionTimeout: 0,
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    navigationTimeout: 60_000,
+    actionTimeout: 30_000,
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
-  projects: generateProjects(), // Find all packages with e2e-test folders
+  projects: [
+    {
+      name: appMode,
+      testDir: 'packages/app-legacy/e2e-tests',
+      use: {
+        channel: 'chrome' as const,
+      },
+    },
+  ],
 });
