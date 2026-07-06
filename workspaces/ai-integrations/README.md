@@ -33,3 +33,15 @@ If you would like to build with `docker`, add the `--user-docker` tag like so:
 ```
 npx --yes @red-hat-developer-hub/cli@latest plugin package --tag --tag "${PLUGIN_CONTAINER_TAG}" --use-docker
 ```
+
+## Specifications
+
+This workspace now keeps local product and implementation documentation for the AIResource catalog work:
+
+- `specifications/prd/` contains workspace-local PRDs
+- `openspec/changes/` contains implementation-oriented change specs, including proposal, design, tasks, and behavioral requirements
+
+For the AIResource catalog capability, start with:
+
+- `specifications/prd/ai-resource-catalog-entity-kind.md`
+- `openspec/changes/ai-resource-catalog-entity-kind/`
