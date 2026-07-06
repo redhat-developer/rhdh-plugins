@@ -66,7 +66,7 @@ const useStyles = makeStyles(theme => ({
     flexShrink: 0,
     marginTop: 2,
     fontSize: '0.875rem',
-    color: 'var(--pf-t--global--icon--color--status--info--default, #2b9af3)',
+    color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
   },
   sourcesList: {
     listStyle: 'none',
@@ -80,10 +80,6 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     gap: theme.spacing(1.5),
     padding: `${theme.spacing(1.5)}px 0`,
-    borderBottom: '1px solid var(--pf-t--global--border--color--default, #444)',
-    '&:last-child': {
-      borderBottom: 'none',
-    },
   },
   sourceContent: {
     flex: 1,
