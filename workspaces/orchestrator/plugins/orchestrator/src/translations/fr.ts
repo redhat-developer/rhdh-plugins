@@ -187,12 +187,9 @@ const orchestratorTranslationFr = createTranslationMessages({
       "L'utilisateur n'est pas autorisé à interrompre le flux de travail.",
     'tooltips.userNotAuthorizedExecute':
       "L'utilisateur n'est pas autorisé à exécuter le flux de travail.",
-    'tooltips.retriggerNotSupportedForAborted':
-      "Le redéclenchement à partir du point d'interruption n'est pas pris en charge. Utilisez Flux de travail entier pour démarrer une nouvelle exécution avec les mêmes entrées.",
     'tooltips.workflowDown':
       "Le flux de travail est actuellement indisponible ou en état d'erreur.",
     'workflow.buttons.entireWorkflow': 'Flux de travail entier',
-    'workflow.buttons.fromAbortedPoint': "À partir du point d'interruption",
     'workflow.buttons.fromFailurePoint': 'À partir du point de défaillance',
     'workflow.buttons.run': 'Exécuter',
     'workflow.buttons.runAgain': 'Exécuter à nouveau',
