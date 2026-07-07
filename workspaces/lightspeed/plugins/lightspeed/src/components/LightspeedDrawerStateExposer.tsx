@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../hooks/useLightspeedDrawer';
 
 /**
  * @public
@@ -60,7 +60,7 @@ export const LightspeedDrawerStateExposer = ({
     setDrawerWidth,
     toggleChatbot,
     isChatbotActive,
-  } = useLightspeedDrawerContext();
+  } = useLightspeedDrawer();
 
   const isDrawerOpen =
     displayMode === ChatbotDisplayMode.docked && isChatbotActive;

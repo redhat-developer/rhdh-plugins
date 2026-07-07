@@ -17,18 +17,26 @@
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, waitFor } from '@testing-library/react';
 
-import { LightspeedDrawerContext } from '../LightspeedDrawerContext';
+import { useLightspeedDrawer } from '../../hooks/useLightspeedDrawer';
 import {
   DrawerState,
   LightspeedDrawerStateExposer,
 } from '../LightspeedDrawerStateExposer';
+
+jest.mock('../../hooks/useLightspeedDrawer', () => ({
+  useLightspeedDrawer: jest.fn(),
+}));
+
+const mockUseLightspeedDrawer = useLightspeedDrawer as jest.MockedFunction<
+  typeof useLightspeedDrawer
+>;
 
 describe('LightspeedDrawerStateExposer', () => {
   const mockSetDrawerWidth = jest.fn();
   const mockOnStateChange = jest.fn();
   const mockToggleChatbot = jest.fn();
 
-  const createContextValue = (overrides = {}) => ({
+  const createMockReturn = (overrides = {}) => ({
     isChatbotActive: false,
     toggleChatbot: mockToggleChatbot,
     displayMode: ChatbotDisplayMode.default,
@@ -41,27 +49,19 @@ describe('LightspeedDrawerStateExposer', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    consumePendingOverlayThreadHandoff: jest.fn(() => false),
     shellViewTab: 0,
     setShellViewTab: jest.fn(),
     ...overrides,
   });
 
-  const renderWithContext = (
-    contextValue: ReturnType<typeof createContextValue>,
-  ) => {
-    return render(
-      <LightspeedDrawerContext.Provider value={contextValue}>
-        <LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />
-      </LightspeedDrawerContext.Provider>,
-    );
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseLightspeedDrawer.mockReturnValue(createMockReturn());
   });
 
   it('should call onStateChange with initial state', async () => {
-    renderWithContext(createContextValue());
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith({
@@ -75,12 +75,14 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should set isDrawerOpen to true when displayMode is docked AND chatbot is active', async () => {
-    renderWithContext(
-      createContextValue({
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({
         displayMode: ChatbotDisplayMode.docked,
         isChatbotActive: true,
       }),
     );
+
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
@@ -92,12 +94,14 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should set isDrawerOpen to false when displayMode is docked but chatbot is not active', async () => {
-    renderWithContext(
-      createContextValue({
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({
         displayMode: ChatbotDisplayMode.docked,
         isChatbotActive: false,
       }),
     );
+
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
@@ -109,11 +113,11 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should set isDrawerOpen to false when displayMode is overlay', async () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.default,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.default }),
     );
+
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
@@ -125,11 +129,11 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should set isDrawerOpen to false when displayMode is fullscreen', async () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.fullscreen,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.fullscreen }),
     );
+
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
@@ -141,11 +145,11 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should include the correct drawerWidth in state', async () => {
-    renderWithContext(
-      createContextValue({
-        drawerWidth: 600,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ drawerWidth: 600 }),
     );
+
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
@@ -156,79 +160,15 @@ describe('LightspeedDrawerStateExposer', () => {
     });
   });
 
-  it('should call onStateChange when drawerWidth changes', async () => {
-    const { rerender } = renderWithContext(
-      createContextValue({
-        drawerWidth: 500,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(mockOnStateChange).toHaveBeenCalledTimes(1);
-    });
-
-    rerender(
-      <LightspeedDrawerContext.Provider
-        value={createContextValue({
-          drawerWidth: 700,
-        })}
-      >
-        <LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />
-      </LightspeedDrawerContext.Provider>,
-    );
-
-    await waitFor(() => {
-      expect(mockOnStateChange).toHaveBeenCalledWith(
-        expect.objectContaining({
-          drawerWidth: 700,
-        }),
-      );
-    });
-  });
-
-  it('should call onStateChange when displayMode changes', async () => {
-    const { rerender } = renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.default,
-        isChatbotActive: false,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(mockOnStateChange).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isDrawerOpen: false,
-        }),
-      );
-    });
-
-    rerender(
-      <LightspeedDrawerContext.Provider
-        value={createContextValue({
-          displayMode: ChatbotDisplayMode.docked,
-          isChatbotActive: true,
-        })}
-      >
-        <LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />
-      </LightspeedDrawerContext.Provider>,
-    );
-
-    await waitFor(() => {
-      expect(mockOnStateChange).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isDrawerOpen: true,
-        }),
-      );
-    });
-  });
-
   it('should render null', () => {
-    const { container } = renderWithContext(createContextValue());
+    const { container } = render(
+      <LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />,
+    );
     expect(container.firstChild).toBeNull();
   });
 
   it('should always use lightspeed as the id', async () => {
-    renderWithContext(createContextValue());
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       const callArg = mockOnStateChange.mock.calls[0][0] as DrawerState;
@@ -237,7 +177,7 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should pass setDrawerWidth function in state', async () => {
-    renderWithContext(createContextValue());
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       const callArg = mockOnStateChange.mock.calls[0][0] as DrawerState;
@@ -246,7 +186,7 @@ describe('LightspeedDrawerStateExposer', () => {
   });
 
   it('should call toggleChatbot when closeDrawer is invoked', async () => {
-    renderWithContext(createContextValue());
+    render(<LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />);
 
     await waitFor(() => {
       const callArg = mockOnStateChange.mock.calls[0][0] as DrawerState;

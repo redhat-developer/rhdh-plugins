@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React, { createContext } from 'react';
-
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { FileContent } from '../types';
@@ -30,7 +28,7 @@ export type LightspeedEmbeddedNotebooksTarget =
   | { notebookSessionId: string };
 
 /**
- * Type for LightspeedDrawerContext
+ * Type for Lightspeed drawer state and actions.
  *
  * @public
  */
@@ -66,7 +64,7 @@ export interface LightspeedDrawerContextType {
   /**
    * The function for setting the drawer width
    */
-  setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
+  setDrawerWidth: (width: number) => void;
   /**
    * The current conversation ID
    */
@@ -107,19 +105,3 @@ export interface LightspeedDrawerContextType {
   shellViewTab: number;
   setShellViewTab: (tab: number) => void;
 }
-
-const CONTEXT_KEY = '__lightspeed_drawer_context__' as keyof typeof globalThis;
-
-function getOrCreateContext() {
-  const existing = (globalThis as any)[CONTEXT_KEY];
-  if (existing)
-    return existing as React.Context<LightspeedDrawerContextType | undefined>;
-  const ctx = createContext<LightspeedDrawerContextType | undefined>(undefined);
-  (globalThis as any)[CONTEXT_KEY] = ctx;
-  return ctx;
-}
-
-/**
- * @public
- */
-export const LightspeedDrawerContext = getOrCreateContext();

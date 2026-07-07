@@ -20,9 +20,11 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen, waitFor } from '@testing-library/react';
 
 import { LIGHTSPEED_APP_DRAWER_ID } from '../../const';
+import { lightspeedDrawerStore } from '../../store/lightspeedDrawerStore';
 import { useBackstageUserIdentity } from '../useBackstageUserIdentity';
 import { useDisplayModeSettings } from '../useDisplayModeSettings';
-import { useLightspeedProviderState } from '../useLightspeedProviderState';
+import { useLightspeedDrawer } from '../useLightspeedDrawer';
+import { useLightspeedShellState } from '../useLightspeedProviderState';
 
 const mockOpenDrawer = jest.fn();
 const mockCloseDrawer = jest.fn();
@@ -52,8 +54,8 @@ const mockUser = 'user:default/test';
 function HookHarness() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { contextValue, shouldRenderOverlayModal } =
-    useLightspeedProviderState();
+  const { shouldRenderOverlayModal } = useLightspeedShellState();
+  const contextValue = useLightspeedDrawer();
 
   return (
     <div>
@@ -182,6 +184,7 @@ describe('useLightspeedProviderState', () => {
     jest.clearAllMocks();
     mockOpenDrawer.mockClear();
     mockCloseDrawer.mockClear();
+    lightspeedDrawerStore.reset();
     displayModeSettingsRef.displayMode = ChatbotDisplayMode.default;
 
     jest.mocked(useDisplayModeSettings).mockImplementation(() => ({

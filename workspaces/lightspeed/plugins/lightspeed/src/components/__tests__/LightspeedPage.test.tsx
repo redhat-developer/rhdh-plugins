@@ -34,8 +34,8 @@ jest.mock('@backstage/plugin-permission-react', () => ({
   RequirePermission: jest.fn(),
 }));
 
-jest.mock('../../hooks/useLightspeedDrawerContext', () => ({
-  useLightspeedDrawerContext: () => ({
+jest.mock('../../hooks/useLightspeedDrawer', () => ({
+  useLightspeedDrawer: () => ({
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
   }),

@@ -38,7 +38,7 @@ import userEvent from '@testing-library/user-event';
 import { lightspeedApiRef } from '../../api/api';
 import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
-import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../../hooks/useLightspeedDrawer';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
@@ -109,8 +109,8 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
-jest.mock('../../hooks/useLightspeedDrawerContext', () => ({
-  useLightspeedDrawerContext: jest.fn(),
+jest.mock('../../hooks/useLightspeedDrawer', () => ({
+  useLightspeedDrawer: jest.fn(),
 }));
 jest.mock('../../hooks/usePinnedChatsSettings', () => ({
   usePinnedChatsSettings: jest.fn().mockReturnValue({
@@ -150,10 +150,9 @@ const mockUseNotebookSessions = useNotebookSessions as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<
   typeof usePermission
 >;
-const mockUseLightspeedDrawerContext =
-  useLightspeedDrawerContext as jest.MockedFunction<
-    typeof useLightspeedDrawerContext
-  >;
+const mockUseLightspeedDrawer = useLightspeedDrawer as jest.MockedFunction<
+  typeof useLightspeedDrawer
+>;
 
 const configAPi = mockApis.config({
   data: {
@@ -242,7 +241,7 @@ describe('LightspeedChat', () => {
       data: [],
       refetch: jest.fn(),
     });
-    mockUseLightspeedDrawerContext.mockReturnValue({
+    mockUseLightspeedDrawer.mockReturnValue({
       isChatbotActive: false,
       toggleChatbot: jest.fn(),
       displayMode: ChatbotDisplayMode.embedded,
@@ -661,7 +660,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should call setDisplayMode with default when leaving fullscreen from notebooks', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,
@@ -702,7 +701,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should not render Chat/Notebooks tabs in overlay mode', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.default,
@@ -735,7 +734,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should not render Chat/Notebooks tabs in docked mode', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.docked,
@@ -768,7 +767,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should show current display mode as selected in full-screen mode', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,
@@ -802,7 +801,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should show current display mode as selected in docked mode', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.docked,
@@ -836,7 +835,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should show current display mode as selected in overlay mode', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.default,
@@ -930,7 +929,7 @@ describe('LightspeedChat', () => {
   describe('notebook tab routing', () => {
     beforeEach(() => {
       mockUsePermission.mockReturnValue({ loading: false, allowed: true });
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,
@@ -966,7 +965,7 @@ describe('LightspeedChat', () => {
     });
 
     it('redirects /intelligent-assistant to /intelligent-assistant/notebooks in fullscreen when shellViewTab is 1', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,
@@ -1041,7 +1040,7 @@ describe('LightspeedChat', () => {
     });
 
     it('should navigate to conversation URL when switching to chat tab with an active conversation', async () => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,
@@ -1076,7 +1075,7 @@ describe('LightspeedChat', () => {
 
   describe('fullscreen mode specific features', () => {
     beforeEach(() => {
-      mockUseLightspeedDrawerContext.mockReturnValue({
+      mockUseLightspeedDrawer.mockReturnValue({
         isChatbotActive: false,
         toggleChatbot: jest.fn(),
         displayMode: ChatbotDisplayMode.embedded,

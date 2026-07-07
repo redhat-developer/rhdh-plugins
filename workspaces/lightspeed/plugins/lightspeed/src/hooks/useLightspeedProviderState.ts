@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
-import type {
-  LightspeedDrawerContextType,
-  LightspeedEmbeddedNotebooksTarget,
-} from '../components/LightspeedDrawerContext';
+import type { LightspeedEmbeddedNotebooksTarget } from '../components/LightspeedDrawerContext';
 import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
-import type { FileContent } from '../types';
+import { lightspeedDrawerStore } from '../store/lightspeedDrawerStore';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';
 
@@ -37,12 +34,12 @@ function lightspeedRoutePath(conversationId?: string): string {
 }
 
 /**
- * Encapsulates LightspeedDrawerProvider state, routing, and ApplicationDrawer sync.
+ * Shell hook that orchestrates router sync, AppDrawer integration, and
+ * registers complex handlers into the lightspeedDrawerStore.
  *
  * @internal
  */
-export function useLightspeedProviderState(): {
-  contextValue: LightspeedDrawerContextType;
+export function useLightspeedShellState(): {
   shouldRenderOverlayModal: boolean;
   closeChatbot: () => void;
 } {
@@ -55,40 +52,22 @@ export function useLightspeedProviderState(): {
     setDisplayMode: setPersistedDisplayMode,
   } = useDisplayModeSettings(user, ChatbotDisplayMode.default);
 
-  const [displayModeState, setDisplayModeState] =
-    useState<ChatbotDisplayMode>(persistedDisplayMode);
-  const [isOpen, setIsOpen] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState(400);
-  const [currentConversationIdState, setCurrentConversationIdState] = useState<
-    string | undefined
-  >(undefined);
-  const [draftMessage, setDraftMessageState] = useState('');
-  const [draftFileContents, setDraftFileContentsState] = useState<
-    FileContent[]
-  >([]);
-  const [shellViewTab, setShellViewTabState] = useState(0);
-  const shellViewTabRef = useRef(shellViewTab);
-  shellViewTabRef.current = shellViewTab;
-  const setShellViewTab = useCallback((tab: number) => {
-    const next = tab === 1 ? 1 : 0;
-    shellViewTabRef.current = next;
-    setShellViewTabState(next);
-  }, []);
+  const snapshot = useSyncExternalStore(
+    lightspeedDrawerStore.subscribe,
+    lightspeedDrawerStore.getSnapshot,
+  );
+
   const openedViaFABRef = useRef(false);
   const dockedAfterLeavingFullscreenRef = useRef(false);
-  /** True while navigating off /lightspeed after user chose overlay/docked (URL can lag persisted mode). */
   const leavingLightspeedForNonEmbeddedShellRef = useRef(false);
-  /** True until overlay/docked LightspeedChat consumes it (new mount after leaving fullscreen route). */
-  const pendingOverlayThreadHandoffRef = useRef(false);
-  /** Used to detect in-app moves (e.g. Chat ↔ Notebooks) so display mode is not reset to embedded. */
   const lightspeedPathnamePrevRef = useRef<string | null>(null);
 
-  const isLightspeedRouteRef = useRef(false);
-  const persistedDisplayModeRef = useRef(persistedDisplayMode);
-
   const isLightspeedRoute = location.pathname.startsWith(LIGHTSPEED_PATH);
+  const isLightspeedRouteRef = useRef(isLightspeedRoute);
   isLightspeedRouteRef.current = isLightspeedRoute;
+  const persistedDisplayModeRef = useRef(persistedDisplayMode);
   persistedDisplayModeRef.current = persistedDisplayMode;
+
   const conversationMatch = useMatch(
     `${LIGHTSPEED_PATH}/conversation/:conversationId`,
   );
@@ -119,14 +98,11 @@ export function useLightspeedProviderState(): {
     navigate(-1);
   }, [navigate]);
 
-  /**
-   * Leaving /lightspeed for overlay/docked must not use navigate(-1): after the first FAB
-   * open, navigateBackOrGoToCatalog uses -1 and can land back on /lightspeed (fullscreen).
-   */
   const leaveLightspeedRouteForShellDisplayMode = useCallback(() => {
     navigate('/catalog', { replace: true });
   }, [navigate]);
 
+  // --- Route → Store sync ---
   useEffect(() => {
     const pathname = location.pathname;
     const prevPathname = lightspeedPathnamePrevRef.current;
@@ -142,12 +118,9 @@ export function useLightspeedProviderState(): {
     }
 
     if (conversationId) {
-      setCurrentConversationIdState(conversationId);
+      lightspeedDrawerStore.setConversationIdRaw(conversationId);
     } else if (isLightspeedRoute) {
-      // On `/lightspeed` without a `:conversationId` segment, URL implies a fresh thread.
-      // When navigating to another app route (overlay/docked), keep the last id so display
-      // mode switches and re-entry to fullscreen stay on the active conversation.
-      setCurrentConversationIdState(undefined);
+      lightspeedDrawerStore.setConversationIdRaw(undefined);
     }
 
     if (isLightspeedRoute) {
@@ -156,21 +129,19 @@ export function useLightspeedProviderState(): {
           leavingLightspeedForNonEmbeddedShellRef.current &&
           persistedDisplayMode !== ChatbotDisplayMode.embedded
         ) {
-          setDisplayModeState(persistedDisplayMode);
+          lightspeedDrawerStore.setDisplayModeRaw(persistedDisplayMode);
         } else {
-          setDisplayModeState(ChatbotDisplayMode.embedded);
+          lightspeedDrawerStore.setDisplayModeRaw(ChatbotDisplayMode.embedded);
         }
       }
-      setIsOpen(true);
+      lightspeedDrawerStore.open();
       if (!dockedAfterLeavingFullscreenRef.current) {
         closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
       }
     } else if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
-      // Off /lightspeed there is no fullscreen surface; use overlay so FAB stays available.
-      // (Persisted preference remains "fullscreen" for the next open.)
-      setDisplayModeState(ChatbotDisplayMode.default);
+      lightspeedDrawerStore.setDisplayModeRaw(ChatbotDisplayMode.default);
     } else {
-      setDisplayModeState(persistedDisplayMode);
+      lightspeedDrawerStore.setDisplayModeRaw(persistedDisplayMode);
     }
 
     lightspeedPathnamePrevRef.current = pathname;
@@ -182,36 +153,40 @@ export function useLightspeedProviderState(): {
     persistedDisplayMode,
   ]);
 
+  // --- Docked mode → AppDrawer sync ---
   useEffect(() => {
     if (
       !isLightspeedRoute &&
-      isOpen &&
-      displayModeState === ChatbotDisplayMode.docked
+      snapshot.isOpen &&
+      snapshot.displayMode === ChatbotDisplayMode.docked
     ) {
       openDrawer(LIGHTSPEED_APP_DRAWER_ID);
       dockedAfterLeavingFullscreenRef.current = false;
     }
-  }, [displayModeState, isLightspeedRoute, isOpen, openDrawer]);
+  }, [snapshot.displayMode, isLightspeedRoute, snapshot.isOpen, openDrawer]);
+
+  // --- Orchestrated actions ---
 
   const openChatbot = useCallback(() => {
     openedViaFABRef.current = true;
     const rawMode = persistedDisplayMode || ChatbotDisplayMode.default;
+    const currentSnapshot = lightspeedDrawerStore.getSnapshot();
 
     if (rawMode === ChatbotDisplayMode.embedded) {
       if (!isLightspeedRoute) {
-        if (shellViewTabRef.current === 1) {
+        if (currentSnapshot.shellViewTab === 1) {
           navigate(`${LIGHTSPEED_PATH}/notebooks`);
         } else {
-          navigate(lightspeedRoutePath(currentConversationIdState));
+          navigate(lightspeedRoutePath(currentSnapshot.currentConversationId));
         }
       }
-      setDisplayModeState(ChatbotDisplayMode.embedded);
+      lightspeedDrawerStore.setDisplayMode(ChatbotDisplayMode.embedded);
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
-      setIsOpen(true);
+      lightspeedDrawerStore.open();
       return;
     }
 
-    setDisplayModeState(rawMode);
+    lightspeedDrawerStore.setDisplayMode(rawMode);
 
     if (rawMode === ChatbotDisplayMode.docked) {
       openDrawer(LIGHTSPEED_APP_DRAWER_ID);
@@ -219,10 +194,9 @@ export function useLightspeedProviderState(): {
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
     }
 
-    setIsOpen(true);
+    lightspeedDrawerStore.open();
   }, [
     closeDrawer,
-    currentConversationIdState,
     isLightspeedRoute,
     navigate,
     openDrawer,
@@ -230,34 +204,31 @@ export function useLightspeedProviderState(): {
   ]);
 
   const closeChatbot = useCallback(() => {
+    const currentSnapshot = lightspeedDrawerStore.getSnapshot();
     dockedAfterLeavingFullscreenRef.current = false;
-    if (displayModeState === ChatbotDisplayMode.embedded && isLightspeedRoute) {
+    if (
+      currentSnapshot.displayMode === ChatbotDisplayMode.embedded &&
+      isLightspeedRoute
+    ) {
       navigateBackOrGoToCatalog();
     }
-    if (displayModeState === ChatbotDisplayMode.docked) {
+    if (currentSnapshot.displayMode === ChatbotDisplayMode.docked) {
       closeDrawer(LIGHTSPEED_APP_DRAWER_ID);
     }
-    setIsOpen(false);
-  }, [
-    closeDrawer,
-    displayModeState,
-    isLightspeedRoute,
-    navigateBackOrGoToCatalog,
-  ]);
+    lightspeedDrawerStore.close();
+  }, [closeDrawer, isLightspeedRoute, navigateBackOrGoToCatalog]);
 
   const toggleChatbot = useCallback(() => {
-    if (isOpen) {
+    if (snapshot.isOpen) {
       closeChatbot();
     } else {
       openChatbot();
     }
-  }, [isOpen, openChatbot, closeChatbot]);
+  }, [snapshot.isOpen, openChatbot, closeChatbot]);
 
   const setCurrentConversationId = useCallback(
     (id: string | undefined) => {
-      setCurrentConversationIdState(id);
-      // Refs: first-stream completion calls onStart after unmount / mode change; a stale
-      // embedded + /lightspeed closure would navigate back to fullscreen without this.
+      lightspeedDrawerStore.setConversationIdRaw(id);
       if (
         persistedDisplayModeRef.current === ChatbotDisplayMode.embedded &&
         isLightspeedRouteRef.current
@@ -268,29 +239,14 @@ export function useLightspeedProviderState(): {
     [navigate],
   );
 
-  const setDraftMessage = useCallback((message: string) => {
-    setDraftMessageState(message);
-  }, []);
-
-  const setDraftFileContents = useCallback((files: FileContent[]) => {
-    setDraftFileContentsState(files);
-  }, []);
-
-  const consumePendingOverlayThreadHandoff = useCallback(() => {
-    if (!pendingOverlayThreadHandoffRef.current) {
-      return false;
-    }
-    pendingOverlayThreadHandoffRef.current = false;
-    return true;
-  }, []);
-
-  const setDisplayMode = useCallback(
+  const orchestratedSetDisplayMode = useCallback(
     (
       mode: ChatbotDisplayMode,
       conversationIdParam?: string,
       embeddedNotebooks?: LightspeedEmbeddedNotebooksTarget,
     ) => {
-      if (mode === displayModeState) {
+      const currentSnapshot = lightspeedDrawerStore.getSnapshot();
+      if (mode === currentSnapshot.displayMode) {
         return;
       }
       setPersistedDisplayMode(mode);
@@ -303,80 +259,53 @@ export function useLightspeedProviderState(): {
               ? `${LIGHTSPEED_PATH}/notebooks`
               : `${LIGHTSPEED_PATH}/notebooks/${embeddedNotebooks.notebookSessionId}`;
           navigate(path);
-        } else if (shellViewTabRef.current === 1) {
+        } else if (currentSnapshot.shellViewTab === 1) {
           navigate(`${LIGHTSPEED_PATH}/notebooks`);
         } else {
-          const convId = conversationIdParam ?? currentConversationIdState;
+          const convId =
+            conversationIdParam ?? currentSnapshot.currentConversationId;
           navigate(lightspeedRoutePath(convId));
         }
-        setIsOpen(true);
+        lightspeedDrawerStore.open();
       } else {
-        // Notebooks exist only in fullscreen; leaving embedded for overlay/docked
-        // must not keep shellViewTab on Notebooks (next fullscreen open should be Chat).
-        setShellViewTab(0);
+        lightspeedDrawerStore.setShellViewTab(0);
         if (isLightspeedRoute) {
           leavingLightspeedForNonEmbeddedShellRef.current = true;
-          pendingOverlayThreadHandoffRef.current = true;
+          lightspeedDrawerStore.setPendingOverlayThreadHandoff(true);
           leaveLightspeedRouteForShellDisplayMode();
         }
-        setIsOpen(true);
+        lightspeedDrawerStore.open();
       }
+
+      lightspeedDrawerStore.setDisplayModeRaw(mode);
     },
     [
-      currentConversationIdState,
-      displayModeState,
       isLightspeedRoute,
       leaveLightspeedRouteForShellDisplayMode,
       navigate,
       setPersistedDisplayMode,
-      setShellViewTab,
       syncShellDrawerForMode,
     ],
   );
 
+  // --- Register orchestrated handlers ---
+  useEffect(() => {
+    lightspeedDrawerStore.registerHandlers({
+      setDisplayMode: orchestratedSetDisplayMode,
+      toggleChatbot,
+      setCurrentConversationId,
+    });
+    return () => {
+      lightspeedDrawerStore.unregisterHandlers();
+    };
+  }, [orchestratedSetDisplayMode, toggleChatbot, setCurrentConversationId]);
+
   const shouldRenderOverlayModal =
-    isOpen &&
-    displayModeState === ChatbotDisplayMode.default &&
+    snapshot.isOpen &&
+    snapshot.displayMode === ChatbotDisplayMode.default &&
     !isLightspeedRoute;
 
-  const contextValue = useMemo(
-    () => ({
-      isChatbotActive: isOpen,
-      toggleChatbot,
-      displayMode: displayModeState,
-      setDisplayMode,
-      drawerWidth,
-      setDrawerWidth,
-      currentConversationId: currentConversationIdState,
-      setCurrentConversationId,
-      draftMessage,
-      setDraftMessage,
-      draftFileContents,
-      setDraftFileContents,
-      consumePendingOverlayThreadHandoff,
-      shellViewTab,
-      setShellViewTab,
-    }),
-    [
-      isOpen,
-      toggleChatbot,
-      displayModeState,
-      setDisplayMode,
-      drawerWidth,
-      currentConversationIdState,
-      setCurrentConversationId,
-      draftMessage,
-      setDraftMessage,
-      draftFileContents,
-      setDraftFileContents,
-      consumePendingOverlayThreadHandoff,
-      shellViewTab,
-      setShellViewTab,
-    ],
-  );
-
   return {
-    contextValue,
     shouldRenderOverlayModal,
     closeChatbot,
   };

@@ -104,7 +104,7 @@ import {
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../hooks/useLightspeedDrawer';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -666,7 +666,7 @@ export const LightspeedChat = ({
     consumePendingOverlayThreadHandoff,
     shellViewTab,
     setShellViewTab,
-  } = useLightspeedDrawerContext();
+  } = useLightspeedDrawer();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const location = useLocation();
   const isNotebooksFullscreenPath =
@@ -1768,6 +1768,7 @@ export const LightspeedChat = ({
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
+          attachButtonPosition="start"
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}

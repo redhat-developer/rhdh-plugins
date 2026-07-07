@@ -20,9 +20,9 @@ import { makeStyles } from '@mui/styles';
 import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
-import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
+import { useLightspeedDrawer } from '../hooks/useLightspeedDrawer';
+import { useLightspeedShellState } from '../hooks/useLightspeedProviderState';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
-import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
 const useStyles = makeStyles(theme => ({
   chatbotModal: {
@@ -40,20 +40,24 @@ const useStyles = makeStyles(theme => ({
 }));
 
 /**
+ * Router-bridge shell: syncs React Router / AppDrawer state with the
+ * global lightspeedDrawerStore and renders the overlay ChatbotModal.
+ * No Context.Provider — state flows through the singleton store.
+ *
  * @public
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const classes = useStyles();
-  const { contextValue, shouldRenderOverlayModal, closeChatbot } =
-    useLightspeedProviderState();
+  const { shouldRenderOverlayModal, closeChatbot } = useLightspeedShellState();
+  const { displayMode } = useLightspeedDrawer();
 
   return (
-    <LightspeedDrawerContext.Provider value={contextValue}>
+    <>
       {children}
       {shouldRenderOverlayModal && (
         <ChatbotModal
           isOpen
-          displayMode={contextValue.displayMode}
+          displayMode={displayMode}
           disableFocusTrap
           onEscapePress={() => closeChatbot()}
           ouiaId="LightspeedChatbotModal"
@@ -63,6 +67,6 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
           <LightspeedChatContainer />
         </ChatbotModal>
       )}
-    </LightspeedDrawerContext.Provider>
+    </>
   );
 };

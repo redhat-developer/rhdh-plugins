@@ -20,14 +20,13 @@ import Tooltip from '@mui/material/Tooltip';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../hooks/useLightspeedDrawer';
 import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
 
 export const LightspeedFABContent = () => {
   const { t } = useTranslation();
-  const { isChatbotActive, toggleChatbot, displayMode } =
-    useLightspeedDrawerContext();
+  const { isChatbotActive, toggleChatbot, displayMode } = useLightspeedDrawer();
 
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;

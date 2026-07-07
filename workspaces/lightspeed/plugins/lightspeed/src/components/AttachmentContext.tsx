@@ -25,7 +25,7 @@ import {
   useState,
 } from 'react';
 
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../hooks/useLightspeedDrawer';
 import { useTranslation } from '../hooks/useTranslation';
 import { FileContent } from '../types';
 import { isSupportedFileType, readFileAsText } from '../utils/attachment-utils';
@@ -59,8 +59,7 @@ const FileAttachmentContextProvider: FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const { t } = useTranslation();
-  const { draftFileContents, setDraftFileContents } =
-    useLightspeedDrawerContext();
+  const { draftFileContents, setDraftFileContents } = useLightspeedDrawer();
   const [currentFileContent, setCurrentFileContent] = useState<
     FileContent | undefined
   >();

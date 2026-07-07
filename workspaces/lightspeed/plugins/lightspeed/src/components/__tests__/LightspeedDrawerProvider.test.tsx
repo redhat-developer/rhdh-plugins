@@ -18,15 +18,22 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
-import type { LightspeedDrawerContextType } from '../LightspeedDrawerContext';
+import { useLightspeedDrawer } from '../../hooks/useLightspeedDrawer';
 import { LightspeedDrawerProvider } from '../LightspeedDrawerProvider';
 
-const mockUseLightspeedProviderState = jest.fn();
+const mockUseLightspeedShellState = jest.fn();
 
 jest.mock('../../hooks/useLightspeedProviderState', () => ({
-  useLightspeedProviderState: () => mockUseLightspeedProviderState(),
+  useLightspeedShellState: () => mockUseLightspeedShellState(),
 }));
+
+jest.mock('../../hooks/useLightspeedDrawer', () => ({
+  useLightspeedDrawer: jest.fn(),
+}));
+
+const mockUseLightspeedDrawer = useLightspeedDrawer as jest.MockedFunction<
+  typeof useLightspeedDrawer
+>;
 
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
@@ -82,7 +89,7 @@ jest.mock('../LightspeedChatContainer', () => ({
   ),
 }));
 
-function baseContextValue(): LightspeedDrawerContextType {
+function baseMockDrawerReturn() {
   return {
     isChatbotActive: false,
     toggleChatbot: jest.fn(),
@@ -103,19 +110,14 @@ function baseContextValue(): LightspeedDrawerContextType {
 }
 
 describe('LightspeedDrawerProvider', () => {
-  const ContextReader = () => {
-    const ctx = useLightspeedDrawerContext();
-    return <span data-testid="context-display-mode">{ctx.displayMode}</span>;
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     const closeChatbot = jest.fn();
-    mockUseLightspeedProviderState.mockReturnValue({
-      contextValue: baseContextValue(),
+    mockUseLightspeedShellState.mockReturnValue({
       shouldRenderOverlayModal: false,
       closeChatbot,
     });
+    mockUseLightspeedDrawer.mockReturnValue(baseMockDrawerReturn());
   });
 
   it('renders children', () => {
@@ -125,27 +127,6 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
     expect(screen.getByText('child content')).toBeInTheDocument();
-  });
-
-  it('exposes hook contextValue to consumers', () => {
-    mockUseLightspeedProviderState.mockReturnValue({
-      contextValue: {
-        ...baseContextValue(),
-        displayMode: ChatbotDisplayMode.docked,
-      },
-      shouldRenderOverlayModal: false,
-      closeChatbot: jest.fn(),
-    });
-
-    render(
-      <LightspeedDrawerProvider>
-        <ContextReader />
-      </LightspeedDrawerProvider>,
-    );
-
-    expect(screen.getByTestId('context-display-mode')).toHaveTextContent(
-      ChatbotDisplayMode.docked,
-    );
   });
 
   it('does not render overlay ChatbotModal when shouldRenderOverlayModal is false', () => {
@@ -159,13 +140,13 @@ describe('LightspeedDrawerProvider', () => {
 
   it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', () => {
     const closeChatbot = jest.fn();
-    mockUseLightspeedProviderState.mockReturnValue({
-      contextValue: {
-        ...baseContextValue(),
-        displayMode: ChatbotDisplayMode.default,
-      },
+    mockUseLightspeedShellState.mockReturnValue({
       shouldRenderOverlayModal: true,
       closeChatbot,
+    });
+    mockUseLightspeedDrawer.mockReturnValue({
+      ...baseMockDrawerReturn(),
+      displayMode: ChatbotDisplayMode.default,
     });
 
     render(
@@ -191,8 +172,7 @@ describe('LightspeedDrawerProvider', () => {
   it('wires ChatbotModal onEscapePress to closeChatbot from the hook', async () => {
     const user = userEvent.setup();
     const closeChatbot = jest.fn();
-    mockUseLightspeedProviderState.mockReturnValue({
-      contextValue: baseContextValue(),
+    mockUseLightspeedShellState.mockReturnValue({
       shouldRenderOverlayModal: true,
       closeChatbot,
     });

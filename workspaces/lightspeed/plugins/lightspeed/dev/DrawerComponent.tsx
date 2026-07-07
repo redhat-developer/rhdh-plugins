@@ -18,12 +18,11 @@ import { PropsWithChildren } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import { useLightspeedDrawerContext } from '../src/hooks/useLightspeedDrawerContext';
+import { useLightspeedDrawer } from '../src/hooks/useLightspeedDrawer';
 import { CustomDrawer } from './CustomDrawer';
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
-  const { displayMode, drawerWidth, setDrawerWidth } =
-    useLightspeedDrawerContext();
+  const { displayMode, drawerWidth, setDrawerWidth } = useLightspeedDrawer();
   return (
     <CustomDrawer
       isDrawerOpen={displayMode === ChatbotDisplayMode.docked}

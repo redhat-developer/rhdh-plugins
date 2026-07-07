@@ -261,7 +261,7 @@ Expected: entries for `LightspeedFABModule` and `LightspeedTranslationsModule`.
 
 ### OFS Mode (Scalprum / Legacy)
 
-OFS mode uses Scalprum for dynamic plugin loading. Legacy exports are also available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity. Translation resources require `module: Alpha`:
+OFS mode uses Scalprum for dynamic plugin loading. Legacy exports require `module: Legacy`. Translation resources require `module: Alpha`:
 
 ```yaml
 plugins:
@@ -335,32 +335,32 @@ import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lig
 
 ### Legacy / OFS consumers
 
-Legacy component imports from the main package path still work for backwards compatibility, but are deprecated and will be removed in a future release. New OFS consumers should use the `./legacy` subpath:
+Legacy component imports have been **removed from the main package path**. OFS consumers must update imports to use the `./legacy` subpath:
 
 ```ts
-// Still works (deprecated — will be removed in a future release)
+// Before (no longer works)
 import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-// Recommended for new OFS consumers
+// After (required)
 import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
 ```
 
 ### Dynamic plugin configuration (OFS)
 
-Legacy exports are available from the default module (PluginRoot), but it is advisable to add `module: Legacy` for clarity:
+Legacy exports are available exclusively from the `Legacy` module. Use `module: Legacy` in your dynamic plugin configuration:
 
 ```yaml
 dynamicRoutes:
   - path: /intelligent-assistant
     importName: LightspeedPage
-    module: Legacy # advisable for clarity, but not mandatory
+    module: Legacy
 ```
 
 ### Dynamic plugin module name change
 
 The `LightspeedPlugin` scalprum module has been removed. Configurations that previously used `module: LightspeedPlugin` should be updated:
 
-- **OFS/Legacy** — omit `module` (defaults to PluginRoot which has legacy exports) or use `module: Legacy` for clarity
+- **OFS/Legacy** — use `module: Legacy` (required since legacy exports are no longer on the default module)
 - **NFS** — use the default `module: PluginRoot` (or omit `module` entirely)
 
 ```yaml
@@ -370,9 +370,9 @@ dynamicRoutes:
     importName: LightspeedPage
     module: LightspeedPlugin
 
-# After (OFS — either works)
+# After (OFS)
 dynamicRoutes:
   - path: /intelligent-assistant
     importName: LightspeedPage
-    module: Legacy  # or omit module entirely
+    module: Legacy
 ```

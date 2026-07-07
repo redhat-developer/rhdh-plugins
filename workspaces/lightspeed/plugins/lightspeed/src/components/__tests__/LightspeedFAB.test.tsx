@@ -17,18 +17,26 @@
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { fireEvent, render, screen } from '@testing-library/react';
 
+import { useLightspeedDrawer } from '../../hooks/useLightspeedDrawer';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
-import { LightspeedDrawerContext } from '../LightspeedDrawerContext';
 import { LightspeedFAB } from '../LightspeedFAB';
 
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
+jest.mock('../../hooks/useLightspeedDrawer', () => ({
+  useLightspeedDrawer: jest.fn(),
+}));
+
+const mockUseLightspeedDrawer = useLightspeedDrawer as jest.MockedFunction<
+  typeof useLightspeedDrawer
+>;
+
 describe('LightspeedFAB', () => {
   const mockToggleChatbot = jest.fn();
 
-  const createContextValue = (overrides = {}) => ({
+  const createMockReturn = (overrides = {}) => ({
     isChatbotActive: false,
     toggleChatbot: mockToggleChatbot,
     displayMode: ChatbotDisplayMode.default,
@@ -41,31 +49,22 @@ describe('LightspeedFAB', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    consumePendingOverlayThreadHandoff: jest.fn(() => false),
     shellViewTab: 0,
     setShellViewTab: jest.fn(),
     ...overrides,
   });
 
-  const renderWithContext = (
-    contextValue: ReturnType<typeof createContextValue>,
-  ) => {
-    return render(
-      <LightspeedDrawerContext.Provider value={contextValue}>
-        <LightspeedFAB />
-      </LightspeedDrawerContext.Provider>,
-    );
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseLightspeedDrawer.mockReturnValue(createMockReturn());
   });
 
   it('should render FAB button when displayMode is overlay', () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.default,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.default }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
     expect(
@@ -74,11 +73,10 @@ describe('LightspeedFAB', () => {
   });
 
   it('should render FAB button when displayMode is docked', () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.docked,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.docked }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
     expect(
@@ -87,21 +85,19 @@ describe('LightspeedFAB', () => {
   });
 
   it('should not render FAB button when displayMode is embedded', () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.embedded,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.embedded }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.queryByTestId('lightspeed-fab')).not.toBeInTheDocument();
   });
 
   it('should call toggleChatbot when FAB button is clicked', () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.default,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.default }),
     );
+    render(<LightspeedFAB />);
 
     const fabButton = screen.getByLabelText('Open intelligent assistant');
     fireEvent.click(fabButton);
@@ -110,33 +106,34 @@ describe('LightspeedFAB', () => {
   });
 
   it('should show chevron-down icon when chatbot is active', () => {
-    renderWithContext(
-      createContextValue({
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({
         isChatbotActive: true,
         displayMode: ChatbotDisplayMode.default,
       }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.getByTestId('lightspeed-fab-open-icon')).toBeInTheDocument();
   });
 
   it('should show LightspeedFABIcon when chatbot is not active', () => {
-    renderWithContext(
-      createContextValue({
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({
         isChatbotActive: false,
         displayMode: ChatbotDisplayMode.default,
       }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.getByTestId('lightspeed-fab-icon')).toBeInTheDocument();
   });
 
   it('should not render when displayMode is fullscreen', () => {
-    renderWithContext(
-      createContextValue({
-        displayMode: ChatbotDisplayMode.fullscreen,
-      }),
+    mockUseLightspeedDrawer.mockReturnValue(
+      createMockReturn({ displayMode: ChatbotDisplayMode.fullscreen }),
     );
+    render(<LightspeedFAB />);
 
     expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
   });
