@@ -137,14 +137,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
 
 test.describe('Persona-Based Homepages', () => {
   test('Groups filters default widgets by persona', async ({ browser }) => {
-    // The `if: groups:` condition in `homepage.defaultWidgets` is a legacy-only
-    // feature — NFS does not implement group-based widget filtering.
-    test.skip(
-      process.env.APP_MODE === 'nfs',
-      '`if: groups:` filtering is not supported in NFS mode',
-    );
-
-    const loginUrl = '/customizable';
+    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
 
     // Guest (port 3000, no groups): sees common defaults only
     const guestPage = await (
