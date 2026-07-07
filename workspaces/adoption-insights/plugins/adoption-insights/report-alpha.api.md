@@ -42,6 +42,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'table.headers.lastUsed': string;
     readonly 'table.headers.views': string;
     readonly 'table.headers.executions': string;
+    readonly 'table.headers.estTimeSaved': string;
     readonly 'table.headers.trend': string;
     readonly 'table.headers.entity': string;
     readonly 'table.pagination.topN': string;
