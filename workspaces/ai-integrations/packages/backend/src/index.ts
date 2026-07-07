@@ -81,10 +81,10 @@ backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions'
   ),
+);
 backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
   ),
-);
 );
 backend.start();
