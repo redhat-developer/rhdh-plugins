@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
 export const ModelCapabilitiesCache = {
-  cache: {} as Record<string, boolean>,
+  cache: {} as Record<string, { value: boolean; expiry: number }>,
 
   get(model: string): boolean | undefined {
-    return this.cache[model];
+    const entry = this.cache[model];
+    if (!entry) return undefined;
+    if (Date.now() > entry.expiry) {
+      delete this.cache[model];
+      return undefined;
+    }
+    return entry.value;
   },
 
   set(model: string, supportsVision: boolean): void {
-    this.cache[model] = supportsVision;
+    this.cache[model] = {
+      value: supportsVision,
+      expiry: Date.now() + CACHE_TTL_MS,
+    };
   },
 
   has(model: string): boolean {
-    return model in this.cache;
+    return this.get(model) !== undefined;
   },
 
   clear(): void {

@@ -936,7 +936,6 @@ export async function createRouter(
         response.json({ model, provider, supportsVision });
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);
-        ModelCapabilitiesCache.set(cacheKey, false);
         response.json({ model, provider, supportsVision: false });
       }
     },

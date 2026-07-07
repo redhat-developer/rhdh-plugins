@@ -53,4 +53,15 @@ describe('ModelCapabilitiesCache', () => {
     expect(ModelCapabilitiesCache.has('model-c')).toBe(true);
     expect(ModelCapabilitiesCache.has('model-d')).toBe(false);
   });
+
+  it('should expire entries after TTL', () => {
+    ModelCapabilitiesCache.set('model-ttl', true);
+    expect(ModelCapabilitiesCache.get('model-ttl')).toBe(true);
+
+    const entry = ModelCapabilitiesCache.cache['model-ttl'];
+    entry.expiry = Date.now() - 1;
+
+    expect(ModelCapabilitiesCache.get('model-ttl')).toBeUndefined();
+    expect(ModelCapabilitiesCache.has('model-ttl')).toBe(false);
+  });
 });
