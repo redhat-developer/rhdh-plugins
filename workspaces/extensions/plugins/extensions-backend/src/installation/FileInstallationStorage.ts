@@ -141,6 +141,7 @@ export class FileInstallationStorage implements InstallationStorage {
       this.packages.add(pkg);
     }
     pkg.set('enabled', enabled);
+    pkg.delete('disabled');
     this.save();
   }
 
@@ -160,6 +161,7 @@ export class FileInstallationStorage implements InstallationStorage {
         packages.add(item);
       }
       item.set('enabled', enabled);
+      item.delete('disabled');
     }
 
     this.save();
