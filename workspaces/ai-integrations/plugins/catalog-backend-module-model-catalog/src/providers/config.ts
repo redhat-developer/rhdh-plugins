@@ -44,8 +44,8 @@ function readModelCatalogApiEntityConfig(
   config: Config,
 ): ModelCatalogConfig {
   let baseUrl = '';
-  if (config.has('baseurl')) {
-    baseUrl = config.getString('baseurl');
+  if (config.has('baseUrl')) {
+    baseUrl = config.getString('baseUrl');
   }
 
   const schedule = config.has('schedule')

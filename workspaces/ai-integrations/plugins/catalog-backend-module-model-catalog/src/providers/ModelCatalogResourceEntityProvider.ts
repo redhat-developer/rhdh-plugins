@@ -51,7 +51,6 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
   private readonly discovery: DiscoveryService;
   private readonly auth: AuthService;
   private readonly scheduleFn: () => Promise<void>;
-  private backendToken?: { token: string };
   private connection?: EntityProviderConnection;
 
   /**
@@ -173,13 +172,11 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     if (svcUrl.length > 0 && url.length === 0) {
       url = svcUrl;
     }
-    if (this.backendToken === undefined) {
-      this.backendToken = await this.auth.getPluginRequestToken({
-        onBehalfOf: await this.auth.getOwnServiceCredentials(),
-        targetPluginId: this.name,
-      });
-    }
-    let catalogKeys = await fetchModelCatalogKeys(url, this.backendToken);
+    const backendToken = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: this.name,
+    });
+    let catalogKeys = await fetchModelCatalogKeys(url, backendToken);
     // If no models are registered yet, the catalogKeys array may be null, so handle it by setting it to be an emptyList
     if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
@@ -190,11 +187,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
 
     await Promise.all(
       catalogKeys.map(async key => {
-        const catalog = await fetchModelCatalogFromKey(
-          url,
-          key,
-          this.backendToken,
-        );
+        const catalog = await fetchModelCatalogFromKey(url, key, backendToken);
         const catalogEntities = GenerateCatalogEntities(catalog, url);
         entityList = entityList.concat(catalogEntities);
       }),

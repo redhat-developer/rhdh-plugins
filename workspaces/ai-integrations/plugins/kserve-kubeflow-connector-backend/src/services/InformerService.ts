@@ -586,7 +586,9 @@ async function processKFMR(
                       ma.modelSourceClass,
                       ma.modelSourceName,
                     );
-                    modelCardKey = ma.modelSourceClass + ma.modelSourceName;
+                    modelCardKey =
+                      replacer(ma.modelSourceClass) +
+                      replacer(ma.modelSourceName);
                     console.log(
                       `processKFMR: Built modelCardKey ${modelCardKey}`,
                     );

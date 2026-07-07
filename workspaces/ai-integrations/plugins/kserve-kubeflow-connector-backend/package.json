@@ -13,14 +13,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/ai-integrations/plugins/kserve-kubeflow-connector"
+    "directory": "workspaces/ai-integrations/plugins/kserve-kubeflow-connector-backend"
   },
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "kserve-kubeflow-connector",
     "pluginPackage": "@backstage/plugin-backend",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-backend-kserve-kubeflow-connector"
+      "@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend"
     ]
   },
   "scripts": {
