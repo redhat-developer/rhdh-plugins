@@ -763,6 +763,127 @@ describe('lightspeed router tests', () => {
       });
     });
 
+    it('should send a minted Backstage token for auth: dcr servers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [{ name: 'backstage-mcp', auth: 'dcr' }],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp']).toBeDefined();
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+    });
+
+    it('should mix DCR and static token servers in MCP headers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [
+            { name: 'backstage-mcp', auth: 'dcr' },
+            { name: 'static-server', token: 'my-static-token' },
+          ],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+      expect(parsedHeaders['static-server']).toEqual({
+        Authorization: 'my-static-token',
+      });
+    });
+
     it('should fail with unauthorized error in chat completion API', async () => {
       const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
       const chatCompletionResponse = await request(backendServer)

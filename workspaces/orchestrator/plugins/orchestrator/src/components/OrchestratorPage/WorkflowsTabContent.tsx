@@ -28,7 +28,6 @@ import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import {
   isEntityScopedWorkflowOverviews,
   useAllWorkflowOverviews,
-  useWorkflowOverviews,
   WorkflowOverviewsState,
 } from '../../hooks/useWorkflowsCount';
 import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
@@ -128,11 +127,6 @@ const WorkflowsTabContentWithFetch = ({
     workflowsArray,
     targetEntity,
   });
-  const paginatedWorkflows = useWorkflowOverviews({
-    workflowsArray,
-    targetEntity,
-    ...(isEntityScoped || isSearching ? {} : { page, pageSize }),
-  });
 
   useEffect(() => {
     setPage(0);
@@ -154,11 +148,9 @@ const WorkflowsTabContentWithFetch = ({
       return slicePaginatedPage(filteredOverviews, page, pageSize);
     }
 
-    const rows = paginatedWorkflows.overviews ?? [];
-    if (rows.length > pageSize) {
-      return rows.slice(0, pageSize);
-    }
-    return rows;
+    // Server-side pagination runs before RBAC filtering; paginate the
+    // authorized list client-side so allowed workflows are not dropped.
+    return slicePaginatedPage(allWorkflows.overviews ?? [], page, pageSize);
   }, [
     allWorkflows.overviews,
     filteredOverviews,
@@ -166,8 +158,9 @@ const WorkflowsTabContentWithFetch = ({
     isSearching,
     page,
     pageSize,
-    paginatedWorkflows.overviews,
   ]);
+
+  const authorizedCount = allWorkflows.overviews?.length ?? 0;
 
   const totalCount = isSearching
     ? filteredOverviews.length
@@ -175,23 +168,17 @@ const WorkflowsTabContentWithFetch = ({
 
   const hasNextPage = isSearching
     ? (page + 1) * pageSize < filteredOverviews.length
-    : Boolean(paginatedWorkflows.hasNextPage);
+    : (page + 1) * pageSize < authorizedCount;
 
   const isPaginated =
     isEntityScoped || isSearching
       ? filteredOverviews.length > pageSize || page > 0
-      : Boolean(paginatedWorkflows.isPaginated);
+      : authorizedCount > pageSize || page > 0;
 
-  const loading =
-    allWorkflows.loading || (!isSearching && paginatedWorkflows.loading);
-  const tableLoading =
-    isSearching || isEntityScoped
-      ? allWorkflows.tableLoading
-      : allWorkflows.tableLoading || paginatedWorkflows.tableLoading;
-  const error = allWorkflows.error ?? paginatedWorkflows.error;
-  const isReady =
-    allWorkflows.isReady &&
-    (isSearching || isEntityScoped || paginatedWorkflows.isReady);
+  const loading = allWorkflows.loading;
+  const tableLoading = allWorkflows.tableLoading;
+  const error = allWorkflows.error;
+  const isReady = allWorkflows.isReady;
 
   return (
     <WorkflowsTabContentView

@@ -40,6 +40,10 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
+// permission plugin (required when permission.enabled is true — see homepage/scorecard workspaces)
+backend.add(import('@backstage/plugin-permission-backend'));
+backend.add(import('@backstage-community/plugin-rbac-backend'));
+
 // search plugin
 backend.add(import('@backstage/plugin-search-backend'));
 
@@ -50,9 +54,6 @@ backend.add(import('@backstage/plugin-search-backend-module-pg'));
 // search collators
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
-
-// permission plugin
-backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // orchestrator
 backend.add(

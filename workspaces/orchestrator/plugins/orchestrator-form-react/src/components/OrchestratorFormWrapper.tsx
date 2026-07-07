@@ -33,6 +33,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  clearExtraErrorAtPath,
+  rjsfIdToFieldPath,
+} from '../utils/clearExtraErrorAtPath';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
 import { toRootExtraErrors } from '../utils/toRootExtraErrors';
@@ -130,10 +134,14 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 
   const onChange = (
     e: IChangeEvent<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
+    id?: string,
   ) => {
+    const fieldPath = rjsfIdToFieldPath(id);
+    setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    setValidationError(undefined);
     setFormData(e.formData || {});
     if (decoratorProps.onChange) {
-      decoratorProps.onChange(e);
+      decoratorProps.onChange(e, id);
     }
   };
 

@@ -55,6 +55,9 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@jest/environment-jsdom-abstract": "^30.3.0",
     "@playwright/test": "1.60.0",
+    "@react-stately/layout": "^4.7.1",
+    "@react-stately/overlays": "^3.7.1",
+    "@react-types/table": "^3.14.0",
     "@spotify/prettier-config": "^12.0.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
@@ -82,7 +85,8 @@
     "langsmith": "^0.6.0",
     "react-router": "6.30.4",
     "react-router-dom": "6.30.4",
-    "@remix-run/router": "1.23.3"
+    "@remix-run/router": "1.23.3",
+    "@patternfly/react-core": "6.4.3"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
