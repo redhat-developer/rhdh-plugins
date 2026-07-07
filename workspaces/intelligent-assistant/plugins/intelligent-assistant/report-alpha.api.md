@@ -240,6 +240,15 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.configureServerTitle': string;
     readonly 'mcp.settings.closeConfigureModalAriaLabel': string;
     readonly 'mcp.settings.modalDescription': string;
+    readonly 'mcp.settings.authenticationToken': string;
+    readonly 'mcp.settings.modal.toolsHeading': string;
+    readonly 'mcp.settings.modal.loadingTools': string;
+    readonly 'mcp.settings.modal.loadingStatus': string;
+    readonly 'mcp.settings.modal.tokenRemovedWarning': string;
+    readonly 'mcp.settings.modal.noToolsAvailable': string;
+    readonly 'mcp.settings.modal.toolsLoadFailed': string;
+    readonly 'mcp.settings.modal.enabledDescription': string;
+    readonly 'mcp.settings.modal.enabledDescriptionOff': string;
     readonly 'mcp.settings.savedToken': string;
     readonly 'mcp.settings.personalAccessToken': string;
     readonly 'mcp.settings.usingAdminCredential': string;
