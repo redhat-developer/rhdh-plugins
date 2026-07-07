@@ -39,6 +39,7 @@ import {
   NOTEBOOKS_SYSTEM_PROMPT,
   upload,
 } from '../constant';
+import { createRateLimitMiddleware } from '../middleware/createRateLimitMiddleware';
 import {
   createIdentityMiddleware,
   getIdentity,
@@ -72,14 +73,14 @@ export async function createNotebooksRouter(
   notebooksRouter.use(express.json());
 
   const lightSpeedPort =
-    config.getOptionalNumber('lightspeed.servicePort') ??
+    config.getOptionalNumber('intelligent-assistant.servicePort') ??
     DEFAULT_LIGHTSPEED_SERVICE_PORT;
   const lightspeedBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${lightSpeedPort}`;
   const queryModel = config.getString(
-    'lightspeed.notebooks.queryDefaults.model',
+    'intelligent-assistant.notebooks.queryDefaults.model',
   );
   const queryProvider = config.getString(
-    'lightspeed.notebooks.queryDefaults.provider_id',
+    'intelligent-assistant.notebooks.queryDefaults.provider_id',
   );
   const systemPrompt = NOTEBOOKS_SYSTEM_PROMPT;
 
@@ -99,6 +100,17 @@ export async function createNotebooksRouter(
   );
 
   const authorizer = userPermissionAuthorization(permissions);
+
+  const expensiveRateLimiter = createRateLimitMiddleware(
+    config,
+    'expensive',
+    logger,
+  );
+  const generalRateLimiter = createRateLimitMiddleware(
+    config,
+    'general',
+    logger,
+  );
 
   const requireNotebooksPermission = async (
     req: any,
@@ -266,10 +278,11 @@ export async function createNotebooksRouter(
     '/v1',
     createIdentityMiddleware(httpAuth, userInfo, logger),
   );
-  notebooksRouter.use('/v1', requireNotebooksPermission);
 
   notebooksRouter.post(
     '/v1/sessions',
+    generalRateLimiter,
+    requireNotebooksPermission,
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
       if (!name) {
@@ -288,6 +301,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions',
+    generalRateLimiter,
+    requireNotebooksPermission,
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
@@ -296,6 +311,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
+    requireNotebooksPermission,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const session = await sessionService.readSession(sessionId, userId);
@@ -307,6 +324,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
+    requireNotebooksPermission,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { name, description, metadata } = req.body;
@@ -323,6 +342,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId',
+    generalRateLimiter,
+    requireNotebooksPermission,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       await sessionService.deleteSession(sessionId, userId);
@@ -337,6 +358,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
+    generalRateLimiter,
+    requireNotebooksPermission,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId } = req.params;
@@ -351,6 +374,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
+    expensiveRateLimiter,
+    requireNotebooksPermission,
     upload.single('file') as any,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -401,6 +426,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents/:documentId/status',
+    generalRateLimiter,
+    requireNotebooksPermission,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -419,6 +446,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
+    generalRateLimiter,
+    requireNotebooksPermission,
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -443,6 +472,8 @@ export async function createNotebooksRouter(
 
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
+    expensiveRateLimiter,
+    requireNotebooksPermission,
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -518,7 +549,7 @@ export async function createNotebooksRouter(
               : HTTP_STATUS_INTERNAL_ERROR;
           res.status(statusCode).json({
             status: 'error',
-            error: `Error from Llama Stack server: ${errorMsg}`,
+            error: `Error from Lightspeed Core: ${errorMsg}`,
           });
           return;
         }

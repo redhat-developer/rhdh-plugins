@@ -39,9 +39,10 @@
     "directory": "workspaces/boost"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/cli": "^0.36.3",
+    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.17.3",
     "@changesets/cli": "^2.27.1",
     "@fission-ai/openspec": "^1.4.1",
     "knip": "^5.27.4",

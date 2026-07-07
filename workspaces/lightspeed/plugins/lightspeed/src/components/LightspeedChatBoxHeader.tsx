@@ -176,12 +176,14 @@ export const LightspeedChatBoxHeader = ({
       <ChatbotHeaderOptionsDropdown
         className={styles.dropdown}
         isCompact
+        shouldFocusFirstItemOnOpen={false}
         toggleProps={{
-          'aria-label': t('aria.settings.label'),
+          'aria-label': t('aria.options.label'),
           className: styles.optionsToggle,
         }}
         tooltipProps={{
-          content: t('tooltip.settings'),
+          trigger: 'manual',
+          content: '',
         }}
       >
         <DropdownGroup>

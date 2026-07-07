@@ -15,12 +15,13 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
+import authPlugin from '@backstage/plugin-auth';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import {
   lightspeedFABModule,
   lightspeedRedirectModule,
   lightspeedTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import { navModule } from './modules/nav';
@@ -28,6 +29,7 @@ import { signInModule } from './modules/signIn';
 
 export default createApp({
   features: [
+    authPlugin,
     appDrawerModule,
     lightspeedFABModule,
     lightspeedRedirectModule,

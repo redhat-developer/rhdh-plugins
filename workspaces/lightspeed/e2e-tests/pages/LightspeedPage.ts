@@ -39,7 +39,7 @@ export async function selectDisplayMode(
   t: LightspeedMessages,
   mode: DisplayMode,
 ) {
-  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await page.getByRole('button', { name: t['aria.options.label'] }).click();
   const modeMap: Record<DisplayMode, string> = {
     Overlay: t['settings.displayMode.overlay'],
     'Dock to window': t['settings.displayMode.docked'],
@@ -92,7 +92,7 @@ export async function expectChatbotControlsVisible(
     await expect(chatHistoryMenuButton).toBeVisible();
   }
   await expect(
-    page.getByRole('button', { name: t['aria.settings.label'] }),
+    page.getByRole('button', { name: t['aria.options.label'] }),
   ).toBeVisible();
 }
 
@@ -100,7 +100,7 @@ export async function verifyDisplayModeMenuOptions(
   page: Page,
   t: LightspeedMessages,
 ) {
-  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await page.getByRole('button', { name: t['aria.options.label'] }).click();
   const settingsMenu = page
     .getByRole('menu')
     .filter({
@@ -145,7 +145,7 @@ export async function verifyDisplayModeMenuOptions(
 // MCP settings (McpServersSettings — strings from `mcp.settings.*` translations)
 
 export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
-  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await page.getByRole('button', { name: t['aria.options.label'] }).click();
   await expect(
     page.getByRole('menuitem', { name: t['settings.mcp.label'] }),
   ).toBeVisible();
@@ -359,7 +359,7 @@ export async function verifyMcpSettingsPanel(
   }
 
   await expect(
-    page.getByRole('button', { name: t['aria.settings.label'] }),
+    page.getByRole('button', { name: t['aria.options.label'] }),
   ).toBeVisible();
 
   await closeMcpSettingsPanel(page, t);
@@ -448,8 +448,8 @@ function getWelcomeHeader(t: LightspeedMessages): string {
 }
 
 const buttonGroup = `
-      - button
-      - text: ''`;
+      - button /.+/
+      - text: /.+/`;
 
 const buttonCounts: Record<DisplayMode, number> = {
   Overlay: 1,

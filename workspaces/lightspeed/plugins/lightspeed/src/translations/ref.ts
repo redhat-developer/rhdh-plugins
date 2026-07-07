@@ -228,7 +228,6 @@ export const lightspeedMessages = {
   'aria.options.label': 'Options',
   'aria.scroll.down': 'Back to bottom',
   'aria.scroll.up': 'Back to top',
-  'aria.settings.label': 'Chatbot options',
   'aria.close': 'Close chatbot',
 
   // Modal actions
@@ -346,6 +345,8 @@ export const lightspeedMessages = {
   'mcp.settings.status.oneTool': '{{count}} tool',
   'mcp.settings.status.manyTools': '{{count}} tools',
   'mcp.settings.status.unknown': 'Unknown',
+  'mcp.settings.modalDescriptionDcr':
+    'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
   'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
   'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
   'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',

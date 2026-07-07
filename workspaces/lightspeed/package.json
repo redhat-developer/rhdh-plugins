@@ -55,6 +55,9 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@jest/environment-jsdom-abstract": "^30.3.0",
     "@playwright/test": "1.60.0",
+    "@react-stately/layout": "^4.7.1",
+    "@react-stately/overlays": "^3.7.1",
+    "@react-types/table": "^3.14.0",
     "@spotify/prettier-config": "^12.0.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
@@ -62,10 +65,12 @@
     "jsdom": "^27.1.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
-    "prettier": "3.8.3",
+    "prettier": "3.8.4",
     "typescript": "~5.8.0"
   },
   "dependencies": {
+    "@react-stately/layout": "^3.6.0",
+    "@react-stately/overlays": "^3.6.0",
     "react": "^18.3.1"
   },
   "resolutions": {
@@ -74,9 +79,14 @@
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/frontend-plugin-api": "0.15.1",
+    "@backstage/plugin-catalog": "2.0.1",
     "infinispan": "0.13.0",
     "@protobufjs/inquire": "1.1.0",
-    "langsmith": "^0.6.0"
+    "langsmith": "^0.6.0",
+    "react-router": "6.30.4",
+    "react-router-dom": "6.30.4",
+    "@remix-run/router": "1.23.3",
+    "@patternfly/react-core": "6.4.3"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

@@ -458,6 +458,20 @@ spec:
             totalCount:
               type: integer
               description: Total number of workflow runs
+            averageTimeToComplete:
+              type: number
+              description: Average time to complete a workflow run in milliseconds
+        WorkflowAvailabilityResponseDTO:
+          type: object
+          properties:
+            isAvailable:
+              type: boolean
+            statusCode:
+              type: integer
+            urlToFetch:
+              type: string
+            reason:
+              type: string
         WorkflowOverviewDTO:
           type: object
           properties:
@@ -482,6 +496,8 @@ spec:
               type: string
             isAvailable:
               type: boolean
+            availability:
+              $ref: '#/components/schemas/WorkflowAvailabilityResponseDTO'
             version:
               type: string
               description: Workflow definition version
@@ -548,6 +564,9 @@ spec:
         ProcessInstanceListResultDTO:
           type: object
           properties:
+            totalCount:
+              type: integer
+              description: Total number of process instances matching the filter
             items:
               type: array
               items:

@@ -23,42 +23,98 @@ import {
   Link,
   SelectItem,
   TableColumn,
+  TableProps,
 } from '@backstage/core-components';
 import {
   useApi,
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
+import {
+  entityPresentationSnapshot,
+  EntityRefLink,
+} from '@backstage/plugin-catalog-react';
+import { usePermission } from '@backstage/plugin-permission-react';
 
+import DescriptionIcon from '@mui/icons-material/Description';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import MuiLink from '@mui/material/Link';
 import TablePagination from '@mui/material/TablePagination';
+import { DateTime } from 'luxon';
 
 import {
   FieldFilter,
   Filter,
   NestedFilter,
+  orchestratorAdminViewPermission,
+  orchestratorInstanceAdminViewPermission,
   PaginationInfoDTO,
   PaginationInfoDTOOrderDirectionEnum,
   ProcessInstanceStatusDTO,
+  WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
+import {
+  DEFAULT_TABLE_PAGE_SIZE,
+  RUN_WORKFLOW_SCAFFOLDER_URL,
+  VALUE_UNAVAILABLE,
+} from '../../constants';
+import { useEntityFilterItems } from '../../hooks/useEntityFilterItems';
+import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import usePolling from '../../hooks/usePolling';
+import { useRunByFilterItems } from '../../hooks/useRunByFilterItems';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
+  executeWorkflowRouteRef,
   workflowInstanceRouteRef,
   workflowRouteRef,
+  workflowRunsRouteRef,
 } from '../../routes';
+import {
+  getInstanceVariables,
+  hasInstanceVariables,
+} from '../../utils/instanceVariables';
 import { Trans } from '../Trans';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
+import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { Selector } from '../ui/Selector';
+import { TableTextFilter } from '../ui/TableTextFilter';
 import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
+import { VariablesDialog } from '../WorkflowInstancePage/VariablesDialog';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
+import { WorkflowLogsDialog } from '../WorkflowInstancePage/WorkflowLogsDialog';
+
+type WorkflowRunsFetchResult = {
+  items: WorkflowRunDetail[];
+  totalCount?: number;
+};
+
+const EntityRefTableCell = ({
+  entityRef,
+  defaultKind,
+}: {
+  entityRef?: string;
+  defaultKind: 'component' | 'user';
+}) => {
+  if (!entityRef) {
+    return <>{VALUE_UNAVAILABLE}</>;
+  }
+
+  return <EntityRefLink entityRef={entityRef} defaultKind={defaultKind} />;
+};
+
+const formatStartedRelative = (startIso?: string) => {
+  if (!startIso) {
+    return VALUE_UNAVAILABLE;
+  }
+
+  return DateTime.fromISO(startIso).toRelative() ?? VALUE_UNAVAILABLE;
+};
 
 const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
   { label: t('table.status.running'), value: ProcessInstanceStatusDTO.Active },
@@ -74,7 +130,29 @@ const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
   },
 ];
 
-export const WorkflowRunsTabContent = () => {
+const ENTITY_FILTER_KINDS = ['Component', 'System'];
+
+const combineFilters = (
+  filters: (Filter | undefined)[],
+): Filter | undefined => {
+  const activeFilters = filters.filter(Boolean) as Filter[];
+  if (activeFilters.length === 0) {
+    return undefined;
+  }
+  if (activeFilters.length === 1) {
+    return activeFilters[0];
+  }
+  return {
+    operator: 'AND',
+    filters: activeFilters,
+  };
+};
+
+export const WorkflowRunsTabContent = ({
+  showRunsEmptyState = true,
+}: {
+  showRunsEmptyState?: boolean;
+} = {}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const eventTriggered = searchParams.get('eventTriggered') === 'true';
@@ -104,9 +182,16 @@ export const WorkflowRunsTabContent = () => {
     }),
   );
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
-  const { workflowId, kind, name, namespace } = useRouteRefParams(
-    entityWorkflowRouteRef,
-  );
+  const {
+    workflowId: entityWorkflowId,
+    kind,
+    name,
+    namespace,
+  } = useRouteRefParams(entityWorkflowRouteRef);
+  const { workflowId: scopedWorkflowId } =
+    useRouteRefParams(workflowRunsRouteRef);
+  const workflowId = entityWorkflowId ?? scopedWorkflowId;
+  const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
     entityRef = `${kind}:${namespace}/${name}`;
@@ -114,6 +199,80 @@ export const WorkflowRunsTabContent = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const workflowPageLink = useRouteRef(workflowRouteRef);
+  const adminView = usePermission({
+    permission: orchestratorAdminViewPermission,
+  });
+  const instanceAdminView = usePermission({
+    permission: orchestratorInstanceAdminViewPermission,
+  });
+  const canViewRunVariables = adminView.allowed || instanceAdminView.allowed;
+  const showEntityFilter = !entityRef;
+  const showRunByFilter =
+    !instanceAdminView.loading && instanceAdminView.allowed;
+  const logsEnabled = useLogsEnabled();
+
+  const { items: entityFilterItems } = useEntityFilterItems({
+    kinds: ENTITY_FILTER_KINDS,
+    defaultKind: 'component',
+    enabled: showEntityFilter,
+  });
+
+  const [isVariablesDialogOpen, setIsVariablesDialogOpen] = useState(false);
+  const [instanceVariables, setInstanceVariables] = useState<WorkflowDataDTO>(
+    {},
+  );
+  const [variablesLoading, setVariablesLoading] = useState(false);
+  const [variablesError, setVariablesError] = useState<Error | undefined>();
+
+  const [isLogsDialogOpen, setIsLogsDialogOpen] = useState(false);
+  const [logsInstanceId, setLogsInstanceId] = useState('');
+  const [logsProcessName, setLogsProcessName] = useState('');
+
+  const handleCloseLogsDialog = useCallback(() => {
+    setIsLogsDialogOpen(false);
+    setLogsInstanceId('');
+    setLogsProcessName('');
+  }, []);
+
+  const handleViewLogs = useCallback(
+    (instanceId: string, processName: string) => {
+      setLogsInstanceId(instanceId);
+      setLogsProcessName(processName);
+      setIsLogsDialogOpen(true);
+    },
+    [],
+  );
+
+  const handleCloseVariablesDialog = useCallback(() => {
+    setIsVariablesDialogOpen(false);
+    setInstanceVariables({});
+    setVariablesError(undefined);
+    setVariablesLoading(false);
+  }, []);
+
+  const handleViewRunVariables = useCallback(
+    async (instanceId: string) => {
+      setVariablesLoading(true);
+      setVariablesError(undefined);
+      setInstanceVariables({});
+
+      try {
+        const response = await orchestratorApi.getInstance(instanceId);
+        const variables = getInstanceVariables(response.data.workflowdata);
+        if (!hasInstanceVariables(response.data.workflowdata)) {
+          return;
+        }
+        setInstanceVariables(variables);
+        setIsVariablesDialogOpen(true);
+      } catch (err) {
+        setVariablesError(err as Error);
+        setIsVariablesDialogOpen(true);
+      } finally {
+        setVariablesLoading(false);
+      }
+    },
+    [orchestratorApi],
+  );
 
   // selectors
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
@@ -122,123 +281,163 @@ export const WorkflowRunsTabContent = () => {
   const [startedSelectorValue, setStartedSelectorValue] = useState<string>(
     Selector.AllItems,
   );
+  const [entitySelectorValue, setEntitySelectorValue] = useState<string>(
+    Selector.AllItems,
+  );
+  const [runBySelectorValue, setRunBySelectorValue] = useState<string>(
+    Selector.AllItems,
+  );
+  const [search, setSearch] = useState('');
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   const [orderByField, setOrderByField] = useState<string>('start');
   const [orderDirection, setOrderDirection] = useState('desc');
 
-  const getFilter = useCallback((): Filter | undefined => {
-    // runs for specific WF
-    const workflowIdFilter: FieldFilter | undefined = workflowId
-      ? {
-          operator: 'EQ',
-          value: workflowId,
-          field: 'processId',
-        }
-      : undefined;
-
-    const statusFilter: FieldFilter | undefined =
-      statusSelectorValue !== Selector.AllItems
+  const getFilter = useCallback(
+    (options?: { includeRunByFilter?: boolean }): Filter | undefined => {
+      const includeRunByFilter = options?.includeRunByFilter ?? true;
+      // runs for specific WF
+      const workflowIdFilter: FieldFilter | undefined = workflowId
         ? {
             operator: 'EQ',
-            value: statusSelectorValue,
-            field: 'state',
+            value: workflowId,
+            field: 'processId',
           }
         : undefined;
 
-    let startedFilter: FieldFilter | undefined = undefined;
-
-    if (startedSelectorValue !== Selector.AllItems) {
-      let dateRange: [string, string] | undefined = undefined;
-
-      const currentDate = new Date();
-      const endOfToday = new Date(currentDate);
-      endOfToday.setHours(23, 59, 59, 999);
-
-      switch (startedSelectorValue) {
-        case 'Today': {
-          const startOfToday = new Date();
-          startOfToday.setHours(0, 0, 0, 0);
-          dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
-          break;
-        }
-        case 'Yesterday': {
-          const startOfYesterday = new Date();
-          startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-          startOfYesterday.setHours(0, 0, 0, 0);
-
-          const endOfYesterday = new Date(startOfYesterday);
-          endOfYesterday.setHours(23, 59, 59, 999);
-
-          dateRange = [
-            startOfYesterday.toISOString(),
-            endOfYesterday.toISOString(),
-          ];
-          break;
-        }
-        case 'Last 7 days': {
-          const startOfLast7Days = new Date();
-          startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
-          startOfLast7Days.setHours(0, 0, 0, 0);
-
-          dateRange = [
-            startOfLast7Days.toISOString(),
-            endOfToday.toISOString(),
-          ];
-          break;
-        }
-        case 'This month': {
-          const startOfCurrentMonth = new Date();
-          startOfCurrentMonth.setDate(1);
-          startOfCurrentMonth.setHours(0, 0, 0, 0);
-
-          dateRange = [
-            startOfCurrentMonth.toISOString(),
-            endOfToday.toISOString(),
-          ];
-          break;
-        }
-        default:
-          dateRange = undefined;
-      }
-
-      startedFilter =
-        startedSelectorValue !== Selector.AllItems
+      const statusFilter: FieldFilter | undefined =
+        statusSelectorValue !== Selector.AllItems
           ? {
-              operator: 'BETWEEN',
-              value: dateRange,
-              field: 'start',
+              operator: 'EQ',
+              value: statusSelectorValue,
+              field: 'state',
             }
           : undefined;
-    }
 
-    const nestedVariablesFilter: NestedFilter | undefined = entityRef
-      ? {
+      let startedFilter: FieldFilter | undefined = undefined;
+
+      if (startedSelectorValue !== Selector.AllItems) {
+        let dateRange: [string, string] | undefined = undefined;
+
+        const currentDate = new Date();
+        const endOfToday = new Date(currentDate);
+        endOfToday.setHours(23, 59, 59, 999);
+
+        switch (startedSelectorValue) {
+          case 'Today': {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
+            break;
+          }
+          case 'Yesterday': {
+            const startOfYesterday = new Date();
+            startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+            startOfYesterday.setHours(0, 0, 0, 0);
+
+            const endOfYesterday = new Date(startOfYesterday);
+            endOfYesterday.setHours(23, 59, 59, 999);
+
+            dateRange = [
+              startOfYesterday.toISOString(),
+              endOfYesterday.toISOString(),
+            ];
+            break;
+          }
+          case 'Last 7 days': {
+            const startOfLast7Days = new Date();
+            startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
+            startOfLast7Days.setHours(0, 0, 0, 0);
+
+            dateRange = [
+              startOfLast7Days.toISOString(),
+              endOfToday.toISOString(),
+            ];
+            break;
+          }
+          case 'This month': {
+            const startOfCurrentMonth = new Date();
+            startOfCurrentMonth.setDate(1);
+            startOfCurrentMonth.setHours(0, 0, 0, 0);
+
+            dateRange = [
+              startOfCurrentMonth.toISOString(),
+              endOfToday.toISOString(),
+            ];
+            break;
+          }
+          default:
+            dateRange = undefined;
+        }
+
+        startedFilter =
+          startedSelectorValue !== Selector.AllItems
+            ? {
+                operator: 'BETWEEN',
+                value: dateRange,
+                field: 'start',
+              }
+            : undefined;
+      }
+
+      let targetEntityFilter: NestedFilter | undefined;
+      if (entityRef) {
+        targetEntityFilter = {
           field: 'variables',
           nested: {
             operator: 'EQ',
-            value: entityRef,
+            value: entityRef.toLowerCase(),
             field: 'targetEntity',
           },
-        }
-      : undefined;
+        };
+      } else if (
+        showEntityFilter &&
+        entitySelectorValue !== Selector.AllItems
+      ) {
+        targetEntityFilter = {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            value: entitySelectorValue,
+            field: 'targetEntity',
+          },
+        };
+      }
 
-    const filters = [
-      statusFilter,
-      workflowIdFilter,
-      startedFilter,
-      nestedVariablesFilter,
-    ].filter(Boolean) as FieldFilter[]; // removes undefined filters
+      const initiatorEntityFilter: NestedFilter | undefined =
+        includeRunByFilter &&
+        showRunByFilter &&
+        runBySelectorValue !== Selector.AllItems
+          ? {
+              field: 'variables',
+              nested: {
+                operator: 'EQ',
+                value: runBySelectorValue,
+                field: 'initiatorEntity',
+              },
+            }
+          : undefined;
 
-    if (filters.length > 1) {
-      return {
-        operator: 'AND',
-        filters,
-      };
-    }
-    return filters[0] || undefined;
-  }, [workflowId, statusSelectorValue, startedSelectorValue, entityRef]);
+      return combineFilters([
+        statusFilter,
+        workflowIdFilter,
+        startedFilter,
+        targetEntityFilter,
+        initiatorEntityFilter,
+      ]);
+    },
+    [
+      workflowId,
+      statusSelectorValue,
+      startedSelectorValue,
+      entityRef,
+      showEntityFilter,
+      entitySelectorValue,
+      showRunByFilter,
+      runBySelectorValue,
+    ],
+  );
 
   const fetchInstances = useCallback(async () => {
     const paginationInfo: PaginationInfoDTO = {
@@ -256,11 +455,14 @@ export const WorkflowRunsTabContent = () => {
       filter,
     );
 
-    const clonedData: WorkflowRunDetail[] =
+    const items: WorkflowRunDetail[] =
       instances.data.items?.map(instance =>
         mapProcessInstanceToDetails(instance, t),
       ) || [];
-    return clonedData;
+    return {
+      items,
+      totalCount: instances.data.totalCount,
+    };
   }, [
     orchestratorApi,
     page,
@@ -271,7 +473,80 @@ export const WorkflowRunsTabContent = () => {
     t,
   ]);
 
-  const { loading, error, value } = usePolling(fetchInstances);
+  const pollingCacheKey = useMemo(
+    () =>
+      [
+        workflowId,
+        statusSelectorValue,
+        startedSelectorValue,
+        entitySelectorValue,
+        runBySelectorValue,
+        page,
+        pageSize,
+        orderByField,
+        orderDirection,
+      ].join(':'),
+    [
+      workflowId,
+      statusSelectorValue,
+      startedSelectorValue,
+      entitySelectorValue,
+      runBySelectorValue,
+      page,
+      pageSize,
+      orderByField,
+      orderDirection,
+    ],
+  );
+
+  const { loading, error, value } = usePolling<WorkflowRunsFetchResult>(
+    fetchInstances,
+    {
+      cacheKey: pollingCacheKey,
+    },
+  );
+
+  const runItems = value?.items;
+
+  const filterForRunByOptions = useMemo(
+    () => getFilter({ includeRunByFilter: false }),
+    [getFilter],
+  );
+
+  const additionalInitiators = useMemo(
+    () =>
+      (runItems ?? [])
+        .map(run => run.initiatorEntity)
+        .filter((initiator): initiator is string => Boolean(initiator)),
+    [runItems],
+  );
+
+  const { items: runByFilterItems } = useRunByFilterItems({
+    enabled: showRunByFilter,
+    filters: filterForRunByOptions,
+    additionalInitiators,
+  });
+
+  const runByFilterItemsWithSelection = useMemo(() => {
+    if (runBySelectorValue === Selector.AllItems) {
+      return runByFilterItems;
+    }
+
+    if (runByFilterItems.some(item => item.value === runBySelectorValue)) {
+      return runByFilterItems;
+    }
+
+    return [
+      ...runByFilterItems,
+      {
+        label:
+          entityPresentationSnapshot(runBySelectorValue, {
+            defaultKind: 'user',
+          }).primaryTitle ?? runBySelectorValue,
+        value: runBySelectorValue,
+      },
+    ];
+  }, [runByFilterItems, runBySelectorValue]);
 
   const applyBackendSort = useCallback(
     (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
@@ -279,16 +554,16 @@ export const WorkflowRunsTabContent = () => {
       // Should be resolved when upgrading backstage and all plugins to material6
       // The workaround is to configure the FE sorting material-table applies to be according to order received from backend
       // TODO: resolve when upgrading to material 6
-      if (!value) {
+      if (!runItems) {
         return 0;
       }
-      const item1Index = value?.findIndex(curItem => curItem.id === item1.id);
-      const item2Index = value?.findIndex(curItem => curItem.id === item2.id);
+      const item1Index = runItems.findIndex(curItem => curItem.id === item1.id);
+      const item2Index = runItems.findIndex(curItem => curItem.id === item2.id);
       return orderDirection === 'asc'
         ? item1Index - item2Index
         : item2Index - item1Index;
     },
-    [value, orderDirection],
+    [runItems, orderDirection],
   );
 
   const columns = useMemo(
@@ -331,20 +606,64 @@ export const WorkflowRunsTabContent = () => {
             },
           ]),
       {
-        title: t('table.headers.runStatus'),
+        title: t('table.headers.version'),
+        field: 'version',
+        sorting: false,
+        render: (data: WorkflowRunDetail) => data.version ?? VALUE_UNAVAILABLE,
+      },
+      {
+        title: t('table.headers.entity'),
+        field: 'targetEntity',
+        sorting: false,
+        render: (data: WorkflowRunDetail) => (
+          <EntityRefTableCell
+            entityRef={data.targetEntity}
+            defaultKind="component"
+          />
+        ),
+      },
+      {
+        title: t('table.headers.status'),
         field: 'state',
         render: (data: WorkflowRunDetail) => (
-          <WorkflowInstanceStatusIndicator
-            status={data.state as ProcessInstanceStatusDTO}
-          />
+          <Box display="flex" alignItems="center" flexWrap="wrap" gap={1}>
+            <WorkflowInstanceStatusIndicator
+              status={data.state as ProcessInstanceStatusDTO}
+            />
+            {logsEnabled && data.state === ProcessInstanceStatusDTO.Error ? (
+              <MuiLink
+                component="button"
+                variant="body2"
+                onClick={() => handleViewLogs(data.id, data.processName)}
+                sx={{
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'none' },
+                }}
+              >
+                {t('run.logs.viewLogs')}
+              </MuiLink>
+            ) : null}
+          </Box>
         ),
       },
       {
         title: t('table.headers.started'),
         field: 'start',
         customSort: applyBackendSort,
+        render: (data: WorkflowRunDetail) =>
+          formatStartedRelative(data.startIso),
       },
-      { title: t('table.headers.duration'), field: 'duration', sorting: false },
+      {
+        title: t('table.headers.runBy'),
+        field: 'initiatorEntity',
+        sorting: false,
+        render: (data: WorkflowRunDetail) => (
+          <EntityRefTableCell
+            entityRef={data.initiatorEntity}
+            defaultKind="user"
+          />
+        ),
+      },
     ],
     [
       t,
@@ -357,134 +676,271 @@ export const WorkflowRunsTabContent = () => {
       kind,
       namespace,
       entityRef,
+      logsEnabled,
+      handleViewLogs,
     ],
   );
 
-  let data = value || [];
-  let hasNextPage = false;
-  if (data.length === pageSize + 1) {
-    hasNextPage = true;
-    data = data.slice(0, -1);
-  }
+  const actions = useMemo((): TableProps<WorkflowRunDetail>['actions'] => {
+    if (!canViewRunVariables) {
+      return undefined;
+    }
+
+    return [
+      rowData => ({
+        icon: () => <DescriptionIcon />,
+        tooltip: rowData.hasVariables
+          ? t('table.actions.viewRunVariables')
+          : t('messages.noVariablesFound'),
+        disabled: !rowData.hasVariables,
+        onClick: () => handleViewRunVariables(rowData.id),
+      }),
+    ];
+  }, [canViewRunVariables, handleViewRunVariables, t]);
+
+  const data = useMemo(() => {
+    const items = runItems ?? [];
+    if (items.length === pageSize + 1) {
+      return items.slice(0, -1);
+    }
+    return items;
+  }, [runItems, pageSize]);
+  const hasNextPage = (runItems?.length ?? 0) === pageSize + 1;
+  const filteredData = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) {
+      return data;
+    }
+
+    return data.filter(
+      row =>
+        row.id.toLowerCase().includes(query) ||
+        row.processName.toLowerCase().includes(query) ||
+        (row.version?.toLowerCase().includes(query) ?? false) ||
+        (row.targetEntity?.toLowerCase().includes(query) ?? false) ||
+        (row.initiatorEntity?.toLowerCase().includes(query) ?? false) ||
+        (row.state?.toLowerCase().includes(query) ?? false) ||
+        row.start.toLowerCase().includes(query),
+    );
+  }, [data, search]);
+  const displayedRunCount = useMemo(() => {
+    if (search.trim()) {
+      return filteredData.length;
+    }
+    return value?.totalCount ?? data.length;
+  }, [search, filteredData.length, value?.totalCount, data.length]);
   const enablePaging = page > 0 || hasNextPage;
+  const isDefaultFilters =
+    statusSelectorValue === Selector.AllItems &&
+    startedSelectorValue === Selector.AllItems &&
+    entitySelectorValue === Selector.AllItems &&
+    runBySelectorValue === Selector.AllItems &&
+    !search.trim();
+  const showEmptyState =
+    showRunsEmptyState &&
+    !loading &&
+    !error &&
+    filteredData.length === 0 &&
+    page === 0 &&
+    isDefaultFilters;
+
+  const runWorkflowUrl = useMemo(() => {
+    if (!workflowId) {
+      return RUN_WORKFLOW_SCAFFOLDER_URL;
+    }
+    const baseUrl = executeWorkflowLink({ workflowId });
+    if (!entityRef) {
+      return baseUrl;
+    }
+    const params = new URLSearchParams({ targetEntity: entityRef });
+    return `${baseUrl}?${params.toString()}`;
+  }, [workflowId, executeWorkflowLink, entityRef]);
+
+  const runListDialogs = (
+    <>
+      <VariablesDialog
+        open={isVariablesDialogOpen}
+        onClose={handleCloseVariablesDialog}
+        instanceVariables={instanceVariables}
+        loading={variablesLoading}
+        error={variablesError}
+      />
+      <WorkflowLogsDialog
+        open={isLogsDialogOpen}
+        onClose={handleCloseLogsDialog}
+        instanceId={logsInstanceId}
+        processName={logsProcessName}
+      />
+    </>
+  );
+
+  if (showEmptyState) {
+    return (
+      <>
+        {runListDialogs}
+        {showEventAlert && (
+          <Alert
+            severity="info"
+            onClose={handleCloseEventAlert}
+            sx={{ width: '100%', boxSizing: 'border-box', mb: 2 }}
+          >
+            {t('run.messages.eventTriggered')}
+          </Alert>
+        )}
+        <OrchestratorEmptyState
+          variant="runs"
+          runWorkflowUrl={runWorkflowUrl}
+        />
+      </>
+    );
+  }
 
   return error ? (
     <ErrorPanel error={error} />
   ) : (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        width: '100%',
-        maxWidth: '100%',
-      }}
-    >
-      {showEventAlert && (
-        <Alert
-          severity="info"
-          onClose={handleCloseEventAlert}
-          sx={{ width: '100%', boxSizing: 'border-box' }}
-        >
-          {t('run.messages.eventTriggered')}
-        </Alert>
-      )}
+    <>
+      {runListDialogs}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: 'flex-start',
+          flexDirection: 'column',
           gap: 2,
           width: '100%',
+          maxWidth: '100%',
         }}
       >
-        <Box sx={{ flexShrink: 0 }}>
-          <Selector
-            label={t('table.filters.status')}
-            items={statuses}
-            onChange={value_ => {
-              setStatusSelectorValue(value_);
-              setPage(0);
-            }}
-            selected={statusSelectorValue}
-          />
-          <Selector
-            label={t('table.filters.started')}
-            items={started}
-            onChange={value_ => {
-              setStartedSelectorValue(value_);
-              setPage(0);
-            }}
-            selected={startedSelectorValue}
-          />
-        </Box>
+        {showEventAlert && (
+          <Alert
+            severity="info"
+            onClose={handleCloseEventAlert}
+            sx={{ width: '100%', boxSizing: 'border-box' }}
+          >
+            {t('run.messages.eventTriggered')}
+          </Alert>
+        )}
         <Box
           sx={{
-            flex: '1 1 auto',
-            minWidth: 0,
-            width: { xs: '100%', sm: 'auto' },
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'flex-start',
+            gap: 2,
+            width: '100%',
           }}
         >
-          <InfoCard
-            noPadding
-            title={
-              workflowId ? (
-                <Trans
-                  message="table.title.allWorkflowRuns"
-                  params={{ count: data.length }}
-                />
-              ) : (
-                <Trans
-                  message="table.title.allRuns"
-                  params={{ count: data.length }}
-                />
-              )
-            }
-          >
-            <OverrideBackstageTable
-              removeOutline
-              isLoading={loading}
-              columns={columns}
-              data={data}
-              options={{
-                paging: false,
+          <Box sx={{ flexShrink: 0 }}>
+            <Selector
+              label={t('table.filters.status')}
+              items={statuses}
+              onChange={value_ => {
+                setStatusSelectorValue(value_);
+                setPage(0);
               }}
-              onOrderChange={(
-                orderBy_: number,
-                orderDirection_: 'asc' | 'desc',
-              ) => {
-                const field = columns[orderBy_].field;
-                if (!field) {
-                  throw new Error(`Failed to find column number ${orderBy_}`);
-                }
-                setOrderByField(field);
-                setOrderDirection(orderDirection_);
-              }}
-              components={{
-                Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
-              }}
+              selected={statusSelectorValue}
             />
-            {enablePaging && (
-              <TablePagination
-                component="div"
-                count={-1}
-                page={page}
-                onPageChange={(_, page_) => setPage(page_)}
-                onRowsPerPageChange={e => {
-                  setPageSize(parseInt(e.target.value, 10));
+            <Selector
+              label={t('table.filters.started')}
+              items={started}
+              onChange={value_ => {
+                setStartedSelectorValue(value_);
+                setPage(0);
+              }}
+              selected={startedSelectorValue}
+            />
+            {showEntityFilter ? (
+              <Selector
+                label={t('table.filters.entity')}
+                items={entityFilterItems}
+                onChange={value_ => {
+                  setEntitySelectorValue(value_);
                   setPage(0);
                 }}
-                rowsPerPage={pageSize}
-                labelDisplayedRows={({ from }) => {
-                  return `${from}-${from + data.length - 1}`;
-                }}
-                rowsPerPageOptions={[5, 10, 20]}
-                nextIconButtonProps={{ disabled: !hasNextPage }}
+                selected={entitySelectorValue}
               />
-            )}
-          </InfoCard>
+            ) : null}
+            {showRunByFilter ? (
+              <Selector
+                label={t('table.filters.runBy')}
+                items={runByFilterItemsWithSelection}
+                onChange={value_ => {
+                  setRunBySelectorValue(value_);
+                  setPage(0);
+                }}
+                selected={runBySelectorValue}
+              />
+            ) : null}
+          </Box>
+          <Box
+            sx={{
+              flex: '1 1 auto',
+              minWidth: 0,
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
+            <InfoCard
+              noPadding
+              title={
+                workflowId ? (
+                  <Trans
+                    message="table.title.allWorkflowRuns"
+                    params={{ count: displayedRunCount }}
+                  />
+                ) : (
+                  <Trans
+                    message="table.title.allRuns"
+                    params={{ count: displayedRunCount }}
+                  />
+                )
+              }
+              action={<TableTextFilter value={search} onChange={setSearch} />}
+              headerProps={{ style: { alignItems: 'center' } }}
+            >
+              <OverrideBackstageTable
+                removeOutline
+                isLoading={loading}
+                columns={columns}
+                data={filteredData}
+                actions={actions}
+                options={{
+                  paging: false,
+                  actionsColumnIndex: columns.length,
+                }}
+                onOrderChange={(
+                  orderBy_: number,
+                  orderDirection_: 'asc' | 'desc',
+                ) => {
+                  const field = columns[orderBy_].field;
+                  if (!field) {
+                    throw new Error(`Failed to find column number ${orderBy_}`);
+                  }
+                  setOrderByField(field);
+                  setOrderDirection(orderDirection_);
+                }}
+                components={{
+                  Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
+                }}
+              />
+              {enablePaging && (
+                <TablePagination
+                  component="div"
+                  count={value?.totalCount ?? -1}
+                  page={page}
+                  onPageChange={(_, page_) => setPage(page_)}
+                  onRowsPerPageChange={e => {
+                    setPageSize(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                  rowsPerPage={pageSize}
+                  labelDisplayedRows={({ from }) => {
+                    return `${from}-${from + filteredData.length - 1}`;
+                  }}
+                  rowsPerPageOptions={[5, 10, 20]}
+                  nextIconButtonProps={{ disabled: !hasNextPage }}
+                />
+              )}
+            </InfoCard>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 };

@@ -65,7 +65,7 @@ First-time administrators receive guided setup.
 
 ### Requirement: Schema-Driven Config Validation
 
-Hand-written validators are replaced with schema-derived validation.
+Hand-written validators MUST be replaced with schema-derived validation.
 
 #### Scenario: Validation from single source of truth
 
@@ -82,7 +82,7 @@ Hand-written validators are replaced with schema-derived validation.
 
 ### Requirement: New Config Categories
 
-New features require additional runtime configuration fields.
+The following new features MUST have runtime configuration fields as specified below.
 
 #### Scenario: Agent approval configuration
 
@@ -100,17 +100,17 @@ New features require additional runtime configuration fields.
   | Field | Scope | Description |
   |---|---|---|
   | `boost.skillsMarketplace.endpoint` | yaml-only | Skills catalog backend URL |
-  | `boost.skillsMarketplace.enabled` | db-overridable | Enable/disable skills marketplace |
 
 #### Scenario: Token exchange configuration
 
-- **WHEN** the admin configures per-user Kagenti auth
+- **WHEN** the admin configures Kagenti service-account auth
 - **THEN** the following fields are available:
   | Field | Scope | Description |
   |---|---|---|
-  | `boost.kagenti.auth.tokenExchange.enabled` | yaml-only | Enable RFC 8693 token exchange |
-  | `boost.kagenti.auth.tokenExchange.audience` | yaml-only | Target audience for exchanged token |
-  | `boost.kagenti.auth.tokenExchange.userTokenHeader` | yaml-only | Header containing user OIDC token |
+  | `boost.kagenti.auth.tokenEndpoint` | yaml-only | Keycloak token endpoint URL |
+  | `boost.kagenti.auth.clientId` | yaml-only | OAuth2 client ID |
+  | `boost.kagenti.auth.clientSecret` | yaml-only | OAuth2 client secret (sensitive) |
+  | `boost.kagenti.auth.tokenExpiryBufferSeconds` | yaml-only | Seconds before expiry to refresh (default: 60) |
 
 #### Scenario: Credential encryption
 
@@ -120,7 +120,7 @@ New features require additional runtime configuration fields.
 
 ### Requirement: Config Schema Versioning
 
-DB-stored config values survive schema changes across upgrades.
+DB-stored config values MUST survive schema changes across upgrades.
 
 #### Scenario: Schema evolution on startup
 

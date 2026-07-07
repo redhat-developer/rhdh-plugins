@@ -17,6 +17,7 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import {
+  Filter,
   ProcessInstance,
   ProcessInstanceState,
   WorkflowInfo,
@@ -666,6 +667,97 @@ describe('SonataFlowService', () => {
     });
   });
 
+  describe('pingWorkflowService', () => {
+    const urlToFetch = `${serviceUrl}/management/processes/${definitionId}`;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns available when the management endpoint responds ok', async () => {
+      setupTest({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(result).toEqual({
+        isAvailable: true,
+        statusCode: 200,
+        urlToFetch,
+        reason: 'OK',
+      });
+    });
+
+    it('returns unavailable with status details when the management endpoint fails', async () => {
+      setupTest({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 503,
+        urlToFetch,
+        reason: 'Service Unavailable',
+      });
+    });
+
+    it('returns unavailable with a default reason when status text is missing', async () => {
+      setupTest({
+        ok: false,
+        status: 500,
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: 'Unknown reason',
+      });
+    });
+
+    it('returns unavailable when fetch throws an error', async () => {
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      });
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      );
+    });
+  });
+
   describe('fetchWorkflowOverviews', () => {
     const NOW = new Date('2024-06-01T12:00:00Z');
     const WITHIN_30_DAYS = '2024-05-15T12:00:00Z';
@@ -876,6 +968,66 @@ describe('SonataFlowService', () => {
 
       expect(result).toHaveLength(1);
       expect(result?.[0].workflowId).toBe('workflow-a');
+    });
+
+    it('queries instance stats by workflow definition id for entity overview', async () => {
+      const helloWorldSource = JSON.stringify({
+        id: 'hello-world',
+        specVersion: '0.8',
+        name: 'Hello World Workflow',
+        version: '1.0',
+        start: 'startState',
+        states: [{ name: 'startState', type: 'inject', end: true }],
+      });
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'hello-world', source: helloWorldSource },
+      ];
+      const overviewFilter: Filter = {
+        field: 'id',
+        operator: 'IN',
+        value: ['hello-world'],
+      };
+      const targetEntity = 'component:default/my-component';
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'hello-world',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({
+        filter: overviewFilter,
+        targetEntity,
+      });
+
+      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+        definitionIds: ['hello-world'],
+        filter: {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        },
+      });
+      expect(result?.[0].workflowRunStats).toMatchObject({
+        successRatio: 1,
+        runsLastMonth: 1,
+        successCount: 1,
+        errorCount: 0,
+        totalCount: 1,
+      });
     });
   });
 

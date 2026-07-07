@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.6.2
+
+### Patch Changes
+
+- c7f0beb: Added unit test coverage for orchestrator scaffolder actions and fixed token fallback logic.
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [43e0722]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+
 ## 1.6.0
 
 ### Minor Changes

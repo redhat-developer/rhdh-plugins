@@ -30,7 +30,17 @@ export type PullPolicy = (typeof PullPolicy)[keyof typeof PullPolicy];
  */
 export type PluginSpec = {
   package: string;
+  /**
+   * Recommended: Use `enabled` instead.
+   * When both `enabled` and `disabled` are present, `enabled` takes precedence.
+   */
   disabled?: boolean;
+  /**
+   * Whether the plugin is active. Preferred over `disabled` (positive logic).
+   * When both `enabled` and `disabled` are present, `enabled` takes precedence
+   * and a warning is logged.
+   */
+  enabled?: boolean;
   pullPolicy?: PullPolicy;
   forceDownload?: boolean;
   integrity?: string;
@@ -111,4 +121,53 @@ export function effectivePullPolicy(plugin: {
   return plugin.package.includes(LATEST_TAG_MARKER)
     ? PullPolicy.ALWAYS
     : PullPolicy.IF_NOT_PRESENT;
+}
+
+/**
+ * Resolve the effective disabled state from the `enabled` and `disabled`
+ * fields on a plugin spec.  Precedence rules (per RHIDP-11983):
+ *
+ *  1. When only `enabled` is set  → `disabled = !enabled`.
+ *  2. When only `disabled` is set → use it directly (backward compat).
+ *  3. When both are set           → `enabled` wins and a warning is emitted
+ *     via the optional `warn` callback.
+ *  4. When neither is set         → default to `false` (not disabled).
+ *
+ * Non-boolean values (e.g. the quoted string `enabled: 'false'` or
+ * `enabled: null`) are treated as unset and a warning is emitted,
+ * preventing JS truthiness from silently flipping activation state.
+ *
+ * The `warn` callback receives the warning message string.  Pass `log` or
+ * leave it out for silent resolution (unit tests, hashing).
+ */
+export function isPluginDisabled(
+  plugin: { package: string; disabled?: boolean; enabled?: boolean },
+  warn?: (msg: string) => void,
+): boolean {
+  const hasEnabled = typeof plugin.enabled === 'boolean';
+  const hasDisabled = typeof plugin.disabled === 'boolean';
+
+  if (plugin.enabled !== undefined && !hasEnabled) {
+    warn?.(
+      `WARNING: Plugin ${plugin.package} has non-boolean 'enabled: ${String(plugin.enabled)}'. ` +
+        `Expected true or false; ignoring the field.`,
+    );
+  }
+  if (plugin.disabled !== undefined && !hasDisabled) {
+    warn?.(
+      `WARNING: Plugin ${plugin.package} has non-boolean 'disabled: ${String(plugin.disabled)}'. ` +
+        `Expected true or false; ignoring the field.`,
+    );
+  }
+
+  if (hasEnabled && hasDisabled) {
+    warn?.(
+      `WARNING: Plugin ${plugin.package} specifies both 'enabled' and 'disabled'. ` +
+        `The 'enabled' field takes precedence; please use only 'enabled'.`,
+    );
+    return !plugin.enabled;
+  }
+  if (hasEnabled) return !plugin.enabled;
+  if (hasDisabled) return plugin.disabled === true;
+  return false;
 }

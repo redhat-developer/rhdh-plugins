@@ -63,3 +63,6 @@ site
 
 # Cursor IDE configuration files
 .cursorrules
+
+# Local git worktrees
+.worktrees/

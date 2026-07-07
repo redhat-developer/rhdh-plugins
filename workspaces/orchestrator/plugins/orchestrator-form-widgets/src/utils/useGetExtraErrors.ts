@@ -25,6 +25,7 @@ import { ERRORS_KEY, ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { evaluateTemplateString } from './evaluateTemplate';
 import { getRequestInit } from './useRequestInit';
+import { parseValidationErrorBody } from './parseValidationErrorBody';
 import { safeSet } from './safeSet';
 
 // Walks through the uiSchema and calls the "callback" for every field which is backed by the dynamic ui:widget.
@@ -115,7 +116,13 @@ export const useGetExtraErrors = () => {
               evaluatedRequestInit,
             );
             if (response.status !== 200) {
-              const data = (await response.json()) as JsonObject;
+              const data = await parseValidationErrorBody(response);
+              if (!data || Object.keys(data).length === 0) {
+                safeSet(errors, path, {
+                  [ERRORS_KEY]: `Validation request failed with status ${response.status}`,
+                });
+                return;
+              }
 
               Object.keys(data).forEach(key => {
                 // @ts-ignore

@@ -20,7 +20,7 @@ import { signInModule } from './modules/signIn';
 import {
   homePageModule,
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 export default createApp({

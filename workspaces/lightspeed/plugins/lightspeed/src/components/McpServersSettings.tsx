@@ -22,7 +22,6 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -38,9 +37,10 @@ import {
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
+  InfoCircleIcon,
   KeyIcon,
   LockIcon,
-  OffIcon,
+  PencilAltIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
   TimesIcon,
@@ -63,6 +63,8 @@ type McpServer = {
   hasToken: boolean;
   hasUserToken: boolean;
   validationError?: string;
+  /** 'dcr' = tokens are minted automatically (no manual token needed). */
+  auth?: string;
 };
 
 type McpServersSettingsProps = {
@@ -162,17 +164,24 @@ const useStyles = makeStyles(theme => ({
   statusOk: {
     color: '#147878',
   },
-  statusToken: {
-    color: '#147878',
-  },
   statusWarn: {
     color: '#B1380B',
   },
   statusDisabled: {
-    color: theme.palette.text.secondary,
+    color:
+      theme.palette.type === 'dark'
+        ? 'var(--pf-t--global--text--color--subtle, #c7c7c7)'
+        : 'var(--pf-t--global--text--color--subtle, #4d4d4d)',
   },
   actionButton: {
     color: theme.palette.text.secondary,
+    opacity: 0,
+    transition: 'opacity 0.15s ease-in-out',
+  },
+  tableRow: {
+    '&:hover $actionButton, &:focus-within $actionButton': {
+      opacity: 1,
+    },
   },
   modalDescription: {
     color: theme.palette.text.secondary,
@@ -316,6 +325,12 @@ const useStyles = makeStyles(theme => ({
   },
   table: {
     width: '100%',
+    backgroundColor: 'transparent',
+    '--pf-v6-c-table--BackgroundColor': 'transparent',
+    '--pf-v5-c-table--BackgroundColor': 'transparent',
+    '& table, & thead, & tbody, & tr, & th, & td': {
+      backgroundColor: 'transparent !important',
+    },
     '& th': {
       borderBottom: 0,
       fontSize: '0.75rem',
@@ -346,6 +361,7 @@ type McpServerResponse = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  auth?: string;
 };
 
 type McpServersListResponse = {
@@ -376,7 +392,7 @@ type McpCredentialsValidateResponse = {
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
   if (status === 'tokenRequired') return <KeyIcon className={className} />;
-  if (status === 'disabled') return <OffIcon className={className} />;
+  if (status === 'disabled') return <InfoCircleIcon className={className} />;
   if (status === 'failed')
     return <ExclamationCircleIcon className={className} />;
   return <CheckCircleIcon className={className} />;
@@ -403,6 +419,7 @@ const toUiServer = (
   hasToken: server.hasToken,
   hasUserToken: server.hasUserToken,
   validationError: server.status === 'error' ? validationError : undefined,
+  auth: server.auth,
 });
 export const McpServersSettings = ({
   onClose,
@@ -904,14 +921,12 @@ export const McpServersSettings = ({
             let statusClass = classes.statusWarn;
             if (displayStatus === 'ok') {
               statusClass = classes.statusOk;
-            } else if (displayStatus === 'tokenRequired') {
-              statusClass = classes.statusToken;
             } else if (displayStatus === 'disabled') {
               statusClass = classes.statusDisabled;
             }
 
             return (
-              <Tr key={server.id}>
+              <Tr key={server.id} className={classes.tableRow}>
                 <Td width={10} className={classes.toggleCell}>
                   {(() => {
                     const isUnavailable =
@@ -997,7 +1012,7 @@ export const McpServersSettings = ({
                     aria-label={t('mcp.settings.editServerAriaLabel' as any, {
                       serverName: server.name,
                     })}
-                    icon={<ModeEditOutlineOutlinedIcon fontSize="small" />}
+                    icon={<PencilAltIcon />}
                     variant="plain"
                     className={classes.actionButton}
                     isDisabled={!canManageMcp}
@@ -1035,83 +1050,103 @@ export const McpServersSettings = ({
               })}
             </Typography>
           </div>
-          <div className={classes.modalDescription}>
-            {t('mcp.settings.modalDescription')}
-          </div>
-          <div className={classes.tokenRow}>
-            <TextField
-              id="mcp-pat-input"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={tokenInputValue}
-              onChange={event => onTokenInputChange(event.target.value)}
-              className={`${classes.tokenInput} ${tokenInputStateClass}`}
-              label={
-                hasSavedTokenInModal
-                  ? t('mcp.settings.savedToken')
-                  : t('mcp.settings.personalAccessToken')
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {tokenInputAdornment}
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {(isUsingOrganizationCredentialInModal ||
-              !hasSavedTokenInModal ||
-              tokenValidationState !== 'idle') && (
-              <div
-                className={classes.tokenHelper}
-                style={{ color: tokenHelperColor }}
-              >
-                {tokenValidationMessage ||
-                  (isUsingOrganizationCredentialInModal
-                    ? t('mcp.settings.usingAdminCredential')
-                    : t('mcp.settings.enterToken'))}
+          {editingServer?.auth === 'dcr' ? (
+            <>
+              <div className={classes.modalDescription}>
+                {t('mcp.settings.modalDescriptionDcr')}
               </div>
-            )}
-          </div>
-          <div className={classes.modalActions}>
-            <Button
-              key="save"
-              variant="primary"
-              onClick={() => void saveServerToken()}
-              isDisabled={
-                !canManageMcp ||
-                Boolean(isSaving[editingServer?.name ?? '']) ||
-                tokenValidationState === 'validating'
-              }
-              className={classes.modalActionButton}
-            >
-              {t('modal.save')}
-            </Button>
-            {canRemovePersonalToken && hasSavedTokenInModal && (
-              <Button
-                key="forget-token"
-                variant="plain"
-                onClick={removePersonalToken}
-                isDisabled={
-                  !canManageMcp ||
-                  Boolean(isSaving[editingServer?.name ?? '']) ||
-                  tokenValidationState === 'validating'
-                }
-                className={classes.forgetTokenButton}
-              >
-                {t('mcp.settings.removePersonalToken')}
-              </Button>
-            )}
-            <Button
-              key="cancel"
-              variant="link"
-              onClick={closeConfigureModal}
-              className={classes.modalCancelButton}
-            >
-              {t('common.cancel')}
-            </Button>
-          </div>
+              <div className={classes.modalActions}>
+                <Button
+                  key="close"
+                  variant="primary"
+                  onClick={closeConfigureModal}
+                  className={classes.modalActionButton}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={classes.modalDescription}>
+                {t('mcp.settings.modalDescription')}
+              </div>
+              <div className={classes.tokenRow}>
+                <TextField
+                  id="mcp-pat-input"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  value={tokenInputValue}
+                  onChange={event => onTokenInputChange(event.target.value)}
+                  className={`${classes.tokenInput} ${tokenInputStateClass}`}
+                  label={
+                    hasSavedTokenInModal
+                      ? t('mcp.settings.savedToken')
+                      : t('mcp.settings.personalAccessToken')
+                  }
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {tokenInputAdornment}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                {(isUsingOrganizationCredentialInModal ||
+                  !hasSavedTokenInModal ||
+                  tokenValidationState !== 'idle') && (
+                  <div
+                    className={classes.tokenHelper}
+                    style={{ color: tokenHelperColor }}
+                  >
+                    {tokenValidationMessage ||
+                      (isUsingOrganizationCredentialInModal
+                        ? t('mcp.settings.usingAdminCredential')
+                        : t('mcp.settings.enterToken'))}
+                  </div>
+                )}
+              </div>
+              <div className={classes.modalActions}>
+                <Button
+                  key="save"
+                  variant="primary"
+                  onClick={() => void saveServerToken()}
+                  isDisabled={
+                    !canManageMcp ||
+                    Boolean(isSaving[editingServer?.name ?? '']) ||
+                    tokenValidationState === 'validating'
+                  }
+                  className={classes.modalActionButton}
+                >
+                  {t('modal.save')}
+                </Button>
+                {canRemovePersonalToken && hasSavedTokenInModal && (
+                  <Button
+                    key="forget-token"
+                    variant="plain"
+                    onClick={removePersonalToken}
+                    isDisabled={
+                      !canManageMcp ||
+                      Boolean(isSaving[editingServer?.name ?? '']) ||
+                      tokenValidationState === 'validating'
+                    }
+                    className={classes.forgetTokenButton}
+                  >
+                    {t('mcp.settings.removePersonalToken')}
+                  </Button>
+                )}
+                <Button
+                  key="cancel"
+                  variant="link"
+                  onClick={closeConfigureModal}
+                  className={classes.modalCancelButton}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>

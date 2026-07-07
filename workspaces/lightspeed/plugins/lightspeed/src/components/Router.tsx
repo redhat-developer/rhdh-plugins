@@ -33,7 +33,8 @@ import { LightspeedPage } from './LightspeedPage';
 export const Router = () => {
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
-    configApi.getOptionalBoolean('lightspeed.notebooks.enabled') ?? false;
+    configApi.getOptionalBoolean('intelligent-assistant.notebooks.enabled') ??
+    false;
 
   return (
     <StylesProvider generateClassName={generateClassName}>

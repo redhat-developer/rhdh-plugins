@@ -59,7 +59,7 @@ describe('Notebooks Router', () => {
     const logger = mockServices.logger.mock();
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           servicePort: 7007,
           notebooks: {
             enabled: true,
@@ -342,7 +342,7 @@ describe('Notebooks Router', () => {
       const logger = mockServices.logger.mock();
       const config = mockServices.rootConfig({
         data: {
-          lightspeed: {
+          'intelligent-assistant': {
             servicePort: 7007,
             notebooks: {
               enabled: true,
@@ -467,6 +467,98 @@ describe('Notebooks Router', () => {
       await request(app).get(`/notebooks/v1/sessions/${sessionId}/documents`);
 
       expect(credentialsSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('rate limiting', () => {
+    let rateLimitedApp: express.Application;
+
+    beforeEach(async () => {
+      resetMockStorage();
+      VectorStoresOperator.resetInstance();
+      const logger = mockServices.logger.mock();
+      const config = mockServices.rootConfig({
+        data: {
+          'intelligent-assistant': {
+            servicePort: 7007,
+            rateLimit: {
+              expensive: { max: 1 },
+              general: { max: 1 },
+            },
+            notebooks: {
+              enabled: true,
+              queryDefaults: {
+                model: 'test-model',
+                provider_id: 'test-provider',
+              },
+              sessionDefaults: {
+                provider_id: 'test-notebooks',
+                embedding_model: 'test-embedding-model',
+                embedding_dimension: 768,
+              },
+            },
+          },
+        },
+      });
+
+      const rateLimitedHttpAuth = mockServices.httpAuth();
+      const userInfo = mockServices.userInfo.mock({
+        getUserInfo: async () => ({
+          userEntityRef: mockUserId,
+          ownershipEntityRefs: [mockUserId],
+        }),
+      });
+      const permissions = mockServices.permissions.mock({
+        authorize: async () => [{ result: AuthorizeResult.ALLOW }],
+      });
+
+      const router = await createNotebooksRouter({
+        logger,
+        config,
+        httpAuth: rateLimitedHttpAuth,
+        userInfo,
+        permissions,
+      });
+
+      rateLimitedApp = express();
+      rateLimitedApp.use(router);
+    });
+
+    it('returns 429 on expensive query endpoint when limit exceeded', async () => {
+      const sessionRes = await request(rateLimitedApp)
+        .post('/notebooks/v1/sessions')
+        .send({ name: 'Rate Limit Test' });
+      const sessionId = sessionRes.body.session.session_id;
+
+      const first = await request(rateLimitedApp)
+        .post(`/notebooks/v1/sessions/${sessionId}/query`)
+        .send({ query: 'What is this about?' });
+      const second = await request(rateLimitedApp)
+        .post(`/notebooks/v1/sessions/${sessionId}/query`)
+        .send({ query: 'Another question?' });
+
+      expect(first.status).not.toBe(429);
+      expect(second.status).toBe(429);
+      expect(second.headers['retry-after']).toBeDefined();
+      expect(second.body.error.name).toBe('RateLimitExceeded');
+    });
+
+    it('returns 429 on general endpoint when limit exceeded', async () => {
+      const first = await request(rateLimitedApp).get('/notebooks/v1/sessions');
+      const second = await request(rateLimitedApp).get(
+        '/notebooks/v1/sessions',
+      );
+
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(429);
+    });
+
+    it('does not rate limit health endpoint', async () => {
+      const first = await request(rateLimitedApp).get('/notebooks/health');
+      const second = await request(rateLimitedApp).get('/notebooks/health');
+
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
     });
   });
 });
