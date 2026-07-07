@@ -83,6 +83,7 @@ export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
         id: 'provider',
         label: t('catalog.table.provider'),
         cell: item => <CellText title={item.provider} />,
+        isSortable: true,
       },
       {
         id: 'description',

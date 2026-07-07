@@ -40,7 +40,10 @@ export const AdoptionCard = () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       },
-      () => {},
+      () => {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to copy to clipboard');
+      },
     );
   }, [command]);
 

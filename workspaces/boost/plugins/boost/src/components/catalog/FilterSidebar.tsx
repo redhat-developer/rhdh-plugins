@@ -45,7 +45,7 @@ function uniqueOptions(
     if (item) set.add(item);
   }
   return Array.from(set)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .map(v => ({ id: v, label: v }));
 }
 

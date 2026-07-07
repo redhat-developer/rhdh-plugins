@@ -103,6 +103,9 @@ export function useUrlFilters(): UrlFilterState & UrlFilterActions {
   }, [rawSearch]);
 
   useEffect(() => {
+    if (searchInputValue === lastWrittenSearchRef.current) {
+      return undefined;
+    }
     timerRef.current = setTimeout(() => {
       setDebouncedSearch(searchInputValue);
       lastWrittenSearchRef.current = searchInputValue;
