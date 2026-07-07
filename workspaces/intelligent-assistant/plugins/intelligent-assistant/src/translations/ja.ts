@@ -125,7 +125,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'lcore.notConfigured.title': 'LLM に接続して始める',
     'mcp.settings.closeAriaLabel': 'MCP 設定を閉じる',
     'mcp.settings.closeConfigureModalAriaLabel': '設定モーダルを閉じる',
-    'mcp.settings.configureServerTitle': '{{serverName}} サーバーを設定',
+    'mcp.settings.configureServerTitle': '{{serverName}} MCP サーバー設定',
     'mcp.settings.edit': '編集',
     'mcp.settings.editServerAriaLabel': '{{serverName}} を編集',
     'mcp.settings.enabled': '有効',

@@ -349,10 +349,22 @@ export const intelligentAssistantMessages = {
     'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
   'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
   'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
-  'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
+  'mcp.settings.configureServerTitle': '{{serverName}} MCP server settings',
   'mcp.settings.closeConfigureModalAriaLabel': 'Close configure modal',
   'mcp.settings.modalDescription':
-    'Credentials are encrypted at rest and scoped to your profile. The intelligent assistant will operate with your exact permissions.',
+    'Credentials are encrypted and operations use your exact permissions.',
+  'mcp.settings.authenticationToken': 'Authentication token',
+  'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
+  'mcp.settings.modal.loadingTools': 'Loading tools...',
+  'mcp.settings.modal.loadingStatus': 'Disconnecting...',
+  'mcp.settings.modal.tokenRemovedWarning':
+    'Token has been removed. To use this MCP server again, provide a new token.',
+  'mcp.settings.modal.noToolsAvailable': 'No tools available.',
+  'mcp.settings.modal.toolsLoadFailed': 'Failed to load tools.',
+  'mcp.settings.modal.enabledDescription':
+    'This server is active and available in chat.',
+  'mcp.settings.modal.enabledDescriptionOff':
+    'This server is disabled and unavailable in chat.',
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
   'mcp.settings.usingAdminCredential':

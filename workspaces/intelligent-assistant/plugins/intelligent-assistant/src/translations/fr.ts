@@ -129,7 +129,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.closeAriaLabel': 'Fermer les paramètres MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Fermer la fenêtre de configuration',
-    'mcp.settings.configureServerTitle': 'Configurer le serveur {{serverName}}',
+    'mcp.settings.configureServerTitle':
+      '{{serverName}} — paramètres du serveur MCP',
     'mcp.settings.edit': 'Modifier',
     'mcp.settings.editServerAriaLabel': 'Modifier {{serverName}}',
     'mcp.settings.enabled': 'Activé',
