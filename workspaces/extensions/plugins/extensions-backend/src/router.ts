@@ -61,11 +61,15 @@ import {
  * Throws InputError when neither field is a boolean.
  */
 function resolveEnabledField(body: Record<string, unknown>): boolean {
-  const hasEnabled = typeof body.enabled === 'boolean';
-  const hasDisabled = typeof body.disabled === 'boolean';
-
-  if (hasEnabled) return body.enabled as boolean;
-  if (hasDisabled) return !(body.disabled as boolean);
+  if (body.enabled !== undefined) {
+    if (typeof body.enabled !== 'boolean') {
+      throw new InputError("'enabled' must be a boolean");
+    }
+    return body.enabled;
+  }
+  if (typeof body.disabled === 'boolean') {
+    return !body.disabled;
+  }
   throw new InputError("'enabled' must be a present boolean");
 }
 
