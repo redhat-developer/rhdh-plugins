@@ -247,9 +247,9 @@ export function mcpConfigureModalMessage(
   page: Page,
   exactText: string,
 ): Locator {
-  return mcpCredentialConfigureModal(page).getByText(exactText, {
-    exact: true,
-  });
+  // PatternFly HelperTextItem appends ": error status;" for error variants; validation
+  // errors may also appear in the tools section. Substring match + first() avoids both.
+  return mcpCredentialConfigureModal(page).getByText(exactText).first();
 }
 
 /**
