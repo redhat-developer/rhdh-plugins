@@ -56,21 +56,23 @@ export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
       return undefined;
     }
 
-    const widgetsByName = new Map<string, HomePageCardConfig>();
+    const widgetsByRef = new Map<string, HomePageCardConfig>();
     for (const widget of widgets) {
-      if (widget.name) {
-        widgetsByName.set(widget.name, widget);
+      const extensionId = widget.node?.spec?.id ?? '';
+      const refName = extensionId.split('/').pop() ?? '';
+      if (refName) {
+        widgetsByRef.set(refName, widget);
       }
     }
 
     const result: HomePageCardConfig[] = [];
     for (const defaultWidget of defaultWidgets) {
-      const widget = widgetsByName.get(defaultWidget.ref);
+      const widget = widgetsByRef.get(defaultWidget.ref);
       if (!widget) {
         // eslint-disable-next-line no-console
         console.warn(
           `Homepage default widget has invalid ref "${defaultWidget.ref}". ` +
-            `No matching NFS widget found. Available widgets: ${[...widgetsByName.keys()].join(', ')}`,
+            `No matching NFS widget found. Available widgets: ${[...widgetsByRef.keys()].join(', ')}`,
         );
         continue;
       }
