@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-import { Content, EmptyState, Page } from '@backstage/core-components';
+import { useMemo } from 'react';
+
+import {
+  Content,
+  EmptyState,
+  Page,
+  Progress,
+} from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDefaultWidgets } from '../../hooks/useDefaultWidgets';
 import { HeaderProps, Header } from '../../components/Header';
 import { HomePageStylesProvider } from '../../components/HomePageStylesProvider';
 import { ReadOnlyGridLayout } from './ReadOnlyGirdLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
 import { HomePageCardConfig } from '../../types';
+import type { Breakpoint, Layout } from '../../types';
 
 /**
  * Props for the NFS home page layout component.
@@ -33,15 +42,65 @@ export interface HomePageProps extends HeaderProps {
 
 /**
  * NFS home page layout that renders widgets in a read-only or customizable grid.
- * Used by the dynamic-homepage-layout extension.
+ * Loads persona-based default widgets from the homepage-backend and merges them
+ * with extension-provided widgets.
  *
  * @alpha
  */
 export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
   const { t } = useTranslation();
+  const { defaultWidgets, loading } = useDefaultWidgets();
+
+  const mergedWidgets = useMemo((): HomePageCardConfig[] | undefined => {
+    if (!defaultWidgets) {
+      return undefined;
+    }
+
+    const widgetsByName = new Map<string, HomePageCardConfig>();
+    for (const widget of widgets) {
+      if (widget.name) {
+        widgetsByName.set(widget.name, widget);
+      }
+    }
+
+    const result: HomePageCardConfig[] = [];
+    for (const defaultWidget of defaultWidgets) {
+      const widget = widgetsByName.get(defaultWidget.ref);
+      if (!widget) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Homepage default widget has invalid ref "${defaultWidget.ref}". ` +
+            `No matching NFS widget found. Available widgets: ${[...widgetsByName.keys()].join(', ')}`,
+        );
+        continue;
+      }
+
+      const widgetLayout = defaultWidget.layout as
+        | Record<string, { x?: number; y?: number; w?: number; h?: number }>
+        | undefined;
+
+      result.push({
+        ...widget,
+        breakpointLayouts: widgetLayout as
+          | Record<Breakpoint, Layout>
+          | undefined,
+      });
+    }
+    return result;
+  }, [defaultWidgets, widgets]);
 
   let content: React.ReactNode;
-  if (widgets.length === 0) {
+  if (loading) {
+    content = <Progress />;
+  } else if (mergedWidgets) {
+    if (mergedWidgets.length === 0) {
+      content = <EmptyState title={t('homePage.empty')} missing="content" />;
+    } else if (customizable) {
+      content = <CustomizableGridLayout homepageCards={mergedWidgets} />;
+    } else {
+      content = <ReadOnlyGridLayout homepageCards={mergedWidgets} />;
+    }
+  } else if (widgets.length === 0) {
     content = <EmptyState title={t('homePage.empty')} missing="content" />;
   } else if (customizable) {
     content = <CustomizableGridLayout homepageCards={widgets} />;
