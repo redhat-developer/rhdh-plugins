@@ -29,8 +29,8 @@ import type { Entity } from '@backstage/catalog-model';
  * | Tools        | Resource    | ai-tool        |
  * | Vector Stores| Resource    | vector-store   |
  *
- * This map is the single source of truth used by both `isAiAsset`
- * and `buildCatalogFilter` in useAiAssets.ts. Keep them in sync.
+ * This map is the single source of truth used by `isAiAsset`
+ * and `buildCatalogFilter`.
  */
 export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
   airesource: new Set(['skill', 'rule']),
@@ -55,4 +55,15 @@ export function isAiAsset(entity: Entity): boolean {
   if (!specType) return false;
   const allowed = AI_ASSET_SPEC_TYPES[kind];
   return allowed !== undefined && allowed.has(specType.toLowerCase());
+}
+
+/**
+ * Builds the static catalog filter for all AI asset kind/type pairs.
+ * Returns an OR query (array of filter objects) for catalogApi.getEntities.
+ */
+export function buildCatalogFilter(): Record<string, string | string[]>[] {
+  return Object.entries(AI_ASSET_SPEC_TYPES).map(([kind, types]) => ({
+    kind,
+    'spec.type': [...types],
+  }));
 }
