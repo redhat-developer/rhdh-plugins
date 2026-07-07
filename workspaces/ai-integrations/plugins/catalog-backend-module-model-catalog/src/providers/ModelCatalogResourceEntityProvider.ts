@@ -27,7 +27,6 @@ import {
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
-  Entity,
 } from '@backstage/catalog-model';
 
 import {
@@ -181,17 +180,21 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
     }
-    let entityList: Entity[] = [];
     this.logger.debug(`Found ${catalogKeys.length} model catalogs`);
     this.logger.debug(`Fetched ModelCatalog: ${JSON.stringify(catalogKeys)}`);
 
-    await Promise.all(
-      catalogKeys.map(async key => {
-        const catalog = await fetchModelCatalogFromKey(url, key, backendToken);
-        const catalogEntities = GenerateCatalogEntities(catalog, url);
-        entityList = entityList.concat(catalogEntities);
-      }),
-    );
+    const entityList = (
+      await Promise.all(
+        catalogKeys.map(async key => {
+          const catalog = await fetchModelCatalogFromKey(
+            url,
+            key,
+            backendToken,
+          );
+          return GenerateCatalogEntities(catalog, url);
+        }),
+      )
+    ).flat();
 
     entityList.forEach(entity => {
       if (entity.metadata.annotations === undefined) {
