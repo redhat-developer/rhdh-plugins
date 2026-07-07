@@ -27,6 +27,7 @@ import {
   fromWorkflowSource,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
+  WorkflowAvailabilityResponse,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
@@ -118,11 +119,24 @@ export class SonataFlowService {
       return [];
     }
 
-    // Can reuse the instances to get the stats
+    const statsDefinitionIds = workflowInfos.map(info => info.id);
+    const instancesFilter: Filter | undefined = targetEntity
+      ? {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        }
+      : undefined;
+
+    // Fetch instances by workflow definition id. Do not reuse the overview
+    // filter here: entity overview passes `id IN [workflowIds]`, which applies
+    // to definitions but would match instance ids when querying instances.
     const instances = await this.dataIndexService.fetchInstances({
-      definitionIds,
-      pagination,
-      filter,
+      definitionIds: statsDefinitionIds,
+      filter: instancesFilter,
     });
 
     // This will have all the workflows, so we need to group by workflow id
@@ -187,6 +201,7 @@ export class SonataFlowService {
             successCount: stats.successCount,
             errorCount: stats.errorCount,
             totalCount: stats.totalCount,
+            averageTimeToComplete: stats.averageTimeToComplete,
           };
         }
         return overview;
@@ -450,6 +465,7 @@ export class SonataFlowService {
           successCount: stats.successCount,
           errorCount: stats.errorCount,
           totalCount: stats.totalCount,
+          averageTimeToComplete: stats.averageTimeToComplete,
         };
       }
     }
@@ -496,7 +512,7 @@ export class SonataFlowService {
   public async pingWorkflowService(args: {
     definitionId: string;
     serviceUrl: string;
-  }): Promise<boolean> {
+  }): Promise<WorkflowAvailabilityResponse> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
     let response: Response | undefined;
     try {
@@ -505,9 +521,19 @@ export class SonataFlowService {
       this.logger.error(
         `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
       );
-      return false;
+      return {
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      };
     }
-    return response.ok;
+    return {
+      isAvailable: response.ok,
+      statusCode: response.status || 500,
+      urlToFetch,
+      reason: response.statusText || 'Unknown reason',
+    };
   }
 
   private async handleWorkflowServiceResponse(

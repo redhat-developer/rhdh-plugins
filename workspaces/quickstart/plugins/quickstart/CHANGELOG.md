@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.10.0
+
+### Minor Changes
+
+- 8479da8: Rebrand Lightspeed quickstart steps to Intelligent Assistant: replace custom SVG icon with PatternFly RhUiAiChatbotIcon, update all English and localized i18n strings, and add test coverage for the Lightspeed icon.
+
 ## 1.9.7
 
 ### Patch Changes

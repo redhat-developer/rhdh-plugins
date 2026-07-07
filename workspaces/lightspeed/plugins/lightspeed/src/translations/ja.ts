@@ -36,7 +36,6 @@ const lightspeedTranslationJa = createTranslationMessages({
     'aria.scroll.up': '一番上に戻る',
     'aria.search.placeholder': '検索',
     'aria.searchPreviousConversations': '以前の会話の検索',
-    'aria.settings.label': 'チャットボットのオプション',
     'attach.menu.description': 'JSON、YAML、または TXT ファイルを添付',
     'attach.menu.title': '添付',
     'button.newChat': '新しいチャット',
@@ -134,6 +133,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'mcp.settings.loading': 'MCP サーバーを読み込み中...',
     'mcp.settings.modalDescription':
       '認証情報は保存時に暗号化され、あなたのプロファイルに限定されます。インテリジェントアシスタントはあなたの権限で動作します。',
+    'mcp.settings.modalDescriptionDcr':
+      'このサーバーは Dynamic Client Registration (DCR) を使用しています。トークンはあなたの Backstage ID を使用して自動的に発行されるため、手動でのトークン入力は不要です。',
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',
@@ -339,7 +340,6 @@ const lightspeedTranslationJa = createTranslationMessages({
     'tooltip.quickNewChat': '新しいチャット',
     'tooltip.responseRecorded': '回答が記録されました',
     'tooltip.send': '送信',
-    'tooltip.settings': 'チャットボットのオプション',
     'user.guest': 'ゲスト',
     'user.loading': '...',
   },

@@ -1,5 +1,37 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.9.0
+
+### Minor Changes
+
+- 2fd75ad: Improve Orchestrator UI for workflows, runs, and workflow details, and place the sidebar item under Administration.
+
+### Patch Changes
+
+- 1dde4e4: Remove the retrigger dropdown menu for aborted workflow runs.
+- 1e4f9ed: Fix the workflows list when RBAC restricts read access to specific workflows.
+- 06755cb: Use instance `totalCount` from the API for the All runs tab title and pagination instead of the current page size.
+- e2df0a3: Show unavailable workflow error details in tooltips and disable run actions when a workflow is not available.
+- de71949: Add frontend unit test coverage for orchestrator hooks and status components, and harden the status indicator fallback for unknown states.
+- Updated dependencies [19f7643]
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.2
+
+## 5.8.1
+
+### Patch Changes
+
+- 870f011: Fix boolean workflow inputs and outputs displaying as emoji checkmarks on the workflow instance page; show `true` and `false` instead.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.1
+
 ## 5.8.0
 
 ### Minor Changes

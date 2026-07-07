@@ -51,7 +51,7 @@ describe('DocumentService', () => {
     resetMockStorage();
     const config = mockServices.rootConfig({
       data: {
-        lightspeed: {
+        'intelligent-assistant': {
           notebooks: {
             sessionDefaults: {
               provider_id: 'test-notebooks',

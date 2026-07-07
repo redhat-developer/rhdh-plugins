@@ -15,8 +15,17 @@
  */
 
 /**
+ * Common types and utilities for the boost plugin.
+ *
+ * @packageDocumentation
+ */
+
+/**
  * The plugin ID for the boost plugin.
  *
  * @public
  */
 export const BOOST_PLUGIN_ID = 'boost';
+
+export * from './types';
+export * from './permissions';

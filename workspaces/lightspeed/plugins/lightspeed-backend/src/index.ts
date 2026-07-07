@@ -19,6 +19,7 @@ export * from './service/router';
 
 export type { RouterOptions } from './service/types';
 export type {
+  McpServerAuth,
   McpServerResponse,
   McpServerStatus,
   McpToolInfo,

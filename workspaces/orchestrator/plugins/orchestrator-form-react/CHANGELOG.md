@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.9.2
+
+### Patch Changes
+
+- 19f7643: Clear async validation errors when the user edits a workflow form field after clicking Next. Only the changed field's error is removed; other field errors remain until that field is edited or the step is validated again. Also handle empty or non-JSON validation responses without breaking the form.
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.2
+
+## 2.9.1
+
+### Patch Changes
+
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.1
+
 ## 2.9.0
 
 ### Minor Changes

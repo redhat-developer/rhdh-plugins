@@ -48,7 +48,7 @@ The frontend detects provider changes and performs a full state reset.
 
 ### Requirement: Capability-Driven Rendering Replaces Provider ID Checks
 
-Frontend layout decisions must use the `ProviderCapabilities` interface, not provider identity strings.
+Frontend layout decisions MUST use the `ProviderCapabilities` interface, not provider identity strings.
 
 #### Scenario: Layout adapts via capabilities not provider ID
 

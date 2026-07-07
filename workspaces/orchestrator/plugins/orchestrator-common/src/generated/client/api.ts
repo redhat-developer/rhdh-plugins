@@ -498,6 +498,12 @@ export interface ProcessInstanceErrorDTO {
  */
 export interface ProcessInstanceListResultDTO {
     /**
+     * Total number of process instances matching the filter
+     * @type {number}
+     * @memberof ProcessInstanceListResultDTO
+     */
+    'totalCount'?: number;
+    /**
      * 
      * @type {Array<ProcessInstanceDTO>}
      * @memberof ProcessInstanceListResultDTO
@@ -559,6 +565,37 @@ export interface SearchRequest {
      * @memberof SearchRequest
      */
     'paginationInfo'?: PaginationInfoDTO;
+}
+/**
+ * 
+ * @export
+ * @interface WorkflowAvailabilityResponseDTO
+ */
+export interface WorkflowAvailabilityResponseDTO {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'statusCode'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'urlToFetch'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'reason'?: string;
 }
 /**
  * 
@@ -718,6 +755,12 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {WorkflowAvailabilityResponseDTO}
+     * @memberof WorkflowOverviewDTO
+     */
+    'availability'?: WorkflowAvailabilityResponseDTO;
     /**
      * Workflow definition version
      * @type {string}
@@ -943,6 +986,12 @@ export interface WorkflowRunStatsDTO {
      * @memberof WorkflowRunStatsDTO
      */
     'totalCount'?: number;
+    /**
+     * Average time to complete a workflow run in milliseconds
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'averageTimeToComplete'?: number;
 }
 /**
  * 

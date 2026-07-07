@@ -143,6 +143,20 @@ copy_changed_files() {
     changed_files+=("$file")
   done < <(git diff --name-only)
 
+  # Check for gitignored files that x2a created
+  local ignored_files=()
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    ignored_files+=("$file")
+  done < <(git ls-files --others --ignored --exclude-standard)
+
+  if [[ ${#ignored_files[@]} -gt 0 ]]; then
+    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a but blocked by .gitignore:"
+    for file in "${ignored_files[@]}"; do
+      echo "    - $file"
+    done
+  fi
+
   if [[ ${#changed_files[@]} -eq 0 ]]; then
     echo "  No changed files detected"
     popd > /dev/null

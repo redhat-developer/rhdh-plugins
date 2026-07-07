@@ -25,17 +25,83 @@ backend.add(
 backend.start();
 ```
 
+### Migration from `lightspeed` to `intelligent-assistant`
+
+If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed:
+
+**Configuration** — rename the top-level key in `app-config.yaml`:
+
+| Before        | After                    |
+| ------------- | ------------------------ |
+| `lightspeed:` | `intelligent-assistant:` |
+
+All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebooks`, etc.) remain the same.
+
+**RBAC policies** — update permission names in your `rbac-policy.csv`:
+
+| Before                     | After                                 |
+| -------------------------- | ------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat.read`     |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.create`   |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat.delete`   |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`   |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
+
+> **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
+
 ### Plugin Configurations
 
 Add the following lightspeed configurations into your `app-config.yaml` file:
 
 ```yaml
-lightspeed:
+intelligent-assistant:
   servicePort: <portNumber> # Optional - Change the LS service port number. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
+  prompts: # Optional - Custom prompts displayed to users in the chat UI
+    - title: <prompt_title>
+      message: <prompt_message>
   mcpServers: # Optional - one or more MCP servers
     - name: <mcp server name> # must match the name configured in LCS
       token: ${MCP_TOKEN}
+  rateLimit: # Optional - per-user request rate limits (defaults apply if omitted)
+    expensive:
+      max: 25 # Max requests per minute per user for expensive endpoints (default: 25). Set to 0 to disable.
+    general:
+      max: 200 # Max requests per minute per user for other authenticated endpoints (default: 200). Set to 0 to disable.
+```
+
+#### Rate limiting
+
+The backend applies per-user rate limits to authenticated endpoints as an abuse
+prevention measure. Limits are keyed by the authenticated user's entity ref and
+use a fixed 1-minute window.
+
+**Tiers**:
+
+- **Expensive** (default: 25 requests/minute per user): `POST /v1/query`, and
+  (when Notebooks is enabled) notebook document uploads and RAG queries.
+- **General** (default: 200 requests/minute per user): all other authenticated
+  endpoints, including conversation listing, MCP server management, feedback,
+  and notebook session CRUD.
+- **Excluded**: `/health` and `/notebooks/health` are not rate limited.
+
+When a limit is exceeded, the API returns `429 Too Many Requests` with a
+`Retry-After` header and a JSON error body (`RateLimitExceeded`).
+
+Set `max: 0` on a tier to disable rate limiting for that tier. If the entire
+`rateLimit` block is omitted, the defaults above apply.
+
+**Example** — tighter limits for a small deployment:
+
+```yaml
+intelligent-assistant:
+  rateLimit:
+    expensive:
+      max: 10
+    general:
+      max: 100
 ```
 
 #### MCP servers settings endpoints
@@ -63,9 +129,17 @@ The Lightspeed Backend plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, lightspeed.chat.read, read, allow
-p, role:default/team_a, lightspeed.chat.create, create, allow
-p, role:default/team_a, lightspeed.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.read, read, allow
+p, role:default/team_a, intelligent-assistant.chat.create, create, allow
+p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
+p, role:default/team_a, intelligent-assistant.chat.update, update, allow
+
+# Required for Notebooks feature (if enabled)
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+
+# Required for MCP server management (if configured)
+p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
+p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -101,7 +175,7 @@ For Llama Stack setup and configuration, refer to the [Llama Stack documentation
 To enable Notebooks, add the following configuration to your `app-config.yaml`:
 
 ```yaml
-lightspeed:
+intelligent-assistant:
   servicePort: 8080 # Optional: Lightspeed Core service port (default: 8080)
 
   notebooks:
@@ -125,7 +199,7 @@ lightspeed:
 
 **Core Settings**:
 
-- **`lightspeed.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://{DEFAULT_LIGHTSPEED_SERVICE_HOST}:{servicePort}` to proxy vector store operations. The host is defined by the `DEFAULT_LIGHTSPEED_SERVICE_HOST` constant in the source.
+- **`intelligent-assistant.servicePort`** _(optional)_: Port where Lightspeed Core service is running (default: `8080`). The backend connects to Lightspeed Core at `http://{DEFAULT_LIGHTSPEED_SERVICE_HOST}:{servicePort}` to proxy vector store operations. The host is defined by the `DEFAULT_LIGHTSPEED_SERVICE_HOST` constant in the source.
 
 **Notebooks Settings**:
 
@@ -177,7 +251,7 @@ When enabled, Notebooks exposes the following REST API endpoints:
 **Notes**:
 
 - All endpoints require authentication (user context is automatically provided by Backstage)
-- All `/v1/*` endpoints require the `lightspeed.notebooks.use` permission
+- All `/v1/*` endpoints require the `intelligent-assistant.notebooks.use` permission
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
@@ -186,9 +260,9 @@ When enabled, Notebooks exposes the following REST API endpoints:
 When RBAC is enabled, users need the following permission to use Notebooks:
 
 ```CSV
-p, role:default/team_a, lightspeed.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 ```
 
-Add this to your `rbac-policy.csv` file along with the existing lightspeed permissions.
+Add this to your `rbac-policy.csv` file along with the existing intelligent-assistant permissions.

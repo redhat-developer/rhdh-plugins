@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 import {
   InfoCard,
@@ -23,7 +23,26 @@ import {
   StructuredMetadataTable,
 } from '@backstage/core-components';
 
+import { makeStyles } from 'tss-react/mui';
+
 import { useTranslation } from '../../hooks/useTranslation';
+import { formatMetadataForDisplay } from '../../utils/formatMetadataForDisplay';
+
+const useStyles = makeStyles()(() => ({
+  metadataTable: {
+    minWidth: 0,
+    maxWidth: '100%',
+    overflowX: 'auto',
+    '& table': {
+      tableLayout: 'fixed',
+      width: '100%',
+    },
+    '& td': {
+      wordBreak: 'break-word',
+      whiteSpace: 'normal',
+    },
+  },
+}));
 
 export const WorkflowInputs: FC<{
   className: string;
@@ -33,7 +52,12 @@ export const WorkflowInputs: FC<{
   cardClassName: string;
 }> = ({ className, value, loading, responseError, cardClassName }) => {
   const { t } = useTranslation();
+  const { classes } = useStyles();
   const inputs = value?.data;
+  const displayInputs = useMemo(
+    () => (inputs ? formatMetadataForDisplay(inputs) : inputs),
+    [inputs],
+  );
   return (
     <InfoCard
       title={t('run.inputs')}
@@ -52,8 +76,10 @@ export const WorkflowInputs: FC<{
         <ResponseErrorPanel error={responseError} />
       )}
 
-      {!loading && !responseError && inputs && (
-        <StructuredMetadataTable dense metadata={inputs} />
+      {!loading && !responseError && displayInputs && (
+        <div className={classes.metadataTable}>
+          <StructuredMetadataTable dense metadata={displayInputs} />
+        </div>
       )}
     </InfoCard>
   );

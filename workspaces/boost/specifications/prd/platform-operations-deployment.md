@@ -71,6 +71,8 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 | `boost-backend`                   | Backend plugin  | Core routes, services, middleware, `ProviderManager`, cross-cutting entity providers (MCP, vector stores)     |
 | `boost-backend-module-llamastack` | Backend module  | Llama Stack agentic provider (composes `llamastack-entity-provider`)                                          |
 | `boost-backend-module-kagenti`    | Backend module  | Kagenti agentic provider (composes `kagenti-entity-provider`)                                                 |
+| `boost-responses-api-toolkit`     | Node library    | Shared Responses API request/response utilities (minimal Backstage deps)                                      |
+| `boost-toolscope`                 | Node library    | Standalone tool-scope management (zero Backstage deps, injectable `CacheAdapter`)                             |
 | `llamastack-entity-provider`      | Backend service | Llama Stack model + agent catalog entities (independently deployable)                                         |
 | `kagenti-entity-provider`         | Backend service | Kagenti agent + tool catalog entities (independently deployable)                                              |
 
@@ -186,7 +188,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 - **Token and Turn Caps:** Maximum output tokens, tool calls per turn, agent turns
 - **Chat Experience:** Featured agents, conversation starters (Kagenti)
 - **Appearance:** Logo, colors, theme presets
-- **Kagenti Auth:** Token exchange configuration (`tokenExchange.enabled`, `audience`, `userTokenHeader`)
+- **Kagenti Auth:** Keycloak service-account configuration (`tokenEndpoint`, `clientId`, `clientSecret`, `tokenExpiryBufferSeconds`)
 - **DevSpaces:** Workspace configuration (credentials must be stored encrypted, not plaintext)
 
 **Admin onboarding:** `AdminOnboardingCard` provides guided setup steps on first admin visit.
@@ -290,9 +292,9 @@ Sources (GitHub, URL, File Upload)
 
 ## Customer Context
 
-Derived from the Citi engagement. Architecture principle: "Runtime-configurable. All configuration changes take effect without restart or redeployment."
+Derived from early enterprise engagement experience. Architecture principle: "Runtime-configurable. All configuration changes take effect without restart or redeployment."
 
-Citi's vision was for the portal to present as their own product ("Cloud Concierge"), not as a Red Hat product. White-labeling is foundational to the engagement, not cosmetic.
+The customer's vision was for the portal to present as their own product, not as a Red Hat product. White-labeling is foundational to the engagement, not cosmetic.
 
 Success outcomes addressed:
 

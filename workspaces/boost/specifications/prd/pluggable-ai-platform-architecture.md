@@ -214,7 +214,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 | RuntimeConfigResolver              | `services/RuntimeConfigResolver.ts`                             | 30s                 | P0       | Immediate invalidation on write via `cache.delete()` |
 | ResponsesApiProvider.\_modelsCache | `providers/llamastack/ResponsesApiProvider.ts`                  | Match Kagenti       | P1       | Eliminates model cache asymmetry                     |
 | McpAuthService tokens              | `providers/llamastack/auth/McpAuthService.ts`                   | From token expiry   | P1       | Security-sensitive                                   |
-| KeycloakTokenManager               | `providers/kagenti/client/KeycloakTokenManager.ts`              | From token expiry   | P1       | Security-sensitive                                   |
+| KeycloakAuthClient                 | `boost-node/src/KeycloakAuthClient.ts`                          | From token expiry   | P1       | Security-sensitive                                   |
 | BackendToolExecutor                | `providers/responses-api/tools/BackendToolExecutor.ts`          | 5 min               | P1       | Add max size limit                                   |
 | ConversationRegistry               | `providers/responses-api/conversations/ConversationRegistry.ts` | 24h                 | P1       | Replaces unbounded Map                               |
 | DocumentSyncService                | `providers/responses-api/documents/DocumentSyncService.ts`      | No expiry           | P2       | Content hash tracking                                |
@@ -333,6 +333,6 @@ ChatInput → BoostApiClient → POST /chat/stream
 
 ## Customer Context
 
-Derived from the Citi engagement. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
+Derived from early enterprise engagement experience. Key architecture principle: "Provider-agnostic. Multiple AI backends supported through a pluggable provider interface. No lock-in to any model serving platform or agent framework."
 
-Citi runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.
+The customer runs their own AI infrastructure and needs to switch between providers as their AI strategy evolves. The pluggable architecture ensures Boost is the stable surface while backends change underneath.

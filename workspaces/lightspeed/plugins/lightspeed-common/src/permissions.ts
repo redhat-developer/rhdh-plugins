@@ -20,7 +20,7 @@ import { createPermission } from '@backstage/plugin-permission-common';
  * @public
  */
 export const lightspeedChatReadPermission = createPermission({
-  name: 'lightspeed.chat.read',
+  name: 'intelligent-assistant.chat.read',
   attributes: {
     action: 'read',
   },
@@ -30,7 +30,7 @@ export const lightspeedChatReadPermission = createPermission({
  * @public
  */
 export const lightspeedChatCreatePermission = createPermission({
-  name: 'lightspeed.chat.create',
+  name: 'intelligent-assistant.chat.create',
   attributes: {
     action: 'create',
   },
@@ -40,7 +40,7 @@ export const lightspeedChatCreatePermission = createPermission({
  * @public
  */
 export const lightspeedChatDeletePermission = createPermission({
-  name: 'lightspeed.chat.delete',
+  name: 'intelligent-assistant.chat.delete',
   attributes: {
     action: 'delete',
   },
@@ -50,7 +50,7 @@ export const lightspeedChatDeletePermission = createPermission({
  * @public
  */
 export const lightspeedChatUpdatePermission = createPermission({
-  name: 'lightspeed.chat.update',
+  name: 'intelligent-assistant.chat.update',
   attributes: {
     action: 'update',
   },
@@ -60,7 +60,7 @@ export const lightspeedChatUpdatePermission = createPermission({
  * @public
  */
 export const lightspeedMcpReadPermission = createPermission({
-  name: 'lightspeed.mcp.read',
+  name: 'intelligent-assistant.mcp.read',
   attributes: {
     action: 'read',
   },
@@ -70,7 +70,7 @@ export const lightspeedMcpReadPermission = createPermission({
  * @public
  */
 export const lightspeedMcpManagePermission = createPermission({
-  name: 'lightspeed.mcp.manage',
+  name: 'intelligent-assistant.mcp.manage',
   attributes: {
     action: 'update',
   },
@@ -80,7 +80,7 @@ export const lightspeedMcpManagePermission = createPermission({
  * @public
  */
 export const lightspeedNotebooksUsePermission = createPermission({
-  name: 'lightspeed.notebooks.use',
+  name: 'intelligent-assistant.notebooks.use',
   attributes: {
     action: 'update',
   },

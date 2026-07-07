@@ -13,7 +13,8 @@ The `AgenticProvider` interface defines the contract between Boost and any AI pl
 #### Scenario: Provider implements required capabilities
 
 - **WHEN** a provider is registered with `boostProviderExtensionPoint`
-- **THEN** it must implement `chat()` and `chatStream()` methods
+- **THEN** it must implement `chat(messages, options?)` and `chatStream(messages, options?)` methods
+- **AND** `options` is an optional `ChatOptions` object with `userRef?: string` for user identity audit
 - **AND** it must provide a `ProviderDescriptor` declaring its ID, name, and supported capabilities
 
 #### Scenario: Provider declares optional capabilities
@@ -42,7 +43,7 @@ Providers register via a Backstage extension point, requiring zero Boost source 
 
 ### Requirement: AI Provider Service Ref for Cross-Plugin Consumption
 
-Other Backstage plugins must be able to consume the active AI provider via Backstage's dependency injection, not just register providers.
+Other Backstage plugins MUST be able to consume the active AI provider via Backstage's dependency injection, not just register providers.
 
 #### Scenario: External plugin consumes active AI provider
 
@@ -61,7 +62,7 @@ Other Backstage plugins must be able to consume the active AI provider via Backs
 
 ### Requirement: Shared Types in Common Package
 
-Provider interfaces and conversation types must live in the common package so both frontend and backend can consume them without circular dependencies.
+Provider interfaces and conversation types MUST live in the common package so both frontend and backend can consume them without circular dependencies.
 
 #### Scenario: AgenticProvider types moved to common
 

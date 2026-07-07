@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.8.3
+
+### Patch Changes
+
+- fc1b00d: Expose the Alpha Scalprum module and `adoptionInsightsTranslations` for dynamic plugins, and register `translationResources` in `app-config.dynamic.yaml` for loading translations from the Alpha bundle.
+- f5e1232: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- 2465411: Replace Material UI v4 imports with MUI v5
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes

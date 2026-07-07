@@ -38,7 +38,7 @@ import { lightspeedPlugin } from '../plugin';
 const mockUserId = 'user:default/user1';
 
 const BASE_CONFIG = {
-  lightspeed: {
+  'intelligent-assistant': {
     servers: [
       {
         id: 'test-server',
@@ -52,8 +52,8 @@ const BASE_CONFIG = {
 // URLs are not in app-config — they come from LCS (GET /v1/mcp-servers).
 // The LCS mock in lcsHandlers returns URLs for 'static-mcp' and 'no-token-server'.
 const MCP_CONFIG = {
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',
@@ -64,8 +64,8 @@ const MCP_CONFIG = {
 };
 
 const MCP_CONFIG_MULTI = {
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',
@@ -78,14 +78,30 @@ const MCP_CONFIG_MULTI = {
   },
 };
 
+const MCP_CONFIG_DCR = {
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
+    mcpServers: [
+      {
+        name: 'static-mcp',
+        token: MOCK_MCP_VALID_TOKEN,
+      },
+      {
+        name: 'no-token-server',
+        auth: 'dcr',
+      },
+    ],
+  },
+};
+
 const MCP_CONFIG_ENCRYPTED = {
   backend: {
     auth: {
       keys: [{ secret: 'EXAMPLE-key-EXAMPLE-key-EXAMPLE!' }], // notsecret
     },
   },
-  lightspeed: {
-    ...BASE_CONFIG.lightspeed,
+  'intelligent-assistant': {
+    ...BASE_CONFIG['intelligent-assistant'],
     mcpServers: [
       {
         name: 'static-mcp',
@@ -256,6 +272,28 @@ describe('MCP server management endpoints', () => {
       );
 
       expect(response.status).toBe(403);
+    });
+
+    it('returns auth field for DCR-configured servers', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+      const response = await request(backendServer).get(
+        '/api/lightspeed/mcp-servers',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.servers).toHaveLength(2);
+
+      const dcrServer = response.body.servers.find(
+        (s: any) => s.name === 'no-token-server',
+      );
+      expect(dcrServer.auth).toBe('dcr');
+      expect(dcrServer.hasToken).toBe(true);
+
+      const staticServer = response.body.servers.find(
+        (s: any) => s.name === 'static-mcp',
+      );
+      expect(staticServer.auth).toBeUndefined();
+      expect(staticServer.hasToken).toBe(true);
     });
   });
 
@@ -515,6 +553,19 @@ describe('MCP server management endpoints', () => {
       );
 
       expect(response.status).toBe(403);
+    });
+
+    it('validates a DCR server using a minted token', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+      const response = await request(backendServer).post(
+        '/api/lightspeed/mcp-servers/no-token-server/validate',
+      );
+
+      // DCR path mints a token successfully (no 502), but the mock MCP server
+      // rejects it (only accepts MOCK_MCP_VALID_TOKEN), so validation reports error.
+      expect(response.status).toBe(200);
+      expect(response.body.name).toBe('no-token-server');
+      expect(response.body.validation).toBeDefined();
     });
   });
 

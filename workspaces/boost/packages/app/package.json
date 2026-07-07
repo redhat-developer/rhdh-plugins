@@ -1,0 +1,64 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "private": true,
+  "bundled": true,
+  "backstage": {
+    "role": "frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/boost/packages/app"
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "clean": "backstage-cli package clean",
+    "test": "backstage-cli package test",
+    "lint": "backstage-cli package lint"
+  },
+  "dependencies": {
+    "@backstage/cli": "^0.36.3",
+    "@backstage/core-components": "^0.18.11",
+    "@backstage/core-plugin-api": "^1.12.7",
+    "@backstage/frontend-defaults": "^0.5.3",
+    "@backstage/frontend-plugin-api": "^0.17.2",
+    "@backstage/plugin-app-react": "^0.2.4",
+    "@backstage/plugin-app-visualizer": "^0.2.5",
+    "@backstage/plugin-catalog": "^2.0.6",
+    "@backstage/plugin-user-settings": "^0.9.4",
+    "@backstage/ui": "^0.16.0",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1",
+    "@red-hat-developer-hub/backstage-plugin-boost": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
+    "react": "^18.0.2",
+    "react-dom": "^18.0.2",
+    "react-router": "^6.30.4",
+    "react-router-dom": "^6.3.0"
+  },
+  "devDependencies": {
+    "@backstage/test-utils": "^1.7.18",
+    "@testing-library/dom": "^9.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@types/react-dom": "*",
+    "cross-env": "^7.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -8,6 +8,7 @@
 | **successCount** | **Integer** | Number of completed workflow runs | [optional] [default to null] |
 | **errorCount** | **Integer** | Number of failed workflow runs | [optional] [default to null] |
 | **totalCount** | **Integer** | Total number of workflow runs | [optional] [default to null] |
+| **averageTimeToComplete** | **BigDecimal** | Average time to complete a workflow run in milliseconds | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
