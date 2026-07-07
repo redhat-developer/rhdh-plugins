@@ -972,6 +972,8 @@ export const LightspeedChat = ({
     if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
       if (onOverlayLikeSurface && stillOnProvisionalThread) {
         setNewChatCreated(true);
+      } else if (!stillOnProvisionalThread) {
+        setNewChatCreated(false);
       }
     }
   }, [
