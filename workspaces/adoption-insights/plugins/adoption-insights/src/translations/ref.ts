@@ -103,6 +103,7 @@ export const adoptionInsightsMessages = {
       lastUsed: 'Last used',
       views: 'Views',
       executions: 'Executions',
+      estTimeSaved: 'Est. Time Saved',
       trend: 'Trend',
       entity: 'Entity',
     },

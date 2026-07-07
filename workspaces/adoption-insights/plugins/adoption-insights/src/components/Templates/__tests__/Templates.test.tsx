@@ -52,6 +52,7 @@ jest.mock('../../../hooks/useEntityMetadataMap', () => ({
     entityMetadataMap: {
       'template:default/example-go-template-1': {
         title: 'Example Go Template 1',
+        timeSaved: '180',
       },
       'template:default/example-go-template-2': {
         title: 'Example Go Template 2',
@@ -81,6 +82,7 @@ jest.mock('../../../utils/constants', () => ({
   TEMPLATE_TABLE_HEADERS: [
     { id: 'name', titleKey: 'table.headers.name' },
     { id: 'executions', titleKey: 'table.headers.executions' },
+    { id: 'estTimeSaved', titleKey: 'table.headers.estTimeSaved' },
   ],
 }));
 
@@ -142,15 +144,15 @@ describe('Templates', () => {
   // eslint-disable-next-line jest/expect-expect
   it('should display correct table headers', () => {
     renderComponent();
-    verifyHeaders(['Name', 'Executions']);
+    verifyHeaders(['Name', 'Executions', 'Est. Time Saved']);
   });
 
   // eslint-disable-next-line jest/expect-expect
   it('should display correct data in table rows', () => {
     renderComponent();
     verifyTableData([
-      ['Example Go Template 1', '10'],
-      ['Example Go Template 2', '20'],
+      ['Example Go Template 1', '10', '30hrs'],
+      ['Example Go Template 2', '20', '—'],
     ]);
   });
 

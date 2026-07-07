@@ -81,6 +81,7 @@ const adoptionInsightsTranslationFr = createTranslationMessages({
     'searches.week': '1 semaine',
     'table.headers.entity': 'Entité',
     'table.headers.executions': 'Exécutions',
+    'table.headers.estTimeSaved': 'Temps estimé économisé',
     'table.headers.kind': 'Type',
     'table.headers.lastUsed': 'Dernière utilisation',
     'table.headers.name': 'Nom',

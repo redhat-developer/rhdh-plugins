@@ -80,6 +80,7 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'searches.week': '週',
     'table.headers.entity': 'エンティティー',
     'table.headers.executions': '実行回数',
+    'table.headers.estTimeSaved': '推定節約時間',
     'table.headers.kind': '種類',
     'table.headers.lastUsed': '最終使用',
     'table.headers.name': '名前',
