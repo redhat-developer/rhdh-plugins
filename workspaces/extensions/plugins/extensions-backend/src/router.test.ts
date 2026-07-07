@@ -648,7 +648,7 @@ describe('createRouter', () => {
       const response = await request(backendServer)
         .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
         .send({ enabled: 'invalid' });
-      expectInputError(response, "'enabled' must be a present boolean");
+      expectInputError(response, "'enabled' must be a boolean");
     });
 
     it('should fail when plugin not found with NotFoundError 404', async () => {
@@ -807,7 +807,7 @@ describe('createRouter', () => {
           '/api/extensions/package/default/package11/configuration/disable',
         )
         .send({ enabled: 'invalid' });
-      expectInputError(response, "'enabled' must be a present boolean");
+      expectInputError(response, "'enabled' must be a boolean");
     });
 
     it('should fail when package not found with NotFoundError 404', async () => {
