@@ -89,6 +89,7 @@ export { globalHeaderTranslationRef } from './translations/ref';
 export { globalHeaderTranslations } from './translations';
 
 const globalHeaderTranslation = TranslationBlueprint.make({
+  name: 'global-header-translations',
   params: {
     resource: globalHeaderTranslations,
   },
