@@ -115,8 +115,8 @@ type LightspeedChatBoxProps = {
   conversationId: string;
   isStreaming: boolean;
   displayMode?: ChatbotDisplayMode;
-  /** When true, sources are shown as a compact chip + modal instead of the inline SourcesCard. */
-  useSourcesChipModal?: boolean;
+  /** When true, sources are shown as a compact chip + popover instead of the inline SourcesCard. */
+  showSourcesChipPopover?: boolean;
 };
 
 export interface ScrollContainerHandle {
@@ -135,7 +135,7 @@ export const LightspeedChatBox = forwardRef(
       isStreaming,
       topicRestrictionEnabled,
       displayMode,
-      useSourcesChipModal: showSourcesChipModal = false,
+      showSourcesChipPopover: showSourcesChipModal = false,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {

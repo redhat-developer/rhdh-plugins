@@ -85,21 +85,7 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minWidth: 0,
   },
-  sourceTitleButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    textAlign: 'left',
-    padding: 0,
-    font: 'inherit',
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    color: 'var(--pf-t--global--text--color--link--default, #2b9af3)',
-    '&:hover': {
-      textDecoration: 'underline',
-    },
-  },
-  sourceTitlePlain: {
+  sourceTitle: {
     fontSize: '0.875rem',
     fontWeight: 500,
   },
@@ -125,16 +111,6 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
 
   const count = sources.sources?.length ?? 0;
   if (count === 0) return null;
-
-  const handleSourceClick = (link: string, isExternal?: boolean) => {
-    if (link) {
-      window.open(
-        link,
-        isExternal ? '_blank' : '_self',
-        isExternal ? 'noreferrer' : undefined,
-      );
-    }
-  };
 
   return (
     <Popover
@@ -164,19 +140,7 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
                 >
                   <FileTypeIcon fileName={title} />
                   <div className={classes.sourceContent}>
-                    {source.link ? (
-                      <button
-                        type="button"
-                        className={classes.sourceTitleButton}
-                        onClick={() =>
-                          handleSourceClick(source.link, source.isExternal)
-                        }
-                      >
-                        {title}
-                      </button>
-                    ) : (
-                      <div className={classes.sourceTitlePlain}>{title}</div>
-                    )}
+                    <div className={classes.sourceTitle}>{title}</div>
                     {source.body && (
                       <div className={classes.sourceBody}>{source.body}</div>
                     )}

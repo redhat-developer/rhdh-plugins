@@ -29,14 +29,12 @@ const mockSources: SourcesCardProps = {
     {
       title: 'aws-bedrock-walkthrough.md',
       body: 'Documentation covering architecture, usage guidelines, and best practices.',
-      link: 'https://example.com/aws-bedrock',
-      isExternal: true,
+      link: '',
     },
     {
       title: 'codecov.yml',
       body: 'Application configuration including backend, database, authentication, and catalog settings.',
-      link: 'https://example.com/codecov',
-      isExternal: true,
+      link: '',
     },
   ],
 };
@@ -108,24 +106,6 @@ describe('SourcesChipModal', () => {
     expect(screen.getByText('yml')).toBeInTheDocument();
   });
 
-  test('should render source title as plain text when no link', () => {
-    const sourcesWithoutLink: SourcesCardProps = {
-      sources: [
-        {
-          title: 'local-doc.yaml',
-          body: 'A local document',
-          link: '',
-        },
-      ],
-    };
-
-    render(<SourcesChipModal sources={sourcesWithoutLink} />);
-
-    fireEvent.click(screen.getByText('1 Source'));
-
-    expect(screen.getByText('local-doc.yaml')).toBeInTheDocument();
-  });
-
   test('should close popover when close button is clicked', () => {
     render(<SourcesChipModal sources={mockSources} />);
 
@@ -156,8 +136,8 @@ describe('SourcesChipModal', () => {
     const sourcesWithoutTitle: SourcesCardProps = {
       sources: [
         {
-          link: 'https://example.com/doc',
-          isExternal: true,
+          body: 'A document without a title',
+          link: '',
         },
       ],
     };
