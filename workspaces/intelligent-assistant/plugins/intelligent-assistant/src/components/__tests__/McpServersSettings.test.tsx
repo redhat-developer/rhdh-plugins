@@ -82,6 +82,20 @@ const resolveTokenFieldAfterPatch = (
   return currentValue;
 };
 
+const resolveStatusAfterPatch = (
+  token: string | null | undefined,
+  enabled: boolean | undefined,
+  currentStatus: McpServerResponse['status'],
+): McpServerResponse['status'] => {
+  if (token === null) {
+    return 'unknown';
+  }
+  if (enabled === true) {
+    return 'connected';
+  }
+  return currentStatus;
+};
+
 describe('McpServersSettings', () => {
   const onClose = jest.fn();
   let servers: McpServerResponse[];
@@ -175,10 +189,11 @@ describe('McpServersSettings', () => {
             body.token,
             current.hasUserToken,
           ),
-          status:
-            body.token === null
-              ? 'unknown'
-              : body.enabled === true || current.status,
+          status: resolveStatusAfterPatch(
+            body.token,
+            body.enabled,
+            current.status,
+          ),
           toolCount: body.token === null ? 0 : current.toolCount,
         };
         servers = servers.map(server =>
