@@ -1,111 +1,113 @@
-# RHIDP-14651: Add persona-support in the NFS components
+# RHIDP-14651: Add persona-support in NFS homepage components
 
 **Jira:** [RHIDP-14651](https://redhat.atlassian.net/browse/RHIDP-14651)
 **Epic:** [RHIDP-14103](https://redhat.atlassian.net/browse/RHIDP-14103) — Homepage-backend upgrade to GA support
 **Feature:** [RHDHPLAN-1371](https://redhat.atlassian.net/browse/RHDHPLAN-1371) — Upgrade homepage related plugins to GA support
 
-## Problem
+## Context
 
-The OFS (Old Frontend System) `HomePage` component already calls the `homepage-backend` via `useDefaultWidgets()` to load persona-based (user/group/permission-filtered) default widgets. The NFS (New Frontend System) `HomePageLayout` does **not** — it only renders whatever widgets the upstream home plugin passes in, with no backend-driven defaults.
+The OFS (Old Frontend System) `HomePage` already calls the `homepage-backend` via `useDefaultWidgets()` to load persona-based (user/group/permission-filtered) default widgets. The NFS (New Frontend System) `HomePageLayout` does **not** — it only renders widgets from extension config, with no backend integration.
 
-This means RHDH customers using NFS cannot configure persona-based homepages (e.g., different widgets for engineers vs. managers).
+The `defaultWidgetsApi` is already registered as an `ApiBlueprint` in NFS (`alpha/extensions/apis.ts`) but never consumed. The existing `useDefaultWidgets` hook uses `useApi` from `@backstage/core-plugin-api`, which is already a re-export of `@backstage/frontend-plugin-api` at runtime — so the same hook can serve both systems without duplication.
 
-## Current Architecture
+The NFS layout extension currently has a `widgetLayout` config schema that provides static layout overrides per widget. This will be removed in favor of the backend-driven defaults which provide the same layout data with persona filtering.
 
-### OFS flow (already working)
+## Changes
 
-```
-HomePage
-  → useDefaultWidgets() hook
-    → DefaultWidgetsApiClient.getDefaultWidgets()
-      → GET /api/homepage/default-widgets (backend, with user credentials)
-  → if defaultWidgets returned:
-      → DefaultWidgetsCustomizableGrid or DefaultWidgetsReadOnlyGrid
-    else:
-      → CustomizableGrid or ReadOnlyGrid (mount-point-only fallback)
-```
+### 1. Update `useDefaultWidgets` hook — shared between OFS and NFS
 
-### NFS flow (current — no backend integration)
+**File:** `plugins/homepage/src/hooks/useDefaultWidgets.ts`
 
-```
-homePageLayoutExtension (HomePageLayoutBlueprint)
-  → receives `widgets` from upstream home plugin
-  → HomePageLayout
-    → CustomizableGridLayout or ReadOnlyGridLayout
-    → widgets come only from extension config (widgetLayout), not backend
-```
-
-### NFS API registration (already exists)
-
-The `defaultWidgetsApi` is already registered in `alpha/extensions/apis.ts` as an `ApiBlueprint`, so the API client is available in the NFS dependency injection. It is just never consumed by the layout.
-
-## Implementation Plan
-
-### 1. Add `useDefaultWidgets` hook for NFS
-
-Create a new hook (or adapt the existing OFS one) that works with the NFS `useApi` from `@backstage/frontend-plugin-api` instead of `@backstage/core-plugin-api`:
-
-- File: `src/alpha/hooks/useDefaultWidgets.ts`
-- Uses the `defaultWidgetsApiRef` already registered
-- Returns `{ defaultWidgets, loading, error }` — same shape as the OFS hook
+Change `import { useApi } from '@backstage/core-plugin-api'` to `import { useApi } from '@backstage/frontend-plugin-api'`. This is a no-op at runtime (core-plugin-api already re-exports it) but makes the hook explicitly compatible with both frontend systems. No other changes needed — the hook already returns `{ defaultWidgets, loading, error }`.
 
 ### 2. Update `HomePageLayout` to integrate backend defaults
 
-Modify `src/alpha/components/HomePageLayout.tsx`:
+**File:** `plugins/homepage/src/alpha/components/HomePageLayout.tsx`
 
-- Call `useDefaultWidgets()` to fetch persona-based default widgets from the backend
+- Import and call `useDefaultWidgets()` from `../../hooks/useDefaultWidgets`
 - Show `<Progress />` while loading
-- When `defaultWidgets` is returned from backend:
-  - Merge backend defaults with the extension-provided `widgets` (backend defaults provide layout/props overrides; extension widgets provide the actual React components)
-  - Render using existing grid components
-- When backend returns no defaults (or backend is unavailable):
-  - Fall back to the current behavior (extension-only widgets)
+- When `defaultWidgets` is returned:
+  - Match backend defaults (`defaultWidget.ref`) to NFS widgets (`widget.name`)
+  - Apply backend-provided `layout` as `breakpointLayouts` overrides on matched widgets
+  - Filter the widget list: only show widgets that have a matching backend default (persona-filtered)
+  - Apply backend-provided `props` as component prop overrides
+- When backend is unavailable (error or no response):
+  - Fall back to current behavior — render all extension-provided widgets as-is
 
-### 3. Add/update unit tests
+The merge logic follows the pattern in `DefaultWidgetsCustomizableGrid.tsx` and `DefaultWidgetsReadOnlyGrid.tsx` (OFS), adapted for the NFS `HomePageCardConfig` shape.
 
-- `src/alpha/hooks/useDefaultWidgets.test.ts` — test the NFS hook
-- `src/alpha/components/HomePageLayout.test.tsx` — test the integration:
-  - Backend returns defaults → renders with persona-based config
-  - Backend returns empty → falls back to extension widgets
-  - Backend unavailable → falls back gracefully
+### 3. Remove `widgetLayout` config from `homePageLayoutExtension`
 
-### 4. Update example app (NFS)
+**File:** `plugins/homepage/src/alpha/extensions/homePageLayoutExtension.tsx`
 
-Ensure `packages/app/` is configured to demonstrate the NFS homepage with the backend plugin enabled, so the persona flow can be tested end-to-end locally.
+- Remove the `widgetLayout` config schema entry and all code that reads/applies it (priority sorting, breakpoint mapping)
+- Keep the `customizable` config option
+- Layout data now comes from backend defaults instead of static extension config
 
-### 5. Documentation
+### 4. Update `app-config.yaml` — remove NFS `widgetLayout` config
 
-Add a section to the workspace README or a dedicated doc file describing:
+**File:** `app-config.yaml`
 
-- How to configure persona-based defaults for NFS
-- Configuration example (same YAML format as OFS, via `homepage.defaultWidgets`)
-- Differences/parity between OFS and NFS behavior
+Remove the `widgetLayout` block under `home-page-layout:home/dynamic-homepage-layout` config since it's no longer supported. The `customizable` option stays.
 
-## Key Design Decision
+### 5. Rename NFS widget blueprint names to match config `ref` values
 
-**Merging strategy:** The backend returns `VisibleDefaultWidget[]` which contains `id`, `ref`, `props`, and `layout`. The NFS receives `HomePageCardConfig[]` (widgets) from the upstream home plugin. The merge needs to:
+The backend config `ref` values must match the NFS widget blueprint `name` values exactly. Rename the NFS widget names to match the existing config refs (preserving backwards compatibility with existing configurations):
 
-1. Match backend defaults by `ref` → NFS widget by `name`
-2. Apply backend-provided `layout` as `breakpointLayouts` overrides
-3. Apply backend-provided `props` as component prop overrides
-4. Respect backend ordering/filtering (persona-based visibility is already handled server-side)
+**File:** `plugins/homepage/src/alpha/extensions/homePageCards.tsx`
 
-This mirrors how `DefaultWidgetsCustomizableGrid` and `DefaultWidgetsReadOnlyGrid` work in OFS — matching `defaultWidget.ref` to `mountPoint.config.id`.
+| Config `ref`                    | Current NFS `name`                    | New NFS `name`             |
+| ------------------------------- | ------------------------------------- | -------------------------- |
+| `quickaccess-card`              | `quick-access-card`                   | `quickaccess-card`         |
+| `recently-visited-card`         | `recently-visited`                    | `recently-visited-card`    |
+| `top-visited-card`              | `top-visited`                         | `top-visited-card`         |
+| `catalog-starred-entities-card` | (override of `home/starred-entities`) | Add explicit name override |
+
+The `rhdh-onboarding-section`, `rhdh-entity-section`, `rhdh-template-section`, and `featured-docs-card` already match.
+
+### 6. Update Playwright e2e tests
+
+**File:** `e2e-tests/homepageCustomizable.test.ts`
+
+- Remove the `test.skip()` for NFS mode in the "Groups filters default widgets by persona" test
+- Update the login URL logic: NFS uses `'/'` instead of `'/customizable'` — the persona test currently hardcodes `'/customizable'`
+- The test should now pass for both `APP_MODE=legacy` and `APP_MODE=nfs`
+
+### 7. Update unit tests
+
+**File:** `plugins/homepage/src/alpha/alpha.test.ts` — update to reflect removed `widgetLayout` config
+
+Add new test for `HomePageLayout` with mocked `useDefaultWidgets`:
+
+- Backend returns defaults → layout renders persona-filtered widgets
+- Backend returns empty → empty state
+- Backend unavailable → falls back to extension widgets
 
 ## Files to Change
 
-| File                                               | Change                             |
-| -------------------------------------------------- | ---------------------------------- |
-| `src/alpha/hooks/useDefaultWidgets.ts`             | **New** — NFS-compatible hook      |
-| `src/alpha/components/HomePageLayout.tsx`          | Integrate backend defaults         |
-| `src/alpha/extensions/homePageLayoutExtension.tsx` | Pass through API context if needed |
-| `src/alpha/alpha.test.ts`                          | Update module tests                |
-| `src/alpha/hooks/useDefaultWidgets.test.ts`        | **New** — hook tests               |
-| `src/alpha/components/HomePageLayout.test.tsx`     | **New** — integration tests        |
-| `packages/app/`                                    | Update example app config          |
+| File                                               | Change                                            |
+| -------------------------------------------------- | ------------------------------------------------- |
+| `src/hooks/useDefaultWidgets.ts`                   | Switch import to `@backstage/frontend-plugin-api` |
+| `src/alpha/components/HomePageLayout.tsx`          | Integrate backend defaults                        |
+| `src/alpha/extensions/homePageLayoutExtension.tsx` | Remove `widgetLayout` config                      |
+| `src/alpha/extensions/homePageCards.tsx`           | Rename widget names to match config refs          |
+| `app-config.yaml`                                  | Remove `widgetLayout` block                       |
+| `src/alpha/alpha.test.ts`                          | Update module tests                               |
+| `src/alpha/components/HomePageLayout.test.tsx`     | **New** — integration tests                       |
+| `e2e-tests/homepageCustomizable.test.ts`           | Enable persona test for NFS                       |
 
 ## Out of Scope
 
 - Changes to the backend (`homepage-backend`) — persona filtering already works
 - Changes to `homepage-common` types — existing types are sufficient
-- OFS changes — OFS already has full persona support
+- OFS changes — OFS already has full persona support (only the `useApi` import changes)
+
+## Verification
+
+1. Run unit tests: `cd workspaces/homepage && yarn test`
+2. Run Playwright tests for both modes:
+   - `yarn test:e2e:legacy` — verify no regressions
+   - `yarn test:e2e:nfs` — verify persona test now passes
+3. Manual verification: start the NFS app (`yarn start`) and check:
+   - Guest sees common defaults only (no Featured Docs, no Recently Visited)
+   - Different users see different widgets based on group membership
