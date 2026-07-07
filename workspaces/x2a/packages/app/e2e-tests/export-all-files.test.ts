@@ -16,13 +16,14 @@
 
 /**
  * FLPATH-4213: Export agent copies all generated files
+ * FLPATH-4481: Verify AAP sync succeeds after publish (FLPATH-4398 regression gate)
  *
- * Validates that the publish phase pushes ALL git-tracked files to the
- * target repo — including deeply nested paths like molecule tests,
- * collections requirements, and project-level files. This verifies
- * the fix in rhdh-plugins#3181 which changed the export agent from
- * copying only files in the ansible/ folder to iterating over all
- * git-tracked files.
+ * Validates that the publish phase:
+ * 1. Pushes ALL git-tracked files to the target repo (FLPATH-4213)
+ * 2. Completes with status=success, meaning AAP synced correctly (FLPATH-4481)
+ *
+ * The AAP sync assertion is the regression gate for FLPATH-4398 (PR #3551),
+ * which fixed a race condition where publish-aap was called before git push.
  *
  * Test flow: create project → init → analyze → migrate → publish → verify target repo
  */
@@ -236,7 +237,7 @@ async function getGitHubCommitFiles(commitSha: string): Promise<string[]> {
   return (data.files ?? []).map((f: { filename: string }) => f.filename);
 }
 
-test.describe('X2Ansible - FLPATH-4213 Export All Files @live', () => {
+test.describe('X2Ansible - FLPATH-4213/4481 Export All Files & AAP Sync @live', () => {
   const baseURL = process.env.PLAYWRIGHT_URL ?? 'http://localhost:7007';
 
   test.describe.configure({ mode: 'serial' });
@@ -364,11 +365,14 @@ test.describe('X2Ansible - FLPATH-4213 Export All Files @live', () => {
       'publish',
       PHASE_TIMEOUT,
     );
-    // Publish may report 'error' if AAP sync fails, but git push can still succeed
+    // FLPATH-4481: Publish MUST succeed (AAP sync included).
+    // After FLPATH-4398 fix, git push happens before AAP sync,
+    // so AAP should always find the playbooks.
     expect(
-      ['success', 'error'].includes(result.status),
-      `Publish did not complete: status=${result.status}`,
-    ).toBeTruthy();
+      result.status,
+      `Publish failed: status=${result.status}. ` +
+        'If AAP sync failed, this is a regression of FLPATH-4398.',
+    ).toBe('success');
     expect(
       result.commitId,
       'Publish must produce a commit in target repo',
