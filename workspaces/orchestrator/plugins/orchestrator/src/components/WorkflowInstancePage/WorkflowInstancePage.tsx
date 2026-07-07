@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -122,6 +122,15 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }));
+
+const withPermissionTooltip = (tooltipText: string, node: ReactElement) =>
+  tooltipText ? (
+    <Tooltip title={tooltipText}>
+      <span>{node}</span>
+    </Tooltip>
+  ) : (
+    node
+  );
 
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
@@ -467,6 +476,13 @@ export const WorkflowInstancePage = () => {
 
   const showRerunMenu = value?.state === ProcessInstanceStatusDTO.Error;
 
+  const abortTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedAbort');
+  const runAgainTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedExecute');
+
   return (
     <BaseOrchestratorPage
       title={instanceId ?? ''}
@@ -496,11 +512,9 @@ export const WorkflowInstancePage = () => {
             </InfoDialog>
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
-                {canAbort && (
-                  <Tooltip
-                    title={t('tooltips.userNotAuthorizedAbort')}
-                    disableHoverListener={permittedToUse.allowed}
-                  >
+                {canAbort &&
+                  withPermissionTooltip(
+                    abortTooltipText,
                     <Button
                       variant="outlined"
                       color="primary"
@@ -508,15 +522,12 @@ export const WorkflowInstancePage = () => {
                       onClick={toggleAbortConfirmationDialog}
                     >
                       {t('run.abort.button')}
-                    </Button>
-                  </Tooltip>
-                )}
+                    </Button>,
+                  )}
               </Grid>
               <Grid item>
-                <Tooltip
-                  title={t('tooltips.userNotAuthorizedExecute')}
-                  disableHoverListener={permittedToUse.allowed}
-                >
+                {withPermissionTooltip(
+                  runAgainTooltipText,
                   <Button
                     ref={anchorRef}
                     variant="contained"
@@ -536,8 +547,8 @@ export const WorkflowInstancePage = () => {
                     ) : (
                       t('workflow.buttons.runAgain')
                     )}
-                  </Button>
-                </Tooltip>
+                  </Button>,
+                )}
 
                 <Menu
                   anchorEl={anchorRef.current}
