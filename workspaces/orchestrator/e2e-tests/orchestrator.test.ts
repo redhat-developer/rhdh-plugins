@@ -46,6 +46,52 @@ function getLocaleDisplayName(locale: string): string {
   return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
 }
 
+const BACKEND_BASE_URL = 'http://localhost:7007';
+const SONATAFLOW_BASE_URL = 'http://localhost:8899';
+
+let orchestratorReadyPromise: Promise<void> | undefined;
+
+const ORCHESTRATOR_READY_TIMEOUT_MS = 180_000;
+
+async function pollUntilReady(
+  description: string,
+  check: () => Promise<boolean>,
+): Promise<void> {
+  const deadline = Date.now() + ORCHESTRATOR_READY_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    try {
+      if (await check()) {
+        return;
+      }
+    } catch {
+      // Service not ready yet.
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  throw new Error(`Timed out waiting for ${description}`);
+}
+
+async function pollOrchestratorReady(): Promise<void> {
+  await pollUntilReady('orchestrator backend health', async () => {
+    const response = await fetch(`${BACKEND_BASE_URL}/api/orchestrator/health`);
+    return response.ok;
+  });
+
+  await pollUntilReady('SonataFlow health', async () => {
+    const response = await fetch(`${SONATAFLOW_BASE_URL}/q/health`);
+    return response.ok;
+  });
+}
+
+async function waitForOrchestratorReady(): Promise<void> {
+  if (!orchestratorReadyPromise) {
+    orchestratorReadyPromise = pollOrchestratorReady();
+  }
+  await orchestratorReadyPromise;
+}
+
 test.describe('Orchestrator workflow runs', () => {
   let orchestrator: Orchestrator;
   let orchestratorHelper: OrchestratorHelper;
@@ -63,7 +109,7 @@ test.describe('Orchestrator workflow runs', () => {
     );
 
     await page.goto('/settings');
-    await page.waitForURL('**/settings**');
+    await page.waitForURL('**/settings**', { timeout: 60_000 });
     const languageButton = page
       .getByRole('button', { name: localeDisplayPattern })
       .first();
@@ -81,19 +127,20 @@ test.describe('Orchestrator workflow runs', () => {
   }
 
   test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(ORCHESTRATOR_READY_TIMEOUT_MS + 90_000);
+    await waitForOrchestratorReady();
     const projectLocale =
       typeof testInfo.project.use.locale === 'string'
         ? testInfo.project.use.locale.split('-')[0]
         : 'en';
 
-    sharedContext = await browser.newContext({ locale: projectLocale });
+    sharedContext = await browser.newContext();
     sharedPage = await sharedContext.newPage();
-    await sharedPage.goto('/');
-    await sharedPage.getByRole('button', { name: 'Enter' }).click();
-    await switchToLocale(sharedPage, projectLocale);
     translations = getTranslations(projectLocale);
-    orchestrator = new Orchestrator(sharedPage, translations, projectLocale);
     orchestratorHelper = new OrchestratorHelper(sharedPage, translations);
+    await orchestratorHelper.loginAsGuest(sharedPage);
+    await switchToLocale(sharedPage, projectLocale);
+    orchestrator = new Orchestrator(sharedPage, translations, projectLocale);
   });
 
   test.beforeEach(async () => {

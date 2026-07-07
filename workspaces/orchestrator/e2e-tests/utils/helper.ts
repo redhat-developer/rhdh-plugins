@@ -26,6 +26,14 @@ export class OrchestratorHelper {
     this.translations = translations;
   }
 
+  async loginAsGuest(page: Page): Promise<void> {
+    await page.goto('/');
+    const enterButton = page.getByRole('button', { name: 'Enter' });
+    await expect(enterButton).toBeVisible({ timeout: 60_000 });
+    await enterButton.click();
+    await expect(enterButton).not.toBeVisible({ timeout: 60_000 });
+  }
+
   async verifyTableHeadings(texts: string[]) {
     // Wait for the table to load by checking for the presence of table rows
     await this.page.waitForSelector('table tbody tr', { state: 'visible' });
@@ -42,8 +50,9 @@ export class OrchestratorHelper {
     // Checks if the table has at least one row with data
     // Excludes rows that have cells spanning multiple columns, such as "No data available" messages
     const rowSelector = `table tbody tr:not(:has(td[colspan]))`;
-    const rowCount = await this.page.locator(rowSelector).count();
-    expect(rowCount).toBeGreaterThan(0);
+    await expect(this.page.locator(rowSelector).first()).toBeVisible({
+      timeout: 60_000,
+    });
   }
 
   async searchInputPlaceholder(searchTerm: string) {
