@@ -763,6 +763,127 @@ describe('lightspeed router tests', () => {
       });
     });
 
+    it('should send a minted Backstage token for auth: dcr servers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [{ name: 'backstage-mcp', auth: 'dcr' }],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp']).toBeDefined();
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+    });
+
+    it('should mix DCR and static token servers in MCP headers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [
+            { name: 'backstage-mcp', auth: 'dcr' },
+            { name: 'static-server', token: 'my-static-token' },
+          ],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+      expect(parsedHeaders['static-server']).toEqual({
+        Authorization: 'my-static-token',
+      });
+    });
+
     it('should fail with unauthorized error in chat completion API', async () => {
       const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
       const chatCompletionResponse = await request(backendServer)
@@ -1138,6 +1259,104 @@ describe('lightspeed router tests', () => {
         .send({ request_id: 'req-123' });
 
       expect(response.statusCode).toEqual(403);
+    });
+  });
+
+  describe('rate limiting', () => {
+    const RATE_LIMIT_CONFIG = {
+      'intelligent-assistant': {
+        ...BASE_CONFIG['intelligent-assistant'],
+        rateLimit: {
+          expensive: { max: 1 },
+          general: { max: 1 },
+        },
+      },
+    };
+
+    it('returns 429 on expensive endpoint when limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const body = {
+        model: mockModel,
+        query: 'Hello',
+        provider: 'test-server',
+      };
+
+      const first = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(body);
+      const second = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(body);
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(429);
+      expect(second.headers['retry-after']).toBeDefined();
+      expect(second.body.error).toEqual({
+        name: 'RateLimitExceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter: expect.any(Number),
+      });
+    });
+
+    it('returns 429 on repeated invalid /v1/query requests after limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const invalidBody = {
+        model: mockModel,
+        query: 'Hello',
+      };
+
+      const first = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(invalidBody);
+      const second = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send(invalidBody);
+
+      expect(first.statusCode).toBe(400);
+      expect(first.body.error).toBe(
+        'provider is required and must be a non-empty string',
+      );
+      expect(second.statusCode).toBe(429);
+    });
+
+    it('returns 429 on general endpoint when limit exceeded', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+
+      const first = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+      const second = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(429);
+    });
+
+    it('does not rate limit health endpoint', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+
+      const first = await request(backendServer).get('/api/lightspeed/health');
+      const second = await request(backendServer).get('/api/lightspeed/health');
+
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(200);
+    });
+
+    it('uses separate counters for expensive and general tiers', async () => {
+      const backendServer = await startBackendServer(RATE_LIMIT_CONFIG);
+      const body = {
+        model: mockModel,
+        query: 'Hello',
+        provider: 'test-server',
+      };
+
+      await request(backendServer).post('/api/lightspeed/v1/query').send(body);
+      const modelsResponse = await request(backendServer).get(
+        '/api/lightspeed/v1/models',
+      );
+
+      expect(modelsResponse.statusCode).toBe(200);
     });
   });
 });

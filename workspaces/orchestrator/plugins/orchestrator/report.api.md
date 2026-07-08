@@ -180,7 +180,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.buttons.runAgain': string;
     readonly 'workflow.buttons.entireWorkflow': string;
     readonly 'workflow.buttons.fromFailurePoint': string;
-    readonly 'workflow.buttons.fromAbortedPoint': string;
     readonly 'workflow.buttons.runFailedAgain': string;
     readonly 'messages.noDataAvailable': string;
     readonly 'messages.noVariablesFound': string;
@@ -197,7 +196,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'tooltips.workflowDown': string;
     readonly 'tooltips.suspended': string;
     readonly 'tooltips.userNotAuthorizedAbort': string;
-    readonly 'tooltips.retriggerNotSupportedForAborted': string;
     readonly 'reviewStep.hiddenFieldsNote': string;
     readonly 'reviewStep.showHiddenParameters': string;
     readonly 'permissions.accessDenied': string;

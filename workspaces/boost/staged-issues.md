@@ -388,7 +388,7 @@ From `openspec/changes/security-safety-governance/tasks.md` section 7:
 - 7.5b Integrate into `KagentiApiClient` — inject bearer token
 - 7.6 Propagate user identity via `X-Backstage-User` header
 
-**Note:** `KeycloakAuthClient` was implemented in `kagenti-entity-provider/src/providers/kagentiAuth.ts` for entity provider use. The remaining tasks (7.3, 7.5b, 7.6) target the `KagentiApiClient` in `boost-backend-module-kagenti` for user-facing provider module use.
+**Note:** `KeycloakAuthClient` was implemented in `boost-node/src/KeycloakAuthClient.ts` for entity provider use. The remaining tasks (7.3, 7.5b, 7.6) target the `KagentiApiClient` in `boost-backend-module-kagenti` for user-facing provider module use.
 
 ### Specifications
 

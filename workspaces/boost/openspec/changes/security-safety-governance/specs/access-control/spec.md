@@ -89,6 +89,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 
 - **WHEN** `boost.kagenti.auth.tokenEndpoint`, `clientId`, and `clientSecret` are all configured
 - **THEN** `KeycloakAuthClient` acquires a bearer token via OAuth2 Client Credentials Grant
+- **AND** credentials are sent as `client_id` and `client_secret` in the POST form body (not via HTTP Basic auth), as required by the Keycloak client configuration
 - **AND** the token is cached until `expires_in - tokenExpiryBufferSeconds` seconds
 - **AND** the bearer token is included in all Kagenti API requests as `Authorization: Bearer <token>`
 
@@ -102,6 +103,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 
 - **WHEN** a Kagenti API call returns HTTP 401
 - **THEN** the cached token is invalidated and a fresh token is acquired
+- **AND** a brief backoff (100 ms) is applied before the retry to avoid hammering the token endpoint under load
 - **AND** the request is retried with the new token
 - **AND** if the retried request also returns 401, the error is propagated to the caller
 
@@ -136,7 +138,7 @@ Kagenti API calls MUST be authenticated via OAuth2 Client Credentials Grant usin
 #### Scenario: LlamaStack provider unaffected
 
 - **WHEN** Kagenti auth is configured
-- **THEN** `ResponsesApiProvider` is not modified — `setUserContext` is optional and not implemented
+- **THEN** `ResponsesApiProvider` is not modified — `ChatOptions` is optional and the provider omits it
 - **AND** Keycloak auth is Kagenti-specific
 
 ### Requirement: CSRF Protection

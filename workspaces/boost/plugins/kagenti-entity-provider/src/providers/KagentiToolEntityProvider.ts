@@ -35,7 +35,7 @@ import {
   sanitizeEntityName,
   unwrapItems,
 } from './entityHelpers';
-import type { KeycloakAuthClient } from './kagentiAuth';
+import type { KeycloakAuthClient } from '@red-hat-developer-hub/backstage-plugin-boost-node';
 import { ANNOTATION_BOOST_LIFECYCLE_STAGE } from './KagentiAgentEntityProvider';
 
 const PROVIDER_ID = 'kagenti-tool-entity-provider';

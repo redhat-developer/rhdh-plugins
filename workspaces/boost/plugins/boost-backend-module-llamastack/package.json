@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "description": "Llama Stack provider module for the boost AI platform",
   "main": "src/index.ts",
@@ -13,6 +13,7 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-backend",
     "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
