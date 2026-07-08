@@ -1,6 +1,13 @@
 # Tasks: OCI Skill Registry Connector
 
 > **Post-consolidation note (2026-07-08):** SDK dependencies reference RHIDP-15258 (absorbs former RHIDP-15261 delta sync and RHIDP-15254 annotations). Air-gapped dependencies reference RHIDP-15316 (absorbs former RHIDP-15263).
+>
+> **Cross-connector dependencies (RHIDP-15316):**
+>
+> - RHIDP-15296 (OCI fetching) is blocked by RHIDP-15265 (endpoint config), RHIDP-15329 (CA bundles), RHIDP-15330 (error resilience)
+> - RHIDP-15297 (multi-registry) is blocked by RHIDP-15265 (endpoint/creds), RHIDP-15329 (CA bundles), RHIDP-15266 (reference configs)
+> - RHIDP-15298 (digest sync) is blocked by RHIDP-15265 (endpoint config), RHIDP-15329 (CA bundles)
+> - RHIDP-15268 (load testing) is blocked by RHIDP-15330 (error resilience)
 
 ## 1. OCI Client Integration (P0)
 

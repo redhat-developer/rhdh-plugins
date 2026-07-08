@@ -1,6 +1,8 @@
 # Multi-Registry Support and Air-Gapped Configuration
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15297 is blocked by RHIDP-15265 (endpoint/credential config patterns), RHIDP-15329 (CA bundle utility), and RHIDP-15266 (reference Helm/Operator CR configs). The endpoint, credential, and TLS requirements below implement OCI-specific variants of the shared patterns those stories define.
 
 The OCI Skill Registry connector supports multiple registry instances with different auth mechanisms, configurable endpoints (no hardcoded SaaS URLs), custom CA bundles, and Secret-based credentials. This enables air-gapped deployments and hybrid registry environments.
 

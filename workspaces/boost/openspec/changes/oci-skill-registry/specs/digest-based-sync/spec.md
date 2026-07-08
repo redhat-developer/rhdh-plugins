@@ -1,6 +1,8 @@
 # Incremental Sync via Digest-Based Change Detection
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15298 is blocked by RHIDP-15265 (configurable endpoint URLs — sync makes registry API calls) and RHIDP-15329 (custom CA bundles — sync connects to internal registries over TLS).
 
 The OCI Skill Registry connector maintains a cursor of tag-to-digest mappings to detect changes between sync cycles. After the first full ingest, subsequent syncs only process skills whose OCI digest changed, dramatically reducing sync time for large namespaces.
 

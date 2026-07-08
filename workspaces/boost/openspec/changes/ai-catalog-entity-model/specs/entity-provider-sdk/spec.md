@@ -3,6 +3,12 @@
 > **Status: Draft (Expanded Scope)** — Pre-implementation specification. Subject to change during implementation.
 >
 > Post-consolidation, RHIDP-15258 absorbs: annotation scheme (RHIDP-15255), delta sync framework (RHIDP-15262), and migration readiness (RHIDP-15302). See companion specs for detailed requirements.
+>
+> **Cross-connector dependencies:** RHIDP-15260 (SDK package) is blocked by three RHIDP-15316 stories:
+>
+> - RHIDP-15265 — SDK must export the configuration schema for endpoint URLs and Secret-based credential validation
+> - RHIDP-15329 — SDK must expose the shared CA bundle resolution utility for all connectors
+> - RHIDP-15330 — SDK must define the per-entity and per-connector error isolation contract
 
 A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types, validation utilities, and adapter interfaces for Neo4j and skillcard.yaml schemas.
 

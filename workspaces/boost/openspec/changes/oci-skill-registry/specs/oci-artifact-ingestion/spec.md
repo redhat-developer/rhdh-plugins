@@ -1,6 +1,8 @@
 # OCI Artifact Fetching and Validation
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15296 is blocked by RHIDP-15265 (configurable endpoint URLs for registry API calls), RHIDP-15329 (custom CA bundles for TLS), and RHIDP-15330 (per-entity error isolation — the "handle errors gracefully" scenarios below implement 15330's contract).
 
 The OCI Skill Registry connector fetches OCI image manifests from OCI-compliant registries, downloads the `skillcard.yaml` blob from image layers, validates it against the SDK schema, and emits Backstage `Resource` entities with `spec.type: ai-skill`. Invalid artifacts are rejected with descriptive logs without aborting the sync of other skills.
 

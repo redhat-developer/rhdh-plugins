@@ -17,6 +17,8 @@
 
 ## 2. Entity Provider SDK Package Scaffolding (P0) — _RHIDP-15258_
 
+> **Cross-connector dependencies:** RHIDP-15260 is blocked by RHIDP-15265 (endpoint/credential config schema), RHIDP-15329 (shared CA bundle utility), and RHIDP-15330 (error isolation contract). The SDK must export the configuration schema, CA bundle utility, and error-handling guarantees defined by those stories.
+
 - [ ] 2.1 Create `@boost/entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`, `CHANGELOG.md` (RHIDP-15260)
 - [ ] 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()` (RHIDP-15259)
 - [ ] 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern (RHIDP-15259)
