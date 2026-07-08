@@ -54,12 +54,8 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    await this.page.goto('/catalog');
-    // "My Groups" sidebar item can overlap the catalog toolbar; force bypasses the check.
-    await this.page
-      .getByTestId('user-picker-all')
-      .getByText('All')
-      .click({ force: true });
+    await this.page.goto('/catalog?filters[user]=all');
+    await expect(this.page.getByTestId('user-picker-all')).toBeVisible();
   }
 
   async openComponent(componentName: string) {

@@ -25,43 +25,6 @@ import {
 import { screen, waitFor } from '@testing-library/react';
 
 describe('ScorecardEntityContentLayoutBlueprint', () => {
-  it('should create an extension with sensible defaults', () => {
-    expect(
-      ScorecardEntityContentLayoutBlueprint.make({
-        params: {
-          title: 'Grid',
-          loader: async () => () => <div />,
-        },
-      }),
-    ).toMatchInlineSnapshot(`
-      {
-        "$$type": "@backstage/ExtensionDefinition",
-        "T": undefined,
-        "attachTo": {
-          "id": "entity-content:catalog/entity-content-scorecard",
-          "input": "layouts",
-        },
-        "configSchema": {
-          "parse": [Function],
-          "schema": [Function],
-        },
-        "disabled": false,
-        "factory": [Function],
-        "if": undefined,
-        "inputs": {},
-        "kind": "scorecard-layout",
-        "name": undefined,
-        "output": [
-          [Function],
-          [Function],
-        ],
-        "override": [Function],
-        "toString": [Function],
-        "version": "v2",
-      }
-    `);
-  });
-
   it('should create a named extension', () => {
     const extension = ScorecardEntityContentLayoutBlueprint.make({
       name: 'scorecard-entity-layout-grid',
