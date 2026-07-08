@@ -2,6 +2,8 @@
 
 ## Context
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed and consolidated into RHIDP-15277 (RHDHPLAN-1508). This health dashboard is unaffected — audit event patterns referenced in this design continue to come from RHIDP-15277. The Neo4j sync panel (RHIDP-15338) depends on RHIDP-15295 (RHDHPLAN-1507 Neo4j Knowledge Graph Sync Adapter) being implemented first.
+
 Boost implements the ingestion health dashboard as a standard admin panel section following the existing patterns established in the augment workspace's admin panel (model connection, system prompt, agent config sections). The augment reference prototype has no equivalent feature — this is net-new functionality for Boost. The design follows RHDH Extensions Catalog patterns for admin tooling: backend exposes REST API, frontend renders via PatternFly components, RBAC enforced at API layer.
 
 ## Goals

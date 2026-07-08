@@ -2,6 +2,8 @@
 
 ## Context
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed and consolidated into RHIDP-15277 (RHDHPLAN-1508). This schema alignment epic is unaffected. The annotation scheme formalized here depends on RHDHPLAN-1507's Entity-Provider SDK (RHIDP-15258), which now includes annotation definitions after consolidation.
+
 RHDH Boost has defined a set of AI Asset annotations and entity type conventions to represent agents, skills, MCP servers, AI models, and model servers in the Backstage catalog. These annotations (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`) and `spec.type` values (`ai-agent`, `mcp-server`, etc.) are documented in the `agent-creation-discovery` change's `catalog-entities/spec.md`.
 
 Meanwhile, upstream Backstage has draft RFCs proposing new entity kinds:

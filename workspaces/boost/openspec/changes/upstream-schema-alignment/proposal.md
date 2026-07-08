@@ -2,6 +2,8 @@
 
 ## Why
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This schema alignment epic (RHIDP-15334) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15331 (Ingestion Health Dashboard) and RHIDP-15332 (Connector Config Hot-Reload). The annotation specification (RHIDP-15346) depends on RHDHPLAN-1507's Entity-Provider SDK (RHIDP-15258) which now includes the annotation scheme after consolidation.
+
 Customers adopting RHDH AI Catalog early need assurance that their catalog entities won't become a dead end when upstream Backstage entity kinds stabilize. A documented mapping from current RHDH annotations to draft upstream RFC entity kinds, plus a dry-run migration-readiness tool, provides that assurance without premature migration.
 
 This addresses the gap between RHDH's current AI Asset annotations (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, entity `spec.type` values like `ai-agent`, `mcp-server`) and the draft Backstage RFCs that propose upstream entity kinds:

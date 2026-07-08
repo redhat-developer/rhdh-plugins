@@ -1,8 +1,9 @@
 # Spec: Eval Hub Integration for Skill Quality Scores
 
-> **Status:** ✅ READY  
-> **Story:** RHIDP-15345  
-> **Coverage:** Eval Hub endpoint configuration, quality score ingestion, per-skill score storage, aggregate distribution computation, graceful handling when Eval Hub unavailable, multiple eval backend support, score refresh cycle
+> **Status:** 🔀 CONSOLIDATED into RHIDP-15277 (RHDHPLAN-1508)  
+> **Story:** RHIDP-15345 (Closed — absorbed by RHIDP-15277 epic scope)  
+> **Coverage:** Eval Hub endpoint configuration, quality score ingestion, per-skill score storage, aggregate distribution computation, graceful handling when Eval Hub unavailable, multiple eval backend support, score refresh cycle  
+> **Consolidation (2026-07-08):** Eval Hub quality score integration is now part of the expanded RHIDP-15277 epic (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). Eval Hub API stability remains the primary integration risk.
 
 ## Scenarios
 

@@ -2,6 +2,8 @@
 
 ## Context
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed and consolidated into RHIDP-15277 (RHDHPLAN-1508). This hot-reload epic is unaffected. Config change audit events (originally RHIDP-15333 scope) are now under RHIDP-15277/RHIDP-15280 — connector config changes should emit `ingestion.config.change` audit events using the RHIDP-15277 structured JSON pattern.
+
 Boost's `RuntimeConfigResolver` provides a two-layer config model: YAML baseline (read-only, deployment-time) + database overrides (mutable, runtime). The resolver caches the merged config with 30-second TTL and immediate invalidation on DB writes. This change extends that proven infrastructure to connector configuration.
 
 Backstage's built-in `ConfigApi` loads YAML at startup with no hot-reload. Boost's `RuntimeConfigResolver` is a **custom layer** built on top of `ConfigApi` that adds:

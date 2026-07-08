@@ -1,8 +1,9 @@
 # Spec: Ingestion Sync Audit Events
 
-> **Status:** ✅ READY  
-> **Story:** RHIDP-15343  
-> **Coverage:** Audit event emission for sync lifecycle, config changes, RHDH audit log integration, disconnected cluster support
+> **Status:** 🔀 CONSOLIDATED into RHIDP-15280 (RHDHPLAN-1508)  
+> **Story:** RHIDP-15343 (Closed — absorbed by RHIDP-15280)  
+> **Coverage:** Audit event emission for sync lifecycle, config changes, RHDH audit log integration, disconnected cluster support  
+> **Consolidation (2026-07-08):** Ingestion sync audit events are now delivered under RHIDP-15280 (Emit audit events for entity provider ingestion sync cycles) within RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508).
 
 ## Scenarios
 

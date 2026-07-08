@@ -2,6 +2,8 @@
 
 ## Why
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. RHDHPLAN-1513 continues with 3 surviving epics: RHIDP-15331 (Ingestion Health Dashboard), RHIDP-15332 (Connector Config Hot-Reload), and RHIDP-15334 (Upstream Schema Alignment). Orphaned stories: RHIDP-15343 → RHIDP-15280, RHIDP-15344 → RHIDP-15277 scope, RHIDP-15345 → RHIDP-15277 scope.
+
 Compliance requires an audit trail of ingestion operations. Every sync attempt, every config change, and every quality score must be recorded with timestamps, actors, and outcomes. The Analytics tab needs historical sync data, quality distributions, and match coverage metrics to give admins visibility into the AI system's health and evolution.
 
 Eval Hub integration closes the quality feedback loop — scores from LightEval, IBM Clear, and GuideLLM flow into the analytics API and surface in the admin UI. Without this loop, quality is invisible; with it, teams can track quality degradation over time and debug skill performance regressions.

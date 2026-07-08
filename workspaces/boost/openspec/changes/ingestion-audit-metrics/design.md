@@ -2,6 +2,8 @@
 
 ## Context
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** This entire change has been consolidated into RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). The audit event infrastructure, analytics REST API, and Eval Hub integration described here are now delivered under RHIDP-15277's expanded scope. Specifically: sync audit events → RHIDP-15280, analytics metrics API → RHIDP-15277 epic scope, Eval Hub integration → RHIDP-15277 epic scope.
+
 Boost audit logging extends the pattern established by RHIDP-15277 (RBAC audit events). That epic defined the RHDH audit log integration, structured JSON event schema, and event emission infrastructure. This change applies the same pattern to ingestion operations.
 
 Analytics REST API provides the data layer for the Admin Panel's Analytics tab (RHDHPLAN-1509). The tab consumes sync history, quality scores, and match coverage metrics via RBAC-gated endpoints.

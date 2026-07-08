@@ -2,6 +2,8 @@
 
 ## Why
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This health dashboard epic (RHIDP-15331) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15332 (Connector Config Hot-Reload) and RHIDP-15334 (Upstream Schema Alignment). Audit event patterns referenced here continue to come from RHIDP-15277. The Neo4j sync panel (RHIDP-15338) depends on RHIDP-15295 (RHDHPLAN-1507 Neo4j Knowledge Graph Sync Adapter).
+
 Admins need visibility into connector health without reading raw logs. When catalog connectors fail, administrators face:
 
 - **Silent failures**: Connectors fail but no alerts fire — catalog goes stale, users see outdated data

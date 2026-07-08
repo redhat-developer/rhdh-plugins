@@ -1,5 +1,7 @@
 # Tasks: Ingestion Audit Logging and Metrics
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** All tasks below have been consolidated into RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). Task groups 1-4 (audit events) → RHIDP-15280, task groups 5-10 (analytics API, Neo4j status) → RHIDP-15277 epic scope, task groups 11-13 (Eval Hub) → RHIDP-15277 epic scope. Cross-reference tasks (group 17) remain relevant — surviving RHDHPLAN-1513 epics should reference RHIDP-15277 for audit event patterns.
+
 ## 1. Audit Event Infrastructure (P0) — RHIDP-15343
 
 - [ ] 1.1 Define ingestion audit event types in `plugins/boost-backend/src/audit/event-types.ts`

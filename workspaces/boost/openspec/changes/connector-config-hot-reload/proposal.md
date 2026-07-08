@@ -2,6 +2,8 @@
 
 ## Why
 
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This hot-reload epic (RHIDP-15332) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15331 (Ingestion Health Dashboard) and RHIDP-15334 (Upstream Schema Alignment). Config change audit events (originally RHIDP-15333 scope) are now delivered under RHIDP-15277/RHIDP-15280 — connector config changes should emit audit events using the RHIDP-15277 pattern.
+
 Connectors need configuration changes without pod restart. Toggling a connector on/off, changing sync schedules, or updating endpoint URLs currently requires editing YAML config and redeploying — a multi-minute cycle that blocks quick experimentation and rapid incident response. Enterprise customers need immediate control over ingestion behavior without downtime.
 
 Boost's existing `RuntimeConfigResolver` already solves this for core boost settings: it provides a two-layer config model (YAML baseline + database overrides) with 30-second TTL refresh. This change extends that proven infrastructure to connector settings, enabling hot-reload of connector enable/disable, endpoint URLs, and sync schedules.
