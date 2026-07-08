@@ -8620,9 +8620,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.4.3":
-  version: 6.4.3
-  resolution: "@patternfly/react-core@npm:6.4.3"
+"@patternfly/react-core@npm:6.5.1":
+  version: 6.5.1
+  resolution: "@patternfly/react-core@npm:6.5.1"
   dependencies:
     "@patternfly/react-icons": "npm:^6.5.1"
     "@patternfly/react-styles": "npm:^6.5.1"
@@ -8633,7 +8633,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 10c0/c9f6b50b146a6acec22ab05c81916593a90a7d02436a89096b26e6e8880253cdcb90d2086951daac609006a80676db4dc3af7057a509084bc6cdb8d2aecd5bb6
+  checksum: 10c0/a19cb6e7e286618b62883f0e15876563df8c3b64e5246b9253de40ee7c84b230cb344694a55641dca6a6dd087d331ab05bd0a7554fe160b5c8a1d52c10713ac6
   languageName: node
   linkType: hard
 

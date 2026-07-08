@@ -86,7 +86,7 @@
     "react-router": "6.30.4",
     "react-router-dom": "6.30.4",
     "@remix-run/router": "1.23.3",
-    "@patternfly/react-core": "6.4.3"
+    "@patternfly/react-core": "6.5.1"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
