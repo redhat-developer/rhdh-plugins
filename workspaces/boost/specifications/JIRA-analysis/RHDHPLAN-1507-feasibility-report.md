@@ -206,8 +206,8 @@ A custom `CatalogProcessor` runs in the processing pipeline and triggers Neo4j w
 - Con: Side effects in the processing pipeline are an anti-pattern — processors should emit relations and transform entities, not write to external systems
 - Con: Couples the catalog processing loop to Neo4j availability — Neo4j downtime could impact catalog processing
 
-**Option C — Event-Driven (if available):**
-If RHDH exposes catalog change events (via an event bus or webhook), the adapter subscribes and syncs on event receipt. This is the ideal approach but depends on RHDH's event infrastructure.
+**Option C — Event-Driven (infrastructure exists, events not yet published):**
+The Backstage catalog backend already uses `EventsService` from `@backstage/plugin-events-node` (with `publish()`/`subscribe()` pattern), but currently only emits `experimental.catalog.conflict` and `experimental.catalog.errors` topics — NOT entity lifecycle events (create/update/delete). The `CatalogScmEventsService` handles SCM webhook events for refresh triggers, not entity change notifications. If entity lifecycle events are added upstream (or via a custom catalog module), the adapter subscribes and syncs on event receipt.
 
 **Recommendation:** Option A for initial implementation. Polling interval can be short (30s–60s) and the adapter is fully decoupled from catalog internals. If latency becomes an issue, evolve to Option C when RHDH event infrastructure is available. No upstream changes needed for any option.
 
@@ -241,11 +241,11 @@ If RHDH exposes catalog change events (via an event bus or webhook), the adapter
 
 ## Comparison with RHDHPLAN-1508
 
-| Aspect                               | RHDHPLAN-1507 (Entity Model)                       | RHDHPLAN-1508 (RBAC)                                                               |
-| ------------------------------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Epics requiring deviations from spec | 0 of 7                                             | 3 of 7                                                                             |
-| Upstream changes needed              | None                                               | None (but 3 require alternate approaches)                                          |
-| Framework alignment                  | High — uses catalog extension points as designed   | Medium — permission framework lacks cascade, config toggle, and admin UI extension |
-| PM discussion needed                 | No                                                 | Yes — policy cascade, default-deny config, admin UI placement                      |
-| Highest-risk epic                    | RHIDP-15295 (Neo4j sync — no extension point)      | RHIDP-15274 (Policy cascade — no framework support)                                |
-| Implementation complexity            | Straightforward for 5/7, high for 2/7 (OCI, Neo4j) | Medium for 4/7, high for 3/7 (cascade, admin UI, default-deny)                     |
+| Aspect                               | RHDHPLAN-1507 (Entity Model)                       | RHDHPLAN-1508 (RBAC)                                                                                                                                  |
+| ------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Epics requiring deviations from spec | 0 of 7                                             | 1 of 7 (default-deny "only affects new assets" criterion)                                                                                             |
+| Upstream changes needed              | None                                               | None — RBAC plugin provides more infrastructure than initially assessed                                                                               |
+| Framework alignment                  | High — uses catalog extension points as designed   | Medium-High — `RBACProvider`, `defaultPermissions`, REST API, and `AuditorService` cover most needs; entity-to-entity cascade is the main custom work |
+| PM discussion needed                 | No                                                 | Minimal — confirm retroactive vs. new-only policy application for default-deny                                                                        |
+| Highest-risk epic                    | RHIDP-15295 (Neo4j sync — no extension point)      | RHIDP-15274 (Policy cascade — entity-to-entity, not group-based)                                                                                      |
+| Implementation complexity            | Straightforward for 5/7, high for 2/7 (OCI, Neo4j) | Low for 3/7, medium for 4/7 — revised downward based on RBAC plugin capabilities                                                                      |

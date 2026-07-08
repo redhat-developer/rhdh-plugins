@@ -9,22 +9,24 @@
 
 Before analyzing each epic, here is what the Backstage permission framework **does and does not** provide:
 
-| Capability                                                                                   | Status                                                                             |
-| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `PermissionPolicy.handle()` — flat per-request evaluation                                    | **Available**                                                                      |
-| `createPermission()` / `permissionsRegistry.addPermissions()`                                | **Available**                                                                      |
-| `ALLOW` / `DENY` definitive decisions                                                        | **Available**                                                                      |
-| `CONDITIONAL` decisions (delegated to plugin backend)                                        | **Available** — requires `resourceType`                                            |
-| `isResourcePermission()` type narrowing                                                      | **Available**                                                                      |
-| Custom rules via `apply(resource, params)` → boolean                                         | **Available** — synchronous, single resource, no external calls                    |
-| Rule composition via `anyOf` / `allOf` / `not`                                               | **Available** — same entity only                                                   |
-| `toQuery()` for database-level filtering                                                     | **Available**                                                                      |
-| `RequirePermission` frontend guard                                                           | **Available**                                                                      |
-| Per-plugin or per-resource-type config keys (e.g., `permission.rbac.<plugin>.defaultPolicy`) | **Not available**                                                                  |
-| Hierarchical/cascading policy evaluation (parent→child)                                      | **Not available**                                                                  |
-| Recursive entity traversal in `apply()`                                                      | **Not available** — `apply()` is synchronous, receives one entity                  |
-| Policy-driven config toggles (`allow`/`deny` enum values)                                    | **Not available** — `permission.rbac.defaultPolicy` is a `$include` to a YAML file |
-| RBAC admin UI extension points                                                               | **Not available** — the RBAC admin UI is a closed upstream plugin                  |
+| Capability                                                    | Status                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PermissionPolicy.handle()` — flat per-request evaluation     | **Available**                                                                                                                                                                                                                                                               |
+| `createPermission()` / `permissionsRegistry.addPermissions()` | **Available**                                                                                                                                                                                                                                                               |
+| `ALLOW` / `DENY` definitive decisions                         | **Available**                                                                                                                                                                                                                                                               |
+| `CONDITIONAL` decisions (delegated to plugin backend)         | **Available** — requires `resourceType`                                                                                                                                                                                                                                     |
+| `isResourcePermission()` type narrowing                       | **Available**                                                                                                                                                                                                                                                               |
+| Custom rules via `apply(resource, params)` → boolean          | **Available** — synchronous, single resource, no external calls                                                                                                                                                                                                             |
+| Rule composition via `anyOf` / `allOf` / `not`                | **Available** — same entity only                                                                                                                                                                                                                                            |
+| `toQuery()` for database-level filtering                      | **Available**                                                                                                                                                                                                                                                               |
+| `RequirePermission` frontend guard                            | **Available**                                                                                                                                                                                                                                                               |
+| Per-plugin or per-resource-type config keys                   | **Partially available** — `pluginsWithPermission`, `defaultPermissions` (with `defaultRole` + `basicPermissions`), and `policyDecisionPrecedence` exist in RBAC config. AI-catalog-scoped config keys (e.g., `permission.rbac.aiCatalog.*`) do not exist                    |
+| Hierarchical/cascading policy evaluation                      | **Partially available** — RBAC supports group-based hierarchical role inheritance (child groups inherit parent roles, configurable `maxDepth`). Entity-to-entity cascade (asset→version) is **not** supported                                                               |
+| Recursive entity traversal in `apply()`                       | **Not available** — `apply()` is synchronous, receives one resource                                                                                                                                                                                                         |
+| Policy-driven config toggles (`allow`/`deny` enum values)     | **Partially available** — `defaultPermissions` config provides a general-purpose default role + permissions for all authenticated users. AI-catalog-specific config toggles do not exist                                                                                    |
+| RBAC admin UI extension points                                | **Backend available, frontend not extensible** — `rbacProviderExtensionPoint` and `pluginIdProviderExtensionPoint` exist for backend integration. REST API provides full policy/role/condition CRUD (23+ routes). The frontend RBAC admin UI has no plugin extension points |
+| `RBACProvider` programmatic policy sync                       | **Available** — `RBACProvider` interface with `connect(connection)` and `refresh()`. `RBACProviderConnection` supports `applyRoles()`, `applyPermissions()`, and `applyConditionalPermissions()` for programmatic policy management                                         |
+| RBAC audit events                                             | **Available** — `AuditorService` emits structured events for `role-write`, `policy-write`, `condition-write`, `permission-evaluation`, and read operations                                                                                                                  |
 
 ---
 
@@ -68,9 +70,9 @@ Before analyzing each epic, here is what the Backstage permission framework **do
 | Documented for RBAC administrators                                               | **YES**                            | Documentation exercise                                                                                                                                                                                                                                                  |
 | Unit and integration tests                                                       | **YES**                            | Testing exercise                                                                                                                                                                                                                                                        |
 
-**Verdict: FEASIBLE WITH SIGNIFICANT CUSTOM WORK — NO UPSTREAM CHANGES NEEDED, BUT NOT A FRAMEWORK FEATURE**
+**Verdict: FEASIBLE WITH MODERATE CUSTOM WORK — RBAC plugin provides the integration mechanism**
 
-The cascade can be implemented without modifying the Backstage framework itself, but it requires building custom infrastructure:
+The RBAC plugin's `RBACProvider` extension point significantly reduces the custom work required. The framework has no built-in entity-to-entity cascade, but the plumbing for programmatic policy sync exists.
 
 **Option A — Custom PermissionPolicy with catalog lookups:**
 The `handle()` method is async (`Promise<PolicyDecision>`), so it _can_ make catalog API calls during evaluation. The policy would:
@@ -87,7 +89,17 @@ When a version entity is ingested, copy the parent asset's policy rules to the v
 
 This avoids runtime catalog lookups but requires the entity provider to maintain policy synchronization.
 
-**Recommendation:** Option B is more performant and avoids the `apply()` synchronous limitation. The entity provider already has access to the catalog and can denormalize policies during ingestion. This is entirely within the boost workspace — no upstream changes needed.
+**Option C — RBACProvider-based policy sync (recommended):**
+Implement a custom `RBACProvider` that watches catalog entity changes and applies conditional permissions via `RBACProviderConnection.applyConditionalPermissions()`. When an asset entity's policies change, the provider's `refresh()` method propagates the policies to all version entities of that asset. Version-specific overrides are stored as separate conditional policies that take precedence via `policyDecisionPrecedence`.
+
+This approach uses the RBAC plugin's intended extension mechanism:
+
+- `connect(connection)` establishes the sync relationship
+- `refresh()` is called on schedule or on-demand to reconcile policies
+- `applyConditionalPermissions()` sets version-level policies derived from the parent asset
+- The RBAC plugin handles storage, precedence, and evaluation — the provider only handles cascade logic
+
+**Recommendation:** Option C. It uses the RBAC plugin's `RBACProvider` extension point as designed, avoids runtime catalog lookups (Option A), and doesn't require entity provider changes (Option B). The cascade logic lives in a dedicated RBAC provider module, cleanly separated from entity ingestion.
 
 ---
 
@@ -97,18 +109,18 @@ This avoids runtime catalog lookups but requires the entity provider to maintain
 
 #### Acceptance Criteria Assessment
 
-| Criterion                                                              | Feasible without upstream changes?                | Assessment                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `permission.rbac.aiCatalog.defaultPolicy` accepts `allow`/`deny`       | **NOT AS SPECIFIED** — but achievable differently | This specific config key pattern doesn't exist in the RBAC plugin. However, the same outcome is achievable through a catch-all RBAC policy rule (see below)                                                                                                                                    |
-| Only accessible to `ai-catalog.admin` holders                          | **YES**                                           | The `ai-catalog.admin` permission gates who can modify the policy — standard permission check                                                                                                                                                                                                  |
-| Per-category defaults (`rhdh.io/ai-asset-category`)                    | **YES with custom rules**                         | A custom permission rule can inspect entity annotations to match categories. Combined with a conditional decision, this filters per-category                                                                                                                                                   |
-| Per-connector defaults (different source connectors)                   | **YES with custom rules**                         | Same approach — a custom rule inspects a source-connector annotation on the entity                                                                                                                                                                                                             |
-| Default-deny: newly ingested entities not visible until explicit ALLOW | **YES**                                           | A catch-all DENY conditional rule for `ai-catalog.asset.read` achieves this. Entities are invisible until an explicit ALLOW policy overrides the catch-all                                                                                                                                     |
-| Default-allow: entities visible to all users with the permission       | **YES**                                           | Absence of the catch-all deny rule = default-allow. Standard RBAC behavior                                                                                                                                                                                                                     |
-| Changing default only affects subsequently ingested assets             | **REQUIRES CUSTOM IMPLEMENTATION**                | The RBAC framework doesn't distinguish "ingested before/after a policy change." This requires either: (a) marking entities with an ingestion-time annotation that the policy checks, or (b) accepting that the policy change affects all entities (which is simpler and arguably more correct) |
-| Log entry when asset ingested under default-deny                       | **YES**                                           | Application-level logging in the entity provider — no framework involvement                                                                                                                                                                                                                    |
-| Audit log for changing the setting                                     | **YES**                                           | Application-level audit logging — covered by RHIDP-15277                                                                                                                                                                                                                                       |
-| Tests for both postures, per-category, per-connector                   | **YES**                                           | Testing exercise                                                                                                                                                                                                                                                                               |
+| Criterion                                                              | Feasible without upstream changes?          | Assessment                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `permission.rbac.aiCatalog.defaultPolicy` accepts `allow`/`deny`       | **Partially supported via existing config** | The RBAC plugin's `defaultPermissions` config (with `defaultRole` + `basicPermissions`) provides a general-purpose default permission posture. The specific AI-catalog-scoped config key doesn't exist, but per-category/per-connector scoping is achievable via catch-all conditional rules. `RBACProvider.applyConditionalPermissions()` enables programmatic default-deny management |
+| Only accessible to `ai-catalog.admin` holders                          | **YES**                                     | The `ai-catalog.admin` permission gates who can modify the policy — standard permission check                                                                                                                                                                                                                                                                                           |
+| Per-category defaults (`rhdh.io/ai-asset-category`)                    | **YES with custom rules**                   | A custom permission rule can inspect entity annotations to match categories. Combined with a conditional decision, this filters per-category                                                                                                                                                                                                                                            |
+| Per-connector defaults (different source connectors)                   | **YES with custom rules**                   | Same approach — a custom rule inspects a source-connector annotation on the entity                                                                                                                                                                                                                                                                                                      |
+| Default-deny: newly ingested entities not visible until explicit ALLOW | **YES**                                     | A catch-all DENY conditional rule for `ai-catalog.asset.read` achieves this. Entities are invisible until an explicit ALLOW policy overrides the catch-all                                                                                                                                                                                                                              |
+| Default-allow: entities visible to all users with the permission       | **YES**                                     | Absence of the catch-all deny rule = default-allow. Standard RBAC behavior                                                                                                                                                                                                                                                                                                              |
+| Changing default only affects subsequently ingested assets             | **REQUIRES CUSTOM IMPLEMENTATION**          | The RBAC framework doesn't distinguish "ingested before/after a policy change." This requires either: (a) marking entities with an ingestion-time annotation that the policy checks, or (b) accepting that the policy change affects all entities (which is simpler and arguably more correct)                                                                                          |
+| Log entry when asset ingested under default-deny                       | **YES**                                     | Application-level logging in the entity provider — no framework involvement                                                                                                                                                                                                                                                                                                             |
+| Audit log for changing the setting                                     | **YES**                                     | Application-level audit logging — covered by RHIDP-15277                                                                                                                                                                                                                                                                                                                                |
+| Tests for both postures, per-category, per-connector                   | **YES**                                     | Testing exercise                                                                                                                                                                                                                                                                                                                                                                        |
 
 **Verdict: FEASIBLE WITHOUT UPSTREAM CHANGES — using catch-all policy approach (Option 2 from questions doc)**
 
@@ -141,7 +153,25 @@ The implementation path:
 | Sufficient context without exposing sensitive content                                     | **YES**                            | Log content design — application-level concern                                                                                        |
 | Unit tests for event emission                                                             | **YES**                            | Testing exercise                                                                                                                      |
 
-**Verdict: FULLY FEASIBLE** — Audit logging is entirely an application-level concern. All events are emitted by boost-owned code (policy management endpoints, entity providers, management APIs). No upstream changes needed.
+**Verdict: FULLY FEASIBLE — scope is smaller than originally estimated**
+
+The RBAC plugin's `AuditorService` already provides structured audit events covering:
+
+- `role-write` / `role-read` — role CRUD operations
+- `policy-write` / `policy-read` — permission policy CRUD
+- `condition-write` / `condition-read` — conditional policy CRUD
+- `permission-evaluation` — per-request permission decisions (includes `userEntityRef`, `permissionName`, `action`, `resourceType`, `decision`)
+- `plugin-ids-write` / `plugin-ids-read` — plugin permission registration changes
+
+**What the RBAC plugin already covers:** All RBAC policy change events (criterion 1) are already audited. The `permission-evaluation` event covers access decision auditing.
+
+**What remains as custom work for this epic:**
+
+- AI-catalog-specific management events (default posture changes, per-category/per-connector policy changes) — these are boost-owned management API events
+- Ingestion sync events (provider, counts, duration, errors) — entity provider logging
+- Individual asset ingestion events (entity ref, operation, source) — entity provider logging
+
+This significantly overlaps with RHIDP-15333 (Ingestion Audit & Metrics) under RHDHPLAN-1513. Consider consolidating the remaining scope.
 
 ---
 
@@ -181,15 +211,15 @@ The implementation path:
 | Changes produce audit log entries                                                        | **YES**                            | The management API emits audit events — covered by RHIDP-15277                                                                                                                              |
 | Follows RHDH admin UI patterns (MUI, Backstage theme)                                    | **YES**                            | Standard frontend development using Backstage component library                                                                                                                             |
 
-**Verdict: FEASIBLE AS A STANDALONE ADMIN PAGE — NOT as a section added to the upstream RBAC admin UI**
+**Verdict: FEASIBLE AS A STANDALONE ADMIN PAGE — the standard RBAC integration pattern**
 
-The key deviation: RHDHPLAN-1508 says "dedicated section in the RHDH RBAC admin UI" but the RBAC admin UI is an upstream plugin. Two paths:
+The RBAC plugin exposes a full REST API (23+ routes) for policy/role/condition CRUD, plus `rbacProviderExtensionPoint` for backend integration. Other RHDH features (Homepage, Scorecard, extensions) already manage RBAC through the REST API from their own pages — this is the intended integration pattern.
 
-1. **Standalone AI Catalog admin page** (recommended): A new route in the boost frontend (`/ai-catalog/admin/rbac`) that provides purpose-built AI Catalog policy management. It can link from the main RBAC admin UI via a sidebar item or banner, but it's a separate page owned by the boost plugin. No upstream changes needed.
+1. **Standalone AI Catalog admin page** (recommended): A new route in the boost frontend (`/ai-catalog/admin/rbac`) that provides purpose-built AI Catalog policy management, using the RBAC REST API for all operations. It can link from the main RBAC admin UI via a sidebar item or banner. No upstream changes needed — this follows the same pattern used by other RHDH features.
 
-2. **RHDH downstream RBAC plugin extension**: If RHDH's downstream fork of the RBAC plugin already has extension points or customizations, a section could be added there — but this is an RHDH platform team concern, not a boost workspace concern, and still involves modifying the RBAC plugin.
+2. **RHDH downstream RBAC plugin extension**: If RHDH's downstream fork of the RBAC plugin already has extension points or customizations, a section could be added there — but this is an RHDH platform team concern, not a boost workspace concern.
 
-**Recommendation:** Option 1. The SMP Admin persona doesn't care whether the policy management UI is a tab inside the RBAC page or a linked page — they care that it exists and is easy to use. A standalone page avoids upstream dependencies entirely.
+**Recommendation:** Option 1. This is how RHDH features are designed to integrate with RBAC — through the REST API from feature-owned pages. The `rbacProviderExtensionPoint` provides additional backend integration for programmatic policy management (e.g., auto-applying policies on entity ingestion).
 
 ---
 
@@ -214,27 +244,29 @@ The key deviation: RHDHPLAN-1508 says "dedicated section in the RHDH RBAC admin 
 
 ## Summary Matrix
 
-| Epic                             | Key         | Feasible without upstream changes? | Implementation complexity | Notes                                                                                                                     |
-| -------------------------------- | ----------- | ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Graduated Visibility Permissions | RHIDP-15270 | **YES**                            | Low                       | Standard permission registration and policy patterns                                                                      |
-| Version-Level Policy Cascade     | RHIDP-15274 | **YES — with custom work**         | High                      | Requires custom cascade logic; recommend denormalized policies at ingestion time (Option B)                               |
-| Default-Deny Configuration       | RHIDP-15276 | **YES — via catch-all policy**     | Medium                    | Config key pattern replaced by catch-all RBAC policy rules; one criterion ("only affects new assets") needs PM discussion |
-| RBAC Audit Logging               | RHIDP-15277 | **YES**                            | Medium                    | Entirely application-level logging in boost-owned code                                                                    |
-| Performance & Multi-Tenancy      | RHIDP-15281 | **YES**                            | Medium                    | Custom tenant-scoping rules; performance testing is infrastructure                                                        |
-| RBAC Admin UI Section            | RHIDP-15304 | **YES — as standalone page**       | Medium-High               | Cannot modify upstream RBAC plugin UI; standalone admin page achieves same outcome                                        |
-| SkillBundle Read-Time Filtering  | RHIDP-15305 | **YES**                            | Medium                    | Standard backend filtering using batch permission checks                                                                  |
+| Epic                             | Key         | Feasible without upstream changes?    | Implementation complexity | Notes                                                                                                                                                                                         |
+| -------------------------------- | ----------- | ------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Graduated Visibility Permissions | RHIDP-15270 | **YES**                               | Low                       | Standard permission registration and policy patterns                                                                                                                                          |
+| Version-Level Policy Cascade     | RHIDP-15274 | **YES — with custom work**            | Medium                    | `RBACProvider` + `applyConditionalPermissions()` provides integration mechanism; entity-to-entity cascade is custom but plumbing exists (Option C)                                            |
+| Default-Deny Configuration       | RHIDP-15276 | **YES — via existing config + rules** | Low-Medium                | `defaultPermissions` config covers general case; per-category/per-connector scoping needs custom conditional rules. One criterion ("only affects new assets") needs PM discussion             |
+| RBAC Audit Logging               | RHIDP-15277 | **YES**                               | Low                       | RBAC `AuditorService` already covers policy/role/condition CRUD and permission evaluation. Remaining scope: ingestion events and AI-catalog management events only. Overlaps with RHIDP-15333 |
+| Performance & Multi-Tenancy      | RHIDP-15281 | **YES**                               | Medium                    | Custom tenant-scoping rules; performance testing is infrastructure                                                                                                                            |
+| RBAC Admin UI Section            | RHIDP-15304 | **YES — as standalone page**          | Medium                    | REST API (23+ routes) is the standard RBAC integration pattern; standalone admin page follows same approach as other RHDH features                                                            |
+| SkillBundle Read-Time Filtering  | RHIDP-15305 | **YES**                               | Medium                    | Standard backend filtering using batch permission checks                                                                                                                                      |
 
 ## Key Findings
 
-1. **All 7 epics have implementation paths that do NOT require upstream Backstage changes.** However, 3 epics require implementation approaches that deviate from the exact wording of RHDHPLAN-1508.
+1. **All 7 epics have implementation paths that do NOT require upstream Backstage changes.** The RBAC plugin provides significantly more infrastructure than initially assessed — `RBACProvider` extension point, `defaultPermissions` config, group hierarchy, full REST API, and structured audit events via `AuditorService` all reduce custom work.
 
-2. **Three areas require PM discussion:**
-   - **RHIDP-15274 (Policy Cascade):** The framework has no cascade — must be built as custom logic. Recommend denormalized policies (set at ingestion time) rather than runtime cascade for performance.
-   - **RHIDP-15276 (Default-Deny Config):** The `permission.rbac.aiCatalog.defaultPolicy` config key pattern doesn't exist. Recommend catch-all RBAC policy rules instead. Also, "only affects subsequently ingested assets" is atypical for RBAC — policies normally apply to all matching entities.
-   - **RHIDP-15304 (Admin UI):** Cannot add sections to the upstream RBAC admin UI. Recommend a standalone AI Catalog admin page linked from the main navigation.
+2. **One area requires PM discussion:**
+   - **RHIDP-15276 (Default-Deny Config):** The criterion "only affects subsequently ingested assets" is atypical for RBAC — policies normally apply to all matching entities. Confirm whether retroactive application is acceptable.
 
-3. **The catch-all policy pattern (Option 2) is the recurring solution** for multiple criteria across RHIDP-15270, RHIDP-15276, and RHIDP-15305. It's the framework-aligned way to achieve default-deny, category-scoped, and connector-scoped policy behaviors.
+3. **The RBAC plugin's `RBACProvider` interface is the primary integration mechanism** for the cascade (RHIDP-15274) and default-deny (RHIDP-15276) epics. `RBACProviderConnection.applyConditionalPermissions()` enables programmatic policy sync triggered by entity ingestion events.
 
-4. **Custom permission rules are the main building block.** Rules like `isAiAssetCategory()`, `isFromConnector()`, `isInTenant()` inspect entity annotations and produce conditional decisions that filter at the database level via `toQuery()`. This is exactly how the framework is designed to be extended.
+4. **RBAC audit logging (RHIDP-15277) scope is significantly smaller than estimated.** The `AuditorService` already covers policy CRUD, role CRUD, condition changes, and permission evaluation. The remaining work is limited to AI-catalog management events and ingestion sync events — which overlaps with RHIDP-15333 under RHDHPLAN-1513.
 
-5. **Performance risk concentrates in RHIDP-15274.** Runtime cascade (looking up parent asset during every version-entity permission check) conflicts with the <10% latency overhead requirement. Denormalization at ingestion time avoids this but adds entity provider complexity.
+5. **Custom permission rules remain the main building block.** Rules like `isAiAssetCategory()`, `isFromConnector()`, `isInTenant()` inspect entity annotations and produce conditional decisions that filter at the database level via `toQuery()`. This is exactly how the framework is designed to be extended.
+
+6. **The standalone admin page (RHIDP-15304) follows the standard RHDH integration pattern.** Other RHDH features (Homepage, Scorecard, extensions) already manage RBAC through the REST API from their own pages — this is not a deviation but the intended approach.
+
+7. **Implementation complexity has been revised downward** for 4 of 7 epics based on existing RBAC plugin capabilities. Policy cascade drops from High to Medium (RBACProvider plumbing exists), default-deny from Medium to Low-Medium (defaultPermissions config exists), audit from Medium to Low (AuditorService already covers most events), and admin UI from Medium-High to Medium (REST API is the intended integration path).
