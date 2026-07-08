@@ -229,6 +229,21 @@ spec:
 
 ## Annotations
 
+### Catalog source
+
+Automatically set by the `BaseEntityProvider` to identify which catalog image each entity came from. The value is derived from the on-disk directory layout produced by `install-dynamic-plugins`:
+
+- Entities under the primary `catalog-entities/` tree get `"primary"`
+- Entities under `extra/<name>/catalog-entities/` get `<name>` as the source (matching the name from `EXTRA_CATALOG_INDEX_IMAGES`)
+
+This annotation is always set and should not be manually specified in YAML files.
+
+```yaml
+metadata:
+  annotations:
+    extensions.backstage.io/catalog-source: 'primary'
+```
+
 ### Support type for Core and Community plugins
 
 ```yaml
