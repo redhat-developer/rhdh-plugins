@@ -45,9 +45,11 @@ The OCI Skill Registry connector solves this by providing a standard Backstage e
 
 ## Impact
 
-- `packages/backend/src/plugins/ai-catalog-entity-model/` — New connector implements the entity provider SDK contract defined here
-- `packages/backend/src/plugins/ai-catalog-entity-model/entity-provider-sdk/` — Connector uses TypeScript interface, annotation population, validation from SDK
-- `packages/backend/src/plugins/ai-catalog-entity-model/delta-sync-framework/` — Connector uses SDK's `applyMutation({ type: 'delta' })` for digest-based change detection
-- `packages/backend/src/plugins/ai-catalog-entity-model/annotation-scheme/` — Connector populates `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`
-- `packages/backend/src/plugins/ai-catalog-entity-model/air-gapped-deployment/` — Connector follows SDK's air-gapped patterns (CA bundles, Secret credentials, configurable endpoints)
+> **Post-consolidation note (2026-07-08):** Dependencies below reference specs whose epics have been consolidated. SDK interface, annotations, and delta sync are all under RHIDP-15258. Air-gapped patterns are under RHIDP-15316.
+
+- `packages/backend/src/plugins/ai-catalog-entity-model/` — New connector implements the entity provider SDK contract (RHIDP-15258)
+- `packages/backend/src/plugins/ai-catalog-entity-model/entity-provider-sdk/` — Connector uses TypeScript interface, annotation population, validation from SDK (RHIDP-15258)
+- `packages/backend/src/plugins/ai-catalog-entity-model/delta-sync-framework/` — Connector uses SDK's `applyMutation({ type: 'delta' })` for digest-based change detection (RHIDP-15258, story RHIDP-15262)
+- `packages/backend/src/plugins/ai-catalog-entity-model/annotation-scheme/` — Connector populates `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source` (RHIDP-15258, story RHIDP-15255)
+- `packages/backend/src/plugins/ai-catalog-entity-model/air-gapped-deployment/` — Connector follows cross-connector air-gapped patterns: CA bundles (RHIDP-15329), Secret credentials (RHIDP-15265), configurable endpoints (RHIDP-15265) — all under RHIDP-15316
 - **New**: `packages/backend/src/plugins/ai-catalog-oci-skill-registry/` — The connector plugin implementation

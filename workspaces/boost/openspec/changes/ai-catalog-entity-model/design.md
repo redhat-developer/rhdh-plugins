@@ -8,6 +8,17 @@ Boost cannot wait for upstream — customers need AI Catalog today. The model us
 
 This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirmed all patterns are standard Backstage catalog extensions with no framework changes required.
 
+## RHDHPLAN-1507 Consolidation (2026-07-08)
+
+> This design originally covered 7 epics. Post-consolidation, 3 surviving epics remain:
+>
+> - **RHIDP-15258** (Entity-Provider SDK) — absorbs annotation scheme, delta sync, per-entity error isolation
+> - **RHIDP-15294** (OCI Skill Registry) — absorbs load testing
+> - **RHIDP-15316** (Cross-Connector, RHDHPLAN-1510) — absorbs air-gapped patterns, error resilience
+>
+> Decisions 1–3, 6–8 remain under RHIDP-15258. Decision 4 (air-gapped) moved to RHIDP-15316.
+> Decision 5 (performance) distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316.
+
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
@@ -83,7 +94,7 @@ interface DeltaSyncCursor {
 }
 ```
 
-### Decision 4: Air-gapped credential pattern
+### Decision 4: Air-gapped credential pattern _(Moved to RHIDP-15316)_
 
 **Custom CA bundles:** Providers read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` environment variable or explicit `https.Agent` configuration. This is standard Node.js TLS.
 
@@ -109,7 +120,7 @@ Startup validation rejects plaintext credentials with descriptive error: `Plaint
 
 Reference app-config pattern applies to all connectors (Kagenti, LlamaStack, OCI skill registry).
 
-### Decision 5: Performance SLAs and error resilience
+### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 
 **Load testing:** Test harness creates 5,000+ entities and measures:
 

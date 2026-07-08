@@ -1,5 +1,7 @@
 # Tasks: OCI Skill Registry Connector
 
+> **Post-consolidation note (2026-07-08):** SDK dependencies reference RHIDP-15258 (absorbs former RHIDP-15261 delta sync and RHIDP-15254 annotations). Air-gapped dependencies reference RHIDP-15316 (absorbs former RHIDP-15263).
+
 ## 1. OCI Client Integration (P0)
 
 - [ ] 1.1 Evaluate and select Node.js OCI Distribution Spec client library (`oras-js` or equivalent) (RHIDP-15296)

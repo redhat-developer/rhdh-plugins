@@ -1,6 +1,6 @@
 # Air-Gapped Deployment Support
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Moved to RHIDP-15316 (Cross-Connector Shared Infrastructure, RHDHPLAN-1510)** — Air-gapped patterns are cross-connector concerns. CA bundle scope → RHIDP-15329, credentials/endpoints → RHIDP-15265, reference configs → RHIDP-15266. Story RHIDP-15264 has been closed (scope split into RHIDP-15329 and RHIDP-15265).
 
 Enterprise air-gapped deployment readiness: custom CA bundles for TLS, K8s Secret-only credentials with startup validation rejecting plaintext, and configurable endpoint URLs with no hardcoded SaaS defaults.
 
@@ -10,20 +10,20 @@ Enterprise air-gapped deployment readiness: custom CA bundles for TLS, K8s Secre
 
 Entity providers MUST honor custom CA bundles from mounted Secret/ConfigMap for all TLS connections.
 
-#### Scenario: CA bundle via NODE_EXTRA_CA_CERTS (RHIDP-15264)
+#### Scenario: CA bundle via NODE_EXTRA_CA_CERTS (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** the `NODE_EXTRA_CA_CERTS=/etc/ssl/certs/custom-ca.pem` environment variable is set (pointing to a mounted Secret/ConfigMap)
 - **THEN** all HTTPS connections from the entity provider honor the custom CA bundle
 - **AND** connections to registries with certificates signed by the custom CA succeed
 
-#### Scenario: CA bundle via explicit https.Agent (RHIDP-15264)
+#### Scenario: CA bundle via explicit https.Agent (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** an entity provider initializes an HTTP client
 - **THEN** it reads the custom CA from app-config (e.g., `boost.providers.kagenti.caCertPath: /etc/ssl/certs/custom-ca.pem`)
 - **AND** it creates an `https.Agent` with `ca: fs.readFileSync(caCertPath)`
 - **AND** all HTTPS requests use this agent
 
-#### Scenario: Configuration schema documented (RHIDP-15264)
+#### Scenario: Configuration schema documented (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** the SDK or provider module is documented
 - **THEN** the README includes an example showing how to mount a CA bundle via Helm/Operator CR
@@ -33,7 +33,7 @@ Entity providers MUST honor custom CA bundles from mounted Secret/ConfigMap for 
 
 Entity providers MUST accept K8s Secret references for all credentials and reject plaintext credentials at startup.
 
-#### Scenario: Secret reference format (RHIDP-15264)
+#### Scenario: Secret reference format (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** app-config specifies credentials via K8s Secret reference
 - **THEN** the format is:
@@ -52,13 +52,13 @@ Entity providers MUST accept K8s Secret references for all credentials and rejec
   ```
 - **AND** the provider reads the secret values via Backstage's `$secret` resolver (or via K8s API if running in-cluster)
 
-#### Scenario: Plaintext credentials rejected at startup (RHIDP-15264)
+#### Scenario: Plaintext credentials rejected at startup (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** app-config specifies credentials as plaintext strings (e.g., `clientSecret: "my-secret"` instead of `$secret`)
 - **THEN** the provider throws at startup: `Error: Plaintext credentials not allowed. Use K8s Secret references ($secret.name / $secret.key).`
 - **AND** the Backstage backend fails to start with a descriptive error message
 
-#### Scenario: Startup validation with descriptive errors (RHIDP-15264)
+#### Scenario: Startup validation with descriptive errors (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** the provider module initializes
 - **THEN** it validates all credential fields are either `$secret` references or `$env` (for mounted secrets)

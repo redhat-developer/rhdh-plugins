@@ -1,6 +1,6 @@
 # AI Asset Annotation Scheme
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Consolidated into RHIDP-15258 (Entity-Provider SDK)** — Annotation scheme is now part of the SDK epic. Single story RHIDP-15255 covers all 3 annotations (category, version, source). Stories RHIDP-15256 and RHIDP-15257 have been closed.
 
 Standardized annotation scheme for classifying AI assets (agents, skills, MCP servers, models, model servers) in the Backstage catalog, with documented normalization rules for versioning and provenance tracking.
 
@@ -36,32 +36,32 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with documented normalization rules.
 
-#### Scenario: Semver version pass-through (RHIDP-15256)
+#### Scenario: Semver version pass-through (RHIDP-15255)
 
 - **WHEN** the source registry reports version `1.2.3` (valid semver)
 - **THEN** the entity has `rhdh.io/ai-asset-version: 1.2.3` (unchanged)
 - **AND** **WHEN** the source registry reports version `2.0.0-beta.1`
 - **THEN** the entity has `rhdh.io/ai-asset-version: 2.0.0-beta.1`
 
-#### Scenario: Date-based version normalization (RHIDP-15256)
+#### Scenario: Date-based version normalization (RHIDP-15255)
 
 - **WHEN** the source registry reports version `20260708` (date format)
 - **THEN** the entity has `rhdh.io/ai-asset-version: 0.0.0-20260708`
 - **AND** **WHEN** the source registry reports version `2026-07-08`
 - **THEN** the entity has `rhdh.io/ai-asset-version: 0.0.0-20260708` (normalized to compact format)
 
-#### Scenario: Commit hash version normalization (RHIDP-15256)
+#### Scenario: Commit hash version normalization (RHIDP-15255)
 
 - **WHEN** the source registry reports version `a1b2c3d` (Git commit SHA)
 - **THEN** the entity has `rhdh.io/ai-asset-version: 0.0.0-a1b2c3d`
 
-#### Scenario: Unrecognized version format fallback (RHIDP-15256)
+#### Scenario: Unrecognized version format fallback (RHIDP-15255)
 
 - **WHEN** the source registry reports version `unknown-format-xyz`
 - **THEN** the entity has `rhdh.io/ai-asset-version: 0.0.0-unknown`
 - **AND** a warning is logged: `Unrecognized version format 'unknown-format-xyz' for entity <entityRef>. Normalized to 0.0.0-unknown`
 
-#### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15256)
+#### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15255)
 
 - **WHEN** a developer imports `normalizeAIAssetVersion` from `@boost/entity-provider-sdk`
 - **THEN** it is a function accepting `sourceVersion: string` and returning normalized semver string
@@ -72,24 +72,24 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identifying the connector and registry instance.
 
-#### Scenario: Source annotation format (RHIDP-15257)
+#### Scenario: Source annotation format (RHIDP-15255)
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
 - **AND** `connector-name` is one of: `kagenti`, `llamastack`, `oci-skill-registry`
 - **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
 
-#### Scenario: Kagenti provider source annotation (RHIDP-15257)
+#### Scenario: Kagenti provider source annotation (RHIDP-15255)
 
 - **WHEN** the Kagenti provider with instance ID `prod-kagenti` emits an entity
 - **THEN** the entity has `rhdh.io/ai-asset-source: kagenti/prod-kagenti`
 
-#### Scenario: OCI skill registry provider source annotation (RHIDP-15257)
+#### Scenario: OCI skill registry provider source annotation (RHIDP-15255)
 
 - **WHEN** the OCI skill registry provider with instance ID `default` emits an entity
 - **THEN** the entity has `rhdh.io/ai-asset-source: oci-skill-registry/default`
 
-#### Scenario: Audit traceability via source annotation (RHIDP-15257)
+#### Scenario: Audit traceability via source annotation (RHIDP-15255)
 
 - **WHEN** an AI asset entity is queried from the catalog
 - **THEN** the `rhdh.io/ai-asset-source` annotation provides audit trail: which connector and which registry instance produced this entity

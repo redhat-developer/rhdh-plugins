@@ -165,6 +165,33 @@ The connector processes incremental syncs efficiently for large namespaces with 
 - **AND** downloads `skillcard.yaml` for all valid images
 - **AND** completes within timeout (configurable, default: 30 minutes)
 
+### Requirement: Manifest-Digest Caching with TTL
+
+> _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
+
+The connector MUST cache manifest digests to avoid redundant registry API calls during incremental sync.
+
+#### Scenario: In-memory digest cache with 5-minute TTL
+
+- **WHEN** the connector fetches a manifest digest for tag `v1.0.0` from registry
+- **THEN** it caches the digest in memory with a 5-minute TTL
+- **AND** subsequent digest lookups for the same tag within 5 minutes return the cached value without a registry API call
+- **AND** after 5 minutes, the cache entry expires and the next lookup fetches from the registry
+
+#### Scenario: Disk-based backup cache for cold starts
+
+- **WHEN** the connector restarts (pod restart, deployment rollout)
+- **THEN** it loads the last-known digest map from disk-based backup cache (same storage as sync cursor)
+- **AND** uses the backup cache for the first incremental sync cycle (avoids full refresh on every restart)
+- **AND** after the first successful sync, the in-memory cache is populated from the fresh registry data
+
+#### Scenario: Cache invalidation on cursor reset
+
+- **WHEN** the sync cursor is invalidated (schema mismatch, expiration, manual reset)
+- **THEN** the in-memory digest cache is cleared
+- **AND** the disk-based backup cache is cleared
+- **AND** the next sync runs as a full refresh (no cached digests to compare against)
+
 ### Requirement: Cursor Update Atomicity
 
 The connector ensures cursor updates are atomic to avoid partial state on failure.

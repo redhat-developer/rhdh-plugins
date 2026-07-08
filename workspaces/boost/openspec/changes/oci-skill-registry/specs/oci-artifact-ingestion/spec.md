@@ -121,6 +121,33 @@ The connector emits Backstage entities with `kind: Resource`, `spec.type: ai-ski
 - **THEN** the connector sets `spec.owner: team-ai` (first author)
 - **AND** adds `metadata.annotations.rhdh.io/ai-skill-authors: team-ai,john-doe` (all authors)
 
+### Requirement: Full-Sync Performance Target
+
+> _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
+
+The connector MUST complete a full sync of 2,000 OCI images within 5 minutes using manifest-only fetching.
+
+#### Scenario: Full sync of 2,000 images completes within 5 minutes
+
+- **WHEN** the connector runs a full sync for a namespace containing 2,000 tagged images
+- **THEN** it fetches all 2,000 manifests using parallel manifest-only fetching (concurrency limit: 10)
+- **AND** downloads `skillcard.yaml` from layers for all valid images
+- **AND** emits up to 2,000 entities
+- **AND** the total sync duration is ≤ 5 minutes (300 seconds)
+
+#### Scenario: Manifest-only fetching optimization
+
+- **WHEN** the connector checks whether a tag has changed (incremental or full sync)
+- **THEN** it fetches only the manifest (HEAD request for digest comparison) before downloading layers
+- **AND** skips layer download for tags whose digest matches the cursor
+- **AND** this reduces per-tag overhead to a single lightweight API call for unchanged tags
+
+#### Scenario: Performance degradation alert
+
+- **WHEN** a full sync of 2,000 images takes longer than 5 minutes
+- **THEN** the connector logs warning: `Full sync exceeded 5-minute target: <actual_duration>. Consider increasing concurrency or reducing namespace size.`
+- **AND** the sync still completes (does not abort on timeout)
+
 ### Requirement: Support Tag Enumeration Discovery
 
 The connector discovers all skill artifacts in a configured OCI namespace by enumerating tags.

@@ -1,6 +1,8 @@
 # Entity Provider SDK
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft (Expanded Scope)** — Pre-implementation specification. Subject to change during implementation.
+>
+> Post-consolidation, RHIDP-15258 absorbs: annotation scheme (RHIDP-15255), delta sync framework (RHIDP-15262), and migration readiness (RHIDP-15302). See companion specs for detailed requirements.
 
 A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types, validation utilities, and adapter interfaces for Neo4j and skillcard.yaml schemas.
 

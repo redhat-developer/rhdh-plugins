@@ -203,6 +203,45 @@ The connector rejects plaintext credentials in app-config and requires K8s Secre
 - **AND** the Secret `quay-robot-account` only contains `username: robot-user` (missing `password`)
 - **THEN** the connector fails at startup with error: `Secret "quay-robot-account" missing required key "password" for basic auth`
 
+### Requirement: K8s Pull Secret Pattern as Primary Credential Mechanism
+
+> _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
+
+The connector MUST support Kubernetes pull secrets (`kubernetes.io/dockerconfigjson`) as the primary credential mechanism, alongside the existing `secretRef` pattern.
+
+#### Scenario: Authenticate using K8s pull secret
+
+- **WHEN** the app-config contains:
+  ```yaml
+  ai-catalog-oci-skill-registry:
+    registries:
+      - id: quay-internal
+        url: https://quay.internal.corp
+        auth:
+          type: pull-secret
+          pullSecretRef: quay-pull-secret
+  ```
+- **AND** the Secret `quay-pull-secret` has `type: kubernetes.io/dockerconfigjson` with `.dockerconfigjson` containing auth for `quay.internal.corp`
+- **THEN** the connector extracts credentials from the pull secret's `.dockerconfigjson` for the matching registry URL
+- **AND** uses the extracted credentials for all API calls to `quay.internal.corp`
+
+#### Scenario: Pull secret with multiple registry entries
+
+- **WHEN** the pull secret `.dockerconfigjson` contains auth entries for `quay.internal.corp`, `ghcr.io`, and `registry-1.docker.io`
+- **AND** the registry config specifies `url: https://quay.internal.corp`
+- **THEN** the connector selects only the auth entry matching `quay.internal.corp`
+- **AND** ignores entries for other registries
+
+#### Scenario: Missing registry entry in pull secret
+
+- **WHEN** the pull secret `.dockerconfigjson` does not contain an auth entry for the configured registry URL
+- **THEN** the connector fails at startup with error: `Pull secret "quay-pull-secret" has no auth entry for registry "quay.internal.corp"`
+
+#### Scenario: Pull secret preferred over explicit secretRef
+
+- **WHEN** both `pullSecretRef` and `secretRef` are specified for a registry
+- **THEN** the connector fails at startup with error: `Registry "quay-internal" has both pullSecretRef and secretRef. Use only one credential source.`
+
 ### Requirement: Independent Sync Intervals Per Registry
 
 The connector allows configurable sync intervals for each registry instance.

@@ -1,6 +1,6 @@
 # Delta Sync Framework
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Consolidated into RHIDP-15258 (Entity-Provider SDK)** — Delta sync is now part of the SDK epic (story RHIDP-15262). Implementation lives in the SDK package alongside the provider interface.
 
 Cursor-based incremental sync framework built on Backstage's `applyMutation({ type: 'delta' })` API, enabling entity providers to report only changes since the last sync.
 

@@ -8,9 +8,24 @@ Enterprise deployments require operational quality from day one: air-gapped envi
 
 Boost builds this as a foundational layer: a standardized annotation scheme, a shared entity provider SDK, and operational-quality patterns that every AI registry connector can adopt from the start.
 
+## RHDHPLAN-1507 Consolidation (2026-07-08)
+
+> 4 of 7 original epics were closed and their scope absorbed into 3 surviving epics:
+>
+> | Closed Epic                          | Absorbed Into                                                          |
+> | ------------------------------------ | ---------------------------------------------------------------------- |
+> | RHIDP-15254 (Annotation Scheme)      | RHIDP-15258 (Entity-Provider SDK)                                      |
+> | RHIDP-15261 (Delta Sync)             | RHIDP-15258 (Entity-Provider SDK)                                      |
+> | RHIDP-15263 (Air-Gapped)             | RHIDP-15316 (Cross-Connector, RHDHPLAN-1510)                           |
+> | RHIDP-15267 (Performance/Resilience) | Distributed: error isolation → RHIDP-15316, load testing → RHIDP-15294 |
+>
+> The subsections below are annotated with their owning epic post-consolidation.
+
 ## What Boost Builds
 
 ### AI Asset Annotation Scheme
+
+> _Consolidated into RHIDP-15258 (Entity-Provider SDK). Single story RHIDP-15255 covers all 3 annotations._
 
 - `rhdh.io/ai-asset-category` annotation with five defined values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
@@ -19,6 +34,8 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - Migration-readiness mapping for transforming to upstream entity kinds when available
 
 ### Entity Provider SDK
+
+> _RHIDP-15258 — expanded scope. Now includes annotation scheme, delta sync framework, and per-entity error isolation._
 
 - TypeScript interface contract defining: entity emission, required annotation population, entity kind/spec.type mapping
 - Support for both full-refresh and incremental-sync patterns
@@ -29,6 +46,8 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ### Delta Sync Framework
 
+> _Consolidated into RHIDP-15258 (Entity-Provider SDK). Story RHIDP-15262._
+
 - Cursor/ETag-based delta sync built on `applyMutation({ type: 'delta' })`
 - Connector-reported additions/updates/deletions translated into catalog mutations
 - Sync cursors persisted across polling cycles
@@ -37,6 +56,8 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ### Air-Gapped Deployment Support
 
+> _Moved to RHIDP-15316 (Cross-Connector Shared Infrastructure, RHDHPLAN-1510). Stories: RHIDP-15265, 15266, 15329._
+
 - Custom CA bundle support via mounted Secret/ConfigMap for all TLS connections
 - K8s Secret-only credential references — startup validation rejects plaintext credentials
 - Configurable endpoint URLs with startup validation (no hardcoded SaaS endpoints)
@@ -44,12 +65,16 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ### Performance and Resilience
 
+> _Distributed: load testing → RHIDP-15294 (OCI Skill Registry, story RHIDP-15268), error isolation → RHIDP-15316 (Cross-Connector, story RHIDP-15330)._
+
 - Load testing with 5,000+ entities validating p95 latency degradation ≤10%
 - Per-entity error resilience: single entity failures logged with identifier, source, field, and error; remaining entities still ingested
 - Sync cycle completes even with multiple failures
 - Error-handling guarantees documented
 
 ### Migration Readiness
+
+> _Remains under RHIDP-15258 (Entity-Provider SDK). Story RHIDP-15302._
 
 - Design document mapping custom annotations → upstream entity kinds
 - Identified consumer-facing changes during migration
