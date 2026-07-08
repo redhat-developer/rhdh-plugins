@@ -44,7 +44,7 @@ RHDHPLAN-1513 covers operational infrastructure for the AI Catalog: admin dashbo
 
 **Verdict: FULLY FEASIBLE** — This is a standard admin dashboard page. The backend stores connector health state (written by connectors during sync cycles), exposes it via REST API, and the frontend renders it. The "Force Sync" action triggers the provider's run method. All within standard Backstage frontend/backend plugin patterns. No upstream changes needed.
 
-**Implementation note:** Boost's admin panel already has model connection, system prompt, agent config, and skills marketplace sections. Adding an "Ingestion Health" section follows the existing pattern — new route, new backend API, new frontend components.
+**Implementation note:** The augment workspace's admin panel (`workspaces/augment/plugins/augment/src/components/AdminPanels/`) already has model connection, system prompt, agent config, and skills marketplace sections. Adding an "Ingestion Health" section follows the existing pattern — new route, new backend API, new frontend components.
 
 ---
 
