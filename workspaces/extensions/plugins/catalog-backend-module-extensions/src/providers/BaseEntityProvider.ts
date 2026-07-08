@@ -28,6 +28,7 @@ import {
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
 import { Config } from '@backstage/config';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
 import path from 'path';
@@ -61,7 +62,30 @@ export abstract class BaseEntityProvider<T extends Entity>
   abstract getProviderName(): string;
   abstract getKind(): string;
 
-  private addProviderAnnotations(entity: T): T {
+  /**
+   * The default source identifier used for entities that do not reside
+   * under an `extra/<name>/` subdirectory — i.e. entities from the
+   * primary catalog index image.
+   */
+  static readonly DEFAULT_CATALOG_SOURCE = 'primary';
+
+  /**
+   * Derives a catalog source identifier from a file path.
+   *
+   * When `install-dynamic-plugins` extracts extra catalog index images
+   * (via `EXTRA_CATALOG_INDEX_IMAGES`), entities are placed under
+   * `<extensionsDir>/extra/<name>/catalog-entities/…`. This method
+   * detects the `extra/<name>/` segment and returns `<name>` as the
+   * source identifier. All other paths return `"primary"`.
+   */
+  static deriveCatalogSource(filePath: string): string {
+    // Normalise to forward slashes so the regex works on all platforms.
+    const normalised = filePath.replace(/\\/g, '/');
+    const match = normalised.match(/\/extra\/([^/]+)\//);
+    return match ? match[1] : BaseEntityProvider.DEFAULT_CATALOG_SOURCE;
+  }
+
+  private addProviderAnnotations(entity: T, filePath: string): T {
     return {
       ...entity,
       metadata: {
@@ -70,6 +94,8 @@ export abstract class BaseEntityProvider<T extends Entity>
           ...entity.metadata.annotations,
           [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
           [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
+          [ExtensionsAnnotation.CATALOG_SOURCE]:
+            BaseEntityProvider.deriveCatalogSource(filePath),
         },
       },
     };
@@ -116,8 +142,8 @@ export abstract class BaseEntityProvider<T extends Entity>
       );
     }
 
-    return Array.from(entitiesByEntityRef.values()).map(({ entity }) =>
-      this.addProviderAnnotations(entity),
+    return Array.from(entitiesByEntityRef.values()).map(
+      ({ entity, filePath }) => this.addProviderAnnotations(entity, filePath),
     );
   }
 

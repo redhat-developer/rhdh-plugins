@@ -19,6 +19,7 @@ import {
   LoggerService,
   SchedulerServiceTaskRunner,
 } from '@backstage/backend-plugin-api';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { BaseEntityProvider } from './BaseEntityProvider';
 import { JsonFileData } from '../types';
 
@@ -134,5 +135,176 @@ describe('BaseEntityProvider collision policy', () => {
     ]);
 
     expect(entities).toHaveLength(2);
+  });
+});
+
+describe('BaseEntityProvider.deriveCatalogSource', () => {
+  it('returns "primary" for paths in the main catalog-entities directory', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/catalog-entities/plugin.yaml',
+      ),
+    ).toBe('primary');
+  });
+
+  it('returns "primary" for paths without the extra/ segment', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource('/extensions/plugins/foo.yaml'),
+    ).toBe('primary');
+  });
+
+  it('returns the source name for paths under extra/<name>/', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/extra/community/catalog-entities/plugin.yaml',
+      ),
+    ).toBe('community');
+  });
+
+  it('returns the source name for a different extra source', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/extra/partner/catalog-entities/plugins/plugin.yaml',
+      ),
+    ).toBe('partner');
+  });
+
+  it('handles auto-derived subdirectory names with special characters', () => {
+    // imageRefToSubdirectory replaces /:@ with _ so names like this are common
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/extra/quay.io_rhdh_index_1.10/catalog-entities/plugin.yaml',
+      ),
+    ).toBe('quay.io_rhdh_index_1.10');
+  });
+
+  it('handles deeply nested files within a source directory', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/extra/community/catalog-entities/nested/deep/plugin.yaml',
+      ),
+    ).toBe('community');
+  });
+
+  it('handles Windows-style backslash paths', () => {
+    expect(
+      BaseEntityProvider.deriveCatalogSource(
+        'C:\\extensions\\extra\\community\\catalog-entities\\plugin.yaml',
+      ),
+    ).toBe('community');
+  });
+});
+
+describe('BaseEntityProvider source metadata annotations', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('sets catalog-source to "primary" for entities from the main catalog root', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
+    const entity = createEntity({ metadata: { name: 'primary-plugin' } });
+
+    const entities = provider.getEntities([
+      createFileData('/extensions/catalog-entities/plugin.yaml', entity),
+    ]);
+
+    expect(entities).toHaveLength(1);
+    expect(
+      entities[0].metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE],
+    ).toBe('primary');
+  });
+
+  it('sets catalog-source to the extra source name for entities under extra/<name>/', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
+    const entity = createEntity({ metadata: { name: 'community-plugin' } });
+
+    const entities = provider.getEntities([
+      createFileData(
+        '/extensions/extra/community/catalog-entities/plugin.yaml',
+        entity,
+      ),
+    ]);
+
+    expect(entities).toHaveLength(1);
+    expect(
+      entities[0].metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE],
+    ).toBe('community');
+  });
+
+  it('sets distinct source annotations when entities come from different sources', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
+    const primaryPlugin = createEntity({
+      metadata: { name: 'plugin-a' },
+    });
+    const communityPlugin = createEntity({
+      metadata: { name: 'plugin-b' },
+    });
+
+    const entities = provider.getEntities([
+      createFileData(
+        '/extensions/catalog-entities/plugin-a.yaml',
+        primaryPlugin,
+      ),
+      createFileData(
+        '/extensions/extra/community/catalog-entities/plugin-b.yaml',
+        communityPlugin,
+      ),
+    ]);
+
+    expect(entities).toHaveLength(2);
+    const sourceA =
+      entities[0].metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+    const sourceB =
+      entities[1].metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+    expect(sourceA).toBe('primary');
+    expect(sourceB).toBe('community');
+  });
+
+  it('preserves the winning entity source annotation on duplicate (first-wins)', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
+    const entity = createEntity({ metadata: { name: 'dup-plugin' } });
+
+    const entities = provider.getEntities([
+      createFileData(
+        '/extensions/extra/community/catalog-entities/plugin.yaml',
+        entity,
+      ),
+      createFileData('/extensions/catalog-entities/plugin.yaml', entity),
+    ]);
+
+    expect(entities).toHaveLength(1);
+    // First-wins: the community entity was seen first
+    expect(
+      entities[0].metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE],
+    ).toBe('community');
+  });
+
+  it('sets correct distinct sources when entities share name but differ by namespace', () => {
+    const provider = new TestEntityProvider(taskRunner, undefined, logger);
+    const primaryEntity = createEntity({
+      metadata: { name: 'shared-name' },
+    });
+    const communityEntity = createEntity({
+      metadata: { name: 'shared-name', namespace: 'community' },
+    });
+
+    const entities = provider.getEntities([
+      createFileData('/extensions/catalog-entities/plugin.yaml', primaryEntity),
+      createFileData(
+        '/extensions/extra/community/catalog-entities/plugin.yaml',
+        communityEntity,
+      ),
+    ]);
+
+    expect(entities).toHaveLength(2);
+    const sources = entities.map(
+      e => e.metadata.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE],
+    );
+    expect(sources).toContain('primary');
+    expect(sources).toContain('community');
   });
 });
