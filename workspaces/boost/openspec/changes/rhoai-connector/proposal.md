@@ -15,6 +15,8 @@ Boost must surface RHOAI's MCP catalog as first-class API entities in the RHDH c
 > - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
 > - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — its scope has been absorbed by RHIDP-15294 (OCI Skill Registry) under RHDHPLAN-1507. RHDHPLAN-1510 continues with 3 surviving epics: RHIDP-15313 (MCP Registry connector), RHIDP-15314 (this RHOAI connector), and RHIDP-15316 (Cross-Connector Shared Infrastructure). All TLS, CA bundle, and credential utilities referenced here depend on RHIDP-15316 stories (RHIDP-15265, 15329) being implemented first.
+
 ## What Boost Builds
 
 ### MCP Catalog Source

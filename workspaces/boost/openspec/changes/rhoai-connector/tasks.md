@@ -9,6 +9,7 @@
 > - RHIDP-15323 (deployment config) is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility)
 > - RHIDP-15322 (MCP catalog source) is blocked by RHDHPLAN-1507 SDK (RHIDP-15258) for annotation scheme
 
+
 ## 1. MCP Catalog Source — RHIDP-15322
 
 - [ ] 1.1 Define RHOAI MCP catalog API response types with Zod schemas (`McpServer`, `McpCapabilities`)

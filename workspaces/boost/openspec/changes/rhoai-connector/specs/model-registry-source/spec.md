@@ -1,6 +1,8 @@
 # Model Registry Source
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15320 is blocked by RHDHPLAN-1507's SDK (RHIDP-15258) which defines the AI Asset annotation scheme (`rhdh.io/ai-asset-version`, `rhdh.io/ai-model-family`). Annotation constants must be exported by the SDK before this source's entity mapping can populate them.
 
 The Model Registry source connects to Kubeflow Model Registry API, ingests RegisteredModel and ModelVersion resources, and emits RHDH catalog entities with normalized version annotations.
 
