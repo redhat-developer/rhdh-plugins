@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { Text } from '@backstage/ui';
-
-export const UsageTab = () => {
-  return (
-    <div>
-      <Text variant="title-small">Usage</Text>
-      <Text variant="body-medium">
-        Usage documentation, TechDocs content, or external links will be
-        displayed here.
-      </Text>
-    </div>
-  );
-};
+@layer components {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bui-space-1);
+    width: 180px;
+    flex-shrink: 0;
+    position: sticky;
+    top: var(--bui-space-4);
+    align-self: flex-start;
+  }
+}

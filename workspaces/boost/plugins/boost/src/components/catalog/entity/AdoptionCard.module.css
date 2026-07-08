@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-import { Card, CardHeader, CardBody, Text } from '@backstage/ui';
-
-export const AiAssetSummaryCard = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <Text variant="title-small">AI Asset Summary</Text>
-      </CardHeader>
-      <CardBody>
-        <Text variant="body-medium">
-          Category, version, source, and lifecycle information will be displayed
-          here.
-        </Text>
-      </CardBody>
-    </Card>
-  );
-};
+@layer components {
+  .command {
+    flex: 1;
+    padding: var(--bui-space-2) var(--bui-space-3);
+    background-color: var(--bui-bg-surface-0);
+    border-radius: var(--bui-radius-2);
+    font-size: var(--bui-font-size-1);
+    font-family: monospace;
+    overflow-x: auto;
+  }
+}

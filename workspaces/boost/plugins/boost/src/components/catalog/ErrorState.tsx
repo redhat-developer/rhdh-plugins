@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-import { Card, CardHeader, CardBody, Text } from '@backstage/ui';
+import { Alert, Button, Flex } from '@backstage/ui';
 
-export const VersionListCard = () => {
+import { useTranslation } from '../../hooks/useTranslation';
+import styles from './AiCatalogPage.module.css';
+
+export const ErrorState = ({ onRetry }: { onRetry: () => void }) => {
+  const { t } = useTranslation();
   return (
-    <Card>
-      <CardHeader>
-        <Text variant="title-small">Versions</Text>
-      </CardHeader>
-      <CardBody>
-        <Text variant="body-medium">
-          All versions of this asset will be listed here.
-        </Text>
-      </CardBody>
-    </Card>
+    <Flex p="4" className={styles.layout}>
+      <Alert
+        status="danger"
+        title={t('catalog.error.title')}
+        description={t('catalog.error.description')}
+        customActions={
+          <Button variant="secondary" onPress={onRetry}>
+            {t('catalog.error.retry')}
+          </Button>
+        }
+      />
+    </Flex>
   );
 };
