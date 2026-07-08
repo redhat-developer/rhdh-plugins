@@ -349,7 +349,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await expect(editButton).toBeVisible({ timeout: 15000 });
@@ -361,7 +363,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();
@@ -387,7 +391,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();
@@ -418,7 +424,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();
@@ -448,7 +456,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();
@@ -477,7 +487,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();
@@ -498,7 +510,9 @@ test.describe.serial('X2Ansible - FLPATH-4211 Edit Project UI @live', () => {
     await performLogin(page);
     await page.goto(`/x2a/projects/${projectId}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page
+      .getByRole('button', { name: /edit/i })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     const editButton = page.getByRole('button', { name: /edit/i });
     await editButton.click();

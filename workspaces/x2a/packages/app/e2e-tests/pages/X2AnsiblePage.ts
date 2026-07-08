@@ -17,6 +17,8 @@
 import { Page, expect } from '@playwright/test';
 import { performLogin } from '../fixtures/auth';
 
+export type PipelinePhase = 'Analyze' | 'Migrate' | 'Publish';
+
 export class X2AnsiblePage {
   readonly page: Page;
 
@@ -306,7 +308,7 @@ export class X2AnsiblePage {
     await this.dismissGitHubLoginDialog();
   }
 
-  async clickPhaseTab(phase: 'Analyze' | 'Migrate' | 'Publish') {
+  async clickPhaseTab(phase: PipelinePhase) {
     const tab = this.page.locator(`[role="tab"]:has-text("${phase}")`);
     await expect(tab).toBeVisible({ timeout: 10000 });
     const isDisabled = await tab.getAttribute('aria-disabled');
@@ -327,7 +329,7 @@ export class X2AnsiblePage {
   }
 
   async waitForPhaseStatus(
-    phase: 'Analyze' | 'Migrate' | 'Publish',
+    phase: PipelinePhase,
     expectedStatus: string,
     timeoutMs = 420000,
   ) {
@@ -351,9 +353,7 @@ export class X2AnsiblePage {
     }
   }
 
-  async getPhaseStatus(
-    phase: 'Analyze' | 'Migrate' | 'Publish',
-  ): Promise<string> {
+  async getPhaseStatus(phase: PipelinePhase): Promise<string> {
     await this.clickPhaseTab(phase);
     await this.page.waitForTimeout(1000);
     const tabPanel = this.page.locator('[role="tabpanel"]:visible');
