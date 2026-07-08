@@ -1,0 +1,42 @@
+# Proposal: Connector Configuration Hot-Reload
+
+## Why
+
+Connectors need configuration changes without pod restart. Toggling a connector on/off, changing sync schedules, or updating endpoint URLs currently requires editing YAML config and redeploying — a multi-minute cycle that blocks quick experimentation and rapid incident response. Enterprise customers need immediate control over ingestion behavior without downtime.
+
+Boost's existing `RuntimeConfigResolver` already solves this for core boost settings: it provides a two-layer config model (YAML baseline + database overrides) with 30-second TTL refresh. This change extends that proven infrastructure to connector settings, enabling hot-reload of connector enable/disable, endpoint URLs, and sync schedules.
+
+The key distinction: Backstage's built-in `ConfigApi` loads config at startup with no hot-reload capability. Boost's `RuntimeConfigResolver` is a **custom layer** that adds DB overrides and TTL-based refresh on top of the YAML baseline. This epic extends that custom layer to connector configuration.
+
+## What Boost Builds
+
+### Config Schemas
+
+- Zod schema definitions for per-connector settings: `enabled`, `endpoint`, `schedule`, `tls`, `credentials`
+- `configScope` annotation on each field: `yaml-only` (mount paths, K8s Secret references), `db-overridable` (enable/disable, endpoint URL, schedule), `db-only` (runtime-only state)
+- Schema validation rejects invalid connector config values before write
+- Integration with `RuntimeConfigResolver`'s two-layer resolution
+
+### Hot-Reload Propagation
+
+- Runtime overrides propagate to active entity provider instances within 30s TTL
+- Connector responds to enable/disable changes on next reconciliation cycle
+- Schedule changes take effect on next reconciliation cycle
+- Endpoint URL changes take effect on next sync cycle
+- K8s Secret mount propagation delays (up to 60s for projected volumes) handled transparently
+
+### Config Admin UI
+
+- Admin UI section for toggling connectors on/off
+- Endpoint URL and sync schedule configuration fields
+- K8s Secret reference field (display only — Secret names are deployment-time config)
+- Changes saved via `AdminConfigService` DB overrides
+- Takes effect via `RuntimeConfigResolver` hot-reload pattern
+- RBAC gating: admin-only access to connector config
+
+## Impact
+
+- `RuntimeConfigResolver` extension — connector config becomes a new scope under the two-layer model
+- Admin panel — new connector config section
+- Connector modules — entity providers read config through `RuntimeConfigResolver`, get hot-reload for free
+- No changes to Backstage upstream — this is a Boost-specific custom config layer

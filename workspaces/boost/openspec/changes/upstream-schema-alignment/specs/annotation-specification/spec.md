@@ -1,0 +1,111 @@
+# Spec: Annotation Specification Document
+
+**Epic:** RHIDP-15334 — Upstream Schema Alignment Readiness  
+**Story:** RHIDP-15346 — Annotation specification document  
+**Status:** 🟡 Draft
+
+## Overview
+
+Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to draft Backstage RFCs #32062 (McpServer entity kind) and #33060 (ai-model/ai-model-server kinds). Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
+
+---
+
+## Scenario: Specification covers all rhdh.io/ai-asset-\* annotations
+
+**GIVEN** the RHDH AI Asset annotation scheme  
+**WHEN** the specification document is published  
+**THEN** all `rhdh.io/ai-asset-*` annotations are documented:
+
+- `rhdh.io/ai-asset-category` values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-version` format and normalization rules
+- `rhdh.io/ai-asset-source` format
+- Each annotation includes: purpose, valid values, format constraints, examples
+
+---
+
+## Scenario: Specification covers all spec.type values
+
+**GIVEN** the RHDH AI Asset entity type conventions  
+**WHEN** the specification document is published  
+**THEN** all `spec.type` values for AI Assets are documented:
+
+- `ai-agent` (Component kind)
+- `ai-skill` (Resource kind)
+- `mcp-server` (API kind)
+- `ai-model` (Resource kind)
+- `model-server` (Component kind)
+- Each type includes: entity kind pairing, purpose, examples
+
+---
+
+## Scenario: Mapping to RFC #32062 documented
+
+**GIVEN** draft Backstage RFC #32062 proposes `McpServer` entity kind  
+**WHEN** the specification document is published  
+**THEN** the mapping from RHDH MCP Server entities to RFC #32062 is documented:
+
+- Current: `kind: API`, `spec.type: mcp-server`
+- Target: `kind: McpServer` (RFC #32062)
+- Transformation requirements: migrate kind from API → McpServer
+- Confidence level: Medium (RFC active but schema may evolve)
+- Fields requiring transformation listed explicitly
+
+---
+
+## Scenario: Mapping to RFC #33060 documented
+
+**GIVEN** draft Backstage RFC #33060 proposes `ai-model` and `ai-model-server` entity kinds  
+**WHEN** the specification document is published  
+**THEN** the mapping from RHDH AI Model and Model Server entities to RFC #33060 is documented:
+
+- **AI Model:** Current `kind: Resource`, `spec.type: ai-model` → Target `kind: ai-model` (RFC #33060)
+- **Model Server:** Current `kind: Component`, `spec.type: model-server` → Target `kind: ai-model-server` (RFC #33060)
+- Transformation requirements listed per entity type
+- Confidence level: Medium (RFC active but schema may evolve)
+
+---
+
+## Scenario: Confidence levels assigned per mapping
+
+**GIVEN** the draft status of upstream RFCs  
+**WHEN** the specification document includes entity mappings  
+**THEN** each mapping includes a confidence level:
+
+- **High:** RFC schema stable, unlikely to change
+- **Medium:** RFC active, schema may evolve
+- **Low:** No corresponding RFC yet, or mapping is speculative
+- Confidence level rationale documented per mapping
+
+---
+
+## Scenario: Migration explicitly framed as future work
+
+**GIVEN** the specification document maps current entities to draft RFC kinds  
+**WHEN** the document is published  
+**THEN** a "Future Work" section explicitly states:
+
+- Actual entity migration is future work
+- Migration depends on RFC finalization
+- The mapping document will update as RFCs evolve
+- No production catalog changes are part of this specification
+
+---
+
+## Scenario: Spec accessible to platform engineers
+
+**GIVEN** the annotation specification document is complete  
+**WHEN** it is published  
+**THEN** it is accessible in a location where platform engineers can find it:
+
+- Published in `workspaces/boost/specifications/` directory
+- Follows the same structure as existing Boost specifications
+- Includes a last-updated date and draft status header
+- Cross-references existing `agent-creation-discovery/catalog-entities` spec
+
+---
+
+## Scenario: Spec references existing catalog-entities entity type strategy
+
+**GIVEN** the `agent-creation-discovery` change defined the entity type strategy  
+**WHEN** the annotation specification document is written  
+**THEN** it cross-references the `catalog-entities/spec.md` entity type strategy table as the source of truth for current RHDH AI Asset entity mappings
