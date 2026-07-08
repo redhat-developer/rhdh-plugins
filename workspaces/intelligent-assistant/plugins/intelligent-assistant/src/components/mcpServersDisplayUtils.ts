@@ -65,21 +65,81 @@ export const getEnabledToggleChecked = (
 ): boolean =>
   isEnabledToggleUnavailable(displayStatus) ? false : server.enabled;
 
-export const isSaveTokenDisabled = ({
-  hasSavedTokenInModal,
+export const hasModalUnsavedChanges = ({
   tokenInputValue,
-  savedTokenMask,
-  isUpdatingModalStatus,
+  initialTokenInputValue,
+  modalEnabled,
+  serverEnabled,
 }: {
-  hasSavedTokenInModal: boolean;
   tokenInputValue: string;
-  savedTokenMask: string;
+  initialTokenInputValue: string;
+  modalEnabled: boolean;
+  serverEnabled: boolean;
+}): boolean =>
+  tokenInputValue !== initialTokenInputValue || modalEnabled !== serverEnabled;
+
+export const isSaveTokenDisabled = ({
+  tokenInputValue,
+  initialTokenInputValue,
+  modalEnabled,
+  serverEnabled,
+  isUpdatingModalStatus,
+  hasRemovedPersonalToken = false,
+}: {
+  tokenInputValue: string;
+  initialTokenInputValue: string;
+  modalEnabled: boolean;
+  serverEnabled: boolean;
   isUpdatingModalStatus: boolean;
+  hasRemovedPersonalToken?: boolean;
 }): boolean => {
-  const isTokenInputUnchanged =
-    hasSavedTokenInModal && tokenInputValue === savedTokenMask;
-  const isTokenInputEmpty = tokenInputValue.trim() === '';
-  return isTokenInputUnchanged || isTokenInputEmpty || isUpdatingModalStatus;
+  if (isUpdatingModalStatus) {
+    return true;
+  }
+  if (hasRemovedPersonalToken) {
+    return false;
+  }
+  return !hasModalUnsavedChanges({
+    tokenInputValue,
+    initialTokenInputValue,
+    modalEnabled,
+    serverEnabled,
+  });
+};
+
+export type McpServerModalInput = McpServerDisplayInput & {
+  hasUserToken?: boolean;
+};
+
+export const hasModalEnabledStateChange = ({
+  server,
+  modalEnabled,
+}: {
+  server?: McpServerModalInput;
+  modalEnabled: boolean;
+}): boolean => Boolean(server && modalEnabled !== server.enabled);
+
+export const getModalDisplayStatus = (
+  server: McpServerDisplayInput,
+  modalEnabled: boolean,
+): ServerStatus => getDisplayStatus({ ...server, enabled: modalEnabled });
+
+export type ModalEnabledDescriptionKey =
+  | 'mcp.settings.modal.enabledDescription'
+  | 'mcp.settings.modal.enabledDescriptionOff'
+  | 'mcp.settings.modal.enabledDescriptionTokenRequired';
+
+export const getModalEnabledDescriptionKey = (
+  isChecked: boolean,
+  displayStatus: ServerStatus,
+): ModalEnabledDescriptionKey => {
+  if (isChecked) {
+    return 'mcp.settings.modal.enabledDescription';
+  }
+  if (displayStatus === 'tokenRequired') {
+    return 'mcp.settings.modal.enabledDescriptionTokenRequired';
+  }
+  return 'mcp.settings.modal.enabledDescriptionOff';
 };
 
 export const isModalEnabledChecked = ({

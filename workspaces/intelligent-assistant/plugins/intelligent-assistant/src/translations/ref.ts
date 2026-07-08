@@ -365,6 +365,8 @@ export const intelligentAssistantMessages = {
     'This server is active and available in chat.',
   'mcp.settings.modal.enabledDescriptionOff':
     'This server is disabled and unavailable in chat.',
+  'mcp.settings.modal.enabledDescriptionTokenRequired':
+    'This server is currently disabled. Provide a token to enable.',
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
   'mcp.settings.usingAdminCredential':

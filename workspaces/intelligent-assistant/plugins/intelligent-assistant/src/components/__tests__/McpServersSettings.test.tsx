@@ -74,7 +74,7 @@ const resolveTokenFieldAfterPatch = (
   currentValue: boolean,
 ): boolean => {
   if (token === null) {
-    return false;
+    return currentValue;
   }
   if (token) {
     return true;
@@ -185,10 +185,10 @@ describe('McpServersSettings', () => {
           ...current,
           enabled: body.enabled ?? current.enabled,
           hasToken: resolveTokenFieldAfterPatch(body.token, current.hasToken),
-          hasUserToken: resolveTokenFieldAfterPatch(
-            body.token,
-            current.hasUserToken,
-          ),
+          hasUserToken:
+            body.token === null
+              ? false
+              : resolveTokenFieldAfterPatch(body.token, current.hasUserToken),
           status: resolveStatusAfterPatch(
             body.token,
             body.enabled,
@@ -244,6 +244,102 @@ describe('McpServersSettings', () => {
     expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  it('updates modal status locally when enabled is toggled off without PATCH', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    await waitFor(() => {
+      expect(within(dialog).getByText('2 tools')).toBeInTheDocument();
+    });
+
+    const patchCallsBefore = mockFetch.mock.calls.filter(
+      ([, init]) => init?.method === 'PATCH',
+    ).length;
+
+    fireEvent.click(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle personal-server',
+      }),
+    );
+
+    expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        'This server is disabled and unavailable in chat.',
+      ),
+    ).toBeInTheDocument();
+
+    const patchCallsAfter = mockFetch.mock.calls.filter(
+      ([, init]) => init?.method === 'PATCH',
+    ).length;
+    expect(patchCallsAfter).toBe(patchCallsBefore);
+
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('persists enabled change when saving with unchanged masked token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    await waitFor(() => {
+      expect(within(dialog).getByText('2 tools')).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle personal-server',
+      }),
+    );
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/mcp-servers/personal-server`,
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ enabled: false }),
+        }),
+      );
+    });
+  });
+
+  it('enables Save when token input is edited', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    fireEvent.change(within(dialog).getByLabelText('Type to filter'), {
+      target: { value: 'edited-token' },
+    });
+
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('enables Save when enabled toggle changes with unchanged masked token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    fireEvent.click(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle personal-server',
+      }),
+    );
+
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
   it('shows modal enabled toggle off when token is required', async () => {
     renderSettings();
     await waitForServersLoaded();
@@ -255,9 +351,14 @@ describe('McpServersSettings', () => {
         name: 'Toggle test-mcp-server',
       }),
     ).not.toBeChecked();
+    expect(
+      within(dialog).getByText(
+        'This server is currently disabled. Provide a token to enable.',
+      ),
+    ).toBeInTheDocument();
   });
 
-  it('removes personal token, shows disconnecting state, warning, and disables actions', async () => {
+  it('removes personal token, shows disconnecting state, warning, and enables Save', async () => {
     renderSettings();
     await waitForServersLoaded();
     await openConfigureModal('personal-server');
@@ -270,7 +371,7 @@ describe('McpServersSettings', () => {
     expect(within(dialog).getByText('Disconnecting...')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(within(dialog).getByText('Token required')).toBeInTheDocument();
+      expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
     });
 
     expect(
@@ -278,7 +379,7 @@ describe('McpServersSettings', () => {
         'Token has been removed. To use this MCP server again, provide a new token.',
       ),
     ).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
     expect(
       within(dialog).getByRole('button', { name: 'Remove personal token' }),
     ).toBeDisabled();
@@ -287,6 +388,41 @@ describe('McpServersSettings', () => {
         name: 'Toggle personal-server',
       }),
     ).not.toBeChecked();
+  });
+
+  it('enables Save after removing personal token and re-enabling with org token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Remove personal token' }),
+    );
+
+    await waitFor(() => {
+      expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle personal-server',
+      }),
+    );
+
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/mcp-servers/personal-server`,
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ enabled: true }),
+        }),
+      );
+    });
   });
 
   it('auto-enables server after saving a valid token', async () => {

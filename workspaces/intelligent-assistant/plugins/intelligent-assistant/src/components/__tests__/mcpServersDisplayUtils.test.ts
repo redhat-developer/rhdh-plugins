@@ -18,6 +18,10 @@ import {
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
+  getModalDisplayStatus,
+  getModalEnabledDescriptionKey,
+  hasModalEnabledStateChange,
+  hasModalUnsavedChanges,
   isEnabledToggleUnavailable,
   isModalEnabledChecked,
   isSaveTokenDisabled,
@@ -135,6 +139,106 @@ describe('mcpServersDisplayUtils', () => {
     });
   });
 
+  describe('getModalDisplayStatus', () => {
+    const server = {
+      hasToken: true,
+      enabled: true,
+      status: 'connected' as const,
+    };
+
+    it('returns disabled when modal toggle is off', () => {
+      expect(getModalDisplayStatus(server, false)).toBe('disabled');
+    });
+
+    it('returns ok when modal toggle is on and server is connected', () => {
+      expect(getModalDisplayStatus(server, true)).toBe('ok');
+    });
+  });
+
+  describe('getModalEnabledDescriptionKey', () => {
+    it('returns active description when enabled', () => {
+      expect(getModalEnabledDescriptionKey(true, 'ok')).toBe(
+        'mcp.settings.modal.enabledDescription',
+      );
+    });
+
+    it('returns token-required description when token is missing', () => {
+      expect(getModalEnabledDescriptionKey(false, 'tokenRequired')).toBe(
+        'mcp.settings.modal.enabledDescriptionTokenRequired',
+      );
+    });
+
+    it('returns user-disabled description when server has a token', () => {
+      expect(getModalEnabledDescriptionKey(false, 'disabled')).toBe(
+        'mcp.settings.modal.enabledDescriptionOff',
+      );
+    });
+  });
+
+  describe('hasModalEnabledStateChange', () => {
+    const server = {
+      hasToken: true,
+      hasUserToken: false,
+      enabled: false,
+      status: 'connected' as const,
+    };
+
+    it('returns true when enabled state changed', () => {
+      expect(
+        hasModalEnabledStateChange({
+          server,
+          modalEnabled: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns false when enabled state is unchanged', () => {
+      expect(
+        hasModalEnabledStateChange({
+          server,
+          modalEnabled: false,
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe('hasModalUnsavedChanges', () => {
+    const savedTokenMask = '********************';
+
+    it('returns true when token input changed', () => {
+      expect(
+        hasModalUnsavedChanges({
+          tokenInputValue: 'new-token',
+          initialTokenInputValue: '',
+          modalEnabled: true,
+          serverEnabled: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns true when enabled state changed', () => {
+      expect(
+        hasModalUnsavedChanges({
+          tokenInputValue: savedTokenMask,
+          initialTokenInputValue: savedTokenMask,
+          modalEnabled: false,
+          serverEnabled: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns false when nothing changed', () => {
+      expect(
+        hasModalUnsavedChanges({
+          tokenInputValue: savedTokenMask,
+          initialTokenInputValue: savedTokenMask,
+          modalEnabled: true,
+          serverEnabled: true,
+        }),
+      ).toBe(false);
+    });
+  });
+
   describe('isModalEnabledChecked', () => {
     it('shows off in modal when token is required', () => {
       expect(
@@ -158,45 +262,62 @@ describe('mcpServersDisplayUtils', () => {
   describe('isSaveTokenDisabled', () => {
     const savedTokenMask = '********************';
 
-    it('disables save for unchanged masked token', () => {
+    it('disables save when nothing changed', () => {
       expect(
         isSaveTokenDisabled({
-          hasSavedTokenInModal: true,
           tokenInputValue: savedTokenMask,
-          savedTokenMask,
+          initialTokenInputValue: savedTokenMask,
+          modalEnabled: true,
+          serverEnabled: true,
           isUpdatingModalStatus: false,
         }),
       ).toBe(true);
     });
 
-    it('disables save for empty token input', () => {
+    it('enables save after personal token was removed', () => {
       expect(
         isSaveTokenDisabled({
-          hasSavedTokenInModal: false,
           tokenInputValue: '',
-          savedTokenMask,
+          initialTokenInputValue: '',
+          modalEnabled: false,
+          serverEnabled: false,
           isUpdatingModalStatus: false,
+          hasRemovedPersonalToken: true,
         }),
-      ).toBe(true);
+      ).toBe(false);
     });
 
-    it('disables save while status is updating', () => {
+    it('disables save while status is updating even with changes', () => {
       expect(
         isSaveTokenDisabled({
-          hasSavedTokenInModal: false,
           tokenInputValue: 'new-token',
-          savedTokenMask,
+          initialTokenInputValue: '',
+          modalEnabled: true,
+          serverEnabled: true,
           isUpdatingModalStatus: true,
         }),
       ).toBe(true);
     });
 
-    it('enables save when user entered a new token', () => {
+    it('enables save when only enabled state changed', () => {
       expect(
         isSaveTokenDisabled({
-          hasSavedTokenInModal: false,
+          tokenInputValue: savedTokenMask,
+          initialTokenInputValue: savedTokenMask,
+          modalEnabled: false,
+          serverEnabled: true,
+          isUpdatingModalStatus: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('enables save when token input changed', () => {
+      expect(
+        isSaveTokenDisabled({
           tokenInputValue: 'new-token',
-          savedTokenMask,
+          initialTokenInputValue: '',
+          modalEnabled: true,
+          serverEnabled: true,
           isUpdatingModalStatus: false,
         }),
       ).toBe(false);

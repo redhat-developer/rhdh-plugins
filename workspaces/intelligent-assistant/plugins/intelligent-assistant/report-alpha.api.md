@@ -249,6 +249,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.modal.toolsLoadFailed': string;
     readonly 'mcp.settings.modal.enabledDescription': string;
     readonly 'mcp.settings.modal.enabledDescriptionOff': string;
+    readonly 'mcp.settings.modal.enabledDescriptionTokenRequired': string;
     readonly 'mcp.settings.savedToken': string;
     readonly 'mcp.settings.personalAccessToken': string;
     readonly 'mcp.settings.usingAdminCredential': string;

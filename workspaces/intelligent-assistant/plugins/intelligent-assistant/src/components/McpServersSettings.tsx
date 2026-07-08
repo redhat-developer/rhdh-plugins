@@ -65,6 +65,7 @@ import {
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
+  getModalDisplayStatus,
   isModalEnabledChecked as getModalEnabledChecked,
   isSaveTokenDisabled as getSaveTokenDisabled,
   isEnabledToggleUnavailable,
@@ -435,6 +436,7 @@ export const McpServersSettings = ({
   const [error, setError] = useState<string | null>(null);
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [tokenInputValue, setTokenInputValue] = useState('');
+  const [initialTokenInputValue, setInitialTokenInputValue] = useState('');
   const [hasSavedTokenInModal, setHasSavedTokenInModal] = useState(false);
   const [canRemovePersonalToken, setCanRemovePersonalToken] = useState(false);
   const [tokenValidationState, setTokenValidationState] =
@@ -668,6 +670,7 @@ export const McpServersSettings = ({
   const closeConfigureModal = useCallback(() => {
     setEditingServerId(null);
     setTokenInputValue('');
+    setInitialTokenInputValue('');
     setHasSavedTokenInModal(false);
     setCanRemovePersonalToken(false);
     setTokenValidationState('idle');
@@ -685,7 +688,9 @@ export const McpServersSettings = ({
     const hasSavedToken = server.hasToken;
     setHasSavedTokenInModal(hasSavedToken);
     setCanRemovePersonalToken(server.hasUserToken);
-    setTokenInputValue(hasSavedToken ? SAVED_TOKEN_MASK : '');
+    const initialToken = hasSavedToken ? SAVED_TOKEN_MASK : '';
+    setInitialTokenInputValue(initialToken);
+    setTokenInputValue(initialToken);
     setModalEnabled(server.enabled);
     setModalTools([]);
     setModalToolsError(null);
@@ -809,16 +814,27 @@ export const McpServersSettings = ({
 
   const isConfigureModalSaving = Boolean(isSaving[editingServer?.name ?? '']);
   const isSaveTokenButtonDisabled = getSaveTokenDisabled({
-    hasSavedTokenInModal,
     tokenInputValue,
-    savedTokenMask: SAVED_TOKEN_MASK,
+    initialTokenInputValue,
+    modalEnabled,
+    serverEnabled: editingServer?.enabled ?? true,
     isUpdatingModalStatus,
+    hasRemovedPersonalToken,
   });
 
   const saveServerToken = useCallback(async () => {
     if (!editingServer || !canManageMcp) return;
 
-    if (hasSavedTokenInModal && tokenInputValue === SAVED_TOKEN_MASK) {
+    const hasTokenInputChange = tokenInputValue !== initialTokenInputValue;
+    const hasEnabledInputChange = modalEnabled !== editingServer.enabled;
+
+    if (!hasTokenInputChange && !hasEnabledInputChange) {
+      closeConfigureModal();
+      return;
+    }
+
+    if (!hasTokenInputChange && hasEnabledInputChange) {
+      await patchServer(editingServer.name, { enabled: modalEnabled });
       closeConfigureModal();
       return;
     }
@@ -856,7 +872,7 @@ export const McpServersSettings = ({
 
       setTokenValidationMessage(t('mcp.settings.token.savingAndValidating'));
       await patchServer(editingServer.name, {
-        enabled: editingServer.enabled,
+        enabled: modalEnabled,
         token: hasToken ? token : null,
       });
       const validationResult = await validateServer(editingServer.name);
@@ -887,7 +903,8 @@ export const McpServersSettings = ({
     canManageMcp,
     closeConfigureModal,
     editingServer,
-    hasSavedTokenInModal,
+    initialTokenInputValue,
+    modalEnabled,
     patchServer,
     t,
     tokenInputValue,
@@ -909,8 +926,9 @@ export const McpServersSettings = ({
     setIsLoadingModalTools(false);
 
     try {
-      await patchServer(editingServer.name, { token: null });
+      await patchServer(editingServer.name, { token: null, enabled: false });
       setHasSavedTokenInModal(false);
+      setInitialTokenInputValue('');
       setModalEnabled(false);
       setHasRemovedPersonalToken(true);
     } catch {
@@ -938,27 +956,24 @@ export const McpServersSettings = ({
       return;
     }
     setModalEnabled(checked);
-    void patchServer(editingServer.name, { enabled: checked }).catch(() => {
-      setModalEnabled(!checked);
-    });
   };
 
-  const editingDisplayStatus = editingServer
-    ? getDisplayStatus(editingServer)
+  const modalDisplayStatus = editingServer
+    ? getModalDisplayStatus(editingServer, modalEnabled)
     : 'unknown';
   const isModalEnabledToggleDisabled =
     !canManageMcp ||
     !editingServer ||
     isUpdatingModalStatus ||
-    isEnabledToggleUnavailable(editingDisplayStatus) ||
+    isEnabledToggleUnavailable(modalDisplayStatus) ||
     Boolean(isSaving[editingServer?.name ?? '']);
   const isModalEnabledChecked = getModalEnabledChecked({
-    displayStatus: editingDisplayStatus,
+    displayStatus: modalDisplayStatus,
     modalEnabled,
   });
 
   const modalStatusDetail = editingServer
-    ? getDisplayDetail(editingServer, editingDisplayStatus)
+    ? getDisplayDetail(editingServer, modalDisplayStatus)
     : '';
 
   const modalToolCount = modalTools.length || editingServer?.toolCount || 0;
@@ -976,17 +991,17 @@ export const McpServersSettings = ({
         />
       );
     }
+    if (modalDisplayStatus === 'disabled') {
+      return <InfoCircleIcon className={classes.statusDisabled} />;
+    }
     if (modalTools.length > 0) {
       return <CheckCircleIcon className={classes.statusOk} />;
     }
-    if (modalToolsError || editingDisplayStatus === 'failed') {
+    if (modalToolsError || modalDisplayStatus === 'failed') {
       return <ExclamationCircleIcon className={classes.statusWarn} />;
     }
-    if (editingDisplayStatus === 'tokenRequired') {
+    if (modalDisplayStatus === 'tokenRequired') {
       return <KeyIcon className={classes.statusWarn} />;
-    }
-    if (editingDisplayStatus === 'disabled') {
-      return <InfoCircleIcon className={classes.statusDisabled} />;
     }
     return <InfoCircleIcon className={classes.statusDisabled} />;
   };
@@ -997,6 +1012,9 @@ export const McpServersSettings = ({
     }
     if (isLoadingModalTools) {
       return t('mcp.settings.modal.loadingTools');
+    }
+    if (modalDisplayStatus === 'disabled') {
+      return t('mcp.settings.status.disabled');
     }
     if (modalTools.length > 0) {
       if (modalTools.length === 1) {
@@ -1037,6 +1055,16 @@ export const McpServersSettings = ({
         {modalToolsError ?? t('mcp.settings.modal.noToolsAvailable')}
       </div>
     );
+  };
+
+  const renderModalEnabledDescription = () => {
+    if (isModalEnabledChecked) {
+      return t('mcp.settings.modal.enabledDescription');
+    }
+    if (modalDisplayStatus === 'tokenRequired') {
+      return t('mcp.settings.modal.enabledDescriptionTokenRequired');
+    }
+    return t('mcp.settings.modal.enabledDescriptionOff');
   };
 
   const renderConfigureModalDetails = () => (
@@ -1083,9 +1111,7 @@ export const McpServersSettings = ({
               {t('mcp.settings.enabled')}
             </div>
             <div className={classes.modalSectionDescription}>
-              {isModalEnabledChecked
-                ? t('mcp.settings.modal.enabledDescription')
-                : t('mcp.settings.modal.enabledDescriptionOff')}
+              {renderModalEnabledDescription()}
             </div>
           </div>
           {isModalEnabledToggleDisabled ? (
