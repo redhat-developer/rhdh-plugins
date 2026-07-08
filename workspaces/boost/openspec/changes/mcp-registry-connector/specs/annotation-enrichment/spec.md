@@ -1,6 +1,8 @@
 # AI Asset Annotation Enrichment
 
 > **Status: Draft** — Pre-implementation specification.
+>
+> **Cross-connector dependencies:** RHIDP-15319 is blocked by RHDHPLAN-1507's SDK (RHIDP-15258) which defines the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`) and SDK validation layer. The annotation constants and validation must be exported by the SDK before this enrichment pipeline can integrate.
 
 ## Description
 

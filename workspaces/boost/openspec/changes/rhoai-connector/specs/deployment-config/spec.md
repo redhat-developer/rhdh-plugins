@@ -1,6 +1,8 @@
 # Deployment Configuration
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15323 is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility) from RHIDP-15316 (Cross-Connector Shared Infrastructure). The shared CA bundle utility and K8s Secret credential patterns must be implemented in RHIDP-15316 before this spec's cross-cluster TLS and auth requirements can be fulfilled.
 
 The RHOAI connector supports per-source enable/disable toggles, cross-cluster endpoint configuration, K8s Secret credentials, and custom CA bundles.
 

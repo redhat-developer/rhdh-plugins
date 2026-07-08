@@ -14,6 +14,8 @@ Enterprise deployments of Red Hat Developer Hub often run in air-gapped environm
 
 This productization effort wraps the upstream connector with RHDH-specific hardening and air-gapped support, packaged as a standalone RHDH dynamic plugin.
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This MCP Registry connector continues under RHIDP-15313. Dependency chain: RHIDP-15316 cross-connector stories (15265 endpoint/creds, 15329 CA bundles) must land before this connector's TLS/auth hardening (RHIDP-15318) can proceed.
+
 ## Goals
 
 - **Air-gapped support** — customers can deploy MCP Registry connector in zero-internet environments using mirrored registries

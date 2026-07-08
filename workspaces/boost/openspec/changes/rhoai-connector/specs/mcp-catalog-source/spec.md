@@ -1,6 +1,8 @@
 # MCP Catalog Source
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Cross-connector dependencies:** RHIDP-15322 is blocked by RHDHPLAN-1507's SDK (RHIDP-15258) which defines the AI Asset annotation scheme. Annotation constants must be exported by the SDK before this source's entity mapping can populate them.
 
 The MCP catalog source connects to RHOAI 3.4's developer-preview MCP catalog API, ingests MCP server metadata, and emits RHDH catalog entities. This source gracefully handles API absence on older RHOAI versions.
 

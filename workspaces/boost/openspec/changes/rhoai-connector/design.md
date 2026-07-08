@@ -6,6 +6,8 @@ RHOAI (Red Hat OpenShift AI) exposes model metadata via Kubeflow's Model Registr
 
 The Model Registry provider is P0 (customers are actively requesting model discoverability). The MCP catalog provider is P1 (RHOAI 3.4 is developer preview; not all customers have upgraded).
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This RHOAI connector continues under RHIDP-15314. Dependency chain: RHIDP-15316 cross-connector stories (15265 endpoint/creds, 15329 CA bundles) must land before this connector's deployment configuration (RHIDP-15323) can proceed.
+
 ## Goals
 
 - Two separate EntityProvider instances for independent failure isolation

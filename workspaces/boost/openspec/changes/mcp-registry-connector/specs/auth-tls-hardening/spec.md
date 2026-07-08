@@ -1,6 +1,8 @@
 # TLS and Credential Hardening
 
 > **Status: Draft** — Pre-implementation specification.
+>
+> **Cross-connector dependencies:** RHIDP-15318 is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility) from RHIDP-15316 (Cross-Connector Shared Infrastructure). The shared `loadCaBundle()` utility and K8s Secret credential patterns must be implemented in RHIDP-15316 before this spec's requirements can be fulfilled.
 
 ## Description
 

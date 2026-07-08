@@ -6,6 +6,8 @@ Red Hat OpenShift AI (RHOAI) is Red Hat's enterprise AI platform for model devel
 
 Boost must surface RHOAI's Model Registry (Kubeflow API) and MCP catalog (developer-preview API) as first-class entities in the RHDH catalog, enabling teams to discover models, track versions, and connect to MCP servers.
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — its scope has been absorbed by RHIDP-15294 (OCI Skill Registry) under RHDHPLAN-1507. RHDHPLAN-1510 continues with 3 surviving epics: RHIDP-15313 (MCP Registry connector), RHIDP-15314 (this RHOAI connector), and RHIDP-15316 (Cross-Connector Shared Infrastructure). All TLS, CA bundle, and credential utilities referenced here depend on RHIDP-15316 stories (RHIDP-15265, 15329) being implemented first.
+
 ## What Boost Builds
 
 ### Model Registry Source

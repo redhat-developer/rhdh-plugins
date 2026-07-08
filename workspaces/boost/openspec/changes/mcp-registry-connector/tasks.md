@@ -1,5 +1,13 @@
 # Tasks: MCP Registry Connector — Productization & Air-Gapped Support
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This connector continues under RHIDP-15313 with 3 stories (RHIDP-15317, 15318, 15319).
+>
+> **Cross-connector dependencies (RHIDP-15316):**
+>
+> - RHIDP-15318 (TLS/auth hardening) is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility)
+> - RHIDP-15319 (annotation enrichment) is blocked by RHDHPLAN-1507 SDK (RHIDP-15258)
+> - RHIDP-15317 (mirror endpoint) has no cross-connector blockers
+
 ## 1. Mirror Endpoint Configuration (P0) — RHIDP-15317
 
 - [ ] 1.1 Add `catalog.providers.mcpRegistry.endpoint` config schema in `config.d.ts`

@@ -1,5 +1,14 @@
 # Tasks: RHOAI Entity-Provider Connector
 
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This connector continues under RHIDP-15314 with 4 stories (RHIDP-15320, 15321, 15322, 15323).
+>
+> **Cross-connector dependencies (RHIDP-15316):**
+>
+> - RHIDP-15323 (deployment config) is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility)
+> - RHIDP-15320 (Model Registry source) is blocked by RHDHPLAN-1507 SDK (RHIDP-15258) for annotation scheme
+> - RHIDP-15322 (MCP catalog source) is blocked by RHDHPLAN-1507 SDK (RHIDP-15258) for annotation scheme
+> - RHIDP-15321 (version normalization) has no cross-connector blockers
+
 ## 1. Model Registry Source (P0) — RHIDP-15320, RHIDP-15321
 
 - [ ] 1.1 Define Kubeflow API response types (`RegisteredModel`, `ModelVersion`) with Zod schemas

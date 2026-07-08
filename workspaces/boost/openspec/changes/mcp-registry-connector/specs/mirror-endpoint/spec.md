@@ -1,6 +1,8 @@
 # Mirror Endpoint Configuration
 
 > **Status: Draft** — Pre-implementation specification.
+>
+> **Cross-connector note:** This spec has no RHIDP-15316 blockers — mirror endpoint configuration is self-contained within the MCP Registry connector module.
 
 ## Description
 
