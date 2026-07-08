@@ -171,7 +171,7 @@ The RBAC plugin's `AuditorService` already provides structured audit events cove
 - Ingestion sync events (provider, counts, duration, errors) — entity provider logging
 - Individual asset ingestion events (entity ref, operation, source) — entity provider logging
 
-This significantly overlaps with RHIDP-15333 (Ingestion Audit & Metrics) under RHDHPLAN-1513. Consider consolidating the remaining scope.
+**Note:** RHIDP-15333 (Ingestion Audit & Metrics, RHDHPLAN-1513) has been **closed and consolidated into this epic** (2026-07-08). The ingestion audit scope from 15333 is now part of RHIDP-15277's deliverables.
 
 ---
 
@@ -263,7 +263,7 @@ The RBAC plugin exposes a full REST API (23+ routes) for policy/role/condition C
 
 3. **The RBAC plugin's `RBACProvider` interface is the primary integration mechanism** for the cascade (RHIDP-15274) and default-deny (RHIDP-15276) epics. `RBACProviderConnection.applyConditionalPermissions()` enables programmatic policy sync triggered by entity ingestion events.
 
-4. **RBAC audit logging (RHIDP-15277) scope is significantly smaller than estimated.** The `AuditorService` already covers policy CRUD, role CRUD, condition changes, and permission evaluation. The remaining work is limited to AI-catalog management events and ingestion sync events — which overlaps with RHIDP-15333 under RHDHPLAN-1513.
+4. **RBAC audit logging (RHIDP-15277) scope is significantly smaller than estimated, and now includes ingestion audit scope.** The `AuditorService` already covers policy CRUD, role CRUD, condition changes, and permission evaluation. The remaining custom work is AI-catalog management events and ingestion sync events. RHIDP-15333 (Ingestion Audit, RHDHPLAN-1513) was closed and consolidated into RHIDP-15277 (2026-07-08).
 
 5. **Custom permission rules remain the main building block.** Rules like `isAiAssetCategory()`, `isFromConnector()`, `isInTenant()` inspect entity annotations and produce conditional decisions that filter at the database level via `toQuery()`. This is exactly how the framework is designed to be extended.
 

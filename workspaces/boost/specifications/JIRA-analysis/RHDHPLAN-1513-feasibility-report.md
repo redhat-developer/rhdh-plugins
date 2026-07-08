@@ -26,6 +26,12 @@ RHDHPLAN-1513 covers operational infrastructure for the AI Catalog: admin dashbo
 
 ---
 
+> **Jira Consolidation (2026-07-08):** 1 of 4 epics under RHDHPLAN-1513 was closed:
+>
+> - **RHIDP-15333** (Ingestion Audit Logging & Metrics) → closed, scope absorbed into **RHIDP-15277** (AI Catalog RBAC Audit Logging, RHDHPLAN-1508)
+>
+> The 3 surviving epics are **RHIDP-15331**, **RHIDP-15332**, and **RHIDP-15334**.
+
 ## Epic-by-Epic Analysis
 
 ### RHIDP-15331: Ingestion Health Admin Dashboard
@@ -70,7 +76,9 @@ RHDHPLAN-1513 covers operational infrastructure for the AI Catalog: admin dashbo
 
 ---
 
-### RHIDP-15333: Ingestion Audit Logging and Metrics
+### ~~RHIDP-15333: Ingestion Audit Logging and Metrics~~ — CLOSED (consolidated into RHIDP-15277)
+
+> **Status:** Closed 2026-07-08. This epic's ingestion audit scope overlapped with RHIDP-15277 (RBAC Audit Logging, RHDHPLAN-1508), which already establishes the audit event infrastructure via `AuditorService`. Ingestion sync events, config change auditing, and analytics metrics are now part of RHIDP-15277's expanded scope.
 
 **Summary:** Audit log every sync attempt and config change. Expose analytics metrics (sync history, quality scores, match coverage, Neo4j sync status) via RBAC-gated REST API.
 
@@ -109,37 +117,36 @@ RHDHPLAN-1513 covers operational infrastructure for the AI Catalog: admin dashbo
 
 ## Summary Matrix
 
-| Epic                                | Key         | Feasible without upstream changes? | Implementation complexity | Notes                                                                            |
-| ----------------------------------- | ----------- | ---------------------------------- | ------------------------- | -------------------------------------------------------------------------------- |
-| Ingestion Health Admin Dashboard    | RHIDP-15331 | **YES**                            | Medium                    | Standard admin page + backend API; boost admin panel already has this pattern    |
-| Connector Configuration Hot-Reload  | RHIDP-15332 | **YES**                            | Medium                    | Extends proven `RuntimeConfigResolver`; K8s Secret rotation timing needs testing |
-| Ingestion Audit Logging and Metrics | RHIDP-15333 | **YES**                            | Medium                    | Extends RHIDP-15277 audit pattern; Eval Hub API availability is the main risk    |
-| Upstream Schema Alignment Readiness | RHIDP-15334 | **YES**                            | Low                       | Documentation + dry-run tool; depends on RFC stability                           |
+| Epic                                    | Key         | Status                         | Feasible without upstream changes? | Implementation complexity | Notes                                                                            |
+| --------------------------------------- | ----------- | ------------------------------ | ---------------------------------- | ------------------------- | -------------------------------------------------------------------------------- |
+| Ingestion Health Admin Dashboard        | RHIDP-15331 | **Active**                     | **YES**                            | Medium                    | Standard admin page + backend API; boost admin panel already has this pattern    |
+| Connector Configuration Hot-Reload      | RHIDP-15332 | **Active**                     | **YES**                            | Medium                    | Extends proven `RuntimeConfigResolver`; K8s Secret rotation timing needs testing |
+| ~~Ingestion Audit Logging and Metrics~~ | RHIDP-15333 | **CLOSED** → absorbed by 15277 | YES                                | Medium                    | Overlap resolved — scope consolidated into RHIDP-15277 (RHDHPLAN-1508)           |
+| Upstream Schema Alignment Readiness     | RHIDP-15334 | **Active**                     | **YES**                            | Low                       | Documentation + dry-run tool; depends on RFC stability                           |
 
 ## Key Findings
 
-1. **All 4 epics are fully feasible without upstream Backstage changes.** RHDHPLAN-1513 is the most internally focused of the four features — three of the four epics build on boost's own infrastructure (`RuntimeConfigResolver`, admin panel, audit logging) rather than Backstage extension points.
+1. **All epics are fully feasible without upstream Backstage changes.** After consolidation, 3 surviving epics (RHIDP-15331, 15332, 15334) remain active. RHDHPLAN-1513 is the most internally focused of the four features — the surviving epics build on boost's own infrastructure (`RuntimeConfigResolver`, admin panel) rather than Backstage extension points.
 
 2. **No PM discussion needed.** All acceptance criteria can be implemented as specified. No spec deviations required.
 
 3. **Boost's `RuntimeConfigResolver` is the key enabler for RHIDP-15332.** Hot-reload config is not a native Backstage capability — boost built it. Extending it to connector settings is a natural progression of that investment.
 
-4. **The audit logging pattern is now a cross-cutting concern.** RHIDP-15277 (RHDHPLAN-1508) establishes the pattern for RBAC audit events; RHIDP-15333 (this feature) extends it to ingestion events. These should share the same audit event infrastructure (structured JSON, dedicated log channel, consistent event schema) to avoid parallel implementations.
+4. **Audit logging consolidation is complete.** RHIDP-15333 was closed (2026-07-08) and its ingestion audit scope absorbed into RHIDP-15277 (RHDHPLAN-1508), which already establishes the audit event infrastructure via `AuditorService`. This avoids parallel audit implementations and ensures a single, consistent audit event schema across RBAC and ingestion events.
 
-5. **Two external dependency risks (neither is a Backstage framework issue):**
-   - **Eval Hub APIs** (LightEval, IBM Clear, GuideLLM) — API availability and contract stability are unknowns. If these APIs are not ready, the quality scores criterion should be scoped to a generic "quality score ingestion" interface.
-   - **Upstream RFCs #32062 and #33060** — if these RFCs undergo significant revision, the mapping document and dry-run tool will need updates. The epic correctly frames actual migration as future work.
+5. **One external dependency risk (not a Backstage framework issue):**
+   - **Upstream RFCs #32062 and #33060** — if these RFCs undergo significant revision, the mapping document and dry-run tool (RHIDP-15334) will need updates. The epic correctly frames actual migration as future work.
 
 ## Comparison Across All Four Features
 
-| Aspect                          | RHDHPLAN-1507 (Entity Model) | RHDHPLAN-1508 (RBAC)          | RHDHPLAN-1510 (Connectors) | RHDHPLAN-1513 (Ops Infra)   |
-| ------------------------------- | ---------------------------- | ----------------------------- | -------------------------- | --------------------------- |
-| Epic count                      | 7                            | 7                             | 4                          | 4                           |
-| Epics requiring spec deviations | 0                            | 3                             | 0                          | 0                           |
-| Upstream changes needed         | None                         | None (3 alternate approaches) | None                       | None                        |
-| Framework alignment             | High                         | Medium                        | High                       | High                        |
-| PM discussion needed            | No                           | Yes (3 areas)                 | No                         | No                          |
-| Highest-risk epic               | RHIDP-15295 (Neo4j)          | RHIDP-15274 (cascade)         | RHIDP-15315 (OCI scale)    | RHIDP-15333 (Eval Hub APIs) |
-| Primary cross-reference         | Catalog framework            | Permission framework          | Entity provider interface  | Boost internal infra        |
+| Aspect                          | RHDHPLAN-1507 (Entity Model) | RHDHPLAN-1508 (RBAC)                 | RHDHPLAN-1510 (Connectors)     | RHDHPLAN-1513 (Ops Infra)   |
+| ------------------------------- | ---------------------------- | ------------------------------------ | ------------------------------ | --------------------------- |
+| Epic count (active / original)  | 3 of 7 (4 closed)            | 7 of 7                               | 3 of 4 (1 closed)              | 3 of 4 (1 closed)           |
+| Epics requiring spec deviations | 0                            | 1 (default-deny "only affects new")  | 0                              | 0                           |
+| Upstream changes needed         | None                         | None — RBAC plugin covers most needs | None                           | None                        |
+| Framework alignment             | High                         | Medium-High                          | High                           | High                        |
+| PM discussion needed            | No                           | Minimal (1 area)                     | No                             | No                          |
+| Highest-risk epic               | RHIDP-15295 (Neo4j)          | RHIDP-15274 (cascade)                | RHIDP-15314 (RHOAI two-source) | RHIDP-15334 (RFC stability) |
+| Primary cross-reference         | Catalog framework            | Permission framework                 | Entity provider interface      | Boost internal infra        |
 
-**Overall:** 22 epics across 4 features. 19 of 22 are fully feasible as specified. 3 (all in RHDHPLAN-1508) require implementation approaches that deviate from the spec text and need PM discussion. Zero require upstream Backstage changes.
+**Overall:** 22 epics originally across 4 features; 6 closed via consolidation, **16 active epics remain**. 15 of 16 active epics are fully feasible as specified. 1 (RHIDP-15276 in RHDHPLAN-1508) has one criterion requiring PM discussion. Zero require upstream Backstage changes.

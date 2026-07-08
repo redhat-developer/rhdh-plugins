@@ -33,6 +33,12 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ---
 
+> **Jira Consolidation (2026-07-08):** 1 of 4 epics under RHDHPLAN-1510 was closed:
+>
+> - **RHIDP-15315** (OCI Skill Registry Connector) → closed, scope absorbed into **RHIDP-15294** (OCI Skill Registry Ingestion Framework, RHDHPLAN-1507)
+>
+> The 3 surviving epics are **RHIDP-15313**, **RHIDP-15314**, and **RHIDP-15316**.
+
 ## Epic-by-Epic Analysis
 
 ### RHIDP-15313: MCP Registry Connector — Productization & Air-Gapped Support
@@ -77,7 +83,9 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ---
 
-### RHIDP-15315: OCI Skill Registry Entity-Provider Connector
+### ~~RHIDP-15315: OCI Skill Registry Entity-Provider Connector~~ — CLOSED (consolidated into RHIDP-15294)
+
+> **Status:** Closed 2026-07-08. This connector epic overlapped with RHIDP-15294 (OCI Skill Registry Ingestion Framework, RHDHPLAN-1507). The framework epic (15294) now carries the full scope — SDK interfaces, OCI client, `skillcard.yaml` parsing, entity emission, and 2K-image scale validation.
 
 **Summary:** Discover AI skills published as OCI artifacts, parse `skillcard.yaml`, validate, emit as `ai-skill` entities. Incremental sync via digest, caching, validated at 2,000-image scale.
 
@@ -127,38 +135,39 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ## Summary Matrix
 
-| Epic                                  | Key         | Feasible without upstream changes? | Implementation complexity | Notes                                                                                |
-| ------------------------------------- | ----------- | ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
-| MCP Registry — Productization         | RHIDP-15313 | **YES**                            | Low-Medium                | Productization wrapper on upstream connector; depends on RHDHPLAN-393                |
-| RHOAI Connector                       | RHIDP-15314 | **YES**                            | Medium                    | Two-source provider against Kubeflow + RHOAI APIs; prior art exists                  |
-| OCI Skill Registry Connector          | RHIDP-15315 | **YES**                            | High                      | OCI client implementation + caching + 2K-scale validation; overlaps with RHIDP-15294 |
-| Cross-Connector Shared Infrastructure | RHIDP-15316 | **YES**                            | Low                       | Shared utilities — CA, Secrets, fault isolation, config patterns                     |
+| Epic                                  | Key         | Status                            | Feasible without upstream changes? | Implementation complexity | Notes                                                                  |
+| ------------------------------------- | ----------- | --------------------------------- | ---------------------------------- | ------------------------- | ---------------------------------------------------------------------- |
+| MCP Registry — Productization         | RHIDP-15313 | **Active**                        | **YES**                            | Low-Medium                | Productization wrapper on upstream connector; depends on RHDHPLAN-393  |
+| RHOAI Connector                       | RHIDP-15314 | **Active**                        | **YES**                            | Medium                    | Two-source provider against Kubeflow + RHOAI APIs; prior art exists    |
+| ~~OCI Skill Registry Connector~~      | RHIDP-15315 | **CLOSED** → absorbed by 15294    | YES                                | High                      | Overlap resolved — scope consolidated into RHIDP-15294 (RHDHPLAN-1507) |
+| Cross-Connector Shared Infrastructure | RHIDP-15316 | **Active** (absorbed 15263 scope) | **YES**                            | Low-Medium                | Now includes air-gapped patterns from RHIDP-15263 (RHDHPLAN-1507)      |
 
 ## Key Findings
 
-1. **All 4 epics are fully feasible without upstream Backstage changes.** Every acceptance criterion maps to standard entity provider patterns or application-level code. No spec deviations needed.
+1. **All epics are fully feasible without upstream Backstage changes.** After consolidation, 3 surviving epics (RHIDP-15313, 15314, 15316) remain active. Every acceptance criterion maps to standard entity provider patterns or application-level code. No spec deviations needed.
 
-2. **RHDHPLAN-1510 is the most straightforward of the three features analyzed so far.** These are concrete connector implementations using the `EntityProvider` interface that RHDHPLAN-1507 establishes the SDK for. The Backstage catalog framework is designed for exactly this pattern.
+2. **RHDHPLAN-1510 is the most straightforward of the four features analyzed.** These are concrete connector implementations using the `EntityProvider` interface that RHDHPLAN-1507 establishes the SDK for. The Backstage catalog framework is designed for exactly this pattern.
 
-3. **Potential overlap between RHIDP-15315 (this feature) and RHIDP-15294 (RHDHPLAN-1507).** Both describe OCI Skill Registry ingestion. RHIDP-15294 defines the "ingestion framework" and RHIDP-15315 is the "entity-provider connector." These should be reconciled — if 15294 delivers the OCI client, caching, and `skillcard.yaml` parsing as reusable framework code, then 15315 is the thin entity-provider wrapper that uses it. If not reconciled, there's a risk of duplicate implementation.
+3. **OCI connector overlap resolved via consolidation.** RHIDP-15315 (this feature) and RHIDP-15294 (RHDHPLAN-1507) both described OCI Skill Registry ingestion. RHIDP-15315 was closed (2026-07-08) and its scope absorbed into RHIDP-15294, which now carries the full OCI connector scope — framework interfaces, OCI client, caching, and 2K-scale validation.
 
-4. **The cross-connector shared infrastructure (RHIDP-15316) is a good engineering practice but not a framework requirement.** Backstage doesn't mandate shared utilities across providers — each provider can implement its own CA/Secret handling. The shared approach reduces duplication and ensures consistency, which is valuable but entirely an application architecture choice.
+4. **The cross-connector shared infrastructure (RHIDP-15316) now also carries air-gapped scope.** RHIDP-15263 (Air-Gapped Deployment, RHDHPLAN-1507) was closed and its scope absorbed into RHIDP-15316. This is a natural fit — CA bundle loading, K8s Secret credential injection, and configurable endpoints are shared utilities used by all connectors.
 
-5. **No PM discussion needed.** All acceptance criteria can be implemented exactly as specified. This contrasts with RHDHPLAN-1508 (3 areas needing PM discussion) and aligns with RHDHPLAN-1507 (also no PM discussion needed).
+5. **No PM discussion needed.** All acceptance criteria can be implemented exactly as specified. This contrasts with RHDHPLAN-1508 (1 area needing PM discussion) and aligns with RHDHPLAN-1507 (also no PM discussion needed).
 
 6. **Dependency chain is clear and manageable:**
    - RHIDP-15316 (shared infra) has no dependencies — build first
    - RHIDP-15313 (MCP Registry) depends on RHDHPLAN-393 (upstream connector) + RHIDP-15316
    - RHIDP-15314 (RHOAI) depends on RHIDP-15316
-   - RHIDP-15315 (OCI) depends on RHIDP-15316 + RHIDP-15294 (from RHDHPLAN-1507)
+   - OCI connector scope now in RHIDP-15294 (RHDHPLAN-1507), depends on RHIDP-15316
 
 ## Comparison Across Features
 
-| Aspect                               | RHDHPLAN-1507 (Entity Model)  | RHDHPLAN-1508 (RBAC)                      | RHDHPLAN-1510 (Connectors)              |
-| ------------------------------------ | ----------------------------- | ----------------------------------------- | --------------------------------------- |
-| Epics requiring deviations from spec | 0 of 7                        | 3 of 7                                    | 0 of 4                                  |
-| Upstream changes needed              | None                          | None (but 3 require alternate approaches) | None                                    |
-| Framework alignment                  | High                          | Medium                                    | High                                    |
-| PM discussion needed                 | No                            | Yes (3 areas)                             | No                                      |
-| Highest-risk epic                    | RHIDP-15295 (Neo4j sync)      | RHIDP-15274 (Policy cascade)              | RHIDP-15315 (OCI scale, overlaps 15294) |
-| Implementation complexity            | Straightforward 5/7, high 2/7 | Medium 4/7, high 3/7                      | Straightforward 3/4, high 1/4           |
+| Aspect                               | RHDHPLAN-1507 (Entity Model)            | RHDHPLAN-1508 (RBAC)                                          | RHDHPLAN-1510 (Connectors)                 |
+| ------------------------------------ | --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| Epics (active / original)            | 3 of 7 (4 closed via consolidation)     | 7 of 7                                                        | 3 of 4 (1 closed via consolidation)        |
+| Epics requiring deviations from spec | 0                                       | 1 of 7 (default-deny "only affects new assets")               | 0                                          |
+| Upstream changes needed              | None                                    | None — RBAC plugin provides more infrastructure than assessed | None                                       |
+| Framework alignment                  | High                                    | Medium-High                                                   | High                                       |
+| PM discussion needed                 | No                                      | Minimal (1 area)                                              | No                                         |
+| Highest-risk epic                    | RHIDP-15295 (Neo4j sync)                | RHIDP-15274 (Policy cascade)                                  | RHIDP-15314 (RHOAI — two-source connector) |
+| Implementation complexity            | Medium 1/3 (SDK), high 2/3 (OCI, Neo4j) | Low 3/7, medium 4/7                                           | Low-Medium 2/3, medium 1/3                 |

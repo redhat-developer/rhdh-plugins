@@ -36,9 +36,20 @@ RHDHPLAN-1507 focuses on entity model, ingestion infrastructure, and data pipeli
 
 ---
 
+> **Jira Consolidation (2026-07-08):** Following review, 4 of 7 epics under RHDHPLAN-1507 were closed and their scope absorbed into surviving epics:
+>
+> - **RHIDP-15254** (Annotation Scheme) → closed, scope absorbed into **RHIDP-15258** (Entity-Provider SDK)
+> - **RHIDP-15261** (Delta Sync) → closed, scope absorbed into **RHIDP-15258** (Entity-Provider SDK)
+> - **RHIDP-15263** (Air-Gapped) → closed, scope absorbed into **RHIDP-15316** (Cross-Connector Shared Infrastructure, RHDHPLAN-1510)
+> - **RHIDP-15267** (Performance & Resilience) → closed, scope distributed across **RHIDP-15258**, **RHIDP-15294**, and **RHIDP-15295**
+>
+> The 3 surviving epics are **RHIDP-15258**, **RHIDP-15294**, and **RHIDP-15295**. Analysis sections for closed epics are preserved below for reference but marked as consolidated.
+
 ## Epic-by-Epic Analysis
 
-### RHIDP-15254: AI Asset Annotation Scheme (`rhdh.io/ai-asset-*`)
+### ~~RHIDP-15254: AI Asset Annotation Scheme (`rhdh.io/ai-asset-*`)~~ — CLOSED (consolidated into RHIDP-15258)
+
+> **Status:** Closed 2026-07-08. Annotation scheme is fully supported by the catalog framework — no dedicated epic needed. Scope (annotation constants, validation, kind/type mapping) absorbed into the Entity-Provider SDK epic (RHIDP-15258).
 
 **Summary:** Define and implement `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations on all AI asset catalog entities. Cover all five `spec.type` values mapped to Backstage entity kinds.
 
@@ -82,7 +93,9 @@ RHDHPLAN-1507 focuses on entity model, ingestion infrastructure, and data pipeli
 
 ---
 
-### RHIDP-15261: Incremental (Delta) Sync Framework for Entity Providers
+### ~~RHIDP-15261: Incremental (Delta) Sync Framework for Entity Providers~~ — CLOSED (consolidated into RHIDP-15258)
+
+> **Status:** Closed 2026-07-08. Delta sync is a first-class Backstage feature (`applyMutation({ type: 'delta' })`) — no dedicated epic needed. SDK wrapper scope absorbed into the Entity-Provider SDK epic (RHIDP-15258).
 
 **Summary:** After first full ingest, subsequent cycles only add/update/remove changed entities — delta sync with cursor/ETag persistence.
 
@@ -103,7 +116,9 @@ RHDHPLAN-1507 focuses on entity model, ingestion infrastructure, and data pipeli
 
 ---
 
-### RHIDP-15263: Air-Gapped Deployment Support for AI Catalog Entity Providers
+### ~~RHIDP-15263: Air-Gapped Deployment Support for AI Catalog Entity Providers~~ — CLOSED (consolidated into RHIDP-15316)
+
+> **Status:** Closed 2026-07-08. Air-gapped patterns (CA bundles, K8s Secrets, configurable endpoints) are standard Node.js/K8s patterns — no dedicated epic needed. Scope absorbed into Cross-Connector Shared Infrastructure (RHIDP-15316, RHDHPLAN-1510).
 
 **Summary:** Support custom CA bundles, K8s Secret-only credential references, configurable endpoint URLs, and startup validation rejecting plaintext credentials.
 
@@ -124,7 +139,9 @@ RHDHPLAN-1507 focuses on entity model, ingestion infrastructure, and data pipeli
 
 ---
 
-### RHIDP-15267: AI Catalog Performance Testing and Entity Resilience
+### ~~RHIDP-15267: AI Catalog Performance Testing and Entity Resilience~~ — CLOSED (scope distributed)
+
+> **Status:** Closed 2026-07-08. Performance testing and resilience are cross-cutting concerns, not a standalone epic. Scope distributed: load testing → RHIDP-15294 (OCI connector validates at 2K-image scale), error isolation → RHIDP-15258 (SDK defines resilience contracts), Neo4j perf → RHIDP-15295.
 
 **Summary:** Validate that 5,000+ entity ingestion doesn't degrade catalog performance. Single-entity failures must not abort sync cycles.
 
@@ -215,37 +232,40 @@ The Backstage catalog backend already uses `EventsService` from `@backstage/plug
 
 ## Summary Matrix
 
-| Epic                             | Key         | Feasible without upstream changes? | Implementation complexity | Notes                                                                   |
-| -------------------------------- | ----------- | ---------------------------------- | ------------------------- | ----------------------------------------------------------------------- |
-| AI Asset Annotation Scheme       | RHIDP-15254 | **YES**                            | Low                       | Standard custom annotations and spec.type values — explicitly supported |
-| Entity-Provider SDK Package      | RHIDP-15258 | **YES**                            | Medium                    | npm package wrapping Backstage interfaces — no framework changes        |
-| Incremental (Delta) Sync         | RHIDP-15261 | **YES**                            | Medium                    | `applyMutation({ type: 'delta' })` is a first-class Backstage feature   |
-| Air-Gapped Deployment            | RHIDP-15263 | **YES**                            | Medium                    | Standard K8s/Node.js TLS and credential patterns                        |
-| Performance Testing & Resilience | RHIDP-15267 | **YES**                            | Medium                    | Testing/measurement exercise — no framework changes                     |
-| OCI Skill Registry Ingestion     | RHIDP-15294 | **YES**                            | High                      | New connector, but uses standard EntityProvider interface               |
-| Neo4j Knowledge Graph Sync       | RHIDP-15295 | **YES**                            | High                      | No catalog secondary-sync extension point; recommend polling approach   |
+| Epic                                 | Key         | Status                            | Feasible without upstream changes? | Implementation complexity | Notes                                                                  |
+| ------------------------------------ | ----------- | --------------------------------- | ---------------------------------- | ------------------------- | ---------------------------------------------------------------------- |
+| ~~AI Asset Annotation Scheme~~       | RHIDP-15254 | **CLOSED** → absorbed by 15258    | YES                                | Low                       | Standard custom annotations — scope folded into SDK package            |
+| Entity-Provider SDK Package          | RHIDP-15258 | **Active** (expanded scope)       | **YES**                            | Medium                    | Now includes annotation scheme, delta sync framework, and SDK contract |
+| ~~Incremental (Delta) Sync~~         | RHIDP-15261 | **CLOSED** → absorbed by 15258    | YES                                | Medium                    | First-class Backstage feature — scope folded into SDK package          |
+| ~~Air-Gapped Deployment~~            | RHIDP-15263 | **CLOSED** → absorbed by 15316    | YES                                | Medium                    | Standard patterns — scope moved to shared infra (RHDHPLAN-1510)        |
+| ~~Performance Testing & Resilience~~ | RHIDP-15267 | **CLOSED** → distributed          | YES                                | Medium                    | Cross-cutting — distributed across 15258, 15294, 15295                 |
+| OCI Skill Registry Ingestion         | RHIDP-15294 | **Active** (absorbed 15315 scope) | **YES**                            | High                      | Now includes concrete connector (from RHIDP-15315, RHDHPLAN-1510)      |
+| Neo4j Knowledge Graph Sync           | RHIDP-15295 | **Active**                        | **YES**                            | High                      | No catalog secondary-sync extension point; recommend polling approach  |
 
 ## Key Findings
 
-1. **All 7 epics are fully feasible without upstream Backstage changes.** Unlike RHDHPLAN-1508 (where 3 epics required implementation deviations from the spec text), RHDHPLAN-1507's requirements align cleanly with Backstage catalog extension points.
+1. **All epics are fully feasible without upstream Backstage changes.** After consolidation, 3 surviving epics (RHIDP-15258, 15294, 15295) carry the full scope. The 4 closed epics were thin — their scope was either already supported by the framework or cross-cutting across other epics. RHDHPLAN-1507's requirements align cleanly with Backstage catalog extension points.
 
 2. **The Backstage catalog is designed for exactly this kind of extension.** Custom annotations (low risk), custom `spec.type` values (low risk), custom entity providers (`EntityProvider` interface), delta mutations, incremental providers, custom processors — all are first-class extension mechanisms.
 
 3. **The critical design decision — using existing kinds (Resource, Component) instead of custom kinds — is already correct.** Custom entity kinds have "very large impact" because many plugins hard-code kind checks. Mapping AI assets to Resource and Component avoids this entirely.
 
-4. **Delta sync is not novel engineering — it's using the existing `applyMutation` API correctly.** The `type: 'delta'` mutation and the `IncrementalEntityProvider` interface handle the hard parts. The SDK wraps these with AI Catalog-specific abstractions.
+4. **Delta sync is not novel engineering — it's using the existing `applyMutation` API correctly.** The `type: 'delta'` mutation and the `IncrementalEntityProvider` interface handle the hard parts. The SDK wraps these with AI Catalog-specific abstractions. (Scope now in RHIDP-15258.)
 
 5. **The only area without a dedicated Backstage extension point is Neo4j sync (RHIDP-15295).** The catalog has no "secondary data store" hook. However, catalog API polling is a well-understood pattern and is fully decoupled from catalog internals. This is not a blocker — it's a design choice.
 
-6. **No PM discussion needed for RHDHPLAN-1507** (unlike RHDHPLAN-1508 where 3 areas required clarification). All acceptance criteria can be implemented as specified.
+6. **No PM discussion needed for RHDHPLAN-1507** (unlike RHDHPLAN-1508 where 1 area required clarification on default-deny policy). All acceptance criteria can be implemented as specified.
+
+7. **Epic consolidation reduced 7 epics to 3 without losing scope.** The closed epics (annotation scheme, delta sync, air-gapped, perf/resilience) described capabilities that are either standard framework features or cross-cutting acceptance criteria better housed in the epics that implement them.
 
 ## Comparison with RHDHPLAN-1508
 
-| Aspect                               | RHDHPLAN-1507 (Entity Model)                       | RHDHPLAN-1508 (RBAC)                                                                                                                                  |
-| ------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Epics requiring deviations from spec | 0 of 7                                             | 1 of 7 (default-deny "only affects new assets" criterion)                                                                                             |
-| Upstream changes needed              | None                                               | None — RBAC plugin provides more infrastructure than initially assessed                                                                               |
-| Framework alignment                  | High — uses catalog extension points as designed   | Medium-High — `RBACProvider`, `defaultPermissions`, REST API, and `AuditorService` cover most needs; entity-to-entity cascade is the main custom work |
-| PM discussion needed                 | No                                                 | Minimal — confirm retroactive vs. new-only policy application for default-deny                                                                        |
-| Highest-risk epic                    | RHIDP-15295 (Neo4j sync — no extension point)      | RHIDP-15274 (Policy cascade — entity-to-entity, not group-based)                                                                                      |
-| Implementation complexity            | Straightforward for 5/7, high for 2/7 (OCI, Neo4j) | Low for 3/7, medium for 4/7 — revised downward based on RBAC plugin capabilities                                                                      |
+| Aspect                               | RHDHPLAN-1507 (Entity Model)                        | RHDHPLAN-1508 (RBAC)                                                                                                                                  |
+| ------------------------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Epics (active / total)               | 3 active of 7 original (4 closed via consolidation) | 7 of 7 active                                                                                                                                         |
+| Epics requiring deviations from spec | 0                                                   | 1 of 7 (default-deny "only affects new assets" criterion)                                                                                             |
+| Upstream changes needed              | None                                                | None — RBAC plugin provides more infrastructure than initially assessed                                                                               |
+| Framework alignment                  | High — uses catalog extension points as designed    | Medium-High — `RBACProvider`, `defaultPermissions`, REST API, and `AuditorService` cover most needs; entity-to-entity cascade is the main custom work |
+| PM discussion needed                 | No                                                  | Minimal — confirm retroactive vs. new-only policy application for default-deny                                                                        |
+| Highest-risk epic                    | RHIDP-15295 (Neo4j sync — no extension point)       | RHIDP-15274 (Policy cascade — entity-to-entity, not group-based)                                                                                      |
+| Implementation complexity            | Medium for 1/3 (SDK), high for 2/3 (OCI, Neo4j)     | Low for 3/7, medium for 4/7 — revised downward based on RBAC plugin capabilities                                                                      |
