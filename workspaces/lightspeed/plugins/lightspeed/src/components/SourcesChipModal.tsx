@@ -16,7 +16,14 @@
 
 import { makeStyles } from '@material-ui/core';
 import { SourcesCardProps } from '@patternfly/chatbot';
-import { Button, Popover } from '@patternfly/react-core';
+import {
+  Button,
+  HelperText,
+  HelperTextItem,
+  List,
+  ListItem,
+  Popover,
+} from '@patternfly/react-core';
 import { InfoCircleIcon, LinkIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -54,32 +61,16 @@ const useStyles = makeStyles(theme => ({
       color: 'inherit',
     },
   },
-  infoRow: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: theme.spacing(1),
+  helperText: {
     marginBottom: theme.spacing(1.5),
-    fontSize: '0.8125rem',
-    color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
-  },
-  infoIcon: {
-    flexShrink: 0,
-    marginTop: 2,
-    fontSize: '0.875rem',
     color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
   },
   sourcesList: {
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
     maxHeight: 320,
-    overflowY: 'auto',
+    overflowY: 'auto' as const,
   },
   sourceItem: {
-    display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1.5),
-    padding: `${theme.spacing(1.5)}px 0`,
   },
   sourceContent: {
     flex: 1,
@@ -126,29 +117,34 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
       appendTo={() => document.body}
       bodyContent={
         <>
-          <div className={classes.infoRow}>
-            <InfoCircleIcon className={classes.infoIcon} />
-            <span>{t('sources.modal.description')}</span>
-          </div>
-          <ul className={classes.sourcesList}>
+          <HelperText className={classes.helperText}>
+            <HelperTextItem variant="indeterminate" icon={<InfoCircleIcon />}>
+              {t('sources.modal.description')}
+            </HelperTextItem>
+          </HelperText>
+          <List
+            isPlain
+            className={classes.sourcesList}
+            aria-label={t('sources.modal.title')}
+          >
             {sources.sources.map((source, index) => {
               const title = source.title ?? `Source ${index + 1}`;
               return (
-                <li
+                <ListItem
                   key={`${source.title}-${index}`}
                   className={classes.sourceItem}
+                  icon={<FileTypeIcon fileName={title} />}
                 >
-                  <FileTypeIcon fileName={title} />
                   <div className={classes.sourceContent}>
                     <div className={classes.sourceTitle}>{title}</div>
                     {source.body && (
                       <div className={classes.sourceBody}>{source.body}</div>
                     )}
                   </div>
-                </li>
+                </ListItem>
               );
             })}
-          </ul>
+          </List>
         </>
       }
     >
