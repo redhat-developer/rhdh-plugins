@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { cloneElement, useMemo } from 'react';
 
 import {
   Content,
@@ -81,8 +81,15 @@ export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
         | Record<string, { x?: number; y?: number; w?: number; h?: number }>
         | undefined;
 
+      const component =
+        defaultWidget.props && widget.component
+          ? cloneElement(widget.component, defaultWidget.props)
+          : widget.component;
+
       result.push({
         ...widget,
+        name: defaultWidget.id,
+        component,
         breakpointLayouts: widgetLayout as
           | Record<Breakpoint, Layout>
           | undefined,

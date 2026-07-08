@@ -30,6 +30,7 @@ The plugin will automatically provide:
 - A homepage at `/home` (or the path configured via `page:home`)
 - Default widgets: Onboarding, Entity Catalog, Templates, Quick Access, Search, Recently Visited, Top Visited, and more
 - Customizable or read-only layout based on configuration, default layout being customizable
+- Persona-based default widgets loaded from the `homepage-backend` plugin (user/group/permission filtering)
 
 ### Configuration
 
@@ -49,24 +50,9 @@ app:
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true # or false for read-only layout
-          widgetLayout:
-            RhdhTemplateSection:
-              priority: 300 # priority is considered for only Read-only Grid layout
-              breakpoints:
-                xl: { w: 12, h: 5 }
-                lg: { w: 12, h: 5 }
-                # ... md, sm, xs, xxs
-            RhdhEntitySection:
-              priority: 200
-              breakpoints:
-                xl: { w: 12, h: 7 }
-                # ...
-            RhdhOnboardingSection:
-              priority: 100
-              breakpoints:
-                xl: { w: 12, h: 6 }
-                # ...
 ```
+
+Default widgets (including persona-based filtering) are configured via the `homepage-backend` plugin. See the [homepage-backend README](../homepage-backend/README.md) for configuration details.
 
 ### Modules
 
@@ -81,16 +67,18 @@ The following modules are available from the alpha export:
 
 The `homePageDevModule` extends the `home` plugin (`@backstage/plugin-home`) with:
 
-- `home-page-layout:home/dynamic-homepage-layout` – Custom layout with config-driven widget arrangement and priority
+- `home-page-layout:home/dynamic-homepage-layout` – Custom layout with persona-based default widgets from the backend
 - `home-page-widget:home/rhdh-onboarding-section` – Onboarding section
 - `home-page-widget:home/rhdh-entity-section` – Software catalog section
 - `home-page-widget:home/rhdh-template-section` – Templates section
-- `home-page-widget:home/quick-access-card` – Quick access card
+- `home-page-widget:home/quickaccess-card` – Quick access card
 - `home-page-widget:home/search-bar` – Search bar
 - `home-page-widget:home/featured-docs-card` – Featured docs
-- `home-page-widget:home/recently-visited` – Recently visited
-- `home-page-widget:home/top-visited` – Top visited
+- `home-page-widget:home/catalog-starred-entities-card` – Starred entities
+- `home-page-widget:home/recently-visited-card` – Recently visited
+- `home-page-widget:home/top-visited-card` – Top visited
 - `api:home/quickaccess` – Quick access API
+- `api:home/default-widgets` – Default widgets API (persona-based filtering)
 
 ## Legacy System (Dynamic Plugins)
 
