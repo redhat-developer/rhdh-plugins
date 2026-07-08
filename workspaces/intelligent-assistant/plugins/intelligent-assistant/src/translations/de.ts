@@ -140,6 +140,20 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Der intelligente Assistent arbeitet mit genau Ihren Berechtigungen.',
     'mcp.settings.modalDescriptionDcr':
       'Dieser Server verwendet Dynamic Client Registration (DCR). Token werden automatisch mit Ihrer Backstage-Identität erstellt — kein manuelles Token erforderlich.',
+    'mcp.settings.authenticationToken': 'Authentifizierungstoken',
+    'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Tools werden geladen...',
+    'mcp.settings.modal.loadingStatus': 'Verbindung wird getrennt...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Token wurde entfernt. Um diesen MCP-Server erneut zu verwenden, geben Sie einen neuen Token ein.',
+    'mcp.settings.modal.noToolsAvailable': 'Keine Tools verfügbar.',
+    'mcp.settings.modal.toolsLoadFailed': 'Tools konnten nicht geladen werden.',
+    'mcp.settings.modal.enabledDescription':
+      'Dieser Server ist aktiv und im Chat verfügbar.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Dieser Server ist deaktiviert und im Chat nicht verfügbar.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Dieser Server ist derzeit deaktiviert. Geben Sie einen Token ein, um ihn zu aktivieren.',
     'mcp.settings.name': 'Name',
     'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',

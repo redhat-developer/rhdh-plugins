@@ -135,6 +135,20 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       '認証情報は保存時に暗号化され、あなたのプロファイルに限定されます。インテリジェントアシスタントはあなたの権限で動作します。',
     'mcp.settings.modalDescriptionDcr':
       'このサーバーは Dynamic Client Registration (DCR) を使用しています。トークンはあなたの Backstage ID を使用して自動的に発行されるため、手動でのトークン入力は不要です。',
+    'mcp.settings.authenticationToken': '認証トークン',
+    'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
+    'mcp.settings.modal.loadingTools': 'ツールを読み込み中...',
+    'mcp.settings.modal.loadingStatus': '切断中...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'トークンが削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
+    'mcp.settings.modal.noToolsAvailable': '利用可能なツールがありません。',
+    'mcp.settings.modal.toolsLoadFailed': 'ツールの読み込みに失敗しました。',
+    'mcp.settings.modal.enabledDescription':
+      'このサーバーはアクティブで、チャットで利用できます。',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'このサーバーは無効になっており、チャットでは利用できません。',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'このサーバーは現在無効です。有効にするにはトークンを入力してください。',
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',

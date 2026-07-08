@@ -140,6 +140,20 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Les identifiants sont chiffrés au repos et limités à votre profil. L\u2019assistant intelligent fonctionnera avec exactement vos autorisations.',
     'mcp.settings.modalDescriptionDcr':
       'Ce serveur utilise Dynamic Client Registration (DCR). Les jetons sont générés automatiquement à partir de votre identité Backstage — aucun jeton manuel n\u2019est nécessaire.',
+    'mcp.settings.authenticationToken': "Jeton d'authentification",
+    'mcp.settings.modal.toolsHeading': 'Outils ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Chargement des outils...',
+    'mcp.settings.modal.loadingStatus': 'Déconnexion...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Le jeton a été supprimé. Pour réutiliser ce serveur MCP, fournissez un nouveau jeton.',
+    'mcp.settings.modal.noToolsAvailable': 'Aucun outil disponible.',
+    'mcp.settings.modal.toolsLoadFailed': 'Échec du chargement des outils.',
+    'mcp.settings.modal.enabledDescription':
+      'Ce serveur est actif et disponible dans le chat.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Ce serveur est désactivé et indisponible dans le chat.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Ce serveur est actuellement désactivé. Fournissez un jeton pour l\u2019activer.',
     'mcp.settings.name': 'Nom',
     'mcp.settings.noneAvailable': 'Aucun serveur MCP disponible.',
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
