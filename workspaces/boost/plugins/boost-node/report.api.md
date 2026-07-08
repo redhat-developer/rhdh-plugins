@@ -21,4 +21,18 @@ export interface BoostProviderExtensionPoint {
 
 // @public
 export const boostProviderExtensionPoint: ExtensionPoint<BoostProviderExtensionPoint>;
+
+// @public
+export class KeycloakAuthClient {
+  constructor(config: KeycloakAuthConfig, expiryBufferSeconds?: number);
+  getBearerToken(): Promise<string>;
+  invalidateToken(): void;
+}
+
+// @public
+export interface KeycloakAuthConfig {
+  clientId: string;
+  clientSecret: string;
+  tokenEndpoint: string;
+}
 ```

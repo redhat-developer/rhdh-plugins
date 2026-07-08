@@ -4,6 +4,18 @@ Red Hat Developer Hub Intelligent Assistant (Intelligent Assistant for RHDH) is 
 
 The Intelligent Assistant for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
 
+## Plugin Architecture
+
+This plugin supports two frontend systems:
+
+| Entry Point    | System                        | Import Path                                                 |
+| -------------- | ----------------------------- | ----------------------------------------------------------- |
+| `./` (default) | **NFS** (New Frontend System) | `@red-hat-developer-hub/backstage-plugin-lightspeed`        |
+| `./legacy`     | **OFS** (Old Frontend System) | `@red-hat-developer-hub/backstage-plugin-lightspeed/legacy` |
+| `./alpha`      | Translations only             | `@red-hat-developer-hub/backstage-plugin-lightspeed/alpha`  |
+
+NFS is the primary and recommended mode. OFS is available exclusively at the `./legacy` subpath for community consumers until Backstage 2.x drops OFS support.
+
 ## For administrators
 
 ### Migration from `lightspeed` to `intelligent-assistant`
@@ -53,33 +65,80 @@ permission:
 
 ### Installation
 
-1. Install the Lightspeed plugin using the following command:
-
-   ```console
-   yarn workspace app add @red-hat-developer-hub/backstage-plugin-lightspeed
-   ```
+```console
+yarn workspace app add @red-hat-developer-hub/backstage-plugin-lightspeed
+```
 
 ### Configuration
 
-1. Add a new nav item **Intelligent assistant** in App `packages/app/src/App.tsx`:
+#### NFS (New Frontend System) — Recommended
 
-   ```tsx title="packages/app/src/components/App.tsx"
-   /* highlight-add-next-line */ import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+NFS is the default export. Import modules directly from the package root and register them as features in `createApp`:
 
-   <Route path="/intelligent-assistant" element={<LightspeedPage />} />;
-   ```
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
 
-2. Enable **Intelligent assistant** page in `packages/app/src/components/Root/Root.tsx`:
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  lightspeedFABModule,
+  lightspeedRedirectModule,
+  lightspeedTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-   ```tsx title="packages/app/src/components/Root/Root.tsx"
-   /* highlight-add-next-line */ import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+export default createApp({
+  features: [
+    appDrawerModule,
+    lightspeedFABModule,
+    lightspeedRedirectModule,
+    lightspeedTranslationsModule,
+    // ...other modules
+  ],
+});
+```
 
-   <SidebarItem
-     icon={LightspeedIcon as IconComponent}
-     to="intelligent-assistant"
-     text="Intelligent assistant"
-   />;
-   ```
+Enable the extensions in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - app-root-wrapper:app/drawer
+    - app-root-wrapper:app/lightspeed-fab
+    - translation:app/lightspeed-translations
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+```
+
+> **Important:** The order of `app-root-wrapper` extensions matters. `app/drawer` must come before `app/lightspeed-fab` to ensure correct React Context nesting.
+
+#### OFS (Old Frontend System / Legacy)
+
+Legacy components are available at the `./legacy` subpath:
+
+```tsx
+import {
+  LightspeedDrawerProvider,
+  LightspeedIcon,
+  LightspeedPage,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
+```
+
+Add a route in `packages/app/src/App.tsx`:
+
+```tsx
+<Route path="/intelligent-assistant" element={<LightspeedPage />} />
+```
+
+Add a sidebar entry in `packages/app/src/components/Root/Root.tsx`:
+
+```tsx
+<SidebarItem
+  icon={LightspeedIcon as IconComponent}
+  to="intelligent-assistant"
+  text="Intelligent assistant"
+/>
+```
 
 ## For users
 
@@ -159,98 +218,161 @@ For backend configuration and API details, administrators should refer to the [L
 
 ## Loading as Dynamic Plugin
 
-#### To configure Lightspeed plugin into Red Hat Developer Hub use this configuration:
+### NFS Mode (Module Federation)
 
-- Load the lightspeed plugin from the npm registry
+NFS mode uses standard Module Federation for dynamic plugin loading. Set the following environment variables on the RHDH instance:
 
-```
-global:
-  dynamic:
-    includes:
-      - dynamic-plugins.default.yaml
-    plugins:
-    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.6.1!red-hat-developer-hub-backstage-plugin-lightspeed
-      disabled: false
-      pluginConfig:
-        intelligent-assistant:
-          # OPTIONAL: Custom users prompts displayed to users
-          # If not provided, the plugin uses built-in default prompts
-          prompts:
-            - title: 'Getting Started with Red Hat Developer Hub'
-              message: Can you guide me through the first steps to start using Developer Hub
-                as a developer, like exploring the Software Catalog and adding my
-                service?
-        dynamicPlugins:
-          frontend:
-            red-hat-developer-hub.backstage-plugin-lightspeed:
-              translationResources:
-                - importName: lightspeedTranslations
-                  module: Alpha
-                  ref: lightspeedTranslationRef
-              dynamicRoutes:
-                - path: /intelligent-assistant
-                  importName: LightspeedPage
-              mountPoints:
-                - mountPoint: application/listener
-                  importName: LightspeedFAB
-                - mountPoint: application/provider
-                  importName: LightspeedDrawerProvider
-                - mountPoint: application/internal/drawer-state
-                  importName: LightspeedDrawerStateExposer
-                - mountPoint: application/internal/drawer-content
-                  importName: LightspeedChatContainer
-                  config:
-                    id: lightspeed
-                    priority: 100
+```env
+APP_CONFIG_app_packageName=app-next
+ENABLE_STANDARD_MODULE_FEDERATION=true
 ```
 
-- add the lightspeed configuration in the `app-config.yaml`
+Enable the plugin and its extensions in your dynamic plugins configuration:
+
+```yaml
+plugins:
+  - package: './local-plugins/red-hat-developer-hub-backstage-plugin-lightspeed'
+    disabled: false
+```
+
+Then configure extensions in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - app-root-wrapper:app/drawer
+    - app-root-wrapper:app/lightspeed-fab
+    - translation:app/lightspeed-translations
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+```
+
+**Verify** the modules are exposed by checking:
 
 ```
-  prompts: # optional
-    - title: <prompt_title>
-      message: <prompt_message>
+http://localhost:7007/.backstage/dynamic-features/remotes
+```
+
+Expected: entries for `LightspeedFABModule` and `LightspeedTranslationsModule`.
+
+---
+
+### OFS Mode (Scalprum / Legacy)
+
+OFS mode uses Scalprum for dynamic plugin loading. Legacy exports require `module: Legacy`. Translation resources require `module: Alpha`:
+
+```yaml
+plugins:
+  - package: './local-plugins/red-hat-developer-hub-backstage-plugin-lightspeed'
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-lightspeed:
+            translationResources:
+              - importName: lightspeedTranslations
+                module: Alpha
+                ref: lightspeedTranslationRef
+            dynamicRoutes:
+              - path: /intelligent-assistant
+                importName: LightspeedPage
+                module: Legacy
+            mountPoints:
+              - mountPoint: application/listener
+                importName: LightspeedFAB
+                module: Legacy
+              - mountPoint: application/provider
+                importName: LightspeedDrawerProvider
+                module: Legacy
+              - mountPoint: application/internal/drawer-state
+                importName: LightspeedDrawerStateExposer
+                module: Legacy
+              - mountPoint: application/internal/drawer-content
+                importName: LightspeedChatContainer
+                module: Legacy
+                config:
+                  id: lightspeed
+                  priority: 100
+```
+
+**Verify** the plugin is loaded via:
+
+```
+http://localhost:7007/api/scalprum/plugins
 ```
 
 ---
 
-#### To install this plugin locally in [RHDH](https://github.com/redhat-developer/rhdh) application as a dynamic plugin.
+### Installing locally
 
-Follow the below steps -
+Export the dynamic plugin assets and install into your RHDH instance:
 
-- Export dynamic plugin assets. This will build and create the static assets for the plugin and put it inside dynamic-plugins-root folder.
+```bash
+cd workspaces/lightspeed/plugins/lightspeed
+yarn install
+yarn tsc
+yarn build
+npx @red-hat-developer-hub/cli plugin export --dev --dynamic-plugins-root <path-to-dynamic-plugins-root>
+```
 
-`yarn install`
+Then configure the plugin for either NFS or OFS mode as described above.
 
-`yarn tsc`
+---
 
-`yarn build`
+## Migration Guide
 
-`npx @red-hat-developer-hub/cli plugin export --dynamic-plugins-root <path-to>/rhdh/dynamic-plugins-root`
+### NFS consumers
 
-- Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
+```ts
+// Before (alpha subpath)
+import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+
+// After (default entry point)
+import { lightspeedFABModule } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+```
+
+### Legacy / OFS consumers
+
+Legacy component imports have been **removed from the main package path**. OFS consumers must update imports to use the `./legacy` subpath:
+
+```ts
+// Before (no longer works)
+import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+
+// After (required)
+import { LightspeedPage, LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
+```
+
+### Dynamic plugin configuration (OFS)
+
+Legacy exports are available exclusively from the `Legacy` module. Use `module: Legacy` in your dynamic plugin configuration:
 
 ```yaml
-dynamicPlugins:
-  frontend:
-    red-hat-developer-hub.backstage-plugin-lightspeed:
-      translationResources:
-        - importName: lightspeedTranslations
-          module: Alpha
-          ref: lightspeedTranslationRef
-      dynamicRoutes:
-        - path: /intelligent-assistant
-          importName: LightspeedPage
-      mountPoints:
-        - mountPoint: application/listener
-          importName: LightspeedFAB
-        - mountPoint: application/provider
-          importName: LightspeedDrawerProvider
-        - mountPoint: application/internal/drawer-state
-          importName: LightspeedDrawerStateExposer
-        - mountPoint: application/internal/drawer-content
-          importName: LightspeedChatContainer
-          config:
-            id: lightspeed
-            priority: 100
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: Legacy
+```
+
+### Dynamic plugin module name change
+
+The `LightspeedPlugin` scalprum module has been removed. Configurations that previously used `module: LightspeedPlugin` should be updated:
+
+- **OFS/Legacy** — use `module: Legacy` (required since legacy exports are no longer on the default module)
+- **NFS** — use the default `module: PluginRoot` (or omit `module` entirely)
+
+```yaml
+# Before
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: LightspeedPlugin
+
+# After (OFS)
+dynamicRoutes:
+  - path: /intelligent-assistant
+    importName: LightspeedPage
+    module: Legacy
 ```

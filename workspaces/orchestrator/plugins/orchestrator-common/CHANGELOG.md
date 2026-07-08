@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.7.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+
 ## 3.7.1
 
 ### Patch Changes

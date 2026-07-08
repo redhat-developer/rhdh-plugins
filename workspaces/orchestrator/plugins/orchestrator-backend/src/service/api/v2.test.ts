@@ -30,7 +30,11 @@ import {
   WorkflowRunStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { buildPagination, buildPaginationTmp } from '../../types/pagination';
+import {
+  buildPagination,
+  buildPaginationTmp,
+  Pagination,
+} from '../../types/pagination';
 import { OrchestratorService } from '../OrchestratorService';
 import { mapToWorkflowOverviewDTO } from './mapping/V2Mappings';
 import {
@@ -711,6 +715,37 @@ describe('getInstances', () => {
     for (let i = 0; i < howmany; i++) {
       expect(processInstanceList.items?.[i].id).toEqual(processInstances[i].id);
     }
+    expect(processInstanceList.totalCount).toBe(howmany);
+  });
+
+  it('sets totalCount from unfiltered fetch when pagination returns a page subset', async () => {
+    const pageItems = generateProcessInstances(2);
+    const allItems = generateProcessInstances(10);
+    const pagedRequest: Pagination = { limit: 2, offset: 0 };
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockImplementation(
+      (args: { pagination?: Pagination }) =>
+        Promise.resolve(args.pagination ? pageItems : allItems),
+    );
+
+    const result = await v2.getInstances(pagedRequest);
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledTimes(2);
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(1, {
+      pagination: pagedRequest,
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(2, {
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(result.items).toHaveLength(2);
+    expect(result.totalCount).toBe(10);
+    expect(result.paginationInfo).toEqual({
+      pageSize: 2,
+      offset: 0,
+    });
   });
 });
 

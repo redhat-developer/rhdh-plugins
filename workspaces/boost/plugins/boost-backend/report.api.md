@@ -112,7 +112,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 1;
+export const BOOST_CONFIG_SCHEMA_VERSION = 2;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -126,74 +126,81 @@ export const boostConfigFields: {
   readonly 'boost.model.baseUrl': {
     readonly schema: z.ZodString;
     readonly configScope: ConfigScope;
-    readonly description: 'Base URL for the AI model endpoint';
+    readonly description: string;
   };
   readonly 'boost.model.name': {
     readonly schema: z.ZodString;
     readonly configScope: ConfigScope;
-    readonly description: 'Name of the AI model to use';
+    readonly description: string;
   };
   readonly 'boost.systemPrompt': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'System prompt for AI conversations';
+    readonly description: string;
   };
   readonly 'boost.security.mode': {
     readonly schema: z.ZodEnum<
       ['development-only-no-auth', 'plugin-only', 'full']
     >;
     readonly configScope: ConfigScope;
-    readonly description: 'Security mode for the boost plugin';
+    readonly description: string;
   };
   readonly 'boost.features.agentCreation': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;
-    readonly description: 'Enable agent creation feature';
+    readonly description: string;
   };
   readonly 'boost.features.skillsMarketplace': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;
-    readonly description: 'Enable skills marketplace feature';
+    readonly description: string;
   };
   readonly 'boost.agentApproval.mode': {
     readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
     readonly configScope: ConfigScope;
-    readonly description: 'Agent approval mode: built-in or SonataFlow-managed';
+    readonly description: string;
   };
   readonly 'boost.agentApproval.sonataflow.endpoint': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'SonataFlow workflow endpoint for agent approval';
+    readonly description: string;
   };
   readonly 'boost.skillsMarketplace.endpoint': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'Skills catalog backend URL';
+    readonly description: string;
   };
-  readonly 'boost.skillsMarketplace.enabled': {
-    readonly schema: z.ZodOptional<z.ZodBoolean>;
-    readonly configScope: ConfigScope;
-    readonly description: 'Enable or disable skills marketplace';
-  };
-  readonly 'boost.kagenti.auth.tokenExchange.enabled': {
-    readonly schema: z.ZodOptional<z.ZodBoolean>;
-    readonly configScope: ConfigScope;
-    readonly description: 'Enable RFC 8693 token exchange for Kagenti';
-  };
-  readonly 'boost.kagenti.auth.tokenExchange.audience': {
+  readonly 'boost.kagenti.auth.tokenEndpoint': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'Target audience for exchanged token';
+    readonly description: string;
   };
-  readonly 'boost.kagenti.auth.tokenExchange.userTokenHeader': {
+  readonly 'boost.kagenti.auth.clientId': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'Header containing user OIDC token';
+    readonly description: 'OAuth2 client ID for Kagenti service-account authentication.';
+  };
+  readonly 'boost.kagenti.auth.clientSecret': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly sensitive: true;
+  };
+  readonly 'boost.kagenti.auth.tokenExpiryBufferSeconds': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.encryptionSecret': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly sensitive: true;
   };
   readonly 'boost.devSpaces.credentials': {
     readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
-    readonly description: 'DevSpaces integration credentials';
+    readonly description: string;
     readonly sensitive: true;
   };
 };
@@ -327,6 +334,9 @@ export function createKagentiAdminRoutes(
 
 // @public
 export function createMcpServerRoutes(options: McpServerRoutesOptions): Router;
+
+// @public
+export function createSkillsRoutes(options: SkillsRoutesOptions): Router;
 
 // @public
 export function createToolResourceLoader(): ResourceLoader;
@@ -472,6 +482,14 @@ export interface RuntimeConfigResolverOptions {
 
 // @public
 export type SecurityMode = 'development-only-no-auth' | 'plugin-only' | 'full';
+
+// @public
+export interface SkillsRoutesOptions {
+  config: RootConfigService;
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+}
 
 // @public
 export class ToolLifecycleStore {

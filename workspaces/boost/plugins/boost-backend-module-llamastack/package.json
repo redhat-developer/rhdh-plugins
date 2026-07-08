@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "description": "Llama Stack provider module for the boost AI platform",
   "main": "src/index.ts",
@@ -13,6 +13,7 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-backend",
     "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
@@ -31,12 +32,14 @@
     }
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.9.1",
+    "@backstage/backend-plugin-api": "^1.9.2",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit": "workspace:^"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5"
+    "@backstage/cli": "^0.36.3",
+    "@red-hat-developer-hub/cli": "^1.11.1"
   },
   "sideEffects": false,
   "scripts": {
@@ -49,10 +52,13 @@
     "tsc": "tsc",
     "start": "backstage-cli package start",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "postpack": "backstage-cli package postpack",
+    "export-dynamic": "rhdh-cli plugin export"
   },
   "files": [
-    "dist"
+    "dist",
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/**"
   ],
   "repository": {
     "type": "git",

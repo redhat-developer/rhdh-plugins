@@ -29,7 +29,7 @@ export const orchestratorMessages = {
   },
   table: {
     title: {
-      workflows: 'Workflows',
+      workflows: 'Workflows ({{count}})',
       allRuns: 'All runs ({{count}})',
       allWorkflowRuns: 'Workflow runs ({{count}})',
     },
@@ -43,14 +43,19 @@ export const orchestratorMessages = {
       description: 'Description',
       lastRun: 'Last run',
       lastRunStatus: 'Last run status',
+      runsLastMonth: 'Runs (last month)',
+      successRatio: 'Success ratio',
       workflowName: 'Workflow name',
       version: 'Version',
+      entity: 'Entity',
+      runBy: 'Run by',
     },
     actions: {
       run: 'Run',
       runAsEvent: 'Run as Event',
       viewRuns: 'View runs',
       viewInputSchema: 'View input schema',
+      viewRunVariables: 'View run variables',
     },
     status: {
       running: 'Running',
@@ -63,6 +68,10 @@ export const orchestratorMessages = {
     filters: {
       status: 'Status',
       started: 'Started',
+      entity: 'Entity',
+      runBy: 'Run by',
+      placeholder: 'Filter',
+      clearAll: 'Clear all',
       startedOptions: {
         today: 'Today',
         yesterday: 'Yesterday',
@@ -74,18 +83,38 @@ export const orchestratorMessages = {
   workflow: {
     details: 'Details',
     definition: 'Workflow definition',
+    inputSchema: 'Input schema',
+    inputSchemaDescription:
+      'Defines required data fields and validation for this workflow.',
+    successRatio: 'Success ratio',
+    successRatioDescription:
+      'Share of completed runs versus failed runs for this workflow.',
+    runSuccess: 'Run success',
+    ofTotal: 'of {{totalCount}}',
+    statsSuccess: 'Success',
+    statsFailed: 'Failed',
     progress: 'Workflow progress',
     status: {
       available: 'Available',
       unavailable: 'Unavailable',
     },
+    unavailable: {
+      title: 'Unavailable workflow',
+      runTooltip: 'Unavailable workflow',
+      requestFailed: 'HTTP GET request to {{url}} failed.',
+      statusCodeLine: 'Status Code: {{statusCode}}',
+      statusTextLine: 'Status Text: {{reason}}',
+    },
     fields: {
+      entity: 'Entity',
       workflow: 'Workflow',
       workflowStatus: 'Workflow Status',
       runStatus: 'Run status',
       duration: 'Duration',
+      averageDuration: 'Average duration',
       description: 'Description',
       started: 'Started',
+      runBy: 'Run by',
       workflowId: 'Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
       version: 'Version',
@@ -109,6 +138,7 @@ export const orchestratorMessages = {
       runWorkflow: 'Run workflow',
       runAgain: 'Run again',
       running: 'Running...',
+      entireWorkflow: 'Entire workflow',
       fromFailurePoint: 'From failure point',
       runFailedAgain: 'Run failed again',
     },
@@ -121,7 +151,7 @@ export const orchestratorMessages = {
     results: 'Results',
     logs: {
       viewLogs: 'View logs',
-      title: 'Run logs',
+      title: '{{processName}} workflow logs',
       noLogsAvailable: 'No logs available for this workflow run.',
     },
     abort: {
@@ -138,7 +168,8 @@ export const orchestratorMessages = {
     status: {
       completed: 'Run completed',
       failed: 'Run has failed {{time}}',
-      aborted: 'Run has aborted',
+      aborted: 'Run was aborted {{time}} ago.',
+      abortedWithoutTime: 'Run was aborted.',
       completedWithMessage: 'Run completed {{time}} with message',
       failedAt: 'Run has failed {{time}}',
       completedAt: 'Run completed {{time}}',
@@ -232,6 +263,20 @@ export const orchestratorMessages = {
       message:
         'Multiple workflows with the same ID detected. Please ensure unique IDs are used across different versions.',
       learnMore: 'Learn more',
+    },
+  },
+  emptyState: {
+    illustrationAlt: 'No workflows or runs illustration',
+    workflows: {
+      title: 'No workflows added yet',
+      description: 'To get started, add a new workflow.',
+      viewDocumentation: 'View documentation',
+    },
+    runs: {
+      title: 'No runs yet',
+      description:
+        'Workflow runs will appear here once workflows have been executed.',
+      runWorkflow: 'Run a workflow',
     },
   },
   stepperObjectField: {

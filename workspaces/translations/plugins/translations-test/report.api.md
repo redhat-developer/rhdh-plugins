@@ -31,7 +31,6 @@ export const translationsTestTranslationRef: TranslationRef<
     readonly 'interpolation.complex.linkText': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
-    readonly 'objects.tree.res': string;
     readonly 'essentials.key': string;
     readonly 'essentials.look.deep': string;
     readonly 'formatting.intlNumber': string;
@@ -51,6 +50,7 @@ export const translationsTestTranslationRef: TranslationRef<
     readonly 'context.friend': string;
     readonly 'context.friend_male': string;
     readonly 'context.friend_female': string;
+    readonly 'objects.tree.res': string;
     readonly 'arrays.array': string;
   }
 >;

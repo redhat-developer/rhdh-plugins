@@ -93,36 +93,50 @@ export interface Config {
        * @configScope yaml-only
        */
       endpoint?: string;
-      /**
-       * Enable or disable skills marketplace.
-       * @visibility frontend
-       * @configScope db-overridable
-       */
-      enabled?: boolean;
     };
 
     /** Kagenti provider configuration. */
     kagenti?: {
       /** Authentication configuration. */
       auth?: {
-        /** RFC 8693 token exchange. */
-        tokenExchange?: {
-          /**
-           * Enable RFC 8693 token exchange for Kagenti.
-           * @configScope yaml-only
-           */
-          enabled?: boolean;
-          /**
-           * Target audience for exchanged token.
-           * @configScope yaml-only
-           */
-          audience?: string;
-          /**
-           * Header containing user OIDC token.
-           * @configScope yaml-only
-           */
-          userTokenHeader?: string;
-        };
+        /**
+         * Keycloak token endpoint URL for OAuth2 Client Credentials Grant.
+         * @configScope yaml-only
+         */
+        tokenEndpoint?: string;
+        /**
+         * OAuth2 client ID for service-account authentication.
+         * @configScope yaml-only
+         */
+        clientId?: string;
+        /**
+         * OAuth2 client secret for service-account authentication.
+         * @visibility secret
+         * @configScope yaml-only
+         */
+        clientSecret?: string;
+        /**
+         * Seconds before token expiry to proactively refresh.
+         * @configScope yaml-only
+         */
+        tokenExpiryBufferSeconds?: number;
+      };
+    };
+
+    /** AI provider connection settings. */
+    providers?: {
+      /** Kagenti A2A provider connection. */
+      kagenti?: {
+        /**
+         * Base URL for the Kagenti A2A endpoint.
+         * @configScope yaml-only
+         */
+        baseUrl?: string;
+        /**
+         * Default agent ID for task routing.
+         * @configScope yaml-only
+         */
+        defaultAgent?: string;
       };
     };
 

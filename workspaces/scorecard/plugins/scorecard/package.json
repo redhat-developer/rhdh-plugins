@@ -81,6 +81,7 @@
     "@backstage/core-app-api": "^1.19.6",
     "@backstage/dev-utils": "^1.1.21",
     "@backstage/frontend-defaults": "^0.5.0",
+    "@backstage/frontend-test-utils": "^0.4.2",
     "@backstage/plugin-catalog": "^2.0.1",
     "@backstage/plugin-user-settings": "^0.9.1",
     "@backstage/test-utils": "^1.7.16",

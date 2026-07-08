@@ -20,10 +20,12 @@ export const JsonCodeBlock = ({
   value,
   isDarkMode,
   maxHeight,
+  fullWidth,
 }: {
   value: object;
   isDarkMode: boolean;
   maxHeight?: number;
+  fullWidth?: boolean;
 }) => {
   const jsonString = JSON.stringify(value, null, 2);
 
@@ -32,6 +34,7 @@ export const JsonCodeBlock = ({
       value={jsonString}
       isDarkMode={isDarkMode}
       maxHeight={maxHeight}
+      fullWidth={fullWidth}
     />
   );
 };

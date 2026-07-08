@@ -15,6 +15,11 @@
  */
 
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
+import type {
+  AuthService,
+  BackstageCredentials,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { NotAllowedError } from '@backstage/errors';
 import type { BasicPermission } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
@@ -40,12 +45,14 @@ import {
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
+  McpServerAuth,
   McpServerResponse,
   McpServerStatus,
   McpValidationResult,
 } from './mcp-server-types';
 import { McpServerValidator } from './mcp-server-validator';
 import { createPermissionMiddleware } from './middleware/createPermissionMiddleware';
+import { createRateLimitMiddleware } from './middleware/createRateLimitMiddleware';
 import {
   createIdentityMiddleware,
   getIdentity,
@@ -57,23 +64,51 @@ import { QueryRequestBody, RouterOptions } from './types';
 import { handleLCSFetchError, rewriteLightspeedProxyPath } from './utils';
 import { validateCompletionsRequest } from './validation';
 
+/**
+ * MCP Server authentication modes for lightspeed.mcpServers entries.
+ *
+ *  - `'dcr'` — Dynamic Client Registration.  The Lightspeed backend mints a
+ *    short-lived Backstage plugin-request token carrying the current user's
+ *    identity.  This token is forwarded to the MCP server via LCORE's
+ *    MCP-HEADERS, and the MCP Actions backend validates it against the
+ *    Backstage Permission Framework (RBAC).  Use this for Backstage-internal
+ *    MCP servers (e.g. `@backstage/plugin-mcp-actions-backend`).
+ *    A static `token` field is **ignored** when `auth: dcr` is set.
+ *
+ *  - (absent / undefined) — Legacy static-token mode.  The token is resolved
+ *    from the user's DB override first, then from the `token` field in
+ *    app-config.  If neither exists, the server is omitted from MCP-HEADERS.
+ *    Users can also set their own tokens via the Lightspeed UI.
+ */
 interface StaticMcpServer {
   name: string;
   token?: string;
+  auth?: McpServerAuth;
 }
 
 /**
- * Build MCP-HEADERS for LCS.  Format matches the LCS "client" auth model:
- *   { "server-name": { "Authorization": "<token>" } }
+ * Build MCP-HEADERS for LCS.  Format matches the LCS "client"/"oauth" auth
+ * model:  `{ "server-name": { "Authorization": "<token>" } }`
  *
- * For each admin-configured server, includes the user's override token if
- * present in the DB, falling back to the admin default from app-config.
- * Servers the user has disabled are excluded.
+ * For each admin-configured server:
+ *
+ *  1. If `auth: 'dcr'`, a Backstage plugin-request token is minted on behalf
+ *     of the authenticated user.  Any static token is ignored.
+ *
+ *  2. Otherwise, the user's personal token (DB) takes precedence over the
+ *     admin default from app-config.  If neither exists, the server is
+ *     excluded from MCP-HEADERS (LCORE will skip it or return 401).
+ *
+ * Servers the user has disabled are always excluded.
  */
 async function buildMcpHeaders(
   servers: StaticMcpServer[],
   store: McpUserSettingsStore,
   userEntityRef: string,
+  options?: {
+    dcrAuth?: { authService: AuthService; credentials: BackstageCredentials };
+    logger?: LoggerService;
+  },
 ): Promise<string> {
   const headers: Record<string, { Authorization: string }> = {};
   const userSettings = await store.listByUser(userEntityRef);
@@ -84,12 +119,32 @@ async function buildMcpHeaders(
     const enabled = setting ? Boolean(setting.enabled) : true;
     if (!enabled) continue;
 
-    // User's personal token (DB) takes precedence over admin default (app-config).
-    // If the user hasn't set one, falls back to the config token.
-    // If neither exists, the server is excluded from MCP-HEADERS.
-    const token = setting?.token || server.token;
-    if (token) {
-      headers[server.name] = { Authorization: `${token}` };
+    if (server.auth === 'dcr') {
+      if (options?.dcrAuth) {
+        try {
+          const { token } =
+            await options.dcrAuth.authService.getPluginRequestToken({
+              onBehalfOf: options.dcrAuth.credentials,
+              targetPluginId: 'mcp-actions',
+            });
+          headers[server.name] = { Authorization: `${token}` };
+        } catch (err) {
+          options?.logger?.error(
+            `Failed to mint DCR token for MCP server '${server.name}': ${err}`,
+          );
+        }
+      } else {
+        options?.logger?.warn(
+          `MCP server '${server.name}' has auth: dcr but AuthService is not available; skipping`,
+        );
+      }
+    } else {
+      // Static token: user's personal token (DB) > admin default (app-config).
+      // If neither exists, the server is excluded from MCP-HEADERS.
+      const token = setting?.token || server.token;
+      if (token) {
+        headers[server.name] = { Authorization: `${token}` };
+      }
     }
   }
 
@@ -103,7 +158,8 @@ async function buildMcpHeaders(
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { logger, config, database, httpAuth, userInfo, permissions } = options;
+  const { logger, config, database, httpAuth, auth, userInfo, permissions } =
+    options;
 
   const router = Router();
   router.use(express.json());
@@ -137,7 +193,16 @@ export async function createRouter(
   let lightspeed_vector_store_id: string = '';
 
   // Parse admin-configured MCP servers from app-config.
-  // Only name is required; token is optional (users can provide their own via the UI).
+  //
+  // Each entry supports:
+  //   name  (required)  — unique identifier, must match the name in lightspeed-stack.yaml
+  //   auth  (optional)  — authentication mode:
+  //                         'dcr'  = the backend mints a per-user Backstage token (for
+  //                                  Backstage-internal MCP servers with DCR/OAuth enabled)
+  //                         absent = legacy static-token mode (see `token` below)
+  //   token (optional)  — static fallback token from app-config.  Ignored when auth: dcr.
+  //                        Users can also set personal tokens via the Lightspeed UI.
+  //
   // URLs come from LCS (GET /v1/mcp-servers), not from app-config.
   const mcpServersConfig = config.getOptionalConfigArray(
     'intelligent-assistant.mcpServers',
@@ -145,9 +210,17 @@ export async function createRouter(
   const staticServers: StaticMcpServer[] = [];
   if (mcpServersConfig) {
     for (const mcpServer of mcpServersConfig) {
+      const authValue = mcpServer.getOptionalString('auth')?.toLowerCase();
+      if (authValue && authValue !== 'dcr') {
+        logger.warn(
+          `MCP server '${mcpServer.getString('name')}' has unsupported auth value '${authValue}'; ` +
+            `only 'dcr' is supported — falling back to static-token mode`,
+        );
+      }
       staticServers.push({
         name: mcpServer.getString('name'),
         token: mcpServer.getOptionalString('token'),
+        auth: authValue === 'dcr' ? 'dcr' : undefined,
       });
     }
   }
@@ -222,12 +295,24 @@ export async function createRouter(
     return createPermissionMiddleware(authorizer, permission, logger);
   }
 
+  const expensiveRateLimiter = createRateLimitMiddleware(
+    config,
+    'expensive',
+    logger,
+  );
+  const generalRateLimiter = createRateLimitMiddleware(
+    config,
+    'general',
+    logger,
+  );
+
   // ─── MCP Server Management Endpoints ────────────────────────────────
   // All MCP servers are admin-configured (static). Users can view the
   // list, toggle servers on/off, and provide personal access tokens.
 
   router.get(
     '/mcp-servers',
+    generalRateLimiter,
     requirePermission(lightspeedMcpReadPermission),
     async (req, res) => {
       try {
@@ -249,8 +334,11 @@ export async function createRouter(
             enabled: setting ? Boolean(setting.enabled) : true,
             status: setting?.status ?? 'unknown',
             toolCount: setting?.tool_count ?? 0,
-            hasToken: !!(setting?.token || server.token),
+            // DCR servers always have a token (minted per-request); static servers check DB + config.
+            hasToken:
+              server.auth === 'dcr' || !!(setting?.token || server.token),
             hasUserToken: !!setting?.token,
+            auth: server.auth,
           };
         });
 
@@ -264,6 +352,7 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/validate',
+    generalRateLimiter,
     requirePermission(lightspeedMcpReadPermission),
     async (req, res) => {
       try {
@@ -298,10 +387,11 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/:name/validate',
+    generalRateLimiter,
     requirePermission(lightspeedMcpManagePermission),
     async (req, res) => {
       try {
-        const { userEntityRef } = getIdentity(req);
+        const { userEntityRef, credentials } = getIdentity(req);
 
         const { name } = req.params;
         const server = staticServers.find(s => s.name === name);
@@ -324,8 +414,27 @@ export async function createRouter(
           return;
         }
 
-        const setting = await settingsStore.get(name, userEntityRef);
-        const effectiveToken = setting?.token || server.token;
+        let effectiveToken: string | undefined;
+        if (server.auth === 'dcr') {
+          try {
+            const { token: dcrToken } = await auth.getPluginRequestToken({
+              onBehalfOf: credentials,
+              targetPluginId: 'mcp-actions',
+            });
+            effectiveToken = dcrToken;
+          } catch (err) {
+            logger.error(
+              `Failed to mint DCR token for server '${name}': ${err}`,
+            );
+            res.status(502).json({
+              error: `Failed to mint authentication token for DCR server '${name}' — check Backstage auth configuration`,
+            });
+            return;
+          }
+        } else {
+          const setting = await settingsStore.get(name, userEntityRef);
+          effectiveToken = setting?.token || server.token;
+        }
         if (!effectiveToken) {
           res
             .status(400)
@@ -363,6 +472,7 @@ export async function createRouter(
 
   router.patch(
     '/mcp-servers/:name',
+    generalRateLimiter,
     requirePermission(lightspeedMcpManagePermission),
     async (req, res) => {
       try {
@@ -430,8 +540,10 @@ export async function createRouter(
             enabled: Boolean(setting.enabled),
             status: setting.status,
             toolCount: setting.tool_count,
-            hasToken: !!(setting.token || server.token),
+            hasToken:
+              server.auth === 'dcr' || !!(setting.token || server.token),
             hasUserToken: !!setting.token,
+            auth: server.auth,
           },
         };
         if (validation) result.validation = validation;
@@ -444,75 +556,88 @@ export async function createRouter(
   );
 
   // Returns conversation IDs associated with notebook sessions for filtering
-  router.get('/notebook-conversation-ids', async (req, res) => {
-    try {
-      const { userEntityRef } = getIdentity(req);
+  router.get(
+    '/notebook-conversation-ids',
+    generalRateLimiter,
+    async (req, res) => {
+      try {
+        const { userEntityRef } = getIdentity(req);
 
-      const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
-      const vectorStores = vectorStoresPage.data || [];
+        const vectorStoresPage = await vectorStoresOperator.vectorStores.list();
+        const vectorStores = vectorStoresPage.data || [];
 
-      const conversationIds: string[] = [];
+        const conversationIds: string[] = [];
 
-      for (const store of vectorStores) {
-        const sessionUserId = store.metadata?.user_id as string;
-        const conversationId = store.metadata?.conversation_id as string | null;
+        for (const store of vectorStores) {
+          const sessionUserId = store.metadata?.user_id as string;
+          const conversationId = store.metadata?.conversation_id as
+            | string
+            | null;
 
-        // Only include this user's sessions with a conversation_id
-        if (sessionUserId === userEntityRef && conversationId) {
-          conversationIds.push(conversationId);
+          // Only include this user's sessions with a conversation_id
+          if (sessionUserId === userEntityRef && conversationId) {
+            conversationIds.push(conversationId);
+          }
+        }
+
+        res.json({
+          conversation_ids: conversationIds,
+        });
+      } catch (error) {
+        const errormsg = `Error fetching notebook conversation IDs: ${error}`;
+        logger.error(errormsg);
+
+        if (error instanceof NotAllowedError) {
+          res.status(403).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: errormsg });
         }
       }
-
-      res.json({
-        conversation_ids: conversationIds,
-      });
-    } catch (error) {
-      const errormsg = `Error fetching notebook conversation IDs: ${error}`;
-      logger.error(errormsg);
-
-      if (error instanceof NotAllowedError) {
-        res.status(403).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: errormsg });
-      }
-    }
-  });
+    },
+  );
 
   // ─── Proxy Routes ───────────────────────────────────────────────────
 
   router.get(
     '/v1/models',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatDeletePermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
@@ -555,6 +680,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query/interrupt',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
@@ -592,12 +718,13 @@ export async function createRouter(
   router.post(
     '/v1/query',
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
+    expensiveRateLimiter,
     validateCompletionsRequest,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
-        const { userEntityRef } = getIdentity(request);
+        const { userEntityRef, credentials } = getIdentity(request);
 
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
 
@@ -624,11 +751,13 @@ export async function createRouter(
 
         const requestBody = JSON.stringify(request.body);
 
-        // Build MCP headers from config servers + this user's preferences
+        // Build MCP headers from config servers + this user's preferences.
+        // For servers with auth: dcr, a per-user Backstage token is minted.
         const mcpHeadersValue = await buildMcpHeaders(
           staticServers,
           settingsStore,
           userEntityRef,
+          { dcrAuth: { authService: auth, credentials }, logger },
         );
 
         const abortController = new AbortController();
@@ -692,6 +821,7 @@ export async function createRouter(
 
   router.put(
     '/v2/conversations/:conversation_id',
+    generalRateLimiter,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       try {
