@@ -21,6 +21,7 @@ import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   ENTITY_REF_RE,
   JobStatus,
+  Phase,
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -149,6 +150,7 @@ export function registerProjectRoutes(
       sourceRepoBranch: z.string(),
       targetRepoBranch: z.string(),
       acceptedRuleIds: z.array(z.string()).optional(),
+      adversarialAgentIds: z.array(z.string().uuid()).optional(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -184,6 +186,17 @@ export function registerProjectRoutes(
       projectId: newProject.id,
       ruleIds: requestBody.acceptedRuleIds ?? [],
     });
+
+    // Attach adversarial agents if provided (validates agent IDs exist)
+    if (
+      requestBody.adversarialAgentIds &&
+      requestBody.adversarialAgentIds.length > 0
+    ) {
+      await x2aDatabase.attachAdversarialAgentsToProject({
+        projectId: newProject.id,
+        agentIds: requestBody.adversarialAgentIds,
+      });
+    }
 
     // Include accepted rules in the response
     newProject.acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
@@ -455,6 +468,124 @@ export function registerProjectRoutes(
       );
 
       return res.json({ status: 'pending', jobId: job.id } as any);
+    },
+  );
+
+  router.post(
+    '/projects/:projectId/adversarial-run',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/adversarial-run';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      const adversarialRunSchema = z.object({
+        phase: z.enum(['analyze', 'migrate']),
+        moduleId: z.string().uuid(),
+        targetRepoAuth: z.object({ token: z.string() }).optional(),
+      });
+
+      const parsedBody = adversarialRunSchema.safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { phase, moduleId, targetRepoAuth } = parsedBody.data;
+
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
+
+      assertProjectHasDirName(project);
+
+      const adversarialAgents =
+        await x2aDatabase.getAdversarialAgentsForProject({ projectId });
+      if (!adversarialAgents || adversarialAgents.length === 0) {
+        return res.status(400).json({
+          error: 'NoAdversarialAgents',
+          message: 'No adversarial agents are configured for this project',
+        });
+      }
+
+      const module = await x2aDatabase.getModule({ id: moduleId });
+      if (!module) {
+        throw new InputError(`Module "${moduleId}" not found`);
+      }
+      if (module.projectId !== projectId) {
+        throw new InputError(
+          `Module "${moduleId}" does not belong to project "${projectId}"`,
+        );
+      }
+
+      // Check for a running adversarial job for this module+phase
+      const adversarialPhase = Phase.from(`adversarial-${phase}`);
+      const existingJobs = await x2aDatabase.listJobsForModule({
+        projectId,
+        moduleId,
+      });
+      const activeAdversarialJob = existingJobs.find(
+        j =>
+          j.phase === adversarialPhase.value &&
+          JobStatus.from(j.status).isActive(),
+      );
+      if (activeAdversarialJob) {
+        return res.status(409).json({
+          error: 'JobAlreadyRunning',
+          message: `An adversarial-${phase} job is already running for this module`,
+          activeJobId: activeAdversarialJob.id,
+        });
+      }
+
+      const targetRepo = gitRepoResolver.resolveTargetOnly({
+        project,
+        targetRepoAuth,
+      });
+
+      const callbackToken = CallbackToken.generate();
+      const job = await x2aDatabase.createJob({
+        projectId,
+        moduleId,
+        phase: adversarialPhase.value,
+        status: 'pending',
+        callbackToken: callbackToken.value,
+      });
+
+      const baseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
+      const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+
+      const { k8sJobName } = await kubeService.createJob({
+        jobId: job.id,
+        projectId,
+        projectName: project.name,
+        projectDirName: project.dirName,
+        phase: adversarialPhase.value,
+        user: userRef,
+        callbackToken: callbackToken.value,
+        callbackUrl,
+        moduleId,
+        moduleName: module.name,
+        sourceRepo: targetRepo,
+        targetRepo,
+        adversarialAgents,
+      });
+
+      await x2aDatabase.updateJob({
+        id: job.id,
+        k8sJobName,
+        status: 'running',
+      });
+
+      logger.info(
+        `Adversarial-${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
+      );
+
+      return res.status(202).json({ jobId: job.id, k8sJobName } as any);
     },
   );
 }

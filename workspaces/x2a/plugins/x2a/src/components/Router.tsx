@@ -15,6 +15,7 @@
  */
 import { Route, Routes } from 'react-router-dom';
 
+import { AdversarialAgentsPage } from './AdversarialAgentsPage';
 import { Dashboard } from './Dashboard';
 import { DownloadStaticPublicFile } from './DownloadStaticPublicFile';
 import { ModulePage } from './ModulePage';
@@ -24,6 +25,7 @@ import {
   moduleRouteRef,
   projectRouteRef,
   rulesRouteRef,
+  adversarialAgentsRouteRef,
 } from '../routes';
 import { ProjectPage } from './ProjectPage';
 
@@ -38,6 +40,10 @@ export const Router = () => {
       <Route path={moduleRouteRef.path} element={<ModulePage />} />
       <Route path={projectRouteRef.path} element={<ProjectPage />} />
       <Route path={rulesRouteRef.path} element={<RulesPage />} />
+      <Route
+        path={adversarialAgentsRouteRef.path}
+        element={<AdversarialAgentsPage />}
+      />
       <Route path="/*" element={<Dashboard />} />
     </Routes>
   );

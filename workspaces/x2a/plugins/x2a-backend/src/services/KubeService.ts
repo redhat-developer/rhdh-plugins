@@ -290,7 +290,20 @@ export class KubeService implements KubeServiceApi {
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
     // Step 2: Create the Kubernetes job
-    const job = JobResourceBuilder.buildJobSpec(params, this.#config);
+    // The adversarial agents ConfigMap is only relevant for adversarial phases
+    const isAdversarialPhase = params.phase.startsWith('adversarial-');
+    const adversarialAgentsConfigMapName =
+      isAdversarialPhase &&
+      params.adversarialAgents &&
+      params.adversarialAgents.length > 0
+        ? `x2a-adversarial-agents-${params.jobId}`
+        : undefined;
+
+    const job = JobResourceBuilder.buildJobSpec(
+      params,
+      this.#config,
+      adversarialAgentsConfigMapName,
+    );
     const k8sJobName = job.metadata?.name || '';
 
     const createdJob = await this.#batchV1Api.createNamespacedJob({
@@ -342,6 +355,24 @@ export class KubeService implements KubeServiceApi {
         await this.#coreV1Api.createNamespacedConfigMap({
           namespace: this.#namespace,
           body: rulesConfigMap,
+        });
+      }
+
+      // Step 5: Create adversarial agents ConfigMap if agents are present
+      const adversarialAgentsConfigMap = adversarialAgentsConfigMapName
+        ? JobResourceBuilder.buildAdversarialAgentsConfigMap(
+            adversarialAgentsConfigMapName,
+            params,
+            ownerReference,
+          )
+        : undefined;
+      if (adversarialAgentsConfigMap) {
+        this.#logger.info(
+          `Creating adversarial agents ConfigMap with ${params.adversarialAgents!.length} agents for job: ${params.jobId}`,
+        );
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: adversarialAgentsConfigMap,
         });
       }
     } catch (error: any) {
@@ -511,6 +542,24 @@ export class KubeService implements KubeServiceApi {
   }
 
   /**
+   * Cleans up all resources for a job, including the job itself and associated ConfigMaps.
+   * This is a best-effort operation - if the job has ownerReferences, associated resources
+   * will be automatically garbage collected. This method provides explicit cleanup.
+   *
+   * @param jobId - The job UUID (used to identify associated ConfigMaps)
+   * @param k8sJobName - The Kubernetes job name
+   */
+  async cleanupJobResources(jobId: string, k8sJobName: string): Promise<void> {
+    this.#logger.info(`Cleaning up resources for job: ${jobId}`);
+
+    // Delete the job (this will trigger cascading deletion of owned resources
+    // including ConfigMaps due to ownerReferences)
+    await this.deleteJob(k8sJobName);
+
+    this.#logger.info(`Cleanup complete for job: ${jobId}`);
+  }
+
+  /**
    * Lists all jobs for a specific project
    */
   async listJobsForProject(projectId: string): Promise<V1Job[]> {
@@ -580,6 +629,7 @@ export const kubeServiceFactory = createServiceFactory({
         image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
         imageTag:
           rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
+        imagePullPolicy: rawConfig?.kubernetes?.imagePullPolicy,
         ttlSecondsAfterFinished:
           rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
           DEFAULT_TTL_SECONDS_AFTER_FINISHED,

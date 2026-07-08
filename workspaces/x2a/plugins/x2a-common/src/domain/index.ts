@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export { AdversarialAgentEntity } from './AdversarialAgent';
 export { ArtifactKind } from './ArtifactKind';
 export { GitRepository } from './GitRepository';
 export { JobStatus } from './JobStatus';

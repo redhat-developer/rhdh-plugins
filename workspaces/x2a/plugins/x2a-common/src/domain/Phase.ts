@@ -25,12 +25,18 @@ export class Phase {
   static readonly ANALYZE = new Phase('analyze', 1);
   static readonly MIGRATE = new Phase('migrate', 2);
   static readonly PUBLISH = new Phase('publish', 3);
+  static readonly ADVERSARIAL_ANALYZE = new Phase('adversarial-analyze', 4);
+  static readonly ADVERSARIAL_MIGRATE = new Phase('adversarial-migrate', 5);
 
   private static readonly BY_VALUE = new Map<string, Phase>(
-    [Phase.INIT, Phase.ANALYZE, Phase.MIGRATE, Phase.PUBLISH].map(p => [
-      p.value,
-      p,
-    ]),
+    [
+      Phase.INIT,
+      Phase.ANALYZE,
+      Phase.MIGRATE,
+      Phase.PUBLISH,
+      Phase.ADVERSARIAL_ANALYZE,
+      Phase.ADVERSARIAL_MIGRATE,
+    ].map(p => [p.value, p]),
   );
 
   private constructor(
@@ -49,11 +55,26 @@ export class Phase {
   }
 
   static all(): readonly Phase[] {
-    return [Phase.INIT, Phase.ANALYZE, Phase.MIGRATE, Phase.PUBLISH];
+    return [
+      Phase.INIT,
+      Phase.ANALYZE,
+      Phase.MIGRATE,
+      Phase.PUBLISH,
+      Phase.ADVERSARIAL_ANALYZE,
+      Phase.ADVERSARIAL_MIGRATE,
+    ];
   }
 
   static modulePhases(): readonly Phase[] {
     return [Phase.ANALYZE, Phase.MIGRATE, Phase.PUBLISH];
+  }
+
+  static adversarialPhases(): readonly Phase[] {
+    return [Phase.ADVERSARIAL_ANALYZE, Phase.ADVERSARIAL_MIGRATE];
+  }
+
+  static adversarialAgentPhaseValues(): readonly ('analyze' | 'migrate')[] {
+    return ['analyze', 'migrate'];
   }
 
   static values(): readonly MigrationPhase[] {

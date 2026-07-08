@@ -108,6 +108,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.phases.analyze': 'Analizar',
     'module.phases.migrate': 'Migrar',
     'module.phases.publish': 'Publicar',
+    'module.phases.adversarial-analyze': 'Análisis Adversarial',
+    'module.phases.adversarial-migrate': 'Migración Adversarial',
     'module.summary.total': 'Total',
     'module.summary.finished': 'Finalizado',
     'module.summary.waiting': 'En espera',

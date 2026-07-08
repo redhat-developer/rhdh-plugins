@@ -26,6 +26,7 @@ import { Box, Grid } from '@material-ui/core';
 import {
   resolveScmProvider,
   MigrationPhase,
+  ModulePhase,
   Module,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -83,8 +84,7 @@ export const ModulePage = () => {
 
   const handleRunPhase = useCallback(
     async (phase: MigrationPhase) => {
-      if (!project || phase === 'init') {
-        // The init phase belongs to the project's page
+      if (!project) {
         return;
       }
       setError(undefined);
@@ -111,7 +111,7 @@ export const ModulePage = () => {
           await clientService.projectsProjectIdModulesModuleIdRunPost({
             path: { projectId, moduleId },
             body: {
-              phase,
+              phase: phase as ModulePhase,
               sourceRepoAuth: { token: sourceRepoAuthToken },
               targetRepoAuth: { token: targetRepoAuthToken },
             },
@@ -143,10 +143,62 @@ export const ModulePage = () => {
     ],
   );
 
+  const handleRunAdversarial = useCallback(
+    async (phase: 'analyze' | 'migrate') => {
+      if (!project) return;
+      setError(undefined);
+
+      try {
+        const targetRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
+          ])
+        )[0].token;
+
+        const response =
+          await clientService.projectsProjectIdAdversarialRunPost({
+            path: { projectId },
+            body: {
+              phase,
+              moduleId,
+              targetRepoAuth: { token: targetRepoAuthToken },
+            },
+          });
+
+        if (response.status !== 202) {
+          const body = (await response.json().catch(() => ({}))) as {
+            message?: string;
+          };
+          setError(body.message || t('modulePage.phases.adversarialRunError'));
+        }
+
+        refetch();
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('modulePage.phases.adversarialRunError'),
+        );
+      }
+    },
+    [
+      clientService,
+      t,
+      projectId,
+      moduleId,
+      project,
+      repoAuthentication,
+      hostMap,
+      refetch,
+    ],
+  );
+
   const handleCancelPhase = useCallback(
     async (phase: MigrationPhase) => {
-      if (!project || phase === 'init') {
-        // The init phase belongs to the project's page
+      if (!project) {
         return;
       }
       setError(undefined);
@@ -155,7 +207,7 @@ export const ModulePage = () => {
         const response =
           await clientService.projectsProjectIdModulesModuleIdCancelPost({
             path: { projectId, moduleId },
-            body: { phase },
+            body: { phase: phase as ModulePhase },
           });
         if (response.status !== 200) {
           const body = await response
@@ -224,6 +276,7 @@ export const ModulePage = () => {
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
                 onCancelPhase={handleCancelPhase}
+                onRunAdversarial={handleRunAdversarial}
                 activeTab={activeTab}
                 handleTabChange={handleTabChange}
               />

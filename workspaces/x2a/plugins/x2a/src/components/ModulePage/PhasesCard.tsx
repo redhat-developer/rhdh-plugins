@@ -26,6 +26,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { PhaseDetails } from '../PhaseDetails';
 import { PhaseStatusIcon } from '../PhaseStatus';
 import { hasPhasePrerequisites } from '../tools';
+import { AdversarialJobDetails } from './AdversarialJobDetails';
 
 const useStyles = makeStyles(theme => ({
   tabs: {
@@ -77,6 +78,7 @@ export const PhasesCard = ({
   handleTabChange,
   onRunPhase,
   onCancelPhase,
+  onRunAdversarial,
 }: {
   module?: Module;
   project?: Project;
@@ -86,6 +88,7 @@ export const PhasesCard = ({
   handleTabChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
   onRunPhase?: (phase: MigrationPhase) => void;
   onCancelPhase?: (phase: MigrationPhase) => void;
+  onRunAdversarial?: (phase: 'analyze' | 'migrate') => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();
@@ -93,6 +96,8 @@ export const PhasesCard = ({
   const analyzePhase = module?.analyze;
   const migratePhase = module?.migrate;
   const publishPhase = module?.publish;
+  const adversarialAnalyzePhase = module?.adversarialAnalyze;
+  const adversarialMigratePhase = module?.adversarialMigrate;
 
   return (
     <InfoCard title={t('modulePage.phases.title')} variant="gridItem">
@@ -151,6 +156,15 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
+          onRunAdversarial={onRunAdversarial}
+        />
+        <AdversarialJobDetails
+          job={adversarialAnalyzePhase}
+          projectId={projectId}
+          moduleId={moduleId}
+          phaseName="adversarial-analyze"
+          targetRepoUrl={project?.targetRepoUrl || ''}
+          targetRepoBranch={project?.targetRepoBranch || ''}
         />
       </Box>
       <Box className={activeTab === 1 ? classes.tabPanel : classes.hiddenPanel}>
@@ -161,6 +175,15 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
+          onRunAdversarial={onRunAdversarial}
+        />
+        <AdversarialJobDetails
+          job={adversarialMigratePhase}
+          projectId={projectId}
+          moduleId={moduleId}
+          phaseName="adversarial-migrate"
+          targetRepoUrl={project?.targetRepoUrl || ''}
+          targetRepoBranch={project?.targetRepoBranch || ''}
         />
       </Box>
       <Box className={activeTab === 2 ? classes.tabPanel : classes.hiddenPanel}>

@@ -18,6 +18,7 @@ export {
   X2APage,
   RepoAuthenticationExtension,
   RulesAcceptanceExtension,
+  AdversarialAgentsPickerExtension,
 } from './plugin';
 export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
 export {

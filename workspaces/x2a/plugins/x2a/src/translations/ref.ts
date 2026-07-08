@@ -49,6 +49,21 @@ export const x2aPluginMessages = {
   projectTable: {
     deleteError: 'Failed to delete project',
   },
+  createProjectPage: {
+    adversarialAgents: {
+      loading: 'Loading adversarial agents...',
+      title: 'Adversarial Agents',
+      subtitle:
+        'Select AI agents to review migration outputs for security, functional gaps, and correctness',
+      placeholder: 'Choose agents…',
+      selected: 'selected',
+      noAgentsAvailable:
+        'No adversarial agents available. Create agents in the Adversarial Agents page.',
+      loadingError: 'Failed to load adversarial agents',
+      tooltip:
+        'Adversarial agents review migration outputs for security issues, functional gaps, and correctness problems',
+    },
+  },
   projectDetailsCard: {
     title: 'Project Details',
     name: 'Name',
@@ -132,7 +147,12 @@ export const x2aPluginMessages = {
         'The module has already been published. Retrigger the publish to update the target repository.',
       rerunPublish: 'Republish to target repository',
       cancel: 'Cancel',
+      runAdversarialReview: 'Run Adversarial Review',
+      adversarialReview: 'Adversarial Review',
+      adversarialReviewInstructions:
+        'Run configured adversarial agents against the phase output. Agents will write a report to the target repository.',
       runError: 'Failed to run phase for module',
+      adversarialRunError: 'Failed to start adversarial review',
       cancelError: 'Failed to cancel phase for module',
       attempts: 'Attempts',
       totalElapsed: 'Total Elapsed',
@@ -261,6 +281,8 @@ export const x2aPluginMessages = {
       analyze: 'Analyze',
       migrate: 'Migrate',
       publish: 'Publish',
+      'adversarial-analyze': 'Adversarial Analyze',
+      'adversarial-migrate': 'Adversarial Migrate',
     },
     summary: {
       total: 'Total',
@@ -318,6 +340,7 @@ export const x2aPluginMessages = {
       migrated_sources: 'Migrated Sources',
       project_metadata: 'Project Metadata',
       ansible_project: 'AAP Project',
+      adversarial_report: 'Adversarial Report',
     },
   },
   time: {
@@ -386,6 +409,58 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       createError: 'Failed to create rule',
       updateError: 'Failed to update rule',
+    },
+  },
+  adversarialAgentsPage: {
+    title: 'Adversarial Agents',
+    subtitle:
+      'Manage AI agents that review migration outputs for security, functional gaps, and correctness issues.',
+    manageAdversarialAgents: 'Manage Adversarial Agents',
+    addAgent: 'Add Agent',
+    notAllowed: 'You do not have permission to manage adversarial agents.',
+    table: {
+      name: 'Name',
+      prompt: 'Prompt',
+      phases: 'Phases',
+      severity: 'Severity',
+      critical: 'Critical',
+      warning: 'Warning',
+      createdAt: 'Created',
+      createdBy: 'Created By',
+      editAgent: 'Edit agent',
+      deleteAgent: 'Delete agent',
+      noAgents: 'No adversarial agents defined yet.',
+      fetchError: 'Failed to fetch adversarial agents',
+    },
+    deleteConfirm: {
+      title: 'Delete agent "{{name}}"?',
+      message: 'This action cannot be undone.',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      deleteError: 'Failed to delete agent',
+    },
+    dialog: {
+      createTitle: 'Create Adversarial Agent',
+      editTitle: 'Edit Adversarial Agent',
+      nameField: 'Name',
+      namePlaceholder: 'e.g., Privilege Escalation Check',
+      promptField: 'Prompt',
+      promptPlaceholder: 'Describe what this agent should check for...',
+      promptHelper:
+        'Be specific about what to look for and how to report findings (50-5000 characters)',
+      phasesField: 'Workflow Phases',
+      phasesHelper: 'Select which workflow phases this agent runs in',
+      phaseAnalyze: 'Analyze',
+      phaseMigrate: 'Migrate',
+      criticalField: 'Critical Agent',
+      criticalHelper:
+        'Critical agents produce critical-severity findings; non-critical agents produce warnings',
+      nameValidation: 'Name must be between 3 and 100 characters',
+      phasesValidation: 'At least one phase is required',
+      save: 'Save',
+      cancel: 'Cancel',
+      createError: 'Failed to create agent',
+      updateError: 'Failed to update agent',
     },
   },
   empty: '-',
