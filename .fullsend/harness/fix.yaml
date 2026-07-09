@@ -1,6 +1,5 @@
 base: https://raw.githubusercontent.com/fullsend-ai/fullsend/807037ff09a6b5d18fbc339d06e57752af9cd522/internal/scaffold/fullsend-repo/harness/fix.yaml#sha256=490f90febfcf879df52856b3bf582dd7a059dd38353e9957b6aa3aaa72180c0e
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
-pre_script: scripts/pre-fix-rebase.sh
 host_files:
   - src: env/rhdh-toolchain.env
     dest: /sandbox/workspace/.env.d/rhdh-toolchain.env
@@ -8,3 +7,6 @@ host_files:
     dest: /sandbox/workspace/.env.d/yarn-proxy.env
 skills:
   - skills/rhdh-workspace
+forge:
+  github:
+    pre_script: scripts/pre-fix-rebase.sh
