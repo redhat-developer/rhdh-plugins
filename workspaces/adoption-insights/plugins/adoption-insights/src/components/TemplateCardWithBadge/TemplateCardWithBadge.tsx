@@ -41,11 +41,17 @@ import UserIcon from '@mui/icons-material/PersonOutlined';
 
 import { TimeSavedBadge } from '../TimeSavedBadge';
 
-type TemplateCardWithBadgeProps = {
+/**
+ * @public
+ */
+export type TemplateCardWithBadgeProps = {
   template: TemplateEntityV1beta3;
   onSelected?: (template: TemplateEntityV1beta3) => void;
 };
 
+/**
+ * @public
+ */
 export const TemplateCardWithBadge = ({
   template,
   onSelected,
