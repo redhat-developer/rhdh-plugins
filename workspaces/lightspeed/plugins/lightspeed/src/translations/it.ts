@@ -135,6 +135,8 @@ const lightspeedTranslationIt = createTranslationMessages({
     'mcp.settings.loading': 'Caricamento dei server MCP...',
     'mcp.settings.modalDescription':
       "Le credenziali sono crittografate a riposo e associate al tuo profilo. L'assistente intelligente opererà con esattamente le tue autorizzazioni.",
+    'mcp.settings.modalDescriptionDcr':
+      'Questo server utilizza Dynamic Client Registration (DCR). I token vengono generati automaticamente utilizzando la tua identità Backstage — non è necessario alcun token manuale.',
     'mcp.settings.name': 'Nome',
     'mcp.settings.noneAvailable': 'Nessun server MCP disponibile.',
     'mcp.settings.personalAccessToken': 'Token di accesso personale',

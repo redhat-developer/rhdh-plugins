@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { PropsWithChildren } from 'react';
+import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
-import { Card, CardHeader, CardBody, Text } from '@backstage/ui';
+const generateClassName = createGenerateClassName({
+  seed: 'ai-experience',
+});
 
-export const AiAssetSummaryCard = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <Text variant="title-small">AI Asset Summary</Text>
-      </CardHeader>
-      <CardBody>
-        <Text variant="body-medium">
-          Category, version, source, and lifecycle information will be displayed
-          here.
-        </Text>
-      </CardBody>
-    </Card>
-  );
-};
+export const AiExperienceStylesProvider = ({
+  children,
+}: PropsWithChildren<{}>) => (
+  <StylesProvider generateClassName={generateClassName}>
+    {children}
+  </StylesProvider>
+);

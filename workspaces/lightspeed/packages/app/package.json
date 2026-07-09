@@ -28,6 +28,7 @@
     "@backstage/frontend-plugin-api": "^0.15.1",
     "@backstage/integration-react": "^1.2.16",
     "@backstage/plugin-app-react": "^0.2.1",
+    "@backstage/plugin-auth": "^0.1.7",
     "@backstage/plugin-catalog": "^2.0.1",
     "@backstage/plugin-scaffolder": "^1.36.1",
     "@backstage/plugin-search": "^1.7.0",
@@ -45,7 +46,7 @@
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.5.1",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.61.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",

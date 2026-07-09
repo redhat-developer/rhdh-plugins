@@ -64,8 +64,8 @@ const StepperObjectField = ({
                 schema={{ ...subSchema, title: '' }} // the title is in the step
                 uiSchema={uiSchema?.[key] || {}}
                 formData={(formData?.[key] as JsonObject) || {}}
-                onChange={data => {
-                  onChange({ ...formData, [key]: data });
+                onChange={(data, newErrorSchema, id) => {
+                  onChange({ ...formData, [key]: data }, newErrorSchema, id);
                 }}
                 idSchema={idSchema[key] as IdSchema<JsonObject>}
                 registry={{

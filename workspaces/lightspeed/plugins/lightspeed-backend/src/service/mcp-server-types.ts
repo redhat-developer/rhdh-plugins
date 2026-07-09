@@ -33,6 +33,12 @@ export interface McpUserSettingsRow {
 export type McpServerStatus = 'connected' | 'error' | 'unknown';
 
 /**
+ * Authentication mode for MCP servers.
+ * @public
+ */
+export type McpServerAuth = 'dcr';
+
+/**
  * Public-facing response for an MCP server with user settings merged.
  * @public
  */
@@ -44,6 +50,8 @@ export interface McpServerResponse {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  /** Authentication mode — `'dcr'` means tokens are minted automatically. */
+  auth?: McpServerAuth;
 }
 
 /**

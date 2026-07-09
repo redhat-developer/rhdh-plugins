@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { Card, CardHeader, CardBody, Text } from '@backstage/ui';
-
-export const DownloadAdoptCard = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <Text variant="title-small">Download / Adopt</Text>
-      </CardHeader>
-      <CardBody>
-        <Text variant="body-medium">
-          Download or adoption actions will be displayed here based on asset
-          location type.
-        </Text>
-      </CardBody>
-    </Card>
-  );
-};
+@layer components {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bui-space-1);
+    width: 180px;
+    flex-shrink: 0;
+    position: sticky;
+    top: var(--bui-space-4);
+    align-self: flex-start;
+  }
+}

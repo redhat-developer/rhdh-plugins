@@ -22,6 +22,11 @@
 - `packages/` in each plugin is strictly for the dev environment; do not add application code there
 - `ai-experience-common` holds shared types and API definitions used by both frontend and backend
 
+## Specifications
+
+- When a task is driven by local implementation specs, check `openspec/changes/` for proposal, design, tasks, and behavioral requirements
+- Prefer local workspace OpenSpec materials over external copies when both exist
+
 ## PR Conventions
 
 - All commits must have an `Assisted-by: <model>` footer below the sign offs

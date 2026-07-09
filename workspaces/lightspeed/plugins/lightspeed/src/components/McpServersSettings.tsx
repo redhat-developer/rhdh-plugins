@@ -63,6 +63,8 @@ type McpServer = {
   hasToken: boolean;
   hasUserToken: boolean;
   validationError?: string;
+  /** 'dcr' = tokens are minted automatically (no manual token needed). */
+  auth?: string;
 };
 
 type McpServersSettingsProps = {
@@ -359,6 +361,7 @@ type McpServerResponse = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  auth?: string;
 };
 
 type McpServersListResponse = {
@@ -416,6 +419,7 @@ const toUiServer = (
   hasToken: server.hasToken,
   hasUserToken: server.hasUserToken,
   validationError: server.status === 'error' ? validationError : undefined,
+  auth: server.auth,
 });
 export const McpServersSettings = ({
   onClose,
@@ -1046,83 +1050,103 @@ export const McpServersSettings = ({
               })}
             </Typography>
           </div>
-          <div className={classes.modalDescription}>
-            {t('mcp.settings.modalDescription')}
-          </div>
-          <div className={classes.tokenRow}>
-            <TextField
-              id="mcp-pat-input"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={tokenInputValue}
-              onChange={event => onTokenInputChange(event.target.value)}
-              className={`${classes.tokenInput} ${tokenInputStateClass}`}
-              label={
-                hasSavedTokenInModal
-                  ? t('mcp.settings.savedToken')
-                  : t('mcp.settings.personalAccessToken')
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    {tokenInputAdornment}
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {(isUsingOrganizationCredentialInModal ||
-              !hasSavedTokenInModal ||
-              tokenValidationState !== 'idle') && (
-              <div
-                className={classes.tokenHelper}
-                style={{ color: tokenHelperColor }}
-              >
-                {tokenValidationMessage ||
-                  (isUsingOrganizationCredentialInModal
-                    ? t('mcp.settings.usingAdminCredential')
-                    : t('mcp.settings.enterToken'))}
+          {editingServer?.auth === 'dcr' ? (
+            <>
+              <div className={classes.modalDescription}>
+                {t('mcp.settings.modalDescriptionDcr')}
               </div>
-            )}
-          </div>
-          <div className={classes.modalActions}>
-            <Button
-              key="save"
-              variant="primary"
-              onClick={() => void saveServerToken()}
-              isDisabled={
-                !canManageMcp ||
-                Boolean(isSaving[editingServer?.name ?? '']) ||
-                tokenValidationState === 'validating'
-              }
-              className={classes.modalActionButton}
-            >
-              {t('modal.save')}
-            </Button>
-            {canRemovePersonalToken && hasSavedTokenInModal && (
-              <Button
-                key="forget-token"
-                variant="plain"
-                onClick={removePersonalToken}
-                isDisabled={
-                  !canManageMcp ||
-                  Boolean(isSaving[editingServer?.name ?? '']) ||
-                  tokenValidationState === 'validating'
-                }
-                className={classes.forgetTokenButton}
-              >
-                {t('mcp.settings.removePersonalToken')}
-              </Button>
-            )}
-            <Button
-              key="cancel"
-              variant="link"
-              onClick={closeConfigureModal}
-              className={classes.modalCancelButton}
-            >
-              {t('common.cancel')}
-            </Button>
-          </div>
+              <div className={classes.modalActions}>
+                <Button
+                  key="close"
+                  variant="primary"
+                  onClick={closeConfigureModal}
+                  className={classes.modalActionButton}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={classes.modalDescription}>
+                {t('mcp.settings.modalDescription')}
+              </div>
+              <div className={classes.tokenRow}>
+                <TextField
+                  id="mcp-pat-input"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  value={tokenInputValue}
+                  onChange={event => onTokenInputChange(event.target.value)}
+                  className={`${classes.tokenInput} ${tokenInputStateClass}`}
+                  label={
+                    hasSavedTokenInModal
+                      ? t('mcp.settings.savedToken')
+                      : t('mcp.settings.personalAccessToken')
+                  }
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {tokenInputAdornment}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                {(isUsingOrganizationCredentialInModal ||
+                  !hasSavedTokenInModal ||
+                  tokenValidationState !== 'idle') && (
+                  <div
+                    className={classes.tokenHelper}
+                    style={{ color: tokenHelperColor }}
+                  >
+                    {tokenValidationMessage ||
+                      (isUsingOrganizationCredentialInModal
+                        ? t('mcp.settings.usingAdminCredential')
+                        : t('mcp.settings.enterToken'))}
+                  </div>
+                )}
+              </div>
+              <div className={classes.modalActions}>
+                <Button
+                  key="save"
+                  variant="primary"
+                  onClick={() => void saveServerToken()}
+                  isDisabled={
+                    !canManageMcp ||
+                    Boolean(isSaving[editingServer?.name ?? '']) ||
+                    tokenValidationState === 'validating'
+                  }
+                  className={classes.modalActionButton}
+                >
+                  {t('modal.save')}
+                </Button>
+                {canRemovePersonalToken && hasSavedTokenInModal && (
+                  <Button
+                    key="forget-token"
+                    variant="plain"
+                    onClick={removePersonalToken}
+                    isDisabled={
+                      !canManageMcp ||
+                      Boolean(isSaving[editingServer?.name ?? '']) ||
+                      tokenValidationState === 'validating'
+                    }
+                    className={classes.forgetTokenButton}
+                  >
+                    {t('mcp.settings.removePersonalToken')}
+                  </Button>
+                )}
+                <Button
+                  key="cancel"
+                  variant="link"
+                  onClick={closeConfigureModal}
+                  className={classes.modalCancelButton}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>
