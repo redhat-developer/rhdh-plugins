@@ -101,9 +101,13 @@ catalog:
     - type: file
       target: ../../examples/entities.yaml
 
-    # Local example template
+    # Local example templates
     - type: file
       target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../examples/template/template-no-annotation.yaml
       rules:
         - allow: [Template]
 

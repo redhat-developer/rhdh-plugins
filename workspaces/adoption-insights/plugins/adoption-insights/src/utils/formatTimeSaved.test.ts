@@ -13,48 +13,143 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { formatTotalTimeSaved } from './formatTimeSaved';
+import {
+  computeTotalTimeSaved,
+  parseTimeSavedMinutes,
+} from './formatTimeSaved';
 
-describe('formatTotalTimeSaved', () => {
-  it('returns dash when annotation is undefined', () => {
-    expect(formatTotalTimeSaved(undefined, 5)).toBe('—');
+describe('computeTotalTimeSaved', () => {
+  it('returns null when annotation is undefined', () => {
+    expect(computeTotalTimeSaved(undefined, 5)).toBeNull();
   });
 
-  it('returns dash when annotation is empty string', () => {
-    expect(formatTotalTimeSaved('', 5)).toBe('—');
+  it('returns null when annotation is empty string', () => {
+    expect(computeTotalTimeSaved('', 5)).toBeNull();
   });
 
-  it('returns dash when annotation is non-numeric', () => {
-    expect(formatTotalTimeSaved('abc', 5)).toBe('—');
+  it('returns null when annotation is non-numeric', () => {
+    expect(computeTotalTimeSaved('abc', 5)).toBeNull();
   });
 
-  it('returns dash when annotation is zero', () => {
-    expect(formatTotalTimeSaved('0', 5)).toBe('—');
+  it('returns null when annotation is zero', () => {
+    expect(computeTotalTimeSaved('0', 5)).toBeNull();
   });
 
-  it('returns dash when annotation is negative', () => {
-    expect(formatTotalTimeSaved('-10', 5)).toBe('—');
+  it('returns null when annotation is negative', () => {
+    expect(computeTotalTimeSaved('-10', 5)).toBeNull();
   });
 
-  it('returns minutes when total is under 60', () => {
-    expect(formatTotalTimeSaved('10', 3)).toBe('30min');
+  it('returns null when count is zero', () => {
+    expect(computeTotalTimeSaved('180', 0)).toBeNull();
   });
 
-  it('returns whole hours', () => {
-    expect(formatTotalTimeSaved('60', 2)).toBe('2hrs');
-    expect(formatTotalTimeSaved('180', 1)).toBe('3hrs');
+  it('returns minutes only when total is under 60', () => {
+    expect(computeTotalTimeSaved('10', 3)).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 30,
+    });
   });
 
-  it('returns fractional hours', () => {
-    expect(formatTotalTimeSaved('30', 3)).toBe('1.5hrs');
-    expect(formatTotalTimeSaved('90', 3)).toBe('4.5hrs');
+  it('returns hours only when total is exact hours under 24', () => {
+    expect(computeTotalTimeSaved('60', 2)).toEqual({
+      days: 0,
+      hours: 2,
+      minutes: 0,
+    });
   });
 
-  it('handles count of zero', () => {
-    expect(formatTotalTimeSaved('180', 0)).toBe('—');
+  it('returns hours and minutes', () => {
+    expect(computeTotalTimeSaved('90', 1)).toEqual({
+      days: 0,
+      hours: 1,
+      minutes: 30,
+    });
   });
 
-  it('handles large values', () => {
-    expect(formatTotalTimeSaved('60', 100)).toBe('100hrs');
+  it('returns days and hours when over 24 hours', () => {
+    expect(computeTotalTimeSaved('60', 28)).toEqual({
+      days: 1,
+      hours: 4,
+      minutes: 0,
+    });
+  });
+
+  it('returns days hours and minutes', () => {
+    expect(computeTotalTimeSaved('90', 17)).toEqual({
+      days: 1,
+      hours: 1,
+      minutes: 30,
+    });
+  });
+
+  it('returns only days when exact multiple of 24 hours', () => {
+    expect(computeTotalTimeSaved('60', 48)).toEqual({
+      days: 2,
+      hours: 0,
+      minutes: 0,
+    });
+  });
+});
+
+describe('parseTimeSavedMinutes', () => {
+  it('returns null when input is undefined', () => {
+    expect(parseTimeSavedMinutes(undefined)).toBeNull();
+  });
+
+  it('returns null when input is empty string', () => {
+    expect(parseTimeSavedMinutes('')).toBeNull();
+  });
+
+  it('returns null when input is non-numeric', () => {
+    expect(parseTimeSavedMinutes('abc')).toBeNull();
+  });
+
+  it('returns null when input is zero', () => {
+    expect(parseTimeSavedMinutes('0')).toBeNull();
+  });
+
+  it('returns null when input is negative', () => {
+    expect(parseTimeSavedMinutes('-30')).toBeNull();
+  });
+
+  it('returns minutes only when under 60', () => {
+    expect(parseTimeSavedMinutes('30')).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 30,
+    });
+  });
+
+  it('returns hours only when exact hours', () => {
+    expect(parseTimeSavedMinutes('180')).toEqual({
+      days: 0,
+      hours: 3,
+      minutes: 0,
+    });
+  });
+
+  it('returns hours and minutes', () => {
+    expect(parseTimeSavedMinutes('90')).toEqual({
+      days: 0,
+      hours: 1,
+      minutes: 30,
+    });
+  });
+
+  it('returns days and hours when over 24 hours', () => {
+    expect(parseTimeSavedMinutes('1680')).toEqual({
+      days: 1,
+      hours: 4,
+      minutes: 0,
+    });
+  });
+
+  it('returns 1 minute for input of 1', () => {
+    expect(parseTimeSavedMinutes('1')).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 1,
+    });
   });
 });

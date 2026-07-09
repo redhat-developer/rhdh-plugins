@@ -43,6 +43,9 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'common.exportCSV': 'Exportar CSV',
     'common.filteredBy': 'filtrado por',
     'common.invalidDateFormat': 'Formato de fecha no válido',
+    'units.days': '{{value}}d',
+    'units.hours': '{{value}}h',
+    'units.minutes': '{{value}} min',
     'common.noResults': 'No hay resultados para este rango de fechas.',
     'common.numberOfSearches': 'Número de búsquedas',
     'common.readMore': 'Leer más',
@@ -79,6 +82,16 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'searches.title': 'Búsquedas principales',
     'searches.totalCount': '{{count}} búsquedas',
     'searches.week': 'semana',
+    'timeSavedBadge.estTimeSaved': 'Tiempo est. ahorrado: {{duration}}',
+    'timeSavedBadge.addEstTimeSaved': 'Agregar tiempo est. ahorrado',
+    'timeSavedBadge.presentTooltip':
+      'Este número refleja el tiempo típico para realizar este trabajo sin la plantilla, según lo informado por el propietario.',
+    'timeSavedBadge.absentTooltipInstruction':
+      'Ayude a los usuarios a ver el valor de su plantilla.\nAgregue esta anotación a su template.yaml:',
+    'timeSavedBadge.annotationSnippet':
+      "rhdh.redhat.com/time-saved: '<duración>'",
+    'timeSavedBadge.copied': '¡Copiado!',
+    'timeSavedBadge.copyAnnotation': 'Copiar anotación',
     'table.headers.entity': 'Entidad',
     'table.headers.executions': 'Ejecuciones',
     'table.headers.estTimeSaved': 'Tiempo estimado ahorrado',

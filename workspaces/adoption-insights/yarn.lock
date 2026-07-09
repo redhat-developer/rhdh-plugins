@@ -10997,6 +10997,7 @@ __metadata:
     "@backstage/plugin-catalog": "npm:^2.0.1"
     "@backstage/plugin-catalog-react": "npm:^2.1.1"
     "@backstage/plugin-permission-react": "npm:^0.4.41"
+    "@backstage/plugin-scaffolder-common": "npm:^2.0.0"
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
     "@mui/icons-material": "npm:5.18.0"
