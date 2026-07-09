@@ -14,24 +14,44 @@
  * limitations under the License.
  */
 
-export function formatTotalTimeSaved(
+export type TimeSavedResult = {
+  days: number;
+  hours: number;
+  minutes: number;
+} | null;
+
+export function parseTimeSavedMinutes(
+  minutesStr: string | undefined,
+): TimeSavedResult {
+  if (!minutesStr) {
+    return null;
+  }
+  const parsed = Number(minutesStr);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  const days = Math.floor(parsed / 1440);
+  const remainingAfterDays = parsed % 1440;
+  const hours = Math.floor(remainingAfterDays / 60);
+  const minutes = Math.round(remainingAfterDays % 60);
+  return { days, hours, minutes };
+}
+
+export function computeTotalTimeSaved(
   timeSavedMinutes: string | undefined,
   count: number,
-): string {
+): TimeSavedResult {
   if (!timeSavedMinutes) {
-    return '—';
+    return null;
   }
   const parsed = Number(timeSavedMinutes);
   if (!Number.isFinite(parsed) || parsed <= 0 || count <= 0) {
-    return '—';
+    return null;
   }
   const totalMinutes = parsed * count;
-  if (totalMinutes < 60) {
-    return `${totalMinutes}min`;
-  }
-  const hours = totalMinutes / 60;
-  if (Number.isInteger(hours)) {
-    return `${hours}hrs`;
-  }
-  return `${hours.toFixed(1)}hrs`;
+  const days = Math.floor(totalMinutes / 1440);
+  const remainingAfterDays = totalMinutes % 1440;
+  const hours = Math.floor(remainingAfterDays / 60);
+  const minutes = Math.round(remainingAfterDays % 60);
+  return { days, hours, minutes };
 }
