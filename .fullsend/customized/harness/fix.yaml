@@ -1,24 +1,21 @@
-# forked-from: fullsend v0.17.0 scaffold
-# last-synced: 2026-06-16
-# harness/fix.yaml — fix agent with yarn sandbox workaround.
-#
-# Based on upstream fix.yaml. The fix agent handles
-# automated fixes triggered by /fs-fix commands on issues or PRs.
+# forked-from: fullsend v0.17.0 scaffold / agents harness
+# last-synced: 2026-07-08
+# harness/fix.yaml — RHDH-customized fix agent with yarn sandbox workaround.
 #
 # Flow: pre_script → sandbox (agent) → validation_loop → post_script
-#   pre_script       : validates inputs, checks iteration cap
+#   pre_script       : validates inputs, checks iteration cap, rebases onto target
 #   agent            : reads pre-fetched review body, fixes code, tests, scans, commits
 #   validation_loop  : validates output schema (max 2 iterations)
 #   post_script      : push commit, post summary comment on PR
 #
-# Customizations over upstream fix.yaml:
+# Customizations over upstream agents harness:
 #   - pre_script: wraps upstream pre-fix.sh with auto-rebase onto target branch
 #   - image: rhdh custom image with yarn/corepack pre-installed
-#   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
-#   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
+#   - host_files: rhdh-toolchain.env + yarn-proxy.env
 #   - skills: adds rhdh-workspace for workspace navigation + test scoping
-#   - policy: custom fix policy with yarn registry + pnpm binary allowlist
+#   - policy: custom fix policy with yarn registry + allow_encoded_slash
 role: fix
+slug: fullsend-ai-coder
 agent: agents/fix.md
 doc: docs/agents/fix.md
 model: opus
@@ -26,12 +23,12 @@ image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: policies/fix.yaml
 
 pre_script: scripts/pre-fix-rebase.sh
+post_script: scripts/post-fix.sh
 
 validation_loop:
   script: scripts/validate-output-schema.sh
+  schema: schemas/fix-result.schema.json
   max_iterations: 2
-
-post_script: scripts/post-fix.sh
 
 host_files:
   - src: env/gcp-vertex.env
@@ -68,7 +65,29 @@ runner_env:
   FIX_ITERATION: "${FIX_ITERATION}"
   REVIEW_BODY_FILE: "${REVIEW_BODY_FILE}"
   PRE_AGENT_HEAD: "${PRE_AGENT_HEAD}"
-  FULLSEND_OUTPUT_SCHEMA: ${FULLSEND_DIR}/schemas/fix-result.schema.json
   FULLSEND_OUTPUT_FILE: fix-result.json
 
 timeout_minutes: 90
+
+forge:
+  github:
+    pre_script: scripts/pre-fix-rebase.sh
+    post_script: scripts/post-fix.sh
+    env:
+      runner:
+        PUSH_TOKEN: "${PUSH_TOKEN}"
+        PUSH_TOKEN_SOURCE: "${PUSH_TOKEN_SOURCE}"
+        REPO_FULL_NAME: "${REPO_FULL_NAME}"
+        PR_NUMBER: "${PR_NUMBER}"
+        REPO_DIR: "${GITHUB_WORKSPACE}/target-repo"
+      sandbox:
+        PR_NUMBER: "${PR_NUMBER}"
+        REPO_FULL_NAME: "${REPO_FULL_NAME}"
+        TRIGGER_SOURCE: "${TRIGGER_SOURCE}"
+        HUMAN_INSTRUCTION: "${HUMAN_INSTRUCTION}"
+        FIX_ITERATION: "${FIX_ITERATION}"
+        GH_TOKEN: "${GH_TOKEN}"
+        GIT_AUTHOR_NAME: "fullsend-fix"
+        GIT_AUTHOR_EMAIL: "${GIT_BOT_EMAIL}"
+        GIT_COMMITTER_NAME: "fullsend-fix"
+        GIT_COMMITTER_EMAIL: "${GIT_BOT_EMAIL}"

@@ -4,6 +4,15 @@ roles:
   - coder
   - review
   - fix
+# Prefer the repo-local customized code/fix harnesses over the transitional
+# fullsend-ai/agents fallback. Without this, v0.29+ resolves those agents from
+# the agents repo (stock image/policy) and skips .fullsend/customized/, which
+# breaks yarn install in the rhdh-plugins monorepo sandbox.
+agents:
+  # Paths are relative to .fullsend/. Point at customized/ directly so the
+  # files exist in git before prepare-workspace overlays them onto harness/.
+  - source: customized/harness/code.yaml
+  - source: customized/harness/fix.yaml
 allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/fullsend/
   - https://raw.githubusercontent.com/fullsend-ai/agents/

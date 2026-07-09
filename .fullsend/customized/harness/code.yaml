@@ -1,6 +1,6 @@
-# forked-from: fullsend v0.17.0 scaffold
-# last-synced: 2026-06-16
-# harness/code.yaml — code agent with pre/post script pipeline.
+# forked-from: fullsend v0.17.0 scaffold / agents harness
+# last-synced: 2026-07-08
+# harness/code.yaml — RHDH-customized code agent.
 #
 # Flow: pre_script → sandbox (agent) → post_script
 #   pre_script  : validates inputs on the runner BEFORE sandbox creation
@@ -10,12 +10,14 @@
 # The agent NEVER pushes or creates PRs (disallowedTools enforces this).
 # Only the post-script, running on the runner with PUSH_TOKEN, can write.
 #
-# Customizations over upstream code.yaml:
+# Customizations over upstream agents harness:
 #   - image: rhdh custom image with yarn/corepack pre-installed
-#   - policy: custom code policy with repo.yarnpkg.com for corepack downloads
-#   - host_files: rhdh-toolchain.env sets COREPACK_HOME to writable /tmp/corepack
-#   - host_files: yarn-proxy.env maps OpenShell's HTTP_PROXY to YARN_HTTP_PROXY
+#   - policy: custom code policy with allow_encoded_slash + repo.yarnpkg.com
+#   - host_files: rhdh-toolchain.env (COREPACK_HOME) + yarn-proxy.env
+#   - skills: rhdh-workspace for monorepo workspace routing
+#   - timeout_minutes: 45 (monorepo yarn install needs headroom)
 role: coder
+slug: fullsend-ai-coder
 agent: agents/code.md
 doc: docs/agents/code.md
 model: opus
@@ -49,6 +51,11 @@ skills:
 plugins:
   - plugins/gopls-lsp
 
+validation_loop:
+  script: scripts/validate-output-schema.sh
+  schema: schemas/code-result.schema.json
+  max_iterations: 2
+
 # Environment variables available to post_script on the runner.
 # These are expanded from the runner environment and NEVER enter the sandbox.
 runner_env:
@@ -58,5 +65,17 @@ runner_env:
   ISSUE_NUMBER: "${ISSUE_NUMBER}"
   REPO_DIR: "${GITHUB_WORKSPACE}/target-repo"
   TARGET_BRANCH: "${TARGET_BRANCH}"
+  FULLSEND_OUTPUT_FILE: code-result.json
 
 timeout_minutes: 45
+
+forge:
+  github:
+    pre_script: scripts/pre-code.sh
+    post_script: scripts/post-code.sh
+    runner_env:
+      PUSH_TOKEN: "${PUSH_TOKEN}"
+      PUSH_TOKEN_SOURCE: "${PUSH_TOKEN_SOURCE}"
+      REPO_FULL_NAME: "${REPO_FULL_NAME}"
+      ISSUE_NUMBER: "${ISSUE_NUMBER}"
+      REPO_DIR: "${GITHUB_WORKSPACE}/target-repo"
