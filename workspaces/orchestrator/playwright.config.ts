@@ -47,7 +47,7 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
   // Locale projects share one dev server so limit parallelism to reduce settings page races
-  workers: process.env.CI ? 2 : undefined,
+  workers: 1,
 
   reporter: [
     ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],

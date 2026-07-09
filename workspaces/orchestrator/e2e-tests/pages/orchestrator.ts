@@ -240,16 +240,9 @@ export class Orchestrator {
     await expect(
       this.page.getByText(this.translations.workflow.buttons.runAgain),
     ).toBeVisible();
-    // Uncomment the below lines and remove the line 254 with bug fix https://redhat.atlassian.net/browse/RHDHBUGS-3400
-    // await this.orchestratorHelper.clickButton(
-    //   this.translations.workflow.buttons.runAgain,
-    // );
-    await this.page
-      .locator('div')
-      .filter({ hasText: this.translations.workflow.buttons.runAgain })
-      .last()
-      .getByRole('button')
-      .click();
+    await this.orchestratorHelper.clickButton(
+      this.translations.workflow.buttons.runAgain,
+    );
     await this.fillGreetingWorkflowForm(language);
     await this.runGreetingWorkflowFromExecuteForm();
   }
@@ -409,36 +402,34 @@ export class Orchestrator {
       }),
     ).toBeVisible();
     await expect(this.page.locator('pre').first()).toBeVisible();
-    await expect(
-      this.page.getByRole('button', { name: 'Copy text' }),
-    ).toBeVisible();
+    await expect(this.page.getByRole('button', { name: 'Copy' })).toBeVisible();
   }
 
-  async verifyWorkflowRunTab(runsCount?: number) {
+  async verifyWorkflowRunsTabHeading(runsCount?: number) {
     const escapedRunsCount = this.translations.table.title.allWorkflowRuns
       .split('{{count}}')
       .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-      .join('\\d+');
+      .join(runsCount !== undefined ? String(runsCount) : '\\d+');
     await expect(
-      this.page.getByText(
-        runsCount
-          ? this.translations.table.title.allWorkflowRuns.replace(
-              '{{count}}',
-              runsCount.toString(),
-            )
-          : new RegExp(`^${escapedRunsCount}$`),
-      ),
-    ).toBeVisible({ timeout: 5000 });
+      this.page.getByText(new RegExp(`^${escapedRunsCount}$`)).first(),
+    ).toBeVisible({ timeout: 60_000 });
+  }
+
+  async verifyWorkflowRunTab(runsCount?: number) {
+    await this.verifyWorkflowRunsTabHeading(runsCount);
     await this.orchestratorHelper.verifyTableHeadingAndRows([
       'ID',
-      this.translations.table.headers.runStatus,
+      this.translations.table.headers.version,
+      this.translations.table.headers.entity,
+      this.translations.table.headers.status,
       this.translations.table.headers.started,
-      this.translations.table.headers.duration,
+      this.translations.table.headers.runBy,
+      'Actions',
     ]);
     await expect(
       this.page
         .getByRole('button', {
-          name: this.translations.table.actions.run,
+          name: this.translations.table.actions.viewRunVariables,
           exact: true,
         })
         .first(),
@@ -451,6 +442,16 @@ export class Orchestrator {
     await expect(
       this.page
         .getByLabel(this.translations.table.filters.started)
+        .getByRole('button', { name: 'All' }),
+    ).toBeVisible();
+    await expect(
+      this.page
+        .getByLabel(this.translations.table.filters.entity)
+        .getByRole('button', { name: 'All' }),
+    ).toBeVisible();
+    await expect(
+      this.page
+        .getByLabel(this.translations.table.filters.runBy)
         .getByRole('button', { name: 'All' }),
     ).toBeVisible();
   }
@@ -514,7 +515,7 @@ export class Orchestrator {
       await this.page.getByRole('button', { name: startTime }).click();
     }
     await this.page.getByRole('option', { name: 'All' }).click();
-    const entityOptions = [];
+    // const entityOptions = [];
     await this.page
       .getByLabel(this.translations.table.filters.entity)
       .getByRole('button', { name: 'All' })

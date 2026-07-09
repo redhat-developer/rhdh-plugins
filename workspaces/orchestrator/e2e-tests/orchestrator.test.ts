@@ -38,6 +38,15 @@ function countHeadingPattern(template: string): RegExp {
   return new RegExp(`^${regexBody}$`);
 }
 
+function parseCountFromHeading(text: string, template: string): number {
+  const [prefix, suffix = ''] = template.split('{{count}}');
+  const match = text
+    .trim()
+    .match(
+      new RegExp(`^${escapeRegExp(prefix)}(\\d+)${escapeRegExp(suffix)}$`),
+    );
+  return parseInt(match?.[1] ?? '0', 10);
+}
 /**
  * Get the display name for a locale code
  */
@@ -301,8 +310,7 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.verifyWorkflowRunTabDetails();
     });
 
-    // Remove the fixme with the fix of bug https://redhat.atlassian.net/browse/RHDHBUGS-3401
-    test.fixme('All runs tab workflow details validation', async () => {
+    test('All runs tab workflow details validation', async () => {
       await sharedPage
         .getByRole('link', { name: 'Hello World workflow' })
         .first()
@@ -312,13 +320,23 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.navigateToWorkflowRunTab(
         translations.page.tabs.workflowRuns,
       );
-      await orchestrator.verifyWorkflowRunTab();
-      const runLocator = await sharedPage
+      await sharedPage
+        .getByTestId('loading-indicator')
+        .waitFor({ state: 'hidden', timeout: 60_000 });
+
+      const runLocator = sharedPage
         .getByText(
           countHeadingPattern(translations.table.title.allWorkflowRuns),
         )
-        .textContent();
-      const runCount = parseInt(runLocator?.match(/\d+/)?.[0] || '0');
+        .first();
+      const runCount = parseCountFromHeading(
+        (await runLocator.textContent({ timeout: 60_000 })) ?? '',
+        translations.table.title.allWorkflowRuns,
+      );
+      await orchestrator.verifyWorkflowRunTab(runCount);
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflowDetails,
+      );
       await sharedPage
         .getByRole('button', {
           name: translations.table.actions.run,
@@ -327,14 +345,27 @@ test.describe('Orchestrator workflow runs', () => {
         .first()
         .click();
       await orchestrator.submitWorkflowRunFromReview();
-      await orchestratorHelper.verifyHeading(
-        translations.run.pageTitle.replace(
-          '{{processName}}',
-          'Hello World workflow',
-        ),
-      );
+      await orchestratorHelper.verifyBreadcrumbLink('Hello World workflow');
       await sharedPage.goto(`/orchestrator/workflows/hello_world/runs`);
-      await orchestrator.verifyWorkflowRunTab(runCount + 1);
+      await sharedPage
+        .getByTestId('loading-indicator')
+        .waitFor({ state: 'hidden', timeout: 60_000 });
+      const template = translations.table.title.allWorkflowRuns;
+      // await expect
+      //   .poll(
+      //     async () =>
+      //       parseCountFromHeading(
+      //         (await sharedPage
+      //           .getByText(countHeadingPattern(template))
+      //           .first()
+      //           .textContent({ timeout: 60_000 })) ?? '',
+      //         template,
+      //       ),
+      //     { timeout: 60_000 },
+      //   )
+      //   .toBe(runCount + 1);
+
+      await orchestrator.verifyWorkflowRunsTabHeading(runCount + 1);
     });
   });
 });
