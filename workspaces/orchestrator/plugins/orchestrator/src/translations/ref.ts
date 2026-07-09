@@ -98,6 +98,13 @@ export const orchestratorMessages = {
       available: 'Available',
       unavailable: 'Unavailable',
     },
+    unavailable: {
+      title: 'Unavailable workflow',
+      runTooltip: 'Unavailable workflow',
+      requestFailed: 'HTTP GET request to {{url}} failed.',
+      statusCodeLine: 'Status Code: {{statusCode}}',
+      statusTextLine: 'Status Text: {{reason}}',
+    },
     fields: {
       entity: 'Entity',
       workflow: 'Workflow',
@@ -133,7 +140,6 @@ export const orchestratorMessages = {
       running: 'Running...',
       entireWorkflow: 'Entire workflow',
       fromFailurePoint: 'From failure point',
-      fromAbortedPoint: 'From aborted point',
       runFailedAgain: 'Run failed again',
     },
   },
@@ -194,8 +200,6 @@ export const orchestratorMessages = {
     workflowDown: 'Workflow is currently down or in an error state',
     userNotAuthorizedAbort: 'user not authorized to abort workflow',
     userNotAuthorizedExecute: 'user not authorized to execute workflow',
-    retriggerNotSupportedForAborted:
-      'Retrigger from the abort point is not supported. Use Entire workflow to start a new run with the same inputs.',
   },
   messages: {
     noDataAvailable: 'No data available',

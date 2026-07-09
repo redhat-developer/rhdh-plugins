@@ -137,6 +137,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'mcp.settings.loading': 'Chargement des serveurs MCP...',
     'mcp.settings.modalDescription':
       'Les identifiants sont chiffrés au repos et limités à votre profil. L\u2019assistant intelligent fonctionnera avec exactement vos autorisations.',
+    'mcp.settings.modalDescriptionDcr':
+      'Ce serveur utilise Dynamic Client Registration (DCR). Les jetons sont générés automatiquement à partir de votre identité Backstage — aucun jeton manuel n\u2019est nécessaire.',
     'mcp.settings.name': 'Nom',
     'mcp.settings.noneAvailable': 'Aucun serveur MCP disponible.',
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
@@ -317,6 +319,12 @@ const lightspeedTranslationFr = createTranslationMessages({
     'sort.label': 'Trier les conversations',
     'sort.newest': 'Date (plus récent en premier)',
     'sort.oldest': 'Date (plus ancien en premier)',
+    'sources.chip.label_one': '{{count}} Source',
+    'sources.chip.label_other': '{{count}} Sources',
+    'sources.modal.description':
+      'Les sources suivantes ont été utilisées pour générer cette réponse IA et fournir des informations complémentaires\u00a0:',
+    'sources.modal.title': 'Sources',
+    'sources.popover.closeAriaLabel': 'Fermer les sources',
     'tabs.ariaLabel': 'Vues de l\u2019assistant intelligent',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Carnets',

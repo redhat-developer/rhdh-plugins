@@ -552,6 +552,9 @@ components:
     ProcessInstanceListResultDTO:
       type: object
       properties:
+        totalCount:
+          type: integer
+          description: Total number of process instances matching the filter
         items:
           type: array
           items:

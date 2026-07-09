@@ -26,5 +26,6 @@ export type {
 export interface UserContext {
   userEntityRef: string;
   groupEntityRefs: Set<string>;
-  policyDecisions: Map<string, PolicyDecision>;
+  defaultWidgetsReadDecision: PolicyDecision;
+  otherPolicyDecisions: Map<string, PolicyDecision>;
 }

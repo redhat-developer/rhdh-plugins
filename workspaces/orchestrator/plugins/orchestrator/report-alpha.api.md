@@ -337,6 +337,11 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.ofTotal': string;
     readonly 'workflow.statsSuccess': string;
     readonly 'workflow.statsFailed': string;
+    readonly 'workflow.unavailable.title': string;
+    readonly 'workflow.unavailable.runTooltip': string;
+    readonly 'workflow.unavailable.requestFailed': string;
+    readonly 'workflow.unavailable.statusCodeLine': string;
+    readonly 'workflow.unavailable.statusTextLine': string;
     readonly 'workflow.fields.description': string;
     readonly 'workflow.fields.version': string;
     readonly 'workflow.fields.workflowId': string;
@@ -359,7 +364,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.buttons.runAgain': string;
     readonly 'workflow.buttons.entireWorkflow': string;
     readonly 'workflow.buttons.fromFailurePoint': string;
-    readonly 'workflow.buttons.fromAbortedPoint': string;
     readonly 'workflow.buttons.runFailedAgain': string;
     readonly 'messages.noDataAvailable': string;
     readonly 'messages.noVariablesFound': string;
@@ -376,7 +380,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'tooltips.workflowDown': string;
     readonly 'tooltips.suspended': string;
     readonly 'tooltips.userNotAuthorizedAbort': string;
-    readonly 'tooltips.retriggerNotSupportedForAborted': string;
     readonly 'reviewStep.hiddenFieldsNote': string;
     readonly 'reviewStep.showHiddenParameters': string;
     readonly 'permissions.accessDenied': string;

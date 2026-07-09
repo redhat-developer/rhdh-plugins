@@ -187,12 +187,9 @@ const orchestratorTranslationFr = createTranslationMessages({
       "L'utilisateur n'est pas autorisé à interrompre le flux de travail.",
     'tooltips.userNotAuthorizedExecute':
       "L'utilisateur n'est pas autorisé à exécuter le flux de travail.",
-    'tooltips.retriggerNotSupportedForAborted':
-      "Le redéclenchement à partir du point d'interruption n'est pas pris en charge. Utilisez Flux de travail entier pour démarrer une nouvelle exécution avec les mêmes entrées.",
     'tooltips.workflowDown':
       "Le flux de travail est actuellement indisponible ou en état d'erreur.",
     'workflow.buttons.entireWorkflow': 'Flux de travail entier',
-    'workflow.buttons.fromAbortedPoint': "À partir du point d'interruption",
     'workflow.buttons.fromFailurePoint': 'À partir du point de défaillance',
     'workflow.buttons.run': 'Exécuter',
     'workflow.buttons.runAgain': 'Exécuter à nouveau',
@@ -239,6 +236,13 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Le flux de travail est actuellement interrompu ou en état d'erreur. Son exécution maintenant peut échouer ou produire des résultats inattendus.",
     'workflow.progress': 'Avancement du flux de travail',
     'workflow.status.available': 'Disponible',
+    'workflow.status.unavailable': 'Indisponible',
+    'workflow.unavailable.title': 'Flux de travail indisponible',
+    'workflow.unavailable.runTooltip': 'Flux de travail indisponible',
+    'workflow.unavailable.requestFailed':
+      'La requête HTTP GET vers {{url}} a échoué.',
+    'workflow.unavailable.statusCodeLine': 'Code de statut : {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texte de statut : {{reason}}',
     'samlSso.title': 'Session GitHub SAML SSO expirée',
     'samlSso.reauthorizeButton': 'Réautoriser SSO',
     'samlSso.body':

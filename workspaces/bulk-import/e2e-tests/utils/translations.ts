@@ -26,19 +26,21 @@ import bulkImportTranslationJa from '../../plugins/bulk-import/src/translations/
 
 export type BulkImportMessages = typeof bulkImportMessages;
 
-function transform(messages: typeof bulkImportTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof bulkImportTranslationDe.messages,
+) {
+  const messages = {} as Record<string, any>;
+  for (const key of Object.keys(flatMessages)) {
     const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
-
-  return result as BulkImportMessages;
+    let current = messages;
+    for (let i = 0; i < path.length - 1; i++) {
+      current[path[i]] = current[path[i]] || {};
+      current = current[path[i]] as Record<string, any>;
+    }
+    current[path[path.length - 1]] =
+      flatMessages[key as keyof typeof flatMessages];
+  }
+  return messages as BulkImportMessages;
 }
 
 export function getTranslations(locale: string): BulkImportMessages {
@@ -46,15 +48,15 @@ export function getTranslations(locale: string): BulkImportMessages {
     case 'en':
       return bulkImportMessages;
     case 'de':
-      return transform(bulkImportTranslationDe.messages);
+      return transformFlatMessagesIntoTree(bulkImportTranslationDe.messages);
     case 'es':
-      return transform(bulkImportTranslationEs.messages);
+      return transformFlatMessagesIntoTree(bulkImportTranslationEs.messages);
     case 'fr':
-      return transform(bulkImportTranslationFr.messages);
+      return transformFlatMessagesIntoTree(bulkImportTranslationFr.messages);
     case 'it':
-      return transform(bulkImportTranslationIt.messages);
+      return transformFlatMessagesIntoTree(bulkImportTranslationIt.messages);
     case 'ja':
-      return transform(bulkImportTranslationJa.messages);
+      return transformFlatMessagesIntoTree(bulkImportTranslationJa.messages);
     default:
       return bulkImportMessages;
   }

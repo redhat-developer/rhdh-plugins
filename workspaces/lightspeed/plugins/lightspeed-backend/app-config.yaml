@@ -1,18 +1,23 @@
 # OPTIONAL: Backend-only configurations
-#intelligent-assistant:
+# intelligent-assistant:
 #  servicePort: 8080 # OPTIONAL: Port for lightspeed-core service (default: 8080)
 #  systemPrompt: <custom_system_prompt> # OPTIONAL: Override default RHDH system prompt
-#
+#  # Optional: Per-user request rate limits (defaults apply if omitted)
+#  rateLimit:
+#   expensive:
+#     max: 10
+#   general:
+#     max: 100
 #  # AI Notebooks (Developer Preview) - Disabled by default
 #  notebooks:
 #    enabled: false # Set to true to enable AI Notebooks feature
-#
+
 #    # REQUIRED when enabled: Query defaults for RAG queries
 #    # Both model and provider_id must be configured together
 #    queryDefaults:
 #      provider_id: ollama # AI provider for query model (e.g., ollama, vllm)
 #      model: llama3.1-8b-instruct # Model to use for answering queries
-#
+
 #    # OPTIONAL: Chunking strategy for document processing
 #    chunkingStrategy:
 #      type: auto # 'auto' (default) or 'static'

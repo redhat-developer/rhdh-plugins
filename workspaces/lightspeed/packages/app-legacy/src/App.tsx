@@ -57,7 +57,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import {
   LightspeedPage,
   LightspeedDrawerProvider,
-} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed/legacy';
 import { RbacPage } from '@backstage-community/plugin-rbac';
 
 const LightspeedRedirect = () => {

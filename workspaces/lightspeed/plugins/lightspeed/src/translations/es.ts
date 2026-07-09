@@ -134,6 +134,8 @@ const lightspeedTranslationEs = createTranslationMessages({
     'mcp.settings.loading': 'Cargando servidores MCP...',
     'mcp.settings.modalDescription':
       'Las credenciales se almacenan cifradas y se limitan a tu perfil. El asistente inteligente funcionará con exactamente tus permisos.',
+    'mcp.settings.modalDescriptionDcr':
+      'Este servidor utiliza Dynamic Client Registration (DCR). Los tokens se generan automáticamente usando tu identidad de Backstage — no se necesita un token manual.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
@@ -312,6 +314,12 @@ const lightspeedTranslationEs = createTranslationMessages({
     'sort.label': 'Ordenar conversaciones',
     'sort.newest': 'Fecha (la más reciente primero)',
     'sort.oldest': 'Fecha (la más antigua primero)',
+    'sources.chip.label_one': '{{count}} Fuente',
+    'sources.chip.label_other': '{{count}} Fuentes',
+    'sources.modal.description':
+      'Las siguientes fuentes se utilizaron para generar esta respuesta de IA y proporcionar información complementaria:',
+    'sources.modal.title': 'Fuentes',
+    'sources.popover.closeAriaLabel': 'Cerrar fuentes',
     'tabs.ariaLabel': 'Vistas del asistente inteligente',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Cuadernos',

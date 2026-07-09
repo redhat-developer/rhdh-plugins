@@ -16,7 +16,6 @@
 import { useEffect, useState } from 'react';
 import { parseStringPromise, processors } from 'xml2js';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
@@ -146,31 +145,27 @@ export const NewsGrid: React.FC = () => {
   return (
     <Box
       sx={{
-        alignItems: 'center',
-        justifyContent: 'space-between',
         padding: `${theme.spacing(4.5)} ${theme.spacing(30)} ${theme.spacing(
           6,
         )} ${theme.spacing(5)}`,
       }}
     >
-      <Grid container direction="row" spacing={4}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr',
+            md: '1fr 1fr',
+            lg: 'repeat(3, 1fr)',
+          },
+          gap: theme.spacing(4),
+        }}
+      >
         {articleData?.map(article => (
-          <Grid
-            item
-            lg={4}
-            md={6}
-            sm={12}
-            xs={12}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'stretch',
-            }}
-          >
-            <NewsCard key={article.title} article={article} />
-          </Grid>
+          <NewsCard key={article.title} article={article} />
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 };

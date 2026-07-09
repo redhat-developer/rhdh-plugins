@@ -187,12 +187,9 @@ const orchestratorTranslationIt = createTranslationMessages({
       'utente non autorizzato a interrompere il flusso di lavoro',
     'tooltips.userNotAuthorizedExecute':
       'utente non autorizzato a eseguire il flusso di lavoro',
-    'tooltips.retriggerNotSupportedForAborted':
-      'Il riavvio dal punto di interruzione non è supportato. Usa Intero flusso di lavoro per avviare una nuova esecuzione con gli stessi input.',
     'tooltips.workflowDown':
       'Il flusso di lavoro è attualmente inattivo o in stato di errore',
     'workflow.buttons.entireWorkflow': 'Intero flusso di lavoro',
-    'workflow.buttons.fromAbortedPoint': 'Dal punto di interruzione',
     'workflow.buttons.fromFailurePoint': 'Dal punto di fallimento',
     'workflow.buttons.run': 'Esegui',
     'workflow.buttons.runAgain': 'Esegui di nuovo',
@@ -240,6 +237,12 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.progress': 'Avanzamento del flusso di lavoro',
     'workflow.status.available': 'Disponibile',
     'workflow.status.unavailable': 'Non disponibile',
+    'workflow.unavailable.title': 'Flusso di lavoro non disponibile',
+    'workflow.unavailable.runTooltip': 'Flusso di lavoro non disponibile',
+    'workflow.unavailable.requestFailed':
+      'Richiesta HTTP GET a {{url}} non riuscita.',
+    'workflow.unavailable.statusCodeLine': 'Codice di stato: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Testo di stato: {{reason}}',
     'samlSso.title': 'Sessione GitHub SAML SSO scaduta',
     'samlSso.reauthorizeButton': 'Riautorizza SSO',
     'samlSso.body':

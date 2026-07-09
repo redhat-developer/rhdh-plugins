@@ -188,12 +188,9 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Usuario no autorizado para cancelar el flujo de trabajo',
     'tooltips.userNotAuthorizedExecute':
       'Usuario no autorizado para ejecutar el flujo de trabajo',
-    'tooltips.retriggerNotSupportedForAborted':
-      'No se admite la reactivación desde el punto de cancelación. Use Flujo de trabajo completo para iniciar una nueva ejecución con las mismas entradas.',
     'tooltips.workflowDown':
       'El flujo de trabajo está actualmente inactivo o en estado de error',
     'workflow.buttons.entireWorkflow': 'Flujo de trabajo completo',
-    'workflow.buttons.fromAbortedPoint': 'Desde el punto de cancelación',
     'workflow.buttons.fromFailurePoint': 'Desde el punto de fallo',
     'workflow.buttons.run': 'Ejecutar',
     'workflow.buttons.runAgain': 'Ejecutar nuevamente',
@@ -241,6 +238,12 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
+    'workflow.unavailable.title': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.runTooltip': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.requestFailed':
+      'La solicitud HTTP GET a {{url}} falló.',
+    'workflow.unavailable.statusCodeLine': 'Código de estado: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texto de estado: {{reason}}',
     'samlSso.title': 'Sesión de GitHub SAML SSO expirada',
     'samlSso.reauthorizeButton': 'Reautorizar SSO',
     'samlSso.body':
