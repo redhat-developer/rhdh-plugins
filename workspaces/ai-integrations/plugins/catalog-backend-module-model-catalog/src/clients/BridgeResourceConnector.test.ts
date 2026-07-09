@@ -38,7 +38,10 @@ const fakeCatalog: ModelCatalog = {
 
 // Mock different fetch results based on the url passed in, to trigger success vs. error scenarios
 global.fetch = jest.fn(url => {
-  if (url === 'errorTest/list') {
+  if (
+    url === 'errorTest/list' ||
+    (typeof url === 'string' && url.startsWith('errorTest/models/'))
+  ) {
     return Promise.resolve({
       ok: false,
       status: 401,
@@ -115,7 +118,9 @@ describe('fetchModelCatalogFromKey', () => {
     });
     await expect(
       async () =>
-        await fetchModelCatalogKeys('errorTest', { token: 'fake-token' }),
+        await fetchModelCatalogFromKey('errorTest', 'some-key', {
+          token: 'fake-token',
+        }),
     ).rejects.toThrow();
   });
 });
