@@ -106,6 +106,7 @@ yarn backstage-cli package test --filter <package-name>
 `yarn backstage-cli package test` without a filter, or `yarn test` from the
 workspace root, execute tests for every package in the workspace. This exceeds
 the sandbox timeout and will kill your run — losing all uncommitted work.
+
 ## Rules
 
 - ALL build, test, lint, and validation commands must run from the workspace root

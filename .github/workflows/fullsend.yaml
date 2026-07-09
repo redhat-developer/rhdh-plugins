@@ -50,7 +50,7 @@ jobs:
           || github.event.comment.author_association == 'COLLABORATOR'
         )
       )
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@e22a1eff69ae1e1a4ac1b19927b5c8d4660b0ae7 # v0.29.0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@v0
     with:
       event_action: ${{ github.event.action }}
       install_mode: per-repo
