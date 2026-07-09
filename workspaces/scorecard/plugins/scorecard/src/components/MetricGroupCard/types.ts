@@ -25,7 +25,6 @@ export interface MetricGroupCardProps {
 export type ThresholdBucket = {
   key: string;
   label: string;
-  expression: string;
   count: number;
   color: string;
 };

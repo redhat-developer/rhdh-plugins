@@ -25,21 +25,18 @@ const mockBuckets: ThresholdBucket[] = [
   {
     key: 'success',
     label: 'Passing',
-    expression: '<1',
     count: 3,
     color: 'success.main',
   },
   {
     key: 'warning',
     label: 'Warning',
-    expression: '1-5',
     count: 2,
     color: 'warning.main',
   },
   {
     key: 'error',
     label: 'Failing',
-    expression: '>5',
     count: 1,
     color: 'error.main',
   },

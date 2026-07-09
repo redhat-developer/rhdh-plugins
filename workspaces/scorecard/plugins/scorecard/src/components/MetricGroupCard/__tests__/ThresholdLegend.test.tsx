@@ -37,15 +37,9 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 const mockBuckets: ThresholdBucket[] = [
-  { key: 'pass', label: 'Pass', expression: '>= 80', count: 5, color: 'green' },
-  {
-    key: 'warn',
-    label: 'Warning',
-    expression: '>= 50',
-    count: 3,
-    color: 'orange',
-  },
-  { key: 'fail', label: 'Fail', expression: '< 50', count: 2, color: 'red' },
+  { key: 'pass', label: 'Pass', count: 5, color: 'green' },
+  { key: 'warn', label: 'Warning', count: 3, color: 'orange' },
+  { key: 'fail', label: 'Fail', count: 2, color: 'red' },
 ];
 
 describe('ThresholdLegend', () => {
@@ -60,7 +54,7 @@ describe('ThresholdLegend', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('should render all bucket pills with label and expression', () => {
+  it('should render all bucket pills with label and count', () => {
     renderWithTheme(
       <ThresholdLegend
         buckets={mockBuckets}
@@ -69,9 +63,9 @@ describe('ThresholdLegend', () => {
       />,
     );
 
-    expect(screen.getByText('Pass >= 80')).toBeInTheDocument();
-    expect(screen.getByText('Warning >= 50')).toBeInTheDocument();
-    expect(screen.getByText('Fail < 50')).toBeInTheDocument();
+    expect(screen.getByText('Pass (5)')).toBeInTheDocument();
+    expect(screen.getByText('Warning (3)')).toBeInTheDocument();
+    expect(screen.getByText('Fail (2)')).toBeInTheDocument();
   });
 
   it('should have role="button" and tabIndex=0 on each pill', () => {

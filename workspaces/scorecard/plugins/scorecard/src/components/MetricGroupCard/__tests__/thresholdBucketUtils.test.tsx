@@ -85,7 +85,7 @@ describe('buildThresholdBuckets', () => {
     expect(result).toEqual([]);
   });
 
-  it('should collect unique threshold rules from multiple metrics', () => {
+  it('should return buckets only for evaluations that exist', () => {
     const metrics = [
       createMetric('m1', 'success'),
       createMetric('m2', 'warning'),
@@ -94,8 +94,8 @@ describe('buildThresholdBuckets', () => {
 
     const result = buildThresholdBuckets(metrics, mockT as any);
 
-    expect(result).toHaveLength(3);
-    expect(result.map(b => b.key)).toEqual(['success', 'warning', 'error']);
+    expect(result).toHaveLength(2);
+    expect(result.map(b => b.key)).toEqual(['success', 'warning']);
   });
 
   it('should count metrics per evaluation key correctly', () => {
@@ -140,8 +140,9 @@ describe('buildThresholdBuckets', () => {
       mockT as any,
     );
 
-    expect(result).toHaveLength(3);
-    expect(result.find(b => b.key === 'success')?.count).toBe(1);
+    expect(result).toHaveLength(1);
+    expect(result[0].key).toBe('success');
+    expect(result[0].count).toBe(1);
   });
 
   it('should use correct label from getTranslatedStatus', () => {
@@ -154,7 +155,11 @@ describe('buildThresholdBuckets', () => {
       return labels[key ?? ''] ?? key ?? '';
     });
 
-    const metrics = [createMetric('m1', 'success')];
+    const metrics = [
+      createMetric('m1', 'success'),
+      createMetric('m2', 'warning'),
+      createMetric('m3', 'error'),
+    ];
     const result = buildThresholdBuckets(metrics, mockT as any);
 
     expect(result[0].label).toBe('Translated Success');
@@ -173,7 +178,11 @@ describe('buildThresholdBuckets', () => {
       return colors[key];
     });
 
-    const metrics = [createMetric('m1', 'success')];
+    const metrics = [
+      createMetric('m1', 'success'),
+      createMetric('m2', 'warning'),
+      createMetric('m3', 'error'),
+    ];
     const result = buildThresholdBuckets(metrics, mockT as any);
 
     expect(result[0].color).toBe('#00ff00');
@@ -193,12 +202,10 @@ describe('buildThresholdBuckets', () => {
     });
   });
 
-  it("should fall back to '' when rule.expression is undefined", () => {
-    const rulesWithoutExpression = [{ key: 'custom' }];
-    const metric = createMetric('m1', 'custom', rulesWithoutExpression as any);
+  it('should not include expression in bucket', () => {
+    const metrics = [createMetric('m1', 'success')];
+    const result = buildThresholdBuckets(metrics, mockT as any);
 
-    const result = buildThresholdBuckets([metric], mockT as any);
-
-    expect(result[0].expression).toBe('');
+    expect(result[0]).not.toHaveProperty('expression');
   });
 });

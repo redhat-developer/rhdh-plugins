@@ -30,7 +30,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 const baseBucket = {
   key: 'passing',
   label: 'Passing',
-  expression: '>= 80',
   count: 42,
   color: 'success',
 };
