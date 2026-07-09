@@ -13,22 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
-
-export interface Config {
-  catalog?: {
-    providers?: {
-      modelCatalog?: {
-        [key: string]: {
-          /**
-           * ModelCatalogConfig
-           */
-          baseUrl?: string;
-          system?: string;
-          owner?: string;
-          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-        };
-      };
-    };
-  };
-}
+module.exports = require('@backstage/cli/config/eslint-factory')(__dirname);

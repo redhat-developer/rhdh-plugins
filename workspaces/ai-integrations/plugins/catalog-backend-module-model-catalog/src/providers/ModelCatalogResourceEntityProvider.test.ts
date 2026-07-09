@@ -96,6 +96,8 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock(),
+        auth: mockServices.auth.mock(),
       },
       {
         schedule,
@@ -125,6 +127,15 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock({
+          getBaseUrl: jest.fn().mockResolvedValue('http://localhost:9090'),
+        }),
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+          getPluginRequestToken: jest
+            .fn()
+            .mockResolvedValue({ token: 'mock-token' }),
+        }),
       },
       {
         schedule,
@@ -149,6 +160,15 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock({
+          getBaseUrl: jest.fn().mockResolvedValue('http://localhost:9090'),
+        }),
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+          getPluginRequestToken: jest
+            .fn()
+            .mockResolvedValue({ token: 'mock-token' }),
+        }),
       },
       {
         schedule,

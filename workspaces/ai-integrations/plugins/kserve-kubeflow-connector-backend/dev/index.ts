@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+import { createBackend } from '@backstage/backend-defaults';
+import { mockServices } from '@backstage/backend-test-utils';
 
-export interface Config {
-  catalog?: {
-    providers?: {
-      modelCatalog?: {
-        [key: string]: {
-          /**
-           * ModelCatalogConfig
-           */
-          baseUrl?: string;
-          system?: string;
-          owner?: string;
-          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-        };
-      };
-    };
-  };
-}
+const backend = createBackend();
+
+backend.add(mockServices.auth.factory());
+backend.add(mockServices.httpAuth.factory());
+
+backend.add(import('../src'));
+
+backend.start();
