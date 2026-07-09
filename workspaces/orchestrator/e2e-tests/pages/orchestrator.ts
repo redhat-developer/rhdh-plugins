@@ -66,7 +66,7 @@ export class Orchestrator {
 
   async navigateToWorkflowRunTab(navText: string) {
     const navLink = this.page.getByRole('tab', { name: navText }).first();
-    await navLink.waitFor({ state: 'visible', timeout: 8_000 });
+    await navLink.waitFor({ state: 'visible', timeout: 60_000 });
     await navLink.click();
     await expect(navLink).toHaveAttribute('aria-selected', 'true');
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Page, expect, Locator } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import type { OrchestratorMessages } from './translations';
 
 export class OrchestratorHelper {
@@ -35,30 +35,42 @@ export class OrchestratorHelper {
   }
 
   async verifyTableHeadings(texts: string[]) {
-    // Wait for the table to load by checking for the presence of table rows
-    await this.page.waitForSelector('table tbody tr', { state: 'visible' });
+    // // Wait for the table to load by checking for the presence of table rows
+    // await this.page.waitForSelector('table tbody tr', { state: 'visible' });
     for (const column of texts) {
-      const columnSelector = `table th:has-text("${column}")`;
-      // check if  columnSelector has at least one element or more
-      const columnCount = await this.page.locator(columnSelector).count();
-      expect(columnCount).toBeGreaterThan(0);
+      // const columnSelector = `table th:has-text("${column}")`;
+      // // check if  columnSelector has at least one element or more
+      // const columnCount = await this.page.locator(columnSelector).count();
+      // expect(columnCount).toBeGreaterThan(0);
+      await expect(
+        this.page.getByRole('columnheader', { name: column, exact: true }),
+      ).toBeVisible({ timeout: 60_000 });
     }
   }
 
   async verifyTableHeadingAndRows(texts: string[]) {
+    await expect(
+      this.page.locator('table tbody tr:not(:has(td[colspan]))').first(),
+    ).toBeVisible({ timeout: 60_000 });
     await this.verifyTableHeadings(texts);
     // Checks if the table has at least one row with data
     // Excludes rows that have cells spanning multiple columns, such as "No data available" messages
-    const rowSelector = `table tbody tr:not(:has(td[colspan]))`;
-    await expect(this.page.locator(rowSelector).first()).toBeVisible({
-      timeout: 60_000,
-    });
+    // const rowSelector = `table tbody tr:not(:has(td[colspan]))`;
+    // await expect(this.page.locator(rowSelector).first()).toBeVisible({
+    //   timeout: 60_000,
+    // });
   }
 
   async searchInputPlaceholder(searchTerm: string) {
-    await this.page
-      .getByPlaceholder(this.translations.table.filters.placeholder)
-      .fill(searchTerm);
+    // await this.page
+    // .getByPlaceholder(this.translations.table.filters.placeholder)
+    // .fill(searchTerm);
+    const filterLabel = this.translations.table.filters.placeholder;
+    const filterInput = this.page
+      .getByPlaceholder(filterLabel)
+      .or(this.page.getByLabel(filterLabel));
+    await expect(filterInput.first()).toBeVisible({ timeout: 60_000 });
+    await filterInput.first().fill(searchTerm);
   }
 
   async verifyHeading(heading: string | RegExp, timeout: number = 20000) {

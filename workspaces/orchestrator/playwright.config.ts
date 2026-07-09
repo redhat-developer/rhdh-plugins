@@ -31,6 +31,8 @@ export default defineConfig({
     timeout: 10 * 1000, // Global expect timeout
   },
 
+  globalSetup: './e2e-tests/global-setup.ts',
+
   // Run your local dev server before starting the tests
   webServer: process.env.PLAYWRIGHT_URL
     ? []
