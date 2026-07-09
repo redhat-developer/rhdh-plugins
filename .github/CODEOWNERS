@@ -39,5 +39,5 @@
 
 # Fullsend AI agent configuration — requires maintainer approval to prevent
 # agents from modifying their own guardrails.
-/.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero
-/.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero
+/.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero @johnmcollier
+/.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero @johnmcollier
