@@ -101,13 +101,13 @@ export function ThresholdLegend({
               sx={{
                 width: 10,
                 height: 10,
-                borderRadius: '50%',
+                borderRadius: '10%',
                 backgroundColor: resolvedColor,
                 flexShrink: 0,
               }}
             />
             <Text variant="body-small">
-              {bucket.label} {bucket.expression}
+              {bucket.label} ({bucket.count})
             </Text>
           </Box>
         );

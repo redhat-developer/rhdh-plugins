@@ -46,39 +46,41 @@ function collectThresholdRules(metrics: MetricResult[]): ThresholdRule[] {
 }
 
 /**
- * Counts metrics per threshold evaluation key.
- */
-function countByEvaluation(metrics: MetricResult[]): Map<string, number> {
-  const counts = new Map<string, number>();
-
-  for (const metric of metrics) {
-    const evaluation = metric.result?.thresholdResult?.evaluation;
-    if (evaluation) {
-      counts.set(evaluation, (counts.get(evaluation) ?? 0) + 1);
-    }
-  }
-
-  return counts;
-}
-
-/**
  * Aggregates a set of metrics into threshold buckets.
  *
- * Each bucket represents a threshold rule (e.g. "success", "warning", "error")
- * and contains the count of metrics whose evaluation matched that rule.
+ * Only buckets where at least one metric evaluated into that threshold are
+ * returned. Expressions are omitted because metrics in a group may define
+ * different expressions for the same key (e.g. success: <1 vs success: <10).
+ * Per-metric expressions are shown in the data sources dialog tooltip instead.
  */
 export function buildThresholdBuckets(
   metrics: MetricResult[],
   t: TranslationFunction<typeof scorecardTranslationRef.T>,
 ): ThresholdBucket[] {
   const rules = collectThresholdRules(metrics);
-  const counts = countByEvaluation(metrics);
+  const buckets: ThresholdBucket[] = [];
+  const seen = new Set<string>();
 
-  return rules.map(rule => ({
-    key: rule.key,
-    label: getTranslatedStatus(rule.key, t),
-    expression: rule.expression ?? '',
-    count: counts.get(rule.key) ?? 0,
-    color: getThresholdRuleColor(rules, rule.key) ?? 'error.main',
-  }));
+  for (const metric of metrics) {
+    const evaluation = metric.result?.thresholdResult?.evaluation;
+    if (evaluation && !seen.has(evaluation)) {
+      seen.add(evaluation);
+      buckets.push({
+        key: evaluation,
+        label: getTranslatedStatus(evaluation, t),
+        count: 0,
+        color: getThresholdRuleColor(rules, evaluation) ?? 'error.main',
+      });
+    }
+  }
+
+  for (const metric of metrics) {
+    const evaluation = metric.result?.thresholdResult?.evaluation;
+    if (evaluation) {
+      const bucket = buckets.find(b => b.key === evaluation);
+      if (bucket) bucket.count += 1;
+    }
+  }
+
+  return buckets;
 }
