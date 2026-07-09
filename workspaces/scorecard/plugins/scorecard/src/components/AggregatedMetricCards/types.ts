@@ -22,3 +22,5 @@ export type AggregatedMetricCardBaseProps = {
   showInfo?: boolean;
   dataTestId?: string;
 };
+
+export type TooltipPosition = { left: number; top: number };

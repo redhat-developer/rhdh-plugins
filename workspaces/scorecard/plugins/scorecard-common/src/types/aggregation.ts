@@ -65,11 +65,17 @@ export type AggregationMetadata = {
   aggregationType: AggregationType;
 };
 
+/**
+ * @public
+ */
 export type StatusGroupedAggregationResult = Omit<
   AggregatedMetric,
   'values'
 > & { values: AggregatedMetricValue[]; thresholds: ThresholdConfig };
 
+/**
+ * @public
+ */
 export type WeightedStatusScoreAggregationResult =
   StatusGroupedAggregationResult & {
     weightedStatusScore: number;

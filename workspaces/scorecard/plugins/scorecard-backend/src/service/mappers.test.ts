@@ -184,7 +184,7 @@ describe('AggregatedMetricMapper', () => {
 
     it('should wrap a weightedStatusScore-shaped result and aggregationType from config', () => {
       const aggregationConfig: AggregationConfig = {
-        id: 'avg.kpi',
+        id: 'weightedKpi',
         type: aggregationTypes.weightedStatusScore,
         title: 'Weighted Status Score KPI',
         description: 'Weighted status score KPI',

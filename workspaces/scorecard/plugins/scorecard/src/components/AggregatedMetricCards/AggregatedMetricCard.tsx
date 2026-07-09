@@ -16,15 +16,15 @@
 
 import {
   aggregationTypes,
-  AggregatedMetricResult,
+  type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { StatusGroupedCardComponent } from './StatusGroupedCard/StatusGroupedCardComponent';
 import { WeightedStatusScoreCardComponent } from './WeightedStatusScoreCard/WeightedStatusScoreCardComponent';
 import { UnsupportedAggregationType } from './UnsupportedAggregationType';
 
-import { WeightedStatusScoreCardComponentProps } from './WeightedStatusScoreCard/types';
-import { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
-import { AggregatedMetricCardBaseProps } from './types';
+import type { WeightedStatusScoreCardComponentProps } from './WeightedStatusScoreCard/types';
+import type { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
+import type { AggregatedMetricCardBaseProps } from './types';
 
 type AggregatedMetricCardProps = AggregatedMetricCardBaseProps & {
   scorecard: AggregatedMetricResult;

@@ -16,7 +16,7 @@
 
 import { PieLabelRenderProps } from 'recharts';
 
-import { TooltipPosition } from './types';
+import type { TooltipPosition } from '../types';
 
 type WeightedStatusScoreCardPieCenterLabelProps = PieLabelRenderProps & {
   centerPercentLabel: string;

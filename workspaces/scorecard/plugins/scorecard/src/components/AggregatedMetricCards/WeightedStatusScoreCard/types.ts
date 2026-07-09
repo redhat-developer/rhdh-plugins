@@ -31,5 +31,3 @@ export type WeightedStatusScoreCardComponentProps =
       result: WeightedStatusScoreAggregationResult;
     };
   };
-
-export type TooltipPosition = { left: number; top: number };

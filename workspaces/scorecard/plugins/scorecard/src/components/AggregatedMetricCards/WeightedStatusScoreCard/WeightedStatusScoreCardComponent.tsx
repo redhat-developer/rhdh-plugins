@@ -28,10 +28,8 @@ import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
 import { DonutChartTooltipContent } from './DonutChartTooltipContent';
-import type {
-  WeightedStatusScoreCardComponentProps,
-  TooltipPosition,
-} from './types';
+import type { TooltipPosition } from '../types';
+import type { WeightedStatusScoreCardComponentProps } from './types';
 import { WeightedStatusScoreCardPieCenterLabel } from './WeightedStatusScoreCardPieCenterLabel';
 import { formatPercentage } from '../../../utils/formatPercentage';
 

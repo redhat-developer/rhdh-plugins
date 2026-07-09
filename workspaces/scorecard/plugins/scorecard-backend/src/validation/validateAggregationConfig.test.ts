@@ -159,7 +159,7 @@ describe('validateAggregationConfig', () => {
       scorecard: {
         aggregationKPIs: {
           weightedKpi: {
-            title: 'Avg KPI',
+            title: 'Weighted status score KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
             metricId: 'github.open_prs',
@@ -181,7 +181,7 @@ describe('validateAggregationConfig', () => {
       scorecard: {
         aggregationKPIs: {
           weightedKpi: {
-            title: 'Avg KPI',
+            title: 'Weighted status score KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
             metricId: 'github.open_prs',
@@ -204,7 +204,7 @@ describe('validateAggregationConfig', () => {
       scorecard: {
         aggregationKPIs: {
           weightedKpi: {
-            title: 'Avg KPI',
+            title: 'Weighted status score KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
             metricId: 'github.open_prs',
@@ -244,7 +244,7 @@ describe('validateAggregationConfig', () => {
       scorecard: {
         aggregationKPIs: {
           weightedKpi: {
-            title: 'Avg KPI',
+            title: 'Weighted status score KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
             metricId: 'github.open_prs',
@@ -278,7 +278,7 @@ describe('validateAggregationConfig', () => {
       scorecard: {
         aggregationKPIs: {
           weightedKpi: {
-            title: 'Avg KPI',
+            title: 'Weighted status score KPI',
             type: aggregationTypes.weightedStatusScore,
             description: 'Weighted health score',
             metricId: 'github.open_prs',

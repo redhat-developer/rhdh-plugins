@@ -17,7 +17,7 @@
 import CustomLegend from '../../ScorecardHomepageSection/CustomLegend';
 import type { PieData } from '../../types';
 import type { PieLegendContentProps } from '../../ScorecardHomepageSection/ResponsivePieChart';
-import type { TooltipPosition } from '../WeightedStatusScoreCard/types';
+import type { TooltipPosition } from '../types';
 
 export type CardLegendContentProps = PieLegendContentProps & {
   activeIndex: number | null;

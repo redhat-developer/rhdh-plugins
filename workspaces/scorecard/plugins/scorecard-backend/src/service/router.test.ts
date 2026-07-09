@@ -1224,7 +1224,7 @@ describe('createRouter', () => {
         .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
         .mockResolvedValue(mockDbAggregatedMetricForAgId);
 
-      const aggregationsServiceAvg = createTestAggregationsService(
+      const aggregationsServiceWeightedKpi = createTestAggregationsService(
         mockDatabaseMetricValues as unknown as DatabaseMetricValues,
         kpiConfig,
       );
@@ -1232,7 +1232,7 @@ describe('createRouter', () => {
       const router = await createRouter({
         metricProvidersRegistry: metricRegistry,
         service: {
-          aggregationsService: aggregationsServiceAvg,
+          aggregationsService: aggregationsServiceWeightedKpi,
           catalogMetricService: kpiService,
         },
         catalog: mockCatalog,
