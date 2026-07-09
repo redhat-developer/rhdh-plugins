@@ -23,6 +23,7 @@ import {
   List,
   ListItem,
   Popover,
+  Tooltip,
 } from '@patternfly/react-core';
 import { InfoCircleIcon, LinkIcon } from '@patternfly/react-icons';
 
@@ -71,6 +72,9 @@ const useStyles = makeStyles(theme => ({
   },
   sourceItem: {
     alignItems: 'center',
+    '& .pf-v6-c-list__item-text': {
+      minWidth: 0,
+    },
   },
   sourceContent: {
     flex: 1,
@@ -79,6 +83,9 @@ const useStyles = makeStyles(theme => ({
   sourceTitle: {
     fontSize: '0.875rem',
     fontWeight: 500,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   sourceBody: {
     fontSize: '0.8125rem',
@@ -136,7 +143,9 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
                   icon={<FileTypeIcon fileName={title} />}
                 >
                   <div className={classes.sourceContent}>
-                    <div className={classes.sourceTitle}>{title}</div>
+                    <Tooltip content={title}>
+                      <div className={classes.sourceTitle}>{title}</div>
+                    </Tooltip>
                     {source.body && (
                       <div className={classes.sourceBody}>{source.body}</div>
                     )}
