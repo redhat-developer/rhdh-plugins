@@ -68,7 +68,12 @@ const LightspeedChatContainerInner = () => {
     refetch: refetchModels,
   } = useAllModels();
 
-  const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
+  const {
+    allowed: hasViewAccess,
+    loading,
+    lightspeedConversationsAccessPermissionName,
+    lightspeedChatUsePermissionName,
+  } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
     async () => await identityApi.getProfileInfo(),
@@ -166,8 +171,8 @@ const LightspeedChatContainerInner = () => {
       <PermissionRequiredState
         subject={t('permission.subject.plugin')}
         permissions={[
-          'intelligent-assistant.chat.read',
-          'intelligent-assistant.chat.create',
+          lightspeedConversationsAccessPermissionName,
+          lightspeedChatUsePermissionName,
         ]}
         action={
           <Button

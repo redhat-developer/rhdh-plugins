@@ -33,5 +33,8 @@ export const useLightspeedViewPermission = () => {
   return {
     loading: canReadChats.loading || canCreateChats.loading,
     allowed: canReadChats.allowed && canCreateChats.allowed,
+    lightspeedConversationsAccessPermissionName:
+      lightspeedConversationsAccessPermission.name,
+    lightspeedChatUsePermissionName: lightspeedChatUsePermission.name,
   };
 };
