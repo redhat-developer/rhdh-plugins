@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.1
+
 ## 2.8.0
 
 ### Minor Changes
