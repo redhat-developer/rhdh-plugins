@@ -17,6 +17,7 @@
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "test": "backstage-cli package test",
+    "test:integration": "backstage-cli package test src/mcp-tools.integration.test.ts --watch=false",
     "clean": "backstage-cli package clean",
     "build-image": "docker build ../.. -f Dockerfile --tag backstage"
   },
@@ -59,7 +60,11 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.2"
+    "@backstage/backend-plugin-api": "1.9.1",
+    "@backstage/backend-test-utils": "^1.11.3",
+    "@backstage/cli": "^0.36.2",
+    "@backstage/plugin-catalog-node": "2.2.1",
+    "@modelcontextprotocol/sdk": "^1.25.2"
   },
   "files": [
     "dist"
