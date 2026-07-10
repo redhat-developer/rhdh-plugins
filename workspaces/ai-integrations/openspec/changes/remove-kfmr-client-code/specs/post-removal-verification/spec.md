@@ -14,11 +14,13 @@ After removal, the connector plugin SHALL contain zero references to KubeFlow Mo
 - **WHEN** all TypeScript files under `kserve-kubeflow-connector-backend/src/` are searched for import statements
 - **THEN** no import references `./Kfmr` or any KFMR-specific symbol (`KFMRClient`, `setupKFMR`, `loopOverKFMR`, `processKFMR`, `getKubeFlowInferenceServicesForModelVersion`)
 
-#### Scenario: No KFMR types remain in types.ts
+#### Scenario: No KFMR-only types remain in types.ts
 
 - **WHEN** `types.ts` is inspected
 - **THEN** the interfaces `KFMRClient`, `KFMRInferenceService`, `InferenceServiceList`, and `LoopOverKFMRResult` do not exist
-- **AND** `ReconcilerConfig` does not contain fields `kfmrClients`, `kfmrRoutes`, or `kfmrCatalogRoute`
+- **AND** `ReconcilerConfig` does not contain fields `kfmrClients` or `kfmrRoutes`
+- **AND** `ReconcilerConfig` contains `catalogRoute` (renamed from `kfmrCatalogRoute`) for Model Catalog route storage
+- **AND** `CatalogModel` interface is preserved (it is a Model Catalog type, not a registry type)
 
 #### Scenario: No KFMR label constants remain
 
@@ -43,6 +45,35 @@ Shared utilities previously exported from `Kfmr.ts` SHALL be available from `typ
 
 - **WHEN** any module imports `ModelCatalog`, `Model`, `ModelServer`, `API`, or `APIType`
 - **THEN** the import resolves from `./types` and the types match their original definitions
+
+---
+
+### Requirement: Model Catalog integration preserved
+
+The KubeFlow Model Catalog API support SHALL remain functional after KFMR removal. Catalog route discovery, model card fetching, and catalog types are relocated, not deleted.
+
+#### Scenario: Catalog route discovery is functional
+
+- **WHEN** the connector starts and discovers OpenShift routes managed by `model-registry-operator`
+- **THEN** routes with `catalog` in the name are stored on `ReconcilerConfig.catalogRoute`
+- **AND** the catalog route's ingress host is used to construct the catalog base URL
+
+#### Scenario: getModelCard is callable
+
+- **WHEN** a `sourceId` and `modelName` are provided to the relocated `getModelCard()` function
+- **AND** the catalog route has been discovered
+- **THEN** a GET request is made to the Model Catalog API at `/api/model_catalog/v1alpha1/sources/{sourceId}/models/{modelName}`
+- **AND** the `readme` field of the returned `CatalogModel` is returned
+
+#### Scenario: CatalogModel type is available
+
+- **WHEN** code imports `CatalogModel` from `types.ts`
+- **THEN** the import resolves and the type includes `id`, `name`, `description`, `readme`, `sourceId`, and `repositoryName` fields
+
+#### Scenario: Catalog PropertyKeys are preserved
+
+- **WHEN** `PropertyKeys` is inspected
+- **THEN** catalog-related keys (`RHOAIModelCatalogSourceModelVersion`, `RHOAIModelCatalogSourceModelKey`, `RHOAIModelCatalogRegisteredFromKey`, `RHOAIModelCatalogProviderKey`) are present
 
 ---
 
