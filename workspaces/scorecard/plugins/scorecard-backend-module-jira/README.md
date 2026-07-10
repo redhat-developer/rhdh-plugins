@@ -77,10 +77,6 @@ proxy:
         Authorization: Basic SomeTokenHere
 ```
 
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the Jira metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
 ### Options Configuration
 
 Options define configuration that affect fetch jira issues global configuration, but all options are optional. This settings are closely related with annotation settings and whole jira issues loading process.

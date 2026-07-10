@@ -42,28 +42,6 @@ metadata:
     openssf/scorecard-location: https://api.securityscorecards.dev/projects/github.com/owner/repo
 ```
 
-### Default thresholds
-
-All OpenSSF metrics share the same default thresholds. Default thresholds for `openssf.maintained`:
-
-```yaml
-# app-config.yaml
-scorecard:
-  plugins:
-    openssf:
-      maintained:
-        thresholds:
-          rules:
-            - key: success
-              expression: '>7'
-            - key: warning
-              expression: '2-7'
-            - key: error
-              expression: '<2'
-```
-
-Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branch_protection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
-
 ## Metrics
 
 18 metrics from [OpenSSF checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md):
@@ -88,6 +66,28 @@ Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained`
 | `openssf.signed_releases`        | Releases are cryptographically signed.                                                      |
 | `openssf.token_permissions`      | GitHub Actions use minimal token permissions.                                               |
 | `openssf.vulnerabilities`        | Known vulnerabilities in dependencies (lower score = more issues).                          |
+
+## Default thresholds
+
+All OpenSSF metrics share the same default thresholds. Default thresholds for `openssf.maintained`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    openssf:
+      maintained:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>7'
+            - key: warning
+              expression: '2-7'
+            - key: error
+              expression: '<2'
+```
+
+Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branch_protection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Troubleshooting
 

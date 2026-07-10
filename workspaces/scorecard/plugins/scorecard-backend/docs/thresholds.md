@@ -8,8 +8,8 @@ Thresholds are evaluated in order and the **first matching** threshold rule is a
 
 - **`key`**: The threshold category (e.g., `success`, `warning`, `error`, or custom keys)
 - **`expression`**: The condition that determines if a metric value matches this threshold
-- **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
-- **`icon`** (optional): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons))
+- **`color`** (optional for standard keys): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors)). Standard keys (`success`, `warning`, `error`) use default colors when omitted; **custom keys in metric threshold config must specify `color` and `icon`** (see [Threshold Colors](#threshold-colors) and [Threshold Icons](#threshold-icons))
+- **`icon`** (optional for standard keys): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons)). Standard keys use default icons when omitted; **custom keys in metric threshold config must specify both `icon` and `color`**
 
 ## Joint coverage (number metrics)
 
@@ -158,7 +158,7 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 
 **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
 
-**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Expressions are **number**-style and are evaluated against **`averageScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Custom keys in aggregation KPI thresholds **only require `color`** (not `icon`). Expressions are **number**-style and are evaluated against **`averageScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
 
 **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`AverageAggregationStrategy`** applies **`DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
 
@@ -328,7 +328,7 @@ If no color is specified for a threshold rule, frontend will use these default c
 | warning  | `warning.main` (orange/yellow) |
 | error    | `error.main` (red)             |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify a `color` property. The configuration will fail validation if a custom key is used without a color. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** a `color` and an `icon` property. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI. (Aggregation KPI thresholds only require `color` for custom keys — see [§4 Aggregation KPI result thresholds](#4-aggregation-kpi-result-thresholds-average-type).)
 
 ## Threshold Icons
 
@@ -392,7 +392,7 @@ If no icon is specified for a threshold rule, the frontend uses default icons fo
 | warning  | `scorecardWarningStatusIcon` | WarningAmber         |
 | error    | `scorecardErrorStatusIcon`   | DangerousOutlined    |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify an `icon` property. The configuration will fail validation if a custom key is used without an icon. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** an `icon` and a `color` property — see the [Threshold Colors](#threshold-colors) section. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI.
 
 ## ThresholdEvaluator
 

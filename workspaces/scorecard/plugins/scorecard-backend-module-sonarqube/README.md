@@ -101,6 +101,7 @@ scorecard:
 
 | Metric                             | Success | Warning | Error |
 | ---------------------------------- | ------- | ------- | ----- |
+| `sonarqube.open_issues`            | `<1`    | `1-10`  | `>10` |
 | `sonarqube.security_issues`        | `<1`    | `1-5`   | `>5`  |
 | `sonarqube.security_hotspots`      | `<1`    | `1-5`   | `>5`  |
 | `sonarqube.reliability_issues`     | `<1`    | `1-5`   | `>5`  |
