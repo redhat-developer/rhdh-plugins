@@ -136,11 +136,14 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.modalDescriptionDcr':
       'このサーバーは Dynamic Client Registration (DCR) を使用しています。トークンはあなたの Backstage ID を使用して自動的に発行されるため、手動でのトークン入力は不要です。',
     'mcp.settings.authenticationToken': '認証トークン',
+    'mcp.settings.modal.authenticationHeading': '認証',
+    'mcp.settings.modal.credentialMode.organization':
+      '組織のデフォルトトークンを使用',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      '管理者が設定したトークンを使用します。',
+    'mcp.settings.modal.credentialMode.personal': '個人トークンを使用',
     'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
     'mcp.settings.modal.loadingTools': 'ツールを読み込み中...',
-    'mcp.settings.modal.loadingStatus': '切断中...',
-    'mcp.settings.modal.tokenRemovedWarning':
-      'トークンが削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
     'mcp.settings.modal.noToolsAvailable': '利用可能なツールがありません。',
     'mcp.settings.modal.toolsLoadFailed': 'ツールの読み込みに失敗しました。',
     'mcp.settings.modal.enabledDescription':
@@ -154,7 +157,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.personalAccessToken': '個人アクセストークン',
     'mcp.settings.readOnlyAccess':
       'MCP サーバーへのアクセスは読み取り専用です。',
-    'mcp.settings.removePersonalToken': '個人トークンを削除',
     'mcp.settings.savedToken': '保存済みトークン',
     'mcp.settings.selectedCount':
       '{{totalCount}} 件中 {{selectedCount}} 件を選択',
@@ -178,8 +180,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.token.validating': 'トークンを検証中...',
     'mcp.settings.token.validationFailed':
       '検証に失敗しました。サーバー URL とトークンを確認してください。',
-    'mcp.settings.usingAdminCredential':
-      '管理者が提供した認証情報を使用しています。アカウント用に上書きするには個人トークンを入力してください。',
     'menu.newConversation': '新しいチャット',
     'message.options.label': 'オプション',
     'modal.cancel': 'キャンセル',

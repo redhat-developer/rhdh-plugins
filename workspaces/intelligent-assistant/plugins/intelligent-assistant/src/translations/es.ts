@@ -138,11 +138,14 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.modalDescriptionDcr':
       'Este servidor utiliza Dynamic Client Registration (DCR). Los tokens se generan automáticamente usando tu identidad de Backstage — no se necesita un token manual.',
     'mcp.settings.authenticationToken': 'Token de autenticación',
+    'mcp.settings.modal.authenticationHeading': 'Autenticación',
+    'mcp.settings.modal.credentialMode.organization':
+      'Usar token predeterminado de la organización',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Usa el token configurado por su administrador.',
+    'mcp.settings.modal.credentialMode.personal': 'Usar token personal',
     'mcp.settings.modal.toolsHeading': 'Herramientas ({{count}})',
     'mcp.settings.modal.loadingTools': 'Cargando herramientas...',
-    'mcp.settings.modal.loadingStatus': 'Desconectando...',
-    'mcp.settings.modal.tokenRemovedWarning':
-      'Se eliminó el token. Para volver a usar este servidor MCP, proporcione un nuevo token.',
     'mcp.settings.modal.noToolsAvailable': 'No hay herramientas disponibles.',
     'mcp.settings.modal.toolsLoadFailed':
       'No se pudieron cargar las herramientas.',
@@ -157,7 +160,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
     'mcp.settings.readOnlyAccess':
       'Tienes acceso de solo lectura a los servidores MCP.',
-    'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
     'mcp.settings.selectedCount':
       '{{selectedCount}} de {{totalCount}} seleccionados',
@@ -181,8 +183,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.token.validating': 'Validando token...',
     'mcp.settings.token.validationFailed':
       'La validación falló. Revisa la URL del servidor y el token.',
-    'mcp.settings.usingAdminCredential':
-      'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
     'modal.cancel': 'Cancelar',

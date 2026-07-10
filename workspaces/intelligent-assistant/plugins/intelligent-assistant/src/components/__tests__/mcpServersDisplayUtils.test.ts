@@ -18,8 +18,12 @@ import {
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
+  getInitialCredentialMode,
+  getModalDisplayHasToken,
   getModalDisplayStatus,
+  getModalEffectiveHasToken,
   getModalEnabledDescriptionKey,
+  getModalVerifiedHasToken,
   hasModalEnabledStateChange,
   hasModalUnsavedChanges,
   isEnabledToggleUnavailable,
@@ -202,6 +206,115 @@ describe('mcpServersDisplayUtils', () => {
     });
   });
 
+  describe('getInitialCredentialMode', () => {
+    it('returns personal when user token is saved', () => {
+      expect(
+        getInitialCredentialMode({ hasUserToken: true, hasOrgToken: true }),
+      ).toBe('personal');
+    });
+
+    it('returns organization when only org token exists', () => {
+      expect(
+        getInitialCredentialMode({ hasUserToken: false, hasOrgToken: true }),
+      ).toBe('organization');
+    });
+
+    it('returns personal when no org token exists', () => {
+      expect(
+        getInitialCredentialMode({ hasUserToken: false, hasOrgToken: false }),
+      ).toBe('personal');
+    });
+  });
+
+  describe('getModalEffectiveHasToken', () => {
+    it('returns true for organization mode when org token exists', () => {
+      expect(
+        getModalEffectiveHasToken({
+          hasOrgToken: true,
+          credentialMode: 'organization',
+          tokenInputValue: '',
+          hasSavedPersonalTokenInModal: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns true for personal mode with saved token', () => {
+      expect(
+        getModalEffectiveHasToken({
+          hasOrgToken: true,
+          credentialMode: 'personal',
+          tokenInputValue: '',
+          hasSavedPersonalTokenInModal: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns false for personal mode without token', () => {
+      expect(
+        getModalEffectiveHasToken({
+          hasOrgToken: true,
+          credentialMode: 'personal',
+          tokenInputValue: '',
+          hasSavedPersonalTokenInModal: false,
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe('getModalDisplayHasToken', () => {
+    it('uses server token when disabled and draft personal mode has no token', () => {
+      expect(
+        getModalDisplayHasToken({
+          modalVerifiedHasToken: false,
+          modalEnabled: false,
+          serverHasToken: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('does not use server token when enabled without verified personal token', () => {
+      expect(
+        getModalDisplayHasToken({
+          modalVerifiedHasToken: false,
+          modalEnabled: true,
+          serverHasToken: true,
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe('getModalVerifiedHasToken', () => {
+    it('returns true for organization mode when org token exists', () => {
+      expect(
+        getModalVerifiedHasToken({
+          hasOrgToken: true,
+          credentialMode: 'organization',
+          hasSavedPersonalTokenInModal: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns false for personal mode with only draft input', () => {
+      expect(
+        getModalVerifiedHasToken({
+          hasOrgToken: true,
+          credentialMode: 'personal',
+          hasSavedPersonalTokenInModal: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('returns true for personal mode with saved token', () => {
+      expect(
+        getModalVerifiedHasToken({
+          hasOrgToken: true,
+          credentialMode: 'personal',
+          hasSavedPersonalTokenInModal: true,
+        }),
+      ).toBe(true);
+    });
+  });
+
   describe('hasModalUnsavedChanges', () => {
     const savedTokenMask = '********************';
 
@@ -223,6 +336,19 @@ describe('mcpServersDisplayUtils', () => {
           initialTokenInputValue: savedTokenMask,
           modalEnabled: false,
           serverEnabled: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns true when credential mode changed', () => {
+      expect(
+        hasModalUnsavedChanges({
+          tokenInputValue: '',
+          initialTokenInputValue: '',
+          modalEnabled: true,
+          serverEnabled: true,
+          credentialMode: 'organization',
+          initialCredentialMode: 'personal',
         }),
       ).toBe(true);
     });
@@ -261,40 +387,41 @@ describe('mcpServersDisplayUtils', () => {
 
   describe('isSaveTokenDisabled', () => {
     const savedTokenMask = '********************';
+    const baseArgs = {
+      tokenInputValue: savedTokenMask,
+      initialTokenInputValue: savedTokenMask,
+      modalEnabled: true,
+      serverEnabled: true,
+      credentialMode: 'personal' as const,
+      initialCredentialMode: 'personal' as const,
+      hasOrgToken: true,
+      hasSavedPersonalTokenInModal: true,
+    };
 
     it('disables save when nothing changed', () => {
-      expect(
-        isSaveTokenDisabled({
-          tokenInputValue: savedTokenMask,
-          initialTokenInputValue: savedTokenMask,
-          modalEnabled: true,
-          serverEnabled: true,
-          isUpdatingModalStatus: false,
-        }),
-      ).toBe(true);
+      expect(isSaveTokenDisabled(baseArgs)).toBe(true);
     });
 
-    it('enables save after personal token was removed', () => {
+    it('enables save when credential mode changed to organization', () => {
       expect(
         isSaveTokenDisabled({
+          ...baseArgs,
           tokenInputValue: '',
-          initialTokenInputValue: '',
-          modalEnabled: false,
-          serverEnabled: false,
-          isUpdatingModalStatus: false,
-          hasRemovedPersonalToken: true,
+          hasSavedPersonalTokenInModal: false,
+          credentialMode: 'organization',
         }),
       ).toBe(false);
     });
 
-    it('disables save while status is updating even with changes', () => {
+    it('disables save for personal mode without token', () => {
       expect(
         isSaveTokenDisabled({
-          tokenInputValue: 'new-token',
+          ...baseArgs,
+          tokenInputValue: '',
           initialTokenInputValue: '',
-          modalEnabled: true,
-          serverEnabled: true,
-          isUpdatingModalStatus: true,
+          hasSavedPersonalTokenInModal: false,
+          credentialMode: 'personal',
+          initialCredentialMode: 'organization',
         }),
       ).toBe(true);
     });
@@ -302,23 +429,44 @@ describe('mcpServersDisplayUtils', () => {
     it('enables save when only enabled state changed', () => {
       expect(
         isSaveTokenDisabled({
-          tokenInputValue: savedTokenMask,
-          initialTokenInputValue: savedTokenMask,
+          ...baseArgs,
           modalEnabled: false,
-          serverEnabled: true,
-          isUpdatingModalStatus: false,
         }),
       ).toBe(false);
+    });
+
+    it('disables save when token input matches baseline after failed attempt', () => {
+      expect(
+        isSaveTokenDisabled({
+          ...baseArgs,
+          tokenInputValue: 'bad-token',
+          initialTokenInputValue: 'bad-token',
+          hasSavedPersonalTokenInModal: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('disables save after failed validation until token input changes', () => {
+      expect(
+        isSaveTokenDisabled({
+          ...baseArgs,
+          tokenInputValue: 'bad-token',
+          initialTokenInputValue: 'bad-token',
+          hasSavedPersonalTokenInModal: false,
+          credentialMode: 'personal',
+          initialCredentialMode: 'organization',
+          tokenValidationState: 'error',
+        }),
+      ).toBe(true);
     });
 
     it('enables save when token input changed', () => {
       expect(
         isSaveTokenDisabled({
+          ...baseArgs,
           tokenInputValue: 'new-token',
           initialTokenInputValue: '',
-          modalEnabled: true,
-          serverEnabled: true,
-          isUpdatingModalStatus: false,
+          hasSavedPersonalTokenInModal: false,
         }),
       ).toBe(false);
     });

@@ -200,6 +200,7 @@ describe('MCP server management endpoints', () => {
         toolCount: 0,
         hasToken: true,
         hasUserToken: false,
+        hasOrgToken: true,
       });
     });
 
@@ -217,12 +218,30 @@ describe('MCP server management endpoints', () => {
       );
       expect(noTokenServer.hasToken).toBe(false);
       expect(noTokenServer.hasUserToken).toBe(false);
+      expect(noTokenServer.hasOrgToken).toBe(false);
 
       const withTokenServer = response.body.servers.find(
         (s: any) => s.name === 'static-mcp',
       );
       expect(withTokenServer.hasToken).toBe(true);
       expect(withTokenServer.hasUserToken).toBe(false);
+      expect(withTokenServer.hasOrgToken).toBe(true);
+    });
+
+    it('exposes hasOrgToken independently of user token', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG);
+
+      await request(backendServer)
+        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .send({ token: 'my-personal-token' });
+
+      const response = await request(backendServer).get(
+        '/api/lightspeed/mcp-servers',
+      );
+
+      expect(response.body.servers[0].hasToken).toBe(true);
+      expect(response.body.servers[0].hasUserToken).toBe(true);
+      expect(response.body.servers[0].hasOrgToken).toBe(true);
     });
 
     it('distinguishes admin token from user token via hasUserToken', async () => {

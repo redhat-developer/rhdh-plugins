@@ -703,10 +703,12 @@ export async function mockMcpServers(
           server.status = 'connected';
           server.toolCount = 5;
         } else {
-          server.hasToken = false;
           server.hasUserToken = false;
-          server.status = 'unknown';
-          server.toolCount = 0;
+          server.hasToken = Boolean(server.hasOrgToken);
+          if (!server.hasToken) {
+            server.status = 'unknown';
+            server.toolCount = 0;
+          }
         }
       }
       await route.fulfill({ json: { server } });

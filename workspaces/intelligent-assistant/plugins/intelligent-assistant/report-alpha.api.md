@@ -241,10 +241,12 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.closeConfigureModalAriaLabel': string;
     readonly 'mcp.settings.modalDescription': string;
     readonly 'mcp.settings.authenticationToken': string;
+    readonly 'mcp.settings.modal.authenticationHeading': string;
+    readonly 'mcp.settings.modal.credentialMode.organization': string;
+    readonly 'mcp.settings.modal.credentialMode.organizationDescription': string;
+    readonly 'mcp.settings.modal.credentialMode.personal': string;
     readonly 'mcp.settings.modal.toolsHeading': string;
     readonly 'mcp.settings.modal.loadingTools': string;
-    readonly 'mcp.settings.modal.loadingStatus': string;
-    readonly 'mcp.settings.modal.tokenRemovedWarning': string;
     readonly 'mcp.settings.modal.noToolsAvailable': string;
     readonly 'mcp.settings.modal.toolsLoadFailed': string;
     readonly 'mcp.settings.modal.enabledDescription': string;
@@ -252,9 +254,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.modal.enabledDescriptionTokenRequired': string;
     readonly 'mcp.settings.savedToken': string;
     readonly 'mcp.settings.personalAccessToken': string;
-    readonly 'mcp.settings.usingAdminCredential': string;
     readonly 'mcp.settings.enterToken': string;
-    readonly 'mcp.settings.removePersonalToken': string;
     readonly 'mcp.settings.token.clearAriaLabel': string;
     readonly 'mcp.settings.token.validating': string;
     readonly 'mcp.settings.token.savingAndValidating': string;

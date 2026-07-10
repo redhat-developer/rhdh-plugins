@@ -38,6 +38,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  Radio,
   Spinner,
   Switch,
   TextInputGroup,
@@ -65,10 +66,14 @@ import {
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
+  getInitialCredentialMode,
+  getModalDisplayHasToken,
   getModalDisplayStatus,
   isModalEnabledChecked as getModalEnabledChecked,
+  getModalVerifiedHasToken,
   isSaveTokenDisabled as getSaveTokenDisabled,
   isEnabledToggleUnavailable,
+  type CredentialMode,
   type ServerStatus,
 } from './mcpServersDisplayUtils';
 
@@ -81,6 +86,7 @@ type McpServer = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  hasOrgToken: boolean;
   validationError?: string;
   /** 'dcr' = tokens are minted automatically (no manual token needed). */
   auth?: string;
@@ -268,31 +274,22 @@ const useStyles = makeStyles(theme => ({
   modalEnabledLabel: {
     flex: 1,
   },
+  credentialRadioGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1.5),
+  },
+  credentialRadioDescription: {
+    color: theme.palette.text.secondary,
+    fontSize: '0.875rem',
+    marginTop: theme.spacing(0.25),
+    marginLeft: theme.spacing(3),
+  },
   modalCloseButton: {
     position: 'absolute',
     top: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
     right: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
     zIndex: 1,
-  },
-  removePersonalTokenButton: {
-    borderRadius: '1.25rem',
-    boxShadow: 'none',
-    '&:not(:disabled):not(.pf-m-disabled)': {
-      '--pf-v6-c-button--BorderColor': '#B1380B',
-      '--pf-v6-c-button--Color': '#B1380B',
-      '--pf-v6-c-button--BackgroundColor': 'transparent',
-      '--pf-v5-c-button--BorderColor': '#B1380B',
-      '--pf-v5-c-button--Color': '#B1380B',
-      '--pf-v5-c-button--BackgroundColor': 'transparent',
-      borderColor: '#B1380B',
-      color: '#B1380B',
-      backgroundColor: 'transparent',
-      '&:hover': {
-        '--pf-v6-c-button--BackgroundColor': 'rgba(201, 25, 11, 0.08)',
-        '--pf-v5-c-button--BackgroundColor': 'rgba(201, 25, 11, 0.08)',
-        backgroundColor: 'rgba(201, 25, 11, 0.08)',
-      },
-    },
   },
   configureModal: {
     '& .pf-v6-c-modal-box, & .pf-v5-c-modal-box': {
@@ -309,6 +306,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-v6-c-modal-box__title, & .pf-v5-c-modal-box__title': {
       marginBlockEnd: 0,
+      fontWeight: 600,
     },
     '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
       '--pf-v6-c-modal-box__body--PaddingBlockStart': '0.5rem',
@@ -358,6 +356,7 @@ type McpServerResponse = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  hasOrgToken: boolean;
   auth?: string;
 };
 
@@ -414,6 +413,7 @@ const toUiServer = (
   toolCount: server.toolCount,
   hasToken: server.hasToken,
   hasUserToken: server.hasUserToken,
+  hasOrgToken: server.hasOrgToken,
   validationError: server.status === 'error' ? validationError : undefined,
   auth: server.auth,
 });
@@ -438,7 +438,10 @@ export const McpServersSettings = ({
   const [tokenInputValue, setTokenInputValue] = useState('');
   const [initialTokenInputValue, setInitialTokenInputValue] = useState('');
   const [hasSavedTokenInModal, setHasSavedTokenInModal] = useState(false);
-  const [canRemovePersonalToken, setCanRemovePersonalToken] = useState(false);
+  const [modalCredentialMode, setModalCredentialMode] =
+    useState<CredentialMode>('personal');
+  const [initialCredentialMode, setInitialCredentialMode] =
+    useState<CredentialMode>('personal');
   const [tokenValidationState, setTokenValidationState] =
     useState<TokenValidationState>('idle');
   const [tokenValidationMessage, setTokenValidationMessage] = useState('');
@@ -446,8 +449,6 @@ export const McpServersSettings = ({
   const [modalTools, setModalTools] = useState<string[]>([]);
   const [isLoadingModalTools, setIsLoadingModalTools] = useState(false);
   const [modalToolsError, setModalToolsError] = useState<string | null>(null);
-  const [isUpdatingModalStatus, setIsUpdatingModalStatus] = useState(false);
-  const [hasRemovedPersonalToken, setHasRemovedPersonalToken] = useState(false);
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/intelligent-assistant`;
@@ -672,30 +673,29 @@ export const McpServersSettings = ({
     setTokenInputValue('');
     setInitialTokenInputValue('');
     setHasSavedTokenInModal(false);
-    setCanRemovePersonalToken(false);
+    setModalCredentialMode('personal');
+    setInitialCredentialMode('personal');
     setTokenValidationState('idle');
     setTokenValidationMessage('');
     setModalEnabled(true);
     setModalTools([]);
     setIsLoadingModalTools(false);
     setModalToolsError(null);
-    setIsUpdatingModalStatus(false);
-    setHasRemovedPersonalToken(false);
   }, []);
 
   const openConfigureModal = (server: McpServer) => {
     setEditingServerId(server.id);
-    const hasSavedToken = server.hasToken;
-    setHasSavedTokenInModal(hasSavedToken);
-    setCanRemovePersonalToken(server.hasUserToken);
-    const initialToken = hasSavedToken ? SAVED_TOKEN_MASK : '';
+    const credentialMode = getInitialCredentialMode(server);
+    const hasSavedPersonalToken = server.hasUserToken;
+    setModalCredentialMode(credentialMode);
+    setInitialCredentialMode(credentialMode);
+    setHasSavedTokenInModal(hasSavedPersonalToken);
+    const initialToken = hasSavedPersonalToken ? SAVED_TOKEN_MASK : '';
     setInitialTokenInputValue(initialToken);
     setTokenInputValue(initialToken);
     setModalEnabled(server.enabled);
     setModalTools([]);
     setModalToolsError(null);
-    setIsUpdatingModalStatus(false);
-    setHasRemovedPersonalToken(false);
     if (server.status === 'error' && server.validationError) {
       setTokenValidationState('error');
       setTokenValidationMessage(
@@ -771,6 +771,32 @@ export const McpServersSettings = ({
     setTokenValidationMessage('');
   };
 
+  const onCredentialModeChange = (mode: CredentialMode) => {
+    if (mode === modalCredentialMode) {
+      return;
+    }
+    setModalCredentialMode(mode);
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+
+    if (mode === 'organization') {
+      setHasSavedTokenInModal(false);
+      setTokenInputValue('');
+      return;
+    }
+
+    if (editingServer?.hasUserToken) {
+      setHasSavedTokenInModal(true);
+      setTokenInputValue(SAVED_TOKEN_MASK);
+      setInitialTokenInputValue(SAVED_TOKEN_MASK);
+      return;
+    }
+
+    setHasSavedTokenInModal(false);
+    setTokenInputValue('');
+    setInitialTokenInputValue('');
+  };
+
   const clearTokenInput = () => {
     if (hasSavedTokenInModal) {
       setHasSavedTokenInModal(false);
@@ -780,8 +806,12 @@ export const McpServersSettings = ({
     setTokenValidationMessage('');
   };
 
-  const isUsingOrganizationCredentialInModal =
-    hasSavedTokenInModal && !canRemovePersonalToken;
+  const showCredentialRadios = Boolean(
+    editingServer?.hasOrgToken && editingServer.auth !== 'dcr',
+  );
+  const showPersonalTokenField =
+    editingServer?.auth !== 'dcr' &&
+    (!showCredentialRadios || modalCredentialMode === 'personal');
 
   let tokenInputValidated: 'success' | 'error' | undefined;
   if (tokenValidationState === 'success') {
@@ -798,15 +828,10 @@ export const McpServersSettings = ({
   }
 
   const showTokenHelperText =
-    isUsingOrganizationCredentialInModal ||
-    !hasSavedTokenInModal ||
-    tokenValidationState !== 'idle';
+    !hasSavedTokenInModal || tokenValidationState !== 'idle';
 
   const tokenHelperText =
-    tokenValidationMessage ||
-    (isUsingOrganizationCredentialInModal
-      ? t('mcp.settings.usingAdminCredential')
-      : t('mcp.settings.enterToken'));
+    tokenValidationMessage || t('mcp.settings.enterToken');
 
   const configureModalTitle = t('mcp.settings.configureServerTitle' as any, {
     serverName: editingServer?.name ?? '',
@@ -818,18 +843,59 @@ export const McpServersSettings = ({
     initialTokenInputValue,
     modalEnabled,
     serverEnabled: editingServer?.enabled ?? true,
-    isUpdatingModalStatus,
-    hasRemovedPersonalToken,
+    credentialMode: modalCredentialMode,
+    initialCredentialMode,
+    hasOrgToken: editingServer?.hasOrgToken ?? false,
+    hasSavedPersonalTokenInModal: hasSavedTokenInModal,
+    tokenValidationState,
   });
 
   const saveServerToken = useCallback(async () => {
     if (!editingServer || !canManageMcp) return;
 
+    const hasCredentialModeChange =
+      modalCredentialMode !== initialCredentialMode;
     const hasTokenInputChange = tokenInputValue !== initialTokenInputValue;
     const hasEnabledInputChange = modalEnabled !== editingServer.enabled;
 
-    if (!hasTokenInputChange && !hasEnabledInputChange) {
+    if (
+      !hasCredentialModeChange &&
+      !hasTokenInputChange &&
+      !hasEnabledInputChange
+    ) {
       closeConfigureModal();
+      return;
+    }
+
+    if (
+      modalCredentialMode === 'organization' &&
+      (hasCredentialModeChange || hasEnabledInputChange)
+    ) {
+      setTokenValidationState('validating');
+      setTokenValidationMessage(t('mcp.settings.token.savingAndValidating'));
+      try {
+        await patchServer(editingServer.name, {
+          token: null,
+          enabled: modalEnabled,
+        });
+        const validationResult = await validateServer(editingServer.name);
+        if (validationResult.status === 'error') {
+          setTokenValidationState('error');
+          setTokenValidationMessage(
+            formatApiError(validationResult.validation?.error) ||
+              t('mcp.settings.token.validationFailed'),
+          );
+          return;
+        }
+        closeConfigureModal();
+      } catch (e) {
+        setTokenValidationState('error');
+        setTokenValidationMessage(
+          e instanceof Error
+            ? e.message
+            : `Failed to update ${editingServer.name} settings`,
+        );
+      }
       return;
     }
 
@@ -838,6 +904,10 @@ export const McpServersSettings = ({
       closeConfigureModal();
       return;
     }
+
+    const markFailedTokenAttempt = () => {
+      setInitialTokenInputValue(tokenInputValue);
+    };
 
     const token = tokenInputValue.trim();
     const hasToken = token.length > 0;
@@ -852,6 +922,7 @@ export const McpServersSettings = ({
           setTokenValidationMessage(
             t('mcp.settings.token.urlUnavailableForValidation'),
           );
+          markFailedTokenAttempt();
           return;
         }
 
@@ -865,6 +936,7 @@ export const McpServersSettings = ({
             formatApiError(credentialValidation.error) ||
               t('mcp.settings.token.invalidCredentials'),
           );
+          markFailedTokenAttempt();
           return;
         }
         setModalTools(credentialValidation.tools?.map(tool => tool.name) ?? []);
@@ -882,6 +954,7 @@ export const McpServersSettings = ({
           formatApiError(validationResult.validation?.error) ||
             t('mcp.settings.token.validationFailed'),
         );
+        markFailedTokenAttempt();
         return;
       }
       if (hasToken && validationResult.status === 'connected') {
@@ -898,57 +971,21 @@ export const McpServersSettings = ({
           ? e.message
           : `Failed to update ${editingServer.name} token`,
       );
+      markFailedTokenAttempt();
     }
   }, [
     canManageMcp,
     closeConfigureModal,
     editingServer,
+    initialCredentialMode,
     initialTokenInputValue,
+    modalCredentialMode,
     modalEnabled,
     patchServer,
     t,
     tokenInputValue,
     validateCredentials,
     validateServer,
-  ]);
-
-  const removePersonalToken = useCallback(async () => {
-    if (!editingServer || !canManageMcp || isUpdatingModalStatus) {
-      return;
-    }
-
-    setIsUpdatingModalStatus(true);
-    setTokenInputValue('');
-    setTokenValidationState('idle');
-    setTokenValidationMessage('');
-    setModalTools([]);
-    setModalToolsError(null);
-    setIsLoadingModalTools(false);
-
-    try {
-      await patchServer(editingServer.name, { token: null, enabled: false });
-      setHasSavedTokenInModal(false);
-      setInitialTokenInputValue('');
-      setModalEnabled(false);
-      setHasRemovedPersonalToken(true);
-    } catch {
-      const server = servers.find(item => item.id === editingServerId);
-      if (server?.hasUserToken && server.hasToken) {
-        setHasSavedTokenInModal(true);
-        setCanRemovePersonalToken(true);
-        setTokenInputValue(SAVED_TOKEN_MASK);
-      }
-      setHasRemovedPersonalToken(false);
-    } finally {
-      setIsUpdatingModalStatus(false);
-    }
-  }, [
-    canManageMcp,
-    editingServer,
-    editingServerId,
-    isUpdatingModalStatus,
-    patchServer,
-    servers,
   ]);
 
   const onModalEnabledChange = (_event: FormEvent, checked: boolean) => {
@@ -958,13 +995,30 @@ export const McpServersSettings = ({
     setModalEnabled(checked);
   };
 
+  const modalVerifiedHasToken = editingServer
+    ? getModalVerifiedHasToken({
+        hasOrgToken: editingServer.hasOrgToken,
+        credentialMode: modalCredentialMode,
+        hasSavedPersonalTokenInModal: hasSavedTokenInModal,
+      })
+    : false;
+
   const modalDisplayStatus = editingServer
-    ? getModalDisplayStatus(editingServer, modalEnabled)
+    ? getModalDisplayStatus(
+        {
+          ...editingServer,
+          hasToken: getModalDisplayHasToken({
+            modalVerifiedHasToken,
+            modalEnabled,
+            serverHasToken: editingServer.hasToken,
+          }),
+        },
+        modalEnabled,
+      )
     : 'unknown';
   const isModalEnabledToggleDisabled =
     !canManageMcp ||
     !editingServer ||
-    isUpdatingModalStatus ||
     isEnabledToggleUnavailable(modalDisplayStatus) ||
     Boolean(isSaving[editingServer?.name ?? '']);
   const isModalEnabledChecked = getModalEnabledChecked({
@@ -979,44 +1033,37 @@ export const McpServersSettings = ({
   const modalToolCount = modalTools.length || editingServer?.toolCount || 0;
 
   const renderModalStatusIcon = () => {
-    if (isUpdatingModalStatus || isLoadingModalTools) {
+    if (isLoadingModalTools) {
       return (
-        <Spinner
-          size="md"
-          aria-label={
-            isUpdatingModalStatus
-              ? t('mcp.settings.modal.loadingStatus')
-              : t('mcp.settings.modal.loadingTools')
-          }
-        />
+        <Spinner size="md" aria-label={t('mcp.settings.modal.loadingTools')} />
       );
     }
     if (modalDisplayStatus === 'disabled') {
       return <InfoCircleIcon className={classes.statusDisabled} />;
     }
-    if (modalTools.length > 0) {
+    if (modalDisplayStatus === 'tokenRequired') {
+      return <KeyIcon className={classes.statusWarn} />;
+    }
+    if (modalDisplayStatus === 'ok' && modalTools.length > 0) {
       return <CheckCircleIcon className={classes.statusOk} />;
     }
     if (modalToolsError || modalDisplayStatus === 'failed') {
       return <ExclamationCircleIcon className={classes.statusWarn} />;
     }
-    if (modalDisplayStatus === 'tokenRequired') {
-      return <KeyIcon className={classes.statusWarn} />;
-    }
     return <InfoCircleIcon className={classes.statusDisabled} />;
   };
 
   const renderModalStatusText = () => {
-    if (isUpdatingModalStatus) {
-      return t('mcp.settings.modal.loadingStatus');
-    }
     if (isLoadingModalTools) {
       return t('mcp.settings.modal.loadingTools');
     }
     if (modalDisplayStatus === 'disabled') {
       return t('mcp.settings.status.disabled');
     }
-    if (modalTools.length > 0) {
+    if (modalDisplayStatus === 'tokenRequired') {
+      return t('mcp.settings.status.tokenRequired');
+    }
+    if (modalDisplayStatus === 'ok' && modalTools.length > 0) {
       if (modalTools.length === 1) {
         return t('mcp.settings.status.oneTool' as any, {
           count: String(modalTools.length),
@@ -1076,15 +1123,6 @@ export const McpServersSettings = ({
         className={classes.modalInfoAlert}
         isInline
       />
-      {hasRemovedPersonalToken && (
-        <Alert
-          variant="custom"
-          customIcon={<InfoCircleIcon />}
-          title={t('mcp.settings.modal.tokenRemovedWarning')}
-          className={classes.modalInfoAlert}
-          isInline
-        />
-      )}
       <div className={classes.modalSection}>
         <div className={classes.modalSectionTitle}>
           {t('mcp.settings.status')}
@@ -1094,16 +1132,17 @@ export const McpServersSettings = ({
           <Typography component="span">{renderModalStatusText()}</Typography>
         </div>
       </div>
-      {(editingServer?.hasToken || editingServer?.auth === 'dcr') && (
-        <div className={classes.modalSection}>
-          <div className={classes.modalSectionTitle}>
-            {t('mcp.settings.modal.toolsHeading' as any, {
-              count: String(modalToolCount),
-            })}
+      {(editingServer?.auth === 'dcr' || modalVerifiedHasToken) &&
+        modalDisplayStatus === 'ok' && (
+          <div className={classes.modalSection}>
+            <div className={classes.modalSectionTitle}>
+              {t('mcp.settings.modal.toolsHeading' as any, {
+                count: String(modalToolCount),
+              })}
+            </div>
+            {renderModalToolsContent()}
           </div>
-          {renderModalToolsContent()}
-        </div>
-      )}
+        )}
       <div className={classes.modalSection}>
         <div className={classes.modalEnabledRow}>
           <div className={classes.modalEnabledLabel}>
@@ -1364,39 +1403,76 @@ export const McpServersSettings = ({
           ) : (
             <>
               {renderConfigureModalDetails()}
-              <FormGroup
-                label={t('mcp.settings.authenticationToken')}
-                fieldId="mcp-pat-input"
-              >
-                <TextInputGroup validated={tokenInputValidated}>
-                  <TextInputGroupMain
-                    inputId="mcp-pat-input"
-                    type="password"
-                    value={tokenInputValue}
-                    onChange={(_event, value) => onTokenInputChange(value)}
-                  />
-                  {(tokenValidationState === 'idle' ||
-                    tokenValidationState === 'validating') && (
-                    <TextInputGroupUtilities>
-                      <Button
-                        variant="plain"
-                        onClick={clearTokenInput}
-                        aria-label={t('mcp.settings.token.clearAriaLabel')}
-                        icon={<TimesIcon />}
+              {showCredentialRadios && (
+                <div className={classes.modalSection}>
+                  <div className={classes.modalSectionTitle}>
+                    {t('mcp.settings.modal.authenticationHeading')}
+                  </div>
+                  <div
+                    className={classes.credentialRadioGroup}
+                    id="mcp-credential-mode"
+                  >
+                    <div>
+                      <Radio
+                        id="mcp-credential-organization"
+                        name="mcp-credential-mode"
+                        label={t(
+                          'mcp.settings.modal.credentialMode.organization',
+                        )}
+                        isChecked={modalCredentialMode === 'organization'}
+                        onChange={() => onCredentialModeChange('organization')}
                       />
-                    </TextInputGroupUtilities>
+                      <div className={classes.credentialRadioDescription}>
+                        {t(
+                          'mcp.settings.modal.credentialMode.organizationDescription',
+                        )}
+                      </div>
+                    </div>
+                    <Radio
+                      id="mcp-credential-personal"
+                      name="mcp-credential-mode"
+                      label={t('mcp.settings.modal.credentialMode.personal')}
+                      isChecked={modalCredentialMode === 'personal'}
+                      onChange={() => onCredentialModeChange('personal')}
+                    />
+                  </div>
+                </div>
+              )}
+              {showPersonalTokenField && (
+                <FormGroup
+                  label={t('mcp.settings.authenticationToken')}
+                  fieldId="mcp-pat-input"
+                >
+                  <TextInputGroup validated={tokenInputValidated}>
+                    <TextInputGroupMain
+                      inputId="mcp-pat-input"
+                      type="password"
+                      value={tokenInputValue}
+                      onChange={(_event, value) => onTokenInputChange(value)}
+                    />
+                    {(tokenValidationState === 'idle' ||
+                      tokenValidationState === 'validating') && (
+                      <TextInputGroupUtilities>
+                        <Button
+                          variant="plain"
+                          onClick={clearTokenInput}
+                          aria-label={t('mcp.settings.token.clearAriaLabel')}
+                          icon={<TimesIcon />}
+                        />
+                      </TextInputGroupUtilities>
+                    )}
+                  </TextInputGroup>
+                  {showTokenHelperText && (
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem variant={tokenHelperVariant}>
+                          {tokenHelperText}
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
                   )}
-                </TextInputGroup>
-                {showTokenHelperText && (
-                  <FormHelperText>
-                    <HelperText>
-                      <HelperTextItem variant={tokenHelperVariant}>
-                        {tokenHelperText}
-                      </HelperTextItem>
-                    </HelperText>
-                  </FormHelperText>
-                )}
-              </FormGroup>
+                </FormGroup>
+              )}
             </>
           )}
         </ModalBody>
@@ -1414,29 +1490,11 @@ export const McpServersSettings = ({
                   !canManageMcp ||
                   isConfigureModalSaving ||
                   tokenValidationState === 'validating' ||
-                  isSaveTokenButtonDisabled ||
-                  isUpdatingModalStatus
+                  isSaveTokenButtonDisabled
                 }
               >
                 {t('modal.save')}
               </Button>
-              {canRemovePersonalToken && (
-                <Button
-                  variant="secondary"
-                  onClick={() => void removePersonalToken()}
-                  isDisabled={
-                    !canManageMcp ||
-                    isConfigureModalSaving ||
-                    tokenValidationState === 'validating' ||
-                    isUpdatingModalStatus ||
-                    hasRemovedPersonalToken ||
-                    !hasSavedTokenInModal
-                  }
-                  className={classes.removePersonalTokenButton}
-                >
-                  {t('mcp.settings.removePersonalToken')}
-                </Button>
-              )}
               <Button variant="link" onClick={closeConfigureModal}>
                 {t('common.cancel')}
               </Button>

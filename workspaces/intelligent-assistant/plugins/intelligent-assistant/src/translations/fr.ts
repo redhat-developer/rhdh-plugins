@@ -141,11 +141,14 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.modalDescriptionDcr':
       'Ce serveur utilise Dynamic Client Registration (DCR). Les jetons sont générés automatiquement à partir de votre identité Backstage — aucun jeton manuel n\u2019est nécessaire.',
     'mcp.settings.authenticationToken': "Jeton d'authentification",
+    'mcp.settings.modal.authenticationHeading': 'Authentification',
+    'mcp.settings.modal.credentialMode.organization':
+      'Utiliser le jeton par défaut de l\u2019organisation',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Utilise le jeton configuré par votre administrateur.',
+    'mcp.settings.modal.credentialMode.personal': 'Utiliser un jeton personnel',
     'mcp.settings.modal.toolsHeading': 'Outils ({{count}})',
     'mcp.settings.modal.loadingTools': 'Chargement des outils...',
-    'mcp.settings.modal.loadingStatus': 'Déconnexion...',
-    'mcp.settings.modal.tokenRemovedWarning':
-      'Le jeton a été supprimé. Pour réutiliser ce serveur MCP, fournissez un nouveau jeton.',
     'mcp.settings.modal.noToolsAvailable': 'Aucun outil disponible.',
     'mcp.settings.modal.toolsLoadFailed': 'Échec du chargement des outils.',
     'mcp.settings.modal.enabledDescription':
@@ -159,7 +162,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
     'mcp.settings.readOnlyAccess':
       'Vous disposez d’un accès en lecture seule aux serveurs MCP.',
-    'mcp.settings.removePersonalToken': 'Supprimer le jeton personnel',
     'mcp.settings.savedToken': 'Jeton enregistré',
     'mcp.settings.selectedCount':
       '{{selectedCount}} sur {{totalCount}} sélectionnés',
@@ -184,8 +186,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.token.validating': 'Validation du jeton...',
     'mcp.settings.token.validationFailed':
       'Échec de la validation. Vérifiez l’URL du serveur et le jeton.',
-    'mcp.settings.usingAdminCredential':
-      'Les identifiants fournis par l’administrateur sont utilisés. Saisissez un jeton personnel pour les remplacer pour votre compte.',
     'menu.newConversation': 'Nouvelle Conversation',
     'message.options.label': 'Options',
     'modal.cancel': 'Annuler',

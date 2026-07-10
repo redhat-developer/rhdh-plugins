@@ -141,11 +141,15 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.modalDescriptionDcr':
       'Dieser Server verwendet Dynamic Client Registration (DCR). Token werden automatisch mit Ihrer Backstage-Identität erstellt — kein manuelles Token erforderlich.',
     'mcp.settings.authenticationToken': 'Authentifizierungstoken',
+    'mcp.settings.modal.authenticationHeading': 'Authentifizierung',
+    'mcp.settings.modal.credentialMode.organization':
+      'Organisations-Standard-Token verwenden',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Verwendet den von Ihrem Administrator konfigurierten Token.',
+    'mcp.settings.modal.credentialMode.personal':
+      'Persönlichen Token verwenden',
     'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
     'mcp.settings.modal.loadingTools': 'Tools werden geladen...',
-    'mcp.settings.modal.loadingStatus': 'Verbindung wird getrennt...',
-    'mcp.settings.modal.tokenRemovedWarning':
-      'Token wurde entfernt. Um diesen MCP-Server erneut zu verwenden, geben Sie einen neuen Token ein.',
     'mcp.settings.modal.noToolsAvailable': 'Keine Tools verfügbar.',
     'mcp.settings.modal.toolsLoadFailed': 'Tools konnten nicht geladen werden.',
     'mcp.settings.modal.enabledDescription':
@@ -159,7 +163,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
     'mcp.settings.readOnlyAccess':
       'Sie haben schreibgeschützten Zugriff auf MCP-Server.',
-    'mcp.settings.removePersonalToken': 'Persönlichen Token entfernen',
     'mcp.settings.savedToken': 'Gespeicherter Token',
     'mcp.settings.selectedCount':
       '{{selectedCount}} von {{totalCount}} ausgewählt',
@@ -184,8 +187,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.token.validating': 'Token wird validiert...',
     'mcp.settings.token.validationFailed':
       'Validierung fehlgeschlagen. Überprüfen Sie Server-URL und Token.',
-    'mcp.settings.usingAdminCredential':
-      'Administratoranmeldedaten werden verwendet. Geben Sie einen persönlichen Token ein, um ihn für Ihr Konto zu überschreiben.',
     'menu.newConversation': 'Neuer Chat',
     'message.options.label': 'Optionen',
     'modal.cancel': 'Abbrechen',

@@ -21,6 +21,8 @@ export type ServerStatus =
   | 'failed'
   | 'unknown';
 
+export type CredentialMode = 'organization' | 'personal';
+
 export type McpServerDisplayInput = {
   enabled: boolean;
   status: 'connected' | 'error' | 'unknown';
@@ -65,46 +67,135 @@ export const getEnabledToggleChecked = (
 ): boolean =>
   isEnabledToggleUnavailable(displayStatus) ? false : server.enabled;
 
+export const getInitialCredentialMode = (server: {
+  hasUserToken: boolean;
+  hasOrgToken: boolean;
+}): CredentialMode => {
+  if (server.hasUserToken) {
+    return 'personal';
+  }
+  if (server.hasOrgToken) {
+    return 'organization';
+  }
+  return 'personal';
+};
+
+export const getModalEffectiveHasToken = ({
+  hasOrgToken,
+  credentialMode,
+  tokenInputValue,
+  hasSavedPersonalTokenInModal,
+}: {
+  hasOrgToken: boolean;
+  credentialMode: CredentialMode;
+  tokenInputValue: string;
+  hasSavedPersonalTokenInModal: boolean;
+}): boolean => {
+  if (credentialMode === 'organization') {
+    return hasOrgToken;
+  }
+  return tokenInputValue.trim().length > 0 || hasSavedPersonalTokenInModal;
+};
+
+export const getModalVerifiedHasToken = ({
+  hasOrgToken,
+  credentialMode,
+  hasSavedPersonalTokenInModal,
+}: {
+  hasOrgToken: boolean;
+  credentialMode: CredentialMode;
+  hasSavedPersonalTokenInModal: boolean;
+}): boolean => {
+  if (credentialMode === 'organization') {
+    return hasOrgToken;
+  }
+  return hasSavedPersonalTokenInModal;
+};
+
+export const getModalDisplayHasToken = ({
+  modalVerifiedHasToken,
+  modalEnabled,
+  serverHasToken,
+}: {
+  modalVerifiedHasToken: boolean;
+  modalEnabled: boolean;
+  serverHasToken: boolean;
+}): boolean => modalVerifiedHasToken || (!modalEnabled && serverHasToken);
+
 export const hasModalUnsavedChanges = ({
   tokenInputValue,
   initialTokenInputValue,
   modalEnabled,
   serverEnabled,
+  credentialMode,
+  initialCredentialMode,
 }: {
   tokenInputValue: string;
   initialTokenInputValue: string;
   modalEnabled: boolean;
   serverEnabled: boolean;
+  credentialMode?: CredentialMode;
+  initialCredentialMode?: CredentialMode;
 }): boolean =>
-  tokenInputValue !== initialTokenInputValue || modalEnabled !== serverEnabled;
+  tokenInputValue !== initialTokenInputValue ||
+  modalEnabled !== serverEnabled ||
+  (credentialMode !== undefined &&
+    initialCredentialMode !== undefined &&
+    credentialMode !== initialCredentialMode);
+
+export type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
 
 export const isSaveTokenDisabled = ({
   tokenInputValue,
   initialTokenInputValue,
   modalEnabled,
   serverEnabled,
-  isUpdatingModalStatus,
-  hasRemovedPersonalToken = false,
+  credentialMode,
+  initialCredentialMode,
+  hasOrgToken,
+  hasSavedPersonalTokenInModal,
+  tokenValidationState = 'idle',
 }: {
   tokenInputValue: string;
   initialTokenInputValue: string;
   modalEnabled: boolean;
   serverEnabled: boolean;
-  isUpdatingModalStatus: boolean;
-  hasRemovedPersonalToken?: boolean;
+  credentialMode: CredentialMode;
+  initialCredentialMode: CredentialMode;
+  hasOrgToken: boolean;
+  hasSavedPersonalTokenInModal: boolean;
+  tokenValidationState?: TokenValidationState;
 }): boolean => {
-  if (isUpdatingModalStatus) {
+  if (
+    tokenValidationState === 'error' &&
+    tokenInputValue === initialTokenInputValue
+  ) {
     return true;
   }
-  if (hasRemovedPersonalToken) {
-    return false;
+
+  if (
+    !hasModalUnsavedChanges({
+      tokenInputValue,
+      initialTokenInputValue,
+      modalEnabled,
+      serverEnabled,
+      credentialMode,
+      initialCredentialMode,
+    })
+  ) {
+    return true;
   }
-  return !hasModalUnsavedChanges({
-    tokenInputValue,
-    initialTokenInputValue,
-    modalEnabled,
-    serverEnabled,
-  });
+
+  if (credentialMode === 'personal') {
+    return !getModalEffectiveHasToken({
+      hasOrgToken,
+      credentialMode,
+      tokenInputValue,
+      hasSavedPersonalTokenInModal,
+    });
+  }
+
+  return false;
 };
 
 export type McpServerModalInput = McpServerDisplayInput & {

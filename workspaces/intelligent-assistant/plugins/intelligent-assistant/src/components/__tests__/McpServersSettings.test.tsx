@@ -44,6 +44,7 @@ type McpServerResponse = {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  hasOrgToken: boolean;
 };
 
 const BASE_URL = 'http://localhost:7007/api/lightspeed';
@@ -66,6 +67,7 @@ const connectedServer = (
   toolCount: 2,
   hasToken: true,
   hasUserToken: false,
+  hasOrgToken: true,
   ...overrides,
 });
 
@@ -128,6 +130,7 @@ describe('McpServersSettings', () => {
     servers = [
       connectedServer('personal-server', {
         hasUserToken: true,
+        hasOrgToken: true,
         toolCount: 3,
       }),
       connectedServer('test-mcp-server', {
@@ -135,6 +138,7 @@ describe('McpServersSettings', () => {
         enabled: true,
         hasToken: false,
         hasUserToken: false,
+        hasOrgToken: false,
         status: 'unknown',
         toolCount: 0,
       }),
@@ -244,6 +248,35 @@ describe('McpServersSettings', () => {
     expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  it('shows credential radios for servers with organization default token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    expect(
+      within(dialog).getByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('radio', { name: 'Use personal token' }),
+    ).toBeChecked();
+  });
+
+  it('does not show credential radios when no organization default token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('test-mcp-server');
+
+    const dialog = getModalDialog();
+    expect(
+      within(dialog).queryByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it('updates modal status locally when enabled is toggled off without PATCH', async () => {
     renderSettings();
     await waitForServersLoaded();
@@ -265,6 +298,7 @@ describe('McpServersSettings', () => {
     );
 
     expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Tools (2)')).not.toBeInTheDocument();
     expect(
       within(dialog).getByText(
         'This server is disabled and unavailable in chat.',
@@ -358,52 +392,183 @@ describe('McpServersSettings', () => {
     ).toBeInTheDocument();
   });
 
-  it('removes personal token, shows disconnecting state, warning, and enables Save', async () => {
+  it('keeps status Disabled when switching to personal token with enabled off', async () => {
+    servers = [
+      connectedServer('org-disabled-server', {
+        enabled: false,
+        hasUserToken: false,
+        hasOrgToken: true,
+        hasToken: true,
+        toolCount: 2,
+      }),
+    ];
+
     renderSettings();
-    await waitForServersLoaded();
-    await openConfigureModal('personal-server');
+    await waitFor(() => {
+      expect(screen.getByText('org-disabled-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('org-disabled-server');
 
     const dialog = getModalDialog();
-    fireEvent.click(
-      within(dialog).getByRole('button', { name: 'Remove personal token' }),
-    );
-
-    expect(within(dialog).getByText('Disconnecting...')).toBeInTheDocument();
-
     await waitFor(() => {
       expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
     });
 
-    expect(
-      within(dialog).getByText(
-        'Token has been removed. To use this MCP server again, provide a new token.',
-      ),
-    ).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
-    expect(
-      within(dialog).getByRole('button', { name: 'Remove personal token' }),
-    ).toBeDisabled();
+    fireEvent.click(
+      within(dialog).getByRole('radio', { name: 'Use personal token' }),
+    );
+
+    expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
+    expect(within(dialog).queryByText('2 tools')).not.toBeInTheDocument();
+
+    fireEvent.change(within(dialog).getByLabelText('Type to filter'), {
+      target: { value: 'draft-token' },
+    });
+
+    expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
+    expect(within(dialog).queryByText('2 tools')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Tools (2)')).not.toBeInTheDocument();
     expect(
       within(dialog).getByRole('switch', {
-        name: 'Toggle personal-server',
+        name: 'Toggle org-disabled-server',
       }),
     ).not.toBeChecked();
   });
 
-  it('enables Save after removing personal token and re-enabling with org token', async () => {
+  it('does not show connected status while drafting a personal token', async () => {
+    servers = [
+      connectedServer('org-enabled-server', {
+        enabled: true,
+        hasUserToken: false,
+        hasOrgToken: true,
+        hasToken: true,
+        toolCount: 2,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('org-enabled-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('org-enabled-server');
+
+    const dialog = getModalDialog();
+    await waitFor(() => {
+      expect(within(dialog).getByText('2 tools')).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      within(dialog).getByRole('radio', { name: 'Use personal token' }),
+    );
+    fireEvent.change(within(dialog).getByLabelText('Type to filter'), {
+      target: { value: 'draft-token' },
+    });
+
+    expect(within(dialog).queryByText('2 tools')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Tools (2)')).not.toBeInTheDocument();
+    expect(within(dialog).getByText('Token required')).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle org-enabled-server',
+      }),
+    ).not.toBeChecked();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('disables Save after failed token save with credential mode change until input is edited', async () => {
+    servers = [
+      connectedServer('org-enabled-server', {
+        enabled: true,
+        hasUserToken: false,
+        hasOrgToken: true,
+        hasToken: true,
+        toolCount: 2,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('org-enabled-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('org-enabled-server');
+
+    const dialog = getModalDialog();
+    fireEvent.click(
+      within(dialog).getByRole('radio', { name: 'Use personal token' }),
+    );
+    fireEvent.change(within(dialog).getByLabelText('Type to filter'), {
+      target: { value: 'bad-token' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(
+        within(dialog).getByText(
+          'Invalid credentials. Check server URL and token.',
+        ),
+      ).toBeInTheDocument();
+    });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    fireEvent.change(within(dialog).getByLabelText('Type to filter'), {
+      target: { value: 'bad-token!' },
+    });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('hides token field when organization default token is selected', async () => {
     renderSettings();
     await waitForServersLoaded();
     await openConfigureModal('personal-server');
 
     const dialog = getModalDialog();
     fireEvent.click(
-      within(dialog).getByRole('button', { name: 'Remove personal token' }),
+      within(dialog).getByRole('radio', {
+        name: 'Use organization default token',
+      }),
     );
 
-    await waitFor(() => {
-      expect(within(dialog).getByText('Disabled')).toBeInTheDocument();
-    });
+    expect(
+      within(dialog).queryByLabelText('Type to filter'),
+    ).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
 
+  it('saves organization credential mode by clearing personal token', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    fireEvent.click(
+      within(dialog).getByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    );
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/mcp-servers/personal-server`,
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ token: null, enabled: true }),
+        }),
+      );
+    });
+  });
+
+  it('enables Save after switching to organization token and re-enabling', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    fireEvent.click(
+      within(dialog).getByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    );
     fireEvent.click(
       within(dialog).getByRole('switch', {
         name: 'Toggle personal-server',
@@ -419,10 +584,49 @@ describe('McpServersSettings', () => {
         `${BASE_URL}/mcp-servers/personal-server`,
         expect.objectContaining({
           method: 'PATCH',
-          body: JSON.stringify({ enabled: true }),
+          body: JSON.stringify({ token: null, enabled: false }),
         }),
       );
     });
+  });
+
+  it('disables Save after failed token save until input is edited', async () => {
+    servers = [
+      connectedServer('credential-test-mcp', {
+        url: 'http://127.0.0.1:7777/mcp',
+        enabled: false,
+        hasToken: false,
+        hasUserToken: false,
+        hasOrgToken: false,
+        status: 'unknown',
+        toolCount: 0,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('credential-test-mcp')).toBeInTheDocument();
+    });
+    await openConfigureModal('credential-test-mcp');
+
+    const dialog = getModalDialog();
+    const tokenField = within(dialog).getByLabelText('Type to filter');
+    fireEvent.change(tokenField, { target: { value: 'bad-token' } });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(
+        within(dialog).getByText(
+          'Invalid credentials. Check server URL and token.',
+        ),
+      ).toBeInTheDocument();
+    });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    fireEvent.change(tokenField, { target: { value: 'bad-token!' } });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
   });
 
   it('auto-enables server after saving a valid token', async () => {
@@ -432,6 +636,7 @@ describe('McpServersSettings', () => {
         enabled: false,
         hasToken: false,
         hasUserToken: false,
+        hasOrgToken: false,
         status: 'unknown',
         toolCount: 0,
       }),
