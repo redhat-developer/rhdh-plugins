@@ -143,7 +143,7 @@ After all changes:
 1. `yarn tsc` passes with no errors
 2. `yarn build:all` succeeds
 3. `yarn test:all` passes (existing tests in the workspace)
-4. No remaining imports or references to `Kfmr` in any `.ts` file under `kserve-kubeflow-connector-backend/src/`
+4. No remaining imports or references to `Kfmr` in any `.ts` file under `plugins/kserve-kubeflow-connector-backend/src/`
 5. No remaining references to `KFMRClient`, `kfmrClients`, `kfmrRoutes`, `setupKFMR`, `loopOverKFMR`, `processKFMR`, or `KubeflowNormalizer`
 6. `PropertyKeys` is importable from `types.ts` and `KServe.ts` compiles using the new import
 7. `getModelCard()` is callable from the relocated catalog module and the `CatalogModel` type is available from `types.ts`

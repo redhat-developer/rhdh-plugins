@@ -7,11 +7,11 @@ After removal, the connector plugin SHALL contain zero references to KubeFlow Mo
 #### Scenario: No KFMR source file exists
 
 - **WHEN** the connector plugin source directory is inspected
-- **THEN** no file named `Kfmr.ts` or containing KFMR client logic exists under `kserve-kubeflow-connector-backend/src/`
+- **THEN** no file named `Kfmr.ts` or containing KFMR client logic exists under `plugins/kserve-kubeflow-connector-backend/src/`
 
 #### Scenario: No KFMR imports remain
 
-- **WHEN** all TypeScript files under `kserve-kubeflow-connector-backend/src/` are searched for import statements
+- **WHEN** all TypeScript files under `plugins/kserve-kubeflow-connector-backend/src/` are searched for import statements
 - **THEN** no import references `./Kfmr` or any KFMR-specific symbol (`KFMRClient`, `setupKFMR`, `loopOverKFMR`, `processKFMR`, `getKubeFlowInferenceServicesForModelVersion`)
 
 #### Scenario: No KFMR-only types remain in types.ts

@@ -49,7 +49,7 @@
 
 - [ ] 5.1 Verify all catalog code and shared utilities have been relocated (tasks 1.x and 2.x complete)
 - [ ] 5.2 Delete `plugins/kserve-kubeflow-connector-backend/src/services/Kfmr.ts`
-- [ ] 5.3 Verify no remaining imports reference `./Kfmr` in any file under `kserve-kubeflow-connector-backend/src/`
+- [ ] 5.3 Verify no remaining imports reference `./Kfmr` in any file under `plugins/kserve-kubeflow-connector-backend/src/`
 
 ## 6. Clean Up Dependencies
 
@@ -62,7 +62,7 @@
 - [ ] 7.1 `yarn tsc` passes with no errors
 - [ ] 7.2 `yarn build:all` succeeds
 - [ ] 7.3 `yarn test:all` passes (existing workspace tests)
-- [ ] 7.4 `grep -rn 'loopOverKFMR\|setupKFMR\|KFMRClient\|KFMRInferenceService\|processKFMR\|KubeflowNormalizer\|kfmrClients\|kfmrRoutes' --include='*.ts' kserve-kubeflow-connector-backend/src/` returns zero results (note: `kfmrCatalogRoute` renamed to `catalogRoute`, so "kfmr" should not appear except in comments explaining the rename)
+- [ ] 7.4 `grep -rn 'loopOverKFMR\|setupKFMR\|KFMRClient\|KFMRInferenceService\|processKFMR\|KubeflowNormalizer\|kfmrClients\|kfmrRoutes' --include='*.ts' plugins/kserve-kubeflow-connector-backend/src/` returns zero results (note: `kfmrCatalogRoute` renamed to `catalogRoute`, so "kfmr" should not appear except in comments explaining the rename)
 - [ ] 7.5 `PropertyKeys` is importable from `./types` and `KServe.ts` compiles correctly
 - [ ] 7.6 `getModelCard()` is importable from the relocated catalog module and compiles correctly
 - [ ] 7.7 `CatalogModel` type is available from `types.ts`
