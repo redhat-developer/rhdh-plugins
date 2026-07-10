@@ -31,7 +31,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 ```
 workspace/boost/plugins/
-├── boost-frontend                    — Chat UI, agent gallery, admin panels, composable extensions
+├── boost                             — Chat UI, agent gallery, admin panels, composable extensions
 ├── boost-common                      — Shared types, permissions (browser-safe, common-library role)
 ├── boost-node                        — Service refs, extension points (node-library role)
 ├── boost-backend                     — Core routes, services, middleware, ProviderManager, cross-cutting entity providers
@@ -43,7 +43,7 @@ workspace/boost/plugins/
 └── kagenti-entity-provider           — Backstage backend service: Kagenti catalog entities (independently deployable)
 ```
 
-The core packages (`boost-frontend`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases. `boost-toolscope` has zero Backstage dependencies and uses an injectable `CacheAdapter` interface. `boost-responses-api-toolkit` has minimal Backstage dependencies and provides shared Responses API request/response utilities.
+The core packages (`boost`, `boost-common`, `boost-node`, `boost-backend`) mirror augment's structure with the addition of `boost-node` for service refs and extension points (following the Backstage `plugin-catalog-common`/`plugin-catalog-node` pattern). Provider modules and entity providers are additive — deployers install only what they need. Entity providers are independently deployable as RHDH dynamic plugins for catalog-only use cases. `boost-toolscope` has zero Backstage dependencies and uses an injectable `CacheAdapter` interface. `boost-responses-api-toolkit` has minimal Backstage dependencies and provides shared Responses API request/response utilities.
 
 ## Design Principles (Learned from Augment)
 
