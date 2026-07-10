@@ -1,6 +1,5 @@
 base: https://raw.githubusercontent.com/fullsend-ai/fullsend/807037ff09a6b5d18fbc339d06e57752af9cd522/internal/scaffold/fullsend-repo/harness/code.yaml#sha256=adba903da2cbb861205a75e906dca341eb6dd67560224421c3ed5975c4e00ca1
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
-agent: agents/code.md
 host_files:
   - src: env/rhdh-toolchain.env
     dest: /sandbox/workspace/.env.d/rhdh-toolchain.env
