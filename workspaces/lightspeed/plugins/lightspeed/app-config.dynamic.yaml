@@ -16,8 +16,7 @@ dynamicPlugins:
 
       # OFS (Old Frontend System) deployment configuration:
 
-      # Note: Legacy exports are also available from the default module (PluginRoot),
-      # but it is advisable to add `module: Legacy` for clarity.
+      # Legacy exports require `module: Legacy` — they are not available on the default module.
       translationResources:
         - importName: lightspeedTranslations
           module: Alpha
@@ -25,15 +24,20 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /intelligent-assistant
           importName: LightspeedPage
+          module: Legacy
       mountPoints:
         - mountPoint: application/listener
           importName: LightspeedFAB
+          module: Legacy
         - mountPoint: application/provider
           importName: LightspeedDrawerProvider
+          module: Legacy
         - mountPoint: application/internal/drawer-state
           importName: LightspeedDrawerStateExposer
+          module: Legacy
         - mountPoint: application/internal/drawer-content
           importName: LightspeedChatContainer
+          module: Legacy
           config:
             id: lightspeed
             priority: 100
