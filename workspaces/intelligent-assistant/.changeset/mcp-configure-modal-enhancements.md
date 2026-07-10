@@ -1,5 +1,15 @@
 ---
 '@red-hat-developer-hub/backstage-plugin-lightspeed': minor
+'@red-hat-developer-hub/backstage-plugin-lightspeed-backend': patch
 ---
 
-Enhance the MCP server configure modal with PatternFly layout, server status and tools list, aligned enabled toggle behavior, personal token save/remove flows (including disconnecting state and warnings), auto-enable on successful token validation, and unit tests.
+Refactor the MCP server configure modal with PatternFly layout and improved credential management:
+
+- Add **Use organization default token** / **Use personal token** radio selectors when an app-config default token is available, replacing the remove-personal-token flow
+- Show server status, tools list, and enabled toggle with local draft state applied on Save
+- Hide the tools section when the server is disabled; keep status consistent while drafting an unverified personal token
+- Disable Save after a failed token validation until the input changes
+- Auto-enable the server after a successful personal token save
+- Bump `@patternfly/react-core` to 6.6.0 and add translations for new modal strings (de, es, fr, it, ja)
+
+The backend now exposes `hasOrgToken` on MCP server list and patch responses so the UI can distinguish organization default tokens from personal-only servers.
