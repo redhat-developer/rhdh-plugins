@@ -14,7 +14,7 @@ The connector plugin was merged in PR #3705 on branch `kserve-kubeflow-connector
 
 - `Kfmr.ts` (837 lines) — full KFMR REST client, route setup, model registry data fetching, `callBackstagePrinters` for KFMR normalizer, `loopOverKFMR`, `getKubeFlowInferenceServicesForModelVersion`. Also contains shared utilities (`PropertyKeys`, `NormalizerFormat`, `getStringPropVal`, `getTagsFromCustomProps`, `sanitizeName`) that are used by `KServe.ts`
 - `types.ts` (425 lines) — contains KFMR-specific interfaces (`KFMRClient`, `KFMRInferenceService`, `InferenceServiceList`, `LoopOverKFMRResult`) and KFMR fields on `ReconcilerConfig` (`kfmrClients`, `kfmrRoutes`, `kfmrCatalogRoute`)
-- `InformerService.ts` (1406 lines) — imports and calls KFMR functions (`setupKFMR`, `loopOverKFMR`, `callBackstagePrinters`, `getKubeFlowInferenceServicesForModelVersion`), contains `processKFMR` function (~180 lines), KFMR label constants, `KubeflowNormalizer` enum value
+- `InformerService.ts` (1406 lines) — imports and calls KFMR functions (`setupKFMR`, `loopOverKFMR`, `callBackstagePrinters`, `getKubeFlowInferenceServicesForModelVersion`), contains `processKFMR` function (~340 lines, lines 287-625), KFMR label constants, `KubeflowNormalizer` enum value
 - `KServe.ts` (311 lines) — imports `PropertyKeys` from `Kfmr.ts` (must be relocated)
 
 ## What Changes
