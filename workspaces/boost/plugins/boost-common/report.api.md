@@ -109,7 +109,7 @@ export const boostAgentPublishPermission: ResourcePermission<'boost-agent'>;
 export const boostAgentRegisterPermission: BasicPermission;
 
 // @public
-export const boostAgentResourcePermissions: ResourcePermission<
+export const boostAgentResourcePermissions: readonly ResourcePermission<
   typeof BOOST_AGENT_RESOURCE_TYPE
 >[];
 
@@ -215,7 +215,7 @@ export const boostToolPromotePermission: ResourcePermission<'boost-tool'>;
 export const boostToolPublishPermission: ResourcePermission<'boost-tool'>;
 
 // @public
-export const boostToolResourcePermissions: ResourcePermission<
+export const boostToolResourcePermissions: readonly ResourcePermission<
   typeof BOOST_TOOL_RESOURCE_TYPE
 >[];
 

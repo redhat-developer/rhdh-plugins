@@ -281,6 +281,38 @@ describe('boost-common', () => {
     });
   });
 
+  describe('permission array immutability', () => {
+    const arrays = [
+      { name: 'boostPermissions', value: boostPermissions },
+      { name: 'boostAgentPermissions', value: boostAgentPermissions },
+      { name: 'boostToolPermissions', value: boostToolPermissions },
+      { name: 'boostFunctionalPermissions', value: boostFunctionalPermissions },
+      { name: 'boostEntityPermissions', value: boostEntityPermissions },
+      {
+        name: 'boostAgentResourcePermissions',
+        value: boostAgentResourcePermissions,
+      },
+      {
+        name: 'boostToolResourcePermissions',
+        value: boostToolResourcePermissions,
+      },
+    ];
+
+    it.each(arrays)(
+      '$name cannot be mutated via push()',
+      ({ value }) => {
+        const originalLength = value.length;
+        const dummy = { name: 'test.dummy', attributes: { action: 'read' } };
+        try {
+          (value as any[]).push(dummy);
+        } catch (_) {
+          // Object.freeze causes TypeError — expected
+        }
+        expect(value).toHaveLength(originalLength);
+      },
+    );
+  });
+
   describe('no provider-specific types', () => {
     it('does not export provider-specific configuration types', () => {
       // This is a static verification — the common package must not
