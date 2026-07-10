@@ -54,7 +54,7 @@ boost-common (common-library)  ←──  boost-node (node-library)  ←──  
      │                                   boost-backend-module-llamastack
      │                                   boost-backend-module-kagenti
      ↓
-boost-frontend (imports types only)
+boost (imports types only)
 ```
 
 `boost-common` exports: `AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, `NormalizedStreamEvent`, conversation types, permission definitions.
