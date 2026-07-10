@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-const STATUS_GROUPED = 'statusGrouped' as const;
-const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
+import {
+  WeightedStatusScoreAggregationResult,
+  AggregatedMetricResult,
+  AggregationMetadata,
+  aggregationTypes,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { AggregatedMetricCardBaseProps } from '../types';
 
-/**
- * Supported aggregation types
- * @public
- */
-export const aggregationTypes = Object.freeze({
-  statusGrouped: STATUS_GROUPED,
-  weightedStatusScore: WEIGHTED_STATUS_SCORE,
-});
+export type WeightedStatusScoreCardComponentProps =
+  AggregatedMetricCardBaseProps & {
+    scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
+      metadata: AggregationMetadata & {
+        aggregationType: typeof aggregationTypes.weightedStatusScore;
+      };
+      result: WeightedStatusScoreAggregationResult;
+    };
+  };

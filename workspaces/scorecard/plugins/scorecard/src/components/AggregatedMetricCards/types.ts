@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  AggregatedMetricAverageResult,
-  AggregatedMetricResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-export type AverageCardComponentProps = {
-  scorecard: Omit<AggregatedMetricResult, 'result'> & {
-    result: AggregatedMetricAverageResult;
-  };
+export type AggregatedMetricCardBaseProps = {
   cardTitle: string;
   description: string;
   aggregationId: string;

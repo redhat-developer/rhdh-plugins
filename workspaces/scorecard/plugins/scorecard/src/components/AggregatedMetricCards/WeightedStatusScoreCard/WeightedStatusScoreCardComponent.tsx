@@ -28,12 +28,13 @@ import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
 import { DonutChartTooltipContent } from './DonutChartTooltipContent';
-import type { AverageCardComponentProps, TooltipPosition } from './types';
-import { AverageCardPieCenterLabel } from './AverageCardPieCenterLabel';
+import type { TooltipPosition } from '../types';
+import type { WeightedStatusScoreCardComponentProps } from './types';
+import { WeightedStatusScoreCardPieCenterLabel } from './WeightedStatusScoreCardPieCenterLabel';
 import { formatPercentage } from '../../../utils/formatPercentage';
 
-const AVERAGE_SCORE_SLICE = 'averageScoreFill';
-const AVERAGE_REMAINDER_SLICE = 'averageScoreRemainder';
+const WEIGHTED_STATUS_SCORE_SLICE = 'weightedStatusScoreFill';
+const WEIGHTED_STATUS_SCORE_REMAINDER_SLICE = 'weightedStatusScoreRemainder';
 
 function clampPercentForDonut(rawPercent: number): {
   fill: number;
@@ -43,7 +44,7 @@ function clampPercentForDonut(rawPercent: number): {
   return { fill, remainder: 100 - fill };
 }
 
-export const AverageCardComponent = ({
+export const WeightedStatusScoreCardComponent = ({
   scorecard,
   cardTitle,
   description,
@@ -51,7 +52,7 @@ export const AverageCardComponent = ({
   showSubheader = true,
   showInfo = true,
   dataTestId,
-}: AverageCardComponentProps) => {
+}: WeightedStatusScoreCardComponentProps) => {
   const theme = useTheme();
 
   const [centerTooltipPosition, setCenterTooltipPosition] =
@@ -65,26 +66,26 @@ export const AverageCardComponent = ({
     });
   };
 
-  const averageScorePercent = scorecard.result.averageScore;
+  const weightedStatusScorePercent = scorecard.result.weightedStatusScore;
 
   const { fill: chartFillPercent, remainder: chartRemainderPercent } =
-    clampPercentForDonut(averageScorePercent);
+    clampPercentForDonut(weightedStatusScorePercent);
 
-  const centerPercentLabel = `${formatPercentage(averageScorePercent)}%`;
+  const centerPercentLabel = `${formatPercentage(weightedStatusScorePercent)}%`;
 
   const arcResolvedColor = resolveStatusColor(
     theme,
     scorecard.result.aggregationChartDisplayColor,
   );
 
-  const averagePieData: PieData[] = [
+  const weightedStatusScorePieData: PieData[] = [
     {
-      name: AVERAGE_SCORE_SLICE,
+      name: WEIGHTED_STATUS_SCORE_SLICE,
       value: chartFillPercent,
       color: arcResolvedColor,
     },
     {
-      name: AVERAGE_REMAINDER_SLICE,
+      name: WEIGHTED_STATUS_SCORE_REMAINDER_SLICE,
       value: chartRemainderPercent,
       color: theme.palette.grey[300],
     },
@@ -114,9 +115,9 @@ export const AverageCardComponent = ({
     >
       <CardChartContainer>
         <ResponsivePieChart
-          pieData={averagePieData}
+          pieData={weightedStatusScorePieData}
           LabelContent={props => (
-            <AverageCardPieCenterLabel
+            <WeightedStatusScoreCardPieCenterLabel
               {...props}
               centerPercentLabel={centerPercentLabel}
               arcResolvedColor={arcResolvedColor}
@@ -129,18 +130,18 @@ export const AverageCardComponent = ({
         {centerTooltipPosition && (
           <CardTooltip
             tooltipPosition={centerTooltipPosition}
-            pieData={averagePieData}
+            pieData={weightedStatusScorePieData}
             payload={[
               {
-                name: AVERAGE_SCORE_SLICE,
+                name: WEIGHTED_STATUS_SCORE_SLICE,
                 value: 1,
-                payload: averagePieData[0],
+                payload: weightedStatusScorePieData[0],
               },
             ]}
             customContent={
               <DonutChartTooltipContent
-                weightedSum={scorecard.result.averageWeightedSum}
-                maxPossible={scorecard.result.averageMaxPossible}
+                weightedSum={scorecard.result.weightedStatusSum}
+                maxPossible={scorecard.result.weightedStatusMaxPossible}
                 statusValues={scorecard.result.values}
               />
             }

@@ -85,7 +85,7 @@ jest.mock('../ResponsivePieChart', () => ({
           {data.name}: {data.value}
         </div>
       ))}
-      <div data-testid="average-pie-label-area">
+      <div data-testid="weighted-status-score-pie-label-area">
         <svg>
           {typeof LabelContent === 'function' ? (
             <LabelContent cx={100} cy={50} index={0} />
@@ -166,17 +166,17 @@ const mockScorecard: AggregatedMetricResult = {
   },
 };
 
-const mockAverageScorecard: AggregatedMetricResult = {
+const mockWeightedStatusScoreScorecard: AggregatedMetricResult = {
   ...mockScorecard,
   metadata: {
     ...mockScorecard.metadata,
-    aggregationType: aggregationTypes.average,
+    aggregationType: aggregationTypes.weightedStatusScore,
   },
   result: {
     ...mockScorecard.result,
-    averageScore: 75,
-    averageWeightedSum: 18,
-    averageMaxPossible: 24,
+    weightedStatusScore: 75,
+    weightedStatusSum: 18,
+    weightedStatusMaxPossible: 24,
     aggregationChartDisplayColor: 'warning.main',
   },
 };
@@ -422,27 +422,27 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
   });
 
-  it('should render two donut slices and center percent for average aggregation', () => {
+  it('should render two donut slices and center percent for weightedStatusScore aggregation', () => {
     render(
       <AggregatedMetricCard
-        scorecard={mockAverageScorecard}
-        aggregationId={mockAverageScorecard.id}
+        scorecard={mockWeightedStatusScoreScorecard}
+        aggregationId={mockWeightedStatusScoreScorecard.id}
         cardTitle="Generative AI APIs"
-        description="Weighted health average for the group."
+        description="Weighted health score for the group."
       />,
       { wrapper: TestWrapper },
     );
 
     expect(screen.getByTestId('pie-data-length')).toHaveTextContent('2');
     expect(
-      screen.getByTestId('pie-segment-averageScoreFill'),
+      screen.getByTestId('pie-segment-weightedStatusScoreFill'),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId('pie-segment-averageScoreRemainder'),
+      screen.getByTestId('pie-segment-weightedStatusScoreRemainder'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('average-card-center-percent')).toHaveTextContent(
-      '75%',
-    );
+    expect(
+      screen.getByTestId('weighted-status-score-card-center-percent'),
+    ).toHaveTextContent('75%');
   });
 
   it('should render error panel when aggregation type is not supported', () => {
