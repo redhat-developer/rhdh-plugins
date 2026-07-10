@@ -38,7 +38,7 @@ A `common-library` package must be safe for browser bundling. `createServiceRef`
 ```typescript
 // plugins/boost-node/src/services.ts
 import { createServiceRef } from '@backstage/backend-plugin-api';
-import type { AgenticProvider } from '@boost/plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 export const boostAiProviderServiceRef = createServiceRef<AgenticProvider>({
   id: 'boost.ai-provider',
