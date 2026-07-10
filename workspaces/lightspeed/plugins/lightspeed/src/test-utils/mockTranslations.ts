@@ -35,7 +35,14 @@ function flattenMessages(obj: any, prefix = ''): Record<string, string> {
 const flattenedMessages = flattenMessages(lightspeedMessages);
 
 export const mockT = (key: string, params?: any) => {
-  let message = flattenedMessages[key] || key;
+  let resolvedKey = key;
+  if (params && typeof params.count === 'number') {
+    const pluralSuffix = params.count === 1 ? '_one' : '_other';
+    if (flattenedMessages[`${key}${pluralSuffix}`]) {
+      resolvedKey = `${key}${pluralSuffix}`;
+    }
+  }
+  let message = flattenedMessages[resolvedKey] || key;
   if (params) {
     for (const [paramKey, paramValue] of Object.entries(params)) {
       message = message.replace(

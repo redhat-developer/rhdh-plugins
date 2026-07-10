@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.8.0
+
+### Minor Changes
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
 ## 2.7.9
 
 ## 2.7.8

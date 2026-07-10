@@ -28,13 +28,7 @@ import { TEMP_CONVERSATION_ID } from '../const';
 import botAvatarDark from '../images/bot-avatar-dark.svg';
 import botAvatarLight from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
-import {
-  Attachment,
-  BaseMessage,
-  LCSConversation,
-  ReferencedDocument,
-  ToolCall,
-} from '../types';
+import { Attachment, BaseMessage, LCSConversation, ToolCall } from '../types';
 import {
   createBotMessage,
   createUserMessage,
@@ -734,14 +728,10 @@ export const useConversationMessages = (
                             isLoading: false,
                           };
 
-                    if (documents.length) {
-                      lastMessage.sources = {
-                        sources: documents.map((doc: ReferencedDocument) => ({
-                          title: doc.doc_title,
-                          link: doc.doc_url,
-                          body: doc.doc_description,
-                        })),
-                      };
+                    const sourcesFromDocs =
+                      transformDocumentsToSources(documents);
+                    if (sourcesFromDocs) {
+                      lastMessage.sources = sourcesFromDocs;
                     }
 
                     const updatedConversation = [

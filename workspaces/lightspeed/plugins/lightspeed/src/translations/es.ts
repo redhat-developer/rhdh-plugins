@@ -314,6 +314,12 @@ const lightspeedTranslationEs = createTranslationMessages({
     'sort.label': 'Ordenar conversaciones',
     'sort.newest': 'Fecha (la más reciente primero)',
     'sort.oldest': 'Fecha (la más antigua primero)',
+    'sources.chip.label_one': '{{count}} Fuente',
+    'sources.chip.label_other': '{{count}} Fuentes',
+    'sources.modal.description':
+      'Las siguientes fuentes se utilizaron para generar esta respuesta de IA y proporcionar información complementaria:',
+    'sources.modal.title': 'Fuentes',
+    'sources.popover.closeAriaLabel': 'Cerrar fuentes',
     'tabs.ariaLabel': 'Vistas del asistente inteligente',
     'tabs.chat': 'Chat',
     'tabs.notebooks': 'Cuadernos',

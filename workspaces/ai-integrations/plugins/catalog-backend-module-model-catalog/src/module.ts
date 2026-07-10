@@ -35,13 +35,15 @@ export const catalogModuleModelCatalogResourceEntityProvider =
         deps: {
           catalog: catalogProcessingExtensionPoint,
           config: coreServices.rootConfig,
+          discovery: coreServices.discovery,
+          auth: coreServices.auth,
           logger: coreServices.logger,
           scheduler: coreServices.scheduler,
         },
-        async init({ catalog, config, logger, scheduler }) {
-          catalog.addEntityProvider(
-            ModelCatalogResourceEntityProvider.fromConfig(
-              { config, logger },
+        async init({ catalog, config, discovery, auth, logger, scheduler }) {
+          try {
+            const ep = ModelCatalogResourceEntityProvider.fromConfig(
+              { config, logger, discovery, auth },
               {
                 schedule: scheduler.createScheduledTaskRunner({
                   frequency: { seconds: 30 },
@@ -49,8 +51,12 @@ export const catalogModuleModelCatalogResourceEntityProvider =
                 }),
                 scheduler: scheduler,
               },
-            ),
-          );
+            );
+            catalog.addEntityProvider(ep);
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
         },
       });
     },
