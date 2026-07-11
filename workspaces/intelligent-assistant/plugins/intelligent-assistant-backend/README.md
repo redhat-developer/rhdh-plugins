@@ -81,15 +81,15 @@ All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebo
 
 Update permission names in your `rbac-policy.csv`:
 
-| Before                     | After                                            |
-| -------------------------- | ------------------------------------------------ |
-| `lightspeed.chat.read`     | `intelligent-assistant.conversations.access`     |
-| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`                 |
-| `lightspeed.chat.delete`   | `intelligent-assistant.conversations.manage`     |
-| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`              |
-| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`            |
-| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`                 |
-| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`               |
+| Before                     | After                                        |
+| -------------------------- | -------------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.conversations.access` |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`             |
+| `lightspeed.chat.delete`   | `intelligent-assistant.conversations.manage` |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`          |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`        |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`             |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`           |
 
 #### 5. OFS dynamic plugin configuration
 

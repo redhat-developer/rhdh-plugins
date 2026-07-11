@@ -29,9 +29,9 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
   lightspeedChatUpdatePermission,
+  lightspeedChatUsePermission,
   lightspeedConversationsAccessPermission,
   lightspeedConversationsManagePermission,
-  lightspeedChatUsePermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
