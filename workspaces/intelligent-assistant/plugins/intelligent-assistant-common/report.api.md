@@ -6,16 +6,16 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public
-export const lightspeedChatCreatePermission: BasicPermission;
-
-// @public
-export const lightspeedChatDeletePermission: BasicPermission;
-
-// @public
-export const lightspeedChatReadPermission: BasicPermission;
-
-// @public
 export const lightspeedChatUpdatePermission: BasicPermission;
+
+// @public
+export const lightspeedChatUsePermission: BasicPermission;
+
+// @public
+export const lightspeedConversationsAccessPermission: BasicPermission;
+
+// @public
+export const lightspeedConversationsManagePermission: BasicPermission;
 
 // @public
 export const lightspeedMcpManagePermission: BasicPermission;
