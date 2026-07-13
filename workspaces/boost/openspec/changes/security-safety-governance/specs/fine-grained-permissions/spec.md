@@ -16,7 +16,7 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
 - **THEN** the following agent permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
-  | `boost.agent.list` | — | — | View agent list (visibility filtering) |
+  | `boost.agent.list` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | View agent list (visibility filtering) |
   | `boost.agent.register` | — | — | Register an agent for governance |
   | `boost.agent.promote` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Submit draft for review (draft→pending) |
   | `boost.agent.approve` | `boost-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending (pending→published) |
@@ -26,6 +26,16 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
   | `boost.agent.withdraw` | `boost-agent` | `IS_OWNER` | Withdraw pending submission |
   | `boost.agent.delete` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Delete agent |
   | `boost.agent.configure` | — | — | Edit agent configuration |
+
+#### Scenario: Conditional list filtering (3-tier evaluation)
+
+- **WHEN** `boost.agent.list` is evaluated via `permissions.authorize()`
+- **THEN** the permission returns one of three results:
+  - **ALLOW** — return all agents (no filtering)
+  - **DENY** — return no agents (empty list)
+  - **CONDITIONAL** — attach conditions to the request for the handler to apply as filters
+- **AND** deployers can configure visibility rules via RBAC policies (e.g., `IS_OWNER` to show only the user's own agents, `HAS_LIFECYCLE_STAGE` to show only published agents)
+- **AND** this aligns with the augment workspace's `augment.agent.list` design (PR #3331), enabling a shared 3-tier evaluation model across both workspaces
 
 #### Scenario: Self-approval prevention via IS_NOT_CREATOR rule
 
@@ -141,3 +151,15 @@ Non-lifecycle functional areas MUST have dedicated permissions for access contro
   | `boost.mcp.manage` | update | Configure MCP servers |
   | `boost.config.manage` | update | Modify admin configuration |
 - **AND** these supplement the lifecycle permissions for comprehensive coverage
+
+### Requirement: Augment Design Alignment
+
+Boost and Augment MUST share the same permission evaluation model for agent list endpoints.
+
+#### Scenario: Shared 3-tier evaluation model
+
+- **WHEN** either `boost.agent.list` or `augment.agent.list` is evaluated
+- **THEN** both use the resource-based permission pattern with 3-tier evaluation (ALLOW/DENY/CONDITIONAL)
+- **AND** both define their list permission with a resource type (`boost-agent` / `augment-agent`)
+- **AND** both support `IS_OWNER` and `HAS_LIFECYCLE_STAGE` conditional rules for visibility filtering
+- **AND** the `authorizeLifecycleAction` middleware handles CONDITIONAL results by attaching conditions to the request for the route handler to apply as filters

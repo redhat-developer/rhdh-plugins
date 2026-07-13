@@ -86,15 +86,17 @@ describe('boost-common', () => {
       }
     });
 
-    it('exports 7 resource-scoped agent permissions', () => {
-      expect(boostAgentResourcePermissions).toHaveLength(7);
+    it('exports 8 resource-scoped agent permissions', () => {
+      expect(boostAgentResourcePermissions).toHaveLength(8);
       for (const perm of boostAgentResourcePermissions) {
         expect(perm.resourceType).toBe(BOOST_AGENT_RESOURCE_TYPE);
       }
     });
 
-    it('basic agent permissions have no resourceType', () => {
-      expect(boostAgentListPermission).not.toHaveProperty('resourceType');
+    it('list permission is resource-scoped for conditional filtering', () => {
+      expect(boostAgentListPermission.resourceType).toBe(
+        BOOST_AGENT_RESOURCE_TYPE,
+      );
     });
 
     it('resource agent permissions have resourceType', () => {

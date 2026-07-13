@@ -38,17 +38,19 @@ export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
 export const BOOST_TOOL_RESOURCE_TYPE = 'boost-tool';
 
 // ---------------------------------------------------------------------------
-// Agent permissions — 10 total (3 basic + 7 resource-scoped)
+// Agent permissions — 10 total (2 basic + 8 resource-scoped)
 // ---------------------------------------------------------------------------
 
 /**
  * View agent list (visibility filtering).
+ * Conditional rules: IS_OWNER, HAS_LIFECYCLE_STAGE.
  *
  * @public
  */
 export const boostAgentListPermission = createPermission({
   name: 'boost.agent.list',
   attributes: { action: 'read' },
+  resourceType: BOOST_AGENT_RESOURCE_TYPE,
 });
 
 /**
@@ -412,6 +414,7 @@ export const boostFunctionalPermissions = [
 export const boostAgentResourcePermissions: ResourcePermission<
   typeof BOOST_AGENT_RESOURCE_TYPE
 >[] = [
+  boostAgentListPermission,
   boostAgentPromotePermission,
   boostAgentApprovePermission,
   boostAgentDemotePermission,

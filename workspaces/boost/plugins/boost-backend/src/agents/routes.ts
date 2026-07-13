@@ -35,7 +35,10 @@ import {
   boostAgentWithdrawPermission,
   boostAgentDeletePermission,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import { authorizeLifecycleAction } from '../middleware/security';
+import {
+  authorizeLifecycleAction,
+  type BoostAuthorizedRequest,
+} from '../middleware/security';
 import type { AgentLifecycleStore } from './AgentLifecycleStore';
 import { isValidTransition, isDeletableStage } from './lifecycle';
 
@@ -117,6 +120,16 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
     async (_req, res, next) => {
       try {
         const agents = await store.list();
+        const conditions = (_req as BoostAuthorizedRequest)
+          .boostPermissionConditions;
+        if (conditions) {
+          // TODO: Apply conditions as filters when resource loader populates
+          // createdBy/lifecycleStage on agent records. Until then, CONDITIONAL
+          // results pass through unfiltered (same as ALLOW).
+          logger.debug(
+            'boost.agent.list returned CONDITIONAL — filtering deferred until resource loader is implemented',
+          );
+        }
         res.json({ agents });
       } catch (error) {
         next(error);

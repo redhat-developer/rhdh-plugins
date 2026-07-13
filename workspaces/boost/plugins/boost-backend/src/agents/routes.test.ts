@@ -58,7 +58,7 @@ function createMockPermissions(
 ): PermissionsService {
   return {
     authorize: jest.fn().mockResolvedValue([{ result }]),
-    authorizeConditional: jest.fn(),
+    authorizeConditional: jest.fn().mockResolvedValue([{ result }]),
   };
 }
 
@@ -566,22 +566,23 @@ describe('agent routes', () => {
         list: jest.fn().mockResolvedValue(agents),
       });
 
+      const authorizeConditionalMock = jest
+        .fn()
+        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
       const authorizeMock = jest
         .fn()
-        // First call: fine-grained → DENY
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }])
-        // Second call: admin → ALLOW
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
 
       const permissions: PermissionsService = {
         authorize: authorizeMock,
-        authorizeConditional: jest.fn(),
+        authorizeConditional: authorizeConditionalMock,
       };
       testApp = await createTestApp({ store, permissions });
 
       const res = await fetchJson(testApp.url, '/agents');
       expect(res.status).toBe(200);
-      expect(authorizeMock).toHaveBeenCalledTimes(2);
+      expect(authorizeConditionalMock).toHaveBeenCalledTimes(1);
+      expect(authorizeMock).toHaveBeenCalledTimes(1);
     });
   });
 });
