@@ -36,6 +36,12 @@ RHDHPLAN-1507 focuses on entity model, ingestion infrastructure, and data pipeli
 
 ---
 
+> **Stakeholder Alignment (2026-07-13):** Per conference call with stakeholders covering overlaps across RHDHPLAN-393, RHDHPLAN-404, RHDHPLAN-1113, RHDHPLAN-1507, RHDHPLAN-1510, RHDHPLAN-1513:
+>
+> - **RHDHPLAN-1113 dependency confirmed:** RHDHPLAN-1507 will depend on RHDHPLAN-1113 for entity kind mappings. Boost already uses `AIResource` for skills/rules and will refrain from defining any new catalog entity mappings — RHDHPLAN-1113 owns the kind definitions. This updates the entity model strategy: rather than mapping exclusively to existing kinds (Resource, Component), the AI Catalog will use `AIResource` kinds from RHDHPLAN-1113 where applicable.
+> - **MCP resource mapping deferred for 2.1:** Christophe consented that MCP resources can be removed as a required mapping for RHDH 2.1. Due diligence confirmation upstream is pending to ensure nothing is in progress for MCP resource entity kinds.
+> - **Entity schema dependency on RHDHPLAN-404:** The new extended API entity schema being worked upstream (via RHDHPLAN-404's KServe/KubeFlow plugin transition) will be leveraged by RHDHPLAN-1510, which in turn affects the entity model defined here. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK will adopt the new `AIResource` kind mappings directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, it uses Resource/Component as an interim mapping and migrates when RHDHPLAN-1113 merges.
+
 > **Jira Consolidation (2026-07-08):** Following review, 4 of 7 epics under RHDHPLAN-1507 were closed and their scope absorbed into surviving epics:
 >
 > - **RHIDP-15254** (Annotation Scheme) → closed, scope absorbed into **RHIDP-15258** (Entity-Provider SDK)
@@ -248,13 +254,13 @@ The Backstage catalog backend already uses `EventsService` from `@backstage/plug
 
 2. **The Backstage catalog is designed for exactly this kind of extension.** Custom annotations (low risk), custom `spec.type` values (low risk), custom entity providers (`EntityProvider` interface), delta mutations, incremental providers, custom processors — all are first-class extension mechanisms.
 
-3. **The critical design decision — using existing kinds (Resource, Component) instead of custom kinds — is already correct.** Custom entity kinds have "very large impact" because many plugins hard-code kind checks. Mapping AI assets to Resource and Component avoids this entirely.
+3. **The entity kind strategy is evolving per stakeholder alignment (2026-07-13).** The original approach — mapping to existing kinds (Resource, Component) to avoid custom-kind risk — remains the baseline. However, RHDHPLAN-1507 now depends on RHDHPLAN-1113 for `AIResource` kind definitions, and Boost will refrain from defining new catalog entity mappings independently. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK will adopt the new `AIResource` kind mappings directly; otherwise it uses Resource/Component as an interim mapping and migrates when RHDHPLAN-1113 merges. MCP resource mapping is deferred for RHDH 2.1.
 
 4. **Delta sync is not novel engineering — it's using the existing `applyMutation` API correctly.** The `type: 'delta'` mutation and the `IncrementalEntityProvider` interface handle the hard parts. The SDK wraps these with AI Catalog-specific abstractions. (Scope now in RHIDP-15258.)
 
 5. **The only area without a dedicated Backstage extension point is Neo4j sync (RHIDP-15295).** The catalog has no "secondary data store" hook. However, catalog API polling is a well-understood pattern and is fully decoupled from catalog internals. This is not a blocker — it's a design choice.
 
-6. **No PM discussion needed for RHDHPLAN-1507** (unlike RHDHPLAN-1508 where 1 area required clarification on default-deny policy). All acceptance criteria can be implemented as specified.
+6. **Stakeholder alignment completed (2026-07-13)** — overlaps with RHDHPLAN-393, RHDHPLAN-404, and RHDHPLAN-1113 have been sorted out. Key outcomes: RHDHPLAN-1507 depends on RHDHPLAN-1113 for entity kind mappings, RHDHPLAN-404 provides the extended API entity schema that RHDHPLAN-1510 leverages, and MCP resource mapping is deferred for 2.1. No PM discussion needed beyond what was resolved in the stakeholder call.
 
 7. **Epic consolidation reduced 7 epics to 3 without losing scope.** The closed epics (annotation scheme, delta sync, air-gapped, perf/resilience) described capabilities that are either standard framework features or cross-cutting acceptance criteria better housed in the epics that implement them.
 

@@ -33,6 +33,12 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ---
 
+> **Stakeholder Alignment (2026-07-13):** Per conference call with stakeholders covering overlaps across RHDHPLAN-393, RHDHPLAN-404, RHDHPLAN-1113, RHDHPLAN-1507, RHDHPLAN-1510, RHDHPLAN-1513:
+>
+> - **RHDHPLAN-393 confirmed complementary:** No duplication of ingestion between RHDHPLAN-393 (community upstream MCP Registry entity provider) and RHDHPLAN-1510 (productization). Staging between the two will happen in normal ceremonies with the RHDH AI team.
+> - **RHDHPLAN-404 dependency for RHOAI entity schema:** RHDHPLAN-404 (KServe/KubeFlow plugin transition) will provide the new extended API entity schema that RHDHPLAN-1510 leverages for RHIDP-15314 (RHOAI connector). RHDHPLAN-1510 can proceed independently via continued use of Resource entities and/or the Catalog Model Layer (like RHDHPLAN-404) to employ a pre-merge version of the schema being curated upstream.
+> - **Llamastack/OGX connector scope:** RHDHPLAN-1510 / Boost will add a llamastack/OGX connector as an additional model information source alongside the RHOAI connector.
+
 > **Jira Consolidation (2026-07-08):** 1 of 4 epics under RHDHPLAN-1510 was closed:
 >
 > - **RHIDP-15315** (OCI Skill Registry Connector) → closed, scope absorbed into **RHIDP-15294** (OCI Skill Registry Ingestion Framework, RHDHPLAN-1507)
@@ -54,11 +60,11 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 | Custom CA bundles from K8s Secret/ConfigMap mounts for mirrored registry TLS       | **YES**                            | Standard Node.js TLS configuration. Load CA from mounted file path, pass to HTTP client. Shared utility from RHIDP-15316                          |
 | K8s Secret-based credentials for private/authenticated registries                  | **YES**                            | Standard RHDH pattern — `$env:` references in app-config resolve to mounted K8s Secret values                                                     |
 | Entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version` annotations | **YES**                            | Custom annotations set during entity emission. The productization layer enriches entities emitted by the upstream provider before `applyMutation` |
-| Integrates with 1507's shared ingestion framework/SDK validation                   | **YES**                            | Application-level — the connector uses the SDK's validation functions before emitting entities                                                    |
+| Integrates with RHDHPLAN-1507's shared ingestion framework/SDK validation          | **YES**                            | Application-level — the connector uses the SDK's validation functions before emitting entities                                                    |
 
 **Verdict: FULLY FEASIBLE** — This epic is a productization wrapper around the upstream MCP Registry connector (RHDHPLAN-393). It adds configuration, credential handling, and annotation enrichment — all standard patterns. The upstream connector handles the core `/v1/servers` API integration; this epic adds the deployment hardening. No upstream Backstage changes needed.
 
-**Dependency note:** Requires RHDHPLAN-393 (upstream MCP Registry entity provider) to be implemented first. This epic layers on top, not replaces.
+**Dependency note:** Requires RHDHPLAN-393 (upstream MCP Registry entity provider) to be implemented first. This epic layers on top, not replaces. Stakeholder alignment (2026-07-13) confirmed the two are complementary with no ingestion duplication; staging happens in normal RHDH AI team ceremonies.
 
 ---
 
@@ -80,6 +86,8 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 **Verdict: FULLY FEASIBLE** — This is a standard entity provider implementation against the Kubeflow Model Registry and RHOAI MCP catalog APIs. The Backstage `EntityProvider` interface handles everything needed. The `redhat-ai-dev/model-catalog-bridge` provides architectural prior art. No upstream Backstage changes needed.
 
 **Key implementation note:** Two independently toggleable sources can be implemented as either (a) two separate `EntityProvider` instances (simpler, each with its own bucket), or (b) a single provider that conditionally fetches from both sources and emits all entities in one `applyMutation`. Option (a) is cleaner — each source has its own isolated bucket and independent failure domains.
+
+**Dependency note (2026-07-13):** RHDHPLAN-404 will provide the new extended API entity schema that this connector leverages. RHIDP-15314 can proceed independently using Resource entities or a pre-merge version of the schema via the Catalog Model Layer. Additionally, RHDHPLAN-1510 / Boost will add a llamastack/OGX connector as an additional model information source.
 
 ---
 
@@ -152,12 +160,12 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 4. **The cross-connector shared infrastructure (RHIDP-15316) now also carries air-gapped scope.** RHIDP-15263 (Air-Gapped Deployment, RHDHPLAN-1507) was closed and its scope absorbed into RHIDP-15316. This is a natural fit — CA bundle loading, K8s Secret credential injection, and configurable endpoints are shared utilities used by all connectors.
 
-5. **No PM discussion needed.** All acceptance criteria can be implemented exactly as specified. This contrasts with RHDHPLAN-1508 (1 area needing PM discussion) and aligns with RHDHPLAN-1507 (also no PM discussion needed).
+5. **Stakeholder alignment completed (2026-07-13)** — overlaps with RHDHPLAN-393, RHDHPLAN-404, and RHDHPLAN-1113 have been sorted out. RHDHPLAN-393 is confirmed complementary (no ingestion duplication). RHDHPLAN-404 provides the extended API entity schema that RHIDP-15314 leverages. RHDHPLAN-1510 / Boost will also add a llamastack/OGX connector. No PM discussion needed beyond what was resolved in the stakeholder call.
 
 6. **Dependency chain is clear and manageable:**
    - RHIDP-15316 (shared infra) has no dependencies — build first
    - RHIDP-15313 (MCP Registry) depends on RHDHPLAN-393 (upstream connector) + RHIDP-15316
-   - RHIDP-15314 (RHOAI) depends on RHIDP-15316
+   - RHIDP-15314 (RHOAI) depends on RHIDP-15316; RHDHPLAN-404 provides entity schema (can proceed independently via Resource entities or pre-merge schema)
    - OCI connector scope now in RHIDP-15294 (RHDHPLAN-1507), depends on RHIDP-15316
 
 ## Comparison Across Features
