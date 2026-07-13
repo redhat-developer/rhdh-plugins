@@ -36,6 +36,10 @@ on:
     types: [created]
   pull_request_target:
     types: [opened, synchronize, ready_for_review, closed]
+    paths:
+      - "workspaces/boost/**"
+      - "workspaces/scorecard/**"
+      - "workspaces/ai-integrations/**"
   pull_request_review:
     types: [submitted]
 
