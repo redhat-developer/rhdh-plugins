@@ -23,4 +23,7 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
-export { TemplateCardWithBadge } from './components/TemplateCardWithBadge';
+export {
+  TemplateCardWithBadge,
+  type TemplateCardWithBadgeProps,
+} from './components/TemplateCardWithBadge';

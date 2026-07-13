@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export { TemplateCardWithBadge } from './TemplateCardWithBadge';
+export {
+  TemplateCardWithBadge,
+  type TemplateCardWithBadgeProps,
+} from './TemplateCardWithBadge';
