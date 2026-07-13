@@ -57,8 +57,6 @@ Determine:
 
 Use these criteria as checkpoints. If a checkpoint fails, fix the root
 cause — do not weaken the check.
-.git/info/exclude:1:AGENTS.md	AGENTS.md
-.git/info/exclude:1:AGENTS.md	.fullsend/AGENTS.md
 
 ## 6. RHDH workspace routing
 
