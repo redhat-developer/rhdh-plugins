@@ -14,7 +14,7 @@ Boost ships as a set of modular RHDH dynamic plugins (OCI) and Backstage static 
 
 | Package                           | Purpose                                                           |
 | --------------------------------- | ----------------------------------------------------------------- |
-| `boost-frontend`                  | Chat UI, agent gallery, admin panels, composable extensions       |
+| `boost`                           | Chat UI, agent gallery, admin panels, composable extensions       |
 | `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)   |
 | `boost-node`                      | Service refs, extension points (`node-library` role)              |
 | `boost-backend`                   | Core routes, services, middleware, cross-cutting entity providers |
@@ -72,4 +72,4 @@ These principles are informed by the Augment reference prototype's experience (s
 - `plugins/boost-backend/src/services/` — RuntimeConfigResolver, config validation, cache management
 - `plugins/boost-backend/src/routes/` — admin panel API routes
 - `plugins/boost-common/src/config.d.ts` — generated from Zod schemas
-- `plugins/boost-frontend/src/admin/` — admin panel components, feature flag integration
+- `plugins/boost/src/admin/` — admin panel components, feature flag integration

@@ -95,8 +95,8 @@ describe('useAiAssets', () => {
 
     expect(result.current.entities).toHaveLength(2);
     expect(result.current.entities.map(e => e.metadata.name)).toEqual([
-      'test-skill',
       'test-agent',
+      'test-skill',
     ]);
   });
 

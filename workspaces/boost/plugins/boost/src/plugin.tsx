@@ -44,24 +44,24 @@ const aiCatalogPage = PageBlueprint.make({
 // ---------------------------------------------------------------------------
 // Entity Card Blueprints — stubs with isAiAsset filter
 // ---------------------------------------------------------------------------
-const aiAssetSummaryCard = EntityCardBlueprint.make({
-  name: 'ai-asset-summary',
+const summaryCard = EntityCardBlueprint.make({
+  name: 'summary',
   params: {
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/AiAssetSummaryCard').then(m => (
-        <m.AiAssetSummaryCard />
+      import('./components/catalog/entity/SummaryCard').then(m => (
+        <m.SummaryCard />
       )),
   },
 });
 
-const downloadAdoptCard = EntityCardBlueprint.make({
-  name: 'download-adopt',
+const adoptionCard = EntityCardBlueprint.make({
+  name: 'adoption',
   params: {
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/DownloadAdoptCard').then(m => (
-        <m.DownloadAdoptCard />
+      import('./components/catalog/entity/AdoptionCard').then(m => (
+        <m.AdoptionCard />
       )),
   },
 });
@@ -71,7 +71,7 @@ const versionListCard = EntityCardBlueprint.make({
   params: {
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/VersionListCard').then(m => (
+      import('./components/catalog/entity/VersionListCard').then(m => (
         <m.VersionListCard />
       )),
   },
@@ -89,7 +89,7 @@ const usageTab = EntityContentBlueprint.make({
     title: 'Usage',
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/UsageTab').then(m => <m.UsageTab />),
+      import('./components/catalog/entity/UsageTab').then(m => <m.UsageTab />),
   },
 });
 
@@ -113,8 +113,8 @@ export const boostPlugin = createFrontendPlugin({
   pluginId: 'boost',
   extensions: [
     aiCatalogPage,
-    aiAssetSummaryCard,
-    downloadAdoptCard,
+    summaryCard,
+    adoptionCard,
     versionListCard,
     usageTab,
   ],

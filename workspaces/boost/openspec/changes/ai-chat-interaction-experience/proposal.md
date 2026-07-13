@@ -44,7 +44,7 @@ Boost builds the frontend as composable extensions from the start — chat, admi
 
 ## Impact
 
-- `plugins/boost-frontend/src/plugin.ts` — composable routable extensions
-- `plugins/boost-frontend/src/components/ChatView.tsx` — lazy loading, capability checks
-- `plugins/boost-frontend/src/components/AdminLayout.tsx` — lazy loading per panel group
+- `plugins/boost/src/plugin.ts` — composable routable extensions
+- `plugins/boost/src/components/ChatView.tsx` — lazy loading, capability checks
+- `plugins/boost/src/components/AdminLayout.tsx` — lazy loading per panel group
 - `plugins/boost-common/src/config.d.ts` — feature flags schema

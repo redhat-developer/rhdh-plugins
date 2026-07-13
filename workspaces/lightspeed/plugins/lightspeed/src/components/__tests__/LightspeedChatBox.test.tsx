@@ -45,6 +45,14 @@ jest.mock('../../hooks/useFeedbackActions', () => ({
   }),
 }));
 
+jest.mock('../SourcesChipModal', () => ({
+  SourcesChipModal: (props: any) => (
+    <div data-testid="sources-chip-modal">
+      {props.sources?.sources?.length ?? 0} sources
+    </div>
+  ),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -68,6 +76,7 @@ jest.mock('@patternfly/chatbot', () => {
         {props.extraContent?.beforeMainContent}
         {props.content}
         {props.extraContent?.afterMainContent}
+        {props.extraContent?.endContent}
       </div>
     ),
   };
@@ -182,5 +191,53 @@ describe('LightspeedChatBox', () => {
     expect(deepThinking.textContent).toContain('Line 1');
     expect(deepThinking.textContent).toContain('Line 2');
     expect(deepThinking.textContent).toContain('Line 3');
+  });
+
+  it('should render SourcesChipModal as endContent when showSourcesChipPopover is true', () => {
+    const messagesWithSources = [
+      {
+        role: 'bot' as const,
+        content: 'Here is the answer.',
+        timestamp: '2024-01-01T00:00:00Z',
+        sources: {
+          sources: [
+            { title: 'doc.md', body: 'Some documentation', link: '' },
+            { title: 'config.yaml', body: 'Config file', link: '' },
+          ],
+        },
+      },
+    ];
+
+    render(
+      <LightspeedChatBox
+        {...defaultProps}
+        messages={messagesWithSources}
+        showSourcesChipPopover
+      />,
+    );
+
+    expect(screen.getByTestId('sources-chip-modal')).toBeInTheDocument();
+    expect(screen.getByTestId('sources-chip-modal')).toHaveTextContent(
+      '2 sources',
+    );
+  });
+
+  it('should not render SourcesChipModal when showSourcesChipPopover is false', () => {
+    const messagesWithSources = [
+      {
+        role: 'bot' as const,
+        content: 'Here is the answer.',
+        timestamp: '2024-01-01T00:00:00Z',
+        sources: {
+          sources: [{ title: 'doc.md', body: 'Some documentation', link: '' }],
+        },
+      },
+    ];
+
+    render(
+      <LightspeedChatBox {...defaultProps} messages={messagesWithSources} />,
+    );
+
+    expect(screen.queryByTestId('sources-chip-modal')).not.toBeInTheDocument();
   });
 });
