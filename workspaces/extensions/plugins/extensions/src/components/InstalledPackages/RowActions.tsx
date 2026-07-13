@@ -121,7 +121,7 @@ export const DownloadPackageYaml = ({
                 `./dynamic-plugins/dist/${pkg.packageName}`;
               const minimalYaml = `plugins:
   - package: ${JSON.stringify(dynamicArtifact)}
-    disabled: false
+    enabled: true
 `;
               // eslint-disable-next-line no-console
               console.info(
