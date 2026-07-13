@@ -7,6 +7,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
+import type { TemplateEntityV1beta3 } from '@backstage/plugin-scaffolder-common';
 
 // @public (undocumented)
 export const AdoptionInsightsIcon: IconComponent;
@@ -22,6 +23,17 @@ export const adoptionInsightsPlugin: BackstagePlugin<
   {},
   {}
 >;
+
+// @public (undocumented)
+export const TemplateCardWithBadge: (
+  input: TemplateCardWithBadgeProps,
+) => JSX_2.Element;
+
+// @public (undocumented)
+export type TemplateCardWithBadgeProps = {
+  template: TemplateEntityV1beta3;
+  onSelected?: (template: TemplateEntityV1beta3) => void;
+};
 
 // (No @packageDocumentation comment for this package)
 ```
