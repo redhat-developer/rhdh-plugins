@@ -188,7 +188,10 @@ describe('McpServersSettings', () => {
         const updated: McpServerResponse = {
           ...current,
           enabled: body.enabled ?? current.enabled,
-          hasToken: resolveTokenFieldAfterPatch(body.token, current.hasToken),
+          hasToken:
+            body.token === null
+              ? current.hasOrgToken
+              : resolveTokenFieldAfterPatch(body.token, current.hasToken),
           hasUserToken:
             body.token === null
               ? false
@@ -246,6 +249,87 @@ describe('McpServersSettings', () => {
 
     const dialog = getModalDialog();
     expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  it('shows remove personal token only when no organization default token exists', async () => {
+    servers = [
+      connectedServer('personal-only-server', {
+        hasUserToken: true,
+        hasOrgToken: false,
+        hasToken: true,
+        toolCount: 2,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('personal-only-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('personal-only-server');
+
+    const dialog = getModalDialog();
+    expect(
+      within(dialog).queryByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', { name: 'Remove personal token' }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not show remove personal token when organization default token exists', async () => {
+    renderSettings();
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    const dialog = getModalDialog();
+    expect(
+      within(dialog).getByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Remove personal token' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('removes personal token for servers without organization default token', async () => {
+    servers = [
+      connectedServer('personal-only-server', {
+        hasUserToken: true,
+        hasOrgToken: false,
+        hasToken: true,
+        toolCount: 2,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('personal-only-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('personal-only-server');
+
+    const dialog = getModalDialog();
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Remove personal token' }),
+    );
+
+    expect(within(dialog).getByText('Disconnecting...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(within(dialog).getByText('Token required')).toBeInTheDocument();
+    });
+
+    expect(
+      within(dialog).getByText(
+        'Token has been removed. To use this MCP server again, provide a new token.',
+      ),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+    expect(
+      within(dialog).getByRole('button', { name: 'Remove personal token' }),
+    ).toBeDisabled();
   });
 
   it('shows credential radios for servers with organization default token', async () => {

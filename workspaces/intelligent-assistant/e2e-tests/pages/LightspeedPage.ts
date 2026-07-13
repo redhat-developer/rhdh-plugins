@@ -275,7 +275,7 @@ export async function clickMcpServersStatusColumn(
   t: LightspeedMessages,
 ) {
   await mcpServersTable(page, t)
-    .getByRole('columnheader', { name: t['mcp.settings.status'] })
+    .getByRole('button', { name: t['mcp.settings.status'] })
     .click();
 }
 
@@ -332,7 +332,7 @@ export async function verifyMcpSettingsPanel(
     table.getByRole('button', { name: t['mcp.settings.name'] }),
   ).toBeVisible();
   await expect(
-    table.getByRole('columnheader', { name: t['mcp.settings.status'] }),
+    table.getByRole('button', { name: t['mcp.settings.status'] }),
   ).toBeVisible();
 
   await clickMcpServersStatusColumn(page, t);

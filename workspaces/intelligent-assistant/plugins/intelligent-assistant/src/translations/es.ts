@@ -146,6 +146,9 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': 'Usar token personal',
     'mcp.settings.modal.toolsHeading': 'Herramientas ({{count}})',
     'mcp.settings.modal.loadingTools': 'Cargando herramientas...',
+    'mcp.settings.modal.loadingStatus': 'Desconectando...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Se eliminó el token. Para volver a usar este servidor MCP, proporcione un nuevo token.',
     'mcp.settings.modal.noToolsAvailable': 'No hay herramientas disponibles.',
     'mcp.settings.modal.toolsLoadFailed':
       'No se pudieron cargar las herramientas.',
@@ -160,6 +163,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
     'mcp.settings.readOnlyAccess':
       'Tienes acceso de solo lectura a los servidores MCP.',
+    'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
     'mcp.settings.selectedCount':
       '{{selectedCount}} de {{totalCount}} seleccionados',

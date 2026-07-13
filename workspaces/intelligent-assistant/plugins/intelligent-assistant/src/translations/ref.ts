@@ -362,6 +362,9 @@ export const intelligentAssistantMessages = {
   'mcp.settings.modal.credentialMode.personal': 'Use personal token',
   'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
   'mcp.settings.modal.loadingTools': 'Loading tools...',
+  'mcp.settings.modal.loadingStatus': 'Disconnecting...',
+  'mcp.settings.modal.tokenRemovedWarning':
+    'Token has been removed. To use this MCP server again, provide a new token.',
   'mcp.settings.modal.noToolsAvailable': 'No tools available.',
   'mcp.settings.modal.toolsLoadFailed': 'Failed to load tools.',
   'mcp.settings.modal.enabledDescription':
@@ -373,6 +376,7 @@ export const intelligentAssistantMessages = {
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
   'mcp.settings.enterToken': 'Enter your token',
+  'mcp.settings.removePersonalToken': 'Remove personal token',
   'mcp.settings.token.clearAriaLabel': 'Clear token input',
   'mcp.settings.token.validating': 'Validating token...',
   'mcp.settings.token.savingAndValidating': 'Saving and validating token...',

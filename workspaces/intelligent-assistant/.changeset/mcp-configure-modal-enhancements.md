@@ -10,6 +10,7 @@ Refactor the MCP server configure modal with PatternFly layout and improved cred
 - Hide the tools section when the server is disabled; keep status consistent while drafting an unverified personal token
 - Disable Save after a failed token validation until the input changes
 - Auto-enable the server after a successful personal token save
+- Add sortable **Name** and **Status** columns to the MCP servers table, with always-visible sort icons (gray when inactive, directional when active)
 - Bump `@patternfly/react-core` to 6.6.0 and add translations for new modal strings (de, es, fr, it, ja)
 
 The backend now exposes `hasOrgToken` on MCP server list and patch responses so the UI can distinguish organization default tokens from personal-only servers.

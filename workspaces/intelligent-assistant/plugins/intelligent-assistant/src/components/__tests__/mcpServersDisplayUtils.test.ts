@@ -15,6 +15,7 @@
  */
 
 import {
+  compareMcpServers,
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
@@ -24,6 +25,7 @@ import {
   getModalEffectiveHasToken,
   getModalEnabledDescriptionKey,
   getModalVerifiedHasToken,
+  getStatusSortRank,
   hasModalEnabledStateChange,
   hasModalUnsavedChanges,
   isEnabledToggleUnavailable,
@@ -446,6 +448,20 @@ describe('mcpServersDisplayUtils', () => {
       ).toBe(true);
     });
 
+    it('enables save after personal token was removed', () => {
+      expect(
+        isSaveTokenDisabled({
+          ...baseArgs,
+          tokenInputValue: '',
+          initialTokenInputValue: '',
+          modalEnabled: false,
+          serverEnabled: false,
+          hasSavedPersonalTokenInModal: false,
+          hasRemovedPersonalToken: true,
+        }),
+      ).toBe(false);
+    });
+
     it('disables save after failed validation until token input changes', () => {
       expect(
         isSaveTokenDisabled({
@@ -469,6 +485,65 @@ describe('mcpServersDisplayUtils', () => {
           hasSavedPersonalTokenInModal: false,
         }),
       ).toBe(false);
+    });
+  });
+
+  describe('compareMcpServers', () => {
+    const server = (
+      name: string,
+      overrides: {
+        hasToken?: boolean;
+        enabled?: boolean;
+        status?: 'connected' | 'error' | 'unknown';
+        toolCount?: number;
+      } = {},
+    ) => ({
+      name,
+      hasToken: true,
+      enabled: true,
+      status: 'connected' as const,
+      toolCount: 0,
+      ...overrides,
+    });
+
+    it('sorts by name ascending', () => {
+      expect(
+        compareMcpServers(server('beta'), server('alpha'), 'name', true),
+      ).toBeGreaterThan(0);
+    });
+
+    it('sorts by name descending', () => {
+      expect(
+        compareMcpServers(server('alpha'), server('beta'), 'name', false),
+      ).toBeGreaterThan(0);
+    });
+
+    it('sorts by status rank ascending with name tie-breaker', () => {
+      const connected = server('beta', { status: 'connected' });
+      const failed = server('alpha', { status: 'error' });
+      expect(compareMcpServers(connected, failed, 'status', true)).toBeLessThan(
+        0,
+      );
+      expect(
+        compareMcpServers(failed, connected, 'status', true),
+      ).toBeGreaterThan(0);
+    });
+
+    it('sorts connected servers by tool count when status rank matches', () => {
+      const fewerTools = server('beta', { toolCount: 1 });
+      const moreTools = server('alpha', { toolCount: 5 });
+      expect(
+        compareMcpServers(fewerTools, moreTools, 'status', true),
+      ).toBeLessThan(0);
+    });
+  });
+
+  describe('getStatusSortRank', () => {
+    it('orders healthy statuses before error states', () => {
+      expect(getStatusSortRank('ok')).toBeLessThan(getStatusSortRank('failed'));
+      expect(getStatusSortRank('tokenRequired')).toBeLessThan(
+        getStatusSortRank('failed'),
+      );
     });
   });
 });

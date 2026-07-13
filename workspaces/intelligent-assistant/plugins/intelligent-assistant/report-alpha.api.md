@@ -247,6 +247,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.modal.credentialMode.personal': string;
     readonly 'mcp.settings.modal.toolsHeading': string;
     readonly 'mcp.settings.modal.loadingTools': string;
+    readonly 'mcp.settings.modal.loadingStatus': string;
+    readonly 'mcp.settings.modal.tokenRemovedWarning': string;
     readonly 'mcp.settings.modal.noToolsAvailable': string;
     readonly 'mcp.settings.modal.toolsLoadFailed': string;
     readonly 'mcp.settings.modal.enabledDescription': string;
@@ -255,6 +257,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.savedToken': string;
     readonly 'mcp.settings.personalAccessToken': string;
     readonly 'mcp.settings.enterToken': string;
+    readonly 'mcp.settings.removePersonalToken': string;
     readonly 'mcp.settings.token.clearAriaLabel': string;
     readonly 'mcp.settings.token.validating': string;
     readonly 'mcp.settings.token.savingAndValidating': string;

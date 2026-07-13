@@ -63,6 +63,7 @@ import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-
 
 import { useTranslation } from '../hooks/useTranslation';
 import {
+  compareMcpServers,
   formatApiError,
   getDisplayStatus,
   getEnabledToggleChecked,
@@ -74,6 +75,7 @@ import {
   isSaveTokenDisabled as getSaveTokenDisabled,
   isEnabledToggleUnavailable,
   type CredentialMode,
+  type McpServerSortColumn,
   type ServerStatus,
 } from './mcpServersDisplayUtils';
 
@@ -152,6 +154,25 @@ const useStyles = makeStyles(theme => ({
     textDecoration: 'none !important',
     display: 'inline-flex',
     alignItems: 'center',
+  },
+  statusHeaderButton: {
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    lineHeight: '1.25rem',
+    minHeight: 'auto',
+    color: theme.palette.text.primary,
+    textDecoration: 'none !important',
+    display: 'inline-flex',
+    alignItems: 'center',
+  },
+  sortHeaderIconActive: {
+    color: 'var(--pf-t--global--icon--color--brand--default, #0066cc)',
+  },
+  sortHeaderIconInactive: {
+    color: 'var(--pf-t--global--icon--color--subtle, #6a6e73)',
   },
   nameHeaderText: {
     paddingLeft: '7px',
@@ -290,6 +311,26 @@ const useStyles = makeStyles(theme => ({
     top: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
     right: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
     zIndex: 1,
+  },
+  removePersonalTokenButton: {
+    borderRadius: '1.25rem',
+    boxShadow: 'none',
+    '&:not(:disabled):not(.pf-m-disabled)': {
+      '--pf-v6-c-button--BorderColor': '#B1380B',
+      '--pf-v6-c-button--Color': '#B1380B',
+      '--pf-v6-c-button--BackgroundColor': 'transparent',
+      '--pf-v5-c-button--BorderColor': '#B1380B',
+      '--pf-v5-c-button--Color': '#B1380B',
+      '--pf-v5-c-button--BackgroundColor': 'transparent',
+      borderColor: '#B1380B',
+      color: '#B1380B',
+      backgroundColor: 'transparent',
+      '&:hover': {
+        '--pf-v6-c-button--BackgroundColor': 'rgba(201, 25, 11, 0.08)',
+        '--pf-v5-c-button--BackgroundColor': 'rgba(201, 25, 11, 0.08)',
+        backgroundColor: 'rgba(201, 25, 11, 0.08)',
+      },
+    },
   },
   configureModal: {
     '& .pf-v6-c-modal-box, & .pf-v5-c-modal-box': {
@@ -430,6 +471,7 @@ export const McpServersSettings = ({
   });
   const canManageMcp = mcpManagePermission.allowed;
   const [servers, setServers] = useState<McpServer[]>([]);
+  const [sortColumn, setSortColumn] = useState<McpServerSortColumn>('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
@@ -449,6 +491,9 @@ export const McpServersSettings = ({
   const [modalTools, setModalTools] = useState<string[]>([]);
   const [isLoadingModalTools, setIsLoadingModalTools] = useState(false);
   const [modalToolsError, setModalToolsError] = useState<string | null>(null);
+  const [canRemovePersonalToken, setCanRemovePersonalToken] = useState(false);
+  const [isUpdatingModalStatus, setIsUpdatingModalStatus] = useState(false);
+  const [hasRemovedPersonalToken, setHasRemovedPersonalToken] = useState(false);
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/intelligent-assistant`;
@@ -640,11 +685,36 @@ export const McpServersSettings = ({
 
   const sortedServers = useMemo(() => {
     const next = [...servers];
-    next.sort((a, b) =>
-      sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name),
-    );
+    next.sort((a, b) => compareMcpServers(a, b, sortColumn, sortAsc));
     return next;
-  }, [servers, sortAsc]);
+  }, [servers, sortAsc, sortColumn]);
+
+  const onSortColumnClick = (column: McpServerSortColumn) => {
+    if (sortColumn === column) {
+      setSortAsc(prev => !prev);
+      return;
+    }
+    setSortColumn(column);
+    setSortAsc(true);
+  };
+
+  const renderSortIcon = (column: McpServerSortColumn) => {
+    const isActive = sortColumn === column;
+    let Icon = SortAmountDownIcon;
+    if (isActive && !sortAsc) {
+      Icon = SortAmountUpIcon;
+    }
+
+    return (
+      <Icon
+        className={
+          isActive
+            ? classes.sortHeaderIconActive
+            : classes.sortHeaderIconInactive
+        }
+      />
+    );
+  };
 
   const getDisplayDetail = useCallback(
     (server: McpServer, displayStatus: ServerStatus): string => {
@@ -681,6 +751,9 @@ export const McpServersSettings = ({
     setModalTools([]);
     setIsLoadingModalTools(false);
     setModalToolsError(null);
+    setCanRemovePersonalToken(false);
+    setIsUpdatingModalStatus(false);
+    setHasRemovedPersonalToken(false);
   }, []);
 
   const openConfigureModal = (server: McpServer) => {
@@ -690,12 +763,15 @@ export const McpServersSettings = ({
     setModalCredentialMode(credentialMode);
     setInitialCredentialMode(credentialMode);
     setHasSavedTokenInModal(hasSavedPersonalToken);
+    setCanRemovePersonalToken(server.hasUserToken && !server.hasOrgToken);
     const initialToken = hasSavedPersonalToken ? SAVED_TOKEN_MASK : '';
     setInitialTokenInputValue(initialToken);
     setTokenInputValue(initialToken);
     setModalEnabled(server.enabled);
     setModalTools([]);
     setModalToolsError(null);
+    setIsUpdatingModalStatus(false);
+    setHasRemovedPersonalToken(false);
     if (server.status === 'error' && server.validationError) {
       setTokenValidationState('error');
       setTokenValidationMessage(
@@ -848,7 +924,52 @@ export const McpServersSettings = ({
     hasOrgToken: editingServer?.hasOrgToken ?? false,
     hasSavedPersonalTokenInModal: hasSavedTokenInModal,
     tokenValidationState,
+    hasRemovedPersonalToken,
   });
+
+  const removePersonalToken = useCallback(async () => {
+    if (
+      !editingServer ||
+      !canManageMcp ||
+      isUpdatingModalStatus ||
+      editingServer.hasOrgToken
+    ) {
+      return;
+    }
+
+    setIsUpdatingModalStatus(true);
+    setTokenInputValue('');
+    setTokenValidationState('idle');
+    setTokenValidationMessage('');
+    setModalTools([]);
+    setModalToolsError(null);
+    setIsLoadingModalTools(false);
+
+    try {
+      await patchServer(editingServer.name, { token: null, enabled: false });
+      setHasSavedTokenInModal(false);
+      setInitialTokenInputValue('');
+      setModalEnabled(false);
+      setHasRemovedPersonalToken(true);
+    } catch {
+      const server = servers.find(item => item.id === editingServerId);
+      if (server?.hasUserToken) {
+        setHasSavedTokenInModal(true);
+        setCanRemovePersonalToken(true);
+        setTokenInputValue(SAVED_TOKEN_MASK);
+      }
+      setHasRemovedPersonalToken(false);
+    } finally {
+      setIsUpdatingModalStatus(false);
+    }
+  }, [
+    canManageMcp,
+    editingServer,
+    editingServerId,
+    isUpdatingModalStatus,
+    patchServer,
+    servers,
+  ]);
 
   const saveServerToken = useCallback(async () => {
     if (!editingServer || !canManageMcp) return;
@@ -1019,6 +1140,7 @@ export const McpServersSettings = ({
   const isModalEnabledToggleDisabled =
     !canManageMcp ||
     !editingServer ||
+    isUpdatingModalStatus ||
     isEnabledToggleUnavailable(modalDisplayStatus) ||
     Boolean(isSaving[editingServer?.name ?? '']);
   const isModalEnabledChecked = getModalEnabledChecked({
@@ -1033,9 +1155,16 @@ export const McpServersSettings = ({
   const modalToolCount = modalTools.length || editingServer?.toolCount || 0;
 
   const renderModalStatusIcon = () => {
-    if (isLoadingModalTools) {
+    if (isUpdatingModalStatus || isLoadingModalTools) {
       return (
-        <Spinner size="md" aria-label={t('mcp.settings.modal.loadingTools')} />
+        <Spinner
+          size="md"
+          aria-label={
+            isUpdatingModalStatus
+              ? t('mcp.settings.modal.loadingStatus')
+              : t('mcp.settings.modal.loadingTools')
+          }
+        />
       );
     }
     if (modalDisplayStatus === 'disabled') {
@@ -1054,6 +1183,9 @@ export const McpServersSettings = ({
   };
 
   const renderModalStatusText = () => {
+    if (isUpdatingModalStatus) {
+      return t('mcp.settings.modal.loadingStatus');
+    }
     if (isLoadingModalTools) {
       return t('mcp.settings.modal.loadingTools');
     }
@@ -1123,6 +1255,15 @@ export const McpServersSettings = ({
         className={classes.modalInfoAlert}
         isInline
       />
+      {hasRemovedPersonalToken && !editingServer?.hasOrgToken && (
+        <Alert
+          variant="custom"
+          customIcon={<InfoCircleIcon />}
+          title={t('mcp.settings.modal.tokenRemovedWarning')}
+          className={classes.modalInfoAlert}
+          isInline
+        />
+      )}
       <div className={classes.modalSection}>
         <div className={classes.modalSectionTitle}>
           {t('mcp.settings.status')}
@@ -1237,16 +1378,28 @@ export const McpServersSettings = ({
               <Button
                 variant="link"
                 className={classes.nameHeaderButton}
-                icon={sortAsc ? <SortAmountDownIcon /> : <SortAmountUpIcon />}
+                icon={renderSortIcon('name')}
                 iconPosition="right"
-                onClick={() => setSortAsc(prev => !prev)}
+                onClick={() => onSortColumnClick('name')}
               >
                 <Typography component="span" className={classes.nameHeaderText}>
                   {t('mcp.settings.name')}
                 </Typography>
               </Button>
             </Th>
-            <Th className={classes.statusHeader}>{t('mcp.settings.status')}</Th>
+            <Th className={classes.statusHeader}>
+              <Button
+                variant="link"
+                className={classes.statusHeaderButton}
+                icon={renderSortIcon('status')}
+                iconPosition="right"
+                onClick={() => onSortColumnClick('status')}
+              >
+                <Typography component="span" className={classes.nameHeaderText}>
+                  {t('mcp.settings.status')}
+                </Typography>
+              </Button>
+            </Th>
             <Th screenReaderText={t('mcp.settings.edit')} />
           </Tr>
         </Thead>
@@ -1490,11 +1643,29 @@ export const McpServersSettings = ({
                   !canManageMcp ||
                   isConfigureModalSaving ||
                   tokenValidationState === 'validating' ||
-                  isSaveTokenButtonDisabled
+                  isSaveTokenButtonDisabled ||
+                  isUpdatingModalStatus
                 }
               >
                 {t('modal.save')}
               </Button>
+              {canRemovePersonalToken && (
+                <Button
+                  variant="secondary"
+                  onClick={() => void removePersonalToken()}
+                  isDisabled={
+                    !canManageMcp ||
+                    isConfigureModalSaving ||
+                    tokenValidationState === 'validating' ||
+                    isUpdatingModalStatus ||
+                    hasRemovedPersonalToken ||
+                    !hasSavedTokenInModal
+                  }
+                  className={classes.removePersonalTokenButton}
+                >
+                  {t('mcp.settings.removePersonalToken')}
+                </Button>
+              )}
               <Button variant="link" onClick={closeConfigureModal}>
                 {t('common.cancel')}
               </Button>

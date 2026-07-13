@@ -21,6 +21,8 @@ export type ServerStatus =
   | 'failed'
   | 'unknown';
 
+export type McpServerSortColumn = 'name' | 'status';
+
 export type CredentialMode = 'organization' | 'personal';
 
 export type McpServerDisplayInput = {
@@ -55,6 +57,55 @@ export const getDisplayStatus = (
   if (server.status === 'error') return 'failed';
   if (server.status === 'connected') return 'ok';
   return 'unknown';
+};
+
+export const getStatusSortRank = (status: ServerStatus): number => {
+  switch (status) {
+    case 'ok':
+      return 0;
+    case 'disabled':
+      return 1;
+    case 'unknown':
+      return 2;
+    case 'tokenRequired':
+      return 3;
+    case 'failed':
+      return 4;
+    default:
+      return 5;
+  }
+};
+
+export type McpServerSortInput = McpServerDisplayInput & {
+  name: string;
+  toolCount?: number;
+};
+
+export const compareMcpServers = (
+  a: McpServerSortInput,
+  b: McpServerSortInput,
+  sortColumn: McpServerSortColumn,
+  sortAsc: boolean,
+): number => {
+  const direction = sortAsc ? 1 : -1;
+
+  if (sortColumn === 'name') {
+    return direction * a.name.localeCompare(b.name);
+  }
+
+  const statusCompare =
+    getStatusSortRank(getDisplayStatus(a)) -
+    getStatusSortRank(getDisplayStatus(b));
+  if (statusCompare !== 0) {
+    return direction * statusCompare;
+  }
+
+  const toolCompare = (a.toolCount ?? 0) - (b.toolCount ?? 0);
+  if (toolCompare !== 0) {
+    return direction * toolCompare;
+  }
+
+  return direction * a.name.localeCompare(b.name);
 };
 
 export const isEnabledToggleUnavailable = (
@@ -155,6 +206,7 @@ export const isSaveTokenDisabled = ({
   hasOrgToken,
   hasSavedPersonalTokenInModal,
   tokenValidationState = 'idle',
+  hasRemovedPersonalToken = false,
 }: {
   tokenInputValue: string;
   initialTokenInputValue: string;
@@ -165,12 +217,17 @@ export const isSaveTokenDisabled = ({
   hasOrgToken: boolean;
   hasSavedPersonalTokenInModal: boolean;
   tokenValidationState?: TokenValidationState;
+  hasRemovedPersonalToken?: boolean;
 }): boolean => {
   if (
     tokenValidationState === 'error' &&
     tokenInputValue === initialTokenInputValue
   ) {
     return true;
+  }
+
+  if (hasRemovedPersonalToken) {
+    return false;
   }
 
   if (

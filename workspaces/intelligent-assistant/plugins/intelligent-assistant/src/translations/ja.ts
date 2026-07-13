@@ -144,6 +144,9 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': '個人トークンを使用',
     'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
     'mcp.settings.modal.loadingTools': 'ツールを読み込み中...',
+    'mcp.settings.modal.loadingStatus': '切断中...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'トークンが削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
     'mcp.settings.modal.noToolsAvailable': '利用可能なツールがありません。',
     'mcp.settings.modal.toolsLoadFailed': 'ツールの読み込みに失敗しました。',
     'mcp.settings.modal.enabledDescription':
@@ -157,6 +160,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.personalAccessToken': '個人アクセストークン',
     'mcp.settings.readOnlyAccess':
       'MCP サーバーへのアクセスは読み取り専用です。',
+    'mcp.settings.removePersonalToken': '個人トークンを削除',
     'mcp.settings.savedToken': '保存済みトークン',
     'mcp.settings.selectedCount':
       '{{totalCount}} 件中 {{selectedCount}} 件を選択',

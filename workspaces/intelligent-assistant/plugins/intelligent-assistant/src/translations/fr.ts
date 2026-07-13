@@ -149,6 +149,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': 'Utiliser un jeton personnel',
     'mcp.settings.modal.toolsHeading': 'Outils ({{count}})',
     'mcp.settings.modal.loadingTools': 'Chargement des outils...',
+    'mcp.settings.modal.loadingStatus': 'Déconnexion...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Le jeton a été supprimé. Pour réutiliser ce serveur MCP, fournissez un nouveau jeton.',
     'mcp.settings.modal.noToolsAvailable': 'Aucun outil disponible.',
     'mcp.settings.modal.toolsLoadFailed': 'Échec du chargement des outils.',
     'mcp.settings.modal.enabledDescription':
@@ -162,6 +165,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
     'mcp.settings.readOnlyAccess':
       'Vous disposez d’un accès en lecture seule aux serveurs MCP.',
+    'mcp.settings.removePersonalToken': 'Supprimer le jeton personnel',
     'mcp.settings.savedToken': 'Jeton enregistré',
     'mcp.settings.selectedCount':
       '{{selectedCount}} sur {{totalCount}} sélectionnés',
