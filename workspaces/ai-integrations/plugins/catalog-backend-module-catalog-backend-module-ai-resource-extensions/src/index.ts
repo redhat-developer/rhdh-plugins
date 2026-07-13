@@ -20,3 +20,8 @@
  * @public
  */
 export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
+export {
+  AIResourceScopeValidator,
+  VALID_AI_RESOURCE_SCOPES,
+} from './AIResourceScopeValidator';
+export type { AIResourceScope } from './AIResourceScopeValidator';
