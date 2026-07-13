@@ -1,97 +1,67 @@
-# Design: RHOAI Entity-Provider Connector
+# Design: RHOAI MCP Catalog Connector
 
 ## Context
 
-RHOAI (Red Hat OpenShift AI) exposes model metadata via Kubeflow's Model Registry API and MCP server metadata via a developer-preview catalog API (RHOAI 3.4+). Customers need catalog visibility into these assets without manual entity YAML authoring. This connector implements two separate EntityProvider instances — one for Model Registry, one for MCP catalog — with independent failure domains and entity buckets.
+RHOAI (Red Hat OpenShift AI) exposes MCP server metadata via a developer-preview catalog API (RHOAI 3.4+). Customers need catalog visibility into these MCP servers without manual entity YAML authoring. This connector implements an EntityProvider for the RHOAI MCP catalog with its own failure domain and entity bucket.
 
-The Model Registry provider is P0 (customers are actively requesting model discoverability). The MCP catalog provider is P1 (RHOAI 3.4 is developer preview; not all customers have upgraded).
+The MCP catalog API is developer preview in RHOAI 3.4; not all customers have upgraded.
 
 > **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This RHOAI connector continues under RHIDP-15314. Dependency chain: RHIDP-15316 cross-connector stories (15265 endpoint/creds, 15329 CA bundles) must land before this connector's deployment configuration (RHIDP-15323) can proceed.
+>
+> **Stakeholder Alignment (2026-07-13):**
+>
+> - **RHDHPLAN-393 complementary:** The RHOAI MCP catalog source and the MCP Registry connector (RHIDP-15313) serve different MCP server discovery paths — no ingestion duplication. RHDHPLAN-393 provides upstream MCP Registry; RHIDP-15313 adds productization. This connector ingests RHOAI-managed MCP servers separately.
+> - **RHDHPLAN-404 dependency:** Provides extended API entity schema that this connector leverages for MCP server entities (`kind: API, spec.type: mcp-server`). Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector.
+> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
+> - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 ## Goals
 
-- Two separate EntityProvider instances for independent failure isolation
-- Kubeflow API client for RegisteredModel/ModelVersion ingestion
 - MCP catalog API client with graceful degradation on 404/absence
-- Version normalization from Kubeflow ModelVersion to `rhdh.io/ai-asset-version` annotation
-- Per-source enable/disable toggles
 - Cross-cluster endpoint configuration with K8s Secret credentials and custom CA bundles
+- Entity mapping: MCP catalog entries → API entities with `spec.type: mcp-server`
+- Packageability as standalone RHDH dynamic plugin
 
 ## Non-Goals
 
-- Synchronizing Model Registry writes back to RHOAI (read-only connector)
+- Model Registry integration via Kubeflow API (handled by RHDHPLAN-404)
 - MCP server health monitoring (covered in separate observability change)
-- AI model lineage tracking (covered in separate lineage change)
-- Model performance metrics (covered in separate metrics integration)
-- Creating new annotation schemes beyond `rhdh.io/ai-asset-version` (reuses entity model from RHDHPLAN-1507)
+- Creating new annotation schemes beyond what RHDHPLAN-1507's entity model defines
+- Mapping MCP resources (tools, prompts) as catalog entities (deferred for RHDH 2.1)
+- Changing the RHOAI MCP catalog API contract
 
 ## Decisions
 
-### Decision 1: Two Separate EntityProvider Instances
+### Decision 1: Entity Type Mapping
 
-Each source (Model Registry, MCP catalog) gets its own EntityProvider instance, not a single provider with conditional fetching.
+MCP catalog entries must map to RHDH entity types.
 
-**Option A (chosen):** Two providers — `RhoaiModelRegistryProvider` and `RhoaiMcpCatalogProvider` — each registered independently via `catalogModule.addEntityProvider()`.
+**MCP catalog entry → API entity with `spec.type: mcp-server`**
 
-**Option B (rejected):** Single `RhoaiProvider` with internal conditional fetching based on config toggles.
+**Why:** MCP servers expose a protocol interface for tool/resource access — API with `spec.type: mcp-server` captures this (a recent Backstage entity kind addition). Follows the entity type strategy from RHDHPLAN-1507's `agent-creation-discovery` change.
 
-**Why A:** Independent failure domains. If the MCP catalog API is unavailable or misconfigured, Model Registry entities continue syncing. Each source gets its own isolated entity bucket (`rhoai-model-registry`, `rhoai-mcp-catalog`), making debugging and metrics clearer. Backstage's EntityProvider lifecycle (connect/refresh) is cleaner when each provider owns one concern.
+**How to apply:** Entity mapper function in `src/providers/mcpCatalog/mapper.ts`. MCP catalog entries get `metadata.annotations['rhdh.io/mcp-protocol-version']`.
 
-**How to apply:** Create two separate provider classes in `src/providers/{modelRegistry,mcpCatalog}/`. Each has its own config schema under `catalog.providers.rhoai.{modelRegistry,mcpCatalog}`. Each registers with a unique provider name for entity bucket isolation.
-
-### Decision 2: Kubeflow API Client — Direct REST vs. Generated SDK
-
-The Model Registry source needs a Kubeflow API client for `RegisteredModel` and `ModelVersion` endpoints.
-
-**Option A (chosen):** Direct REST client with typed response interfaces.
-
-**Option B (rejected):** Generated SDK from Kubeflow OpenAPI spec.
-
-**Why A:** The Kubeflow Model Registry API is stable but the SDK generation adds build complexity and version coupling risk. A direct REST client with typed response interfaces (`RegisteredModel`, `ModelVersion`) is simpler to maintain and easier to debug. The API surface is small (2 endpoints: list models, list versions). Prior art from `model-catalog-bridge` shows direct REST is sufficient.
-
-**How to apply:** Implement `KubeflowApiClient` in `src/providers/modelRegistry/client.ts` with typed response interfaces. Use `fetch` (or `node-fetch` if needed) with manual JSON parsing and Zod validation for responses.
-
-### Decision 3: Entity Type Mapping
-
-Kubeflow Model Registry and RHOAI MCP catalog must map to RHDH entity types.
-
-**RegisteredModel → Resource entity with `spec.type: ai-model`**  
-**ModelVersion → Component entity with `spec.type: model-server`**  
-**MCP catalog entry → Resource entity with `spec.type: mcp-server`**
-
-**Why:** Follows the entity type strategy from RHDHPLAN-1507's `agent-creation-discovery` change (UC-11, UC-12). RegisteredModel is a logical grouping of versions (like a model family) — Resource captures this. ModelVersion is a deployable artifact (container image + config) — Component captures this. MCP servers are external services — Resource captures this.
-
-**How to apply:** Entity mapper functions in `src/providers/modelRegistry/mapper.ts` and `src/providers/mcpCatalog/mapper.ts`. RegisteredModel entities get `metadata.annotations['rhdh.io/ai-model-family']`. ModelVersion entities get `metadata.annotations['rhdh.io/ai-asset-version']` with normalized version. MCP catalog entries get `metadata.annotations['rhdh.io/mcp-protocol-version']`.
-
-### Decision 4: Graceful Degradation for MCP Catalog API
+### Decision 2: Graceful Degradation for MCP Catalog API
 
 The MCP catalog API is developer preview in RHOAI 3.4. Older RHOAI versions (< 3.4) will not have this API. The connector must not fail startup on API absence.
 
 **How to apply:** MCP catalog provider's `connect()` method tries the API endpoint. On 404 or connection error, log a warning (`MCP catalog API not available, disabling MCP source for this cycle`), set internal flag `mcpApiAvailable = false`, and return empty entity array from `read()`. On subsequent refreshes, skip API calls if flag is false. Do NOT throw an error that halts the entire catalog backend.
 
-**Why:** RHOAI deployment versions vary across customers. The Model Registry provider must continue working even if MCP catalog is unavailable. The two-provider design (Decision 1) ensures this isolation.
+**Why:** RHOAI deployment versions vary across customers. The connector must handle API absence gracefully without crashing the catalog backend.
 
-### Decision 5: Cross-Cluster Endpoint Configuration
+### Decision 3: Cross-Cluster Endpoint Configuration
 
 RHOAI clusters may be separate from the RHDH cluster. The connector must support cross-cluster API endpoints with K8s Secret credentials and custom CA bundles.
 
-**How to apply:** Config schema under `catalog.providers.rhoai.{modelRegistry,mcpCatalog}` includes:
+**How to apply:** Config schema under `catalog.providers.rhoai.mcpCatalog` includes:
 
 ```yaml
 catalog:
   providers:
     rhoai:
-      modelRegistry:
-        enabled: true
-        endpoint: https://model-registry.rhoai-cluster.example.com
-        auth:
-          secretRef:
-            name: rhoai-model-registry-secret
-            namespace: rhdh
-        tls:
-          caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
       mcpCatalog:
-        enabled: false
+        enabled: true
         endpoint: https://mcp-catalog.rhoai-cluster.example.com
         auth:
           secretRef:
@@ -101,12 +71,38 @@ catalog:
           caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
 ```
 
-Each provider uses the shared CA bundle utility from RHIDP-15316. K8s Secret credentials follow the same pattern as the Kagenti provider from RHDHPLAN-1507. Disabled sources skip EntityProvider registration entirely.
+The provider uses the shared CA bundle utility from RHIDP-15316. K8s Secret credentials follow the same pattern as other RHDHPLAN-1510 connectors.
 
 **Why:** Many customers run RHOAI in a dedicated AI cluster separate from their RHDH instance. Custom CA bundles are required for internal/self-signed certificates.
 
 ## Risks
 
-- **MCP catalog API instability:** Developer preview APIs may change. **Mitigation:** Version the API client interface and log API version mismatches as warnings, not errors.
-- **Kubeflow API pagination:** Large model registries (1000+ models) may require pagination. **Mitigation:** Implement cursor-based pagination in `KubeflowApiClient` from day one (Kubeflow API supports `pageSize` and `nextPageToken`).
-- **Secret rotation:** K8s Secret credentials may rotate. **Mitigation:** Refresh secrets on each `refresh()` cycle, not just at startup. Leverage RHIDP-15316's shared secret manager.
+### Risk 1: MCP Catalog API Instability
+
+**Likelihood:** Medium  
+**Impact:** High  
+**Mitigation:**
+
+- Version the API client interface and log API version mismatches as warnings, not errors
+- Graceful degradation (Decision 2) prevents API instability from crashing the catalog backend
+- Automated tests against multiple API response shapes
+
+### Risk 2: Secret Rotation
+
+**Likelihood:** Medium  
+**Impact:** Medium  
+**Mitigation:**
+
+- Refresh secrets on each `refresh()` cycle, not just at startup
+- Leverage RHIDP-15316's shared secret manager
+- Prometheus metrics for auth failures
+
+### Risk 3: Annotation Schema Divergence
+
+**Likelihood:** Low  
+**Impact:** Low  
+**Mitigation:**
+
+- Shared annotation schema defined in RHDHPLAN-1507's `ai-catalog-entity-model`
+- SDK validation enforces annotation schema compliance
+- Automated tests verify annotation presence and correctness

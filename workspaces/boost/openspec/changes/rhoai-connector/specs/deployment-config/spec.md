@@ -4,7 +4,7 @@
 >
 > **Cross-connector dependencies:** RHIDP-15323 is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility) from RHIDP-15316 (Cross-Connector Shared Infrastructure). The shared CA bundle utility and K8s Secret credential patterns must be implemented in RHIDP-15316 before this spec's cross-cluster TLS and auth requirements can be fulfilled.
 
-The RHOAI connector supports per-source enable/disable toggles, cross-cluster endpoint configuration, K8s Secret credentials, and custom CA bundles.
+The RHOAI MCP catalog connector supports cross-cluster endpoint configuration, K8s Secret credentials, and custom CA bundles.
 
 ## EXISTING Requirements
 
@@ -12,69 +12,37 @@ None. This is a new configuration schema.
 
 ## ADDED Requirements
 
-### Requirement: Per-Source Enable/Disable Toggle
+### Requirement: Enable/Disable Toggle
 
-The Model Registry and MCP catalog sources must be independently toggleable via app-config.
+The MCP catalog source must be toggleable via app-config.
 
-#### Scenario: Model Registry enabled, MCP catalog disabled
+#### Scenario: MCP catalog disabled
 
 - **WHEN** app-config includes:
   ```yaml
   catalog:
     providers:
       rhoai:
-        modelRegistry:
-          enabled: true
-          endpoint: https://model-registry.rhoai.example.com
         mcpCatalog:
           enabled: false
   ```
-- **THEN** the `RhoaiModelRegistryProvider` is registered via `catalogModule.addEntityProvider()`
-- **AND** the `RhoaiMcpCatalogProvider` is NOT registered (no entity bucket created for it)
-- **AND** the catalog backend logs: `RHOAI Model Registry provider enabled` and `RHOAI MCP catalog provider disabled (enabled: false)`
+- **THEN** the `RhoaiMcpCatalogProvider` is NOT registered (no entity bucket created)
+- **AND** the catalog backend logs: `RHOAI MCP catalog provider disabled (enabled: false)`
+- **AND** the module does NOT attempt to load K8s Secrets or validate endpoint connectivity
 
-#### Scenario: Both sources disabled
+#### Scenario: MCP catalog enabled
 
-- **WHEN** both `modelRegistry.enabled` and `mcpCatalog.enabled` are `false`
-- **THEN** no RHOAI EntityProviders are registered
-- **AND** the catalog backend logs: `RHOAI connector module loaded but all sources disabled`
-
-#### Scenario: Disabled source skips Secret loading
-
-- **WHEN** a source has `enabled: false`
-- **THEN** the module does NOT attempt to load K8s Secrets for that source
-- **AND** it does NOT validate endpoint connectivity for that source
-- **AND** it does NOT create an entity bucket for that source
+- **WHEN** app-config includes `mcpCatalog.enabled: true` with a valid endpoint
+- **THEN** the `RhoaiMcpCatalogProvider` is registered via `catalogModule.addEntityProvider()`
+- **AND** the catalog backend logs: `RHOAI MCP catalog provider enabled`
 
 ### Requirement: Cross-Cluster Endpoint Configuration
 
-Each source must support cross-cluster API endpoints with dedicated configuration.
-
-#### Scenario: Model Registry endpoint configuration
-
-- **WHEN** app-config includes:
-  ```yaml
-  catalog:
-    providers:
-      rhoai:
-        modelRegistry:
-          enabled: true
-          endpoint: https://model-registry.rhoai-cluster.example.com
-          auth:
-            secretRef:
-              name: rhoai-model-registry-secret
-              namespace: rhdh
-          tls:
-            caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
-  ```
-- **THEN** the `RhoaiModelRegistryProvider` connects to the specified endpoint
-- **AND** it loads credentials from the K8s Secret `rhoai/rhoai-model-registry-secret`
-- **AND** it loads the CA bundle from `/etc/rhdh/ca-bundles/rhoai-ca.pem`
-- **AND** it uses the CA bundle for TLS validation when connecting to the endpoint
+The MCP catalog source must support cross-cluster API endpoints with dedicated configuration.
 
 #### Scenario: MCP catalog endpoint configuration
 
-- **WHEN** app-config includes separate endpoint and credentials for MCP catalog:
+- **WHEN** app-config includes:
   ```yaml
   catalog:
     providers:
@@ -90,12 +58,13 @@ Each source must support cross-cluster API endpoints with dedicated configuratio
             caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
   ```
 - **THEN** the `RhoaiMcpCatalogProvider` connects to the specified MCP catalog endpoint
-- **AND** it uses independent credentials from `rhoai/rhoai-mcp-catalog-secret`
-- **AND** it uses the same CA bundle (or a separate one if configured differently)
+- **AND** it loads credentials from the K8s Secret `rhdh/rhoai-mcp-catalog-secret`
+- **AND** it loads the CA bundle from `/etc/rhdh/ca-bundles/rhoai-ca.pem`
+- **AND** it uses the CA bundle for TLS validation when connecting to the endpoint
 
 ### Requirement: K8s Secret Credentials
 
-Each source must load authentication credentials from K8s Secrets.
+The MCP catalog source must load authentication credentials from K8s Secrets.
 
 #### Scenario: K8s Secret contains bearer token
 
@@ -112,7 +81,7 @@ Each source must load authentication credentials from K8s Secrets.
 #### Scenario: K8s Secret is missing
 
 - **WHEN** the K8s Secret referenced in `auth.secretRef` does not exist
-- **THEN** the provider logs an error: `K8s Secret {namespace}/{name} not found for RHOAI {source} provider`
+- **THEN** the provider logs an error: `K8s Secret {namespace}/{name} not found for RHOAI MCP catalog provider`
 - **AND** it returns empty entity array from `read()` without crashing the catalog backend
 - **AND** on the next refresh cycle, it retries loading the Secret (Secret may have been created)
 
@@ -125,7 +94,7 @@ Each source must load authentication credentials from K8s Secrets.
 
 ### Requirement: Custom CA Bundle
 
-Each source must support custom CA bundles for internal/self-signed certificates.
+The MCP catalog source must support custom CA bundles for internal/self-signed certificates.
 
 #### Scenario: Custom CA bundle is configured
 
@@ -153,20 +122,20 @@ The module must validate the configuration schema at startup.
 
 #### Scenario: Missing required endpoint
 
-- **WHEN** `modelRegistry.enabled: true` but `modelRegistry.endpoint` is missing
-- **THEN** the module logs an error: `RHOAI Model Registry enabled but endpoint not configured`
-- **AND** the `RhoaiModelRegistryProvider` is NOT registered
+- **WHEN** `mcpCatalog.enabled: true` but `mcpCatalog.endpoint` is missing
+- **THEN** the module logs an error: `RHOAI MCP catalog enabled but endpoint not configured`
+- **AND** the `RhoaiMcpCatalogProvider` is NOT registered
 - **AND** the catalog backend continues starting without the provider
 
 #### Scenario: Invalid endpoint URL
 
 - **WHEN** `endpoint` is set to an invalid URL (e.g., `not-a-url`)
-- **THEN** the module logs an error: `Invalid endpoint URL for RHOAI {source}: {url}`
+- **THEN** the module logs an error: `Invalid endpoint URL for RHOAI MCP catalog: {url}`
 - **AND** the provider is NOT registered
 - **AND** the catalog backend continues starting
 
 #### Scenario: Valid configuration
 
 - **WHEN** all required fields are present and valid
-- **THEN** the module logs: `RHOAI {source} provider configured with endpoint: {endpoint}`
+- **THEN** the module logs: `RHOAI MCP catalog provider configured with endpoint: {endpoint}`
 - **AND** the provider is registered and starts syncing entities

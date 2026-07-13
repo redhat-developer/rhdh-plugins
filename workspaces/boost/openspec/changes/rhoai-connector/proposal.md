@@ -1,47 +1,43 @@
-# Proposal: RHOAI Entity-Provider Connector
+# Proposal: RHOAI MCP Catalog Connector
 
 ## Why
 
-Red Hat OpenShift AI (RHOAI) is Red Hat's enterprise AI platform for model development, deployment, and serving. Customers building AI applications on RHOAI need catalog visibility into their registered models, deployed model servers, and MCP (Model Context Protocol) servers — but these exist outside the catalog today. Without this connector, teams lack discoverability, documentation, and metadata tracking for their AI assets.
+Red Hat OpenShift AI (RHOAI) is Red Hat's enterprise AI platform for model development, deployment, and serving. RHOAI 3.4 introduces a developer-preview MCP (Model Context Protocol) catalog that lists MCP servers available within the platform. Customers building AI applications need catalog visibility into these MCP servers — but they exist outside the RHDH catalog today. Without this connector, teams lack discoverability and metadata tracking for RHOAI-managed MCP servers.
 
-Boost must surface RHOAI's Model Registry (Kubeflow API) and MCP catalog (developer-preview API) as first-class entities in the RHDH catalog, enabling teams to discover models, track versions, and connect to MCP servers.
+Boost must surface RHOAI's MCP catalog as first-class API entities in the RHDH catalog, enabling teams to discover and connect to MCP servers.
 
 > **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — its scope has been absorbed by RHIDP-15294 (OCI Skill Registry) under RHDHPLAN-1507. RHDHPLAN-1510 continues with 3 surviving epics: RHIDP-15313 (MCP Registry connector), RHIDP-15314 (this RHOAI connector), and RHIDP-15316 (Cross-Connector Shared Infrastructure). All TLS, CA bundle, and credential utilities referenced here depend on RHIDP-15316 stories (RHIDP-15265, 15329) being implemented first.
+>
+> **Stakeholder Alignment (2026-07-13):**
+>
+> - **RHDHPLAN-393 complementary:** The RHOAI MCP catalog source and the MCP Registry connector (RHIDP-15313) serve different MCP server discovery paths — no ingestion duplication. RHDHPLAN-393 provides upstream MCP Registry; RHIDP-15313 adds productization. This connector ingests RHOAI-managed MCP servers separately.
+> - **RHDHPLAN-404 dependency:** Provides extended API entity schema that this connector leverages for MCP server entities (`kind: API, spec.type: mcp-server`). Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector.
+> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
+> - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 ## What Boost Builds
-
-### Model Registry Source
-
-- EntityProvider connecting to Kubeflow API (RegisteredModel/ModelVersion endpoints)
-- Maps `RegisteredModel` → Resource entity with `spec.type: ai-model`
-- Maps `ModelVersion` → Component entity with `spec.type: model-server`
-- Uses `applyMutation` for full sync and incremental updates
-- Prior art from `redhat-ai-dev/model-catalog-bridge` for entity mapping patterns
-
-### Version Normalization
-
-- Maps ModelVersion identifiers to `rhdh.io/ai-asset-version` annotation
-- Normalizes version formats (`v1.0.0`, `1.0`, `latest`) from Kubeflow API
-- Preserves ModelVersion metadata (description, author, timestamps)
 
 ### MCP Catalog Source
 
 - EntityProvider connecting to RHOAI 3.4 MCP catalog API (developer preview)
-- Emits Resource entities with `spec.type: mcp-server`
+- Emits API entities with `spec.type: mcp-server`
 - Gracefully degrades when MCP catalog API is absent (404/connection error → log warning, disable MCP source for cycle)
 - Handles API absence on RHOAI < 3.4 without failure
 
 ### Deployment Configuration
 
-- Per-source enable/disable toggles via app-config: `catalog.providers.rhoai.modelRegistry.enabled` and `catalog.providers.rhoai.mcpCatalog.enabled`
 - Cross-cluster endpoint configuration with K8s Secret credentials and custom CA bundles
 - Uses shared CA utility from RHIDP-15316 (cross-connector infrastructure)
-- Disabled sources skip registration entirely
 
 ## Impact
 
-- `plugins/catalog-backend-module-rhoai/` — new backend module with two EntityProvider instances
-- `plugins/catalog-backend-module-rhoai/src/providers/modelRegistry/` — Kubeflow API client and entity mapping
+- `plugins/catalog-backend-module-rhoai/` — new backend module with MCP catalog EntityProvider
 - `plugins/catalog-backend-module-rhoai/src/providers/mcpCatalog/` — MCP catalog API client and entity mapping
-- `plugins/catalog-backend-module-rhoai/src/utils/` — shared version normalization, CA bundle loading
-- Documentation referencing `rhdh.io/ai-asset-version` annotation from RHDHPLAN-1507's entity model
+- `plugins/catalog-backend-module-rhoai/src/utils/` — CA bundle loading (shared utility integration)
+- Documentation referencing RHDH AI Asset annotations from RHDHPLAN-1507's entity model
+
+**Cross-references:**
+
+- `workspaces/boost/openspec/changes/ai-catalog-entity-model/` — annotation scheme and SDK validation (RHDHPLAN-1507)
+- `workspaces/boost/openspec/changes/cross-connector-shared-infrastructure/` — shared CA bundle utility (RHIDP-15316)
+- RHDHPLAN-404 — Model Registry integration (Kubeflow API) handled separately

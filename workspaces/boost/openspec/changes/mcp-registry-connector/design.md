@@ -15,6 +15,12 @@ Enterprise deployments of Red Hat Developer Hub often run in air-gapped environm
 This productization effort wraps the upstream connector with RHDH-specific hardening and air-gapped support, packaged as a standalone RHDH dynamic plugin.
 
 > **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This MCP Registry connector continues under RHIDP-15313. Dependency chain: RHIDP-15316 cross-connector stories (15265 endpoint/creds, 15329 CA bundles) must land before this connector's TLS/auth hardening (RHIDP-15318) can proceed.
+>
+> **Stakeholder Alignment (2026-07-13):**
+>
+> - **RHDHPLAN-393 complementary:** This productization wrapper layers on top of RHDHPLAN-393's upstream MCP Registry connector. No ingestion duplication — RHDHPLAN-393 provides core MCP server discovery, this connector adds air-gapped support, credential management, and AI Asset annotation enrichment.
+> - **RHDHPLAN-404 dependency:** The upstream RHDHPLAN-393 connector emits API entities with `spec.type: mcp-server` (a recent Backstage addition). This productization wrapper is kind-agnostic — it enriches annotations regardless of entity kind.
+> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector focuses on MCP server entity discovery only.
 
 ## Goals
 

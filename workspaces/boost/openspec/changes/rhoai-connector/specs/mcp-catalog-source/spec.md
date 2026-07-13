@@ -37,12 +37,12 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 
 ### Requirement: MCP Server Entity Emission
 
-MCP catalog entries must map to Resource entities with `spec.type: mcp-server`.
+MCP catalog entries must map to API entities with `spec.type: mcp-server`.
 
-#### Scenario: MCP server is mapped to Resource entity
+#### Scenario: MCP server is mapped to API entity
 
 - **WHEN** the provider fetches MCP servers from `GET /api/mcp/v1/servers`
-- **THEN** each MCP server entry is converted to a Resource entity
+- **THEN** each MCP server entry is converted to an API entity
 - **AND** `metadata.name` is set to the server's `name` (slugified if needed)
 - **AND** `metadata.title` is set to the server's `displayName` (fallback to `name`)
 - **AND** `spec.type` is set to `mcp-server`
@@ -66,7 +66,7 @@ The provider must not block catalog startup when the MCP catalog API is unavaila
 - **AND** the MCP catalog API is unreachable (404, connection error, timeout)
 - **THEN** the provider completes `connect()` without throwing an error
 - **AND** it logs a single warning message (not repeated on every refresh)
-- **AND** the Model Registry provider (separate instance) continues syncing entities
+- **AND** the catalog backend continues operating normally
 
 #### Scenario: Provider retries API connection after upgrade
 
