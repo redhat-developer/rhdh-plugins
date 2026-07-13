@@ -19,5 +19,3 @@ Run build, lint, fix, API-report, and dedupe commands from the workspace root.
 Run tests from the affected package directory or with an explicit package
 filter. Do not run unfiltered workspace-wide tests; they exceed the Fullsend
 sandbox timeout.
-
-Use the shared `$rhdh` skill for broader RHDH guidance.
