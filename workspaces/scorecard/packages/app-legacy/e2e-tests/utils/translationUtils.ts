@@ -193,7 +193,7 @@ export function getSomeEntitiesNotReportingTooltip(
   );
 }
 
-/** Flat metric-namespace string by key (e.g. averageCenterTooltipTotalLabel). */
+/** Flat metric-namespace string by key (e.g. weightedStatusScoreCenterTooltipTotalLabel). */
 export function getMetricTranslation(
   translations: ScorecardMessages,
   key: string,
@@ -451,8 +451,8 @@ export function getStatusGroupedCardSnapshot(
         `;
 }
 
-/** Snapshot for average-type homepage KPI cards (donut gauge, no threshold legend). */
-export function getAverageCardSnapshot(
+/** Snapshot for weightedStatusScore-type homepage KPI cards (donut gauge, no threshold legend). */
+export function getWeightedStatusScoreCardSnapshot(
   translations: ScorecardMessages,
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
@@ -460,7 +460,7 @@ export function getAverageCardSnapshot(
     homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
     cardDescription: string;
-    averageScoreLabel: string;
+    weightedStatusScoreLabel: string;
   },
 ): string {
   const {
@@ -468,7 +468,7 @@ export function getAverageCardSnapshot(
     drillDownAggregationId,
     cardTitle,
     cardDescription,
-    averageScoreLabel,
+    weightedStatusScoreLabel,
   } = options;
   const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
   const { healthy, total } = options.homepageCalculationHealth ?? {
@@ -488,7 +488,7 @@ export function getAverageCardSnapshot(
           - button
           - separator
           - paragraph: ${cardDescription}
-          - application: ${averageScoreLabel}
+          - application: ${weightedStatusScoreLabel}
         `;
 }
 

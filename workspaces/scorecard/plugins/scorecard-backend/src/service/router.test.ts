@@ -1187,14 +1187,14 @@ describe('createRouter', () => {
       );
     });
 
-    it('should use KPI type average when configured', async () => {
+    it('should use KPI type weightedStatusScore when configured', async () => {
       const kpiConfig = new ConfigReader({
         scorecard: {
           aggregationKPIs: {
-            avgKpi: {
+            weightedKpi: {
               title: 'Weighted health KPI',
-              description: 'Weighted average',
-              type: 'average',
+              description: 'Weighted status score',
+              type: 'weightedStatusScore',
               metricId: 'github.open_prs',
               options: {
                 statusScores: {
@@ -1224,7 +1224,7 @@ describe('createRouter', () => {
         .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
         .mockResolvedValue(mockDbAggregatedMetricForAgId);
 
-      const aggregationsServiceAvg = createTestAggregationsService(
+      const aggregationsServiceWeightedKpi = createTestAggregationsService(
         mockDatabaseMetricValues as unknown as DatabaseMetricValues,
         kpiConfig,
       );
@@ -1232,7 +1232,7 @@ describe('createRouter', () => {
       const router = await createRouter({
         metricProvidersRegistry: metricRegistry,
         service: {
-          aggregationsService: aggregationsServiceAvg,
+          aggregationsService: aggregationsServiceWeightedKpi,
           catalogMetricService: kpiService,
         },
         catalog: mockCatalog,
@@ -1245,7 +1245,7 @@ describe('createRouter', () => {
       kpiApp.use(router);
       kpiApp.use(mockErrorHandler());
 
-      await request(kpiApp).get('/aggregations/avgKpi');
+      await request(kpiApp).get('/aggregations/weightedKpi');
 
       expect(getSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],

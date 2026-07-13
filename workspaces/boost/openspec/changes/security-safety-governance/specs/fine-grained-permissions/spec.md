@@ -121,7 +121,7 @@ Permission constants MUST follow Backstage registration best practices.
 #### Scenario: Permissions exported from common package
 
 - **WHEN** permission constants are needed by frontend or backend
-- **THEN** they are exported from `@boost/plugin-boost-common`
+- **THEN** they are exported from `@red-hat-developer-hub/backstage-plugin-boost-common`
 - **AND** basic permissions use `createPermission` from `@backstage/plugin-permission-common`
 - **AND** resource permissions use `createResourcePermission` with resource types `boost-agent` and `boost-tool`
 

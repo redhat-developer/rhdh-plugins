@@ -77,10 +77,6 @@ proxy:
         Authorization: Basic SomeTokenHere
 ```
 
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the Jira metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
 ### Options Configuration
 
 Options define configuration that affect fetch jira issues global configuration, but all options are optional. This settings are closely related with annotation settings and whole jira issues loading process.
@@ -187,7 +183,10 @@ This metric counts all jira issues that match the filter condition specified in 
 - **Metric ID**: `jira.open_issues`
 - **Type**: `Number`
 - **Datasource**: `jira`
-- **Default thresholds**:
+
+## Default thresholds
+
+Default thresholds for `jira.open_issues`:
 
 ```yaml
 # app-config.yaml
@@ -198,9 +197,11 @@ scorecard:
         thresholds:
           rules:
             - key: success
-              expression: '<=50'
+              expression: '<10'
             - key: warning
-              expression: '>50'
+              expression: '10-50'
             - key: error
-              expression: '>100'
+              expression: '>50'
 ```
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
