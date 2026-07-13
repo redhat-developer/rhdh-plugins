@@ -88,6 +88,13 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'table.pagination.topN': string;
     readonly 'filter.all': string;
     readonly 'filter.selectKind': string;
+    readonly 'timeSavedBadge.estTimeSaved': string;
+    readonly 'timeSavedBadge.addEstTimeSaved': string;
+    readonly 'timeSavedBadge.presentTooltip': string;
+    readonly 'timeSavedBadge.absentTooltipInstruction': string;
+    readonly 'timeSavedBadge.annotationSnippet': string;
+    readonly 'timeSavedBadge.copied': string;
+    readonly 'timeSavedBadge.copyAnnotation': string;
     readonly 'units.days': string;
     readonly 'units.hours': string;
     readonly 'units.minutes': string;
