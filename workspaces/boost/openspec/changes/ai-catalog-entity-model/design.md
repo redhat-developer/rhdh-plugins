@@ -19,6 +19,14 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 > Decisions 1–3, 6–8 remain under RHIDP-15258. Decision 4 (air-gapped) moved to RHIDP-15316.
 > Decision 5 (performance) distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316.
 
+## Stakeholder Alignment (2026-07-13)
+
+> Per RHDHPLAN-1505 stakeholder meeting:
+>
+> - **RHDHPLAN-1113 dependency:** Boost will use AIResource for skills/rules and will refrain from defining new catalog entity kind mappings. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK adopts AIResource/AIContext mappings directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, use Resource/Component as interim and migrate when RHDHPLAN-1113 merges.
+> - **MCP resource mapping deferred for RHDH 2.1** — upstream due diligence pending.
+> - **Entity kind strategy is conditional:** The mapping table in Decision 1 reflects the interim Resource/Component path. If RHDHPLAN-1113 provides AIResource kinds first, that table becomes the starting point instead.
+
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
@@ -30,7 +38,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 ## Non-Goals
 
-- Creating new upstream Backstage entity kinds (we use existing kinds: Resource, Component, API)
+- Creating new upstream Backstage entity kinds (we use existing kinds: Resource, Component, API — or AIResource/AIContext if RHDHPLAN-1113 lands first)
 - Changing Backstage catalog core behavior or mutation APIs
 - Implementing specific connectors (Kagenti/LlamaStack) — covered in separate changes
 - Neo4j knowledge graph ingestion pipeline — covered in `neo4j-knowledge-graph` change
@@ -56,7 +64,9 @@ The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, 
 
 This mapping is documented for reference — connectors MAY map differently based on their domain. The annotation is the source of truth for AI asset category, not the kind.
 
-**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: Component` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
+> **RHDHPLAN-1113 conditional (2026-07-13):** If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the Backstage Kind column changes: `agent` and `skill` map to AIResource (not Component), `ai-model` and `model-server` map to AIResource (not Resource). The annotation layer and spec.type values remain unchanged — only the entity kind changes. If RHIDP-15258 starts first, the table above is used as interim and migrated when RHDHPLAN-1113 merges.
+
+**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: Component` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. If RHDHPLAN-1113 provides AIResource kinds as the starting point, the migration path becomes `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
 
 ### Decision 2: SDK package scope and structure
 

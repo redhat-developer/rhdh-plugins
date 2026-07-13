@@ -21,6 +21,13 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 >
 > The subsections below are annotated with their owning epic post-consolidation.
 
+## Stakeholder Alignment (2026-07-13)
+
+> Per RHDHPLAN-1505 stakeholder meeting:
+>
+> - **RHDHPLAN-1113 dependency:** Entity kind strategy is conditional. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK adopts AIResource/AIContext kinds directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, Resource/Component is used as interim.
+> - **MCP resource mapping deferred for RHDH 2.1** — upstream due diligence pending.
+
 ## What Boost Builds
 
 ### AI Asset Annotation Scheme
@@ -31,13 +38,13 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
-- Migration-readiness mapping for transforming to upstream entity kinds when available
+- Migration-readiness mapping for transforming to upstream entity kinds when available (starting from Resource/Component or AIResource per RHDHPLAN-1113 — see Stakeholder Alignment above)
 
 ### Entity Provider SDK
 
 > _RHIDP-15258 — expanded scope. Now includes annotation scheme, delta sync framework, and per-entity error isolation._
 
-- TypeScript interface contract defining: entity emission, required annotation population, entity kind/spec.type mapping
+- TypeScript interface contract defining: entity emission, required annotation population, entity kind/spec.type mapping (kind depends on RHDHPLAN-1113 — see Stakeholder Alignment)
 - Support for both full-refresh and incremental-sync patterns
 - Shared validation utilities rejecting entities with missing/invalid annotations
 - Neo4j sync adapter interface for knowledge graph integration

@@ -16,7 +16,7 @@ A TypeScript SDK package defining the contract for AI asset entity providers, ex
 
 ### Requirement: TypeScript Interface Contract
 
-The SDK MUST define TypeScript interfaces for AI asset entity providers covering entity emission, annotation population, and kind/spec.type mapping.
+The SDK MUST define TypeScript interfaces for AI asset entity providers covering entity emission, annotation population, and kind/spec.type mapping. The entity kind definitions depend on RHDHPLAN-1113: if RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK uses AIResource/AIContext kinds directly; otherwise Resource/Component is used as interim (see design.md Stakeholder Alignment).
 
 #### Scenario: AIAssetEntityProvider interface definition (RHIDP-15259)
 

@@ -102,8 +102,9 @@ A documented mapping from custom annotations to upstream Backstage entity kinds 
 #### Scenario: Migration design document exists (RHIDP-15302)
 
 - **WHEN** the migration-readiness spec is reviewed
-- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `Component` + `ai-agent` + `agent` → `AIAgent`)
+- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `Component` + `ai-agent` + `agent` → `AIAgent`, or `AIResource` + `ai-agent` + `agent` → `AIAgent` if RHDHPLAN-1113 path)
 - **AND** it identifies consumer-facing changes during migration (e.g., catalog UI filters, queries, entity refs)
+- **AND** it documents both the interim Resource/Component path and the RHDHPLAN-1113 AIResource path per stakeholder alignment (2026-07-13)
 
 #### Scenario: Upstream maintainer or RHDH architect sign-off (RHIDP-15302)
 
