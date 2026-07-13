@@ -24,7 +24,7 @@ describe('DefaultScorecardCollectorsService', () => {
     metadata: { name: 'service-a', namespace: 'default' },
   };
 
-  const collectorId = 'test:collector';
+  const collectorId = 'datasource:testCollectorName';
 
   const contractInputSchema = z.object({
     from: z.string().datetime(),

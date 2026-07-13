@@ -20,9 +20,9 @@ Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecar
 
 ## Collector ID convention
 
-Use `source:name` for collector IDs (for example `github:deployments`, `github:commit-pulls`).
-
-This keeps collector IDs visually distinct from metric/provider IDs that use dot notation.
+Collector IDs follow the `datasource:name` format (e.g.,`github:deployments`, `github:workflowRuns`).
+This distinguishes them visually from metric/provider IDs which use dot notation. Prefer to use `camelCase`
+for collector names.
 
 ## Create a collector
 
@@ -33,11 +33,11 @@ import type { Entity } from '@backstage/catalog-model';
 import type { Collector } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { z } from 'zod';
 
-export class MyDeploymentsCollector
+export class CustomDeploymentsCollector
   implements
     Collector<
-      (typeof MyDeploymentsCollector)['inputSchema'],
-      (typeof MyDeploymentsCollector)['outputSchema']
+      (typeof CustomDeploymentsCollector)['inputSchema'],
+      (typeof CustomDeploymentsCollector)['outputSchema']
     >
 {
   static readonly inputSchema = z.object({
@@ -56,7 +56,7 @@ export class MyDeploymentsCollector
   });
 
   getCollectorId(): string {
-    return 'my-source:deployments';
+    return 'customDatasource:customDeployments';
   }
 
   getCollectorDescription(): string {
@@ -64,17 +64,17 @@ export class MyDeploymentsCollector
   }
 
   getInputSchema() {
-    return MyDeploymentsCollector.inputSchema;
+    return CustomDeploymentsCollector.inputSchema;
   }
 
   getOutputSchema() {
-    return MyDeploymentsCollector.outputSchema;
+    return CustomDeploymentsCollector.outputSchema;
   }
 
   async collect(options: {
     entity: Entity;
-    input: z.infer<(typeof MyDeploymentsCollector)['inputSchema']>;
-  }): Promise<z.infer<(typeof MyDeploymentsCollector)['outputSchema']>> {
+    input: z.infer<(typeof CustomDeploymentsCollector)['inputSchema']>;
+  }): Promise<z.infer<(typeof CustomDeploymentsCollector)['outputSchema']>> {
     return {
       deployments: [],
     };
@@ -89,18 +89,18 @@ Register collectors through `scorecardCollectorsExtensionPoint`:
 ```ts
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { scorecardCollectorsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { MyDeploymentsCollector } from './collectors/MyDeploymentsCollector';
+import { CustomDeploymentsCollector } from './collectors/CustomDeploymentsCollector';
 
-export const scorecardModuleMySource = createBackendModule({
+export const scorecardModuleCustomDatasource = createBackendModule({
   pluginId: 'scorecard',
-  moduleId: 'my-source',
+  moduleId: 'custom-datasource',
   register(reg) {
     reg.registerInit({
       deps: {
         collectors: scorecardCollectorsExtensionPoint,
       },
       async init({ collectors }) {
-        collectors.addCollector(new MyDeploymentsCollector());
+        collectors.addCollector(new CustomDeploymentsCollector());
       },
     });
   },
@@ -119,9 +119,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MyMetricProvider } from './metricProviders/MyMetricProvider';
 
-export const scorecardModuleMySource = createBackendModule({
+export const scorecardModuleOtherDatasource = createBackendModule({
   pluginId: 'scorecard',
-  moduleId: 'my-source',
+  moduleId: 'other-datasource',
   register(reg) {
     reg.registerInit({
       deps: {
@@ -136,7 +136,7 @@ export const scorecardModuleMySource = createBackendModule({
 });
 ```
 
-Use `collectorsService.collect(...)` to validate both sides of the contract (provider and collector expected input and output):
+Use `collectorsService.collect(...)` to fetch data from custom datasource. `Collect` validates both sides of the contract (metric provider and collector expected input and output):
 
 ```ts
 import type { Entity } from '@backstage/catalog-model';
@@ -162,7 +162,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
   async calculateMetric(entity: Entity): Promise<number> {
     const collected = await this.collectorsService.collect({
-      collectorId: 'my-source:deployments',
+      collectorId: 'customDatasource:customDeployments',
       contract: {
         inputSchema,
         outputSchema,
