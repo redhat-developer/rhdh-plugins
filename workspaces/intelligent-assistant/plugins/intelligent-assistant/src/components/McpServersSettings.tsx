@@ -789,7 +789,8 @@ export const McpServersSettings = ({
       return undefined;
     }
 
-    if (editingServer.auth !== 'dcr' && !editingServer.hasToken) {
+    // DCR servers don't expose credential UI — skip tools fetch in the modal.
+    if (editingServer.auth === 'dcr' || !editingServer.hasToken) {
       setModalTools([]);
       setModalToolsError(null);
       setIsLoadingModalTools(false);
@@ -1273,17 +1274,16 @@ export const McpServersSettings = ({
           <Typography component="span">{renderModalStatusText()}</Typography>
         </div>
       </div>
-      {(editingServer?.auth === 'dcr' || modalVerifiedHasToken) &&
-        modalDisplayStatus === 'ok' && (
-          <div className={classes.modalSection}>
-            <div className={classes.modalSectionTitle}>
-              {t('mcp.settings.modal.toolsHeading' as any, {
-                count: String(modalToolCount),
-              })}
-            </div>
-            {renderModalToolsContent()}
+      {modalVerifiedHasToken && modalDisplayStatus === 'ok' && (
+        <div className={classes.modalSection}>
+          <div className={classes.modalSectionTitle}>
+            {t('mcp.settings.modal.toolsHeading' as any, {
+              count: String(modalToolCount),
+            })}
           </div>
-        )}
+          {renderModalToolsContent()}
+        </div>
+      )}
       <div className={classes.modalSection}>
         <div className={classes.modalEnabledRow}>
           <div className={classes.modalEnabledLabel}>
@@ -1547,12 +1547,9 @@ export const McpServersSettings = ({
         />
         <ModalBody id="mcp-configure-modal-body">
           {editingServer?.auth === 'dcr' ? (
-            <>
-              {renderConfigureModalDetails()}
-              <div className={classes.modalSectionDescription}>
-                {t('mcp.settings.modalDescriptionDcr')}
-              </div>
-            </>
+            <div className={classes.modalSectionDescription}>
+              {t('mcp.settings.modalDescriptionDcr')}
+            </div>
           ) : (
             <>
               {renderConfigureModalDetails()}

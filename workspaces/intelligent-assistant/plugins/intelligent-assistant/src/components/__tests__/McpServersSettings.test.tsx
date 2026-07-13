@@ -45,6 +45,7 @@ type McpServerResponse = {
   hasToken: boolean;
   hasUserToken: boolean;
   hasOrgToken: boolean;
+  auth?: string;
 };
 
 const BASE_URL = 'http://localhost:7007/api/lightspeed';
@@ -276,6 +277,47 @@ describe('McpServersSettings', () => {
     expect(
       within(dialog).getByRole('button', { name: 'Remove personal token' }),
     ).toBeInTheDocument();
+  });
+
+  it('shows only the DCR message and Cancel for DCR servers', async () => {
+    servers = [
+      connectedServer('dcr-server', {
+        auth: 'dcr',
+        hasToken: true,
+        hasUserToken: false,
+        hasOrgToken: false,
+        toolCount: 4,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('dcr-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('dcr-server');
+
+    const dialog = getModalDialog();
+    expect(
+      within(dialog).getByText(
+        'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', { name: 'Cancel' }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Save' }),
+    ).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Status')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Enabled')).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByLabelText('Type to filter'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole('radio', {
+        name: 'Use organization default token',
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it('does not show remove personal token when organization default token exists', async () => {
