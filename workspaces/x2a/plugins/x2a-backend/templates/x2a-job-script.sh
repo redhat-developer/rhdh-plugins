@@ -151,9 +151,10 @@ copy_changed_files() {
   done < <(git ls-files --others --ignored --exclude-standard)
 
   if [[ ${#ignored_files[@]} -gt 0 ]]; then
-    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a but blocked by .gitignore:"
+    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a matched .gitignore — including them anyway:"
     for file in "${ignored_files[@]}"; do
       echo "    - $file"
+      changed_files+=("$file")
     done
   fi
 
