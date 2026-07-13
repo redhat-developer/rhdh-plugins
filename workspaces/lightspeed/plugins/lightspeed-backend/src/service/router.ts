@@ -190,8 +190,6 @@ export async function createRouter(
     lightspeedCoreBaseUrl,
     logger,
   );
-  let lightspeed_vector_store_id: string = '';
-
   // Parse admin-configured MCP servers from app-config.
   //
   // Each entry supports:
@@ -727,19 +725,6 @@ export async function createRouter(
         const { userEntityRef, credentials } = getIdentity(request);
 
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
-
-        // get the vector store id for the rhdh-product-docs vector store
-        if (lightspeed_vector_store_id === '') {
-          const vectorStores = await vectorStoresOperator.vectorStores.list();
-          lightspeed_vector_store_id =
-            vectorStores.data.find((v: any) =>
-              v.name.startsWith('rhdh-product-docs'),
-            )?.id || '';
-        }
-
-        if (lightspeed_vector_store_id !== '') {
-          request.body.vector_store_ids = [lightspeed_vector_store_id];
-        }
 
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
