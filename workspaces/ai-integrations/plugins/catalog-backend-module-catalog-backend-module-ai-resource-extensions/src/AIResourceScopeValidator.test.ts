@@ -20,7 +20,7 @@ import {
   VALID_AI_RESOURCE_SCOPES,
 } from './AIResourceScopeValidator';
 
-function makeAIResource(spec: Record<string, unknown> = {}): Entity {
+function makeAIResource(spec: Entity['spec'] = {}): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'AIResource',
