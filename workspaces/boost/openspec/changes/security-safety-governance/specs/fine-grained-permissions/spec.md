@@ -36,6 +36,7 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
   - **CONDITIONAL** — attach conditions to `req.boostPermissionConditions` for the handler to apply as filters
 - **AND** deployers can configure visibility rules via RBAC policies (e.g., `IS_OWNER` to show only the user's own agents, `HAS_LIFECYCLE_STAGE` to show only published agents)
 
+
 #### Scenario: Self-approval prevention via IS_NOT_CREATOR rule
 
 - **WHEN** a user attempts to approve an agent (pending→published)
