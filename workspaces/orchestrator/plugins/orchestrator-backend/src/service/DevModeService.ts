@@ -26,7 +26,7 @@ import {
   DEFAULT_WORKFLOWS_PATH,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { join, resolve } from 'path';
 
 import { GitService } from './GitService';
@@ -108,6 +108,14 @@ export class DevModeService {
   }
 
   private launchSonataFlow(): void {
+    spawnSync(
+      this.connection.runtime,
+      ['rm', '-f', 'backstage-internal-sonataflow'],
+      {
+        stdio: 'ignore',
+      },
+    );
+
     const launcherCmd = this.createLauncherCommand();
 
     this.logger.info(
@@ -140,12 +148,23 @@ export class DevModeService {
 
     const launcherArgs = [
       'run',
+      '-d',
+      '--rm',
       '--name',
       'backstage-internal-sonataflow',
       ...(this.connection.runtime === 'podman'
         ? ['--replace']
         : ['--add-host', 'host.docker.internal:host-gateway']),
     ];
+
+    // Devmode runs Maven offline by default. In CI the image cache may be incomplete,
+    // so allow online dependency resolution (see run-app-devmode.sh in the image).
+    if (process.env.CI) {
+      launcherArgs.push(
+        '-e',
+        'QUARKUS_EXTENSIONS=io.quarkus:quarkus-smallrye-health',
+      );
+    }
 
     // TODO: pass automatically a set of env variables from configuration, i.e. all config props with names starting at ENV_:
     //   config: orchestrator.sonataFlowService.ENV_foo
