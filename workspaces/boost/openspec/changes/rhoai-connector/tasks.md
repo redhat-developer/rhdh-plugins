@@ -9,9 +9,7 @@
 > - RHIDP-15323 (deployment config) is blocked by RHIDP-15265 (endpoint/credential config schema) and RHIDP-15329 (shared CA bundle utility)
 > - RHIDP-15322 (MCP catalog source) is blocked by RHDHPLAN-1507 SDK (RHIDP-15258) for annotation scheme
 
-
 ## 1. MCP Catalog Source — RHIDP-15322
-
 - [ ] 1.1 Define RHOAI MCP catalog API response types with Zod schemas (`McpServer`, `McpCapabilities`)
 - [ ] 1.2 Implement `McpCatalogApiClient` in `src/providers/mcpCatalog/client.ts` with typed fetch
 - [ ] 1.3 Implement `RhoaiMcpCatalogProvider` extending `EntityProvider`
@@ -87,5 +85,4 @@
 ## 8. Cross-References
 
 - [ ] 8.1 Reference RHDHPLAN-1507's `ai-catalog-entity-model` change for annotation scheme
-- [ ] 8.2 Reference RHIDP-15316 for shared CA bundle utility and cross-connector infrastructure
 - [ ] 8.3 Reference RHDHPLAN-404 for Model Registry integration (Kubeflow API — handled separately)

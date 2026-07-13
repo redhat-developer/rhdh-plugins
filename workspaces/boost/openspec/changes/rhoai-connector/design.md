@@ -16,6 +16,13 @@ The MCP catalog API is developer preview in RHOAI 3.4; not all customers have up
 > - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 > **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This RHOAI connector continues under RHIDP-15314. Dependency chain: RHIDP-15316 cross-connector stories (15265 endpoint/creds, 15329 CA bundles) must land before this connector's deployment configuration (RHIDP-15323) can proceed.
+>
+> **Stakeholder Alignment (2026-07-13):**
+>
+> - **RHDHPLAN-393 complementary:** The RHOAI MCP catalog source and the MCP Registry connector (RHIDP-15313) serve different MCP server discovery paths — no ingestion duplication. RHDHPLAN-393 provides upstream MCP Registry; RHIDP-15313 adds productization. This connector ingests RHOAI-managed MCP servers separately.
+> - **RHDHPLAN-404 dependency:** Provides extended API entity schema that this connector leverages for MCP server entities (`kind: API, spec.type: mcp-server`). Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector.
+> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
+> - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 ## Goals
 
@@ -106,4 +113,5 @@ The provider uses the shared CA bundle utility from RHIDP-15316. K8s Secret cred
 
 - Shared annotation schema defined in RHDHPLAN-1507's `ai-catalog-entity-model`
 - SDK validation enforces annotation schema compliance
+- Automated tests verify annotation presence and correctness
 - Automated tests verify annotation presence and correctness
