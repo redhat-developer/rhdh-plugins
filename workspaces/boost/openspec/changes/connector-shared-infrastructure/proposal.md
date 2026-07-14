@@ -53,5 +53,6 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 - RHDHPLAN-1510 (Declarative AI Catalog via entity-provider connectors)
   - RHIDP-15313 (MCP Registry connector)
   - RHIDP-15314 (RHOAI connector)
-  - RHIDP-15315 (OCI Skill connector)
-- RHDHPLAN-1507 `ai-catalog-entity-model` change (air-gapped-deployment patterns for CA/credential injection)
+- RHDHPLAN-1507 (Entity Model & Ingestion)
+  - RHIDP-15294 (OCI Skill Registry — also consumes shared infrastructure)
+  - `ai-catalog-entity-model` change (air-gapped-deployment patterns for CA/credential injection)

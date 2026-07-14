@@ -1,5 +1,7 @@
 # Design: OCI Skill Registry Entity-Provider Connector
 
+> **RHDHPLAN-1510 → RHDHPLAN-1507 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This openspec remains the authoritative specification for the OCI connector implementation.
+
 ## Context
 
 This change implements the OCI Skill Registry Entity-Provider Connector for discovering AI skills published as OCI artifacts. It builds on the OCI Skill Registry Ingestion Framework (RHDHPLAN-1507's RHIDP-15294, covered by the separate `oci-skill-registry` OpenSpec change on the `boost-oci-skill-registry-framework` branch), which defines the SDK interfaces, `skillcard.yaml` schema validation, and ingestion abstractions.
@@ -123,20 +125,20 @@ interface DigestCache {
 - Delta mutation: use `applyMutation({ type: 'delta', added: [...], removed: [...] })` for changes only
 - Cache warming: on startup, load from disk, then re-validate digests in background
 
-### Decision 4: Entity emission — Resource with ai-skill type
+### Decision 4: Entity emission — AIResource with skill type
 
 **Context:** Skills must be emitted as catalog entities. Options:
 
 - Custom entity kind `kind: Skill`
-- Resource entity with `spec.type: ai-skill`
-- Component entity with `spec.type: ai-skill`
+- AIResource entity with `spec.type: skill`
+- Component entity with `spec.type: skill`
 
-**Decision:** Resource entity with `spec.type: ai-skill`.
+**Decision:** AIResource entity with `spec.type: skill`.
 
 **Rationale:**
 
-- Follows the pattern established in `agent-creation-discovery/catalog-entities` spec (RHDHPLAN-1507 RHIDP-15257)
-- Resource kind is intended for infrastructure/platform services (skills are executable assets)
+- AIResource is the designated Backstage entity kind for AI-specific catalog assets (skills, prompts, tool definitions)
+- Follows the entity type strategy from RHDHPLAN-1507's `ai-catalog-entity-model` change
 - Component kind is for software components (skills are not deployable software, they're executable definitions)
 - AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci://<registry>/<namespace>/<image>`
 
@@ -144,7 +146,7 @@ interface DigestCache {
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
-kind: Resource
+kind: AIResource
 metadata:
   name: my-skill
   annotations:
@@ -152,7 +154,7 @@ metadata:
     rhdh.io/ai-asset-source: oci://quay.io/skills/my-skill:latest
     rhdh.io/ai-asset-digest: sha256:abc123...
 spec:
-  type: ai-skill
+  type: skill
   owner: team-ai
   # additional fields from skillcard.yaml
 ```

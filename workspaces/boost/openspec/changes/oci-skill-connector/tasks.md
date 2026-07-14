@@ -1,5 +1,7 @@
 # Tasks: OCI Skill Registry Entity-Provider Connector
 
+> **RHDHPLAN-1510 → RHDHPLAN-1507 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). Stories RHIDP-15324 through RHIDP-15328 are now under RHIDP-15294. This openspec remains the authoritative specification for the OCI connector implementation.
+
 ## 1. OCI Registry Client (P0) — RHIDP-15324
 
 - [ ] 1.1 Implement OCI Distribution Spec tag listing client (`GET /v2/<name>/tags/list`)
@@ -21,7 +23,7 @@
 - [ ] 2.3 Implement YAML parsing using `js-yaml` with safe load
 - [ ] 2.4 Integrate SDK's Zod schema validator from RHDHPLAN-1507 RHIDP-15258
 - [ ] 2.5 Implement descriptive error logging for invalid skillcards (include image ref, validation failure details)
-- [ ] 2.6 Implement entity building as `kind: Resource` with `spec.type: ai-skill`
+- [ ] 2.6 Implement entity building as `kind: AIResource` with `spec.type: skill`
 - [ ] 2.7 Populate `metadata.annotations['rhdh.io/ai-asset-category']: skill`
 - [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci://<registry>/<namespace>/<image>`
 - [ ] 2.9 Populate `metadata.annotations['rhdh.io/ai-asset-digest']: <sha256>`

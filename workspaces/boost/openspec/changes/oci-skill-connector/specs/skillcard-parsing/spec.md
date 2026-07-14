@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Parses `skillcard.yaml` from OCI image layers, validates against the SDK schema, and emits Resource entities with AI Asset annotations.
+Parses `skillcard.yaml` from OCI image layers, validates against the SDK schema, and emits AIResource entities with AI Asset annotations.
 
 ## Requirements
 
@@ -69,21 +69,21 @@ The connector MUST parse `skillcard.yaml` and validate against the SDK's Zod sch
 - **AND** the connector logs the error with skill image reference and YAML syntax details
 - **AND** it does not emit an entity for this skill
 
-### Requirement: Entity Emission as Resource with ai-skill Type
+### Requirement: Entity Emission as AIResource with skill Type
 
-The connector MUST emit catalog entities as `kind: Resource` with `spec.type: ai-skill` and RHDH AI Asset annotations.
+The connector MUST emit catalog entities as `kind: AIResource` with `spec.type: skill` and RHDH AI Asset annotations.
 
-#### Scenario: Emit Resource entity from valid skillcard
+#### Scenario: Emit AIResource entity from valid skillcard
 
 - **WHEN** the connector successfully validates a skillcard for `quay.io/skills/code-reviewer:latest`
-- **THEN** it builds a Resource entity with:
+- **THEN** it builds an AIResource entity with:
   - `apiVersion: backstage.io/v1alpha1`
-  - `kind: Resource`
+  - `kind: AIResource`
   - `metadata.name: code-reviewer`
   - `metadata.annotations['rhdh.io/ai-asset-category']: skill`
   - `metadata.annotations['rhdh.io/ai-asset-source']: oci://quay.io/skills/code-reviewer:latest`
   - `metadata.annotations['rhdh.io/ai-asset-digest']: sha256:abc123...`
-  - `spec.type: ai-skill`
+  - `spec.type: skill`
   - `spec.owner: team-ai` (from skillcard or default)
 
 #### Scenario: Populate entity metadata from skillcard fields

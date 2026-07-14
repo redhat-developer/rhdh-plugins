@@ -1,5 +1,7 @@
 # Proposal: OCI Skill Registry Entity-Provider Connector
 
+> **RHDHPLAN-1510 → RHDHPLAN-1507 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This openspec remains the authoritative specification for the OCI connector implementation.
+
 ## Why
 
 AI skills published as OCI artifacts need automated catalog discovery. Teams publish skills to container registries using the OCI Distribution Spec (the standard registry protocol), annotate images with metadata, and embed `skillcard.yaml` descriptors. Boost must discover these skills, parse their metadata, validate against the common schema, and emit them as catalog entities — without manual YAML authoring for each skill.
@@ -23,7 +25,7 @@ This change implements the connector for OCI-based skill discovery. It builds on
 - Parses `skillcard.yaml` from OCI image layers (selective blob download)
 - Validates required fields using SDK's schema validator (from RHDHPLAN-1507's RHIDP-15258)
 - Invalid skills rejected with descriptive errors — no abort on single failure
-- Emits Resource entities with `spec.type: ai-skill` and RHDH AI Asset annotations
+- Emits AIResource entities with `spec.type: skill` and RHDH AI Asset annotations
 - OCI registry reference in `rhdh.io/ai-asset-source: oci://<registry>/<namespace>/<image>`
 
 ### Incremental Sync and Caching

@@ -1,8 +1,8 @@
 # Tasks: RHOAI MCP Catalog Connector
 
-> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This connector continues under RHIDP-15314 with stories RHIDP-15322 (MCP catalog source) and RHIDP-15323 (deployment config).
+> **RHDHPLAN-1510 Consolidation (2026-07-08):** Epic RHIDP-15315 (OCI Skill Registry Connector) was closed — scope absorbed by RHIDP-15294 (RHDHPLAN-1507). This connector continues under RHIDP-15314 with stories RHIDP-15321 (version normalization), RHIDP-15322 (MCP catalog source), and RHIDP-15323 (deployment config).
 >
-> **Stakeholder Alignment (2026-07-13):** Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector. RHIDP-15320 (Model Registry source) and RHIDP-15321 (version normalization) are no longer in scope for RHIDP-15314.
+> **Stakeholder Alignment (2026-07-13):** Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector. RHIDP-15320 (Model Registry source) is no longer in scope for RHIDP-15314. RHIDP-15321 (version normalization) remains in scope — applies to MCP server entity version annotations.
 >
 > **Cross-connector dependencies (RHIDP-15316):**
 >
@@ -73,8 +73,18 @@
 - [ ] 6.4 Create `dynamic-plugins.yaml` example for RHDH deployment
 - [ ] 6.5 Add module to CI/CD pipeline for automated builds and testing
 
-## 7. Cross-References
+## 7. Version Normalization — RHIDP-15321
 
-- [ ] 7.1 Reference RHDHPLAN-1507's `ai-catalog-entity-model` change for annotation scheme
-- [ ] 7.2 Reference RHIDP-15316 for shared CA bundle utility and cross-connector infrastructure
-- [ ] 7.3 Reference RHDHPLAN-404 for Model Registry integration (Kubeflow API — handled separately)
+- [ ] 7.1 Define version normalization rules: extract version string from MCP server manifest metadata
+- [ ] 7.2 Implement `normalizeVersion(rawVersion: string): string` utility — semver normalization, strip `v` prefix, handle `latest`/`nightly` tags
+- [ ] 7.3 Populate `rhdh.io/ai-asset-version` annotation with normalized version on all emitted MCP server entities
+- [ ] 7.4 Handle missing version metadata: set `rhdh.io/ai-asset-version: "unknown"` with DEBUG log
+- [ ] 7.5 Handle invalid version strings (empty, malformed): set `rhdh.io/ai-asset-version: "unknown"` with WARNING log
+- [ ] 7.6 Unit tests for version normalization: semver, pre-release, `v`-prefix stripping, missing/invalid
+- [ ] 7.7 Integration test: emitted entities carry correct `rhdh.io/ai-asset-version` annotation
+
+## 8. Cross-References
+
+- [ ] 8.1 Reference RHDHPLAN-1507's `ai-catalog-entity-model` change for annotation scheme
+- [ ] 8.2 Reference RHIDP-15316 for shared CA bundle utility and cross-connector infrastructure
+- [ ] 8.3 Reference RHDHPLAN-404 for Model Registry integration (Kubeflow API — handled separately)

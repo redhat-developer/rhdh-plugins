@@ -64,11 +64,21 @@
 - [ ] 5.5 Integration test: Disabled connector skipped entirely on startup (mock backend module registration)
 - [ ] 5.6 Integration test: Structured error log produced when provider crashes (assert log fields)
 
-## 6. Connector Integration (P2)
+## 6. Reference App-Config YAML (P1) — RHIDP-15266
 
-- [ ] 6.1 Update MCP Registry connector to consume `@boost/connector-utils`
-- [ ] 6.2 Update RHOAI connector to consume `@boost/connector-utils`
-- [ ] 6.3 Update OCI Skill connector to consume `@boost/connector-utils`
-- [ ] 6.4 Verify all three connectors use consistent CA bundle loading pattern
-- [ ] 6.5 Verify all three connectors use consistent enable/disable config
-- [ ] 6.6 Verify all three connectors use consistent structured error logging
+- [ ] 6.1 Create reference `app-config.yaml` snippet demonstrating: configurable endpoint URL, CA bundle reference, Secret-based credentials, sync schedule
+- [ ] 6.2 Include MCP Registry connector example: mirror endpoint, custom CA, K8s Secret auth
+- [ ] 6.3 Include RHOAI connector example: cross-cluster endpoint, MCP catalog toggle, Secret ref
+- [ ] 6.4 Include OCI Skill connector example: multi-registry config, pull secret, namespace filtering
+- [ ] 6.5 Document each config field with inline comments explaining purpose and valid values
+- [ ] 6.6 Add air-gapped deployment variant showing zero-internet configuration
+- [ ] 6.7 Place reference YAML in `workspaces/boost/examples/` or alongside connector README files
+
+## 7. Connector Integration (P2)
+
+- [ ] 7.1 Update MCP Registry connector to consume `@boost/connector-utils`
+- [ ] 7.2 Update RHOAI connector to consume `@boost/connector-utils`
+- [ ] 7.3 Update OCI Skill connector to consume `@boost/connector-utils`
+- [ ] 7.4 Verify all three connectors use consistent CA bundle loading pattern
+- [ ] 7.5 Verify all three connectors use consistent enable/disable config
+- [ ] 7.6 Verify all three connectors use consistent structured error logging
