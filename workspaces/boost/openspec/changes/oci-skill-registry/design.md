@@ -151,7 +151,7 @@ Each skill becomes an `AIResource` entity with:
 - `metadata.annotations`:
   - `rhdh.io/ai-asset-category: skill`
   - `rhdh.io/ai-asset-version`: from `skillcard.yaml` version field
-  - `rhdh.io/ai-asset-source`: OCI registry URL
+  - `rhdh.io/ai-asset-source`: `oci-skill-registry/<instance-id>` (per annotation-scheme spec)
   - `rhdh.io/oci-registry-url`: full registry URL
   - `rhdh.io/oci-image-name`: `namespace/imageName`
   - `rhdh.io/oci-digest`: current digest
@@ -168,7 +168,7 @@ metadata:
   annotations:
     rhdh.io/ai-asset-category: skill
     rhdh.io/ai-asset-version: 1.2.0
-    rhdh.io/ai-asset-source: quay.io/myorg/skills
+    rhdh.io/ai-asset-source: oci-skill-registry/default
     rhdh.io/oci-registry-url: https://quay.io
     rhdh.io/oci-image-name: myorg/skills/pdf-processor
     rhdh.io/oci-digest: sha256:abc123...

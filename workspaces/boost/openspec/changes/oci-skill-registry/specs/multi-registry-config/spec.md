@@ -119,7 +119,7 @@ The connector requires explicit registry URLs in app-config, with no hardcoded d
         namespaces: [open-source-org/skills]
   ```
 - **THEN** the connector runs separate sync cycles for each registry
-- **AND** emits entities with `metadata.annotations.rhdh.io/ai-asset-source` set to the respective registry URL
+- **AND** emits entities with `metadata.annotations.rhdh.io/ai-asset-source` set to `oci-skill-registry/<registry-id>` (e.g., `oci-skill-registry/quay-internal`, `oci-skill-registry/ghcr-external`)
 
 ### Requirement: Custom CA Bundles for TLS
 

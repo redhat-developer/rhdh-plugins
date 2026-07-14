@@ -105,7 +105,7 @@ The connector emits Backstage entities with `kind: AIResource`, `spec.type: skil
   - `spec.type: skill`
   - `metadata.annotations.rhdh.io/ai-asset-category: skill`
   - `metadata.annotations.rhdh.io/ai-asset-version: 1.2.0`
-  - `metadata.annotations.rhdh.io/ai-asset-source: quay.io/myorg/skills`
+  - `metadata.annotations.rhdh.io/ai-asset-source: oci-skill-registry/default`
   - `metadata.annotations.rhdh.io/oci-registry-url: https://quay.io`
   - `metadata.annotations.rhdh.io/oci-image-name: myorg/skills`
   - `metadata.annotations.rhdh.io/oci-digest: sha256:abc123...`

@@ -116,12 +116,6 @@ Skill/Agent-to-domain relationships are derived from tags and annotations.
 - **THEN** the adapter ensures a `Domain` node exists with `name: 'security'`
 - **AND** creates a relationship `(skill)-[:BELONGS_TO]->(domain)`
 
-#### Scenario: Skill with ai-asset-category annotation creates BELONGS_TO relationship
-
-- **WHEN** a skill entity has `metadata.annotations['rhdh.io/ai-asset-category']: 'devops'`
-- **THEN** the adapter ensures a `Domain` node exists with `name: 'devops'`
-- **AND** creates a relationship `(skill)-[:BELONGS_TO]->(domain)`
-
 #### Scenario: Domain tag removed deletes BELONGS_TO relationship
 
 - **WHEN** a skill entity's tags no longer include a `domain:*` tag

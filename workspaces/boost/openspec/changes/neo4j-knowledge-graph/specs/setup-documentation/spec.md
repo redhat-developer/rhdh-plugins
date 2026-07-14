@@ -217,28 +217,27 @@ Documentation includes troubleshooting steps for common issues.
   # Check Prometheus metrics
   curl http://backstage-backend:7007/metrics | grep neo4j_sync
   ```
-  ````
 
   ### Common issues
 
   **Entities not syncing:**
+
   - Verify entity has `metadata.annotations.rhdh.io/ai-asset-category`
   - Check entity revision is changing (compare `resourceVersion` between syncs)
   - Trigger manual full sync: `curl -X POST .../trigger-full-sync`
 
   **Neo4j connection failures:**
+
   - Verify `aiCatalog.neo4j.uri` is reachable from backend pod
   - Check credentials in K8s Secret
   - Test connection: `kubectl exec -it deployment/backstage-backend -- curl bolt://neo4j.example.com:7687`
 
   **High sync latency:**
+
   - Reduce `syncInterval` (trade-off: increased catalog API load)
   - Disable `computeSimilarity` if not needed (reduces CPU during sync)
   - Check catalog search API performance: `curl '.../api/catalog/entities?filter=...'`
-
-  ```
-
-  ```
+  ````
 
 #### Scenario: Schema migration documented
 
@@ -256,8 +255,6 @@ Documentation includes troubleshooting steps for common issues.
      ```bash
      kubectl scale deployment/backstage-backend --replicas=0 -n rhdh
      ```
-  ````
-
   2. Drop and recreate Neo4j database:
      ```bash
      neo4j-admin database drop neo4j
@@ -272,10 +269,7 @@ Documentation includes troubleshooting steps for common issues.
      ```bash
      kubectl logs -f deployment/backstage-backend -n rhdh | grep neo4j-sync
      ```
-
-  ```
-
-  ```
+  ````
 
 ### Requirement: Metrics and Observability Documentation
 
@@ -316,10 +310,6 @@ Documentation covers metrics exported by the adapter for monitoring.
   rate(neo4j_entities_failed_total[5m])
   ```
   ````
-
-  ```
-
-  ```
 
 ### Requirement: Documentation Coverage Validation
 
