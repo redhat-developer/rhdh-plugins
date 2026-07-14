@@ -16,7 +16,6 @@ Boost has a backend with 30+ API routes and 9 plugin packages but no frontend. T
 
 - Chat UI, admin panels, or agent gallery (future domains)
 - Custom entity detail pages (use existing catalog pages)
-- RHDH dynamic plugin packaging (Scalprum/export-dynamic deferred)
 - Custom search collator for global search (rely on default catalog indexing)
 
 ## Decisions
@@ -51,6 +50,55 @@ BUI (`@backstage/ui`) is the component library for all new UI. MUI v5 as fallbac
 ### Decision 7: RBAC graceful degradation
 
 Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when the permission is not yet registered (RHDHPLAN-1508 not built). Content is shown, and enforcement activates automatically when RBAC lands.
+
+### Decision 8: Extensible browse filters via AiCatalogFilterBlueprint
+
+The browse page filter sidebar becomes NFS-extensible. Each filter is an extension of a custom `AiCatalogFilterBlueprint` (kind: `ai-catalog-filter`) that attaches to the AI Catalog page's `filters` input.
+
+**Architecture:**
+
+- The `aiCatalogPage` PageBlueprint is upgraded via `makeWithOverrides` to declare a `filters` input accepting `ai-catalog-filter` extensions
+- Each filter extension provides three things: a React component (sidebar UI), a `filterFn` (entity predicate for client-side filtering), and a `urlParam` name (for URL state persistence)
+- Built-in filters (category, provider, owner, tags) become default `ai-catalog-filter` extensions registered by the plugin
+- The `FilterSidebar` renders child filter extensions in priority order instead of hardcoding filter components
+- `useUrlFilters` and `applyEntityFilters` become dynamic — they read the registered filter set instead of a fixed field list
+
+**Deployer customization (app-config.yaml):**
+
+```yaml
+app:
+  extensions:
+    # Disable a built-in filter
+    - ai-catalog-filter:boost/owner: false
+    # Configure a filter
+    - ai-catalog-filter:boost/category:
+        config:
+          collapsed: true
+    # Custom filter from a third-party module (just enable it)
+    - ai-catalog-filter:my-plugin/team-filter: {}
+```
+
+**Third-party filter contribution:**
+
+```typescript
+// In a third-party plugin or module
+createFrontendModule({
+  pluginId: 'boost',
+  extensions: [
+    AiCatalogFilterBlueprint.make({
+      name: 'team-filter',
+      params: {
+        urlParam: 'team',
+        filterFn: (entity, values) =>
+          values.some(v => entity.spec?.owner?.includes(v)),
+        loader: () => import('./TeamFilter').then(m => <m.TeamFilter />),
+      },
+    }),
+  ],
+});
+```
+
+This follows the same pattern as upstream `CatalogFilterBlueprint` and the in-repo `GlobalHeaderComponentBlueprint` / `ScorecardLayoutBlueprint`.
 
 ## Entity Model
 
