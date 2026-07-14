@@ -45,7 +45,7 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 | AI Asset     | Current Kind | Current spec.type | Target RFC Kind (draft)      | Confidence |
 | ------------ | ------------ | ----------------- | ---------------------------- | ---------- |
 | Agent        | Component    | ai-agent          | (no RFC yet)                 | Low        |
-| Skill        | Resource     | ai-skill          | (no RFC yet)                 | Low        |
+| Skill        | AIResource   | skill             | (no RFC yet)                 | Low        |
 | MCP Server   | API          | mcp-server        | McpServer (RFC #32062)       | Medium     |
 | AI Model     | Resource     | ai-model          | ai-model (RFC #33060)        | Medium     |
 | Model Server | Component    | model-server      | ai-model-server (RFC #33060) | Medium     |

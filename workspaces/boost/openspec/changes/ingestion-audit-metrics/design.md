@@ -191,12 +191,12 @@ Match coverage compares declared agent capabilities (from Kagenti agent specs) a
 
 Agent capabilities: Declared in Kagenti agent specs (e.g., `metadata.capabilities: ['code-review', 'bug-detection']`). Boost reads agent entities from catalog.
 
-Skill catalog: Entities with `spec.type: ai-skill` (from RHDHPLAN-1506 skill ingestion). Boost reads skill entities from catalog.
+Skill catalog: Entities with `spec.type: skill` (from RHDHPLAN-1506 skill ingestion). Boost reads skill entities from catalog.
 
 Match logic:
 
 1. Fetch all agent entities (filter by `spec.type: ai-agent` or similar)
-2. Fetch all skill entities (filter by `spec.type: ai-skill`)
+2. Fetch all skill entities (filter by `spec.type: skill`)
 3. Extract capabilities from agents: `agent.metadata.capabilities`
 4. Extract skill IDs from skills: `skill.metadata.id`
 5. Compute matched capabilities: capabilities that have a corresponding skill

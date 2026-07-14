@@ -30,7 +30,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **THEN** all `spec.type` values for AI Assets are documented:
 
 - `ai-agent` (Component kind)
-- `ai-skill` (Resource kind)
+- `skill` (AIResource kind)
 - `mcp-server` (API kind)
 - `ai-model` (Resource kind)
 - `model-server` (Component kind)
