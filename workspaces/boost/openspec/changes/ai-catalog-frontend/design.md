@@ -51,17 +51,19 @@ BUI (`@backstage/ui`) is the component library for all new UI. MUI v5 as fallbac
 
 Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when the permission is not yet registered (RHDHPLAN-1508 not built). Content is shown, and enforcement activates automatically when RBAC lands.
 
-### Decision 8: Extensible browse filters via AiCatalogFilterBlueprint
+### Decision 8: Extensible browse filters via data-driven FilterDefinition
 
-The browse page filter sidebar becomes NFS-extensible. Each filter is an extension of a custom `AiCatalogFilterBlueprint` (kind: `ai-catalog-filter`) that attaches to the AI Catalog page's `filters` input.
+The browse page filter sidebar becomes NFS-extensible using a **data-driven** approach. Filters are plain objects (`FilterDefinition`), not per-filter React components. The `FilterSidebar` renders a generic `<Select>` for each registered filter — the same pattern already used for all 4 current filters.
 
 **Architecture:**
 
-- The `aiCatalogPage` PageBlueprint is upgraded via `makeWithOverrides` to declare a `filters` input accepting `ai-catalog-filter` extensions
-- Each filter extension provides three things: a React component (sidebar UI), a `filterFn` (entity predicate for client-side filtering), and a `urlParam` name (for URL state persistence)
-- Built-in filters (category, provider, owner, tags) become default `ai-catalog-filter` extensions registered by the plugin
-- The `FilterSidebar` renders child filter extensions in priority order instead of hardcoding filter components
-- `useUrlFilters` and `applyEntityFilters` become dynamic — they read the registered filter set instead of a fixed field list
+- A `FilterDefinition` interface defines each filter: `urlParam`, `label`, `getOptions(entities)`, `matchEntity(entity, values)`, `priority`
+- `AiCatalogFilterBlueprint` wraps a `FilterDefinition` as an NFS extension (kind: `ai-catalog-filter`) with a single custom `createExtensionDataRef`
+- Built-in filters are plain objects in `src/filters/builtinFilters.ts`, registered as Blueprint extensions in `plugin.tsx`
+- The `aiCatalogPage` PageBlueprint uses `makeWithOverrides` to declare a `filters` input, resolves `FilterDefinition[]`, sorts by priority, and passes to the page component
+- `FilterSidebar` maps over the array and renders `<Select>` for each — no per-filter component files
+- `useUrlFilters` reads/writes URL params dynamically from the definition array
+- `applyEntityFilters` loops over active definitions calling `matchEntity` in AND logic
 
 **Deployer customization (app-config.yaml):**
 
@@ -70,10 +72,6 @@ app:
   extensions:
     # Disable a built-in filter
     - ai-catalog-filter:boost/owner: false
-    # Configure a filter
-    - ai-catalog-filter:boost/category:
-        config:
-          collapsed: true
     # Custom filter from a third-party module (just enable it)
     - ai-catalog-filter:my-plugin/team-filter: {}
 ```
@@ -81,7 +79,6 @@ app:
 **Third-party filter contribution:**
 
 ```typescript
-// In a third-party plugin or module
 createFrontendModule({
   pluginId: 'boost',
   extensions: [
@@ -89,16 +86,19 @@ createFrontendModule({
       name: 'team-filter',
       params: {
         urlParam: 'team',
-        filterFn: (entity, values) =>
-          values.some(v => entity.spec?.owner?.includes(v)),
-        loader: () => import('./TeamFilter').then(m => <m.TeamFilter />),
+        label: 'Team',
+        getOptions: entities =>
+          [...new Set(entities.map(e => e.spec?.team).filter(Boolean))]
+            .sort()
+            .map(t => ({ id: t, label: t })),
+        matchEntity: (entity, values) =>
+          values.some(v => v === entity.spec?.team),
+        priority: 200,
       },
     }),
   ],
 });
 ```
-
-This follows the same pattern as upstream `CatalogFilterBlueprint` and the in-repo `GlobalHeaderComponentBlueprint` / `ScorecardLayoutBlueprint`.
 
 ## Entity Model
 

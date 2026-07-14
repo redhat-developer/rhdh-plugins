@@ -4,30 +4,45 @@
 
 The AI Catalog browse page filter sidebar becomes extensible via the Backstage New Frontend System (NFS). Deployers can enable/disable built-in filters and third-party plugins can contribute new filters — all without modifying boost source code.
 
+## Design Approach
+
+Filters are **data, not components**. Each filter is a `FilterDefinition` — a plain object with a URL param name, a label, a function to extract options from entities, and a function to match an entity against selected values. The `FilterSidebar` renders a generic `<Select>` for each definition. No per-filter React components, no lazy loading, no custom data refs per field.
+
+The NFS extension system handles enable/disable/add via `app.extensions`. The `AiCatalogFilterBlueprint` wraps a `FilterDefinition` in an extension. A single custom `createExtensionDataRef` carries the whole definition object. No `config` schema — deployers control filter visibility via NFS disable (`ai-catalog-filter:boost/owner: false`) and filter render order via `priority` in params.
+
 ## Requirements
 
-### Requirement: AiCatalogFilterBlueprint
+### Requirement: FilterDefinition and AiCatalogFilterBlueprint
 
-A custom Blueprint defines the contract for browse page filters.
+A `FilterDefinition` interface defines the contract. A Blueprint wraps it as an NFS extension.
 
-#### Scenario: Filter extension provides required params
+#### Scenario: FilterDefinition provides required fields
 
-- **GIVEN** a filter extension created via `AiCatalogFilterBlueprint.make`
-- **THEN** it provides a `urlParam` (string) for URL state persistence
-- **AND** it provides a `filterFn(entity, selectedValues) => boolean` for client-side filtering
-- **AND** it provides a `loader` returning a React component for the sidebar UI
-- **AND** optionally provides a `priority` (number) controlling render order in the sidebar
+- **GIVEN** a `FilterDefinition` object
+- **THEN** it has `urlParam` (string) for URL state persistence
+- **AND** it has `label` (string) for the sidebar heading (i18n key or plain text)
+- **AND** it has `getOptions(entities) => { id, label }[]` for deriving select options from loaded entities
+- **AND** it has `matchEntity(entity, selectedValues) => boolean` for client-side filtering
+- **AND** it has `priority` (number) controlling render order in the sidebar
 
-#### Scenario: Filter extension receives standardized props
+#### Scenario: Blueprint wraps FilterDefinition as NFS extension
 
-- **WHEN** the filter sidebar renders a filter extension
-- **THEN** the extension component receives `entities` (all unfiltered AI assets for option derivation)
-- **AND** receives `selectedValues` (current selections from URL state)
-- **AND** receives `onChange(values: string[])` callback to update the filter
+- **GIVEN** a filter created via `AiCatalogFilterBlueprint.make`
+- **THEN** it outputs a `FilterDefinition` via a single extension data ref
+- **AND** the extension kind is `ai-catalog-filter`
+- **AND** the extension attaches to `page:boost/ai-catalog` input `filters`
+- **AND** the Blueprint has no `config` schema (no deployer YAML config per filter)
+
+#### Scenario: FilterSidebar renders generic Select for each filter
+
+- **WHEN** the filter sidebar renders
+- **THEN** it maps over resolved `FilterDefinition[]` and renders a `<Select>` for each
+- **AND** each `<Select>` uses `getOptions(allEntities)` for its options list
+- **AND** each `<Select>` binds to URL state via `urlParam`
 
 ### Requirement: Built-in Filters as Extensions
 
-Existing hardcoded filters are converted to default Blueprint extensions.
+Existing hardcoded filters are converted to `FilterDefinition` objects registered as default Blueprint extensions.
 
 #### Scenario: Default filter set matches current behavior
 
@@ -35,16 +50,16 @@ Existing hardcoded filters are converted to default Blueprint extensions.
 - **THEN** the browse page renders the same four filters as before: category (type), provider, owner, tags
 - **AND** filter behavior (AND logic, URL params, dynamic options) is unchanged
 
-#### Scenario: Lifecycle filter added as built-in
+#### Scenario: Built-in filters are plain objects
 
-- **WHEN** no app-config overrides are present
-- **THEN** a lifecycle filter (`spec.lifecycle`) is available in the sidebar
-- **AND** options are dynamically derived from loaded entities (e.g., production, experimental, deprecated)
-- **AND** the URL param is `lifecycle`
+- **GIVEN** the 4 built-in filter definitions (category, provider, owner, tags)
+- **THEN** each is a plain object in `src/filters/builtinFilters.ts`
+- **AND** no filter has its own React component file
+- **AND** all share the same generic `<Select>` rendering in `FilterSidebar`
 
 ### Requirement: Disable Filters via app-config
 
-Deployers can disable any built-in filter.
+Deployers can disable any built-in filter using NFS extension disable.
 
 #### Scenario: Disable a single filter
 
@@ -52,11 +67,11 @@ Deployers can disable any built-in filter.
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** the owner filter is not rendered in the sidebar
 - **AND** the `owner` URL param has no effect on filtering
-- **AND** the remaining filters (category, provider, tags, lifecycle) work normally
+- **AND** the remaining filters (category, provider, tags) work normally
 
 #### Scenario: Disable multiple filters
 
-- **GIVEN** the deployer disables both `ai-catalog-filter:boost/tags` and `ai-catalog-filter:boost/lifecycle`
+- **GIVEN** the deployer disables both `ai-catalog-filter:boost/tags` and `ai-catalog-filter:boost/owner`
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** neither filter appears in the sidebar
 - **AND** the category, provider, and owner filters render normally
@@ -69,34 +84,17 @@ Deployers can disable any built-in filter.
 - **AND** the search bar still works
 - **AND** the card grid shows all AI assets
 
-### Requirement: Configure Filters via app-config
-
-Deployers can configure built-in filter behavior.
-
-#### Scenario: Collapse a filter by default
-
-- **GIVEN** the deployer sets `ai-catalog-filter:boost/tags` with `config.collapsed: true`
-- **WHEN** the developer navigates to `/ai-catalog`
-- **THEN** the tags filter section is rendered in collapsed state
-- **AND** clicking it expands to show the filter options
-
-#### Scenario: Reorder filters via priority
-
-- **GIVEN** the deployer configures `ai-catalog-filter:boost/owner` with a lower priority number than `ai-catalog-filter:boost/category`
-- **WHEN** the developer navigates to `/ai-catalog`
-- **THEN** the owner filter renders above the category filter in the sidebar
-
 ### Requirement: Add Custom Filters via NFS Module
 
-Third-party plugins can contribute new filters.
+Third-party plugins can contribute new filters by providing a `FilterDefinition`.
 
 #### Scenario: Third-party filter appears in sidebar
 
 - **GIVEN** a third-party plugin registers a filter via `createFrontendModule({ pluginId: 'boost' })` using `AiCatalogFilterBlueprint.make`
-- **AND** the filter provides `urlParam: 'team'`, a `filterFn`, and a sidebar component
+- **AND** the filter provides a `FilterDefinition` with `urlParam: 'team'`, `getOptions`, and `matchEntity`
 - **WHEN** the developer navigates to `/ai-catalog`
-- **THEN** the custom "team" filter appears in the sidebar alongside built-in filters
-- **AND** selecting a value in the custom filter narrows the card grid using the provided `filterFn`
+- **THEN** the custom "team" filter appears as a `<Select>` in the sidebar alongside built-in filters
+- **AND** selecting a value narrows the card grid using the provided `matchEntity`
 - **AND** the `team` URL param persists the selection
 
 #### Scenario: Custom filter participates in AND logic
@@ -124,24 +122,27 @@ Third-party plugins can contribute new filters.
 
 The filter pipeline adapts to the registered filter set.
 
-#### Scenario: useUrlFilters reads registered filters
+#### Scenario: useUrlFilters reads registered filters dynamically
 
+- **GIVEN** the page receives a resolved `FilterDefinition[]`
 - **WHEN** the page initializes
-- **THEN** `useUrlFilters` reads URL params for all registered filter extensions (not a hardcoded list)
+- **THEN** `useUrlFilters` reads URL params for each definition's `urlParam` (not a hardcoded list)
 - **AND** unrecognized URL params from disabled or removed filters are ignored (not cleared)
 
-#### Scenario: applyEntityFilters uses registered filterFns
+#### Scenario: applyEntityFilters uses registered matchEntity functions
 
 - **WHEN** the card grid is filtered
-- **THEN** `applyEntityFilters` iterates over all registered filter extensions' `filterFn` functions
-- **AND** applies them in AND logic
+- **THEN** `applyEntityFilters` iterates over all active `FilterDefinition` entries
+- **AND** for each with selected values, calls `matchEntity(entity, values)`
+- **AND** applies all in AND logic
 - **AND** does not reference hardcoded filter field names
 
-#### Scenario: Clear filters resets all registered filters
+#### Scenario: Clear filters resets registered filters and search only
 
 - **WHEN** the developer clicks "Clear filters"
 - **THEN** all registered filter URL params are cleared
-- **AND** custom filter params are also cleared
+- **AND** the search param (`q`) is cleared
+- **AND** view mode (`view`) and page size (`pageSize`) are preserved
 - **AND** the full unfiltered card grid is restored
 
 #### Scenario: Active filter detection includes custom filters
@@ -156,11 +157,12 @@ The AI Catalog page declares a filters input for child extensions.
 
 #### Scenario: Page collects filter extensions
 
-- **GIVEN** the `aiCatalogPage` extension is defined with `PageBlueprint.makeWithOverrides`
+- **GIVEN** the `aiCatalogPage` extension is defined with `PageBlueprint.makeWithOverrides` and `name: 'ai-catalog'`
 - **AND** it declares a `filters` input of kind `ai-catalog-filter`
 - **WHEN** the page renders
-- **THEN** it receives all enabled `ai-catalog-filter` extensions as resolved inputs
-- **AND** passes them to the filter sidebar and filter pipeline
+- **THEN** it receives all enabled `ai-catalog-filter` extensions as resolved `FilterDefinition[]`
+- **AND** sorts them by priority
+- **AND** passes the sorted array to the filter sidebar and filter pipeline
 
 #### Scenario: No filters input graceful fallback
 

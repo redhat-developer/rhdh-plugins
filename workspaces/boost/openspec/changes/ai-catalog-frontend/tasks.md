@@ -52,25 +52,26 @@
 
 ## 4. Extensible Browse Filters via NFS (RHIDP-15449)
 
-- [ ] 4.1 Create `AiCatalogFilterBlueprint` via `createExtensionBlueprint` (kind: `ai-catalog-filter`). Params: `urlParam` (string), `filterFn` (entity predicate), `loader` (React.lazy component), optional `priority` (number, default 100). Config schema: optional `collapsed` (boolean, default false).
-- [ ] 4.2 Define `AiCatalogFilterProps` interface — `entities: Entity[]`, `selectedValues: string[]`, `onChange: (values: string[]) => void`
-- [ ] 4.3 Upgrade `aiCatalogPage` to `PageBlueprint.makeWithOverrides` — declare `filters` input via `createExtensionInput` accepting `ai-catalog-filter` extensions
-- [ ] 4.4 Convert category filter to `AiCatalogFilterBlueprint.make({ name: 'category', params: { urlParam: 'type', filterFn, loader } })` — options from `getAllCategories()`, multi-select
-- [ ] 4.5 Convert provider filter to `AiCatalogFilterBlueprint.make({ name: 'provider', params: { urlParam: 'provider', filterFn, loader } })` — options from `rhdh.io/ai-asset-source` annotation
-- [ ] 4.6 Convert owner filter to `AiCatalogFilterBlueprint.make({ name: 'owner', params: { urlParam: 'owner', filterFn, loader } })` — options from `spec.owner`
-- [ ] 4.7 Convert tags filter to `AiCatalogFilterBlueprint.make({ name: 'tags', params: { urlParam: 'tag', filterFn, loader } })` — options from `metadata.tags`
-- [ ] 4.8 Add lifecycle filter as new built-in: `AiCatalogFilterBlueprint.make({ name: 'lifecycle', params: { urlParam: 'lifecycle', filterFn, loader } })` — options from `spec.lifecycle`
-- [ ] 4.9 Refactor `FilterSidebar` — iterate over resolved filter extension inputs instead of hardcoded `<Select>` components. Render each filter's loaded component, passing standardized props. Respect priority ordering and `collapsed` config.
-- [ ] 4.10 Refactor `useUrlFilters` — read/write URL params dynamically from the registered filter set (array of `urlParam` strings) instead of hardcoded param names. Keep search (`q`), view mode, pagination as built-in.
-- [ ] 4.11 Refactor `applyEntityFilters` — iterate over registered `filterFn` functions in AND logic instead of checking hardcoded field names. The search filter remains built-in (not a Blueprint extension).
-- [ ] 4.12 Update `clearFilters` to reset all registered filter URL params (including custom ones) and search
-- [ ] 4.13 Update `hasActiveFilters` detection to check all registered filter URL params
-- [ ] 4.14 Export `AiCatalogFilterBlueprint` and `AiCatalogFilterProps` from plugin public API (`src/index.ts`) so third-party modules can import them
-- [ ] 4.15 Add dev app example: a sample custom filter module (`packages/app/src/modules/sampleFilter.ts`) using `createFrontendModule({ pluginId: 'boost' })` to demonstrate third-party filter contribution
-- [ ] 4.16 Add app-config example in dev app showing filter disable (`ai-catalog-filter:boost/owner: false`) and configuration (`collapsed: true`)
-- [ ] 4.17 i18n: all filter labels and accessibility strings via translation resources
-- [ ] 4.18 WCAG 2.1 AA: keyboard navigation through dynamically rendered filters, aria-labels
-- [ ] 4.19 Unit tests: Blueprint creation, filter registration, enable/disable via config, custom filter rendering, filterFn AND logic, URL param sync for dynamic filters, clearFilters with custom params, priority ordering, collapsed state
+- [ ] 4.1 Define `FilterDefinition` interface in `src/blueprints/AiCatalogFilterBlueprint.ts` — fields: `urlParam` (string), `label` (string), `getOptions(entities) => {id, label}[]`, `matchEntity(entity, values) => boolean`, `priority` (number)
+- [ ] 4.2 Create single `filterDefinitionDataRef` via `createExtensionDataRef<FilterDefinition>` in same file
+- [ ] 4.3 Create `AiCatalogFilterBlueprint` via `createExtensionBlueprint` — kind `ai-catalog-filter`, attaches to `page:boost/ai-catalog` input `filters`, params are `FilterDefinition` fields, no config schema. Factory outputs the `FilterDefinition` via the single data ref.
+- [ ] 4.4 Create `src/filters/builtinFilters.ts` with 4 plain `FilterDefinition` objects:
+  - `categoryFilter` — urlParam `type`, getOptions from `getAllCategories()`, matchEntity checks `spec.type`, priority 100
+  - `providerFilter` — urlParam `provider`, getOptions from `rhdh.io/ai-asset-source` annotation, priority 200
+  - `ownerFilter` — urlParam `owner`, getOptions from `spec.owner`, priority 300
+  - `tagsFilter` — urlParam `tag`, getOptions from `metadata.tags`, priority 400
+- [ ] 4.5 Register 5 built-in filters as `AiCatalogFilterBlueprint.make(...)` extensions in `plugin.tsx`, add to `createFrontendPlugin({ extensions: [...] })`
+- [ ] 4.6 Upgrade `aiCatalogPage` to `PageBlueprint.makeWithOverrides` with `name: 'ai-catalog'` — declare `filters` input via `createExtensionInput` accepting `ai-catalog-filter` extensions. Factory resolves `FilterDefinition[]`, sorts by priority, passes to page component as prop.
+- [ ] 4.7 Refactor `FilterSidebar` — receive `FilterDefinition[]` + URL values. Map over definitions, render `<Select>` for each using `getOptions(allEntities)`. Return `null` when array is empty.
+- [ ] 4.8 Refactor `useUrlFilters` — accept `urlParam[]` from resolved definitions instead of hardcoded param names. Replace `setCategory`/`setProvider`/`setOwner`/`setTag` with generic `setFilter(urlParam, values)`. Keep `setSearch`, `setViewMode`, `setPage`, `setPageSize` unchanged. `clearFilters` resets registered filter params + search only (preserves view/pageSize).
+- [ ] 4.9 Refactor `applyEntityFilters` in `entityHelpers.ts` — replace 5 hardcoded `if` blocks with one loop: for each `FilterDefinition` with active values, call `matchEntity(entity, values)`. AND logic. Search filter stays built-in. Remove old `EntityFilters` interface.
+- [ ] 4.10 Update `AiCatalogPage.tsx` — receive `FilterDefinition[]` from page factory, pass to `FilterSidebar` and `useUrlFilters`. `hasActiveFilters` checks all registered urlParams dynamically.
+- [ ] 4.11 Export `AiCatalogFilterBlueprint` and `FilterDefinition` from `src/index.ts`
+- [ ] 4.12 Add dev app example: `packages/app/src/modules/sampleFilter/` — a lifecycle filter via `createFrontendModule({ pluginId: 'boost' })` demonstrating third-party contribution (lifecycle is not built-in, shown as custom filter example)
+- [ ] 4.13 Add app-config example showing filter disable (`ai-catalog-filter:boost/owner: false`)
+- [ ] 4.14 Add lifecycle filter label to `ref.ts` translation keys
+- [ ] 4.15 WCAG 2.1 AA: keyboard navigation through dynamically rendered filters, aria-labels on each `<Select>`
+- [ ] 4.16 Unit tests: `builtinFilters` (getOptions returns correct options, matchEntity matches correctly), `FilterSidebar` (renders N selects from definitions, returns null when empty), `useUrlFilters` (dynamic param read/write, setFilter, clearFilters preserves view/pageSize), `applyEntityFilters` (AND loop with matchEntity, search + filters combined), priority ordering
 
 ## 5. Add Translations for Supported Languages (RHIDP-15479)
 
