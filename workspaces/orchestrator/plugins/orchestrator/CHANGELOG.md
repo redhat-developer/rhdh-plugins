@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.9.1
+
+### Patch Changes
+
+- cb02f14: Fix intermittent page load failures in dynamic plugin mode by removing the explicit Alpha module from translationResources, letting RHDH default to PluginRoot and avoiding a module initialization race on the Alpha default export.
+- 00f80fc: Fix workflow instance page layout overlap when `cardHeightMode` is set to `content`.
+- 41fe374: Fix unintended Workflows tab on User profile pages by converting the entity tab condition from a React hook-based component to a plain predicate function and using the built-in hasAnnotation checker in dynamic plugin config
+- 992efa0: Fix incorrect aria-label on Run again and Abort buttons when the user is authorized to execute the workflow.
+
 ## 5.9.0
 
 ### Minor Changes
