@@ -49,3 +49,78 @@
 - [ ] 3.8 i18n: all user-facing strings via translation resources
 - [ ] 3.9 WCAG 2.1 AA for all interactive elements
 - [ ] 3.10 Unit tests for each card/tab, RBAC-gated rendering, download/copy behavior
+
+## 4. Extensible Browse Filters via NFS (RHIDP-15449)
+
+- [ ] 4.1 Create `AiCatalogFilterBlueprint` via `createExtensionBlueprint` (kind: `ai-catalog-filter`). Params: `urlParam` (string), `filterFn` (entity predicate), `loader` (React.lazy component), optional `priority` (number, default 100). Config schema: optional `collapsed` (boolean, default false).
+- [ ] 4.2 Define `AiCatalogFilterProps` interface — `entities: Entity[]`, `selectedValues: string[]`, `onChange: (values: string[]) => void`
+- [ ] 4.3 Upgrade `aiCatalogPage` to `PageBlueprint.makeWithOverrides` — declare `filters` input via `createExtensionInput` accepting `ai-catalog-filter` extensions
+- [ ] 4.4 Convert category filter to `AiCatalogFilterBlueprint.make({ name: 'category', params: { urlParam: 'type', filterFn, loader } })` — options from `getAllCategories()`, multi-select
+- [ ] 4.5 Convert provider filter to `AiCatalogFilterBlueprint.make({ name: 'provider', params: { urlParam: 'provider', filterFn, loader } })` — options from `rhdh.io/ai-asset-source` annotation
+- [ ] 4.6 Convert owner filter to `AiCatalogFilterBlueprint.make({ name: 'owner', params: { urlParam: 'owner', filterFn, loader } })` — options from `spec.owner`
+- [ ] 4.7 Convert tags filter to `AiCatalogFilterBlueprint.make({ name: 'tags', params: { urlParam: 'tag', filterFn, loader } })` — options from `metadata.tags`
+- [ ] 4.8 Add lifecycle filter as new built-in: `AiCatalogFilterBlueprint.make({ name: 'lifecycle', params: { urlParam: 'lifecycle', filterFn, loader } })` — options from `spec.lifecycle`
+- [ ] 4.9 Refactor `FilterSidebar` — iterate over resolved filter extension inputs instead of hardcoded `<Select>` components. Render each filter's loaded component, passing standardized props. Respect priority ordering and `collapsed` config.
+- [ ] 4.10 Refactor `useUrlFilters` — read/write URL params dynamically from the registered filter set (array of `urlParam` strings) instead of hardcoded param names. Keep search (`q`), view mode, pagination as built-in.
+- [ ] 4.11 Refactor `applyEntityFilters` — iterate over registered `filterFn` functions in AND logic instead of checking hardcoded field names. The search filter remains built-in (not a Blueprint extension).
+- [ ] 4.12 Update `clearFilters` to reset all registered filter URL params (including custom ones) and search
+- [ ] 4.13 Update `hasActiveFilters` detection to check all registered filter URL params
+- [ ] 4.14 Export `AiCatalogFilterBlueprint` and `AiCatalogFilterProps` from plugin public API (`src/index.ts`) so third-party modules can import them
+- [ ] 4.15 Add dev app example: a sample custom filter module (`packages/app/src/modules/sampleFilter.ts`) using `createFrontendModule({ pluginId: 'boost' })` to demonstrate third-party filter contribution
+- [ ] 4.16 Add app-config example in dev app showing filter disable (`ai-catalog-filter:boost/owner: false`) and configuration (`collapsed: true`)
+- [ ] 4.17 i18n: all filter labels and accessibility strings via translation resources
+- [ ] 4.18 WCAG 2.1 AA: keyboard navigation through dynamically rendered filters, aria-labels
+- [ ] 4.19 Unit tests: Blueprint creation, filter registration, enable/disable via config, custom filter rendering, filterFn AND logic, URL param sync for dynamic filters, clearFilters with custom params, priority ordering, collapsed state
+
+## 5. Add Translations for Supported Languages (RHIDP-15479)
+
+- [ ] 5.1 Create `src/translations/de.ts` — German translations using `createTranslationMessages` referencing `boostTranslationRef`, flattened dot-notation keys
+- [ ] 5.2 Create `src/translations/es.ts` — Spanish translations
+- [ ] 5.3 Create `src/translations/fr.ts` — French translations
+- [ ] 5.4 Create `src/translations/it.ts` — Italian translations
+- [ ] 5.5 Create `src/translations/ja.ts` — Japanese translations
+- [ ] 5.6 Update `src/translations/index.ts` — register all 5 locales in `createTranslationResource` with lazy imports (`de: () => import('./de')`, etc.)
+- [ ] 5.7 Audit all user-facing strings in browse page, filter sidebar, entity cards, entity tabs, empty/error/loading states — ensure every string uses `useTranslationRef` with a key in `ref.ts`
+- [ ] 5.8 Add missing keys to `ref.ts` if any strings are found not externalized
+- [ ] 5.9 Ensure interpolation placeholders (e.g., `{{count}}`) are preserved in all locale files
+- [ ] 5.10 Add separate entry point for translation module auto-discovery — re-export `boostTranslationsModule` as default from a dedicated file, add entry to `package.json` `exports`
+- [ ] 5.11 Verify locale switching in dev app — switch locale via Settings, confirm all AI Catalog strings update without page reload
+- [ ] 5.12 Verify English fallback — if a key is missing from a locale file, English is shown (not a raw key or empty string)
+
+## 6. E2E Tests with Playwright (RHIDP-15480)
+
+- [ ] 6.1 Install `@playwright/test` and `@backstage/e2e-test-utils` as devDependencies
+- [ ] 6.2 Create `playwright.config.ts` at workspace root — `webServer` starts `yarn start`, `testDir: 'e2e-tests'`, NFS-only (no `APP_MODE`)
+- [ ] 6.3 Add Playwright projects for at least `en` and one non-English locale (e.g., `ja`) with separate ports
+- [ ] 6.4 Create `e2e-tests/test_yamls/` with per-locale `app-config-e2e-*.yaml` overrides (baseUrl, backend port, CORS)
+- [ ] 6.5 Add `package.json` scripts: `test:e2e` → `playwright test`, `playwright` → forwarding script
+- [ ] 6.6 Create `e2e-tests/utils/translations.ts` — `getTranslations(locale)` helper loading messages from plugin translation modules
+- [ ] 6.7 Create `e2e-tests/utils/accessibility.ts` — axe-core audit helper with WCAG 2.1 AA tags, attaches results to `TestInfo`
+- [ ] 6.8 Test: browse page renders card grid with fixture data — verify cards visible using translation keys
+- [ ] 6.9 Test: search filters cards by keyword — type in search, verify URL updates, cards filtered
+- [ ] 6.10 Test: sidebar filter narrows results — select category, verify only matching cards shown
+- [ ] 6.11 Test: multiple filters combine as AND — select category + tag, verify intersection
+- [ ] 6.12 Test: clear filters resets view — click clear, verify URL params removed, full grid restored
+- [ ] 6.13 Test: card click navigates to entity detail — click card, verify URL changes to catalog entity page
+- [ ] 6.14 Test: empty state when no matches — apply impossible filter combination, verify empty state message
+- [ ] 6.15 Test: pagination controls — navigate pages, verify card grid updates
+- [ ] 6.16 Test: sort control — change sort order, verify card reordering
+- [ ] 6.17 Accessibility: axe-core audit on browse page (unfiltered)
+- [ ] 6.18 Accessibility: axe-core audit on browse page (with active filters)
+- [ ] 6.19 Verify same tests pass for non-English locale project
+
+## 7. Dynamic Plugin Export and Overlay Registration (RHIDP-15481)
+
+- [ ] 7.1 Add `"export-dynamic": "rhdh-cli plugin export"` script to `plugins/boost/package.json`
+- [ ] 7.2 Add `"dist-dynamic/*.*"` and `"dist-dynamic/dist/**"` to `files` array in `plugins/boost/package.json`
+- [ ] 7.3 Run `yarn export-dynamic` and verify `dist-dynamic/` is produced without errors
+- [ ] 7.4 Create `plugins/boost/app-config.dynamic.yaml` with default `app.extensions` config:
+  - `page:boost/ai-catalog` at `/ai-catalog`
+  - `entity-card:boost/summary`, `entity-card:boost/adoption`, `entity-card:boost/version-list` with AI asset filter
+  - `entity-content:boost/usage` tab with title and group
+- [ ] 7.5 Add boost frontend plugin entry to `redhat-developer/rhdh-plugin-export-overlays` — PR with overlay config for OCI image build
+- [ ] 7.6 Update workspace `dynamic-plugins-image-reference.yaml` with the published OCI image ref for the frontend plugin
+- [ ] 7.7 Verify plugin loads in RHDH with `ENABLE_STANDARD_MODULE_FEDERATION=true` — AI Catalog nav item appears, browse page renders
+- [ ] 7.8 Verify entity page extensions mount on AI asset entities and are absent on non-AI entities
+- [ ] 7.9 Verify adopter overrides via `app.extensions` — disable a card, rename a tab, change entity filter
+- [ ] 7.10 Verify `page:boost/ai-catalog: false` removes the nav item and page
