@@ -67,31 +67,32 @@ This metric counts all pull requests that are currently in an "open" state for t
 - **Metric ID**: `github.open_prs`
 - **Type**: Number
 - **Datasource**: `github`
-- **Default thresholds**:
 
-  ```yaml
-  # app-config.yaml
-  scorecard:
-    plugins:
-      github:
-        open_prs:
-          thresholds:
-            rules:
-              - key: error
-                expression: '>50'
-              - key: warning
-                expression: '10-50'
-              - key: success
-                expression: '<10'
-  ```
+## Default thresholds
+
+Default thresholds for `github.open_prs`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    github:
+      open_prs:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '10-50'
+            - key: error
+              expression: '>50'
+```
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Configuration
 
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the GitHub metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
-## Schedule Configuration
+### Schedule Configuration
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. However, this configuration can be changed in the `app-config.yaml` file. Here is an example of how to do that:
 

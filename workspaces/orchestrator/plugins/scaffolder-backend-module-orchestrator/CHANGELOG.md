@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.6.3
+
+### Patch Changes
+
+- f6271a5: add output links to the catalog entity and the workflow list in the Orchestrator
+
 ## 1.6.2
 
 ### Patch Changes

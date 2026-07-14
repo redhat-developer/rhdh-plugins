@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github
 
+## 2.8.1
+
+### Patch Changes
+
+- 7ead71c: Correct default threshold documentation and add missing threshold documentation in scorecard backend module READMEs to match provider code defaults.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.1
+
 ## 2.8.0
 
 ### Minor Changes

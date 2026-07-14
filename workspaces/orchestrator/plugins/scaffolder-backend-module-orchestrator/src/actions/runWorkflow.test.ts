@@ -109,7 +109,7 @@ describe('createRunWorkflowAction', () => {
     expect(mockApi.executeWorkflow).not.toHaveBeenCalled();
   });
 
-  it('executes the workflow and outputs the instance url derived from the template entity', async () => {
+  it('executes the workflow and outputs orchestrator, catalog, and instance urls', async () => {
     mockApi.executeWorkflow.mockResolvedValue({
       data: {
         id: 'instance-123',
@@ -140,6 +140,14 @@ describe('createRunWorkflowAction', () => {
         targetEntity: 'component:default/sample-service',
       },
       reqConfigOption,
+    );
+    expect(ctx.output).toHaveBeenCalledWith(
+      'orchestratorWorkflowsUrl',
+      '/orchestrator/workflows',
+    );
+    expect(ctx.output).toHaveBeenCalledWith(
+      'catalogEntityUrl',
+      '/catalog/default/component/sample-service/workflows',
     );
     expect(ctx.output).toHaveBeenCalledWith(
       'instanceUrl',
@@ -176,6 +184,14 @@ describe('createRunWorkflowAction', () => {
         targetEntity: 'resource:prod/database',
       }),
       reqConfigOption,
+    );
+    expect(ctx.output).toHaveBeenCalledWith(
+      'orchestratorWorkflowsUrl',
+      '/orchestrator/workflows',
+    );
+    expect(ctx.output).toHaveBeenCalledWith(
+      'catalogEntityUrl',
+      '/catalog/prod/resource/database/workflows',
     );
     expect(ctx.output).toHaveBeenCalledWith(
       'instanceUrl',
