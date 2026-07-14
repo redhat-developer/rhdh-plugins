@@ -16,6 +16,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
@@ -286,5 +287,177 @@ describe('validateAttachmentsForModel', () => {
 
     expect(mockNext).toHaveBeenCalled();
     expect(statusMock).not.toHaveBeenCalled();
+  });
+
+  describe('image magic byte verification', () => {
+    const VALID_JPEG_B64 = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
+    ]).toString('base64');
+    const INVALID_IMAGE_B64 = Buffer.from('Hello world').toString('base64');
+
+    beforeEach(() => {
+      ModelCapabilitiesCache.set('openai/gpt-4', true);
+    });
+
+    afterEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('should accept image with valid JPEG magic bytes', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/jpeg',
+            content: VALID_JPEG_B64,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should accept image with data URL prefix', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/jpeg',
+            content: `data:image/jpeg;base64,${VALID_JPEG_B64}`,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should reject image with invalid magic bytes', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/jpeg',
+            content: INVALID_IMAGE_B64,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({
+        error: 'Image attachment does not contain a valid JPEG file',
+      });
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('should skip magic byte check for non-image attachments', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'api object',
+            content_type: 'text/plain',
+            content: INVALID_IMAGE_B64,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('JSON content validation', () => {
+    it('should accept valid JSON content', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        attachments: [
+          {
+            attachment_type: 'api object',
+            content_type: 'application/json',
+            content: '{"key": "value", "nested": {"a": 1}}',
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should reject invalid JSON content', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        attachments: [
+          {
+            attachment_type: 'api object',
+            content_type: 'application/json',
+            content: '{invalid json content',
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({
+        error:
+          'Attachment with content_type "application/json" contains invalid JSON',
+      });
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('should skip JSON validation for non-JSON content types', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        attachments: [
+          {
+            attachment_type: 'api object',
+            content_type: 'text/plain',
+            content: 'this is not json and that is fine',
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should skip JSON validation for empty content', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        attachments: [
+          {
+            attachment_type: 'api object',
+            content_type: 'application/json',
+            content: '',
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1441,6 +1441,10 @@ describe('intelligent-assistant router tests', () => {
   });
 
   describe('POST /v1/query attachment validation', () => {
+    const VALID_JPEG_B64 = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
+    ]).toString('base64');
+
     beforeEach(() => {
       ModelCapabilitiesCache.clear();
     });
@@ -1471,7 +1475,7 @@ describe('intelligent-assistant router tests', () => {
             {
               attachment_type: 'image',
               content_type: 'image/jpeg',
-              content: 'base64data',
+              content: VALID_JPEG_B64,
             },
           ],
         });
@@ -1508,7 +1512,7 @@ describe('intelligent-assistant router tests', () => {
             {
               attachment_type: 'image',
               content_type: 'image/jpeg',
-              content: 'base64data',
+              content: VALID_JPEG_B64,
             },
           ],
         });

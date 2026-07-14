@@ -729,28 +729,12 @@ export async function createRouter(
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
         const { userEntityRef, credentials } = getIdentity(request);
-
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
 
         if (request.body.attachments?.length) {
           logger.info(
             `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
           );
-
-          const contextParts: string[] = [];
-          for (const att of request.body.attachments as Array<{
-            attachment_type: string;
-            content_type: string;
-            content: string;
-          }>) {
-            if (att.attachment_type !== 'image') {
-              contextParts.push(att.content);
-            }
-          }
-          if (contextParts.length > 0) {
-            request.body.query = `${contextParts.join('\n')}\n\n${request.body.query}`;
-          }
-          delete request.body.attachments;
         }
 
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
