@@ -85,4 +85,5 @@
 ## 8. Cross-References
 
 - [ ] 8.1 Reference RHDHPLAN-1507's `ai-catalog-entity-model` change for annotation scheme
+- [ ] 8.2 Reference RHIDP-15316 for shared CA bundle utility and cross-connector infrastructure
 - [ ] 8.3 Reference RHDHPLAN-404 for Model Registry integration (Kubeflow API — handled separately)
