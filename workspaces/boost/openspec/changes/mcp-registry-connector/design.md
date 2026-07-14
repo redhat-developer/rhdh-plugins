@@ -156,14 +156,9 @@ catalog:
 **Integration pattern:**
 
 ```typescript
-import { loadCaBundle } from '@boost/plugin-boost-backend-shared';
+import { loadCaBundle } from '@boost/connector-utils';
 
-const caBundlePath = config.getOptionalString(
-  'catalog.providers.mcpRegistry.tls.ca',
-);
-const caBundlePEM = caBundlePath
-  ? await loadCaBundle(caBundlePath, logger)
-  : undefined;
+const caBundle = loadCaBundle(config, 'mcpRegistry');
 
 // Pass CA bundle to HTTP client
 const httpsAgent = new https.Agent({
@@ -180,7 +175,7 @@ const httpsAgent = new https.Agent({
 
 **Dependency:**
 
-- `@boost/plugin-boost-backend-shared` package exports `loadCaBundle()` utility
+- `@boost/connector-utils` package exports `loadCaBundle()` utility
 - Shared utility handles file reading, PEM validation, and error logging
 
 ### Decision 4: Annotation Enrichment Pipeline After Entity Emission

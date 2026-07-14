@@ -64,7 +64,7 @@ This change layers productization on top of the upstream connector, adding air-g
 **Cross-references:**
 
 - `workspaces/boost/openspec/changes/ai-catalog-entity-model/` — annotation scheme and SDK validation (RHDHPLAN-1507)
-- `workspaces/boost/openspec/changes/cross-connector-shared-infrastructure/` — shared CA bundle utility (RHIDP-15316)
+- `workspaces/boost/openspec/changes/connector-shared-infrastructure/` — shared CA bundle utility (RHIDP-15316)
 - Upstream RHDHPLAN-393 — base MCP Registry entity provider
 
 **Configuration schema:**

@@ -39,5 +39,5 @@ Boost must surface RHOAI's MCP catalog as first-class API entities in the RHDH c
 **Cross-references:**
 
 - `workspaces/boost/openspec/changes/ai-catalog-entity-model/` — annotation scheme and SDK validation (RHDHPLAN-1507)
-- `workspaces/boost/openspec/changes/cross-connector-shared-infrastructure/` — shared CA bundle utility (RHIDP-15316)
+- `workspaces/boost/openspec/changes/connector-shared-infrastructure/` — shared CA bundle utility (RHIDP-15316)
 - RHDHPLAN-404 — Model Registry integration (Kubeflow API) handled separately

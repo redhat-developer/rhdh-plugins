@@ -179,7 +179,7 @@ catalog:
 
 **WHEN** the connector loads a custom CA bundle:
 
-**THEN** the connector uses the shared `loadCaBundle()` utility from `@boost/plugin-boost-backend-shared` (RHIDP-15316).
+**THEN** the connector uses the shared `loadCaBundle()` utility from `@boost/connector-utils` (RHIDP-15316).
 
 **AND** the connector does NOT implement inline CA bundle loading logic.
 
