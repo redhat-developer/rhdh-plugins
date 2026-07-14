@@ -188,4 +188,19 @@ describe('AdoptionCard', () => {
       expect(screen.getByText('Copied')).toBeInTheDocument();
     });
   });
+
+  it('opens the git archive URL with noopener,noreferrer when Download ZIP is clicked', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+    await renderWithEntity(gitEntity);
+    fireEvent.click(screen.getByText('Download ZIP'));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://api.github.com/repos/example/no-hardcoded-secrets-rule/zipball',
+      '_blank',
+      'noopener,noreferrer',
+    );
+
+    openSpy.mockRestore();
+  });
 });

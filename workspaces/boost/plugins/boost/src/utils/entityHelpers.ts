@@ -102,8 +102,80 @@ export function applyEntityFilters(
  */
 export interface AdoptionAction {
   type: 'copy' | 'link';
-  label: string;
   value: string;
+}
+
+/**
+ * Parses a URL string and returns its hostname, or undefined if the URL is malformed.
+ */
+function parseHostname(url: string): string | undefined {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return undefined;
+  }
+}
+
+function isHost(hostname: string | undefined, host: string): boolean {
+  return hostname === host || (hostname?.endsWith(`.${host}`) ?? false);
+}
+
+/**
+ * Matches a well-formed `oci://` reference and rejects anything containing
+ * shell metacharacters (`;`, `|`, `` ` ``, `$()`, spaces, etc.), since this
+ * value is interpolated into a `podman pull` command that gets copied to the
+ * clipboard.
+ */
+const OCI_REFERENCE_PATTERN = /^oci:\/\/[a-zA-Z0-9][a-zA-Z0-9._:@/-]*$/;
+
+function isSafeOciReference(url: string): boolean {
+  return OCI_REFERENCE_PATTERN.test(url);
+}
+
+/**
+ * Returns true if `value` parses as an absolute `http:`/`https:` URL.
+ */
+function isHttpUrl(value: string): boolean {
+  try {
+    return ['http:', 'https:'].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Builds a "download ZIP" archive URL for a git-hosted repository target.
+ *
+ * - GitHub: uses the branch-agnostic `zipball` API endpoint, so the actual
+ *   default branch is always resolved server-side (no branch guessing).
+ *   Requires the target path to be exactly `owner/repo` (a repo root); a
+ *   subpage such as `/tree/main` or `/blob/...` is not a repo root and is
+ *   returned unchanged rather than guessing a wrong owner/repo pair.
+ * - GitLab: has no branch-agnostic web URL, so this falls back to a
+ *   best-effort `main` branch guess. This is a heuristic pending the
+ *   backend download proxy (RHIDP-15167); it may not resolve for
+ *   repositories whose default branch isn't `main`.
+ */
+function buildGitArchiveUrl(target: string, hostname: string): string {
+  let segments: string[];
+  try {
+    segments = new URL(target).pathname
+      .replace(/^\/|\/$/g, '')
+      .split('/')
+      .filter(Boolean);
+  } catch {
+    return target;
+  }
+
+  if (isHost(hostname, 'github.com')) {
+    if (segments.length !== 2) return target;
+    const [owner, repoRaw] = segments;
+    return `https://api.github.com/repos/${owner}/${repoRaw.replace(/\.git$/, '')}/zipball`;
+  }
+
+  const repo = segments[segments.length - 1]?.replace(/\.git$/, '');
+  if (!repo) return target;
+  return `${target.replace(/\/$/, '')}/-/archive/main/${repo}-main.zip`;
 }
 
 /**
@@ -124,7 +196,6 @@ export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
   if (specType === 'skill') {
     return {
       type: 'copy',
-      label: 'adoptionSkillCommand',
       value: `npx skills add ${entity.metadata.name}`,
     };
   }
@@ -133,21 +204,16 @@ export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
     url?: string;
     type?: string;
   }>;
-  const ociAnnotation =
-    entity.metadata.annotations?.['rhdh.io/ai-asset-source'];
 
   // 2. OCI-sourced
-  const ociRemote = remotes.find(r => r.url?.startsWith('oci://'));
+  // Checked before the mcp-server branch below: per #3735's priority order,
+  // an oci:// remote takes precedence even for entities typed `mcp-server`.
+  const ociRemote = remotes.find(r => r.url && isSafeOciReference(r.url));
   if (ociRemote?.url) {
     return {
       type: 'copy',
-      label: 'adoptionPullCommand',
       value: `podman pull ${ociRemote.url}`,
     };
-  }
-  if (ociAnnotation === 'oci') {
-    // Annotation indicates OCI but no oci:// remote found — nothing to show
-    return undefined;
   }
 
   // 3. Git-sourced
@@ -156,27 +222,27 @@ export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
     | undefined;
   if (location?.target) {
     const target = location.target;
-    const isGitHost =
-      target.includes('github.com') || target.includes('gitlab.com');
-    if (isGitHost) {
-      const archiveUrl = target.includes('github.com')
-        ? `${target}/archive/refs/heads/main.zip`
-        : target;
+    const hostname = parseHostname(target);
+    if (isHost(hostname, 'github.com') || isHost(hostname, 'gitlab.com')) {
       return {
         type: 'link',
-        label: 'adoptionDownloadZip',
-        value: archiveUrl,
+        value: buildGitArchiveUrl(target, hostname as string),
       };
     }
   }
 
   // 4. MCP servers
-  if (specType === 'mcp-server' && remotes.length > 0 && remotes[0].url) {
-    return {
-      type: 'copy',
-      label: 'adoptionMcpRemote',
-      value: remotes[0].url,
-    };
+  if (specType === 'mcp-server') {
+    const mcpRemote =
+      remotes.find(
+        r => r.type === 'streamable-http' && r.url && isHttpUrl(r.url),
+      ) ?? remotes.find(r => r.url && isHttpUrl(r.url));
+    if (mcpRemote?.url) {
+      return {
+        type: 'copy',
+        value: mcpRemote.url,
+      };
+    }
   }
 
   // 5. Fallback

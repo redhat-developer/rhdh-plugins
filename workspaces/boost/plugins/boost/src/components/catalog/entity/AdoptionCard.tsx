@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Button, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
@@ -30,7 +30,7 @@ export const AdoptionCard = () => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const action = getAdoptionAction(entity);
+  const action = useMemo(() => getAdoptionAction(entity), [entity]);
 
   const handleCopy = useCallback(() => {
     if (!action || action.type !== 'copy') return;
@@ -78,7 +78,9 @@ export const AdoptionCard = () => {
         ) : (
           <Button
             variant="tertiary"
-            onPress={() => window.open(action.value, '_blank')}
+            onPress={() =>
+              window.open(action.value, '_blank', 'noopener,noreferrer')
+            }
             iconStart={<DownloadOutlined fontSize="small" />}
           >
             {t('catalog.card.adoptionDownloadZip')}
