@@ -16,11 +16,11 @@
 
 import type { SvgIconComponent } from '@mui/icons-material';
 import AutoFixHighOutlined from '@mui/icons-material/AutoFixHighOutlined';
-import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
+import GppGoodOutlined from '@mui/icons-material/GppGoodOutlined';
 import DnsOutlined from '@mui/icons-material/DnsOutlined';
 import SmartToyOutlined from '@mui/icons-material/SmartToyOutlined';
 import PsychologyOutlined from '@mui/icons-material/PsychologyOutlined';
-import BuildOutlined from '@mui/icons-material/BuildOutlined';
+import HandymanOutlined from '@mui/icons-material/HandymanOutlined';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 
 export interface CategoryMeta {
@@ -37,7 +37,7 @@ const categoryMetaMap: Record<string, CategoryMeta> = {
   },
   rule: {
     label: 'Rules',
-    icon: VerifiedUserOutlined,
+    icon: GppGoodOutlined,
     color: 'var(--boost-color-rule, #c084fc)',
   },
   'mcp-server': {
@@ -57,7 +57,7 @@ const categoryMetaMap: Record<string, CategoryMeta> = {
   },
   'ai-tool': {
     label: 'Tools',
-    icon: BuildOutlined,
+    icon: HandymanOutlined,
     color: 'var(--boost-color-tool, #fb923c)',
   },
   'vector-store': {
