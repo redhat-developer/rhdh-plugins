@@ -23,7 +23,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
   });
 
   test('FLPATH-4200: Data Center page renders from sidebar navigation', async () => {

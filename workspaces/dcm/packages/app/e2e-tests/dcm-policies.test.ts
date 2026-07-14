@@ -25,7 +25,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Policies');
   });

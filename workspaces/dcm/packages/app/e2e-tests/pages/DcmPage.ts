@@ -15,7 +15,7 @@
  */
 
 import { expect, type Page } from '@playwright/test';
-import { performGuestLogin } from '../fixtures/auth';
+import { performLogin } from '../fixtures/auth';
 import { TIMEOUTS } from '../utils/constants';
 
 const DCM_TABS = [
@@ -49,8 +49,13 @@ export class DcmPage {
     this.page = page;
   }
 
+  async login() {
+    await performLogin(this.page);
+  }
+
+  /** @deprecated Use {@link login} */
   async loginAsGuest() {
-    await performGuestLogin(this.page);
+    await performLogin(this.page);
   }
 
   // ── Navigation ────────────────────────────────────────────────────────

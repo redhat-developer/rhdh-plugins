@@ -26,7 +26,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
   });
 
@@ -306,7 +306,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
   });
 
