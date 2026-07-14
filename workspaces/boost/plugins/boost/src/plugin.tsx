@@ -15,6 +15,7 @@
  */
 
 import {
+  createExtensionInput,
   createFrontendModule,
   createFrontendPlugin,
   PageBlueprint,
@@ -25,19 +26,62 @@ import {
   EntityContentBlueprint,
 } from '@backstage/plugin-catalog-react/alpha';
 
+import {
+  AiCatalogFilterBlueprint,
+  filterDefinitionDataRef,
+} from './blueprints/AiCatalogFilterBlueprint';
+import {
+  categoryFilterDefinition,
+  providerFilterDefinition,
+  ownerFilterDefinition,
+  tagsFilterDefinition,
+} from './filters/builtInFilterDefinitions';
 import { rootRouteRef } from './routes';
 import { boostTranslations } from './translations';
 import { isAiAsset } from './utils/isAiAsset';
 
 // ---------------------------------------------------------------------------
-// Page Blueprint — Browse page at /ai-catalog
+// Built-in filter extensions
 // ---------------------------------------------------------------------------
-const aiCatalogPage = PageBlueprint.make({
-  params: {
-    path: '/ai-catalog',
-    routeRef: rootRouteRef,
-    title: 'AI Catalog',
-    loader: () => import('./components/catalog').then(m => <m.AiCatalogPage />),
+const categoryFilter = AiCatalogFilterBlueprint.make({
+  name: 'category',
+  params: categoryFilterDefinition,
+});
+const providerFilter = AiCatalogFilterBlueprint.make({
+  name: 'provider',
+  params: providerFilterDefinition,
+});
+const ownerFilter = AiCatalogFilterBlueprint.make({
+  name: 'owner',
+  params: ownerFilterDefinition,
+});
+const tagsFilter = AiCatalogFilterBlueprint.make({
+  name: 'tags',
+  params: tagsFilterDefinition,
+});
+
+// ---------------------------------------------------------------------------
+// Page Blueprint — Browse page at /ai-catalog with extensible filter input
+// ---------------------------------------------------------------------------
+const aiCatalogPage = PageBlueprint.makeWithOverrides({
+  name: 'ai-catalog',
+  inputs: {
+    filters: createExtensionInput([filterDefinitionDataRef]),
+  },
+  factory(originalFactory, { inputs }) {
+    const filterDefs = inputs.filters
+      .map(f => f.get(filterDefinitionDataRef))
+      .sort((a, b) => a.priority - b.priority);
+
+    return originalFactory({
+      path: '/ai-catalog',
+      routeRef: rootRouteRef,
+      title: 'AI Catalog',
+      loader: () =>
+        import('./components/catalog').then(m => (
+          <m.AiCatalogPage filters={filterDefs} />
+        )),
+    });
   },
 });
 
@@ -113,6 +157,10 @@ export const boostPlugin = createFrontendPlugin({
   pluginId: 'boost',
   extensions: [
     aiCatalogPage,
+    categoryFilter,
+    providerFilter,
+    ownerFilter,
+    tagsFilter,
     summaryCard,
     adoptionCard,
     versionListCard,

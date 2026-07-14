@@ -17,15 +17,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import type { AiAssetFilters } from './useAiAssets';
-
 export type ViewMode = 'grid' | 'table';
 
 export interface UrlFilterState {
-  /** Debounced filters passed to useAiAssets. */
-  filters: AiAssetFilters;
-  /** Current search input value (not debounced) — bind to SearchField. */
+  search: string;
   searchInputValue: string;
+  filterValues: Map<string, string[]>;
   viewMode: ViewMode;
   page: number;
   pageSize: number;
@@ -33,10 +30,7 @@ export interface UrlFilterState {
 
 export interface UrlFilterActions {
   setSearch: (value: string) => void;
-  setCategory: (values: string[]) => void;
-  setProvider: (values: string[]) => void;
-  setOwner: (values: string[]) => void;
-  setTag: (values: string[]) => void;
+  setFilter: (urlParam: string, values: string[]) => void;
   setViewMode: (mode: ViewMode) => void;
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
@@ -48,46 +42,36 @@ function readArray(params: URLSearchParams, key: string): string[] {
   return val ? val.split(',').filter(Boolean) : [];
 }
 
-function writeArray(
-  params: URLSearchParams,
-  key: string,
-  values: string[],
-): void {
-  if (values.length > 0) {
-    params.set(key, values.join(','));
-  } else {
-    params.delete(key);
-  }
-}
-
 const SEARCH_DEBOUNCE_MS = 300;
 
 /**
  * Synchronizes filter, search, pagination, and view mode state
- * with URL query parameters. Search is debounced at 300ms so
- * the SearchField responds instantly while the data query
- * waits for the user to stop typing.
+ * with URL query parameters. Accepts dynamic filter param names
+ * from the registered FilterDefinition set.
  */
-export function useUrlFilters(): UrlFilterState & UrlFilterActions {
+export function useUrlFilters(
+  filterParams: string[],
+): UrlFilterState & UrlFilterActions {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const rawSearch = searchParams.get('q') ?? '';
-  const category = useMemo(
-    () => readArray(searchParams, 'type'),
-    [searchParams],
-  );
-  const provider = useMemo(
-    () => readArray(searchParams, 'provider'),
-    [searchParams],
-  );
-  const owner = useMemo(() => readArray(searchParams, 'owner'), [searchParams]);
-  const tag = useMemo(() => readArray(searchParams, 'tag'), [searchParams]);
   const viewMode = (searchParams.get('view') as ViewMode) || 'grid';
   const page = Math.max(0, parseInt(searchParams.get('page') ?? '0', 10) || 0);
   const pageSize = Math.min(
     100,
     Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10) || 20),
   );
+
+  const filterValues = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const param of filterParams) {
+      const vals = readArray(searchParams, param);
+      if (vals.length > 0) {
+        map.set(param, vals);
+      }
+    }
+    return map;
+  }, [searchParams, filterParams]);
 
   const [searchInputValue, setSearchInputValue] = useState(rawSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(rawSearch);
@@ -123,118 +107,91 @@ export function useUrlFilters(): UrlFilterState & UrlFilterActions {
     return () => clearTimeout(timerRef.current);
   }, [searchInputValue, setSearchParams]);
 
-  const update = useCallback(
-    (updater: (params: URLSearchParams) => void) => {
+  const setSearch = useCallback((value: string) => {
+    setSearchInputValue(value);
+  }, []);
+
+  const setFilter = useCallback(
+    (urlParam: string, values: string[]) => {
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
-        updater(next);
+        if (values.length > 0) {
+          next.set(urlParam, values.join(','));
+        } else {
+          next.delete(urlParam);
+        }
+        next.delete('page');
         return next;
       });
     },
     [setSearchParams],
   );
 
-  const setSearch = useCallback((value: string) => {
-    setSearchInputValue(value);
-  }, []);
-
-  const setCategory = useCallback(
-    (values: string[]) =>
-      update(p => {
-        writeArray(p, 'type', values);
-        p.delete('page');
-      }),
-    [update],
-  );
-
-  const setProvider = useCallback(
-    (values: string[]) =>
-      update(p => {
-        writeArray(p, 'provider', values);
-        p.delete('page');
-      }),
-    [update],
-  );
-
-  const setOwner = useCallback(
-    (values: string[]) =>
-      update(p => {
-        writeArray(p, 'owner', values);
-        p.delete('page');
-      }),
-    [update],
-  );
-
-  const setTag = useCallback(
-    (values: string[]) =>
-      update(p => {
-        writeArray(p, 'tag', values);
-        p.delete('page');
-      }),
-    [update],
-  );
-
   const setViewMode = useCallback(
-    (mode: ViewMode) =>
-      update(p => {
+    (mode: ViewMode) => {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
         if (mode === 'grid') {
-          p.delete('view');
+          next.delete('view');
         } else {
-          p.set('view', mode);
+          next.set('view', mode);
         }
-      }),
-    [update],
+        return next;
+      });
+    },
+    [setSearchParams],
   );
 
   const setPage = useCallback(
-    (p: number) =>
-      update(params => {
+    (p: number) => {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
         if (p === 0) {
-          params.delete('page');
+          next.delete('page');
         } else {
-          params.set('page', String(p));
+          next.set('page', String(p));
         }
-      }),
-    [update],
+        return next;
+      });
+    },
+    [setSearchParams],
   );
 
   const setPageSize = useCallback(
-    (size: number) =>
-      update(p => {
-        p.set('pageSize', String(size));
-        p.delete('page');
-      }),
-    [update],
+    (size: number) => {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set('pageSize', String(size));
+        next.delete('page');
+        return next;
+      });
+    },
+    [setSearchParams],
   );
 
   const clearFilters = useCallback(() => {
-    setSearchParams(new URLSearchParams());
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('q');
+      next.delete('page');
+      for (const param of filterParams) {
+        next.delete(param);
+      }
+      return next;
+    });
     setSearchInputValue('');
     setDebouncedSearch('');
-  }, [setSearchParams]);
-
-  const filters: AiAssetFilters = useMemo(
-    () => ({
-      search: debouncedSearch || undefined,
-      category: category.length > 0 ? category : undefined,
-      provider: provider.length > 0 ? provider : undefined,
-      tags: tag.length > 0 ? tag : undefined,
-      owner: owner.length > 0 ? owner : undefined,
-    }),
-    [debouncedSearch, category, provider, tag, owner],
-  );
+  }, [setSearchParams, filterParams]);
 
   return {
-    filters,
+    search: debouncedSearch,
     searchInputValue,
+    filterValues,
     viewMode,
     page,
     pageSize,
     setSearch,
-    setCategory,
-    setProvider,
-    setOwner,
-    setTag,
+    setFilter,
     setViewMode,
     setPage,
     setPageSize,
