@@ -16,9 +16,9 @@
 
 import { Entity } from '@backstage/catalog-model';
 import {
-  AIResourceScopeProcessor,
+  AIResourceExtensionsProcessor,
   VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceScopeProcessor';
+} from './AIResourceExtensionsProcessor';
 
 function makeAIResource(spec: Entity['spec'] = {}): Entity {
   return {
@@ -29,18 +29,18 @@ function makeAIResource(spec: Entity['spec'] = {}): Entity {
   };
 }
 
-describe('AIResourceScopeProcessor', () => {
-  let processor: AIResourceScopeProcessor;
+describe('AIResourceExtensionsProcessor', () => {
+  let processor: AIResourceExtensionsProcessor;
   const location = { type: 'url', target: 'https://example.com' };
   const emit = jest.fn();
 
   beforeEach(() => {
-    processor = new AIResourceScopeProcessor();
+    processor = new AIResourceExtensionsProcessor();
     emit.mockClear();
   });
 
   it('should return processor name', () => {
-    expect(processor.getProcessorName()).toBe('AIResourceScopeProcessor');
+    expect(processor.getProcessorName()).toBe('AIResourceExtensionsProcessor');
   });
 
   describe('valid scope values', () => {
@@ -148,12 +148,13 @@ describe('AIResourceScopeProcessor', () => {
     it('should not expose internal class names in error', async () => {
       const entity = makeAIResource({ scope: 'invalid' });
 
-      await expect(
-        processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow(
-        expect.not.objectContaining({
-          message: expect.stringMatching(/AIResourceScopeProcessor/),
-        }),
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).not.toMatch(
+        /AIResourceExtensionsProcessor/,
       );
     });
 

@@ -13,7 +13,7 @@ import { LocationSpec } from '@backstage/plugin-catalog-common';
 export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 // @public
-export class AIResourceScopeProcessor implements CatalogProcessor {
+export class AIResourceExtensionsProcessor implements CatalogProcessor {
   // (undocumented)
   getProcessorName(): string;
   // (undocumented)

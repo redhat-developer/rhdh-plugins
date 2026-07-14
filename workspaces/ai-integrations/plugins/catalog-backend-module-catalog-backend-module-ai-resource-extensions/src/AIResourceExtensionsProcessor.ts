@@ -47,11 +47,14 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  * - `spec.scope`: optional field restricted to 'organization',
  *   'product', or 'team'
  *
+ * Additional extension validators (for example OCI location rules)
+ * should be added here so errors can be reported together.
+ *
  * @public
  */
-export class AIResourceScopeProcessor implements CatalogProcessor {
+export class AIResourceExtensionsProcessor implements CatalogProcessor {
   getProcessorName(): string {
-    return 'AIResourceScopeProcessor';
+    return 'AIResourceExtensionsProcessor';
   }
 
   async preProcessEntity(

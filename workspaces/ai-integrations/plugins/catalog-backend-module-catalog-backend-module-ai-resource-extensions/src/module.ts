@@ -16,7 +16,7 @@
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 
-import { AIResourceScopeProcessor } from './AIResourceScopeProcessor';
+import { AIResourceExtensionsProcessor } from './AIResourceExtensionsProcessor';
 
 /**
  * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
@@ -33,7 +33,7 @@ export const catalogModuleCatalogBackendModuleAiResourceExtensions =
           catalog: catalogProcessingExtensionPoint,
         },
         async init({ catalog }) {
-          catalog.addProcessor(new AIResourceScopeProcessor());
+          catalog.addProcessor(new AIResourceExtensionsProcessor());
         },
       });
     },
