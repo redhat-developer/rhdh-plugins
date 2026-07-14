@@ -40,16 +40,20 @@ CREATE TABLE sync_attempts (
   assets_added INTEGER NOT NULL DEFAULT 0,
   assets_updated INTEGER NOT NULL DEFAULT 0,
   assets_removed INTEGER NOT NULL DEFAULT 0,
-  duration_ms INTEGER NOT NULL,
-  INDEX (connector_id, timestamp DESC)
+  duration_ms INTEGER NOT NULL
 );
+
+CREATE INDEX idx_sync_attempts_connector_ts ON sync_attempts (connector_id, timestamp DESC);
 ```
 
 Health status is derived from the last N sync attempts (default N=3):
 
-- **Healthy**: Last 3 sync attempts succeeded
-- **Degraded**: Last sync attempt succeeded but 1+ failures in last 3 attempts
-- **Failing**: Last 3 sync attempts failed
+- **Healthy**: All N attempts succeeded
+- **Degraded**: Mixed results (not all-success and not all-failure)
+- **Failing**: All N attempts failed
+- **Unknown**: Zero sync attempts recorded (new connector, never synced)
+
+If fewer than N attempts exist, the same rules apply to the available attempts.
 
 **Why:** Storing sync attempts provides historical context for health trends. Derivation logic (last N attempts) balances recency with resilience against transient failures. Separate table avoids coupling health storage to connector config schema.
 
@@ -94,7 +98,7 @@ The health UI distinguishes between three connector states:
 2. **Enabled + Failing**: Red status badge, error summary, diagnostic guidance, "Force Sync" action
 3. **Disabled**: Grey/muted status badge, no error indicators, shows "Disabled" label, no "Force Sync" action
 
-Disabled state is set via connector config (`enabled: false`). Health status derivation skips disabled connectors entirely — they don't generate health records or consume health API response space.
+Disabled state is set via connector config (`enabled: false`). Health status derivation skips disabled connectors by default — they are excluded from the API response unless `?includeDisabled=true` is set. When included, disabled connectors render with muted treatment in the UI (grey badge, no error indicators).
 
 **Why:** Air-gapped deployments intentionally disable upstream connectors (GitHub, GitLab) but enable internal ones (Jira). Showing disabled connectors as "failing" generates false alarms. Muted treatment signals "expected state, no action needed."
 

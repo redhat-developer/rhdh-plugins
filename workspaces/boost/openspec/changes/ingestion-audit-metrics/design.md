@@ -129,10 +129,11 @@ CREATE TABLE boost_quality_scores (
   eval_source VARCHAR(100) NOT NULL, -- 'lighteval', 'ibm-clear', 'guidellm', etc.
   score DECIMAL(5, 3) NOT NULL, -- 0.000 to 1.000 (normalized)
   timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-  metadata JSONB, -- extensible for eval-framework-specific data
-  INDEX idx_skill_ref (skill_entity_ref),
-  INDEX idx_timestamp (timestamp DESC)
+  metadata JSONB -- extensible for eval-framework-specific data
 );
+
+CREATE INDEX idx_quality_scores_skill_ref ON boost_quality_scores (skill_entity_ref);
+CREATE INDEX idx_quality_scores_timestamp ON boost_quality_scores (timestamp DESC);
 ```
 
 Aggregate distribution: Computed on-demand when `GET /api/boost/admin/analytics/quality-scores` is called. Query groups scores into buckets (e.g., 0.0-0.2, 0.2-0.4, ..., 0.8-1.0) and returns histogram.

@@ -15,7 +15,7 @@ The key distinction: Backstage's built-in `ConfigApi` loads config at startup wi
 ### Config Schemas
 
 - Zod schema definitions for per-connector settings: `enabled`, `endpoint`, `schedule`, `tls`, `credentials`
-- `configScope` annotation on each field: `yaml-only` (mount paths, K8s Secret references), `db-overridable` (enable/disable, endpoint URL, schedule), `db-only` (runtime-only state)
+- `configScope` annotation on each field: `yaml-only` (mount paths, K8s Secret references), `db-overridable` (enable/disable, endpoint URL, schedule)
 - Schema validation rejects invalid connector config values before write
 - Integration with `RuntimeConfigResolver`'s two-layer resolution
 

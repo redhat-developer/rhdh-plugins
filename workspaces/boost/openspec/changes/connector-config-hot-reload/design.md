@@ -101,7 +101,7 @@ Entity providers receive config changes on next reconciliation cycle. Provider's
 
 ### Decision 4: Credential rotation handling
 
-K8s Secret mount propagation can take up to 60s for projected volumes (kubelet sync period). Provider re-reads mounted file each cycle. Effective credential rotation = mount propagation delay (≤60s) + resolver TTL (30s) = ≤90s worst case.
+K8s Secret mount propagation can take up to 60s for projected volumes (kubelet sync period). Provider re-reads mounted file each reconciliation cycle. Effective credential rotation = mount propagation delay (≤60s) + reconciliation interval (up to 5m) = ~6 minutes worst case.
 
 **Why not watch Secret mounts:** Filesystem watching (inotify) adds complexity and failure modes (missed events, watcher exhaustion). Reading the mounted Secret file at each reconciliation cycle is simpler and sufficient for credential rotation use cases.
 
@@ -113,7 +113,7 @@ K8s Secret mount propagation can take up to 60s for projected volumes (kubelet s
 4. Provider reads mounted Secret file
 5. Provider uses new credentials for sync
 
-**Why not immediate propagation:** Credentials are long-lived secrets (API tokens, certificates). 90s rotation latency is acceptable. Immediate propagation would require filesystem watchers or polling loops, adding complexity for minimal benefit.
+**Why not immediate propagation:** Credentials are long-lived secrets (API tokens, certificates). ~6 minute rotation latency is acceptable. Immediate propagation would require filesystem watchers or polling loops, adding complexity for minimal benefit.
 
 ### Decision 5: Admin UI writes DB overrides via AdminConfigService
 
@@ -126,9 +126,9 @@ Admin UI writes connector config changes via `AdminConfigService` — same patte
 1. Admin opens connector config section
 2. Form fields pre-populated with current merged config (YAML baseline + DB overrides)
 3. Admin toggles `enabled` or changes `endpoint`
-4. Frontend calls `POST /admin/config/connectors.jira` with new values
+4. Frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: {...} }`
 5. Backend validates via Zod schema, writes DB override, invalidates cache
-6. Frontend shows immediate visual feedback ("Saved — will take effect within 30s")
+6. Frontend shows immediate visual feedback ("Saved — will take effect within 30s + next reconciliation cycle")
 
 **YAML-only fields (read-only in UI):** TLS mount paths, Secret references shown as read-only info. Tooltip: "Deployment-time config. Edit YAML to change."
 
@@ -136,6 +136,6 @@ Admin UI writes connector config changes via `AdminConfigService` — same patte
 
 ## Risks
 
-- **K8s Secret mount propagation delays:** Mitigated by documenting 90s worst-case credential rotation latency. For emergency credential rotation, admin can manually restart connector pod.
+- **K8s Secret mount propagation delays:** Mitigated by documenting ~6 minute worst-case credential rotation latency (60s kubelet sync + 5m reconciliation interval). For emergency credential rotation, admin can manually restart connector pod.
 - **Config schema versioning:** Mitigated by Zod schema versioning. Breaking changes require migration logic in `RuntimeConfigResolver`.
 - **Partial config state during cache refresh:** Mitigated by atomic cache updates. Resolver fetches full merged config (YAML + DB) before updating cache entry.

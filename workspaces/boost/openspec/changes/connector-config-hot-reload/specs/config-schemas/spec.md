@@ -13,8 +13,8 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 #### Scenario: Jira connector config schema
 
 - **WHEN** Jira connector config schema is defined
-- **THEN** schema includes fields: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
-- **AND** each field is annotated with `configScope`: `enabled` is `db-overridable`, `endpoint` is `db-overridable`, `schedule.intervalMs` is `db-overridable`, `schedule.cron` is `db-overridable`, `credentials.secretRef` is `yaml-only`, `credentials.secretKey` is `yaml-only`, `namespace` is `yaml-only`, `batchSize` is `db-overridable`, `timeout.connectionMs` is `db-overridable`
+- **THEN** schema includes fields: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `tls.caFile` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
+- **AND** each field is annotated with `configScope`: `enabled` is `db-overridable`, `endpoint` is `db-overridable`, `schedule.intervalMs` is `db-overridable`, `schedule.cron` is `db-overridable`, `tls.caFile` is `yaml-only`, `credentials.secretRef` is `yaml-only`, `credentials.secretKey` is `yaml-only`, `namespace` is `yaml-only`, `batchSize` is `db-overridable`, `timeout.connectionMs` is `db-overridable`
 
 #### Scenario: GitHub connector config schema
 

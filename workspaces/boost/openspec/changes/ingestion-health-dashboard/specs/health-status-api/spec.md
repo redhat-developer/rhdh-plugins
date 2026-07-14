@@ -19,12 +19,13 @@ The API exposes connector health state for admin dashboard consumption.
 
 #### Scenario: Health status derivation logic
 
-- **WHEN** a connector has 3+ sync attempts in the database
-- **THEN** the API derives status from the last 3 attempts:
-  - **Healthy** if all 3 succeeded
-  - **Degraded** if the most recent succeeded but at least 1 of the prior 2 failed
-  - **Failing** if all 3 failed
-- **AND** if fewer than 3 attempts exist, status is derived from available attempts (e.g., 1 success = Healthy)
+- **WHEN** a connector has 1+ sync attempts in the database
+- **THEN** the API derives status from the last 3 attempts (or fewer if less than 3 exist):
+  - **Healthy** if all attempts succeeded
+  - **Degraded** if results are mixed (not all-success and not all-failure)
+  - **Failing** if all attempts failed
+  - **Unknown** if zero sync attempts exist (new connector, never synced)
+- **AND** the same derivation rules apply regardless of whether 1, 2, or 3 attempts are available
 
 #### Scenario: Empty state for zero connectors
 
