@@ -26891,10 +26891,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tarn@npm:^3.0.2, tarn@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "tarn@npm:3.1.0"
-  checksum: 10c0/5ac9ce5dd94283262bc9c72ddbc0ed81de1dda69ecd30c0dd26286355b0a73fd472b0ab5c2d4167e58cbb0528ec1cfa08689e5c09923e13fe78b6f26f296d8a1
+"tarn@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "tarn@npm:3.1.2"
+  checksum: 10c0/fae37a0f2a9ee4b0ba5c309b213a1111e65bbc72cab5056be26beebcfa2980613aa0dd66f054fa0433e0cc6951875137e37c0ac52edb56812fbf05957130a795
   languageName: node
   linkType: hard
 
