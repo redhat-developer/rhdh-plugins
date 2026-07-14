@@ -12,7 +12,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 > This design originally covered 7 epics. Post-consolidation, 3 surviving epics remain:
 >
-> - **RHIDP-15258** (Entity-Provider SDK) — absorbs annotation scheme, delta sync, per-entity error isolation
+> - **RHIDP-15258** (Entity-Provider SDK) — absorbs annotation scheme, delta sync
 > - **RHIDP-15294** (OCI Skill Registry) — absorbs load testing
 > - **RHIDP-15316** (Cross-Connector, RHDHPLAN-1510) — absorbs air-gapped patterns, error resilience
 >
@@ -54,17 +54,17 @@ The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, 
 
 **Mapping reference (not a constraint):**
 
-| Category       | Backstage Kind | spec.type         | Notes                                      |
-| -------------- | -------------- | ----------------- | ------------------------------------------ |
-| `agent`        | Component      | `ai-agent`        | Software component with agentic capability |
-| `skill`        | Component      | `ai-skill`        | Reusable skill component                   |
-| `mcp-server`   | API            | `mcp`             | MCP protocol endpoint                      |
-| `ai-model`     | Resource       | `ai-model`        | Model weights/checkpoint                   |
-| `model-server` | Resource       | `ai-model-server` | Deployed model serving instance            |
+| Category       | Backstage Kind | spec.type         | Notes                                                             |
+| -------------- | -------------- | ----------------- | ----------------------------------------------------------------- |
+| `agent`        | Component      | `ai-agent`        | Mapping pending RHDHPLAN-1113 (owns agent entity kind definition) |
+| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113 — Boost already uses this mapping    |
+| `mcp-server`   | API            | `mcp-server`      | API entity extension for MCP protocol endpoints                   |
+| `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
+| `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
 
 This mapping is documented for reference — connectors MAY map differently based on their domain. The annotation is the source of truth for AI asset category, not the kind.
 
-> **RHDHPLAN-1113 conditional (2026-07-13):** If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the Backstage Kind column changes: `agent` and `skill` map to AIResource (not Component), `ai-model` and `model-server` map to AIResource (not Resource). The annotation layer and spec.type values remain unchanged — only the entity kind changes. If RHIDP-15258 starts first, the table above is used as interim and migrated when RHDHPLAN-1113 merges.
+> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (2026-07-13):** The `skill` category already uses `AIResource` kind and `spec.type: skill` per RHDHPLAN-1113. The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category uses the API entity extension with `spec.type: mcp-server`. When RHDHPLAN-1113 and RHDHPLAN-404 resolve their respective mappings, this table will be updated accordingly.
 
 **Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: Component` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. If RHDHPLAN-1113 provides AIResource kinds as the starting point, the migration path becomes `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
 

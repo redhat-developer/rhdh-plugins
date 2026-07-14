@@ -14,6 +14,7 @@ Documentation covers adapter configuration in app-config and environment setup.
 
 - **WHEN** a user reads the setup documentation at `workspaces/boost/docs/neo4j-sync-setup.md`
 - **THEN** the docs include a basic configuration example:
+
   ```yaml
   # app-config.yaml
   aiCatalog:
@@ -221,7 +222,7 @@ Documentation includes troubleshooting steps for common issues.
   ### Common issues
 
   **Entities not syncing:**
-  - Verify entity has `metadata.annotations.rhdh.io/ai-asset-type`
+  - Verify entity has `metadata.annotations.rhdh.io/ai-asset-category`
   - Check entity revision is changing (compare `resourceVersion` between syncs)
   - Trigger manual full sync: `curl -X POST .../trigger-full-sync`
 

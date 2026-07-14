@@ -4,7 +4,7 @@
 >
 > **Cross-connector dependencies:** RHIDP-15296 is blocked by RHIDP-15265 (configurable endpoint URLs for registry API calls), RHIDP-15329 (custom CA bundles for TLS), and RHIDP-15330 (per-entity error isolation — the "handle errors gracefully" scenarios below implement 15330's contract).
 
-The OCI Skill Registry connector fetches OCI image manifests from OCI-compliant registries, downloads the `skillcard.yaml` blob from image layers, validates it against the SDK schema, and emits Backstage `Resource` entities with `spec.type: ai-skill`. Invalid artifacts are rejected with descriptive logs without aborting the sync of other skills.
+The OCI Skill Registry connector fetches OCI image manifests from OCI-compliant registries, downloads the `skillcard.yaml` blob from image layers, validates it against the SDK schema, and emits Backstage `AIResource` entities with `spec.type: skill`. Invalid artifacts are rejected with descriptive logs without aborting the sync of other skills.
 
 ## ADDED Requirements
 
@@ -92,17 +92,17 @@ The connector validates the parsed YAML against the SDK schema, rejecting skills
 - **THEN** the connector validates successfully (extra fields are allowed for forward compatibility)
 - **AND** proceeds to entity emission
 
-### Requirement: Emit `Resource` Entities with AI Skill Annotations
+### Requirement: Emit `AIResource` Entities with AI Skill Annotations
 
-The connector emits Backstage entities with `kind: Resource`, `spec.type: ai-skill`, and the required annotation set.
+The connector emits Backstage entities with `kind: AIResource`, `spec.type: skill`, and the required annotation set.
 
 #### Scenario: Emit entity for valid skill
 
 - **WHEN** the connector validates `skillcard.yaml` for tag `v1.2.0` with name `pdf-processor`
-- **THEN** it emits a `Resource` entity with:
+- **THEN** it emits an `AIResource` entity with:
   - `metadata.name: pdf-processor`
   - `metadata.namespace: default` (from config)
-  - `spec.type: ai-skill`
+  - `spec.type: skill`
   - `metadata.annotations.rhdh.io/ai-asset-category: skill`
   - `metadata.annotations.rhdh.io/ai-asset-version: 1.2.0`
   - `metadata.annotations.rhdh.io/ai-asset-source: quay.io/myorg/skills`

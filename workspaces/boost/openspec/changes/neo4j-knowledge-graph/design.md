@@ -55,7 +55,7 @@ This design implements **Option A** for initial release.
 // packages/backend/src/plugins/neo4jSync.ts
 export async function runSyncCycle(catalog: CatalogApi, neo4j: Neo4jDriver) {
   const entities = await catalog.queryEntities({
-    filter: { 'metadata.annotations.rhdh.io/ai-asset-type': '*' },
+    filter: { 'metadata.annotations.rhdh.io/ai-asset-category': '*' },
   });
 
   for (const entity of entities.items) {
@@ -251,7 +251,7 @@ export function createNeo4jDriver(config: Config): neo4j.Driver {
 
 **Risk 4: Catalog API query performance degrades as catalog grows**
 
-- **Mitigation:** Use catalog search API with filters (`metadata.annotations.rhdh.io/ai-asset-type`). Pagination if needed. If search API is still slow, consider caching entity list and using `/entities/{uid}` for changed entities only.
+- **Mitigation:** Use catalog search API with filters (`metadata.annotations.rhdh.io/ai-asset-category`). Pagination if needed. If search API is still slow, consider caching entity list and using `/entities/{uid}` for changed entities only.
 
 **Risk 5: SIMILAR_TO computation is expensive for large catalogs**
 

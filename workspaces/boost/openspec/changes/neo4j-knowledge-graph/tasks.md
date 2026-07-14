@@ -4,7 +4,7 @@
 
 - [ ] 1.1 Create backend plugin package structure at `workspaces/boost/plugins/catalog-backend-module-neo4j-sync/` (RHIDP-15299)
 - [ ] 1.2 Implement Neo4j driver factory with configuration loading from `aiCatalog.neo4j` (RHIDP-15299)
-- [ ] 1.3 Implement catalog API polling with entity filtering (`metadata.annotations.rhdh.io/ai-asset-type`) (RHIDP-15299)
+- [ ] 1.3 Implement catalog API polling with entity filtering (`metadata.annotations.rhdh.io/ai-asset-category`) (RHIDP-15299)
 - [ ] 1.4 Implement entity revision tracking using `_syncedRevision` node property (RHIDP-15299)
 - [ ] 1.5 Implement incremental sync logic (only process changed entities) (RHIDP-15299)
 - [ ] 1.6 Implement scheduled sync task with configurable interval (RHIDP-15299)

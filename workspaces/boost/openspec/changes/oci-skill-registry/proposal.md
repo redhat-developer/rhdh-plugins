@@ -19,7 +19,7 @@ The OCI Skill Registry connector solves this by providing a standard Backstage e
 
 - OCI client fetches image manifests and downloads `skillcard.yaml` blobs from OCI-compliant registries
 - Validates `skillcard.yaml` against SDK schema (name, description, tags, version, authors, allowed-tools)
-- Emits `Resource` entities with `spec.type: ai-skill` and annotation set: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`
+- Emits `AIResource` entities with `spec.type: skill` and annotation set: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`
 - Each entity includes OCI registry reference: registry URL, namespace, image name, digest
 - Rejects artifacts with invalid/missing `skillcard.yaml` with descriptive log, excludes without aborting other skills
 - Supports tag enumeration to discover all skill artifacts in a configured OCI namespace

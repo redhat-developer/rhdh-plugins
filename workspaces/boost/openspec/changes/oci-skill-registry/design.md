@@ -142,10 +142,10 @@ Full refresh fallback triggers when:
 
 ### Decision 4: Entity Emission Pattern
 
-Each skill becomes a `Resource` entity with:
+Each skill becomes an `AIResource` entity with:
 
-- `kind: Resource`
-- `spec.type: ai-skill`
+- `kind: AIResource`
+- `spec.type: skill`
 - `metadata.name`: derived from `skillcard.yaml` name field (sanitized to `[a-z0-9-]+`)
 - `metadata.namespace`: from registry instance config (default: `default`)
 - `metadata.annotations`:
@@ -161,7 +161,7 @@ Example entity:
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
-kind: Resource
+kind: AIResource
 metadata:
   name: pdf-processor
   namespace: default
@@ -174,7 +174,7 @@ metadata:
     rhdh.io/oci-digest: sha256:abc123...
     rhdh.io/oci-tag: v1.2.0
 spec:
-  type: ai-skill
+  type: skill
   owner: team-ai
 ```
 

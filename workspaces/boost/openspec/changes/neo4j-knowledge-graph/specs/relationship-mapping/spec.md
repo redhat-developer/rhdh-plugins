@@ -13,7 +13,7 @@ The adapter uses scheduled polling rather than real-time event subscription beca
 #### Scenario: Scheduled sync cycle processes only changed entities
 
 - **WHEN** the scheduled task runs (default interval: 60 seconds, configurable via `aiCatalog.neo4j.syncInterval`)
-- **THEN** the adapter queries the catalog search API with filter `metadata.annotations.rhdh.io/ai-asset-type: *`
+- **THEN** the adapter queries the catalog search API with filter `metadata.annotations.rhdh.io/ai-asset-category: *`
 - **AND** for each entity, compares `metadata.resourceVersion` (or `metadata.etag`) against the last-synced revision stored in Neo4j node property `_syncedRevision`
 - **AND** only processes entities where `currentRevision !== lastSyncedRevision`
 - **AND** after successful sync, updates the Neo4j node's `_syncedRevision` property to the current revision
