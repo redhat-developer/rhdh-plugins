@@ -75,7 +75,8 @@
     "@backstage/plugin-app-react": "^0.2.4",
     "@backstage/plugin-catalog-react": "^3.1.0",
     "@backstage/ui": "^0.16.0",
-    "@mui/icons-material": "^5.17.1"
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
