@@ -19,9 +19,10 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { Button, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
 
 import { useTranslation } from '../../../hooks/useTranslation';
-import { getSpecField } from '../../../utils/entityHelpers';
+import { getAdoptionAction } from '../../../utils/entityHelpers';
 import styles from './AdoptionCard.module.css';
 
 export const AdoptionCard = () => {
@@ -29,14 +30,11 @@ export const AdoptionCard = () => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const specType = getSpecField(entity, 'type');
-
-  const command =
-    specType === 'skill' ? `npx skills add ${entity.metadata.name}` : undefined;
+  const action = getAdoptionAction(entity);
 
   const handleCopy = useCallback(() => {
-    if (!command) return;
-    navigator.clipboard.writeText(command).then(
+    if (!action || action.type !== 'copy') return;
+    navigator.clipboard.writeText(action.value).then(
       () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -46,9 +44,9 @@ export const AdoptionCard = () => {
         console.warn('Failed to copy to clipboard');
       },
     );
-  }, [command]);
+  }, [action]);
 
-  if (!command) return null;
+  if (!action) return null;
 
   return (
     <Card>
@@ -56,24 +54,36 @@ export const AdoptionCard = () => {
         <Text variant="title-small">{t('catalog.card.adoptionTitle')}</Text>
       </CardHeader>
       <CardBody>
-        <Flex align="center" gap="2">
-          <code className={styles.command}>{command}</code>
+        {action.type === 'copy' ? (
+          <Flex align="center" gap="2">
+            <code className={styles.command}>{action.value}</code>
+            <Button
+              variant="tertiary"
+              size="small"
+              onPress={handleCopy}
+              aria-label={t('catalog.card.copyAriaLabel')}
+              iconStart={
+                copied ? (
+                  <CheckOutlined fontSize="small" />
+                ) : (
+                  <ContentCopyOutlined fontSize="small" />
+                )
+              }
+            >
+              {copied
+                ? t('catalog.card.copied')
+                : t('catalog.card.copyCommand')}
+            </Button>
+          </Flex>
+        ) : (
           <Button
             variant="tertiary"
-            size="small"
-            onPress={handleCopy}
-            aria-label={t('catalog.card.copyAriaLabel')}
-            iconStart={
-              copied ? (
-                <CheckOutlined fontSize="small" />
-              ) : (
-                <ContentCopyOutlined fontSize="small" />
-              )
-            }
+            onPress={() => window.open(action.value, '_blank')}
+            iconStart={<DownloadOutlined fontSize="small" />}
           >
-            {copied ? t('catalog.card.copied') : t('catalog.card.copyCommand')}
+            {t('catalog.card.adoptionDownloadZip')}
           </Button>
-        </Flex>
+        )}
       </CardBody>
     </Card>
   );

@@ -94,6 +94,95 @@ export function applyEntityFilters(
   return results;
 }
 
+/**
+ * Resolved adoption action for an AI asset entity.
+ *
+ * - `copy`: the value should be copied to the clipboard (skill, OCI pull, MCP remote URL).
+ * - `link`: the value is a URL that should be opened in a new tab (git ZIP download).
+ */
+export interface AdoptionAction {
+  type: 'copy' | 'link';
+  label: string;
+  value: string;
+}
+
+/**
+ * Resolves the adoption action for an entity based on its metadata.
+ *
+ * Priority order:
+ * 1. Skills — `npx skills add <name>`
+ * 2. OCI-sourced — `podman pull <oci-ref>`
+ * 3. Git-sourced — Download ZIP link
+ * 4. MCP servers — remote URL copy
+ * 5. Fallback — undefined (no action)
+ */
+export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
+  const spec = entity.spec as Record<string, unknown> | undefined;
+  const specType = getSpecField(entity, 'type');
+
+  // 1. Skills
+  if (specType === 'skill') {
+    return {
+      type: 'copy',
+      label: 'adoptionSkillCommand',
+      value: `npx skills add ${entity.metadata.name}`,
+    };
+  }
+
+  const remotes = (spec?.remotes ?? []) as Array<{
+    url?: string;
+    type?: string;
+  }>;
+  const ociAnnotation =
+    entity.metadata.annotations?.['rhdh.io/ai-asset-source'];
+
+  // 2. OCI-sourced
+  const ociRemote = remotes.find(r => r.url?.startsWith('oci://'));
+  if (ociRemote?.url) {
+    return {
+      type: 'copy',
+      label: 'adoptionPullCommand',
+      value: `podman pull ${ociRemote.url}`,
+    };
+  }
+  if (ociAnnotation === 'oci') {
+    // Annotation indicates OCI but no oci:// remote found — nothing to show
+    return undefined;
+  }
+
+  // 3. Git-sourced
+  const location = spec?.location as
+    | { type?: string; target?: string }
+    | undefined;
+  if (location?.target) {
+    const target = location.target;
+    const isGitHost =
+      target.includes('github.com') || target.includes('gitlab.com');
+    if (isGitHost) {
+      const archiveUrl = target.includes('github.com')
+        ? `${target}/archive/refs/heads/main.zip`
+        : target;
+      return {
+        type: 'link',
+        label: 'adoptionDownloadZip',
+        value: archiveUrl,
+      };
+    }
+  }
+
+  // 4. MCP servers
+  if (specType === 'mcp-server' && remotes.length > 0 && remotes[0].url) {
+    return {
+      type: 'copy',
+      label: 'adoptionMcpRemote',
+      value: remotes[0].url,
+    };
+  }
+
+  // 5. Fallback
+  return undefined;
+}
+
 export function getSortValue(entity: Entity, columnId: string): string {
   switch (columnId) {
     case 'title':
