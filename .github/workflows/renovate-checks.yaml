@@ -8,6 +8,9 @@ on:
     # https://docs.renovatebot.com/configuration-options/
     branches: [ 'main' ]
 
+permissions:
+  contents: read
+
 jobs:
   renovate-config-validator:
     runs-on: ubuntu-latest
