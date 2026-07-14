@@ -50,7 +50,10 @@ import {
   OrchestratorPage,
   orchestratorTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
-import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import {
+  BulkImportPage,
+  bulkImportTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { RbacPage } from '@backstage-community/plugin-rbac';
@@ -59,7 +62,6 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 const app = createApp({
   apis,

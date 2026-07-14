@@ -7,7 +7,7 @@ import type { AuditorService } from '@backstage/backend-plugin-api';
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
-import type { CatalogService } from '@backstage/plugin-catalog-node';
+import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { DiscoveryService } from '@backstage/backend-plugin-api';
@@ -32,7 +32,7 @@ export interface RouterOptions {
   // (undocumented)
   cache: CacheService;
   // (undocumented)
-  catalog: CatalogService;
+  catalogApi: CatalogApi;
   // (undocumented)
   config: Config;
   // (undocumented)

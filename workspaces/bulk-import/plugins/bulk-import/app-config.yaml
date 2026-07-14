@@ -1,14 +1,15 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-bulk-import:
+      # Legacy exports require `module: Legacy` — they are not available on the default module.
       appIcons:
         - name: bulkImportIcon
-          module: BulkImportPlugin
+          module: Legacy
           importName: BulkImportIcon
       dynamicRoutes:
         - path: /bulk-import
           importName: BulkImportPage
-          module: BulkImportPlugin
+          module: Legacy
           menuItem:
             icon: bulkImportIcon
             text: Bulk import
