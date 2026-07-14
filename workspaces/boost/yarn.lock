@@ -8915,6 +8915,8 @@ __metadata:
     "@backstage/frontend-test-utils": "npm:^0.6.2"
     "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/plugin-catalog-react": "npm:^3.1.0"
+    "@backstage/plugin-permission-common": "npm:^0.9.9"
+    "@backstage/plugin-permission-react": "npm:^0.5.2"
     "@backstage/test-utils": "npm:^1.7.19"
     "@backstage/ui": "npm:^0.16.0"
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
