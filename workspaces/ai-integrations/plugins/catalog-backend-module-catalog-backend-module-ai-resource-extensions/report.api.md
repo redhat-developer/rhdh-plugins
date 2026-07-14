@@ -10,9 +10,6 @@ import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
 
 // @public
-export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
-
-// @public
 export class AIResourceExtensionsProcessor implements CatalogProcessor {
   // (undocumented)
   getProcessorName(): string;
@@ -23,6 +20,9 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
     _emit: CatalogProcessorEmit,
   ): Promise<Entity>;
 }
+
+// @public
+export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 // @public
 const catalogModuleCatalogBackendModuleAiResourceExtensions: BackendFeature;
