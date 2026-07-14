@@ -25,7 +25,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@backstage/ui';
-import { RiGridLine, RiListUnordered } from '@remixicon/react';
+import GridViewOutlined from '@mui/icons-material/GridViewOutlined';
+import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
 
 import { useAiAssets } from '../../hooks/useAiAssets';
 import { useUrlFilters } from '../../hooks/useUrlFilters';
@@ -148,12 +149,12 @@ const AiCatalogPageContent = () => {
               <ToggleButton
                 id="grid"
                 aria-label={t('catalog.toolbar.viewGrid')}
-                iconStart={<RiGridLine size={16} />}
+                iconStart={<GridViewOutlined fontSize="small" />}
               />
               <ToggleButton
                 id="table"
                 aria-label={t('catalog.toolbar.viewTable')}
-                iconStart={<RiListUnordered size={16} />}
+                iconStart={<ViewListOutlined fontSize="small" />}
               />
             </ToggleButtonGroup>
           </Flex>
