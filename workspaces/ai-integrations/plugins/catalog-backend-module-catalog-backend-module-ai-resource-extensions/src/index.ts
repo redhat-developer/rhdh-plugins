@@ -15,13 +15,13 @@
  */
 
 /**
- * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
+ * The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
  *
- * @public
+ * @packageDocumentation
  */
 export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
 export {
-  AIResourceScopeValidator,
+  AIResourceScopeProcessor,
   VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceScopeValidator';
-export type { AIResourceScope } from './AIResourceScopeValidator';
+} from './AIResourceScopeProcessor';
+export type { AIResourceScope } from './AIResourceScopeProcessor';

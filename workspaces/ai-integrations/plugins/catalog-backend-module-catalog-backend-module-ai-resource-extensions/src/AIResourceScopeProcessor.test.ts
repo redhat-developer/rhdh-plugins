@@ -16,9 +16,9 @@
 
 import { Entity } from '@backstage/catalog-model';
 import {
-  AIResourceScopeValidator,
+  AIResourceScopeProcessor,
   VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceScopeValidator';
+} from './AIResourceScopeProcessor';
 
 function makeAIResource(spec: Entity['spec'] = {}): Entity {
   return {
@@ -29,18 +29,18 @@ function makeAIResource(spec: Entity['spec'] = {}): Entity {
   };
 }
 
-describe('AIResourceScopeValidator', () => {
-  let processor: AIResourceScopeValidator;
+describe('AIResourceScopeProcessor', () => {
+  let processor: AIResourceScopeProcessor;
   const location = { type: 'url', target: 'https://example.com' };
   const emit = jest.fn();
 
   beforeEach(() => {
-    processor = new AIResourceScopeValidator();
+    processor = new AIResourceScopeProcessor();
     emit.mockClear();
   });
 
   it('should return processor name', () => {
-    expect(processor.getProcessorName()).toBe('AIResourceScopeValidator');
+    expect(processor.getProcessorName()).toBe('AIResourceScopeProcessor');
   });
 
   describe('valid scope values', () => {
@@ -67,6 +67,18 @@ describe('AIResourceScopeValidator', () => {
 
     it('should accept entity with undefined spec.scope', async () => {
       const entity = makeAIResource({ scope: undefined });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept entity with no spec property', async () => {
+      const entity: Entity = {
+        apiVersion: 'backstage.io/v1beta1',
+        kind: 'AIResource',
+        metadata: { name: 'test-resource' },
+      };
 
       const result = await processor.preProcessEntity(entity, location, emit);
 
@@ -122,6 +134,14 @@ describe('AIResourceScopeValidator', () => {
         processor.preProcessEntity(entity, location, emit),
       ).rejects.toThrow("spec.scope has invalid value '42'");
     });
+
+    it('should reject null scope value', async () => {
+      const entity = makeAIResource({ scope: null });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.scope');
+    });
   });
 
   describe('error quality', () => {
@@ -132,7 +152,7 @@ describe('AIResourceScopeValidator', () => {
         processor.preProcessEntity(entity, location, emit),
       ).rejects.toThrow(
         expect.not.objectContaining({
-          message: expect.stringMatching(/AIResourceScopeValidator/),
+          message: expect.stringMatching(/AIResourceScopeProcessor/),
         }),
       );
     });

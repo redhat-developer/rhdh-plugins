@@ -49,9 +49,9 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  *
  * @public
  */
-export class AIResourceScopeValidator implements CatalogProcessor {
+export class AIResourceScopeProcessor implements CatalogProcessor {
   getProcessorName(): string {
-    return 'AIResourceScopeValidator';
+    return 'AIResourceScopeProcessor';
   }
 
   async preProcessEntity(
@@ -71,10 +71,12 @@ export class AIResourceScopeValidator implements CatalogProcessor {
       !VALID_AI_RESOURCE_SCOPES.includes(scope as AIResourceScope)
     ) {
       const accepted = VALID_AI_RESOURCE_SCOPES.map(v => `'${v}'`).join(', ');
+      const sanitized = Array.from(String(scope))
+        .filter(c => c.charCodeAt(0) > 0x1f)
+        .join('')
+        .slice(0, 200);
       errors.push(
-        `spec.scope has invalid value '${String(
-          scope,
-        )}'; accepted values are ${accepted}`,
+        `spec.scope has invalid value '${sanitized}'; accepted values are ${accepted}`,
       );
     }
 
