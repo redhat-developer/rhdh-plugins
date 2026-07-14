@@ -7,6 +7,7 @@ import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { EntityCardType } from '@backstage/plugin-catalog-react/alpha';
+import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FilterPredicate } from '@backstage/filter-predicates';
@@ -22,12 +23,135 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
+export const AiCatalogFilterBlueprint: ExtensionBlueprint<{
+  kind: 'ai-catalog-filter';
+  params: {
+    urlParam: string;
+    label: string;
+    labelKey?: string;
+    getOptions: (entities: Entity[]) => {
+      id: string;
+      label: string;
+    }[];
+    matchEntity: (entity: Entity, values: string[]) => boolean;
+    priority?: number;
+  };
+  output: ExtensionDataRef<
+    FilterDefinition,
+    'ai-catalog-filter.definition',
+    {}
+  >;
+  inputs: {};
+  config: {};
+  configInput: {};
+  dataRefs: {
+    filterDefinition: ConfigurableExtensionDataRef<
+      FilterDefinition,
+      'ai-catalog-filter.definition',
+      {}
+    >;
+  };
+}>;
+
+// @public
 const boostPlugin: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
   },
   {},
   {
+    'ai-catalog-filter:boost/category': OverridableExtensionDefinition<{
+      kind: 'ai-catalog-filter';
+      name: 'category';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        FilterDefinition,
+        'ai-catalog-filter.definition',
+        {}
+      >;
+      inputs: {};
+      params: {
+        urlParam: string;
+        label: string;
+        labelKey?: string;
+        getOptions: (entities: Entity[]) => {
+          id: string;
+          label: string;
+        }[];
+        matchEntity: (entity: Entity, values: string[]) => boolean;
+        priority?: number;
+      };
+    }>;
+    'ai-catalog-filter:boost/owner': OverridableExtensionDefinition<{
+      kind: 'ai-catalog-filter';
+      name: 'owner';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        FilterDefinition,
+        'ai-catalog-filter.definition',
+        {}
+      >;
+      inputs: {};
+      params: {
+        urlParam: string;
+        label: string;
+        labelKey?: string;
+        getOptions: (entities: Entity[]) => {
+          id: string;
+          label: string;
+        }[];
+        matchEntity: (entity: Entity, values: string[]) => boolean;
+        priority?: number;
+      };
+    }>;
+    'ai-catalog-filter:boost/provider': OverridableExtensionDefinition<{
+      kind: 'ai-catalog-filter';
+      name: 'provider';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        FilterDefinition,
+        'ai-catalog-filter.definition',
+        {}
+      >;
+      inputs: {};
+      params: {
+        urlParam: string;
+        label: string;
+        labelKey?: string;
+        getOptions: (entities: Entity[]) => {
+          id: string;
+          label: string;
+        }[];
+        matchEntity: (entity: Entity, values: string[]) => boolean;
+        priority?: number;
+      };
+    }>;
+    'ai-catalog-filter:boost/tags': OverridableExtensionDefinition<{
+      kind: 'ai-catalog-filter';
+      name: 'tags';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        FilterDefinition,
+        'ai-catalog-filter.definition',
+        {}
+      >;
+      inputs: {};
+      params: {
+        urlParam: string;
+        label: string;
+        labelKey?: string;
+        getOptions: (entities: Entity[]) => {
+          id: string;
+          label: string;
+        }[];
+        matchEntity: (entity: Entity, values: string[]) => boolean;
+        priority?: number;
+      };
+    }>;
     'entity-card:boost/adoption': OverridableExtensionDefinition<{
       kind: 'entity-card';
       name: 'adoption';
@@ -170,6 +294,7 @@ const boostPlugin: OverridableFrontendPlugin<
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
             'core.routing.ref',
@@ -177,7 +302,6 @@ const boostPlugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
@@ -230,20 +354,17 @@ const boostPlugin: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
-    'page:boost': OverridableExtensionDefinition<{
-      kind: 'page';
-      name: undefined;
+    'page:boost/ai-catalog': OverridableExtensionDefinition<{
       config: {
         path: string | undefined;
         title: string | undefined;
       };
       configInput: {
-        path?: string | undefined;
-        title?: string | undefined;
+        path?: string | undefined | undefined;
+        title?: string | undefined | undefined;
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
             'core.routing.ref',
@@ -251,6 +372,7 @@ const boostPlugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             string,
             'core.title',
@@ -296,7 +418,21 @@ const boostPlugin: OverridableFrontendPlugin<
             internal: false;
           }
         >;
+        filters: ExtensionInput<
+          ConfigurableExtensionDataRef<
+            FilterDefinition,
+            'ai-catalog-filter.definition',
+            {}
+          >,
+          {
+            singleton: false;
+            optional: false;
+            internal: false;
+          }
+        >;
       };
+      kind: 'page';
+      name: 'ai-catalog';
       params: {
         path: string;
         title?: string;
@@ -317,12 +453,12 @@ export const boostTranslationRef: TranslationRef<
     readonly 'nav.aiCatalog': string;
     readonly 'catalog.table.name': string;
     readonly 'catalog.table.type': string;
-    readonly 'catalog.table.description': string;
-    readonly 'catalog.table.provider': string;
     readonly 'catalog.table.owner': string;
+    readonly 'catalog.table.provider': string;
+    readonly 'catalog.table.description': string;
     readonly 'catalog.filter.type': string;
-    readonly 'catalog.filter.provider': string;
     readonly 'catalog.filter.owner': string;
+    readonly 'catalog.filter.provider': string;
     readonly 'catalog.filter.tag': string;
     readonly 'catalog.page.title': string;
     readonly 'catalog.page.subtitle': string;
@@ -359,4 +495,24 @@ export const boostTranslations: TranslationResource<'plugin.boost'>;
 
 // @public
 export const boostTranslationsModule: FrontendModule;
+
+// @public
+export interface FilterDefinition {
+  getOptions: (entities: Entity[]) => {
+    id: string;
+    label: string;
+  }[];
+  label: string;
+  labelKey?: string;
+  matchEntity: (entity: Entity, values: string[]) => boolean;
+  priority: number;
+  urlParam: string;
+}
+
+// @public
+export const filterDefinitionDataRef: ConfigurableExtensionDataRef<
+  FilterDefinition,
+  'ai-catalog-filter.definition',
+  {}
+>;
 ```

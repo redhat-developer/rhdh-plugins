@@ -59,7 +59,7 @@ The browse page filter sidebar becomes NFS-extensible using a **data-driven** ap
 
 - A `FilterDefinition` interface defines each filter: `urlParam`, `label`, `getOptions(entities)`, `matchEntity(entity, values)`, `priority`
 - `AiCatalogFilterBlueprint` wraps a `FilterDefinition` as an NFS extension (kind: `ai-catalog-filter`) with a single custom `createExtensionDataRef`
-- Built-in filters are plain objects in `src/filters/builtinFilters.ts`, registered as Blueprint extensions in `plugin.tsx`
+- Built-in filters are plain objects in `src/filters/builtInFilterDefinitions.ts`, registered as Blueprint extensions in `plugin.tsx`
 - The `aiCatalogPage` PageBlueprint uses `makeWithOverrides` to declare a `filters` input, resolves `FilterDefinition[]`, sorts by priority, and passes to the page component
 - `FilterSidebar` maps over the array and renders `<Select>` for each — no per-filter component files
 - `useUrlFilters` reads/writes URL params dynamically from the definition array

@@ -53,7 +53,7 @@ Existing hardcoded filters are converted to `FilterDefinition` objects registere
 #### Scenario: Built-in filters are plain objects
 
 - **GIVEN** the 4 built-in filter definitions (category, provider, owner, tags)
-- **THEN** each is a plain object in `src/filters/builtinFilters.ts`
+- **THEN** each is a plain object in `src/filters/builtInFilterDefinitions.ts`
 - **AND** no filter has its own React component file
 - **AND** all share the same generic `<Select>` rendering in `FilterSidebar`
 
@@ -74,7 +74,7 @@ Deployers can disable any built-in filter using NFS extension disable.
 - **GIVEN** the deployer disables both `ai-catalog-filter:boost/tags` and `ai-catalog-filter:boost/owner`
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** neither filter appears in the sidebar
-- **AND** the category, provider, and owner filters render normally
+- **AND** the category and provider filters render normally
 
 #### Scenario: Disable all filters
 

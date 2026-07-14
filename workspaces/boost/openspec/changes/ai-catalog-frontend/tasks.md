@@ -55,12 +55,12 @@
 - [ ] 4.1 Define `FilterDefinition` interface in `src/blueprints/AiCatalogFilterBlueprint.ts` — fields: `urlParam` (string), `label` (string), `getOptions(entities) => {id, label}[]`, `matchEntity(entity, values) => boolean`, `priority` (number)
 - [ ] 4.2 Create single `filterDefinitionDataRef` via `createExtensionDataRef<FilterDefinition>` in same file
 - [ ] 4.3 Create `AiCatalogFilterBlueprint` via `createExtensionBlueprint` — kind `ai-catalog-filter`, attaches to `page:boost/ai-catalog` input `filters`, params are `FilterDefinition` fields, no config schema. Factory outputs the `FilterDefinition` via the single data ref.
-- [ ] 4.4 Create `src/filters/builtinFilters.ts` with 4 plain `FilterDefinition` objects:
+- [ ] 4.4 Create `src/filters/builtInFilterDefinitions.ts` with 4 plain `FilterDefinition` objects:
   - `categoryFilter` — urlParam `type`, getOptions from `getAllCategories()`, matchEntity checks `spec.type`, priority 100
   - `providerFilter` — urlParam `provider`, getOptions from `rhdh.io/ai-asset-source` annotation, priority 200
   - `ownerFilter` — urlParam `owner`, getOptions from `spec.owner`, priority 300
   - `tagsFilter` — urlParam `tag`, getOptions from `metadata.tags`, priority 400
-- [ ] 4.5 Register 5 built-in filters as `AiCatalogFilterBlueprint.make(...)` extensions in `plugin.tsx`, add to `createFrontendPlugin({ extensions: [...] })`
+- [ ] 4.5 Register 4 built-in filters as `AiCatalogFilterBlueprint.make(...)` extensions in `plugin.tsx`, add to `createFrontendPlugin({ extensions: [...] })`
 - [ ] 4.6 Upgrade `aiCatalogPage` to `PageBlueprint.makeWithOverrides` with `name: 'ai-catalog'` — declare `filters` input via `createExtensionInput` accepting `ai-catalog-filter` extensions. Factory resolves `FilterDefinition[]`, sorts by priority, passes to page component as prop.
 - [ ] 4.7 Refactor `FilterSidebar` — receive `FilterDefinition[]` + URL values. Map over definitions, render `<Select>` for each using `getOptions(allEntities)`. Return `null` when array is empty.
 - [ ] 4.8 Refactor `useUrlFilters` — accept `urlParam[]` from resolved definitions instead of hardcoded param names. Replace `setCategory`/`setProvider`/`setOwner`/`setTag` with generic `setFilter(urlParam, values)`. Keep `setSearch`, `setViewMode`, `setPage`, `setPageSize` unchanged. `clearFilters` resets registered filter params + search only (preserves view/pageSize).
