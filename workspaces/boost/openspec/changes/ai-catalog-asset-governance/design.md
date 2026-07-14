@@ -18,9 +18,9 @@ This design covers the catalog-layer RBAC system. It is informed by:
 > Post-consolidation, 4 epics remain with the following story distribution:
 >
 > - **RHIDP-15270** (Graduated Visibility) — 6 stories: RHIDP-15271, 15272, 15273, 15306, 15310, 15312
-> - **RHIDP-15274** (Version-Level Policy Cascade) — epic-level, no sub-stories
-> - **RHIDP-15277** (Audit Logging) — epic-level, absorbs RHIDP-15333 from RHDHPLAN-1513
-> - **RHIDP-15304** (RBAC Admin UI) — epic-level, no sub-stories
+> - **RHIDP-15274** (Version-Level Policy Cascade) — 1 story: RHIDP-15275
+> - **RHIDP-15277** (Audit Logging) — 2 stories: RHIDP-15279, 15280; absorbs RHIDP-15333 from RHDHPLAN-1513
+> - **RHIDP-15304** (RBAC Admin UI) — 3 stories: RHIDP-15307, 15308, 15309
 >
 > Closed epics: RHIDP-15276 (Default-Deny → absorbed into 15270), RHIDP-15281 (Perf/Multi-Tenancy → absorbed into 15270), RHIDP-15305 (SkillBundle Filtering → absorbed into 15270)
 

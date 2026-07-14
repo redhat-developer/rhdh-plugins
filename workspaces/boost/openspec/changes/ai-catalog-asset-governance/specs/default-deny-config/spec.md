@@ -45,12 +45,12 @@ Deployers MUST be able to configure different default postures per asset categor
     rbac:
       defaultPolicy: allow
       categories:
-        models:
+        ai-model:
           defaultPolicy: deny
         agents:
           defaultPolicy: allow
   ```
-- **THEN** newly ingested assets with `rhdh.io/ai-asset-category: model` receive a catch-all DENY rule
+- **THEN** newly ingested assets with `rhdh.io/ai-asset-category: ai-model` receive a catch-all DENY rule
 - **AND** newly ingested assets with `rhdh.io/ai-asset-category: agent` do not receive a deny rule
 - **AND** categories not listed fall back to the top-level `defaultPolicy`
 

@@ -14,9 +14,9 @@ A conditional rule MUST filter AI assets by their category annotation.
 
 #### Scenario: Category-scoped visibility
 
-- **WHEN** a deployer configures an RBAC policy with `isAiAssetCategory({ category: 'model' })`
-- **THEN** the rule's `apply(resource, params)` returns `true` only when the resource's `rhdh.io/ai-asset-category` annotation matches `'model'`
-- **AND** the rule's `toQuery({ category: 'model' })` generates a catalog query predicate filtering by the annotation value
+- **WHEN** a deployer configures an RBAC policy with `isAiAssetCategory({ category: 'ai-model' })`
+- **THEN** the rule's `apply(resource, params)` returns `true` only when the resource's `rhdh.io/ai-asset-category` annotation matches `'ai-model'`
+- **AND** the rule's `toQuery({ category: 'ai-model' })` generates a catalog query predicate filtering by the annotation value
 - **AND** the rule works with both ALLOW and DENY policies
 
 #### Scenario: Multiple categories via anyOf
@@ -25,7 +25,7 @@ A conditional rule MUST filter AI assets by their category annotation.
 - **THEN** they configure two rules composed with `anyOf`:
   ```
   anyOf:
-    - isAiAssetCategory({ category: 'model' })
+    - isAiAssetCategory({ category: 'ai-model' })
     - isAiAssetCategory({ category: 'agent' })
   ```
 - **AND** the `toQuery()` implementation generates an OR clause
@@ -73,7 +73,7 @@ Custom rules MUST be registered with the permission framework at startup.
 - **AND** each rule has a unique `name` and `description` for RBAC admin UI display:
   | Rule Name | Description |
   |---|---|
-  | `isAiAssetCategory` | Matches AI assets by their category (model, agent, skill, mcp-server) |
+  | `isAiAssetCategory` | Matches AI assets by their category (ai-model, agent, skill, mcp-server, model-server) |
   | `isFromConnector` | Matches AI assets by their source connector (e.g., watsonx, internal-registry) |
   | `isInTenant` | Matches AI assets by their tenant identity (namespace or annotation) |
 
@@ -87,7 +87,7 @@ Rules MUST compose with standard Backstage permission criteria operators.
 - **THEN** they use `allOf`:
   ```
   allOf:
-    - isAiAssetCategory({ category: 'model' })
+    - isAiAssetCategory({ category: 'ai-model' })
     - isFromConnector({ connector: 'watsonx' })
   ```
 - **AND** the generated `toQuery()` produces an AND clause
