@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions
 
-The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
+A Backstage catalog backend module that validates RHDH-specific extension
+fields on AIResource entities.
 
-_This plugin was created through the Backstage CLI_
+## Validation
+
+The `AIResourceExtensionsProcessor` validates RHDH extension fields on
+`AIResource` entities. Non-AIResource entities pass through unchanged.
+
+### `spec.scope`
+
+When present, `spec.scope` must be one of:
+
+- `organization`
+- `product`
+- `team`
+
+Omitting `spec.scope` is valid. Invalid values produce an actionable error
+naming the field, the received value, and the accepted values.
+
+## Public API
+
+| Export                          | Description                                             |
+| ------------------------------- | ------------------------------------------------------- |
+| `AIResourceExtensionsProcessor` | `CatalogProcessor` for RHDH AIResource extension fields |
+| `VALID_AI_RESOURCE_SCOPES`      | Readonly tuple of accepted scope values                 |
+| `AIResourceScope`               | Type union of accepted scope values                     |
