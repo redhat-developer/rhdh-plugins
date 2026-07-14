@@ -169,6 +169,7 @@ const boostPlugin: OverridableFrontendPlugin<
         icon?: string | undefined;
       };
       output:
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
@@ -177,7 +178,6 @@ const boostPlugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
@@ -216,10 +216,10 @@ const boostPlugin: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'overview'
-              | 'documentation'
               | 'development'
               | 'deployment'
+              | 'overview'
+              | 'documentation'
               | 'operation'
               | 'observability'
             )
@@ -242,8 +242,8 @@ const boostPlugin: OverridableFrontendPlugin<
         title?: string | undefined;
       };
       output:
-        | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
             'core.routing.ref',
@@ -315,39 +315,41 @@ export const boostTranslationRef: TranslationRef<
   'plugin.boost',
   {
     readonly 'nav.aiCatalog': string;
-    readonly 'catalog.table.name': string;
-    readonly 'catalog.table.type': string;
-    readonly 'catalog.table.description': string;
-    readonly 'catalog.table.provider': string;
-    readonly 'catalog.table.owner': string;
     readonly 'catalog.filter.type': string;
-    readonly 'catalog.filter.provider': string;
-    readonly 'catalog.filter.owner': string;
     readonly 'catalog.filter.tag': string;
-    readonly 'catalog.page.title': string;
-    readonly 'catalog.page.subtitle': string;
+    readonly 'catalog.filter.owner': string;
+    readonly 'catalog.filter.provider': string;
     readonly 'catalog.error.title': string;
     readonly 'catalog.error.description': string;
     readonly 'catalog.error.retry': string;
+    readonly 'catalog.page.title': string;
+    readonly 'catalog.page.subtitle': string;
+    readonly 'catalog.table.name': string;
+    readonly 'catalog.table.type': string;
+    readonly 'catalog.table.description': string;
+    readonly 'catalog.table.owner': string;
+    readonly 'catalog.table.provider': string;
+    readonly 'catalog.empty.title': string;
+    readonly 'catalog.empty.description': string;
+    readonly 'catalog.empty.learnMore': string;
+    readonly 'catalog.toolbar.search': string;
+    readonly 'catalog.toolbar.allPrefix': string;
+    readonly 'catalog.toolbar.viewGrid': string;
+    readonly 'catalog.toolbar.viewTable': string;
     readonly 'catalog.tab.usageTitle': string;
     readonly 'catalog.tab.usageDocumentation': string;
     readonly 'catalog.tab.usageViewTechDocs': string;
     readonly 'catalog.tab.usageExternalLinks': string;
     readonly 'catalog.tab.usageNoDocumentation': string;
-    readonly 'catalog.toolbar.search': string;
-    readonly 'catalog.toolbar.allPrefix': string;
-    readonly 'catalog.toolbar.viewGrid': string;
-    readonly 'catalog.toolbar.viewTable': string;
+    readonly 'catalog.tab.usagePermissionDenied': string;
+    readonly 'catalog.tab.usageContactOwner': string;
+    readonly 'catalog.card.copied': string;
     readonly 'catalog.card.summaryTitle': string;
     readonly 'catalog.card.adoptionTitle': string;
     readonly 'catalog.card.versionTitle': string;
     readonly 'catalog.card.versionCurrent': string;
     readonly 'catalog.card.copyCommand': string;
-    readonly 'catalog.card.copied': string;
     readonly 'catalog.card.copyAriaLabel': string;
-    readonly 'catalog.empty.title': string;
-    readonly 'catalog.empty.description': string;
-    readonly 'catalog.empty.learnMore': string;
     readonly 'catalog.emptyFiltered.title': string;
     readonly 'catalog.emptyFiltered.description': string;
     readonly 'catalog.emptyFiltered.clearFilters': string;

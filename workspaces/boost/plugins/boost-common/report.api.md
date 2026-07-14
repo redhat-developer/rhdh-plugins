@@ -120,6 +120,9 @@ export const boostAgentUnpublishPermission: ResourcePermission<'boost-agent'>;
 export const boostAgentWithdrawPermission: ResourcePermission<'boost-agent'>;
 
 // @public
+export const boostAiCatalogUsageDocsPermission: BasicPermission;
+
+// @public
 export const boostChatCreatePermission: BasicPermission;
 
 // @public
@@ -158,6 +161,7 @@ export const boostFunctionalPermissions: readonly [
   BasicPermission,
   BasicPermission,
   BasicPermission,
+  BasicPermission,
 ];
 
 // @public
@@ -183,6 +187,7 @@ export const boostPermissions: readonly [
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
+  BasicPermission,
   BasicPermission,
   BasicPermission,
   BasicPermission,
