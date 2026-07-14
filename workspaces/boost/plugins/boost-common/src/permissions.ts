@@ -239,7 +239,21 @@ export const boostKagentiAdminPermission = createPermission({
 });
 
 // ---------------------------------------------------------------------------
-// Functional permissions — 5 total
+// AI Catalog permissions
+// ---------------------------------------------------------------------------
+
+/**
+ * View usage documentation for an AI catalog asset.
+ *
+ * @public
+ */
+export const boostAiCatalogUsageDocsPermission = createPermission({
+  name: 'ai-catalog.asset.read.usage-docs',
+  attributes: { action: 'read' },
+});
+
+// ---------------------------------------------------------------------------
+// Functional permissions — 6 total
 // ---------------------------------------------------------------------------
 
 /**
@@ -392,11 +406,12 @@ export const boostEntityPermissions = [
 ] as const;
 
 /**
- * All 5 functional permissions.
+ * All 6 functional permissions.
  *
  * @public
  */
 export const boostFunctionalPermissions = [
+  boostAiCatalogUsageDocsPermission,
   boostChatReadPermission,
   boostChatCreatePermission,
   boostDocumentsManagePermission,

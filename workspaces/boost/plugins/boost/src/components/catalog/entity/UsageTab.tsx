@@ -15,13 +15,45 @@
  */
 
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Flex, Link, Text } from '@backstage/ui';
+import { usePermission } from '@backstage/plugin-permission-react';
+import { Flex, Link, Skeleton, Text } from '@backstage/ui';
+import { boostAiCatalogUsageDocsPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import { useTranslation } from '../../../hooks/useTranslation';
+import { getSpecField } from '../../../utils/entityHelpers';
 
 export const UsageTab = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
+  const { loading, allowed } = usePermission({
+    permission: boostAiCatalogUsageDocsPermission,
+  });
+
+  if (loading) {
+    return (
+      <Flex direction="column" gap="4" p="4">
+        <Skeleton width="40%" height={20} />
+        <Skeleton width="70%" height={16} />
+      </Flex>
+    );
+  }
+
+  if (!allowed) {
+    const owner = getSpecField(entity, 'owner');
+    return (
+      <Flex direction="column" gap="4" p="4">
+        <Text variant="title-small">{t('catalog.tab.usageTitle')}</Text>
+        <Text variant="body-medium" color="secondary">
+          {t('catalog.tab.usagePermissionDenied')}
+        </Text>
+        {owner && (
+          <Link href={`/catalog/default/group/${owner}`}>
+            {t('catalog.tab.usageContactOwner')}
+          </Link>
+        )}
+      </Flex>
+    );
+  }
 
   const hasTechDocs = Boolean(
     entity.metadata.annotations?.['backstage.io/techdocs-ref'],
