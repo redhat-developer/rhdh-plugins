@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-/**
- * Node.js library for the scorecard plugin.
- *
- * @packageDocumentation
- */
-
-export * from './extensions';
-export * from './api';
-export * from './service';
-export * from './utils';
-export * from './errors';
+/** True when the user may jump to `targetStep` from `activeStep` (backward only). */
+export const isBackwardStepNavigable = (
+  targetStep: number,
+  activeStep: number,
+): boolean => targetStep >= 0 && targetStep < activeStep;

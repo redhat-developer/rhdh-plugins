@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-/**
- * Node.js library for the scorecard plugin.
- *
- * @packageDocumentation
- */
+import { isBackwardStepNavigable } from './isBackwardStepNavigable';
 
-export * from './extensions';
-export * from './api';
-export * from './service';
-export * from './utils';
-export * from './errors';
+describe('isBackwardStepNavigable', () => {
+  it('allows navigating to any step before the active step', () => {
+    expect(isBackwardStepNavigable(0, 2)).toBe(true);
+    expect(isBackwardStepNavigable(1, 2)).toBe(true);
+  });
+
+  it('disallows the active step and future steps', () => {
+    expect(isBackwardStepNavigable(2, 2)).toBe(false);
+    expect(isBackwardStepNavigable(3, 2)).toBe(false);
+  });
+
+  it('disallows negative step indices', () => {
+    expect(isBackwardStepNavigable(-1, 2)).toBe(false);
+  });
+});

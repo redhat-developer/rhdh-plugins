@@ -7,7 +7,7 @@ app:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
-    - nav-item:catalog:
+    - page:catalog:
         config:
           title: 'Home'
 
