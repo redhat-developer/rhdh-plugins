@@ -1,5 +1,34 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 3.0.0
+
+### Major Changes
+
+- 859ee5a: BREAKING CHANGE: The configuration namespace has been renamed from `lightspeed` to `intelligent-assistant`. Update your `app-config.yaml` to replace `lightspeed:` with `intelligent-assistant:`. RBAC permission policy names have also been renamed (e.g., `lightspeed.chat.read` → `intelligent-assistant.chat.read`). Update your `rbac-policy.csv` accordingly. See the migration guide in the lightspeed-backend plugin's README for full details.
+
+### Minor Changes
+
+- 904c783: Add DCR (Dynamic Client Registration) authentication support for Backstage-internal MCP servers, allowing the Lightspeed backend to mint per-user plugin request tokens instead of requiring static tokens.
+- d903ed7: add rate limiting to lightspeed and notebooks
+- df49416: bugfix - Notebooks routes 404 passthrough error resolved
+- 10a8a5c: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 4866641: removed unused llama stack dependency (and transitive dependencies). removed dead constant.
+- 6898e78: Removed hardcoded vector_store_ids override to enable BYOK RAG sources
+- 6c4b038: Add input size validation for queries and attachments to prevent resource exhaustion. Queries are limited to 32K characters, individual attachments to 20MB, and total attachments to 50MB.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- 250d53d: Updated dependency `llama-stack-client` to `^0.7.0`.
+  Updated dependency `msw` to `2.14.6`.
+  Updated dependency `langsmith` to `^0.7.0`.
+  Updated dependency `@patternfly/react-core` to `6.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- Updated dependencies [859ee5a]
+- Updated dependencies [7c2f5d2]
+- Updated dependencies [10a8a5c]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@3.0.0
+
 ## 2.9.1
 
 ### Patch Changes

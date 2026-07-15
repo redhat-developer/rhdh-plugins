@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 3.0.0
+
+### Major Changes
+
+- 859ee5a: BREAKING CHANGE: The configuration namespace has been renamed from `lightspeed` to `intelligent-assistant`. Update your `app-config.yaml` to replace `lightspeed:` with `intelligent-assistant:`. RBAC permission policy names have also been renamed (e.g., `lightspeed.chat.read` → `intelligent-assistant.chat.read`). Update your `rbac-policy.csv` accordingly. See the migration guide in the lightspeed-backend plugin's README for full details.
+
+### Minor Changes
+
+- 10a8a5c: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+
 ## 2.9.1
 
 ## 2.9.0
