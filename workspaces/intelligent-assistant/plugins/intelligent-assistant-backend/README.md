@@ -27,17 +27,59 @@ backend.start();
 
 ### Migration from `lightspeed` to `intelligent-assistant`
 
-If you are upgrading from a previous version, the configuration namespace and RBAC permission names have changed:
+If you are upgrading from a previous version, follow the steps below.
 
-**Configuration** — rename the top-level key in `app-config.yaml`:
+#### 1. npm packages
 
-| Before        | After                    |
-| ------------- | ------------------------ |
-| `lightspeed:` | `intelligent-assistant:` |
+```bash
+# Remove old packages
+yarn remove @red-hat-developer-hub/backstage-plugin-lightspeed
+yarn remove @red-hat-developer-hub/backstage-plugin-lightspeed-backend
+yarn remove @red-hat-developer-hub/backstage-plugin-lightspeed-common
+
+# Install new packages
+yarn add @red-hat-developer-hub/backstage-plugin-intelligent-assistant
+yarn add @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
+yarn add @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
+```
+
+#### 2. Backend plugin import
+
+Update `packages/backend/src/index.ts`:
+
+```typescript
+// Before
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-lightspeed-backend'),
+);
+
+// After
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend'),
+);
+```
+
+#### 3. `app-config.yaml` namespace
+
+Rename the top-level configuration key:
+
+```yaml
+# Before
+lightspeed:
+  notebooks:
+    enabled: true
+
+# After
+intelligent-assistant:
+  notebooks:
+    enabled: true
+```
 
 All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebooks`, etc.) remain the same.
 
-**RBAC policies** — update permission names in your `rbac-policy.csv`:
+#### 4. RBAC policy names
+
+Update permission names in your `rbac-policy.csv`:
 
 | Before                     | After                                 |
 | -------------------------- | ------------------------------------- |
@@ -48,6 +90,96 @@ All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebo
 | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
 | `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
 | `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
+
+#### 5. OFS dynamic plugin configuration
+
+The top-level plugin key, route path, and drawer `config.id` change. `importName` values are **unchanged**:
+
+```yaml
+# Before
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-lightspeed:
+      dynamicRoutes:
+        - path: /lightspeed
+          importName: LightspeedPage
+          module: Legacy
+      mountPoints:
+        - mountPoint: application/internal/drawer-content
+          importName: LightspeedChatContainer
+          module: Legacy
+          config:
+            id: lightspeed
+
+# After
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-intelligent-assistant:
+      dynamicRoutes:
+        - path: /intelligent-assistant
+          importName: LightspeedPage          # unchanged
+          module: Legacy
+      mountPoints:
+        - mountPoint: application/internal/drawer-content
+          importName: LightspeedChatContainer  # unchanged
+          module: Legacy
+          config:
+            id: intelligent-assistant
+```
+
+#### 6. NFS extension configuration
+
+Update extension names in `app-config.yaml`:
+
+```yaml
+# Before
+app:
+  extensions:
+    - app-root-wrapper:app/lightspeed-fab
+    - app-drawer-content:lightspeed/lightspeed
+    - translation:app/lightspeed-translations
+
+# After
+app:
+  extensions:
+    - app-root-wrapper:app/intelligent-assistant-fab
+    - app-drawer-content:intelligent-assistant/intelligent-assistant
+    - translation:app/intelligent-assistant-translations
+```
+
+#### 7. NFS module imports
+
+For non-dynamic-plugin NFS consumers, update module imports:
+
+```typescript
+// Before
+
+// After
+import {
+  intelligentAssistantFABModule,
+  intelligentAssistantRedirectModule,
+  intelligentAssistantTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant';
+import {
+  lightspeedFABModule,
+  lightspeedRedirectModule,
+  lightspeedTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+```
+
+#### 8. Scalprum `exposedModules` keys
+
+For OFS deployments referencing NFS modules:
+
+```yaml
+# Before
+module: LightspeedFABModule
+module: LightspeedTranslationsModule
+
+# After
+module: IntelligentAssistantFABModule
+module: IntelligentAssistantTranslationsModule
+```
 
 > **Warning**: The old `lightspeed:` config key and `lightspeed.*` permission names are no longer recognized. Existing deployments that do not update will silently lose functionality.
 

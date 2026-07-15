@@ -16,20 +16,20 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { lightspeedMessages } from '../../plugins/lightspeed/src/translations/ref';
-import lightspeedTranslationDe from '../../plugins/lightspeed/src/translations/de.js';
-import lightspeedTranslationFr from '../../plugins/lightspeed/src/translations/fr.js';
-import lightspeedTranslationEs from '../../plugins/lightspeed/src/translations/es.js';
-import lightspeedTranslationIt from '../../plugins/lightspeed/src/translations/it.js';
-import lightspeedTranslationJa from '../../plugins/lightspeed/src/translations/ja.js';
+import { intelligentAssistantMessages } from '../../plugins/intelligent-assistant/src/translations/ref';
+import lightspeedTranslationDe from '../../plugins/intelligent-assistant/src/translations/de.js';
+import lightspeedTranslationFr from '../../plugins/intelligent-assistant/src/translations/fr.js';
+import lightspeedTranslationEs from '../../plugins/intelligent-assistant/src/translations/es.js';
+import lightspeedTranslationIt from '../../plugins/intelligent-assistant/src/translations/it.js';
+import lightspeedTranslationJa from '../../plugins/intelligent-assistant/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
-export type LightspeedMessages = typeof lightspeedMessages;
+export type LightspeedMessages = typeof intelligentAssistantMessages;
 
 export function getTranslations(locale: string) {
   switch (locale) {
     case 'en':
-      return lightspeedMessages;
+      return intelligentAssistantMessages;
     case 'fr':
       return lightspeedTranslationFr.messages;
     case 'de':
@@ -41,7 +41,7 @@ export function getTranslations(locale: string) {
     case 'ja':
       return lightspeedTranslationJa.messages;
     default:
-      return lightspeedMessages;
+      return intelligentAssistantMessages;
   }
 }
 
