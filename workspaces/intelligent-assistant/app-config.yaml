@@ -1,0 +1,180 @@
+app:
+  title: Developer Intelligent Assistant
+  baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+    - nav-item:catalog:
+        config:
+          title: 'Home'
+
+organization:
+  name: Red Hat
+
+# Disable AI Notebooks feature by default
+intelligent-assistant:
+  # MCP Servers available to the Intelligent Assistant via LCORE.
+  # Names must match the 'name' field in lightspeed-stack.yaml mcp_servers.
+  #
+  # Authentication modes per server:
+  #   auth: dcr   — Backstage mints a per-user token automatically (for
+  #                  Backstage-internal MCP servers with DCR enabled).
+  #                  The corresponding lightspeed-stack.yaml entry should use
+  #                  authorization_headers: { Authorization: "client" }.
+  #                  Any static 'token' field is ignored when auth: dcr is set.
+  #
+  #   (no auth)   — Static-token mode (legacy).  Uses the 'token' field from
+  #                  this config, or the user's personal token set in the UI.
+  #                  The corresponding lightspeed-stack.yaml entry should use
+  #                  authorization_headers: { Authorization: "client" }.
+  #
+  # Example:
+  # mcpServers:
+  #   - name: mcp-integration-tools
+  #     auth: dcr
+  #   - name: test-mcp-server
+  #     token: ${MCP_TOKEN_1}
+  notebooks:
+    enabled: ${NOTEBOOKS_ENABLED:-false}
+    queryDefaults:
+      model: ${NOTEBOOKS_QUERY_MODEL}
+      provider_id: ${NOTEBOOKS_QUERY_PROVIDER_ID}
+
+backend:
+  # Used for enabling authentication, secret is shared by all backend plugins
+  # See https://backstage.io/docs/auth/service-to-service-auth for
+  # information on the format
+  # auth:
+  #   keys:
+  #     - secret: ${BACKEND_SECRET}
+  #
+  # To expose MCP tools locally, uncomment the following.  pluginSources lists
+  # the pluginIds whose actions are exposed as MCP tools.  Requires
+  # @backstage/plugin-mcp-actions-backend and the mcp-extras plugins in index.ts.
+  # In production RHDH the overlay renames these to 'software-catalog-mcp-tool' etc.
+  # actions:
+  #   pluginSources:
+  #     - 'software-catalog-mcp-extras'
+  #     - 'techdocs-mcp-extras'
+  #     - 'scaffolder-mcp-extras'
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+    # Uncomment the following host directive to bind to specific interfaces
+    # host: 127.0.0.1
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+    # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+    # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  # This is for local development only, it is not recommended to use this in production
+  # The production database configuration is stored in app-config.production.yaml
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+    # To persist the database to a file for local development, replace the above with:
+    # connection:
+    #   directory: './sqlite-data'
+    # OpenShift / RHDH production — uses the PostgreSQL instance managed by the
+    # RHDH Helm chart or Operator.  These env vars are injected from the
+    # PostgreSQL Secret into the Backstage container by the deployment config.
+    # client: pg
+    # connection:
+    #   host: ${POSTGRES_HOST}
+    #   port: ${POSTGRES_PORT}
+    #   user: ${POSTGRES_USER}
+    #   password: ${POSTGRES_PASSWORD}
+  # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+# Disable dotted tool names (e.g. "software-catalog-mcp-extras.query-catalog-entities")
+# so they pass OpenAI's strict tool name pattern ^[a-zA-Z0-9_-]+$ (dots are rejected).
+# In production RHDH, add this under the backstage appConfig in values.yaml.
+# mcpActions:
+#   namespacedToolNames: false
+
+integrations:
+  github:
+    - host: github.com
+      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+      # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
+      token: ${GITHUB_TOKEN}
+    ### Example for how to add your GitHub Enterprise instance using the API:
+    # - host: ghe.example.net
+    #   apiBaseUrl: https://ghe.example.net/api/v3
+    #   token: ${GHE_TOKEN}
+
+  ### Example for how to add a proxy endpoint for the frontend.
+  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
+  # endpoints:
+  #   '/test':
+  #     target: 'https://example.com'
+  #     changeOrigin: true
+
+# Reference documentation http://backstage.io/docs/features/techdocs/configuration
+# Note: After experimenting with basic setup, use CI/CD to generate docs
+# and an external cloud storage when deploying TechDocs for production use-case.
+# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+techdocs:
+  builder: 'local' # Alternatives - 'external'
+  generator:
+    runIn: 'docker' # Alternatives - 'local'
+  publisher:
+    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+auth:
+  # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: development
+  # Enable Dynamic Client Registration (DCR) for MCP.
+  # This allows MCP clients (e.g. Cursor, VS Code) to register OAuth2 clients
+  # dynamically and obtain per-user tokens via the Backstage auth system.
+  # Requires @backstage/plugin-auth (frontend) and @backstage/plugin-mcp-actions-backend.
+  # experimentalDynamicClientRegistration:
+  #   enabled: true
+  #   allowedRedirectUriPatterns:
+  #     - '*'
+  providers:
+    # See https://backstage.io/docs/auth/guest/provider
+    guest: {}
+    # Uncomment if using GitHub provider
+    # See https://backstage.io/docs/auth/github/provider#configuration
+    # github:
+    #   development:
+    #     clientId: ${AUTH_GITHUB_CLIENT_ID}
+    #     clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+    #     signIn:
+    #       resolvers:
+    #         - resolver: usernameMatchingUserEntityName
+    # # Since we do not have a User entity, for local development, uncomment the following line to allow sign-in without a user in the catalog
+    #           dangerouslyAllowSignInWithoutUserInCatalog: true
+
+# RBAC permission configuration.
+# Enables fine-grained role-based access control for Intelligent Assistant and catalog.
+# Requires @backstage/plugin-permission-backend and @backstage-community/plugin-rbac-backend
+# in packages/backend/src/index.ts, plus an rbac-policy.csv file.
+# permission:
+#   enabled: true
+#   rbac:
+#     policies-csv-file: ../../rbac-policy.csv
+#     policyFileReload: true
+#     admin:
+#       superUsers:
+#         - name: user:default/breanna.davison
+
+scaffolder: {}
+  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ./catalog-info.yaml
