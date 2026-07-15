@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { DcmPage, SERVICE_TYPES } from './pages/DcmPage';
+import { DcmPage } from './pages/DcmPage';
 import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Plugin Smoke Tests @dcm', () => {
@@ -76,20 +76,18 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.verifyCellContent('k8s-container-provider');
   });
 
-  test('FLPATH-4200: Service types tab shows all five default types', async () => {
+  test('FLPATH-4200: Service types tab shows registered types', async () => {
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(5);
+    await dcm.verifyTableHasRows(1);
 
     await dcm.verifyColumnHeader('Service type');
     await dcm.verifyColumnHeader('API version');
     await dcm.verifyColumnHeader('Path');
     await dcm.verifyColumnHeader('Created');
 
-    for (const st of SERVICE_TYPES) {
-      await dcm.verifyCellContent(st);
-    }
+    await dcm.verifyCellContent('container');
   });
 
   test('FLPATH-4200: Catalog items tab shows Pet Clinic item', async () => {

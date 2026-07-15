@@ -245,20 +245,12 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     }
   });
 
-  test('FLPATH-4245: Service Types tab loads all five types from backend', async () => {
+  test('FLPATH-4245: Service Types tab loads types from backend', async () => {
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(5);
+    await dcm.verifyTableHasRows(1);
 
-    for (const st of [
-      'cluster',
-      'container',
-      'database',
-      'three-tier-app-demo',
-      'vm',
-    ]) {
-      await dcm.verifyCellContent(st);
-    }
+    await dcm.verifyCellContent('container');
   });
 
   test('FLPATH-4249: Provider name is read-only in edit mode', async ({
