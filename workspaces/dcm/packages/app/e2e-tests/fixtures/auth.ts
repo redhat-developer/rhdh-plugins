@@ -28,45 +28,55 @@ import { TIMEOUTS } from '../utils/constants';
  * (defaults: "guest" / "guest").
  */
 export async function performLogin(page: Page) {
-  await page.goto('/');
-  await page.waitForLoadState('domcontentloaded', { timeout: TIMEOUTS.page });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await page.goto('/');
+      await page.waitForLoadState('domcontentloaded', {
+        timeout: TIMEOUTS.page,
+      });
 
-  const nav = page.locator('nav').first();
-  const enterButton = page.locator('button:has-text("Enter")');
-  const signInButton = page.locator('button:has-text("Sign in")');
+      const nav = page.locator('nav').first();
+      const enterButton = page.locator('button:has-text("Enter")');
+      const signInButton = page.locator('button:has-text("Sign in")');
 
-  const which = await Promise.race([
-    enterButton
-      .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-      .then(() => 'guest' as const),
-    signInButton
-      .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-      .then(() => 'oidc' as const),
-    nav
-      .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-      .then(() => 'already-logged-in' as const),
-  ]);
+      const which = await Promise.race([
+        enterButton
+          .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
+          .then(() => 'guest' as const),
+        signInButton
+          .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
+          .then(() => 'oidc' as const),
+        nav
+          .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
+          .then(() => 'already-logged-in' as const),
+      ]);
 
-  if (which === 'already-logged-in') return;
+      if (which === 'already-logged-in') return;
 
-  if (which === 'guest') {
-    await enterButton.click();
-  } else {
-    const username = process.env.OIDC_USERNAME ?? 'guest';
-    const password = process.env.OIDC_PASSWORD ?? 'guest';
+      if (which === 'guest') {
+        await enterButton.click();
+      } else {
+        const username = process.env.OIDC_USERNAME ?? 'guest';
+        const password = process.env.OIDC_PASSWORD ?? 'guest';
 
-    const popupPromise = page.waitForEvent('popup');
-    await signInButton.click();
-    const popup = await popupPromise;
-    await popup.waitForLoadState('domcontentloaded', {
-      timeout: TIMEOUTS.page,
-    });
-    await popup.getByLabel('Username or email').fill(username);
-    await popup.getByLabel('Password').fill(password);
-    await popup.getByRole('button', { name: 'Sign in' }).click();
+        const popupPromise = page.waitForEvent('popup');
+        await signInButton.click();
+        const popup = await popupPromise;
+        await popup.waitForLoadState('domcontentloaded', {
+          timeout: TIMEOUTS.page,
+        });
+        await popup.getByLabel('Username or email').fill(username);
+        await popup.getByLabel('Password').fill(password);
+        await popup.getByRole('button', { name: 'Sign in' }).click();
+      }
+
+      await nav.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
+      return;
+    } catch (err) {
+      if (attempt === 1) throw err;
+      await page.waitForTimeout(2_000);
+    }
   }
-
-  await nav.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
 }
 
 /** @deprecated Use {@link performLogin} which handles both guest and OIDC. */

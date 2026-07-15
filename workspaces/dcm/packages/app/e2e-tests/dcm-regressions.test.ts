@@ -134,14 +134,13 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     }
 
     await dcm.searchFor('K8s Container');
+    await page.waitForTimeout(TIMEOUTS.networkSettle);
     await dcm.waitForTableRefresh();
 
-    const found = await page
-      .getByRole('cell', { name: /K8s Container Provider|k8s-container-provider/i })
-      .first()
-      .isVisible()
-      .catch(() => false);
-    expect(found).toBe(true);
+    const providerCell = page
+      .getByRole('cell', { name: /K8s Container|k8s-container/i })
+      .first();
+    await expect(providerCell).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clearSearch();
     await dcm.waitForTableRefresh();

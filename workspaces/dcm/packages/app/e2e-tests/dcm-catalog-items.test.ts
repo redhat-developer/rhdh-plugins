@@ -75,15 +75,12 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     await dcm.submitDialog('Create');
 
-    const dialogStillOpen = await page
-      .locator('[role="dialog"], [class*="MuiDrawer"]')
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    if (dialogStillOpen) {
+    try {
+      await dcm.waitForDialogClosed();
+    } catch {
       await dcm.cancelDialog();
-      test.skip(true, 'Catalog item creation failed — API may reject the payload');
+      test.skip(true, 'Catalog item creation failed — dialog stayed open');
+      return;
     }
 
     await dcm.waitForTableRefresh();
@@ -203,15 +200,12 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     await dcm.submitDialog('Create');
 
-    const importDialogStillOpen = await page
-      .locator('[role="dialog"], [class*="MuiDrawer"]')
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    if (importDialogStillOpen) {
+    try {
+      await dcm.waitForDialogClosed();
+    } catch {
       await dcm.cancelDialog();
-      test.skip(true, 'Catalog item import failed — API may reject the payload');
+      test.skip(true, 'Catalog item import failed — dialog stayed open');
+      return;
     }
 
     await dcm.waitForTableRefresh();
