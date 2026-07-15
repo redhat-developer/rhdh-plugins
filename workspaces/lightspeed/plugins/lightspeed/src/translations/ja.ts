@@ -133,6 +133,8 @@ const lightspeedTranslationJa = createTranslationMessages({
     'mcp.settings.loading': 'MCP サーバーを読み込み中...',
     'mcp.settings.modalDescription':
       '認証情報は保存時に暗号化され、あなたのプロファイルに限定されます。インテリジェントアシスタントはあなたの権限で動作します。',
+    'mcp.settings.modalDescriptionDcr':
+      'このサーバーは Dynamic Client Registration (DCR) を使用しています。トークンはあなたの Backstage ID を使用して自動的に発行されるため、手動でのトークン入力は不要です。',
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',
@@ -307,6 +309,12 @@ const lightspeedTranslationJa = createTranslationMessages({
     'sort.label': '会話を並べ替え',
     'sort.newest': '日付（新しい順）',
     'sort.oldest': '日付（古い順）',
+    'sources.chip.label_one': '{{count}} ソース',
+    'sources.chip.label_other': '{{count}} ソース',
+    'sources.modal.description':
+      '以下のソースは、この AI 応答の生成と補足情報の提供に使用されました:',
+    'sources.modal.title': 'ソース',
+    'sources.popover.closeAriaLabel': 'ソースを閉じる',
     'tabs.ariaLabel': 'インテリジェントアシスタントのビュー',
     'tabs.chat': 'チャット',
     'tabs.notebooks': 'ノートブック',

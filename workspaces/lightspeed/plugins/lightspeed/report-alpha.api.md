@@ -234,6 +234,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'mcp.settings.status.oneTool': string;
     readonly 'mcp.settings.status.manyTools': string;
     readonly 'mcp.settings.status.unknown': string;
+    readonly 'mcp.settings.modalDescriptionDcr': string;
     readonly 'mcp.settings.toggleServerAriaLabel': string;
     readonly 'mcp.settings.editServerAriaLabel': string;
     readonly 'mcp.settings.configureServerTitle': string;
@@ -272,6 +273,11 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'sort.oldest': string;
     readonly 'sort.alphabeticalAsc': string;
     readonly 'sort.alphabeticalDesc': string;
+    readonly 'sources.chip.label_one': string;
+    readonly 'sources.chip.label_other': string;
+    readonly 'sources.modal.title': string;
+    readonly 'sources.modal.description': string;
+    readonly 'sources.popover.closeAriaLabel': string;
     readonly 'reasoning.thinking': string;
   }
 >;

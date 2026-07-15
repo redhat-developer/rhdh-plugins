@@ -50,7 +50,7 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
-      - host: '${RHDH_BRIDGE_HOST}'
+      - host: '${RHDH_BRIDGE_HOST:-localhost}'
 
 integrations:
   github:
@@ -77,7 +77,7 @@ integrations:
 techdocs:
   builder: 'local' # Alternatives - 'external'
   generator:
-    runIn: 'docker' # Alternatives - 'local'
+    runIn: 'local' # 'docker' # Alternatives - 'local'
   publisher:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
@@ -99,9 +99,11 @@ catalog:
     - allow: [Component, System, API, Resource, Location]
   providers:
     modelCatalog:
-      # The field underneath here can be any value that you feel represents your model catalog bridge instance
-      development:
+      # The field underneath should list the connector plugin ID that the entity provider accesses through
+      # the discovery service
+      kserve-kubeflow-connector:
         # `http://localhost:9090` works in both local testing and when the bridge is running as a sidecar
         # we'll hardcode for now and see about env vars later on once we officially take on running the bridge as
         # a separate pod
-        baseUrl: 'http://localhost:9090'
+        # baseUrl: 'http://localhost:9090'
+        name: my-k8s-cluster

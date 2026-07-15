@@ -2,6 +2,15 @@
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. In this documentation, we will discuss how to create a simple metric provider backend module that will be used to collect and calculate metrics.
 
+For provider data-fetching reuse across datasources, Scorecard provides collector contracts:
+
+- `scorecardCollectorsExtensionPoint` extension point to register collectors
+- `scorecardCollectorsServiceRef` service to call `collect(...)` and read collector output with dual validation:
+  - provider expected input/output schemas
+  - collector declared input/output schemas
+
+For details and examples, see [collectors.md](./collectors.md).
+
 ## Getting started
 
 First step is to create a metric provider backend module using the following command:

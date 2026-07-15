@@ -617,6 +617,7 @@ export const NotebookView = ({
             conversationId={conversationId}
             isStreaming={isSendButtonDisabled}
             topicRestrictionEnabled={topicRestrictionEnabled}
+            showSourcesChipPopover
           />
         </ChatbotContent>
       );

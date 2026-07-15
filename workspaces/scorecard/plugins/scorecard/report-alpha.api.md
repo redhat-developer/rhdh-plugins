@@ -54,8 +54,8 @@ const _default: OverridableFrontendPlugin<
         title: string | undefined;
       };
       configInput: {
-        title?: string | undefined;
         path?: string | undefined;
+        title?: string | undefined;
       };
       output:
         | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
@@ -198,13 +198,13 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.lastUpdated': string;
     readonly 'metric.lastUpdatedNotAvailable': string;
     readonly 'metric.someEntitiesNotReportingValues': string;
-    readonly 'metric.averageCenterTooltipTotalLabel': string;
-    readonly 'metric.averageCenterTooltipMaxLabel': string;
-    readonly 'metric.averageCenterTooltipBreakdownRow_one': string;
-    readonly 'metric.averageCenterTooltipBreakdownRow_other': string;
-    readonly 'metric.averageLegendTooltipEntitiesEach_one': string;
-    readonly 'metric.averageLegendTooltipEntitiesEach_other': string;
-    readonly 'metric.averageLegendTooltipRowTotal': string;
+    readonly 'metric.weightedStatusScoreCenterTooltipTotalLabel': string;
+    readonly 'metric.weightedStatusScoreCenterTooltipMaxLabel': string;
+    readonly 'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': string;
+    readonly 'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': string;
+    readonly 'metric.weightedStatusScoreLegendTooltipEntitiesEach_one': string;
+    readonly 'metric.weightedStatusScoreLegendTooltipEntitiesEach_other': string;
+    readonly 'metric.weightedStatusScoreLegendTooltipRowTotal': string;
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;

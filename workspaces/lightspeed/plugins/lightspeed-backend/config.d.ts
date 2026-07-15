@@ -48,6 +48,13 @@ export interface Config {
        * @visibility secret
        */
       token?: string;
+      /**
+       * Authentication mode for this MCP server.
+       * Set to 'dcr' for Dynamic Client Registration (user-bound tokens minted per-request).
+       * When omitted, falls back to static-token mode.
+       * @visibility frontend
+       */
+      auth?: 'dcr';
     }>;
     /**
      * Per-user rate limiting for Lightspeed API endpoints.

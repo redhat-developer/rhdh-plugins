@@ -71,25 +71,10 @@ const splitJsonObjects = (response: { text: string }): string[] =>
     .map(line => line.replace('data: ', '')); // Remove the "data: " prefix
 
 describe('lightspeed router tests', () => {
-  const server = setupServer(...handlers);
-  const rcs = setupServer(...lcsHandlers);
+  const server = setupServer(...handlers, ...lcsHandlers);
 
   beforeAll(() => {
     server.listen({
-      /*
-       *  This is required so that msw doesn't throw
-       *  warnings when the backend is requesting an endpoint
-       */
-      onUnhandledRequest: (req, print) => {
-        if (req.url.includes('/api/lightspeed')) {
-          // bypass
-          return;
-        }
-        print.warning();
-      },
-    });
-
-    rcs.listen({
       /*
        *  This is required so that msw doesn't throw
        *  warnings when the backend is requesting an endpoint
@@ -106,7 +91,6 @@ describe('lightspeed router tests', () => {
 
   afterAll(() => {
     server.close();
-    rcs.close();
   });
 
   beforeEach(() => {
@@ -116,7 +100,6 @@ describe('lightspeed router tests', () => {
   afterEach(() => {
     jest.clearAllMocks();
     server.resetHandlers();
-    rcs.resetHandlers();
   });
 
   async function startBackendServer(
@@ -198,7 +181,7 @@ describe('lightspeed router tests', () => {
   describe('GET /v1/shields', () => {
     it('should load available shields without injecting user_id', async () => {
       const upstreamUrls: URL[] = [];
-      rcs.use(
+      server.use(
         http.get(`${LOCAL_LCS_ADDR}/v1/shields`, ({ request: req }) => {
           upstreamUrls.push(new URL(req.url));
           return HttpResponse.json({
@@ -334,7 +317,7 @@ describe('lightspeed router tests', () => {
     it('should handle upstream server errors properly', async () => {
       const backendServer = await startBackendServer();
       // Override the handler to simulate an error from upstream
-      rcs.use(
+      server.use(
         http.put(`${LOCAL_LCS_ADDR}/v2/conversations/:conversation_id`, () => {
           return new HttpResponse(
             JSON.stringify({
@@ -495,7 +478,7 @@ describe('lightspeed router tests', () => {
 
     it('should handle upstream server errors properly', async () => {
       const backendServer = await startBackendServer();
-      rcs.use(
+      server.use(
         http.post(`${LOCAL_LCS_ADDR}/v1/feedback`, () => {
           return new HttpResponse(
             JSON.stringify({
@@ -604,7 +587,7 @@ describe('lightspeed router tests', () => {
     it('should send MCP headers for multiple MCP servers', async () => {
       let capturedMcpHeaders: string | null = null;
 
-      rcs.use(
+      server.use(
         http.post(
           `${LOCAL_LCS_ADDR}/v1/streaming_query`,
           ({ request: req }) => {
@@ -664,7 +647,7 @@ describe('lightspeed router tests', () => {
     it('should send empty MCP headers when no MCP servers configured', async () => {
       let capturedMcpHeaders: string | null = null;
 
-      rcs.use(
+      server.use(
         http.post(
           `${LOCAL_LCS_ADDR}/v1/streaming_query`,
           ({ request: req }) => {
@@ -710,7 +693,7 @@ describe('lightspeed router tests', () => {
     it('should send MCP headers for single MCP server', async () => {
       let capturedMcpHeaders: string | null = null;
 
-      rcs.use(
+      server.use(
         http.post(
           `${LOCAL_LCS_ADDR}/v1/streaming_query`,
           ({ request: req }) => {
@@ -760,6 +743,127 @@ describe('lightspeed router tests', () => {
       const parsedHeaders = JSON.parse(capturedMcpHeaders!);
       expect(parsedHeaders).toEqual({
         'single-mcp-server': { Authorization: 'single-token' },
+      });
+    });
+
+    it('should send a minted Backstage token for auth: dcr servers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      server.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [{ name: 'backstage-mcp', auth: 'dcr' }],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp']).toBeDefined();
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+    });
+
+    it('should mix DCR and static token servers in MCP headers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      server.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        'intelligent-assistant': {
+          ...BASE_CONFIG['intelligent-assistant'],
+          mcpServers: [
+            { name: 'backstage-mcp', auth: 'dcr' },
+            { name: 'static-server', token: 'my-static-token' },
+          ],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders['backstage-mcp'].Authorization).toBeTruthy();
+      expect(parsedHeaders['backstage-mcp'].Authorization).not.toMatch(
+        /^Bearer /,
+      );
+      expect(parsedHeaders['static-server']).toEqual({
+        Authorization: 'my-static-token',
       });
     });
 
@@ -823,7 +927,7 @@ describe('lightspeed router tests', () => {
     it('returns upstream status code on error', async () => {
       const backendServer = await startBackendServer();
       const nonExistentModel = 'nonexistent-model';
-      rcs.use(
+      server.use(
         http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query`, () => {
           return new HttpResponse(
             JSON.stringify({
@@ -853,7 +957,7 @@ describe('lightspeed router tests', () => {
 
   describe('GET /notebook-conversation-ids', () => {
     it('returns conversation IDs for the authenticated user', async () => {
-      rcs.use(
+      server.use(
         http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
           return HttpResponse.json({
             data: [
@@ -904,7 +1008,7 @@ describe('lightspeed router tests', () => {
     });
 
     it('returns empty array when user has no notebook sessions', async () => {
-      rcs.use(
+      server.use(
         http.get(`${LOCAL_LCS_ADDR}/v1/vector-stores`, () => {
           return HttpResponse.json({
             data: [
@@ -1016,7 +1120,7 @@ describe('lightspeed router tests', () => {
   describe('POST /v1/query stream error handling', () => {
     it('returns 500 when upstream stream errors', async () => {
       const backendServer = await startBackendServer();
-      rcs.use(
+      server.use(
         http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query`, () => {
           const stream = new ReadableStream({
             start(controller) {

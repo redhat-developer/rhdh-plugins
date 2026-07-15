@@ -69,7 +69,8 @@ export function waitForAggregationResponse(
         const result = json?.result;
 
         return (
-          result?.averageScore !== undefined || result?.total !== undefined
+          result?.weightedStatusScore !== undefined ||
+          result?.total !== undefined
         );
       } catch {
         return false;

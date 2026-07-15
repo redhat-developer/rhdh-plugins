@@ -3,7 +3,6 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-orchestrator:
       translationResources:
         - importName: orchestratorTranslations
-          module: Alpha
           ref: orchestratorTranslationRef
       appIcons:
         - name: orchestratorIcon
@@ -31,4 +30,4 @@ dynamicPlugins:
               gridColumn: '1 / -1'
             if:
               anyOf:
-                - IsOrchestratorCatalogTabAvailable
+                - hasAnnotation: orchestrator.io/workflows

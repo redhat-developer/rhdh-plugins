@@ -75,7 +75,12 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
   const workflowPageLink = useRouteRef(workflowRouteRef);
 
   return (
-    <Grid container alignContent="flex-start" spacing="1rem">
+    <Grid
+      container
+      alignContent="flex-start"
+      spacing="1rem"
+      sx={{ minWidth: 0 }}
+    >
       <Grid item md={7} key="Workflow">
         <AboutField label={t('workflow.fields.workflow')}>
           <Link to={workflowPageLink({ workflowId: details.workflowId })}>
