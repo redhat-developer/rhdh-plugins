@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-/**
- * The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
-export {
-  AIResourceExtensionsProcessor,
-  VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceExtensionsProcessor';
-export type { AIResourceScope } from './AIResourceExtensionsProcessor';
+import * as auth from './index';
+
+describe('auth barrel exports', () => {
+  it('can be imported as a valid module surface', () => {
+    expect(auth).toBeDefined();
+    expect(typeof auth).toBe('object');
+  });
+});

@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
-export {
-  AIResourceExtensionsProcessor,
-  VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceExtensionsProcessor';
-export type { AIResourceScope } from './AIResourceExtensionsProcessor';
+import { QUERY_PARAM_INSTANCE_ID } from './QueryParams';
+
+describe('QueryParams constants', () => {
+  it('exports the expected instance id query parameter', () => {
+    expect(QUERY_PARAM_INSTANCE_ID).toBe('instanceId');
+  });
+});

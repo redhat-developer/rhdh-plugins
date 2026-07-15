@@ -4,10 +4,34 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
+import { Entity } from '@backstage/catalog-model';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
+
+// @public
+export class AIResourceExtensionsProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  preProcessEntity(
+    entity: Entity,
+    _location: LocationSpec,
+    _emit: CatalogProcessorEmit,
+  ): Promise<Entity>;
+}
+
+// @public
+export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 // @public
 const catalogModuleCatalogBackendModuleAiResourceExtensions: BackendFeature;
 export default catalogModuleCatalogBackendModuleAiResourceExtensions;
 
-// (No @packageDocumentation comment for this package)
+// @public
+export const VALID_AI_RESOURCE_SCOPES: readonly [
+  'organization',
+  'product',
+  'team',
+];
 ```
