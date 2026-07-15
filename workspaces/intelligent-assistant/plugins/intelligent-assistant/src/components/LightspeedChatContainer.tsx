@@ -174,7 +174,7 @@ const LightspeedChatContainerInner = () => {
             variant="outlined"
             color="primary"
             target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed/README.md#permission-framework-support"
+            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant/README.md#permission-framework-support"
           >
             {t('common.readMore')} &nbsp; <OpenInNewIcon />
           </Button>

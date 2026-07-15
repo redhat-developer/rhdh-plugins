@@ -31,7 +31,7 @@ import { useTranslation } from '../hooks/useTranslation';
 const LLAMA_STACK_CONFIGURE_DOCS_URL =
   'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/interacting_with_red_hat_developer_lightspeed_for_red_hat_developer_hub/developer-lightspeed#proc-installing-and-configuring-lightspeed_developer-lightspeed';
 const LIGHTSPEED_BACKEND_README_URL =
-  'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md';
+  'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant-backend/README.md';
 
 const useStyles = makeStyles(theme =>
   createStyles({

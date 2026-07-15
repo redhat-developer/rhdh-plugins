@@ -57,7 +57,7 @@ export const intelligentAssistantPlugin = createBackendPlugin({
           logger.warn(
             'DEPRECATED: The "lightspeed" configuration key has been renamed to "intelligent-assistant". ' +
               'Please update your app-config.yaml. The old "lightspeed" key is no longer read. ' +
-              'Migration guide: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md#migration-from-lightspeed-to-intelligent-assistant',
+              'Migration guide: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant-backend/README.md#migration-from-lightspeed-to-intelligent-assistant',
           );
         }
 
