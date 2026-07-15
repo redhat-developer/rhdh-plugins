@@ -128,20 +128,23 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     }
 
     const nextPageBtn = page.getByRole('button', { name: /next page/i });
-    if (await nextPageBtn.isEnabled().catch(() => false)) {
-      await nextPageBtn.click();
-      await dcm.waitForTableRefresh();
+    if (!(await nextPageBtn.isEnabled().catch(() => false))) {
+      test.skip(true, 'Not enough providers to create a second page');
+      return;
     }
+    await nextPageBtn.click();
+    await dcm.waitForTableRefresh();
 
-    const firstCreated = createdProviders[0];
-    await dcm.searchFor(firstCreated);
+    const prevPageBtn = page.getByRole('button', { name: /previous page/i });
+    await expect(prevPageBtn).toBeEnabled({ timeout: TIMEOUTS.short });
+
+    const searchInput = page.getByRole('textbox', { name: /search/i });
+    await searchInput.click();
+    await searchInput.fill('e2e');
     await page.waitForTimeout(TIMEOUTS.networkSettle);
     await dcm.waitForTableRefresh();
 
-    const providerCell = page
-      .getByRole('cell', { name: new RegExp(firstCreated, 'i') })
-      .first();
-    await expect(providerCell).toBeVisible({ timeout: TIMEOUTS.element });
+    await expect(prevPageBtn).toBeDisabled({ timeout: TIMEOUTS.element });
 
     await dcm.clearSearch();
     await dcm.waitForTableRefresh();
