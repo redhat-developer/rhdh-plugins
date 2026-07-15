@@ -28,15 +28,16 @@ import ReactFlow, {
 
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import CheckIcon from '@mui/icons-material/Check';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
+import PendingIcon from '@mui/icons-material/Pending';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
-import StopCircleIcon from '@mui/icons-material/StopCircle';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, darken, useTheme } from '@mui/material/styles';
 
 import {
   ProcessInstanceDTO,
@@ -56,15 +57,22 @@ import 'reactflow/dist/style.css';
 
 const ICON_STYLE = { fontSize: 16, verticalAlign: 'middle' } as const;
 
+const AbortedIcon = ({ sx }: { sx?: object }) => (
+  <span style={{ display: 'inline-flex', marginLeft: -4, marginRight: -4 }}>
+    <RemoveIcon sx={{ ...sx, marginRight: '-3px' }} />
+    <RemoveIcon sx={sx} />
+  </span>
+);
+
 const STATUS_ICONS: Record<
   ProcessInstanceStatusDTO,
   React.ComponentType<{ sx?: object }>
 > = {
-  [ProcessInstanceStatusDTO.Completed]: CheckCircleIcon,
+  [ProcessInstanceStatusDTO.Completed]: CheckIcon,
   [ProcessInstanceStatusDTO.Active]: PlayCircleFilledIcon,
-  [ProcessInstanceStatusDTO.Pending]: HourglassEmptyIcon,
-  [ProcessInstanceStatusDTO.Error]: ErrorIcon,
-  [ProcessInstanceStatusDTO.Aborted]: StopCircleIcon,
+  [ProcessInstanceStatusDTO.Pending]: PendingIcon,
+  [ProcessInstanceStatusDTO.Error]: ErrorOutlineIcon,
+  [ProcessInstanceStatusDTO.Aborted]: AbortedIcon,
   [ProcessInstanceStatusDTO.Suspended]: PauseCircleFilledIcon,
 };
 
@@ -115,8 +123,8 @@ const useNodeColors = (status?: ProcessInstanceStatusDTO) => {
 
   if (isDark) {
     return {
-      background: pal.dark,
-      border: pal.main,
+      background: darken(pal.main, 0.75),
+      border: pal.dark,
       color: theme.palette.common.white,
       secondaryColor: alpha(theme.palette.common.white, 0.8),
       iconColor: theme.palette.common.white,
@@ -137,7 +145,7 @@ const WorkflowProgressFlowNode = ({
 }: NodeProps<WorkflowFlowNodeData>) => {
   const theme = useTheme();
   const colors = useNodeColors(data.status);
-  const IconComponent = data.status ? STATUS_ICONS[data.status] : undefined;
+  const IconComponent = data.status ? STATUS_ICONS[data.status] : ZoomInMapIcon;
   const secondaryLabel =
     data.status !== undefined
       ? STATUS_LABELS[data.status]
@@ -165,28 +173,33 @@ const WorkflowProgressFlowNode = ({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 6,
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
         }}
       >
         {IconComponent && (
           <IconComponent sx={{ ...ICON_STYLE, color: colors.iconColor }} />
         )}
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {data.label}
-        </span>
-      </div>
-      {secondaryLabel && (
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: colors.secondaryColor,
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
           }}
         >
-          {secondaryLabel}
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {data.label}
+          </div>
+          {secondaryLabel && (
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: colors.secondaryColor,
+              }}
+            >
+              {secondaryLabel}
+            </div>
+          )}
         </div>
-      )}
+      </div>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </div>
   );

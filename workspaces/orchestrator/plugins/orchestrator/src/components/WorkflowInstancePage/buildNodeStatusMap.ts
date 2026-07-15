@@ -53,5 +53,17 @@ export const buildNodeStatusMap = (
     addStatusKey(statusMap, node.nodeId, model.status);
   });
 
+  if (
+    workflowStatus === ProcessInstanceStatusDTO.Aborted ||
+    workflowStatus === ProcessInstanceStatusDTO.Suspended ||
+    workflowStatus === ProcessInstanceStatusDTO.Error
+  ) {
+    for (const [key, status] of statusMap) {
+      if (status === ProcessInstanceStatusDTO.Active) {
+        statusMap.set(key, workflowStatus);
+      }
+    }
+  }
+
   return statusMap;
 };
