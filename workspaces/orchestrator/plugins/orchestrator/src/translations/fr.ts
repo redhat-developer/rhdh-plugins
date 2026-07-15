@@ -117,11 +117,11 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.status.aborted': "L'exécution a été interrompue il y a {{time}}.",
     'run.status.abortedWithoutTime': "L'exécution a été interrompue.",
     'run.status.completed': 'Exécution terminée',
-    'run.status.completedAt': 'Exécution terminée {{time}}',
+    'run.status.completedAt': 'Exécution terminée le {{time}}',
     'run.status.completedWithMessage':
-      'Exécution terminée {{time}} avec le message',
-    'run.status.failed': "L'exécution a échoué {{time}}",
-    'run.status.failedAt': "L'exécution a échoué {{time}}",
+      'Exécution terminée le {{time}} avec le message',
+    'run.status.failed': "L'exécution a échoué le {{time}}",
+    'run.status.failedAt': "L'exécution a échoué le {{time}}",
     'run.status.noAdditionalInfo':
       "Le flux de travail n'a fourni aucune information supplémentaire concernant l'état.",
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
