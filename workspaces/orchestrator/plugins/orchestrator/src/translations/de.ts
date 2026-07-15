@@ -116,11 +116,11 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.status.aborted': 'Der Lauf wurde vor {{time}} abgebrochen.',
     'run.status.abortedWithoutTime': 'Der Lauf wurde abgebrochen.',
     'run.status.completed': 'Lauf abgeschlossen',
-    'run.status.completedAt': 'Lauf abgeschlossen {{time}}',
+    'run.status.completedAt': 'Lauf abgeschlossen am {{time}}',
     'run.status.completedWithMessage':
-      'Lauf abgeschlossen {{time}} mit folgender Nachricht',
-    'run.status.failed': 'Der Lauf ist fehlgeschlagen {{time}}',
-    'run.status.failedAt': 'Der Lauf ist fehlgeschlagen {{time}}',
+      'Lauf abgeschlossen am {{time}} mit folgender Nachricht',
+    'run.status.failed': 'Der Lauf ist fehlgeschlagen am {{time}}',
+    'run.status.failedAt': 'Der Lauf ist fehlgeschlagen am {{time}}',
     'run.status.noAdditionalInfo':
       'Der Workflow lieferte keine weiteren Informationen zum Status.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':

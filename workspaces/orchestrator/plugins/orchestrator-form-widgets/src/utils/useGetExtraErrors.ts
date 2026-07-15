@@ -101,7 +101,9 @@ export const useGetExtraErrors = () => {
               evaluatedValidateUrl,
             });
             safeSet(errors, path, {
-              [ERRORS_KEY]: `The validate:url is not evaluated to a string: "${validateUrl}"`,
+              [ERRORS_KEY]: [
+                `The validate:url is not evaluated to a string: "${validateUrl}"`,
+              ],
             });
           } else {
             const evaluatedRequestInit = await getRequestInit(
@@ -119,7 +121,9 @@ export const useGetExtraErrors = () => {
               const data = await parseValidationErrorBody(response);
               if (!data || Object.keys(data).length === 0) {
                 safeSet(errors, path, {
-                  [ERRORS_KEY]: `Validation request failed with status ${response.status}`,
+                  [ERRORS_KEY]: [
+                    `Validation request failed with status ${response.status}`,
+                  ],
                 });
                 return;
               }

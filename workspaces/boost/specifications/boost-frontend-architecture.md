@@ -257,18 +257,18 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 
 ## Technology Stack
 
-| Layer             | Technology                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons |
-| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                          |
-| Styling           | CSS Modules with `--bui-*` CSS variables                                                                     |
-| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                        |
-| State             | React hooks + URL params for filters; streaming reducer for chat events                                      |
-| API               | `catalogApiRef` for entity queries; `BoostApiClient` for `/api/boost` routes; `fetchApi` for auth            |
-| Testing           | `TestApiProvider` + `renderInTestApp` from `@backstage/test-utils`                                           |
-| i18n              | `TranslationBlueprint` + `useTranslationRef` (English-only initially)                                        |
-| Dynamic plugins   | Scalprum federation, `dist-scalprum` build                                                                   |
-| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                      |
+| Layer             | Technology                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@mui/icons-material` icons |
+| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                             |
+| Styling           | CSS Modules with `--bui-*` CSS variables                                                                        |
+| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                           |
+| State             | React hooks + URL params for filters; streaming reducer for chat events                                         |
+| API               | `catalogApiRef` for entity queries; `BoostApiClient` for `/api/boost` routes; `fetchApi` for auth               |
+| Testing           | `TestApiProvider` + `renderInTestApp` from `@backstage/test-utils`                                              |
+| i18n              | `TranslationBlueprint` + `useTranslationRef` (English-only initially)                                           |
+| Dynamic plugins   | Scalprum federation, `dist-scalprum` build                                                                      |
+| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                         |
 
 ---
 

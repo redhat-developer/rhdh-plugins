@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  coreServices,
-  createBackendModule,
-} from '@backstage/backend-plugin-api';
+import { createBackendModule } from '@backstage/backend-plugin-api';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+
+import { AIResourceExtensionsProcessor } from './AIResourceExtensionsProcessor';
 
 /**
  * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
@@ -29,9 +29,11 @@ export const catalogModuleCatalogBackendModuleAiResourceExtensions =
     moduleId: 'catalog-backend-module-ai-resource-extensions',
     register(reg) {
       reg.registerInit({
-        deps: { logger: coreServices.logger },
-        async init({ logger }) {
-          logger.info('Hello World!');
+        deps: {
+          catalog: catalogProcessingExtensionPoint,
+        },
+        async init({ catalog }) {
+          catalog.addProcessor(new AIResourceExtensionsProcessor());
         },
       });
     },

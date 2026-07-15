@@ -163,7 +163,7 @@ const ResultMessage = ({
       );
       return [formattedDate, matchingMessage ?? ''];
     }
-    return [`at ${formattedDate}`];
+    return [formattedDate];
   };
 
   const getAbortTimeAgo = (): string => {
