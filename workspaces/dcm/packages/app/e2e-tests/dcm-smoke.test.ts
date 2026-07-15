@@ -80,7 +80,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(1);
+    await dcm.verifyTableHasRows(2);
 
     await dcm.verifyColumnHeader('Service type');
     await dcm.verifyColumnHeader('API version');
@@ -88,6 +88,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.verifyColumnHeader('Created');
 
     await dcm.verifyCellContent('container');
+    await dcm.verifyCellContent('three-tier-app-demo');
   });
 
   test('FLPATH-4200: Catalog items tab shows Pet Clinic item', async () => {
@@ -149,7 +150,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.verifyCellContent('k8s-container-provider');
 
     await dcm.clickTab('Service types');
-    await dcm.verifyTableHasRows(5);
+    await dcm.verifyTableHasRows(2);
 
     await dcm.clickTab('Catalog items');
     await dcm.verifyCellContent('Pet Clinic');

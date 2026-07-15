@@ -248,9 +248,10 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
   test('FLPATH-4245: Service Types tab loads types from backend', async () => {
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(1);
+    await dcm.verifyTableHasRows(2);
 
     await dcm.verifyCellContent('container');
+    await dcm.verifyCellContent('three-tier-app-demo');
   });
 
   test('FLPATH-4249: Provider name is read-only in edit mode', async ({
