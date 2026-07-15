@@ -1,7 +1,7 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed': minor
-'@red-hat-developer-hub/backstage-plugin-lightspeed-backend': minor
-'@red-hat-developer-hub/backstage-plugin-lightspeed-common': minor
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant': minor
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend': minor
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common': minor
 ---
 
 Backstage version bump to v1.52.1

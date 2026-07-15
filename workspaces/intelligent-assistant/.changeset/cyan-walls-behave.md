@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed-backend': patch
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend': patch
 ---
 
 removed unused llama stack dependency (and transitive dependencies). removed dead constant.

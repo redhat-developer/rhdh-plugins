@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed': major
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant': major
 ---
 
 **Breaking:** Legacy (OFS) component exports have been removed from the main `./` entry point and are now exclusively available at the `./legacy` subpath. OFS consumers must update their imports:

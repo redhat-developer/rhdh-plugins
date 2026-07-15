@@ -1,6 +1,6 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed-backend': patch
-'@red-hat-developer-hub/backstage-plugin-lightspeed': patch
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend': patch
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant': patch
 ---
 
 Updated dependency `llama-stack-client` to `^0.7.0`.

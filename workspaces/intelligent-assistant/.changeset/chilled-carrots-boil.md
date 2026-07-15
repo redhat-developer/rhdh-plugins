@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed': patch
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant': patch
 ---
 
 Fix MCP settings panel and options dropdown behavior:
