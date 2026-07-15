@@ -447,7 +447,7 @@ export const McpServersSettings = ({
   const [tokenValidationMessage, setTokenValidationMessage] = useState('');
 
   const getBaseUrl = useCallback(() => {
-    return `${configApi.getString('backend.baseUrl')}/api/lightspeed`;
+    return `${configApi.getString('backend.baseUrl')}/api/intelligent-assistant`;
   }, [configApi]);
 
   const fetchJson = useCallback(
