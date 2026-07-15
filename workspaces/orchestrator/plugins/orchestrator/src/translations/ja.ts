@@ -183,11 +183,8 @@ const orchestratorTranslationJa = createTranslationMessages({
       'ユーザーにワークフローの中止権限がありません',
     'tooltips.userNotAuthorizedExecute':
       'ユーザーにワークフローの実行権限がありません',
-    'tooltips.retriggerNotSupportedForAborted':
-      '中止箇所からの再トリガーはサポートされていません。同じ入力で新しい実行を開始するには、ワークフロー全体を使用してください。',
     'tooltips.workflowDown': 'ワークフローは現在停止しているかエラー状態です',
     'workflow.buttons.entireWorkflow': 'ワークフロー全体',
-    'workflow.buttons.fromAbortedPoint': '中止箇所から',
     'workflow.buttons.fromFailurePoint': '失敗箇所から',
     'workflow.buttons.run': '実行',
     'workflow.buttons.runAgain': '再実行',
@@ -235,6 +232,12 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.progress': 'ワークフロー進捗',
     'workflow.status.available': '利用可能',
     'workflow.status.unavailable': '利用不可',
+    'workflow.unavailable.title': '利用できないワークフロー',
+    'workflow.unavailable.runTooltip': '利用できないワークフロー',
+    'workflow.unavailable.requestFailed':
+      'HTTP GET リクエスト {{url}} は失敗しました。',
+    'workflow.unavailable.statusCodeLine': 'ステータスコード: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'ステータステキスト: {{reason}}',
     'samlSso.title': 'GitHub SAML SSO セッションの有効期限切れ',
     'samlSso.reauthorizeButton': 'SSO を再認証',
     'samlSso.body':

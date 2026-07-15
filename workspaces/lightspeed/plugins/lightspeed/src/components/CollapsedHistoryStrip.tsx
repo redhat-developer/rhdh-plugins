@@ -58,11 +58,14 @@ const useStyles = makeStyles(theme => ({
     lineHeight: 1,
     borderRadius: '8px !important',
     border: '1px solid var(--pf-t--global--border--color--default) !important',
-    color: 'var(--pf-t--global--color--brand--default)',
+    color: 'var(--pf-t--global--color--brand--default) !important',
     '&:hover': {
       color: 'var(--pf-t--global--color--brand--hover) !important',
       backgroundColor:
         'var(--pf-t--global--background--color--action--plain--hover) !important',
+    },
+    '&:disabled': {
+      color: 'var(--pf-t--global--text--color--disabled) !important',
     },
   },
 }));

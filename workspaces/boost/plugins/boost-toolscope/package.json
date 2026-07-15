@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-toolscope",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "description": "Standalone toolscope package with injectable cache interface for the boost AI platform",
   "main": "src/index.ts",
@@ -16,6 +16,7 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-toolscope",
     "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-common",
       "@red-hat-developer-hub/backstage-plugin-boost-node",
@@ -33,7 +34,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5"
+    "@backstage/cli": "^0.36.3"
   },
   "files": [
     "dist"

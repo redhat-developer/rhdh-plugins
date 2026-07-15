@@ -13,7 +13,8 @@ The `AgenticProvider` interface defines the contract between Boost and any AI pl
 #### Scenario: Provider implements required capabilities
 
 - **WHEN** a provider is registered with `boostProviderExtensionPoint`
-- **THEN** it must implement `chat()` and `chatStream()` methods
+- **THEN** it must implement `chat(messages, options?)` and `chatStream(messages, options?)` methods
+- **AND** `options` is an optional `ChatOptions` object with `userRef?: string` for user identity audit
 - **AND** it must provide a `ProviderDescriptor` declaring its ID, name, and supported capabilities
 
 #### Scenario: Provider declares optional capabilities
@@ -66,11 +67,11 @@ Provider interfaces and conversation types MUST live in the common package so bo
 #### Scenario: AgenticProvider types moved to common
 
 - **WHEN** the `AgenticProvider` interface, `ProviderDescriptor`, `ProviderCapabilities`, and `NormalizedStreamEvent` types are needed
-- **THEN** they are imported from `@boost/plugin-boost-common`
+- **THEN** they are imported from `@red-hat-developer-hub/backstage-plugin-boost-common`
 - **AND** provider-specific types (e.g., `LlamaStackConfig`, `KagentiConfig`) remain in their respective provider modules — not in the common package
 
 #### Scenario: Conversation types consolidated
 
 - **WHEN** conversation types (`ConversationSummary`, `ConversationDetails`, `InputItem`) are needed
-- **THEN** they are imported from `@boost/plugin-boost-common`
+- **THEN** they are imported from `@red-hat-developer-hub/backstage-plugin-boost-common`
 - **AND** they are no longer defined inside `providers/llamastack/conversationTypes.ts`

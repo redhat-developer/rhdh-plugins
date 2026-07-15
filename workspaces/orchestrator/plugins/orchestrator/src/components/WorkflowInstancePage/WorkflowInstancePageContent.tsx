@@ -21,6 +21,7 @@ import { Content, InfoCard, Link } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { DateTime } from 'luxon';
@@ -80,7 +81,7 @@ export const mapProcessInstanceToDetails = (
   };
 };
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   topRowCard: {
     height: '24rem',
   },
@@ -95,6 +96,31 @@ const useStyles = makeStyles()(() => ({
   recommendedLabel: { margin: '0 0.25rem' },
   cardClassName: {
     overflow: 'auto',
+  },
+  contentModeCard: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+  },
+  contentCardOverflow: {
+    minWidth: 0,
+    maxWidth: '100%',
+    overflowX: 'auto',
+    wordBreak: 'break-word',
+  },
+  contentModeLayout: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    gap: theme.spacing(2),
+    width: '100%',
+    alignItems: 'start',
+  },
+  contentModeColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    minWidth: 0,
+    maxWidth: '100%',
   },
   titleContainer: {
     display: 'flex',
@@ -116,7 +142,12 @@ export const WorkflowInstancePageContent: React.FC<{
   const isFixedHeightMode = cardHeightMode !== 'content';
   const topRowClassName = isFixedHeightMode ? classes.topRowCard : '';
   const bottomRowClassName = isFixedHeightMode ? classes.bottomRowCard : '';
-  const cardOverflowClassName = isFixedHeightMode ? classes.cardClassName : '';
+  const cardOverflowClassName = isFixedHeightMode
+    ? classes.cardClassName
+    : classes.contentCardOverflow;
+  const contentModeCardClassName = isFixedHeightMode
+    ? ''
+    : classes.contentModeCard;
 
   const details = useMemo(
     () => mapProcessInstanceToDetails(instance, t),
@@ -186,7 +217,7 @@ export const WorkflowInstancePageContent: React.FC<{
         </div>
       }
       divider={false}
-      className={topRowClassName}
+      className={`${topRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
     >
       <WorkflowRunDetails details={details} />
@@ -195,7 +226,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
   const resultCard = (
     <WorkflowResult
-      className={topRowClassName}
+      className={`${topRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
       instance={instance}
     />
@@ -203,7 +234,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
   const inputsCard = (
     <WorkflowInputs
-      className={bottomRowClassName}
+      className={`${bottomRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
       value={value}
       loading={loading}
@@ -215,7 +246,7 @@ export const WorkflowInstancePageContent: React.FC<{
     <InfoCard
       title={t('workflow.progress')}
       divider={false}
-      className={bottomRowClassName}
+      className={`${bottomRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
     >
       <WorkflowProgress
@@ -236,34 +267,32 @@ export const WorkflowInstancePageContent: React.FC<{
       <Grid container spacing={2}>
         {isFixedHeightMode ? (
           <>
-            <Grid item xs={6}>
+            <Grid item xs={6} zeroMinWidth>
               {detailsCard}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={6} zeroMinWidth>
               {resultCard}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={6} zeroMinWidth>
               {inputsCard}
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={6} zeroMinWidth>
               {progressCard}
             </Grid>
           </>
         ) : (
-          <>
-            <Grid item xs={6}>
-              <Grid container spacing={2} direction="column">
-                <Grid item>{detailsCard}</Grid>
-                <Grid item>{inputsCard}</Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={6}>
-              <Grid container spacing={2} direction="column">
-                <Grid item>{resultCard}</Grid>
-                <Grid item>{progressCard}</Grid>
-              </Grid>
-            </Grid>
-          </>
+          <Grid item xs={12}>
+            <Box className={classes.contentModeLayout}>
+              <Box className={classes.contentModeColumn}>
+                {detailsCard}
+                {inputsCard}
+              </Box>
+              <Box className={classes.contentModeColumn}>
+                {resultCard}
+                {progressCard}
+              </Box>
+            </Box>
+          </Grid>
         )}
       </Grid>
     </Content>

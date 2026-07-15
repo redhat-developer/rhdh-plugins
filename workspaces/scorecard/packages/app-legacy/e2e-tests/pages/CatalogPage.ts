@@ -40,6 +40,9 @@ export class CatalogPage {
     await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible({ timeout: 30000 });
+    // Accept the legacy-guest-token fallback dialog if the auth backend
+    // is not yet ready when the "Enter" button is clicked.
+    this.page.once('dialog', dialog => dialog.accept());
     await enterButton.click();
     // Guest flow copy varies by Backstage / branding; wait for shell instead of "Welcome back!".
     await expect(
@@ -51,8 +54,11 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    await this.page.goto('/catalog'); // Resolves the issue when "My Groups" sidebar covers the catalog toolbar
-    await this.page.getByTestId('user-picker-all').getByText('All').click();
+    // Select the "All" user filter via URL instead of clicking the picker:
+    // on CI the picker item's container <li> intercepts pointer events and
+    // the click times out (rendering/font metrics differ from local runs).
+    await this.page.goto('/catalog?filters[user]=all');
+    await expect(this.page.getByTestId('user-picker-all')).toBeVisible();
   }
 
   async openComponent(componentName: string) {
@@ -72,6 +78,6 @@ export class CatalogPage {
     await this.page.getByRole('link', { name: 'Settings' }).click();
     await this.page.getByRole('button', { name: 'English' }).click();
     await this.page.getByRole('option', { name: displayName }).click();
-    await this.page.locator('a').filter({ hasText: 'Home' }).click();
+    await this.page.getByRole('link', { name: 'Home' }).first().click();
   }
 }

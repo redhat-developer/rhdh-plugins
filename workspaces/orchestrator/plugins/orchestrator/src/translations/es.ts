@@ -117,21 +117,21 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.status.aborted': 'La ejecución se canceló hace {{time}}.',
     'run.status.abortedWithoutTime': 'La ejecución se canceló.',
     'run.status.completed': 'Ejecución completada',
-    'run.status.completedAt': 'Ejecución completada {{time}}',
+    'run.status.completedAt': 'Ejecución completada el {{time}}',
     'run.status.completedWithMessage':
-      'Ejecución completada {{time}} con mensaje',
-    'run.status.failed': 'La ejecución falló {{time}}',
-    'run.status.failedAt': 'La ejecución falló {{time}}',
+      'Ejecución completada el {{time}} con mensaje',
+    'run.status.failed': 'La ejecución falló el {{time}}',
+    'run.status.failedAt': 'La ejecución falló el {{time}}',
     'run.status.noAdditionalInfo':
       'El flujo de trabajo no proporcionó información adicional sobre el estado.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       'Los resultados se mostrarán aquí una vez que se complete la ejecución.',
     'run.status.running':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.status.runningWaitingAtNode':
       'El flujo de trabajo está en ejecución; esperando en el nodo {{node}} desde {{formattedTime}}',
     'run.status.workflowIsRunning':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
     'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',
     'run.title': 'Ejecutar flujo de trabajo',
@@ -188,12 +188,9 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Usuario no autorizado para cancelar el flujo de trabajo',
     'tooltips.userNotAuthorizedExecute':
       'Usuario no autorizado para ejecutar el flujo de trabajo',
-    'tooltips.retriggerNotSupportedForAborted':
-      'No se admite la reactivación desde el punto de cancelación. Use Flujo de trabajo completo para iniciar una nueva ejecución con las mismas entradas.',
     'tooltips.workflowDown':
       'El flujo de trabajo está actualmente inactivo o en estado de error',
     'workflow.buttons.entireWorkflow': 'Flujo de trabajo completo',
-    'workflow.buttons.fromAbortedPoint': 'Desde el punto de cancelación',
     'workflow.buttons.fromFailurePoint': 'Desde el punto de fallo',
     'workflow.buttons.run': 'Ejecutar',
     'workflow.buttons.runAgain': 'Ejecutar nuevamente',
@@ -241,6 +238,12 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
+    'workflow.unavailable.title': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.runTooltip': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.requestFailed':
+      'La solicitud HTTP GET a {{url}} falló.',
+    'workflow.unavailable.statusCodeLine': 'Código de estado: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texto de estado: {{reason}}',
     'samlSso.title': 'Sesión de GitHub SAML SSO expirada',
     'samlSso.reauthorizeButton': 'Reautorizar SSO',
     'samlSso.body':

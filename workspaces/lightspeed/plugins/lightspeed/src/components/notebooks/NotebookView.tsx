@@ -245,7 +245,7 @@ const useStyles = makeStyles(theme => ({
   },
   footer: {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+      'var(--pf-t--global--background--color--floating--default) !important',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
@@ -255,6 +255,11 @@ const useStyles = makeStyles(theme => ({
         theme.palette.type === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
+    },
+    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
+      '--pf-v6-c-button--BorderRadius':
+        'var(--pf-t--global--border--radius--pill)',
+      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
     },
   },
   chatContent: {
@@ -612,6 +617,7 @@ export const NotebookView = ({
             conversationId={conversationId}
             isStreaming={isSendButtonDisabled}
             topicRestrictionEnabled={topicRestrictionEnabled}
+            showSourcesChipPopover
           />
         </ChatbotContent>
       );

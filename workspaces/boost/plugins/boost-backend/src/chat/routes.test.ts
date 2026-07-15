@@ -357,6 +357,19 @@ describe('chat routes', () => {
       expect(res.status).toBe(200);
     });
 
+    it('passes userRef from credentials to provider.chat', async () => {
+      const mockProvider = createMockProvider();
+      testApp = await createTestApp({ provider: mockProvider });
+
+      await postJson(testApp.url, '/chat', {
+        messages: [{ type: 'text', text: 'Hello' }],
+      });
+
+      expect(mockProvider.chat).toHaveBeenCalledWith(expect.any(Array), {
+        userRef: 'user:default/testuser',
+      });
+    });
+
     it('includes conversationId when provided', async () => {
       testApp = await createTestApp({ provider: createMockProvider() });
 
@@ -409,6 +422,19 @@ describe('chat routes', () => {
       expect(res.status).toBe(200);
       const doneEvents = res.events.filter(e => e.type === 'done');
       expect(doneEvents.length).toBe(1);
+    });
+
+    it('passes userRef from credentials to provider.chatStream', async () => {
+      const mockProvider = createMockProvider();
+      testApp = await createTestApp({ provider: mockProvider });
+
+      await postSse(testApp.url, '/chat/stream', {
+        messages: [{ type: 'text', text: 'Hello' }],
+      });
+
+      expect(mockProvider.chatStream).toHaveBeenCalledWith(expect.any(Array), {
+        userRef: 'user:default/testuser',
+      });
     });
 
     it('returns 400 for missing messages', async () => {

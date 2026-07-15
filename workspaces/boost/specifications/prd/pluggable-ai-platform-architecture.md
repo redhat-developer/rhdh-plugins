@@ -193,10 +193,10 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 
 ```yaml
 # dynamic-plugins.override.yaml
-- package: @boost/plugin-boost-backend-module-llamastack
+- package: @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack
   integrity: sha512-...
   disabled: false
-- package: @boost/plugin-boost-backend-module-kagenti
+- package: @red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti
   integrity: sha512-...
   disabled: false
 ```
@@ -214,7 +214,7 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 | RuntimeConfigResolver              | `services/RuntimeConfigResolver.ts`                             | 30s                 | P0       | Immediate invalidation on write via `cache.delete()` |
 | ResponsesApiProvider.\_modelsCache | `providers/llamastack/ResponsesApiProvider.ts`                  | Match Kagenti       | P1       | Eliminates model cache asymmetry                     |
 | McpAuthService tokens              | `providers/llamastack/auth/McpAuthService.ts`                   | From token expiry   | P1       | Security-sensitive                                   |
-| KeycloakTokenManager               | `providers/kagenti/client/KeycloakTokenManager.ts`              | From token expiry   | P1       | Security-sensitive                                   |
+| KeycloakAuthClient                 | `boost-node/src/KeycloakAuthClient.ts`                          | From token expiry   | P1       | Security-sensitive                                   |
 | BackendToolExecutor                | `providers/responses-api/tools/BackendToolExecutor.ts`          | 5 min               | P1       | Add max size limit                                   |
 | ConversationRegistry               | `providers/responses-api/conversations/ConversationRegistry.ts` | 24h                 | P1       | Replaces unbounded Map                               |
 | DocumentSyncService                | `providers/responses-api/documents/DocumentSyncService.ts`      | No expiry           | P2       | Content hash tracking                                |

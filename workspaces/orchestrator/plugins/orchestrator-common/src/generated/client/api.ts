@@ -498,6 +498,12 @@ export interface ProcessInstanceErrorDTO {
  */
 export interface ProcessInstanceListResultDTO {
     /**
+     * Total number of process instances matching the filter
+     * @type {number}
+     * @memberof ProcessInstanceListResultDTO
+     */
+    'totalCount'?: number;
+    /**
      * 
      * @type {Array<ProcessInstanceDTO>}
      * @memberof ProcessInstanceListResultDTO

@@ -71,17 +71,19 @@ const scorecardTranslationDe = createTranslationMessages({
       'Diese Scorecard verwendet einen Aggregationstyp, der von dieser Version des Plugins nicht unterstützt wird.',
     'errors.userNotFoundInCatalogMessage':
       'Benutzerentität im Katalog nicht gefunden.',
-    'metric.averageCenterTooltipMaxLabel': 'Maximal erreichbare Punktzahl',
-    'metric.averageCenterTooltipTotalLabel': 'Gesamtpunktzahl',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel':
+      'Maximal erreichbare Punktzahl',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Gesamtpunktzahl',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} Entitäten, jede {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} Entitäten, jeweils {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Gesamtpunktzahl {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal':
+      'Gesamtpunktzahl {{total}}',
     'metric.drillDownCalculationFailures':
       'Bei der Berechnung dieser Kennzahl ist ein oder mehrere Fehler aufgetreten.',
     'metric.filecheck.description':

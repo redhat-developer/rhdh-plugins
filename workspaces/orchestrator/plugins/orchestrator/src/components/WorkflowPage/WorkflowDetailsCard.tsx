@@ -126,6 +126,7 @@ const WorkflowDefinitionDetailsCard = ({
         <b>
           <WorkflowStatus
             availability={formattedWorkflowOverview?.availability}
+            availabilityDetails={workflowOverview?.availability}
           />
         </b>
       )}

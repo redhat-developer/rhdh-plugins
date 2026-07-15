@@ -117,21 +117,21 @@ const orchestratorTranslationIt = createTranslationMessages({
     'run.status.aborted': "L'esecuzione è stata interrotta {{time}} fa.",
     'run.status.abortedWithoutTime': "L'esecuzione è stata interrotta.",
     'run.status.completed': 'Esecuzione completata',
-    'run.status.completedAt': 'Esecuzione completata {{time}}',
+    'run.status.completedAt': 'Esecuzione completata il {{time}}',
     'run.status.completedWithMessage':
-      'Esecuzione completata {{time}} con messaggio',
-    'run.status.failed': "L'esecuzione non è riuscita {{time}}",
-    'run.status.failedAt': "L'esecuzione non è riuscita {{time}}",
+      'Esecuzione completata il {{time}} con messaggio',
+    'run.status.failed': "L'esecuzione non è riuscita il {{time}}",
+    'run.status.failedAt': "L'esecuzione non è riuscita il {{time}}",
     'run.status.noAdditionalInfo':
       'Il flusso di lavoro non forniva ulteriori informazioni sullo stato.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       "I risultati verranno visualizzati qui al termine dell'esecuzione.",
     'run.status.running':
-      'Il flusso di lavoro è in esecuzione. Iniziata {{time}}',
+      'Il flusso di lavoro è in esecuzione. Iniziata il {{time}}',
     'run.status.runningWaitingAtNode':
       'Il flusso di lavoro è in esecuzione - in attesa al nodo {{node}} da {{formattedTime}}',
     'run.status.workflowIsRunning':
-      'Il flusso di lavoro è in esecuzione. Iniziata {{time}}',
+      'Il flusso di lavoro è in esecuzione. Iniziata il {{time}}',
     'run.suggestedNextWorkflow': 'Flusso di lavoro successivo suggerito',
     'run.suggestedNextWorkflows': 'Flussi di lavoro successivi suggeriti',
     'run.title': 'Esegui flusso di lavoro',
@@ -187,12 +187,9 @@ const orchestratorTranslationIt = createTranslationMessages({
       'utente non autorizzato a interrompere il flusso di lavoro',
     'tooltips.userNotAuthorizedExecute':
       'utente non autorizzato a eseguire il flusso di lavoro',
-    'tooltips.retriggerNotSupportedForAborted':
-      'Il riavvio dal punto di interruzione non è supportato. Usa Intero flusso di lavoro per avviare una nuova esecuzione con gli stessi input.',
     'tooltips.workflowDown':
       'Il flusso di lavoro è attualmente inattivo o in stato di errore',
     'workflow.buttons.entireWorkflow': 'Intero flusso di lavoro',
-    'workflow.buttons.fromAbortedPoint': 'Dal punto di interruzione',
     'workflow.buttons.fromFailurePoint': 'Dal punto di fallimento',
     'workflow.buttons.run': 'Esegui',
     'workflow.buttons.runAgain': 'Esegui di nuovo',
@@ -240,6 +237,12 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.progress': 'Avanzamento del flusso di lavoro',
     'workflow.status.available': 'Disponibile',
     'workflow.status.unavailable': 'Non disponibile',
+    'workflow.unavailable.title': 'Flusso di lavoro non disponibile',
+    'workflow.unavailable.runTooltip': 'Flusso di lavoro non disponibile',
+    'workflow.unavailable.requestFailed':
+      'Richiesta HTTP GET a {{url}} non riuscita.',
+    'workflow.unavailable.statusCodeLine': 'Codice di stato: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Testo di stato: {{reason}}',
     'samlSso.title': 'Sessione GitHub SAML SSO scaduta',
     'samlSso.reauthorizeButton': 'Riautorizza SSO',
     'samlSso.body':

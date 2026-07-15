@@ -35,6 +35,7 @@ export interface FormattedWorkflowOverview {
   readonly description: string;
   readonly format: WorkflowFormatDTO;
   readonly availability?: string;
+  readonly availabilityDetails?: WorkflowOverviewDTO['availability'];
   readonly runsLastMonth: string;
   readonly successRatio?: number;
   readonly successRatioDisplay: string;
@@ -90,6 +91,7 @@ const WorkflowOverviewFormatter: DataFormatter<
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
       availability: formatIsAvailable(data.isAvailable),
+      availabilityDetails: data.availability,
       runsLastMonth: formatRunsLastMonth(data.workflowRunStats?.runsLastMonth),
       successRatio: data.workflowRunStats?.successRatio,
       successRatioDisplay: formatSuccessRatioDisplay(

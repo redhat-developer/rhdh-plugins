@@ -26,19 +26,21 @@ import adoptionInsightsTranslationJa from '../../plugins/adoption-insights/src/t
 
 export type InsightsMessages = typeof adoptionInsightsMessages;
 
-function transform(messages: typeof adoptionInsightsTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof adoptionInsightsTranslationDe.messages,
+) {
+  const messages = {} as Record<string, any>;
+  for (const key of Object.keys(flatMessages)) {
     const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
-
-  return result as InsightsMessages;
+    let current = messages;
+    for (let i = 0; i < path.length - 1; i++) {
+      current[path[i]] = current[path[i]] || {};
+      current = current[path[i]] as Record<string, any>;
+    }
+    current[path[path.length - 1]] =
+      flatMessages[key as keyof typeof flatMessages];
+  }
+  return messages as InsightsMessages;
 }
 
 export function getTranslations(locale: string) {
@@ -46,15 +48,25 @@ export function getTranslations(locale: string) {
     case 'en':
       return adoptionInsightsMessages;
     case 'de':
-      return transform(adoptionInsightsTranslationDe.messages);
+      return transformFlatMessagesIntoTree(
+        adoptionInsightsTranslationDe.messages,
+      );
     case 'es':
-      return transform(adoptionInsightsTranslationEs.messages);
+      return transformFlatMessagesIntoTree(
+        adoptionInsightsTranslationEs.messages,
+      );
     case 'fr':
-      return transform(adoptionInsightsTranslationFr.messages);
+      return transformFlatMessagesIntoTree(
+        adoptionInsightsTranslationFr.messages,
+      );
     case 'it':
-      return transform(adoptionInsightsTranslationIt.messages);
+      return transformFlatMessagesIntoTree(
+        adoptionInsightsTranslationIt.messages,
+      );
     case 'ja':
-      return transform(adoptionInsightsTranslationJa.messages);
+      return transformFlatMessagesIntoTree(
+        adoptionInsightsTranslationJa.messages,
+      );
     default:
       return adoptionInsightsMessages;
   }

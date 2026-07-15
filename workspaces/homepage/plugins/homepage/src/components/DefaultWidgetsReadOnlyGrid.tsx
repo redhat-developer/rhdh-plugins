@@ -148,7 +148,7 @@ export const DefaultWidgetsReadOnlyGrid = ({
         return {
           id,
           Component: mountPoint.Component,
-          props: widget.props,
+          props: { ...mountPoint.config?.props, ...widget.props },
           layouts,
         };
       })

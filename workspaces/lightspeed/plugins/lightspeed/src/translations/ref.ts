@@ -345,6 +345,8 @@ export const lightspeedMessages = {
   'mcp.settings.status.oneTool': '{{count}} tool',
   'mcp.settings.status.manyTools': '{{count}} tools',
   'mcp.settings.status.unknown': 'Unknown',
+  'mcp.settings.modalDescriptionDcr':
+    'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
   'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
   'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
   'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
@@ -393,6 +395,14 @@ export const lightspeedMessages = {
   'sort.oldest': 'Date (oldest first)',
   'sort.alphabeticalAsc': 'Name (A-Z)',
   'sort.alphabeticalDesc': 'Name (Z-A)',
+  // Sources
+  'sources.chip.label_one': '{{count}} Source',
+  'sources.chip.label_other': '{{count}} Sources',
+  'sources.modal.title': 'Sources',
+  'sources.modal.description':
+    'The following sources were used to generate this AI response and provide supporting information:',
+  'sources.popover.closeAriaLabel': 'Close sources',
+
   // Deep thinking
   'reasoning.thinking': 'Show thinking',
 };

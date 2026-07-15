@@ -18,7 +18,7 @@ Boost implements the provider abstraction as modular RHDH dynamic plugins from t
 - Modifying chat interaction behavior or message rendering
 - Rewriting the ADK orchestration library
 - Creating catalog entities for models/agents (covered in agent-creation-discovery change)
-- Per-user token exchange (covered in security-safety-governance change)
+- Kagenti service-account auth (covered in security-safety-governance change — OAuth2 Client Credentials Grant adopted)
 
 ## Decisions
 
@@ -38,7 +38,7 @@ A `common-library` package must be safe for browser bundling. `createServiceRef`
 ```typescript
 // plugins/boost-node/src/services.ts
 import { createServiceRef } from '@backstage/backend-plugin-api';
-import type { AgenticProvider } from '@boost/plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 export const boostAiProviderServiceRef = createServiceRef<AgenticProvider>({
   id: 'boost.ai-provider',
@@ -54,7 +54,7 @@ boost-common (common-library)  ←──  boost-node (node-library)  ←──  
      │                                   boost-backend-module-llamastack
      │                                   boost-backend-module-kagenti
      ↓
-boost-frontend (imports types only)
+boost (imports types only)
 ```
 
 `boost-common` exports: `AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities`, `NormalizedStreamEvent`, conversation types, permission definitions.
