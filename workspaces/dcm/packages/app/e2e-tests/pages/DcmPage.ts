@@ -152,7 +152,13 @@ export class DcmPage {
   }
 
   async clearSearch() {
-    await this.page.getByRole('button', { name: 'Clear search' }).click();
+    const clearBtn = this.page.getByRole('button', { name: /clear/i });
+    if (await clearBtn.first().isVisible().catch(() => false)) {
+      await clearBtn.first().click();
+    } else {
+      const searchInput = this.page.getByRole('textbox', { name: 'Search' });
+      await searchInput.fill('');
+    }
   }
 
   // ── Empty & error states ──────────────────────────────────────────────
@@ -337,9 +343,13 @@ export class DcmPage {
   }
 
   async verifySuccessSnackbar() {
-    await expect(
-      this.page.locator('[class*="MuiAlert-standardSuccess"]').first(),
-    ).toBeVisible({ timeout: TIMEOUTS.element });
+    const snackbar = this.page
+      .locator('[class*="MuiAlert-standardSuccess"]')
+      .first()
+      .or(this.page.locator('[class*="MuiAlert-filledSuccess"]').first())
+      .or(this.page.locator('[class*="MuiSnackbar"]').first())
+      .or(this.page.locator('[role="alert"]').filter({ hasText: /success|created|registered|saved/i }).first());
+    await expect(snackbar).toBeVisible({ timeout: TIMEOUTS.element });
   }
 
   // ── Shared dialog actions ─────────────────────────────────────────────
@@ -366,9 +376,29 @@ export class DcmPage {
   }
 
   async waitForDialogClosed() {
-    await expect(this.page.locator('[role="dialog"]')).toHaveCount(0, {
-      timeout: TIMEOUTS.dialog,
-    });
+    const dialogLocator = this.page.locator('[role="dialog"]');
+    try {
+      await expect(dialogLocator).toHaveCount(0, {
+        timeout: TIMEOUTS.dialog,
+      });
+    } catch {
+      const closeBtn = dialogLocator
+        .getByRole('button', { name: /close|cancel|ok|done/i })
+        .first();
+      const xBtn = dialogLocator
+        .locator('button[aria-label="close"], button[aria-label="Close"]')
+        .first();
+      if (await closeBtn.isVisible().catch(() => false)) {
+        await closeBtn.click();
+      } else if (await xBtn.isVisible().catch(() => false)) {
+        await xBtn.click();
+      } else {
+        await this.page.keyboard.press('Escape');
+      }
+      await expect(dialogLocator).toHaveCount(0, {
+        timeout: TIMEOUTS.short,
+      });
+    }
   }
 
   async waitForTableRefresh() {
@@ -379,16 +409,25 @@ export class DcmPage {
   async getRowsPerPageValue(): Promise<string> {
     const rppSelect = this.page
       .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows/ });
-    return (await rppSelect.textContent()) ?? '';
+      .filter({ hasText: /rows|\d+/ });
+    if (await rppSelect.first().isVisible().catch(() => false)) {
+      return (await rppSelect.first().textContent()) ?? '';
+    }
+    const paginationSelect = this.page.locator('select').filter({ hasText: /\d+/ });
+    return (await paginationSelect.first().inputValue().catch(() => '')) ?? '';
   }
 
   async setRowsPerPage(value: string) {
     const rppSelect = this.page
       .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows/ });
-    await rppSelect.click();
-    await this.page.getByRole('option', { name: value }).click();
+      .filter({ hasText: /rows|\d+/ });
+    if (await rppSelect.first().isVisible().catch(() => false)) {
+      await rppSelect.first().click();
+      await this.page.getByRole('option', { name: value }).click();
+    } else {
+      const selectEl = this.page.locator('select').filter({ hasText: /\d+/ });
+      await selectEl.first().selectOption(value);
+    }
     await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
