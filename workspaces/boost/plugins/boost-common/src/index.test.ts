@@ -18,6 +18,7 @@ import {
   BOOST_PLUGIN_ID,
   BOOST_AGENT_RESOURCE_TYPE,
   BOOST_TOOL_RESOURCE_TYPE,
+  AI_CATALOG_ASSET_RESOURCE_TYPE,
   BOOST_RULE_IS_OWNER,
   BOOST_RULE_IS_NOT_CREATOR,
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
@@ -28,6 +29,8 @@ import {
   boostPermissions,
   boostAgentResourcePermissions,
   boostToolResourcePermissions,
+  boostAiCatalogResourcePermissions,
+  boostAiCatalogUsageDocsPermission,
   boostAccessPermission,
   boostAdminPermission,
   boostAgentListPermission,
@@ -140,6 +143,24 @@ describe('boost-common', () => {
     });
   });
 
+  describe('ai catalog permissions', () => {
+    it('exports exactly 1 ai catalog permission', () => {
+      expect(boostAiCatalogResourcePermissions).toHaveLength(1);
+    });
+
+    it('is resource-scoped with resourceType ai-catalog-asset', () => {
+      expect(boostAiCatalogUsageDocsPermission.resourceType).toBe(
+        AI_CATALOG_ASSET_RESOURCE_TYPE,
+      );
+    });
+
+    it('uses the ai-catalog.asset.read.usage-docs name', () => {
+      expect(boostAiCatalogUsageDocsPermission.name).toBe(
+        'ai-catalog.asset.read.usage-docs',
+      );
+    });
+  });
+
   describe('functional permissions', () => {
     it('exports exactly 5 functional permissions', () => {
       expect(boostFunctionalPermissions).toHaveLength(5);
@@ -166,8 +187,8 @@ describe('boost-common', () => {
   });
 
   describe('combined permissions', () => {
-    it('includes all 23 permissions (16 resource + 5 functional + 2 gate)', () => {
-      expect(boostPermissions).toHaveLength(23);
+    it('includes all 24 permissions (16 resource + 1 ai-catalog + 5 functional + 2 gate)', () => {
+      expect(boostPermissions).toHaveLength(24);
     });
 
     it('all permission names are unique', () => {

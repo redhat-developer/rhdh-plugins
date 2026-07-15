@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { Flex, Link, Skeleton, Text } from '@backstage/ui';
 import { boostAiCatalogUsageDocsPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import { useTranslation } from '../../../hooks/useTranslation';
-import { getSpecField } from '../../../utils/entityHelpers';
+import { entityRefHref, getSpecField } from '../../../utils/entityHelpers';
 
 export const UsageTab = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
   const { loading, allowed } = usePermission({
     permission: boostAiCatalogUsageDocsPermission,
+    resourceRef: stringifyEntityRef(entity),
   });
 
   if (loading) {
@@ -47,7 +49,7 @@ export const UsageTab = () => {
           {t('catalog.tab.usagePermissionDenied')}
         </Text>
         {owner && (
-          <Link href={`/catalog/default/group/${owner}`}>
+          <Link href={entityRefHref(owner)}>
             {t('catalog.tab.usageContactOwner')}
           </Link>
         )}
