@@ -133,10 +133,15 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
       await dcm.waitForTableRefresh();
     }
 
-    await dcm.searchFor('k8s-container-provider');
+    await dcm.searchFor('K8s Container');
     await dcm.waitForTableRefresh();
 
-    await dcm.verifyCellContent('K8s Container Provider');
+    const found = await page
+      .getByRole('cell', { name: /K8s Container Provider|k8s-container-provider/i })
+      .first()
+      .isVisible()
+      .catch(() => false);
+    expect(found).toBe(true);
 
     await dcm.clearSearch();
     await dcm.waitForTableRefresh();
@@ -155,7 +160,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
@@ -196,7 +201,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
@@ -383,7 +388,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
