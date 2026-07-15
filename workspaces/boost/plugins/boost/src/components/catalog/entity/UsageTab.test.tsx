@@ -15,6 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { renderInTestApp } from '@backstage/test-utils';
@@ -97,6 +98,20 @@ const entityNoOwner: Entity = {
   },
 };
 
+const entityWithQualifiedOwner: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'qualified-owner-asset',
+    namespace: 'default',
+    uid: 'uid-5',
+  },
+  spec: {
+    type: 'skill',
+    owner: 'user:default/jdoe',
+  },
+};
+
 function setEntity(entity: Entity) {
   mockUseEntity.mockReturnValue({
     entity,
@@ -142,6 +157,19 @@ describe('UsageTab', () => {
     expect(link).toHaveAttribute(
       'href',
       '/docs/default/airesource/code-review-skill',
+    );
+  });
+
+  it('checks the permission with a resourceRef for the current entity', async () => {
+    setEntity(entityWithTechDocs);
+    setPermission({ loading: false, allowed: true });
+
+    await renderInTestApp(<UsageTab />);
+
+    expect(mockUsePermission).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceRef: stringifyEntityRef(entityWithTechDocs),
+      }),
     );
   });
 
@@ -200,5 +228,17 @@ describe('UsageTab', () => {
     expect(
       screen.queryByText(msg.tab.usageContactOwner),
     ).not.toBeInTheDocument();
+  });
+
+  it('builds the contact owner link from a fully-qualified owner ref', async () => {
+    setEntity(entityWithQualifiedOwner);
+    setPermission({ loading: false, allowed: false });
+
+    await renderInTestApp(<UsageTab />);
+
+    const contactLink = screen.getByRole('link', {
+      name: msg.tab.usageContactOwner,
+    });
+    expect(contactLink).toHaveAttribute('href', '/catalog/default/user/jdoe');
   });
 });
