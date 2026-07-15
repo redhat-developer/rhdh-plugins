@@ -355,10 +355,11 @@ export class DcmPage {
   // ── Shared dialog actions ─────────────────────────────────────────────
 
   async submitDialog(buttonLabel: string) {
-    await this.page
+    const btn = this.page
       .locator('[role="dialog"], [class*="MuiDrawer"]')
-      .getByRole('button', { name: buttonLabel })
-      .click();
+      .getByRole('button', { name: buttonLabel });
+    await btn.click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   async confirmDelete() {
@@ -376,29 +377,9 @@ export class DcmPage {
   }
 
   async waitForDialogClosed() {
-    const dialogLocator = this.page.locator('[role="dialog"]');
-    try {
-      await expect(dialogLocator).toHaveCount(0, {
-        timeout: TIMEOUTS.dialog,
-      });
-    } catch {
-      const closeBtn = dialogLocator
-        .getByRole('button', { name: /close|cancel|ok|done/i })
-        .first();
-      const xBtn = dialogLocator
-        .locator('button[aria-label="close"], button[aria-label="Close"]')
-        .first();
-      if (await closeBtn.isVisible().catch(() => false)) {
-        await closeBtn.click();
-      } else if (await xBtn.isVisible().catch(() => false)) {
-        await xBtn.click();
-      } else {
-        await this.page.keyboard.press('Escape');
-      }
-      await expect(dialogLocator).toHaveCount(0, {
-        timeout: TIMEOUTS.short,
-      });
-    }
+    await expect(this.page.locator('[role="dialog"]')).toHaveCount(0, {
+      timeout: TIMEOUTS.dialog,
+    });
   }
 
   async waitForTableRefresh() {
