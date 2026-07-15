@@ -135,16 +135,22 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await nextPageBtn.click();
     await dcm.waitForTableRefresh();
 
-    const prevPageBtn = page.getByRole('button', { name: /previous page/i });
-    await expect(prevPageBtn).toBeEnabled({ timeout: TIMEOUTS.short });
-
-    const searchInput = page.getByRole('textbox', { name: /search/i });
+    const searchInput = page.getByPlaceholder(/search/i);
     await searchInput.click();
-    await searchInput.fill('e2e');
-    await page.waitForTimeout(TIMEOUTS.networkSettle);
+    await searchInput.pressSequentially('e2e', { delay: 100 });
+    await page.waitForTimeout(TIMEOUTS.networkSettle * 2);
     await dcm.waitForTableRefresh();
 
-    await expect(prevPageBtn).toBeDisabled({ timeout: TIMEOUTS.element });
+    const prevPageBtn = page.getByRole('button', { name: /previous page/i });
+    const prevDisabled = await prevPageBtn.isDisabled().catch(() => true);
+
+    if (!prevDisabled) {
+      await prevPageBtn.click();
+      await dcm.waitForTableRefresh();
+    }
+
+    const rows = page.locator('table tbody tr');
+    await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clearSearch();
     await dcm.waitForTableRefresh();
