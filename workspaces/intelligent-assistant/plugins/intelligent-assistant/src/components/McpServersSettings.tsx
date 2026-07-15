@@ -789,8 +789,7 @@ export const McpServersSettings = ({
       return undefined;
     }
 
-    // DCR servers don't expose credential UI — skip tools fetch in the modal.
-    if (editingServer.auth === 'dcr' || !editingServer.hasToken) {
+    if (!editingServer.hasToken) {
       setModalTools([]);
       setModalToolsError(null);
       setIsLoadingModalTools(false);
@@ -926,6 +925,7 @@ export const McpServersSettings = ({
     hasSavedPersonalTokenInModal: hasSavedTokenInModal,
     tokenValidationState,
     hasRemovedPersonalToken,
+    isDcrServer: editingServer?.auth === 'dcr',
   });
 
   const removePersonalToken = useCallback(async () => {
@@ -1118,7 +1118,8 @@ export const McpServersSettings = ({
   };
 
   const modalVerifiedHasToken = editingServer
-    ? getModalVerifiedHasToken({
+    ? editingServer.auth === 'dcr' ||
+      getModalVerifiedHasToken({
         hasOrgToken: editingServer.hasOrgToken,
         credentialMode: modalCredentialMode,
         hasSavedPersonalTokenInModal: hasSavedTokenInModal,
@@ -1163,7 +1164,7 @@ export const McpServersSettings = ({
           aria-label={
             isUpdatingModalStatus
               ? t('mcp.settings.modal.loadingStatus')
-              : t('mcp.settings.modal.loadingTools')
+              : t('mcp.settings.modal.fetchingStatus')
           }
         />
       );
@@ -1188,7 +1189,7 @@ export const McpServersSettings = ({
       return t('mcp.settings.modal.loadingStatus');
     }
     if (isLoadingModalTools) {
-      return t('mcp.settings.modal.loadingTools');
+      return t('mcp.settings.modal.fetchingStatus');
     }
     if (modalDisplayStatus === 'disabled') {
       return t('mcp.settings.status.disabled');
@@ -1247,7 +1248,9 @@ export const McpServersSettings = ({
     return t('mcp.settings.modal.enabledDescriptionOff');
   };
 
-  const renderConfigureModalDetails = () => (
+  const renderConfigureModalDetails = (options?: {
+    showDcrAlert?: boolean;
+  }) => (
     <>
       <Alert
         variant="custom"
@@ -1256,6 +1259,15 @@ export const McpServersSettings = ({
         className={classes.modalInfoAlert}
         isInline
       />
+      {options?.showDcrAlert && (
+        <Alert
+          variant="custom"
+          customIcon={<InfoCircleIcon />}
+          title={t('mcp.settings.modalDescriptionDcr')}
+          className={classes.modalInfoAlert}
+          isInline
+        />
+      )}
       {hasRemovedPersonalToken && !editingServer?.hasOrgToken && (
         <Alert
           variant="custom"
@@ -1546,128 +1558,116 @@ export const McpServersSettings = ({
           onClick={closeConfigureModal}
         />
         <ModalBody id="mcp-configure-modal-body">
-          {editingServer?.auth === 'dcr' ? (
-            <div className={classes.modalSectionDescription}>
-              {t('mcp.settings.modalDescriptionDcr')}
-            </div>
-          ) : (
-            <>
-              {renderConfigureModalDetails()}
-              {showCredentialRadios && (
-                <div className={classes.modalSection}>
-                  <div className={classes.modalSectionTitle}>
-                    {t('mcp.settings.modal.authenticationHeading')}
-                  </div>
-                  <div
-                    className={classes.credentialRadioGroup}
-                    id="mcp-credential-mode"
-                  >
-                    <div>
-                      <Radio
-                        id="mcp-credential-organization"
-                        name="mcp-credential-mode"
-                        label={t(
-                          'mcp.settings.modal.credentialMode.organization',
-                        )}
-                        isChecked={modalCredentialMode === 'organization'}
-                        onChange={() => onCredentialModeChange('organization')}
-                      />
-                      <div className={classes.credentialRadioDescription}>
-                        {t(
-                          'mcp.settings.modal.credentialMode.organizationDescription',
-                        )}
-                      </div>
-                    </div>
-                    <Radio
-                      id="mcp-credential-personal"
-                      name="mcp-credential-mode"
-                      label={t('mcp.settings.modal.credentialMode.personal')}
-                      isChecked={modalCredentialMode === 'personal'}
-                      onChange={() => onCredentialModeChange('personal')}
-                    />
-                  </div>
+          <>
+            {renderConfigureModalDetails({
+              showDcrAlert: editingServer?.auth === 'dcr',
+            })}
+            {showCredentialRadios && (
+              <div className={classes.modalSection}>
+                <div className={classes.modalSectionTitle}>
+                  {t('mcp.settings.modal.authenticationHeading')}
                 </div>
-              )}
-              {showPersonalTokenField && (
-                <FormGroup
-                  label={t('mcp.settings.authenticationToken')}
-                  fieldId="mcp-pat-input"
+                <div
+                  className={classes.credentialRadioGroup}
+                  id="mcp-credential-mode"
                 >
-                  <TextInputGroup validated={tokenInputValidated}>
-                    <TextInputGroupMain
-                      inputId="mcp-pat-input"
-                      type="password"
-                      value={tokenInputValue}
-                      onChange={(_event, value) => onTokenInputChange(value)}
+                  <div>
+                    <Radio
+                      id="mcp-credential-organization"
+                      name="mcp-credential-mode"
+                      label={t(
+                        'mcp.settings.modal.credentialMode.organization',
+                      )}
+                      isChecked={modalCredentialMode === 'organization'}
+                      onChange={() => onCredentialModeChange('organization')}
                     />
-                    {(tokenValidationState === 'idle' ||
-                      tokenValidationState === 'validating') && (
-                      <TextInputGroupUtilities>
-                        <Button
-                          variant="plain"
-                          onClick={clearTokenInput}
-                          aria-label={t('mcp.settings.token.clearAriaLabel')}
-                          icon={<TimesIcon />}
-                        />
-                      </TextInputGroupUtilities>
-                    )}
-                  </TextInputGroup>
-                  {showTokenHelperText && (
-                    <FormHelperText>
-                      <HelperText>
-                        <HelperTextItem variant={tokenHelperVariant}>
-                          {tokenHelperText}
-                        </HelperTextItem>
-                      </HelperText>
-                    </FormHelperText>
+                    <div className={classes.credentialRadioDescription}>
+                      {t(
+                        'mcp.settings.modal.credentialMode.organizationDescription',
+                      )}
+                    </div>
+                  </div>
+                  <Radio
+                    id="mcp-credential-personal"
+                    name="mcp-credential-mode"
+                    label={t('mcp.settings.modal.credentialMode.personal')}
+                    isChecked={modalCredentialMode === 'personal'}
+                    onChange={() => onCredentialModeChange('personal')}
+                  />
+                </div>
+              </div>
+            )}
+            {showPersonalTokenField && (
+              <FormGroup
+                label={t('mcp.settings.authenticationToken')}
+                fieldId="mcp-pat-input"
+              >
+                <TextInputGroup validated={tokenInputValidated}>
+                  <TextInputGroupMain
+                    inputId="mcp-pat-input"
+                    type="password"
+                    value={tokenInputValue}
+                    onChange={(_event, value) => onTokenInputChange(value)}
+                  />
+                  {(tokenValidationState === 'idle' ||
+                    tokenValidationState === 'validating') && (
+                    <TextInputGroupUtilities>
+                      <Button
+                        variant="plain"
+                        onClick={clearTokenInput}
+                        aria-label={t('mcp.settings.token.clearAriaLabel')}
+                        icon={<TimesIcon />}
+                      />
+                    </TextInputGroupUtilities>
                   )}
-                </FormGroup>
-              )}
-            </>
-          )}
+                </TextInputGroup>
+                {showTokenHelperText && (
+                  <FormHelperText>
+                    <HelperText>
+                      <HelperTextItem variant={tokenHelperVariant}>
+                        {tokenHelperText}
+                      </HelperTextItem>
+                    </HelperText>
+                  </FormHelperText>
+                )}
+              </FormGroup>
+            )}
+          </>
         </ModalBody>
         <ModalFooter>
-          {editingServer?.auth === 'dcr' ? (
-            <Button variant="primary" onClick={closeConfigureModal}>
-              {t('common.cancel')}
+          <Button
+            variant="primary"
+            onClick={() => void saveServerToken()}
+            isDisabled={
+              !canManageMcp ||
+              isConfigureModalSaving ||
+              tokenValidationState === 'validating' ||
+              isSaveTokenButtonDisabled ||
+              isUpdatingModalStatus
+            }
+          >
+            {t('modal.save')}
+          </Button>
+          {canRemovePersonalToken && (
+            <Button
+              variant="secondary"
+              onClick={() => void removePersonalToken()}
+              isDisabled={
+                !canManageMcp ||
+                isConfigureModalSaving ||
+                tokenValidationState === 'validating' ||
+                isUpdatingModalStatus ||
+                hasRemovedPersonalToken ||
+                !hasSavedTokenInModal
+              }
+              className={classes.removePersonalTokenButton}
+            >
+              {t('mcp.settings.removePersonalToken')}
             </Button>
-          ) : (
-            <>
-              <Button
-                variant="primary"
-                onClick={() => void saveServerToken()}
-                isDisabled={
-                  !canManageMcp ||
-                  isConfigureModalSaving ||
-                  tokenValidationState === 'validating' ||
-                  isSaveTokenButtonDisabled ||
-                  isUpdatingModalStatus
-                }
-              >
-                {t('modal.save')}
-              </Button>
-              {canRemovePersonalToken && (
-                <Button
-                  variant="secondary"
-                  onClick={() => void removePersonalToken()}
-                  isDisabled={
-                    !canManageMcp ||
-                    isConfigureModalSaving ||
-                    tokenValidationState === 'validating' ||
-                    isUpdatingModalStatus ||
-                    hasRemovedPersonalToken ||
-                    !hasSavedTokenInModal
-                  }
-                  className={classes.removePersonalTokenButton}
-                >
-                  {t('mcp.settings.removePersonalToken')}
-                </Button>
-              )}
-              <Button variant="link" onClick={closeConfigureModal}>
-                {t('common.cancel')}
-              </Button>
-            </>
           )}
+          <Button variant="link" onClick={closeConfigureModal}>
+            {t('common.cancel')}
+          </Button>
         </ModalFooter>
       </Modal>
     </div>

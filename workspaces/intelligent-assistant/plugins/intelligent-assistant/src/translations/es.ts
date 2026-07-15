@@ -146,6 +146,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': 'Usar token personal',
     'mcp.settings.modal.toolsHeading': 'Herramientas ({{count}})',
     'mcp.settings.modal.loadingTools': 'Cargando herramientas...',
+    'mcp.settings.modal.fetchingStatus': 'Obteniendo estado...',
     'mcp.settings.modal.loadingStatus': 'Desconectando...',
     'mcp.settings.modal.tokenRemovedWarning':
       'Se eliminó el token. Para volver a usar este servidor MCP, proporcione un nuevo token.',

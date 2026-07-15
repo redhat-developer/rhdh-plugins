@@ -279,7 +279,7 @@ describe('McpServersSettings', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows only the DCR message and Cancel for DCR servers', async () => {
+  it('shows DCR modal layout aligned with personal-token servers without token input', async () => {
     servers = [
       connectedServer('dcr-server', {
         auth: 'dcr',
@@ -299,17 +299,25 @@ describe('McpServersSettings', () => {
     const dialog = getModalDialog();
     expect(
       within(dialog).getByText(
+        'Credentials are encrypted and operations use your exact permissions.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
         'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
       ),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText('Status')).toBeInTheDocument();
+    expect(within(dialog).getByText('Enabled')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(dialog).getByText('Tools (2)')).toBeInTheDocument();
+    });
+    expect(
+      within(dialog).getByRole('button', { name: 'Save' }),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByRole('button', { name: 'Cancel' }),
     ).toBeInTheDocument();
-    expect(
-      within(dialog).queryByRole('button', { name: 'Save' }),
-    ).not.toBeInTheDocument();
-    expect(within(dialog).queryByText('Status')).not.toBeInTheDocument();
-    expect(within(dialog).queryByText('Enabled')).not.toBeInTheDocument();
     expect(
       within(dialog).queryByLabelText('Type to filter'),
     ).not.toBeInTheDocument();
@@ -318,6 +326,49 @@ describe('McpServersSettings', () => {
         name: 'Use organization default token',
       }),
     ).not.toBeInTheDocument();
+  });
+
+  it('persists enabled change when saving a DCR server', async () => {
+    servers = [
+      connectedServer('dcr-server', {
+        auth: 'dcr',
+        hasToken: true,
+        hasUserToken: false,
+        hasOrgToken: false,
+        toolCount: 4,
+      }),
+    ];
+
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByText('dcr-server')).toBeInTheDocument();
+    });
+    await openConfigureModal('dcr-server');
+
+    const dialog = getModalDialog();
+    await waitFor(() => {
+      expect(within(dialog).getByText('Tools (2)')).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      within(dialog).getByRole('switch', {
+        name: 'Toggle dcr-server',
+      }),
+    );
+
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeEnabled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/mcp-servers/dcr-server`,
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ enabled: false }),
+        }),
+      );
+    });
   });
 
   it('does not show remove personal token when organization default token exists', async () => {

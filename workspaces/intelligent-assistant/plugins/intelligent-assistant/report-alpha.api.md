@@ -247,6 +247,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.modal.credentialMode.personal': string;
     readonly 'mcp.settings.modal.toolsHeading': string;
     readonly 'mcp.settings.modal.loadingTools': string;
+    readonly 'mcp.settings.modal.fetchingStatus': string;
     readonly 'mcp.settings.modal.loadingStatus': string;
     readonly 'mcp.settings.modal.tokenRemovedWarning': string;
     readonly 'mcp.settings.modal.noToolsAvailable': string;

@@ -144,6 +144,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': '個人トークンを使用',
     'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
     'mcp.settings.modal.loadingTools': 'ツールを読み込み中...',
+    'mcp.settings.modal.fetchingStatus': 'ステータスを取得中...',
     'mcp.settings.modal.loadingStatus': '切断中...',
     'mcp.settings.modal.tokenRemovedWarning':
       'トークンが削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',

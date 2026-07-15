@@ -207,6 +207,7 @@ export const isSaveTokenDisabled = ({
   hasSavedPersonalTokenInModal,
   tokenValidationState = 'idle',
   hasRemovedPersonalToken = false,
+  isDcrServer = false,
 }: {
   tokenInputValue: string;
   initialTokenInputValue: string;
@@ -218,6 +219,7 @@ export const isSaveTokenDisabled = ({
   hasSavedPersonalTokenInModal: boolean;
   tokenValidationState?: TokenValidationState;
   hasRemovedPersonalToken?: boolean;
+  isDcrServer?: boolean;
 }): boolean => {
   if (
     tokenValidationState === 'error' &&
@@ -241,6 +243,10 @@ export const isSaveTokenDisabled = ({
     })
   ) {
     return true;
+  }
+
+  if (isDcrServer) {
+    return false;
   }
 
   if (credentialMode === 'personal') {

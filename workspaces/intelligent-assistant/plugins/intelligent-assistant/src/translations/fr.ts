@@ -149,6 +149,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.modal.credentialMode.personal': 'Utiliser un jeton personnel',
     'mcp.settings.modal.toolsHeading': 'Outils ({{count}})',
     'mcp.settings.modal.loadingTools': 'Chargement des outils...',
+    'mcp.settings.modal.fetchingStatus': 'Récupération du statut...',
     'mcp.settings.modal.loadingStatus': 'Déconnexion...',
     'mcp.settings.modal.tokenRemovedWarning':
       'Le jeton a été supprimé. Pour réutiliser ce serveur MCP, fournissez un nouveau jeton.',

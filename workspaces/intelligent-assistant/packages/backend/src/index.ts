@@ -29,6 +29,13 @@ backend.add(import('@backstage/plugin-auth-backend'));
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 // See https://backstage.io/docs/auth/guest/provider
 
+// Optional: MCP actions backend for Dynamic Client Registration (DCR).
+// Not enabled by default — adopters who need DCR must uncomment the line below,
+// add @backstage/plugin-mcp-actions-backend@0.1.12 to packages/backend/package.json
+// (pin 0.1.12; newer versions require tracing APIs not in backend-defaults@0.16),
+// and follow the DCR setup in plugins/lightspeed-backend/README.md.
+// backend.add(import('@backstage/plugin-mcp-actions-backend'));
+
 // catalog plugin
 backend.add(import('@backstage/plugin-catalog-backend'));
 backend.add(

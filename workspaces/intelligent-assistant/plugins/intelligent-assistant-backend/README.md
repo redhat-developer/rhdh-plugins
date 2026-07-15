@@ -254,6 +254,77 @@ settings panel:
 These endpoints power server selection and token configuration, including inline
 success/error feedback while users enter tokens.
 
+#### DCR authentication for Backstage-internal MCP servers (optional)
+
+By default, MCP servers use **static tokens** (`token` in app-config or a personal
+token in the UI). For Backstage-internal MCP servers that support OAuth, you can
+instead use **Dynamic Client Registration (DCR)**: Lightspeed mints a per-user
+Backstage plugin-request token on each request — no manual token is required.
+
+DCR is **not enabled out of the box**. Adopters must configure the Backstage
+instance, Lightspeed Core (LCS), and Lightspeed app-config as follows.
+
+**1. Backstage backend** — register the MCP actions plugin in
+`packages/backend/src/index.ts` and add the dependency (pin version **0.1.12**;
+do not use `^0.1.14` with `backend-defaults@0.16` — the plugin will fail to start):
+
+```bash
+yarn add --cwd packages/backend @backstage/plugin-mcp-actions-backend@0.1.12
+```
+
+```ts
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+```
+
+Expose catalog/scaffolder actions as MCP tools (adjust plugin IDs for your setup):
+
+```yaml
+backend:
+  actions:
+    pluginSources:
+      - catalog
+      - scaffolder
+```
+
+**2. Backstage auth** — enable experimental DCR and use the new frontend app
+(`@backstage/plugin-auth` is required for the OAuth consent flow; `yarn start`,
+not `start:legacy`):
+
+```yaml
+auth:
+  experimentalDynamicClientRegistration:
+    enabled: true
+    allowedRedirectUriPatterns:
+      - '*'
+```
+
+**3. Lightspeed app-config** — mark the MCP server as DCR (omit `token`; it is
+ignored when `auth: dcr` is set):
+
+```yaml
+intelligent-assistant:
+  mcpServers:
+    - name: test-mcp-server
+      auth: dcr
+```
+
+**4. LCS (`lightspeed-stack.yaml`)** — point the server URL at your Backstage
+MCP endpoint and use client authorization headers:
+
+```yaml
+mcp_servers:
+  - name: test-mcp-server
+    url: 'http://<backstage-host>:7007/api/mcp-actions/v1'
+    authorization_headers:
+      Authorization: client
+```
+
+**5. MCP clients (e.g. Cursor)** — connect to the same Backstage MCP URL. DCR
+handles OAuth; no static token in `mcp.json` is needed when DCR is configured.
+
+See also commented examples in the workspace `app-config.yaml` under
+`intelligent-assistant.mcpServers` and `auth.experimentalDynamicClientRegistration`.
+
 #### Permission Framework Support
 
 The Intelligent Assistant Backend plugin has support for the permission framework.

@@ -476,6 +476,20 @@ describe('mcpServersDisplayUtils', () => {
       ).toBe(true);
     });
 
+    it('enables save when only enabled state changed on DCR servers', () => {
+      expect(
+        isSaveTokenDisabled({
+          ...baseArgs,
+          modalEnabled: false,
+          hasOrgToken: false,
+          hasSavedPersonalTokenInModal: false,
+          tokenInputValue: '',
+          initialTokenInputValue: '',
+          isDcrServer: true,
+        }),
+      ).toBe(false);
+    });
+
     it('enables save when token input changed', () => {
       expect(
         isSaveTokenDisabled({
