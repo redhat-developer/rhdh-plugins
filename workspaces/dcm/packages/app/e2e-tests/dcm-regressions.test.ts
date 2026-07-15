@@ -135,7 +135,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await nextPageBtn.click();
     await dcm.waitForTableRefresh();
 
-    const searchInput = page.getByPlaceholder(/search/i);
+    const searchInput = page.getByRole('textbox', { name: 'Search' });
     await searchInput.click();
     await searchInput.pressSequentially('e2e', { delay: 100 });
     await page.waitForTimeout(TIMEOUTS.networkSettle * 2);
