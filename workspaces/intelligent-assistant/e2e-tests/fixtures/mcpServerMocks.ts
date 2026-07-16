@@ -25,6 +25,8 @@ export type McpServerMockEntry = {
   name: string;
   /** Optional — some backends send it; not shown in the MCP table name/status cells. */
   url?: string;
+  /** Optional auth mode (e.g. 'dcr' for Dynamic Client Registration servers). */
+  auth?: 'dcr';
   enabled: boolean;
   status: 'connected' | 'error' | 'unknown';
   toolCount: number;
