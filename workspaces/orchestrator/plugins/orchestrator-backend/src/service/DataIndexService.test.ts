@@ -1272,6 +1272,7 @@ describe('fetchInstancesByDefinitionId', () => {
         nodes: [],
         state: 'COMPLETED' as any,
         start: '2024-01-01T00:00:00.000Z',
+        endpoint: '',
       },
     ];
     mockClient.query.mockResolvedValueOnce(
@@ -1343,6 +1344,7 @@ describe('fetchInstance', () => {
       id: 'inst1',
       processId: 'wf1',
       nodes: [createNodeObject('A')],
+      endpoint: '',
     };
     mockClient.query.mockResolvedValueOnce(
       mockOperationResult({ ProcessInstances: [instance] }),
@@ -1375,6 +1377,7 @@ describe('fetchInstance', () => {
       id: 'inst1',
       processId: 'wf1',
       nodes: [],
+      endpoint: '',
     };
     mockClient.query.mockResolvedValueOnce(
       mockOperationResult({ ProcessInstances: [instance] }),

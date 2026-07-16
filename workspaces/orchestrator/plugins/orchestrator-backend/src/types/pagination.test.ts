@@ -115,7 +115,7 @@ describe('buildPaginationTmp()', () => {
   });
 
   it('should normalise orderDirection to uppercase', () => {
-    expect(buildPaginationTmp({ orderDirection: 'asc' })).toEqual({
+    expect(buildPaginationTmp({ orderDirection: 'asc' as any })).toEqual({
       limit: undefined,
       offset: undefined,
       order: 'ASC',
