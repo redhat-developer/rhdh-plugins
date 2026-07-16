@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import { buildPagination } from './pagination';
+import { buildPagination, buildPaginationTmp } from './pagination';
 
 describe('buildPagination()', () => {
   it('should build the correct pagination obj when no query parameters are passed', () => {
     const mockRequest: any = {
       body: {},
     };
-    expect(buildPagination(mockRequest)).toEqual({});
+    expect(buildPagination(mockRequest)).toEqual({
+      limit: undefined,
+      offset: undefined,
+      order: undefined,
+      sortField: undefined,
+    });
   });
   it('should build the correct pagination obj when partial query parameters are passed', () => {
     const mockRequest: any = {
@@ -66,6 +71,62 @@ describe('buildPagination()', () => {
       },
     };
     expect(buildPagination(mockRequest)).toEqual({
+      limit: undefined,
+      offset: undefined,
+      order: undefined,
+      sortField: undefined,
+    });
+  });
+});
+
+describe('buildPaginationTmp()', () => {
+  it('should return empty pagination when no input is provided', () => {
+    expect(buildPaginationTmp(undefined)).toEqual({
+      limit: undefined,
+      offset: undefined,
+      order: undefined,
+      sortField: undefined,
+    });
+  });
+
+  it('should build correct pagination when only pageSize is provided', () => {
+    expect(buildPaginationTmp({ pageSize: 25 })).toEqual({
+      limit: 25,
+      offset: undefined,
+      order: undefined,
+      sortField: undefined,
+    });
+  });
+
+  it('should build correct pagination when all fields are provided', () => {
+    expect(
+      buildPaginationTmp({
+        offset: 10,
+        pageSize: 50,
+        orderBy: 'lastUpdated',
+        orderDirection: 'DESC',
+      }),
+    ).toEqual({
+      limit: 50,
+      offset: 10,
+      order: 'DESC',
+      sortField: 'lastUpdated',
+    });
+  });
+
+  it('should normalise orderDirection to uppercase', () => {
+    expect(buildPaginationTmp({ orderDirection: 'asc' })).toEqual({
+      limit: undefined,
+      offset: undefined,
+      order: 'ASC',
+      sortField: undefined,
+    });
+  });
+
+  it('should ignore non-numeric values for offset and pageSize', () => {
+    expect(
+      buildPaginationTmp({ offset: 'abc' as any, pageSize: 'xyz' as any }),
+    ).toEqual({
       limit: undefined,
       offset: undefined,
       order: undefined,

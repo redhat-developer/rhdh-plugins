@@ -45,10 +45,14 @@ describe('useOrchestratorAuth', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseApi
-      .mockReturnValueOnce(githubAuthApi)
-      .mockReturnValueOnce(gitlabAuthApi)
-      .mockReturnValueOnce(microsoftAuthApi);
+    const builtInApiMap: Record<string, unknown> = {
+      'core.auth.github': githubAuthApi,
+      'core.auth.gitlab': gitlabAuthApi,
+      'core.auth.microsoft': microsoftAuthApi,
+    };
+    mockUseApi.mockImplementation(
+      (ref: { id: string }) => builtInApiMap[ref.id],
+    );
     mockUseApp.mockReturnValue({
       getPlugins: () => [],
     });
@@ -147,13 +151,6 @@ describe('useOrchestratorAuth', () => {
       apis: new Map(),
     });
 
-    // Remount with updated mocks for useApi call order in this test.
-    mockUseApi.mockReset();
-    mockUseApi
-      .mockReturnValueOnce(githubAuthApi)
-      .mockReturnValueOnce(gitlabAuthApi)
-      .mockReturnValueOnce(microsoftAuthApi);
-
     const { result } = renderHook(() => useOrchestratorAuth());
 
     await expect(
@@ -183,12 +180,6 @@ describe('useOrchestratorAuth', () => {
       apis: new Map([['internal.auth.oidc', customApi]]),
     });
 
-    mockUseApi.mockReset();
-    mockUseApi
-      .mockReturnValueOnce(githubAuthApi)
-      .mockReturnValueOnce(gitlabAuthApi)
-      .mockReturnValueOnce(microsoftAuthApi);
-
     const { result } = renderHook(() => useOrchestratorAuth());
 
     await expect(
@@ -209,12 +200,6 @@ describe('useOrchestratorAuth', () => {
       get: jest.fn(),
       apis: new Map(),
     });
-
-    mockUseApi.mockReset();
-    mockUseApi
-      .mockReturnValueOnce(githubAuthApi)
-      .mockReturnValueOnce(gitlabAuthApi)
-      .mockReturnValueOnce(microsoftAuthApi);
 
     const { result } = renderHook(() => useOrchestratorAuth());
 
@@ -244,12 +229,6 @@ describe('useOrchestratorAuth', () => {
       get: jest.fn().mockReturnValue(undefined),
       apis: new Map(),
     });
-
-    mockUseApi.mockReset();
-    mockUseApi
-      .mockReturnValueOnce(githubAuthApi)
-      .mockReturnValueOnce(gitlabAuthApi)
-      .mockReturnValueOnce(microsoftAuthApi);
 
     const { result } = renderHook(() => useOrchestratorAuth());
 

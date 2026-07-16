@@ -70,6 +70,8 @@ ignore:
   - "workspaces/orchestrator/plugins/orchestrator/src/test-utils/**"
   - "workspaces/orchestrator/plugins/orchestrator/src/plugin.ts"
   - "workspaces/orchestrator/plugins/orchestrator/src/alpha.tsx"
+  # Router.tsx is a wiring-only Backstage plugin router with no testable logic;
+  # permission-gated page rendering is covered by e2e tests.
   - "workspaces/orchestrator/plugins/orchestrator/src/components/Router.tsx"
   - "workspaces/orchestrator/plugins/orchestrator/src/constants.ts"
   - "workspaces/orchestrator/plugins/orchestrator/src/components/Trans.tsx"
