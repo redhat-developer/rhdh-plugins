@@ -34,9 +34,8 @@ export interface K8sClients {
 const TLS_FIX_HINT =
   'Trust the cluster CA with NODE_EXTRA_CA_CERTS. ' +
   "For OpenShift: oc get configmap kube-root-ca.crt -n openshift-config -o jsonpath='{.data.ca\\.crt}' > /tmp/cluster-ca.crt && " +
-  'export NODE_EXTRA_CA_CERTS=/tmp/cluster-ca.crt . ' +
-  'Or set NODE_TLS_REJECT_UNAUTHORIZED=0 (insecure, dev only). ' +
-  'See the "TLS Certificate Handling" section in the workspace README.';
+  'export NODE_EXTRA_CA_CERTS=/tmp/cluster-ca.crt. ' +
+  'See the "TLS Certificate Handling" section in the workspace README for development-only alternatives.';
 
 const TLS_ERROR_CODES = [
   'UNABLE_TO_VERIFY_LEAF_SIGNATURE',

@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { MultiSelect, Select } = require('enquirer');
 
-const RHDH_CLI_VERSION = '1.9.1';
+const RHDH_CLI_VERSION = '1.10.7';
 const EMBED_COMMON = '@red-hat-developer-hub/backstage-plugin-x2a-common';
 const EMBED_NODE = '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
