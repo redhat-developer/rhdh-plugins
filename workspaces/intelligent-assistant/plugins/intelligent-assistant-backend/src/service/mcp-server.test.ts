@@ -232,11 +232,11 @@ describe('MCP server management endpoints', () => {
       const backendServer = await startBackendServer(MCP_CONFIG);
 
       await request(backendServer)
-        .patch('/api/lightspeed/mcp-servers/static-mcp')
+        .patch('/api/intelligent-assistant/mcp-servers/static-mcp')
         .send({ token: 'my-personal-token' });
 
       const response = await request(backendServer).get(
-        '/api/lightspeed/mcp-servers',
+        '/api/intelligent-assistant/mcp-servers',
       );
 
       expect(response.body.servers[0].hasToken).toBe(true);
