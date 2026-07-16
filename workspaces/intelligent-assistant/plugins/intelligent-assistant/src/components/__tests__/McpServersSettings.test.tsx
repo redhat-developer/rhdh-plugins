@@ -48,7 +48,7 @@ type McpServerResponse = {
   auth?: string;
 };
 
-const BASE_URL = 'http://localhost:7007/api/lightspeed';
+const BASE_URL = 'http://localhost:7007/api/intelligent-assistant';
 
 const jsonResponse = (body: unknown, ok = true) => ({
   ok,
