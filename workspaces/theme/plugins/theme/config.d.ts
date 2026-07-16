@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ThemeConfig } from './src';
+import { ThemeConfig } from './';
 
 export interface Config {
   app: {
