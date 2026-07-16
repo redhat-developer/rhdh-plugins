@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.9
+
+### Patch Changes
+
+- eed88f3: Fix broken `config.d.ts` import path: change `import { ThemeConfig } from './src'` to `'./'` so the published package resolves correctly during config schema validation.
+
 ## 0.14.8
 
 ### Patch Changes
