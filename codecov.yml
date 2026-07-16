@@ -50,8 +50,9 @@ ignore:
   - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/*.spec.tsx"
-  # Package entry barrels only. Nested index.ts(x) files often hold real logic
-  # (API clients, services, components) and must remain in the coverage denominator.
+  # Package entry points / NFS plugin wiring (createFrontendPlugin, blueprints).
+  # Nested index.ts(x) under api/, components/, services/ often hold real logic
+  # and must remain in the coverage denominator (hence the /src/ prefix).
   - "**/src/index.ts"
   - "**/src/index.tsx"
   - "**/__fixtures__/**"
