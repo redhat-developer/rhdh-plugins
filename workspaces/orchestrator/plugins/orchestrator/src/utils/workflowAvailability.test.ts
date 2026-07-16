@@ -32,7 +32,7 @@ describe('hasWorkflowAvailabilityDetails', () => {
     expect(
       hasWorkflowAvailabilityDetails({
         isAvailable: false,
-        message: 'disabled',
+        reason: 'disabled',
       }),
     ).toBe(true);
     expect(hasWorkflowAvailabilityDetails({ isAvailable: true })).toBe(false);
