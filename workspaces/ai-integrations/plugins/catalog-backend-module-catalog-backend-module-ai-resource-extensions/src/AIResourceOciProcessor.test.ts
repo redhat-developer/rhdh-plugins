@@ -174,6 +174,32 @@ describe('AIResourceOciProcessor', () => {
       ).rejects.toThrow('not a valid OCI reference');
     });
 
+    it('should reject oci:// with no registry (triple slash)', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'oci:///foo',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('not a valid OCI reference');
+    });
+
+    it('should reject oci:// with registry but empty repository', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'oci://host/',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('not a valid OCI reference');
+    });
+
     it('should reject missing target field', async () => {
       const entity = makeAIResource({
         location: {

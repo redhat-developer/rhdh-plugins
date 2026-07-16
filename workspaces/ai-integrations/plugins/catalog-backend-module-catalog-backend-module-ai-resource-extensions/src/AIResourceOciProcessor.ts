@@ -44,14 +44,14 @@ export class AIResourceOciProcessor implements CatalogProcessor {
       return entity;
     }
 
-    const locationType = (entity.spec as Record<string, unknown> | undefined)
+    const specLocation = (entity.spec as Record<string, unknown> | undefined)
       ?.location as Record<string, unknown> | undefined;
 
-    if (locationType?.type !== 'oci') {
+    if (specLocation?.type !== 'oci') {
       return entity;
     }
 
-    const target = locationType?.target;
+    const target = specLocation?.target;
 
     if (typeof target !== 'string' || target.trim() === '') {
       throw new Error(
@@ -70,8 +70,9 @@ export class AIResourceOciProcessor implements CatalogProcessor {
     }
 
     const ociPath = target.slice('oci://'.length);
+    const parts = ociPath.split('/');
 
-    if (ociPath.length === 0 || !ociPath.includes('/')) {
+    if (parts.length < 2 || parts[0] === '' || parts[1] === '') {
       const sanitized = Array.from(String(target))
         .filter(c => c.charCodeAt(0) > 0x1f)
         .join('')
