@@ -59,6 +59,12 @@ export class AIResourceOciProcessor implements CatalogProcessor {
       );
     }
 
+    if (target !== target.trim()) {
+      throw new Error(
+        'Validation failed for AIResource entity: spec.location.target must not have leading or trailing whitespace (e.g. oci://quay.io/org/model:tag)',
+      );
+    }
+
     if (!target.startsWith('oci://')) {
       const sanitized = Array.from(String(target))
         .filter(c => c.charCodeAt(0) > 0x1f)
@@ -72,7 +78,12 @@ export class AIResourceOciProcessor implements CatalogProcessor {
     const ociPath = target.slice('oci://'.length);
     const parts = ociPath.split('/');
 
-    if (parts.length < 2 || parts[0] === '' || parts[1] === '') {
+    // Reject missing registry/repo, empty segments (e.g. trailing slash),
+    // and whitespace inside path segments (e.g. oci:// quay.io/...).
+    if (
+      parts.length < 2 ||
+      parts.some(part => part === '' || /\s/.test(part))
+    ) {
       const sanitized = Array.from(String(target))
         .filter(c => c.charCodeAt(0) > 0x1f)
         .join('')

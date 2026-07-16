@@ -200,6 +200,45 @@ describe('AIResourceOciProcessor', () => {
       ).rejects.toThrow('not a valid OCI reference');
     });
 
+    it('should reject oci:// with trailing slash after repository', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'oci://registry/repo/',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('not a valid OCI reference');
+    });
+
+    it('should reject target with leading whitespace', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: ' oci://quay.io/org/model:tag',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('must not have leading or trailing whitespace');
+    });
+
+    it('should reject oci:// with whitespace in the registry segment', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'oci:// quay.io/org/model',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('not a valid OCI reference');
+    });
+
     it('should reject missing target field', async () => {
       const entity = makeAIResource({
         location: {
