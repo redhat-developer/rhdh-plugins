@@ -55,7 +55,7 @@
     "express-rate-limit": "^8.2.2",
     "form-data": "^4.0.5",
     "htmlparser2": "^9.1.0",
-    "http-proxy-middleware": "^3.0.2",
+    "http-proxy-middleware": "^3.0.7",
     "js-yaml": "^4.1.1",
     "knex": "^3.1.0",
     "multer": "^2.1.1",
