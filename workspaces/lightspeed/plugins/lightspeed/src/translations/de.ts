@@ -26,6 +26,8 @@ const lightspeedTranslationDe = createTranslationMessages({
   ref: lightspeedTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Chatverlauf-Menü',
+    'modelSelector.disabledTooltip':
+      'Jede Chatsitzung unterstützt nur ein Modell. Um das Modell zu wechseln, starten Sie einen neuen Chat.',
     'aria.chatbotSelector': 'Chatbot-Auswahl',
     'aria.close': 'Chatbot schließen',
     'aria.closeDrawerPanel': 'Drawer-Fenster schließen',

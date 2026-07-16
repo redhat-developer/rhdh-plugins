@@ -140,6 +140,7 @@ export const lightspeedTranslationRef: TranslationRef<
     readonly 'chatbox.message.placeholder': string;
     readonly 'chatbox.fileUpload.failed': string;
     readonly 'chatbox.fileUpload.infoText': string;
+    readonly 'modelSelector.disabledTooltip': string;
     readonly 'aria.chatbotSelector': string;
     readonly 'aria.important': string;
     readonly 'aria.chatHistoryMenu': string;
