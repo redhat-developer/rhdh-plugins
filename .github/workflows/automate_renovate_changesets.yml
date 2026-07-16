@@ -8,9 +8,7 @@ on:
 jobs:
   generate-changeset:
     runs-on: ubuntu-latest
-    if: github.actor == 'renovate[bot]' && github.repository ==
-      'redhat-developer/rhdh-plugins' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+    if: (github.event.pull_request.user.login == 'renovate[bot]' || github.event.pull_request.user.login == 'dependabot[bot]') && github.repository == 'redhat-developer/rhdh-plugins' && github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4

@@ -31,8 +31,8 @@ workspace/homepage:
 workspace/konflux:
   - 'Workspace\\s*konflux'
 
-workspace/lightspeed:
-  - 'Workspace\\s*lightspeed'
+workspace/intelligent-assistant:
+  - 'Workspace\\s*intelligent-assistant'
 
 workspace/mcp-integrations:
   - 'Workspace\\s*mcp-integrations'
