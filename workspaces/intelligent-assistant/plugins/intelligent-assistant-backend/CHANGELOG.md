@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 3.0.1
+
+### Patch Changes
+
+- f2c72f4: Updated dependency `multer` to `^2.2.0`.
+- f5068f1: Updated dependency `http-proxy-middleware` to `^3.0.7`.
+- 9b05257: Updated dependency `form-data` to `^4.0.6`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.1
+
 ## 3.0.0
 
 ### Major Changes
