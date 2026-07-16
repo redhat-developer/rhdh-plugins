@@ -9399,7 +9399,7 @@ __metadata:
     "@patternfly/react-table": "npm:^6.4.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.8"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.9"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^5.59.15"
     "@testing-library/dom": "npm:^10.0.0"
@@ -9436,6 +9436,24 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
   checksum: 10c0/9dc6f44a9eca0f0a033609ef1887837908737bf4e3eba2ff614202c9ad1c4886ef6a52e30c5c25015607205104846786dceabbf37f760835037e7016711bac4e
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.9":
+  version: 0.14.9
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.9"
+  dependencies:
+    "@backstage/frontend-plugin-api": "npm:^0.15.1"
+    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@mui/icons-material": "npm:^5.17.1"
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.12.4
+    "@backstage/theme": ^0.7.2
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/4d07ca0766f37e9b347074b7409143c245081c47f15dabd39b47c1a352203b7ccf52fe3cfd934d5d6075b61a746daf6467338bda596ee6b3c251954a683864e5
   languageName: node
   linkType: hard
 
