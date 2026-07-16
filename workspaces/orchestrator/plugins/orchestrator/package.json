@@ -76,6 +76,7 @@
     "@backstage/plugin-catalog-react": "^3.0.0",
     "@backstage/plugin-permission-common": "^0.9.9",
     "@backstage/plugin-permission-react": "^0.5.1",
+    "@backstage/types": "^1.2.2",
     "@dagrejs/dagre": "^2.0.4",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",

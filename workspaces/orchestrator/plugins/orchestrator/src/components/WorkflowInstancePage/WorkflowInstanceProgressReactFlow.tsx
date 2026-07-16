@@ -76,14 +76,14 @@ const STATUS_ICONS: Record<
   [ProcessInstanceStatusDTO.Suspended]: PauseCircleFilledIcon,
 };
 
-const STATUS_LABELS: Record<ProcessInstanceStatusDTO, string> = {
-  [ProcessInstanceStatusDTO.Completed]: 'Completed',
-  [ProcessInstanceStatusDTO.Active]: 'Active',
-  [ProcessInstanceStatusDTO.Pending]: 'Pending',
-  [ProcessInstanceStatusDTO.Error]: 'Failed',
-  [ProcessInstanceStatusDTO.Aborted]: 'Aborted',
-  [ProcessInstanceStatusDTO.Suspended]: 'Suspended',
-};
+const STATUS_TRANSLATION_KEYS = {
+  [ProcessInstanceStatusDTO.Completed]: 'table.status.completed',
+  [ProcessInstanceStatusDTO.Active]: 'table.status.active',
+  [ProcessInstanceStatusDTO.Pending]: 'table.status.pending',
+  [ProcessInstanceStatusDTO.Error]: 'table.status.failed',
+  [ProcessInstanceStatusDTO.Aborted]: 'table.status.aborted',
+  [ProcessInstanceStatusDTO.Suspended]: 'tooltips.suspended',
+} as const;
 
 const useNodeColors = (status?: ProcessInstanceStatusDTO) => {
   const theme = useTheme();
@@ -143,12 +143,13 @@ const useNodeColors = (status?: ProcessInstanceStatusDTO) => {
 const WorkflowProgressFlowNode = ({
   data,
 }: NodeProps<WorkflowFlowNodeData>) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useNodeColors(data.status);
   const IconComponent = data.status ? STATUS_ICONS[data.status] : ZoomInMapIcon;
   const secondaryLabel =
     data.status !== undefined
-      ? STATUS_LABELS[data.status]
+      ? t(STATUS_TRANSLATION_KEYS[data.status])
       : data.secondaryLabel;
 
   return (

@@ -11874,6 +11874,7 @@ __metadata:
     "@backstage/plugin-search": "npm:^1.7.4"
     "@backstage/plugin-user-settings": "npm:^0.9.3"
     "@backstage/test-utils": "npm:^1.7.18"
+    "@backstage/types": "npm:^1.2.2"
     "@backstage/ui": "npm:^0.15.0"
     "@dagrejs/dagre": "npm:^2.0.4"
     "@janus-idp/cli": "npm:3.7.0"
