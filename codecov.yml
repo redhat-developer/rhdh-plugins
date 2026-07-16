@@ -50,7 +50,9 @@ ignore:
   - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/*.spec.tsx"
-  - "**/index.ts"
+  # Package entry barrels only. Nested index.ts files often hold real logic
+  # (API clients, services) and must remain in the coverage denominator.
+  - "**/src/index.ts"
   - "**/__fixtures__/**"
   - "**/__tests__/**"
   - "**/__mocks__/**"
@@ -64,7 +66,8 @@ ignore:
   - "workspaces/*/packages/app/**"
   - "workspaces/*/packages/app-legacy/**"
   - "workspaces/*/packages/backend/**"
-  - "workspaces/plugins/*-test/**"
+  # Test-helper plugins live under workspaces/<workspace>/plugins/*-test
+  - "workspaces/*/plugins/*-test/**"
   - "**/generated/**"
   - "workspaces/orchestrator/plugins/orchestrator/src/translations/**"
   - "workspaces/orchestrator/plugins/orchestrator/src/test-utils/**"
