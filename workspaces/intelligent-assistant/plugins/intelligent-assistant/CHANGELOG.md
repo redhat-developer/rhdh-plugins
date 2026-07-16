@@ -1,5 +1,51 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 3.0.0
+
+### Major Changes
+
+- 95d26f7: BREAKING CHANGE: Rename Lightspeed plugins to Intelligent Assistant. npm package names, Backstage plugin IDs (`pluginId`), backend API base URLs (`/api/lightspeed` → `/api/intelligent-assistant`), app-config namespace (`lightspeed:` → `intelligent-assistant:`), RBAC permission names (`lightspeed.*` → `intelligent-assistant.*`), scalprum identifiers, NFS extension names, and translation refs have all been updated. See the backend plugin README migration guide for full details.
+- 95d26f7: BREAKING CHANGE: Legacy (OFS) component exports have been removed from the main `./` entry point and are now exclusively available at the `./legacy` subpath. OFS consumers must update their imports:
+
+  ```diff
+  - import { LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+  + import { LightspeedDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant/legacy';
+  ```
+
+  **New:** Graduate the New Frontend System (NFS) plugin from `./alpha` to the primary `./` entry point.
+
+  Translations remain at `./alpha`. Existing OFS dynamic plugin configurations using `module: Legacy` continue to work unchanged.
+
+- 95d26f7: BREAKING CHANGE: The configuration namespace has been renamed from `lightspeed` to `intelligent-assistant`. Update your `app-config.yaml` to replace `lightspeed:` with `intelligent-assistant:`. RBAC permission policy names have also been renamed (e.g., `lightspeed.chat.read` → `intelligent-assistant.chat.read`). Update your `rbac-policy.csv` accordingly. See the migration guide in the lightspeed-backend plugin's README for full details.
+
+### Minor Changes
+
+- 95d26f7: Rebrand Lightspeed to Intelligent Assistant: update UI text, translations, URL route, icons, and bot avatar assets to align with Red Hat Developer Hub branding guidelines.
+- 95d26f7: Add DCR (Dynamic Client Registration) authentication support for Backstage-internal MCP servers, allowing the Lightspeed backend to mint per-user plugin request tokens instead of requiring static tokens.
+- 95d26f7: Replace inline SourcesCard with a compact chip + popover for notebook sources display, using PatternFly's native Popover component with custom FileTypeIcon badges and i18n support for all languages.
+- 95d26f7: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 95d26f7: Fix MCP settings panel and options dropdown behavior:
+
+  - Keep MCP settings panel open during navigation in fullscreen mode
+  - Prevent options dropdown from auto-focusing first item on open
+
+- 95d26f7: Improve chat history sidebar UI: add icons to chat action menu, fix sidebar icon alignment, improve delete modal styling with rounded corners and chat name in title, keep New Chat button always visible but disabled, and update empty state messages.
+- 95d26f7: Polish MCP settings and chatbot options menu: remove the settings button hover tooltip, relabel it to "Options", show MCP server edit actions on row hover only, display token-required status with a red warning icon, and align the MCP servers table background with the panel in dark mode.
+- 95d26f7: Updated dependency `prettier` to `3.8.4`.
+- 95d26f7: Updated dependency `llama-stack-client` to `^0.7.0`.
+  Updated dependency `msw` to `2.14.6`.
+  Updated dependency `langsmith` to `^0.7.0`.
+  Updated dependency `@patternfly/react-core` to `6.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.0
+
 ## 2.9.1
 
 ### Patch Changes

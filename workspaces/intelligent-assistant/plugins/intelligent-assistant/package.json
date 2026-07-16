@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-intelligent-assistant",
-  "version": "2.9.1",
+  "version": "3.0.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
