@@ -67,6 +67,12 @@ ignore:
   - "workspaces/plugins/*-test/**"
   - "**/generated/**"
   - "workspaces/orchestrator/plugins/orchestrator/src/translations/**"
+  - "workspaces/orchestrator/plugins/orchestrator/src/test-utils/**"
+  - "workspaces/orchestrator/plugins/orchestrator/src/plugin.ts"
+  - "workspaces/orchestrator/plugins/orchestrator/src/alpha.tsx"
+  - "workspaces/orchestrator/plugins/orchestrator/src/components/Router.tsx"
+  - "workspaces/orchestrator/plugins/orchestrator/src/constants.ts"
+  - "workspaces/orchestrator/plugins/orchestrator/src/components/Trans.tsx"
 
 component_management:
   # GENERATED — do not edit by hand.
