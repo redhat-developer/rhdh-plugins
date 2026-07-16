@@ -50,9 +50,10 @@ ignore:
   - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/*.spec.tsx"
-  # Package entry barrels only. Nested index.ts files often hold real logic
-  # (API clients, services) and must remain in the coverage denominator.
+  # Package entry barrels only. Nested index.ts(x) files often hold real logic
+  # (API clients, services, components) and must remain in the coverage denominator.
   - "**/src/index.ts"
+  - "**/src/index.tsx"
   - "**/__fixtures__/**"
   - "**/__tests__/**"
   - "**/__mocks__/**"
@@ -69,15 +70,21 @@ ignore:
   # Test-helper plugins live under workspaces/<workspace>/plugins/*-test
   - "workspaces/*/plugins/*-test/**"
   - "**/generated/**"
-  - "workspaces/orchestrator/plugins/orchestrator/src/translations/**"
-  - "workspaces/orchestrator/plugins/orchestrator/src/test-utils/**"
-  - "workspaces/orchestrator/plugins/orchestrator/src/plugin.ts"
-  - "workspaces/orchestrator/plugins/orchestrator/src/alpha.tsx"
-  # Router.tsx is a wiring-only Backstage plugin router with no testable logic;
-  # permission-gated page rendering is covered by e2e tests.
-  - "workspaces/orchestrator/plugins/orchestrator/src/components/Router.tsx"
+  # Locale catalogs, test helpers, and Backstage plugin wiring (no business logic).
+  # Do not ignore src/alpha/** wholesale — those folders often contain real logic.
+  - "workspaces/*/plugins/*/src/translations/**"
+  - "workspaces/*/plugins/*/src/test-utils/**"
+  - "workspaces/*/plugins/*/src/plugin.ts"
+  - "workspaces/*/plugins/*/src/alpha.ts"
+  - "workspaces/*/plugins/*/src/alpha.tsx"
+  - "workspaces/*/plugins/*/src/alpha/index.ts"
+  - "workspaces/*/plugins/*/src/alpha/index.tsx"
+  - "workspaces/*/plugins/*/src/alpha/plugin.ts"
+  # Route tables / i18n wrappers; page behavior is covered by e2e where needed.
+  - "workspaces/*/plugins/*/src/components/Router.tsx"
+  - "workspaces/*/plugins/*/src/components/Trans.tsx"
+  # Frontend string/number constants only (not *-common constants modules).
   - "workspaces/orchestrator/plugins/orchestrator/src/constants.ts"
-  - "workspaces/orchestrator/plugins/orchestrator/src/components/Trans.tsx"
 
 component_management:
   # GENERATED — do not edit by hand.
