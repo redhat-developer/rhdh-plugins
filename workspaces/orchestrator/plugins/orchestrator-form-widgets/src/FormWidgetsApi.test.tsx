@@ -36,7 +36,7 @@ describe('FormWidgetsApi', () => {
 
   it('returns undefined review component by default', () => {
     const api = new FormWidgetsApi();
-    expect(api.getReviewComponent()).toBeUndefined();
+    expect(api.getReviewComponent?.()).toBeUndefined();
   });
 
   it('decorates form component with widgets and context props', () => {
@@ -49,7 +49,9 @@ describe('FormWidgetsApi', () => {
     };
 
     const decorator = api.getFormDecorator();
-    const Decorated = decorator(DummyForm as ComponentType<any>);
+    const Decorated = decorator(
+      DummyForm as ComponentType<any>,
+    ) as ComponentType<any>;
 
     render(
       <Decorated

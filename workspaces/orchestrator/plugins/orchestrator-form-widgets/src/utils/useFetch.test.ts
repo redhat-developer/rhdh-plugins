@@ -129,7 +129,7 @@ describe('useFetch', () => {
       },
     });
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useFetch(
         {} as any,
         { 'fetch:url': 'https://example.test/fetch' } as any,
