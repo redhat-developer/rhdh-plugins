@@ -21,6 +21,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
   InternalAxiosRequestConfig,
+  isAxiosError,
   RawAxiosResponseHeaders,
 } from 'axios';
 
@@ -583,6 +584,204 @@ describe('OrchestratorClient', () => {
       await expect(promise).rejects.toThrow();
     });
   });
+
+  describe('retriggerInstance', () => {
+    it('should retrigger an instance with auth tokens', async () => {
+      const workflowId = 'workflow123';
+      const instanceId = 'instance123';
+      const authTokens: AuthToken[] = [{ provider: 'github', token: 't' }];
+      const mockResponse: AxiosResponse<object> = {
+        data: {},
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      const retriggerSpy = jest.spyOn(
+        DefaultApi.prototype,
+        'retriggerInstance',
+      );
+      axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
+
+      const result = await orchestratorClient.retriggerInstance(
+        workflowId,
+        instanceId,
+        authTokens,
+      );
+
+      expect(result.data).toEqual({});
+      expect(retriggerSpy).toHaveBeenCalledWith(
+        workflowId,
+        instanceId,
+        { authTokens },
+        getDefaultTestRequestConfig(),
+      );
+    });
+
+    it('should retrigger an instance without auth tokens', async () => {
+      const retriggerSpy = jest.spyOn(
+        DefaultApi.prototype,
+        'retriggerInstance',
+      );
+      axios.request = jest.fn().mockResolvedValueOnce({
+        data: {},
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      });
+
+      await orchestratorClient.retriggerInstance('wf', 'inst');
+
+      expect(retriggerSpy).toHaveBeenCalledWith(
+        'wf',
+        'inst',
+        {},
+        getDefaultTestRequestConfig(),
+      );
+    });
+
+    it('should map axios API errors when retrigger fails', async () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            error: { message: 'retrigger failed', name: 'RetriggerError' },
+          },
+        },
+        toJSON: () => ({}),
+        name: 'AxiosError',
+        message: 'Request failed',
+      };
+      jest.mocked(isAxiosError).mockReturnValue(true);
+      axios.request = jest.fn().mockRejectedValueOnce(axiosError);
+
+      await expect(
+        orchestratorClient.retriggerInstance('wf', 'inst'),
+      ).rejects.toMatchObject({
+        message: 'retrigger failed',
+        name: 'RetriggerError',
+      });
+    });
+  });
+
+  describe('getWorkflowsOverviewForEntity', () => {
+    it('should return overviews for an entity', async () => {
+      const mockData: WorkflowOverviewListResultDTO = {
+        overviews: [
+          {
+            workflowId: 'wf-1',
+            name: 'Workflow 1',
+            format: WorkflowFormatDTO.Yaml,
+          },
+        ],
+      };
+      const mockResponse: AxiosResponse<WorkflowOverviewListResultDTO> = {
+        data: mockData,
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      const spy = jest.spyOn(
+        DefaultApi.prototype,
+        'getWorkflowsOverviewForEntity',
+      );
+      axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
+
+      const result = await orchestratorClient.getWorkflowsOverviewForEntity(
+        'component:default/app',
+        ['wf-1'],
+      );
+
+      expect(result.data).toEqual(mockData);
+      expect(spy).toHaveBeenCalledWith(
+        {
+          targetEntity: 'component:default/app',
+          annotationWorkflowIds: ['wf-1'],
+        },
+        getDefaultTestRequestConfig(),
+      );
+    });
+  });
+
+  describe('getWorkflowDataInputSchema', () => {
+    it('should return input schema for a workflow', async () => {
+      const mockResponse: AxiosResponse = {
+        data: { inputSchema: { type: 'object' } },
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      const spy = jest.spyOn(
+        DefaultApi.prototype,
+        'getWorkflowInputSchemaById',
+      );
+      axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
+
+      const result = await orchestratorClient.getWorkflowDataInputSchema(
+        'wf-1',
+        'inst-1',
+      );
+
+      expect(result.data).toEqual({ inputSchema: { type: 'object' } });
+      expect(spy).toHaveBeenCalledWith(
+        'wf-1',
+        'inst-1',
+        getDefaultTestRequestConfig(),
+      );
+    });
+  });
+
+  describe('pingWorkflowService', () => {
+    it('should ping the workflow service', async () => {
+      const mockResponse: AxiosResponse<boolean> = {
+        data: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      const spy = jest.spyOn(DefaultApi.prototype, 'pingWorkflowServiceById');
+      axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
+
+      const result = await orchestratorClient.pingWorkflowService('wf-1');
+
+      expect(result.data).toBe(true);
+      expect(spy).toHaveBeenCalledWith('wf-1', getDefaultTestRequestConfig());
+    });
+  });
+
+  describe('getInstanceLogs', () => {
+    it('should return instance logs', async () => {
+      const mockResponse: AxiosResponse = {
+        data: { log: 'hello' },
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      axios.get = jest.fn().mockResolvedValueOnce(mockResponse);
+
+      const result = await orchestratorClient.getInstanceLogs('inst-1');
+
+      expect(result.data).toEqual({ log: 'hello' });
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/v2/workflows/instances/inst-1/logs`,
+        getDefaultTestRequestConfig(),
+      );
+    });
+
+    it('should throw when fetching logs fails', async () => {
+      axios.get = jest.fn().mockRejectedValueOnce(new Error('log failure'));
+
+      await expect(
+        orchestratorClient.getInstanceLogs('inst-1'),
+      ).rejects.toThrow('log failure');
+    });
+  });
+
   function getDefaultTestRequestConfig(): AxiosRequestConfig {
     return {
       baseURL: baseUrl,

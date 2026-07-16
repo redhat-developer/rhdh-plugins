@@ -23,7 +23,9 @@ import {
 
 describe('orchestrator common constants', () => {
   it('exports expected sonataflow defaults', () => {
-    expect(DEFAULT_SONATAFLOW_CONTAINER_IMAGE).toContain('sonataflow');
+    expect(DEFAULT_SONATAFLOW_CONTAINER_IMAGE).toBe(
+      'quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main',
+    );
     expect(DEFAULT_SONATAFLOW_PERSISTENCE_PATH).toBe(
       '/home/kogito/persistence',
     );
