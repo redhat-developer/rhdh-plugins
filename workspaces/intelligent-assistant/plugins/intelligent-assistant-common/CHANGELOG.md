@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-lightspeed-common
+# @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
 ## 3.0.0
 
@@ -14,6 +14,8 @@
 ### Patch Changes
 
 - 95d26f7: Updated dependency `prettier` to `3.8.4`.
+
+# @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
 ## 2.9.1
 

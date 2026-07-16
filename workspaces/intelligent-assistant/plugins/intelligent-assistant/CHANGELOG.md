@@ -1,4 +1,4 @@
-## @red-hat-developer-hub/backstage-plugin-lightspeed
+# @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
 ## 3.0.0
 
@@ -28,7 +28,6 @@
 ### Patch Changes
 
 - 95d26f7: Fix MCP settings panel and options dropdown behavior:
-
   - Keep MCP settings panel open during navigation in fullscreen mode
   - Prevent options dropdown from auto-focusing first item on open
 
@@ -45,6 +44,8 @@
 - Updated dependencies [95d26f7]
 - Updated dependencies [95d26f7]
   - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.0
+
+# @red-hat-developer-hub/backstage-plugin-lightspeed
 
 ## 2.9.1
 

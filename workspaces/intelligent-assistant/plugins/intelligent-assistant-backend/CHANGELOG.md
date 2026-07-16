@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-lightspeed-backend
+# @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
 ## 3.0.0
 
@@ -30,6 +30,8 @@
 - Updated dependencies [95d26f7]
 - Updated dependencies [95d26f7]
   - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.0
+
+# @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
 ## 2.9.1
 

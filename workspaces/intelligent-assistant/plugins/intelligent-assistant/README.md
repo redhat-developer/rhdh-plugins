@@ -1,4 +1,4 @@
-# Lightspeed plugin for Backstage
+# Intelligent Assistant
 
 Red Hat Developer Hub Intelligent Assistant (Intelligent Assistant for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
 
