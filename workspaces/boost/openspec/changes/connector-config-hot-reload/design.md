@@ -82,6 +82,11 @@ Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these 
 | `schedule.cron`        | `db-overridable` | Admin can change cron schedule at runtime          |
 | `batchSize`            | `db-overridable` | Admin can tune performance at runtime              |
 | `timeout.connectionMs` | `db-overridable` | Admin can adjust for network conditions at runtime |
+| `lastSyncTimestamp`     | `db-only`        | Runtime state written by provider after sync — no YAML baseline exists                                |
+| `lastSyncOutcome`       | `db-only`        | Runtime state (success/failure) — written by provider, not configurable                               |
+| `runStatus`             | `db-only`        | Transient state (running/idle) — no deployment-time equivalent                                        |
+
+**Why db-only exists:** Some fields are pure runtime state — they are written by the system during operation and have no YAML baseline or admin-configurable equivalent. They live exclusively in the database and are never merged with YAML config. The `RuntimeConfigResolver` returns them as-is from the DB layer without two-layer merging.
 
 **Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp` and `lastSyncOutcome` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Run status (running/idle) is derived from these fields, not stored as a separate column. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
