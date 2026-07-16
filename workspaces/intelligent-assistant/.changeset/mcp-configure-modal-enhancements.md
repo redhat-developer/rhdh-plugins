@@ -1,6 +1,6 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-lightspeed': minor
-'@red-hat-developer-hub/backstage-plugin-lightspeed-backend': patch
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant': minor
+'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend': patch
 ---
 
 Refactor the MCP server configure modal with PatternFly layout and improved credential management:
