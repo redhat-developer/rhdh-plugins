@@ -32,6 +32,11 @@ export type MockMcpServersOptions = {
   failServerValidateFor?: string;
   /** Shown as `validation.error` when POST validate fails for `failServerValidateFor` (use product i18n, e.g. `mcp.settings.token.validationFailed`). */
   failServerValidateError?: string;
+  /**
+   * Optional per-server tool names returned by POST `/mcp-servers/:name/validate`.
+   * This allows modal "Tools" list assertions to mirror real server names.
+   */
+  validationToolsByServer?: Record<string, string[]>;
 };
 
 let mcpMockOptions: MockMcpServersOptions = {};
@@ -655,14 +660,22 @@ export async function mockMcpServers(
       }
 
       const toolCount = server.toolCount;
+      const validationTools = mcpMockOptions.validationToolsByServer?.[name];
+      const validation: { tools?: { name: string }[]; error?: string } = {};
+      if (validationTools) {
+        validation.tools = validationTools.map(toolName => ({
+          name: toolName,
+        }));
+      }
+      if (server.status === 'error') {
+        validation.error = 'MCP validation failed';
+      }
       await route.fulfill({
         json: {
           name,
           status: server.status,
           toolCount,
-          ...(server.status === 'error'
-            ? { validation: { error: 'MCP validation failed' } }
-            : {}),
+          ...(Object.keys(validation).length > 0 ? { validation } : {}),
         },
       });
       return;

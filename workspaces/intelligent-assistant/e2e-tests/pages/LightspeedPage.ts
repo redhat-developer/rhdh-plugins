@@ -206,11 +206,11 @@ export function mcpPersonalAccessTokenInput(page: Page): Locator {
   return page.locator('#mcp-pat-input');
 }
 
-/** Configure-server modal that contains the PAT field (avoids matching other dialogs). */
+/** Configure-server modal for MCP settings (works for token and DCR flows). */
 export function mcpCredentialConfigureModal(page: Page): Locator {
   return page
     .getByRole('dialog')
-    .filter({ has: page.locator('#mcp-pat-input') });
+    .filter({ has: page.locator('#mcp-configure-modal-body') });
 }
 
 /** Clear (×) control on the PAT field (`mcp.settings.token.clearAriaLabel`). */
