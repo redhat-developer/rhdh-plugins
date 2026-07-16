@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 3.0.0
+
+### Major Changes
+
+- 95d26f7: BREAKING CHANGE: Rename Lightspeed plugins to Intelligent Assistant. npm package names, Backstage plugin IDs (`pluginId`), backend API base URLs (`/api/lightspeed` → `/api/intelligent-assistant`), app-config namespace (`lightspeed:` → `intelligent-assistant:`), RBAC permission names (`lightspeed.*` → `intelligent-assistant.*`), scalprum identifiers, NFS extension names, and translation refs have all been updated. See the backend plugin README migration guide for full details.
+- 95d26f7: BREAKING CHANGE: The configuration namespace has been renamed from `lightspeed` to `intelligent-assistant`. Update your `app-config.yaml` to replace `lightspeed:` with `intelligent-assistant:`. RBAC permission policy names have also been renamed (e.g., `lightspeed.chat.read` → `intelligent-assistant.chat.read`). Update your `rbac-policy.csv` accordingly. See the migration guide in the lightspeed-backend plugin's README for full details.
+
+### Minor Changes
+
+- 95d26f7: Add DCR (Dynamic Client Registration) authentication support for Backstage-internal MCP servers, allowing the Lightspeed backend to mint per-user plugin request tokens instead of requiring static tokens.
+- 95d26f7: add rate limiting to lightspeed and notebooks
+- 95d26f7: bugfix - Notebooks routes 404 passthrough error resolved
+- 95d26f7: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 95d26f7: removed unused llama stack dependency (and transitive dependencies). removed dead constant.
+- 95d26f7: Removed hardcoded vector_store_ids override to enable BYOK RAG sources
+- 95d26f7: Add input size validation for queries and attachments to prevent resource exhaustion. Queries are limited to 32K characters, individual attachments to 20MB, and total attachments to 50MB.
+- 95d26f7: Updated dependency `prettier` to `3.8.4`.
+- 95d26f7: Updated dependency `llama-stack-client` to `^0.7.0`.
+  Updated dependency `msw` to `2.14.6`.
+  Updated dependency `langsmith` to `^0.7.0`.
+  Updated dependency `@patternfly/react-core` to `6.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.0
+
 ## 2.9.1
 
 ### Patch Changes

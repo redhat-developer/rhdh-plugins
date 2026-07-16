@@ -1,5 +1,23 @@
 # app
 
+## 0.0.28
+
+### Patch Changes
+
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+- Updated dependencies [95d26f7]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant@3.0.0
+
 ## 0.0.27
 
 ### Patch Changes
