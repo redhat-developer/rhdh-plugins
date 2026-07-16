@@ -4,6 +4,27 @@ app:
 
   packages: all
 
+  # BUI component customization (RHIDP-14510)
+  branding:
+    # Per-theme BUI token overrides (stable API)
+    # theme:
+    #   light:
+    #     bui:
+    #       tokens:
+    #         primary: red
+    #         backgroundColor: '#f5f5f5'
+    #         foregroundPrimary: '#151515'
+    #         borderColor: '#d2d2d2'
+    #         focusRing: green
+    #   dark:
+    #     bui:
+    #       tokens:
+    #         primary: orange
+    # Raw CSS injection (use at your own risk — BUI class names may change)
+    # customCSS: |
+    #   .bui-Card { border-radius: 8px !important; }
+    #   .bui-Button[data-variant="primary"] { color: orange !important; }
+
   extensions:
     # Configure the catalog index page to be the root page, this is normally mounted on /catalog
     - page:catalog:
