@@ -153,7 +153,12 @@ export class DcmPage {
 
   async clearSearch() {
     const clearBtn = this.page.getByRole('button', { name: /clear/i });
-    if (await clearBtn.first().isVisible().catch(() => false)) {
+    if (
+      await clearBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await clearBtn.first().click();
     } else {
       const searchInput = this.page.getByRole('textbox', { name: 'Search' });
@@ -348,7 +353,12 @@ export class DcmPage {
       .first()
       .or(this.page.locator('[class*="MuiAlert-filledSuccess"]').first())
       .or(this.page.locator('[class*="MuiSnackbar"]').first())
-      .or(this.page.locator('[role="alert"]').filter({ hasText: /success|created|registered|saved/i }).first());
+      .or(
+        this.page
+          .locator('[role="alert"]')
+          .filter({ hasText: /success|created|registered|saved/i })
+          .first(),
+      );
     await expect(snackbar).toBeVisible({ timeout: TIMEOUTS.element });
   }
 
@@ -391,18 +401,35 @@ export class DcmPage {
     const rppSelect = this.page
       .locator('[role="button"][aria-haspopup="listbox"]')
       .filter({ hasText: /rows|\d+/ });
-    if (await rppSelect.first().isVisible().catch(() => false)) {
+    if (
+      await rppSelect
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return (await rppSelect.first().textContent()) ?? '';
     }
-    const paginationSelect = this.page.locator('select').filter({ hasText: /\d+/ });
-    return (await paginationSelect.first().inputValue().catch(() => '')) ?? '';
+    const paginationSelect = this.page
+      .locator('select')
+      .filter({ hasText: /\d+/ });
+    return (
+      (await paginationSelect
+        .first()
+        .inputValue()
+        .catch(() => '')) ?? ''
+    );
   }
 
   async setRowsPerPage(value: string) {
     const rppSelect = this.page
       .locator('[role="button"][aria-haspopup="listbox"]')
       .filter({ hasText: /rows|\d+/ });
-    if (await rppSelect.first().isVisible().catch(() => false)) {
+    if (
+      await rppSelect
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await rppSelect.first().click();
       await this.page.getByRole('option', { name: value }).click();
     } else {

@@ -296,7 +296,9 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
       await page.waitForTimeout(TIMEOUTS.networkSettle);
       const hasError = await page
         .locator('[role="dialog"]')
-        .locator('[class*="MuiFormHelperText"], [role="alert"], [class*="error"]')
+        .locator(
+          '[class*="MuiFormHelperText"], [role="alert"], [class*="error"]',
+        )
         .first()
         .isVisible()
         .catch(() => false);

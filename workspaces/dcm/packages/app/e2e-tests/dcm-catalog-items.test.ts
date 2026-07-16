@@ -84,7 +84,10 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
       });
     } catch {
       await dcm.closeCatalogItemDrawer().catch(() => dcm.cancelDialog());
-      test.skip(true, 'Catalog item creation rejected by API — drawer stayed open');
+      test.skip(
+        true,
+        'Catalog item creation rejected by API — drawer stayed open',
+      );
       return;
     }
 
@@ -221,7 +224,10 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
       });
     } catch {
       await dcm.closeCatalogItemDrawer().catch(() => dcm.cancelDialog());
-      test.skip(true, 'Catalog item import rejected by API — drawer stayed open');
+      test.skip(
+        true,
+        'Catalog item import rejected by API — drawer stayed open',
+      );
       return;
     }
 
