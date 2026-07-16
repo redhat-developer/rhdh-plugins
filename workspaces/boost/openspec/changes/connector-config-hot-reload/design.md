@@ -77,6 +77,11 @@ Each connector config field is annotated with `configScope` to control which lay
 | `namespace`             | `yaml-only`      | Namespace is deployment-time config (can't change active provider's target namespace without restart) |
 | `batchSize`             | `db-overridable` | Admin can tune performance at runtime                                                                 |
 | `timeout.connectionMs`  | `db-overridable` | Admin can adjust for network conditions at runtime                                                    |
+| `lastSyncTimestamp`     | `db-only`        | Runtime state written by provider after sync — no YAML baseline exists                                |
+| `lastSyncOutcome`       | `db-only`        | Runtime state (success/failure) — written by provider, not configurable                               |
+| `runStatus`             | `db-only`        | Transient state (running/idle) — no deployment-time equivalent                                        |
+
+**Why db-only exists:** Some fields are pure runtime state — they are written by the system during operation and have no YAML baseline or admin-configurable equivalent. They live exclusively in the database and are never merged with YAML config. The `RuntimeConfigResolver` returns them as-is from the DB layer without two-layer merging.
 
 **Why not make everything db-overridable:** Mount paths and Secret references can't change at runtime without a pod restart. Making them `db-overridable` would create false expectations of hot-reload capability.
 
