@@ -24,7 +24,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RHDH_CLI_VERSION="1.9.1"
+RHDH_CLI_VERSION="1.10.7"
 EMBED_COMMON="@red-hat-developer-hub/backstage-plugin-x2a-common"
 EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"

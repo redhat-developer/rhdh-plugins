@@ -347,6 +347,34 @@ export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
 
 The first run downloads the `postgres:18` image.
 
+## Testing against a local RHDH checkout
+
+To export the x2a dynamic plugins into a local [RHDH](https://github.com/redhat-developer/rhdh) (or rhdh-local) checkout and merge the required `app-config.local.yaml` defaults, run from `workspaces/x2a`:
+
+```sh
+yarn enable-in-rhdh-repo
+```
+
+This runs `scripts/export-to-rhdh-repo.js` then `scripts/update-config-in-rhdh-repo.js`. You will be prompted for the target repo type and which plugins to export.
+
+Expected layout (sibling directories):
+
+```text
+your-workspace/
+├── rhdh/                  # Clone of https://github.com/redhat-developer/rhdh
+│   └── dynamic-plugins-root/
+└── rhdh-plugins/          # This monorepo
+    └── workspaces/x2a/
+```
+
+Override the RHDH path if needed:
+
+```sh
+RHDH_DIR=~/path/to/rhdh yarn enable-in-rhdh-repo
+```
+
+Seed config comes from `scripts/config-for-rhdh-repo.yaml`. Existing leaf values in `app-config.local.yaml` are preserved (defaults are applied only where missing).
+
 ## Additional Commands
 
 - `yarn test` - Run tests (SQLite only)
@@ -356,6 +384,7 @@ The first run downloads the `postgres:18` image.
 - `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages
 - `yarn clean` - Clean build artifacts
+- `yarn enable-in-rhdh-repo` - Export dynamic plugins into a local RHDH checkout (see above)
 
 ## Project Structure
 
