@@ -65,6 +65,8 @@ ignore:
   - "workspaces/*/packages/app-legacy/**"
   - "workspaces/*/packages/backend/**"
   - "workspaces/plugins/*-test/**"
+  - "**/generated/**"
+  - "workspaces/orchestrator/plugins/orchestrator/src/translations/**"
 
 component_management:
   # GENERATED — do not edit by hand.
