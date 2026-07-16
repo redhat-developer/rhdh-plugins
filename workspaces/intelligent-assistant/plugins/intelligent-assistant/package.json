@@ -83,7 +83,7 @@
     "@patternfly/react-table": "^6.4.1",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^0.1.0",
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.8",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.9",
     "@tanstack/react-query": "^5.59.15",
     "monaco-editor": "^0.55.0",
     "react-dropzone": "^14.4.0",
