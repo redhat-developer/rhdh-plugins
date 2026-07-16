@@ -8,6 +8,7 @@
   },
   "scripts": {
     "create-workspace": "rhdh-repo-tools workspace create",
+    "list-deprecations": "node scripts/list-deprecations.js",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write ."
