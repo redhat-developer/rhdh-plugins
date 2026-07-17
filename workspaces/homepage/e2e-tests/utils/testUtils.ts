@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
-  en: 'English',
-  de: 'Deutsch',
-  es: 'Español',
-  fr: 'Français',
-  it: 'Italiano',
-  ja: '日本語',
+  en: "English",
+  de: "Deutsch",
+  es: "Español",
+  fr: "Français",
+  it: "Italiano",
+  ja: "日本語",
 };
 
 function getLocaleDisplayName(locale: string): string {
-  const baseLocale = locale.split('-')[0];
+  const baseLocale = locale.split("-")[0];
   return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
 }
 
@@ -38,34 +38,34 @@ export class TestUtils {
   }
 
   async loginAsGuest(url?: string) {
-    await this.page.goto(url ?? '/');
+    await this.page.goto(url ?? "/");
     await this.waitForLoad(240000);
 
-    this.page.on('dialog', async dialog => {
+    this.page.on("dialog", async (dialog) => {
       // eslint-disable-next-line no-console
       console.log(`Dialog message: ${dialog.message()}`);
       await dialog.accept();
     });
 
-    await this.clickButton('Enter');
-    await this.verifyHeading('Welcome back');
+    await this.clickButton("Enter");
+    await this.verifyHeading("Welcome back");
   }
 
   async waitForLoad(timeout = 120000) {
     const loadingSelectors = [
       '[data-testid="loading"]',
-      '.MuiCircularProgress-root',
+      ".MuiCircularProgress-root",
       '[role="progressbar"]',
     ];
 
-    for (const selector of loadingSelectors) {
+    for (const selector of [...loadingSelectors]) {
       try {
         await this.page.waitForSelector(selector, {
-          state: 'hidden',
+          state: "hidden",
           timeout: timeout,
         });
       } catch (error) {
-        if (error instanceof Error && error.name === 'TimeoutError') {
+        if (error instanceof Error && error.name === "TimeoutError") {
           // eslint-disable-next-line no-console
           console.log(
             `Loading selector ${selector} not found or already hidden`,
@@ -78,19 +78,19 @@ export class TestUtils {
   }
 
   async signOut(): Promise<void> {
-    await this.page.getByRole('link', { name: 'Settings' }).click();
-    await this.page.getByTestId('user-settings-menu').click();
-    await this.page.getByTestId('sign-out').click();
+    await this.page.getByRole("link", { name: "Settings" }).click();
+    await this.page.getByTestId("user-settings-menu").click();
+    await this.page.getByTestId("sign-out").click();
   }
 
   async switchToLocale(locale: string): Promise<void> {
-    const baseLocale = locale.split('-')[0];
-    if (baseLocale !== 'en') {
+    const baseLocale = locale.split("-")[0];
+    if (baseLocale !== "en") {
       const displayName = getLocaleDisplayName(locale);
-      await this.page.getByRole('link', { name: 'Settings' }).click();
-      await this.page.getByRole('button', { name: 'English' }).click();
-      await this.page.getByRole('option', { name: displayName }).click();
-      await this.page.locator('a').filter({ hasText: 'Home' }).click();
+      await this.page.getByRole("link", { name: "Settings" }).click();
+      await this.page.getByRole("button", { name: "English" }).click();
+      await this.page.getByRole("option", { name: displayName }).click();
+      await this.page.locator("a").filter({ hasText: "Home" }).click();
     }
   }
 
@@ -103,7 +103,7 @@ export class TestUtils {
   }
 
   async clickButton(buttonText: string): Promise<void> {
-    await this.page.getByRole('button', { name: buttonText }).click();
+    await this.page.getByRole("button", { name: buttonText }).click();
   }
 
   async verifyTextInCard(
@@ -132,7 +132,7 @@ export class TestUtils {
       .first();
 
     const link = cardLocator
-      .locator('a')
+      .locator("a")
       .getByText(linkText, { exact })
       .first();
 
@@ -152,14 +152,14 @@ export class TestUtils {
       .first();
 
     const link = cardLocator
-      .locator('a')
+      .locator("a")
       .getByText(linkText, { exact })
       .first();
 
     await link.scrollIntoViewIfNeeded();
     await expect(link).toBeVisible();
 
-    const href = await link.getAttribute('href');
+    const href = await link.getAttribute("href");
     if (href) {
       expect(href).toContain(expectedUrl);
     } else {
