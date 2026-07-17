@@ -21,6 +21,7 @@ import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common
 export const mockMetricProvidersRegistry = {
   register: jest.fn(),
   getProvider: jest.fn(),
+  hasProvider: jest.fn(),
   getMetric: jest.fn(),
   listProviders: jest.fn().mockReturnValue([]),
   listMetrics: jest.fn().mockReturnValue([]),
@@ -47,6 +48,7 @@ export const buildMockMetricProvidersRegistry = ({
         return metricsList;
       })
     : jest.fn();
+  const hasProvider = provider ? jest.fn().mockReturnValue(true) : jest.fn();
   const getMetric =
     provider || metricsList
       ? jest.fn().mockImplementation((metricId: string) => {
@@ -67,6 +69,7 @@ export const buildMockMetricProvidersRegistry = ({
   return {
     ...mockMetricProvidersRegistry,
     getProvider,
+    hasProvider,
     getMetric,
     listMetrics,
   } as unknown as jest.Mocked<MetricProvidersRegistry>;

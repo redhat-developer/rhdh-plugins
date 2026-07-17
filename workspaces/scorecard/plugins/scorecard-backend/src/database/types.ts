@@ -54,3 +54,14 @@ export type DbAggregatedMetric = {
    */
   latest_entity_count: number;
 };
+
+export type ScalarAggregationFn = 'sum' | 'average' | 'max' | 'min' | 'count';
+
+export type DbScalarAggregatedMetric = {
+  metric_id: string;
+  total: number;
+  max_timestamp: Date;
+  value: number;
+  calculation_error_count: number;
+  latest_entity_count: number;
+};

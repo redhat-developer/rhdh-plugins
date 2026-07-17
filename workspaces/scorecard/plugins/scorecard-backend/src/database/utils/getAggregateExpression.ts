@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { ScalarAggregationFn } from '../types';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+export function getAggregateExpression(
+  aggregationFn: ScalarAggregationFn,
+  numericValueExpr: string,
+): string {
+  switch (aggregationFn) {
+    case 'count':
+      return 'COUNT(*)';
+    case 'sum':
+      return `SUM(${numericValueExpr})`;
+    case 'average':
+      return `AVG(${numericValueExpr})`;
+    case 'max':
+      return `MAX(${numericValueExpr})`;
+    case 'min':
+      return `MIN(${numericValueExpr})`;
+    default:
+      throw new Error(`Invalid aggregation function: ${aggregationFn}`);
+  }
+}

@@ -19,7 +19,12 @@ import {
   DbMetricValueCreate,
   DbMetricValue,
   DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+  ScalarAggregationFn,
 } from './types';
+import { normalizeTimestamp } from '../utils/normalizeTimestamp';
+import { mergeMaxTimestamp } from '../utils/mergeMaxTimestamp';
+import { getAggregateExpression } from './utils/getAggregateExpression';
 
 type ReadEntityMetricsWithFiltersOptions = {
   status?: string;
@@ -39,10 +44,135 @@ type ReadEntityMetricsWithFiltersOptions = {
   pagination?: { limit: number; offset: number };
 };
 
+type StatsRowResult = {
+  latestIdsSubquery: Knex.QueryBuilder;
+  latestRowCount: number;
+  calculation_error_count: number;
+  maxTimestampAllLatest: Date;
+};
+
+type ScalarAggregationRowResult = {
+  value: number;
+  total: number;
+  maxTimestamp: Date;
+};
+
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
 
+  /**
+   * `value` is a JSON column. Depending on database/driver, a "missing" metric value can
+   * arrive either as SQL NULL or as JSON literal null (`CAST(value AS TEXT) = 'null'`).
+   */
+  private static readonly metricValueIsMissingExpr =
+    "(value IS NULL OR CAST(value AS TEXT) = 'null')";
+
   constructor(private readonly dbClient: Knex<any, any[]>) {}
+
+  /**
+   * Get the latest ids subquery for a given metric and catalog entity refs
+   */
+  private getLatestIdsSubquery(
+    metric_id: string,
+    catalog_entity_refs: string[],
+  ): Knex.QueryBuilder {
+    return this.dbClient(this.tableName)
+      .max('id')
+      .where('metric_id', metric_id)
+      .whereIn('catalog_entity_ref', catalog_entity_refs)
+      .groupBy('catalog_entity_ref');
+  }
+
+  /**
+   * Get the stats row for a given latest ids subquery
+   */
+  private async readStatsRowByLatestIdsSubquery(
+    latestIdsSubquery: Knex.QueryBuilder,
+  ): Promise<StatsRowResult> {
+    // One round-trip for latest-row count, calculation-error count, and max timestamp
+    // (same latest-id set as the status breakdown query below).
+    const statsRow = await this.dbClient(this.tableName)
+      .whereIn('id', latestIdsSubquery)
+      .select(
+        this.dbClient.raw('COUNT(*) as latest_row_count'),
+        this.dbClient.raw(
+          `SUM(CASE WHEN error_message IS NOT NULL AND ${DatabaseMetricValues.metricValueIsMissingExpr} THEN 1 ELSE 0 END) as calculation_error_count`,
+        ),
+        this.dbClient.raw('MAX(timestamp) as max_timestamp'),
+      )
+      .first();
+
+    const latestRowCount = Number(
+      (statsRow as { latest_row_count?: string | number } | undefined)
+        ?.latest_row_count ?? 0,
+    );
+
+    const calculation_error_count = Number(
+      (statsRow as { calculation_error_count?: string | number } | undefined)
+        ?.calculation_error_count ?? 0,
+    );
+
+    const maxTimestampAllLatest = normalizeTimestamp(
+      (statsRow as { max_timestamp?: unknown })?.max_timestamp,
+    );
+
+    return {
+      latestIdsSubquery,
+      latestRowCount,
+      calculation_error_count,
+      maxTimestampAllLatest,
+    };
+  }
+
+  private async readScalarAggregationByLatestIdsSubquery(
+    latestIdsSubquery: Knex.QueryBuilder,
+    aggregationFn: ScalarAggregationFn,
+  ): Promise<ScalarAggregationRowResult> {
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
+
+    const numericValueExpr = isPostgres
+      ? 'CAST(value::text AS DOUBLE PRECISION)'
+      : 'CAST(CAST(value AS TEXT) AS REAL)';
+
+    const aggregateExpression = getAggregateExpression(
+      aggregationFn,
+      numericValueExpr,
+    );
+
+    const aggregateQuery = this.dbClient(this.tableName)
+      .whereIn('id', latestIdsSubquery)
+      .whereRaw(`NOT ${DatabaseMetricValues.metricValueIsMissingExpr}`);
+
+    const aggregateRow = await aggregateQuery
+      .select(
+        this.dbClient.raw(`${aggregateExpression} as value`),
+        this.dbClient.raw('COUNT(*) as total'),
+        this.dbClient.raw('MAX(timestamp) as max_timestamp'),
+      )
+      .first();
+
+    const aggregateResult = {
+      value: 0,
+      total: 0,
+      maxTimestamp: new Date(0),
+    };
+
+    if (aggregateRow) {
+      aggregateResult.value = Number(aggregateRow.value);
+      aggregateResult.total = Number(aggregateRow.total);
+      aggregateResult.maxTimestamp = normalizeTimestamp(
+        aggregateRow.max_timestamp,
+      );
+    }
+
+    return {
+      value: aggregateResult.value,
+      total: aggregateResult.total,
+      maxTimestamp: aggregateResult.maxTimestamp,
+    };
+  }
 
   /**
    * Insert multiple metric values
@@ -93,59 +223,16 @@ export class DatabaseMetricValues {
       return undefined;
     }
 
-    const latestIdsSubquery = this.dbClient(this.tableName)
-      .max('id')
-      .where('metric_id', metric_id)
-      .whereIn('catalog_entity_ref', catalog_entity_refs)
-      .groupBy('catalog_entity_ref');
-
-    // `value` is a JSON column. Depending on database/driver, a "missing" metric value can
-    // arrive either as SQL NULL or as JSON literal null (`CAST(value AS TEXT) = 'null'`).
-    const metricValueIsMissingExpr =
-      "(value IS NULL OR CAST(value AS TEXT) = 'null')";
-
-    // One round-trip for latest-row count, calculation-error count, and max timestamp
-    // (same latest-id set as the status breakdown query below).
-    const statsRow = await this.dbClient(this.tableName)
-      .whereIn('id', latestIdsSubquery)
-      .select(
-        this.dbClient.raw('COUNT(*) as latest_row_count'),
-        this.dbClient.raw(
-          `SUM(CASE WHEN error_message IS NOT NULL AND ${metricValueIsMissingExpr} THEN 1 ELSE 0 END) as calculation_error_count`,
-        ),
-        this.dbClient.raw('MAX(timestamp) as max_timestamp'),
-      )
-      .first();
-
-    const latestRowCount = Number(
-      (statsRow as { latest_row_count?: string | number } | undefined)
-        ?.latest_row_count ?? 0,
+    const latestIdsSubquery = this.getLatestIdsSubquery(
+      metric_id,
+      catalog_entity_refs,
     );
+    const { latestRowCount, calculation_error_count, maxTimestampAllLatest } =
+      await this.readStatsRowByLatestIdsSubquery(latestIdsSubquery);
+
     if (latestRowCount === 0) {
       return undefined;
     }
-
-    const calculation_error_count = Number(
-      (statsRow as { calculation_error_count?: string | number } | undefined)
-        ?.calculation_error_count ?? 0,
-    );
-
-    // Normalize types for cross-database compatibility
-    // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
-    // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
-    const normalizeTimestamp = (timestamp: unknown): Date => {
-      if (timestamp instanceof Date) {
-        return timestamp;
-      }
-      if (typeof timestamp === 'number' || typeof timestamp === 'string') {
-        return new Date(timestamp);
-      }
-      return new Date();
-    };
-
-    const maxTimestampAllLatest = normalizeTimestamp(
-      (statsRow as { max_timestamp?: unknown })?.max_timestamp,
-    );
 
     const statusRows = await this.dbClient(this.tableName)
       .select('status')
@@ -153,7 +240,7 @@ export class DatabaseMetricValues {
       .max('timestamp as max_timestamp')
       .whereIn('id', latestIdsSubquery)
       .whereNotNull('status')
-      .whereRaw(`NOT ${metricValueIsMissingExpr}`)
+      .whereRaw(`NOT ${DatabaseMetricValues.metricValueIsMissingExpr}`)
       .groupBy('status');
 
     if (!statusRows || statusRows.length === 0) {
@@ -181,16 +268,60 @@ export class DatabaseMetricValues {
       total += count;
     }
 
-    const mergedMax =
-      maxTimestampAllLatest.getTime() >= maxTimestamp.getTime()
-        ? maxTimestampAllLatest
-        : maxTimestamp;
+    const mergedMax = mergeMaxTimestamp(maxTimestampAllLatest, maxTimestamp);
 
     return {
       metric_id,
       total,
       max_timestamp: mergedMax,
       statusCounts,
+      calculation_error_count,
+      latest_entity_count: latestRowCount,
+    };
+  }
+
+  /**
+   * Aggregate raw metric values across latest rows for multiple entities.
+   */
+  async readScalarAggregatedMetricByEntityRefs(
+    catalog_entity_refs: string[],
+    metric_id: string,
+    aggregationFn: ScalarAggregationFn,
+  ): Promise<DbScalarAggregatedMetric | undefined> {
+    if (catalog_entity_refs.length === 0) {
+      return undefined;
+    }
+
+    const latestIdsSubquery = this.getLatestIdsSubquery(
+      metric_id,
+      catalog_entity_refs,
+    );
+    const { latestRowCount, calculation_error_count, maxTimestampAllLatest } =
+      await this.readStatsRowByLatestIdsSubquery(latestIdsSubquery);
+
+    if (latestRowCount === 0) {
+      return undefined;
+    }
+
+    const {
+      value,
+      total,
+      maxTimestamp: aggregateMaxTimestamp,
+    } = await this.readScalarAggregationByLatestIdsSubquery(
+      latestIdsSubquery,
+      aggregationFn,
+    );
+
+    const mergedMax = mergeMaxTimestamp(
+      maxTimestampAllLatest,
+      aggregateMaxTimestamp,
+    );
+
+    return {
+      metric_id,
+      total,
+      max_timestamp: mergedMax,
+      value,
       calculation_error_count,
       latest_entity_count: latestRowCount,
     };

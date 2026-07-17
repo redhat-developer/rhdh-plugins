@@ -19,20 +19,20 @@ import {
   AggregatedMetricResult,
   AggregationMetadata,
   Metric,
-  aggregationTypes,
   AggregationResultByType,
-  type AggregationConfig,
+  ScalarAggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
+import type { DbScalarAggregatedMetric } from '../database/types';
+import { toIsoTimestamp } from '../utils/toIsoTimestamp';
+import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = aggregatedMetric?.max_timestamp
-      ? new Date(aggregatedMetric.max_timestamp).toISOString()
-      : new Date().toISOString();
+    const timestamp = toIsoTimestamp(aggregatedMetric?.max_timestamp);
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
@@ -43,24 +43,37 @@ export class AggregatedMetricMapper {
     };
   }
 
+  static toScalarAggregatedMetric(
+    scalarMetric?: DbScalarAggregatedMetric,
+  ): ScalarAggregatedMetric {
+    const timestamp = toIsoTimestamp(scalarMetric?.max_timestamp);
+
+    return {
+      value: scalarMetric?.value ?? 0,
+      total: scalarMetric?.total ?? 0,
+      entitiesConsidered: scalarMetric?.latest_entity_count ?? 0,
+      calculationErrorCount: scalarMetric?.calculation_error_count ?? 0,
+      timestamp,
+    };
+  }
+
   static toAggregationMetadata(
     metric: Metric,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregationMetadata {
     return {
-      title: aggregationConfig?.title ?? metric.title,
-      description: aggregationConfig?.description ?? metric.description,
       type: metric.type,
       history: metric.history,
-      aggregationType:
-        aggregationConfig?.type ?? aggregationTypes.statusGrouped, // By default, return the status grouped aggregation type
+      title: aggregationConfig.title,
+      description: aggregationConfig.description,
+      aggregationType: aggregationConfig.type,
     };
   }
 
   static toAggregatedMetricResult(
     metric: Metric,
     result: AggregationResultByType,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregatedMetricResult {
     return {
       id: metric.id,
