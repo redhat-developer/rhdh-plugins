@@ -76,9 +76,12 @@ jobs:
         run: yarn install --immutable
 
       - name: Install jest-junit reporter
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
+          WORKSPACE: ${{ matrix.workspace }}
         run: |
-          npm install jest-junit@17.0.0 --ignore-scripts --prefix ${{ runner.temp }}/jest-junit
-          mkdir -p ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix "$RUNNER_TEMP/jest-junit"
+          mkdir -p "$RUNNER_TEMP/test-results/$WORKSPACE"
 
       - name: Run tests with coverage
         id: tests
@@ -86,7 +89,8 @@ jobs:
           JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
           JEST_JUNIT_CLASSNAME: '{filepath}'
           JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
-        run: yarn test:all --maxWorkers=3 --reporters=default --reporters=${{ runner.temp }}/jest-junit/node_modules/jest-junit
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: yarn test:all --maxWorkers=3 --reporters=default --reporters="$RUNNER_TEMP/jest-junit/node_modules/jest-junit"
 
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}

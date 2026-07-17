@@ -19,3 +19,18 @@ Run build, lint, fix, API-report, and dedupe commands from the workspace root.
 Run tests from the affected package directory or with an explicit package
 filter. Do not run unfiltered workspace-wide tests; they exceed the Fullsend
 sandbox timeout.
+
+## Before finishing
+
+These CI gates apply across workspaces. Run them from the workspace root and
+commit any generated files.
+
+- **API reports** — if public exports or function signatures changed, run
+  `yarn build:api-reports:only --ci` (and `yarn fix` if package metadata
+  moved).
+- **Prettier** — run `yarn prettier:check` (or `yarn prettier:fix` when that
+  script exists).
+- **Dedupe** — if the lockfile changed, run `yarn dedupe`.
+- **Changesets** — for user-facing changes to published packages, add a
+  `.changeset/` entry. Check the workspace `AGENTS.md` for when a changeset
+  is required vs skippable.
