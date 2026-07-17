@@ -30,6 +30,7 @@ const homepageTranslationEs = createTranslationMessages({
     'homePage.empty':
       'No se configuraron o encontraron tarjetas de página de inicio (puntos de montaje).',
     'search.placeholder': 'Buscar',
+    'search.clearButton': 'Borrar',
     'quickAccess.title': 'Acceso rápido',
     'quickAccess.fetchError': 'No se pudieron obtener los datos.',
     'quickAccess.error': 'Error desconocido',
@@ -37,7 +38,11 @@ const homepageTranslationEs = createTranslationMessages({
     'featuredDocs.learnMore': ' Saber más',
     'starredEntities.title': 'Entidades del catálogo marcadas',
     'recentlyVisited.title': 'Visitados recientemente',
+    'recentlyVisited.description':
+      'Acceso rápido a entidades y páginas vistas recientemente',
     'topVisited.title': 'Más visitados',
+    'topVisited.description':
+      'Tus entidades y servicios a los que accedes con más frecuencia',
     'templates.title': 'Explorar plantillas',
     'templates.fetchError': 'No se pudieron obtener los datos.',
     'templates.error': 'Error desconocido',
