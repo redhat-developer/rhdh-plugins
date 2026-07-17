@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import '@backstage/ui/css/styles.css';
 import Grid from '@mui/material/Grid';
 import { Header, Page, Content, InfoCard } from '@backstage/core-components';
 import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
