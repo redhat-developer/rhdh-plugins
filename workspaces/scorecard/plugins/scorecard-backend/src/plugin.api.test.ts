@@ -283,7 +283,7 @@ describe('scorecard plugin with aggregationKPIs config', () => {
         myCustomKpi: {
           title: 'Custom KPI',
           description: 'A custom KPI based on open PRs',
-          type: 'average',
+          type: 'weightedStatusScore',
           metricId: 'github.open_prs',
           options: {
             statusScores: {
@@ -315,7 +315,7 @@ describe('scorecard plugin with aggregationKPIs config', () => {
       expect.objectContaining({
         title: 'Custom KPI',
         description: 'A custom KPI based on open PRs',
-        aggregationType: 'average',
+        aggregationType: 'weightedStatusScore',
       }),
     );
   });
