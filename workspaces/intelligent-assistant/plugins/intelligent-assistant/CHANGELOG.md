@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 3.0.2
+
+### Patch Changes
+
+- f71bd18: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.9`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.0.2
+
 ## 3.0.1
 
 ### Patch Changes
