@@ -28,4 +28,4 @@ export {
   BulkImportSidebarItem,
 } from './plugin';
 
-export { default as BulkImportIcon } from './components/BulkImportSidebarItem';
+export { default as BulkImportIcon } from './components/BulkImportIcon';
