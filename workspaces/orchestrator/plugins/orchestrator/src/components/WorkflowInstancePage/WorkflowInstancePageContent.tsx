@@ -46,7 +46,7 @@ import {
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
-import { WorkflowProgress } from './WorkflowProgress';
+import { WorkflowInstanceProgressReactFlow } from './WorkflowInstanceProgressReactFlow';
 import { WorkflowResult } from './WorkflowResult';
 import { WorkflowRunDetails } from './WorkflowRunDetails';
 
@@ -159,7 +159,7 @@ export const WorkflowInstancePageContent: React.FC<{
   const workflowId = instance.processId;
   const instanceId = instance.id;
   const {
-    value,
+    value: inputSchemaResponse,
     loading,
     error: responseError,
   } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
@@ -167,6 +167,15 @@ export const WorkflowInstancePageContent: React.FC<{
       workflowId,
       instanceId,
     );
+    return res.data;
+  }, [orchestratorApi, workflowId, instanceId]);
+
+  const {
+    value: workflowSource,
+    loading: loadingWorkflowSource,
+    error: workflowSourceError,
+  } = useAsync(async (): Promise<string | undefined> => {
+    const res = await orchestratorApi.getWorkflowSource(workflowId);
     return res.data;
   }, [orchestratorApi, workflowId]);
 
@@ -236,20 +245,23 @@ export const WorkflowInstancePageContent: React.FC<{
     <WorkflowInputs
       className={`${bottomRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
-      value={value}
+      value={inputSchemaResponse}
       loading={loading}
       responseError={responseError}
     />
   );
 
-  const progressCard = (
+  const progressGraphCard = (
     <InfoCard
       title={t('workflow.progress')}
       divider={false}
       className={`${bottomRowClassName} ${contentModeCardClassName}`.trim()}
       cardClassName={cardOverflowClassName}
     >
-      <WorkflowProgress
+      <WorkflowInstanceProgressReactFlow
+        workflowSource={workflowSource}
+        loadingWorkflowSource={loadingWorkflowSource}
+        errorWorkflowSource={workflowSourceError}
         workflowError={instance.error}
         workflowNodes={instance.nodes}
         workflowStatus={instance.state}
@@ -277,7 +289,7 @@ export const WorkflowInstancePageContent: React.FC<{
               {inputsCard}
             </Grid>
             <Grid item xs={6} zeroMinWidth>
-              {progressCard}
+              {progressGraphCard}
             </Grid>
           </>
         ) : (
@@ -289,7 +301,7 @@ export const WorkflowInstancePageContent: React.FC<{
               </Box>
               <Box className={classes.contentModeColumn}>
                 {resultCard}
-                {progressCard}
+                {progressGraphCard}
               </Box>
             </Box>
           </Grid>
