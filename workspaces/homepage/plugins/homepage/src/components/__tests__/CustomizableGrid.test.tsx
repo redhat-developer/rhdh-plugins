@@ -60,7 +60,7 @@ jest.mock('@backstage/plugin-home', () => ({
 const HeadlineCard = () => createElement('div', null, 'Headline');
 const SearchCard = () => createElement('div', null, 'Search');
 
-const mountPoints: HomePageCardMountPoint[] = [
+const mountPoints = [
   {
     Component: HeadlineCard,
     config: {
@@ -82,7 +82,7 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: SearchCard,
     config: {},
   },
-];
+] as HomePageCardMountPoint[];
 
 describe('CustomizableGrid', () => {
   it('renders customizable homepage grid with configured cards', () => {

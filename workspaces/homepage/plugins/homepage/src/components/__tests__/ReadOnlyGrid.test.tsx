@@ -39,7 +39,7 @@ jest.mock('@backstage/core-components', () => ({
 
 const CardComponent = () => createElement('div', null, 'Card Content');
 
-const mountPointsWithLayout: HomePageCardMountPoint[] = [
+const mountPointsWithLayout = [
   {
     Component: CardComponent,
     config: {
@@ -48,14 +48,14 @@ const mountPointsWithLayout: HomePageCardMountPoint[] = [
       },
     },
   },
-];
+] as unknown as HomePageCardMountPoint[];
 
-const mountPointsWithoutLayout: HomePageCardMountPoint[] = [
+const mountPointsWithoutLayout = [
   {
     Component: CardComponent,
     config: {},
   },
-];
+] as unknown as HomePageCardMountPoint[];
 
 describe('ReadOnlyGrid', () => {
   it('renders cards with configured layouts', () => {

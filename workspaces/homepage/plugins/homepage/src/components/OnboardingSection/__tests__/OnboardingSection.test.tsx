@@ -75,7 +75,9 @@ const renderWithProviders = (ui: ReactNode) =>
           catalogApiRef,
           {
             getEntityByRef: async () => ({
-              metadata: { title: 'Catalog User' },
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'User',
+              metadata: { name: 'catalog-user', title: 'Catalog User' },
               spec: { profile: { displayName: 'Catalog User' } },
             }),
           },

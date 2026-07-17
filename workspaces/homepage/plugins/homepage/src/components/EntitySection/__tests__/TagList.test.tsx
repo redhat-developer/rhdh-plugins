@@ -19,7 +19,6 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { mockUseTranslation } from '../../../test-utils/mockTranslations';
 import TagList from '../TagList';
 
 jest.mock('@backstage/core-components', () => ({

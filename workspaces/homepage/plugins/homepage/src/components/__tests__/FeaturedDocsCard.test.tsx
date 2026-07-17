@@ -40,7 +40,7 @@ jest.mock('@backstage/plugin-home', () => ({
 
 describe('FeaturedDocsCard', () => {
   it('renders with translated title and sub link text', () => {
-    render(<FeaturedDocsCard />);
+    render(<FeaturedDocsCard filter={{ kind: 'component' }} />);
 
     expect(screen.getByTestId('title')).toHaveTextContent('Featured Docs');
     expect(screen.getByTestId('sub-link').textContent).toContain('Learn more');

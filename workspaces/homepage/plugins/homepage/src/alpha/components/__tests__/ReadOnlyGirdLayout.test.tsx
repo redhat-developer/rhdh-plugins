@@ -37,27 +37,27 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-const CardComponent = () => createElement('div', null, 'Card Content');
+const cardElement = createElement('div', null, 'Card Content');
 
 const ContentCard = ({ label }: { label: string }) =>
   createElement('div', null, label);
 
-const homepageCardsWithLayout: HomePageCardConfig[] = [
+const homepageCardsWithLayout = [
   {
     name: 'headline',
-    component: CardComponent,
+    component: cardElement,
     breakpointLayouts: {
       xl: { x: 0, y: 0, w: 6, h: 4 },
     },
   },
-];
+] as unknown as HomePageCardConfig[];
 
-const homepageCardsWithoutLayout: HomePageCardConfig[] = [
+const homepageCardsWithoutLayout = [
   {
     name: 'headline',
-    component: CardComponent,
+    component: cardElement,
   },
-];
+] as unknown as HomePageCardConfig[];
 
 describe('ReadOnlyGridLayout', () => {
   it('renders cards with configured breakpoint layouts', () => {
@@ -95,12 +95,14 @@ describe('ReadOnlyGridLayout', () => {
   it('renders react element components directly', () => {
     render(
       <ReadOnlyGridLayout
-        homepageCards={[
-          {
-            name: 'element',
-            component: createElement('div', null, 'Element Content'),
-          },
-        ]}
+        homepageCards={
+          [
+            {
+              name: 'element',
+              component: createElement('div', null, 'Element Content'),
+            },
+          ] as unknown as HomePageCardConfig[]
+        }
       />,
     );
 

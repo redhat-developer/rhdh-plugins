@@ -70,7 +70,7 @@ const renderHeader = (
           {
             getProfileInfo: async () => profile ?? {},
             getBackstageIdentity: async () => ({
-              type: 'user',
+              type: 'user' as const,
               userEntityRef: 'user:default/guest',
               ownershipEntityRefs: [],
             }),
