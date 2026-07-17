@@ -39,6 +39,8 @@ Choose a priority that reflects the real-world impact of the bug:
 | **Normal**   | A noticeable issue that affects a subset of users or use cases but does not block core functionality.                                                                                       |
 | **Minor**    | Cosmetic issues, typos, or minor inconveniences with no functional impact.                                                                                                                  |
 
+Please ping @rhdh-cope on Slack in the #rhdh-plugins-ecosystem channel for awareness if you have opened a **Blocker** or **Critical** bug.
+
 > [!IMPORTANT]
 > If you are unsure between priorities, err on the higher side and add a comment explaining the impact. It is easier to downgrade a priority than to miss a release-blocking issue.
 
