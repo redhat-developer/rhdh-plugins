@@ -9399,7 +9399,7 @@ __metadata:
     "@patternfly/react-table": "npm:^6.4.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.9"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.10"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^5.59.15"
     "@testing-library/dom": "npm:^10.0.0"
@@ -9421,9 +9421,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.8, @red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.9":
-  version: 0.14.9
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.9"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.10":
+  version: 0.14.10
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.10"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
@@ -9435,7 +9435,7 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/4d07ca0766f37e9b347074b7409143c245081c47f15dabd39b47c1a352203b7ccf52fe3cfd934d5d6075b61a746daf6467338bda596ee6b3c251954a683864e5
+  checksum: 10c0/fbc7d8806e24b85cbe6a295473c3ed300e971f997d97622efce83e495e21670c962b9892ed3c40059d02f810e3d01ce56bca211bb94ca93401f4337f9623cb68
   languageName: node
   linkType: hard
 
@@ -14402,7 +14402,7 @@ __metadata:
     "@mui/material": "npm:^5.12.2"
     "@playwright/test": "npm:1.61.0"
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.8"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.10"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
@@ -14454,7 +14454,7 @@ __metadata:
     "@playwright/test": "npm:1.61.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.8"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.10"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
