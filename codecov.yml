@@ -82,7 +82,7 @@ component_management:
         - workspaces/adoption-insights/
         - workspaces/global-header/
         - workspaces/homepage/
-        - workspaces/lightspeed/
+        - workspaces/intelligent-assistant/
         - workspaces/orchestrator/
         - workspaces/quickstart/
     # Tech-Preview Plugins — 4 workspace(s)
@@ -169,7 +169,7 @@ flag_management:
         - workspaces/konflux/
     - name: intelligent-assistant
       paths:
-        - workspaces/lightspeed/
+        - workspaces/intelligent-assistant/
     - name: mcp-integrations
       paths:
         - workspaces/mcp-integrations/
