@@ -31,6 +31,22 @@ export type McpServerDisplayInput = {
   hasToken: boolean;
 };
 
+/** Shared server shape used by the configure-server modal and its hook. */
+export type McpConfigureServer = {
+  id: string;
+  name: string;
+  url?: string;
+  enabled: boolean;
+  status: 'connected' | 'error' | 'unknown';
+  toolCount: number;
+  hasToken: boolean;
+  hasUserToken: boolean;
+  hasOrgToken: boolean;
+  validationError?: string;
+  /** 'dcr' = tokens are minted automatically (no manual token needed). */
+  auth?: string;
+};
+
 export const formatApiError = (error: unknown): string => {
   if (typeof error === 'string') {
     return error;
@@ -304,3 +320,28 @@ export const isModalEnabledChecked = ({
   modalEnabled: boolean;
 }): boolean =>
   isEnabledToggleUnavailable(displayStatus) ? false : modalEnabled;
+
+/** Translation function shape accepted by {@link getDisplayDetail}. */
+type TranslateFn = (key: any, options?: any) => string;
+
+export const getDisplayDetail = (
+  server: { toolCount: number },
+  displayStatus: ServerStatus,
+  t: TranslateFn,
+): string => {
+  if (displayStatus === 'disabled') return t('mcp.settings.status.disabled');
+  if (displayStatus === 'tokenRequired')
+    return t('mcp.settings.status.tokenRequired');
+  if (displayStatus === 'failed') return t('mcp.settings.status.failed');
+  if (displayStatus === 'ok') {
+    if (server.toolCount === 1) {
+      return t('mcp.settings.status.oneTool', {
+        count: String(server.toolCount),
+      });
+    }
+    return t('mcp.settings.status.manyTools', {
+      count: String(server.toolCount),
+    });
+  }
+  return t('mcp.settings.status.unknown');
+};
