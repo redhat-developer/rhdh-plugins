@@ -37,7 +37,10 @@
 /workspaces/x2a                                     @redhat-developer/rhdh-plugins-maintainers @mareklibra @eloycoto @yray-pixel
 /workspaces/dcm                                     @redhat-developer/rhdh-plugins-maintainers @asmasarw @jkilzi @mareklibra
 
-# Fullsend AI agent configuration — requires maintainer approval to prevent
+# AI agent configuration — requires maintainer approval to prevent
 # agents from modifying their own guardrails.
-/.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero @johnmcollier
-/.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @durandom @gabemontero @johnmcollier
+/.agents/                                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.claude/                                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.cursor/                                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
