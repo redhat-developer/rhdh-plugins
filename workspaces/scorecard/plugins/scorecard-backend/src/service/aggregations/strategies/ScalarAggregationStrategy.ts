@@ -15,46 +15,57 @@
  */
 
 import {
-  aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
-  type StatusGroupedAggregationResult,
+  type ScalarAggregationResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ScalarAggregationFn } from '../../../database/types';
 import { AggregatedMetricMapper } from '../../mappers';
 import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import type { AggregationOptions } from '../types';
 import type { AggregationStrategy } from './types';
+import { isScalarAggregationConfig } from '../../../utils/aggregation/isScalarAggregationConfig';
 
-export class StatusGroupedAggregationStrategy implements AggregationStrategy {
-  constructor(private readonly loader: AggregatedMetricLoader) {}
+export class ScalarAggregationStrategy implements AggregationStrategy {
+  constructor(
+    private readonly loader: AggregatedMetricLoader,
+    private readonly aggregationFn: ScalarAggregationFn,
+  ) {}
 
   async aggregate(
     options: AggregationOptions,
   ): Promise<AggregatedMetricResult> {
-    const { entityRefs, metric, thresholds, aggregationConfig } = options;
+    const { entityRefs, metric, aggregationConfig } = options;
 
-    if (aggregationConfig.type !== aggregationTypes.statusGrouped) {
+    if (!isScalarAggregationConfig(aggregationConfig)) {
       throw new Error(
-        `Expected aggregation type "${aggregationTypes.statusGrouped}" but received "${aggregationConfig.type}"`,
+        `Expected a scalar aggregation config but received type "${aggregationConfig.type}"`,
       );
     }
 
-    const aggregatedMetric =
-      await this.loader.loadStatusGroupedMetricByEntityRefs(
-        entityRefs,
-        metric.id,
-      );
+    const { thresholds: headlineThresholds = DEFAULT_NUMBER_THRESHOLDS } =
+      aggregationConfig.options ?? {};
+
+    const {
+      value,
+      total,
+      entitiesConsidered,
+      calculationErrorCount,
+      timestamp,
+    } = await this.loader.loadScalarMetricByEntityRefs(
+      entityRefs,
+      metric.id,
+      this.aggregationFn,
+    );
 
     const result = {
-      total: aggregatedMetric.total,
-      timestamp: aggregatedMetric.timestamp,
-      entitiesConsidered: aggregatedMetric.entitiesConsidered,
-      calculationErrorCount: aggregatedMetric.calculationErrorCount,
-      values: thresholds.rules.map(rule => ({
-        name: rule.key,
-        count: aggregatedMetric.values[rule.key] ?? 0,
-      })),
-      thresholds,
-    } as StatusGroupedAggregationResult;
+      value,
+      total,
+      entitiesConsidered,
+      calculationErrorCount,
+      timestamp,
+      thresholds: headlineThresholds,
+    } satisfies ScalarAggregationResult;
 
     return AggregatedMetricMapper.toAggregatedMetricResult(
       metric,

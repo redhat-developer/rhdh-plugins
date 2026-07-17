@@ -41,7 +41,7 @@ export type AggregationConfig = {
 
 // @public (undocumented)
 export type AggregationConfigOptions = {
-  statusScores: Record<string, number>;
+  statusScores?: StatusScoreAggregationOption;
   thresholds?: ThresholdConfig;
 };
 
@@ -57,7 +57,8 @@ export type AggregationMetadata = {
 // @public (undocumented)
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | WeightedStatusScoreAggregationResult;
+  | WeightedStatusScoreAggregationResult
+  | ScalarAggregationResult;
 
 // @public
 export type AggregationThresholdRule = Pick<
@@ -73,6 +74,11 @@ export type AggregationType =
 export const aggregationTypes: Readonly<{
   statusGrouped: 'statusGrouped';
   weightedStatusScore: 'weightedStatusScore';
+  sum: 'sum';
+  average: 'average';
+  max: 'max';
+  min: 'min';
+  count: 'count';
 }>;
 
 // @public
@@ -149,6 +155,25 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 // @public (undocumented)
 export const RESOURCE_TYPE_SCORECARD_METRIC = 'scorecard-metric';
 
+// @public (undocumented)
+export type ScalarAggregatedMetric = Omit<AggregatedMetric, 'values'> & {
+  value: number;
+};
+
+// @public (undocumented)
+export type ScalarAggregationResult = ScalarAggregatedMetric & {
+  thresholds: ThresholdConfig;
+};
+
+// @public
+export const scalarAggregationTypes: readonly [
+  'sum',
+  'average',
+  'max',
+  'min',
+  'count',
+];
+
 // @public
 export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
   | 'success.main'
@@ -189,6 +214,9 @@ export type StatusGroupedAggregationResult = Omit<
   values: AggregatedMetricValue[];
   thresholds: ThresholdConfig;
 };
+
+// @public (undocumented)
+export type StatusScoreAggregationOption = Record<string, number>;
 
 // @public
 export type ThresholdConfig = {

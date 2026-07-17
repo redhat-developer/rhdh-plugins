@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
-
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+export function toIsoTimestamp(timestamp?: Date): string {
+  return timestamp
+    ? new Date(timestamp).toISOString()
+    : new Date().toISOString();
+}

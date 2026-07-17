@@ -156,15 +156,29 @@ For **number** metrics, each overridden expression is validated in isolation fir
 
 These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`weightedStatusScore`**.
 
-**Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
+- **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
 
-**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the weightedStatusScore KPI donut). Custom keys in aggregation KPI thresholds **only require `color`** (not `icon`). Expressions are **number**-style and are evaluated against **`weightedStatusScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the weightedStatusScore KPI donut). Custom keys in aggregation KPI thresholds **only require `color`** (not `icon`). Expressions are **number**-style and are evaluated against **`weightedStatusScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
 
-**Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`WeightedStatusScoreAggregationStrategy`** applies **`DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`WeightedStatusScoreAggregationStrategy`** applies **`DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
 
-**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. WeightedStatusScore KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+- **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. WeightedStatusScore KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
 
-**Further reading:** [Entity Aggregation](./aggregation.md) (`weightedStatusScore` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
+- **Further reading:** [Entity Aggregation](./aggregation.md) (`weightedStatusScore` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
+
+### 5. Aggregation KPI result thresholds (scalar types)
+
+These thresholds are **not** per-entity metric rules. They apply to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**.
+
+- **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
+
+- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
+
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**.
+
+- **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Scalar KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions when multiple rules apply (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+
+- **Further reading:** [Entity Aggregation](./aggregation.md) (scalar types, API response shape); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (scalar **`aggregationKPIs`** examples).
 
 ## Threshold Priority Order
 
@@ -328,7 +342,7 @@ If no color is specified for a threshold rule, frontend will use these default c
 | warning  | `warning.main` (orange/yellow) |
 | error    | `error.main` (red)             |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** a `color` and an `icon` property. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI. (Aggregation KPI thresholds only require `color` for custom keys — see [§4 Aggregation KPI result thresholds](#4-aggregation-kpi-result-thresholds-average-type).)
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** a `color` and an `icon` property. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI. (Aggregation KPI thresholds only require `color` for custom keys — see [§4 Aggregation KPI result thresholds](#4-aggregation-kpi-result-thresholds-weightedstatusscore-type).)
 
 ## Threshold Icons
 
@@ -429,6 +443,6 @@ rules:
 
 ## Related documentation
 
-- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`** vs **`weightedStatusScore`**
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, and scalar types
 - [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
 - [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

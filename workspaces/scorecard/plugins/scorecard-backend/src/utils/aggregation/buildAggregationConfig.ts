@@ -16,49 +16,20 @@
 
 import type { Config } from '@backstage/config';
 import {
-  type ThresholdConfig,
   aggregationTypes,
-  type AggregationConfigOptions,
   type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { isScalarAggregationType } from './isScalarAggregationType';
+import { buildAggregationConfigThresholds } from './buildAggregationConfigThresholds';
+import { buildAggregationStatusScores } from './buildAggregationStatusScores';
 
-function buildStatusScores(
-  config: Config,
-): AggregationConfigOptions['statusScores'] {
-  const statusScores: AggregationConfigOptions['statusScores'] = {};
-  const statusScoresConfig = config
-    .getConfig('options')
-    .getConfig('statusScores');
-
-  for (const key of statusScoresConfig.keys()) {
-    statusScores[key] = statusScoresConfig.getNumber(key);
-  }
-
-  return statusScores;
-}
-
-function buildAggregationThresholdsConfig(
-  config: Config,
-): ThresholdConfig | undefined {
-  const thresholdsConfig = config.getOptionalConfig('options.thresholds');
-  if (thresholdsConfig) {
-    return {
-      rules: thresholdsConfig.getConfigArray('rules').map(rule => ({
-        key: rule.getString('key'),
-        expression: rule.getString('expression'),
-        color: rule.getString('color'),
-      })),
-    };
-  }
-
-  return undefined;
-}
+type Options = {
+  config: Config;
+};
 
 export function buildAggregationConfig(
   aggregationId: string,
-  options: {
-    config: Config;
-  },
+  options: Options,
 ): AggregationConfig {
   const { config } = options;
 
@@ -70,11 +41,16 @@ export function buildAggregationConfig(
     description: config.getString('description'),
   } as AggregationConfig;
 
+  aggregationConfig.options = {};
+
   if (aggregationConfig.type === aggregationTypes.weightedStatusScore) {
-    aggregationConfig.options = {
-      statusScores: buildStatusScores(config),
-      thresholds: buildAggregationThresholdsConfig(config),
-    };
+    aggregationConfig.options.statusScores =
+      buildAggregationStatusScores(config);
+    aggregationConfig.options.thresholds =
+      buildAggregationConfigThresholds(config);
+  } else if (isScalarAggregationType(aggregationConfig.type)) {
+    aggregationConfig.options.thresholds =
+      buildAggregationConfigThresholds(config);
   }
 
   return aggregationConfig;

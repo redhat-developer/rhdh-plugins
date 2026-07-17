@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { type StatusScoreAggregationOption } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Config } from '@backstage/config';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+export function buildAggregationStatusScores(
+  config: Config,
+): StatusScoreAggregationOption {
+  const statusScores: StatusScoreAggregationOption = {};
+  const statusScoresConfig = config
+    .getConfig('options')
+    .getConfig('statusScores');
+
+  for (const key of statusScoresConfig.keys()) {
+    statusScores[key] = statusScoresConfig.getNumber(key);
+  }
+
+  return statusScores;
+}

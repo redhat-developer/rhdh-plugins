@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+export function normalizeTimestamp(timestamp?: unknown): Date {
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    return new Date(timestamp);
+  }
+
+  return new Date();
+}
