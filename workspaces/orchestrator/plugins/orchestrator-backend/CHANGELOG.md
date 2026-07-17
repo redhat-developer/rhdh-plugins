@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.10.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+- Updated dependencies [eade824]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.3
+
 ## 8.10.2
 
 ### Patch Changes

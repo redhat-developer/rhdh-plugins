@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.11.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+- ea8563b: Enable backward navigation in multi-step workflow forms by clicking completed stepper steps, while keeping the current and future steps display-only.
+- Updated dependencies [eade824]
+- Updated dependencies [ea8563b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.3
+
 ## 1.11.2
 
 ### Patch Changes
