@@ -15,20 +15,25 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
-import { Markdown } from './Markdown';
+import { ViewMoreLink } from '../ViewMoreLink';
 
-describe('Markdown', () => {
-  it('renders successfully', async () => {
+jest.mock('@backstage/core-components', () => ({
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}));
+
+describe('EntitySection ViewMoreLink', () => {
+  it('renders a link with children', () => {
     render(
-      <Markdown
-        title="This is a headline"
-        content={'## This is some markdown\n\nSome content'}
-      />,
+      <MemoryRouter>
+        <ViewMoreLink to="/catalog">View all entities</ViewMoreLink>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByText('This is a headline')).toBeInTheDocument();
-    expect(screen.getByText('This is some markdown')).toBeInTheDocument();
-    expect(screen.getByText('Some content')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'View all entities' });
+    expect(link).toHaveAttribute('href', '/catalog');
   });
 });
