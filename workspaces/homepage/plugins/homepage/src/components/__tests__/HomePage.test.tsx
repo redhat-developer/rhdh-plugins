@@ -88,7 +88,7 @@ const renderHomePage = (customizable: boolean) =>
           {
             getProfileInfo: async () => ({}),
             getBackstageIdentity: async () => ({
-              type: 'user',
+              type: 'user' as const,
               userEntityRef: 'user:default/guest',
               ownershipEntityRefs: [],
             }),
@@ -110,6 +110,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: undefined,
       loading: true,
+      error: undefined,
     });
 
     renderHomePage(false);
@@ -121,6 +122,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: [{ id: 'headline', ref: 'homepage.headline' }],
       loading: false,
+      error: undefined,
     });
 
     renderHomePage(true);
@@ -134,6 +136,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: [{ id: 'headline', ref: 'homepage.headline' }],
       loading: false,
+      error: undefined,
     });
 
     renderHomePage(false);
@@ -147,6 +150,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: [],
       loading: false,
+      error: undefined,
     });
 
     renderHomePage(false);
@@ -160,6 +164,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: undefined,
       loading: false,
+      error: undefined,
     });
 
     renderHomePage(true);
@@ -171,6 +176,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: undefined,
       loading: false,
+      error: undefined,
     });
 
     renderHomePage(false);
@@ -182,6 +188,7 @@ describe('HomePage', () => {
     mockUseDefaultWidgets.mockReturnValue({
       defaultWidgets: undefined,
       loading: false,
+      error: undefined,
     });
 
     render(
@@ -192,7 +199,7 @@ describe('HomePage', () => {
             {
               getProfileInfo: async () => ({}),
               getBackstageIdentity: async () => ({
-                type: 'user',
+                type: 'user' as const,
                 userEntityRef: 'user:default/guest',
                 ownershipEntityRefs: [],
               }),

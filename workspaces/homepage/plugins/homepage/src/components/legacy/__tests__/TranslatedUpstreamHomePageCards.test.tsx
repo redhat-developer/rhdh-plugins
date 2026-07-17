@@ -49,13 +49,13 @@ describe('TranslatedUpstreamHomePageCards', () => {
   });
 
   it('renders RecentlyVisitedCard with translated title', () => {
-    render(<RecentlyVisitedCard />);
+    render(<RecentlyVisitedCard kind="recent" />);
 
     expect(screen.getByTestId('recent')).toHaveTextContent('Recently Visited');
   });
 
   it('renders TopVisitedCard with translated title', () => {
-    render(<TopVisitedCard />);
+    render(<TopVisitedCard kind="top" />);
 
     expect(screen.getByTestId('top')).toHaveTextContent('Top Visited');
   });

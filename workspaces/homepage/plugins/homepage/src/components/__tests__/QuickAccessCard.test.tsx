@@ -73,13 +73,14 @@ const quickAccessData = [
     isExpanded: true,
     links: [
       {
+        icon: null,
         iconUrl: '/icons/web.png',
         label: 'Website',
         url: 'https://example.com',
       },
     ],
   },
-];
+] as unknown as ReturnType<typeof useQuickAccessLinks>['data'];
 
 const theme = createTheme();
 

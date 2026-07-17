@@ -50,7 +50,7 @@ const SearchCard = createElement(
   'Search',
 );
 
-const homepageCards: HomePageCardConfig[] = [
+const homepageCards = [
   {
     name: 'headline',
     component: HeadlineCard,
@@ -58,17 +58,17 @@ const homepageCards: HomePageCardConfig[] = [
     breakpointLayouts: {
       xl: { x: 0, y: 0, w: 12, h: 2 },
     },
-  } as HomePageCardConfig,
+  },
   {
     name: 'search',
     component: SearchCard,
     node: SearchCard,
-  } as HomePageCardConfig,
+  },
   {
     name: 'skipped',
     component: createElement('div', null, 'Skipped'),
-  } as HomePageCardConfig,
-];
+  },
+] as unknown as HomePageCardConfig[];
 
 describe('CustomizableGridLayout', () => {
   it('renders customizable homepage grid with default layout config', () => {

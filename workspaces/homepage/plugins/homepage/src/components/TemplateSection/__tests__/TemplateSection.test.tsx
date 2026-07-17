@@ -112,6 +112,7 @@ describe('TemplateSectionContent', () => {
       data: {
         items: [
           {
+            apiVersion: 'scaffolder.backstage.io/v1beta3',
             kind: 'Template',
             metadata: {
               name: 'nodejs',
