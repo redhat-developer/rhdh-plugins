@@ -1,5 +1,49 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.10.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.2
+
+## 8.10.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+- 22f75ad: Fix workflow run stats on entity catalog workflow overview by querying instances with workflow definition ids and optional target entity filter.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.1
+
+## 8.10.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- d908e3e: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+- bbcdc56: update the workflow overview api to include the success ratio for a worfklow. Also add the total runs(for the last 30 days) for each workflow
+- a6cd70c: Add the ability to send nested filters with the same field
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.0
+
+## 8.9.5
+
+### Patch Changes
+
+- 06ac2d0: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+
 ## 8.9.4
 
 ### Patch Changes

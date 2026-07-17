@@ -22,7 +22,7 @@ import {
 import { makeStyles } from '@material-ui/core';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { formatRelativeTime } from '../tools';
+import { formatRelativeTime, getEffectiveDurationSeconds } from '../tools';
 
 const useStyles = makeStyles(theme => ({
   timing: {
@@ -56,6 +56,7 @@ export const TimingCell = ({ lastJob }: { lastJob: Job | undefined }) => {
     t,
     lastJob.startedAt,
     lastJob.finishedAt,
+    getEffectiveDurationSeconds(lastJob),
   );
   return <div className={classes.timing}>{timingText}</div>;
 };

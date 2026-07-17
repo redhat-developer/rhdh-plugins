@@ -19,7 +19,7 @@ import { useAsync } from 'react-use';
 import { TabbedLayout } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Box } from '@material-ui/core';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from 'tss-react/mui';
 
@@ -81,7 +81,6 @@ export const WorkflowPage = () => {
             title={t('page.tabs.workflowRuns')}
           >
             <Grid container spacing={2}>
-              <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
               <Grid item xs={12}>
                 <WorkflowRunsTabContent />
               </Grid>

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -26,24 +29,100 @@ import BuildIcon from '@mui/icons-material/Build';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import StarIcon from '@mui/icons-material/Star';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useApi } from '@backstage/core-plugin-api';
 import { McpIcon } from '../icons';
 import { StatusDot } from './StatusDot';
 import { useStatus } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
+import { augmentApiRef } from '../../api';
+import type {
+  KagentiAgentCard,
+  KagentiDashboardConfig,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 
 export interface AgentInfoSectionProps {
   expanded: boolean;
   onToggleExpanded: () => void;
   /** Display name of the currently active agent during streaming */
   currentAgent?: string;
+  /** The selectedModel from ChatContainer, used as fallback when currentAgent is undefined */
+  selectedModel?: string;
 }
 
 export const AgentInfoSection = ({
   expanded,
   onToggleExpanded,
   currentAgent,
+  selectedModel,
 }: AgentInfoSectionProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { status, loading } = useStatus();
+  const api = useApi(augmentApiRef);
+  const hasAgentCards = status?.capabilities?.agentCards === true;
+  const hasAgentCatalog = status?.capabilities?.agentCatalog === true;
+
+  const [agentCard, setAgentCard] = useState<KagentiAgentCard | undefined>();
+  const [agentStatus, setAgentStatus] = useState<string | undefined>();
+  const [dashboards, setDashboards] = useState<
+    KagentiDashboardConfig | undefined
+  >();
+
+  const effectiveAgent = currentAgent || selectedModel;
+
+  useEffect(() => {
+    if (!hasAgentCards || !effectiveAgent) {
+      setAgentCard(undefined);
+      setAgentStatus(undefined);
+      return undefined;
+    }
+    const agentRef = effectiveAgent;
+    const parts = agentRef.includes('/')
+      ? agentRef.split('/')
+      : [undefined, agentRef];
+    const ns = parts[0];
+    const name = parts[parts.length - 1];
+    if (!ns || !name) return undefined;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const detail = await api.getKagentiAgent(ns, name);
+        if (!cancelled) {
+          setAgentCard(detail.agentCard);
+          setAgentStatus(
+            typeof detail.status === 'string'
+              ? detail.status
+              : String(
+                  (detail.status as Record<string, unknown>)?.phase ?? '',
+                ) || undefined,
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, hasAgentCards, effectiveAgent]);
+
+  useEffect(() => {
+    if (!hasAgentCards) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const d = await api.getKagentiDashboards();
+        if (!cancelled) setDashboards(d);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, hasAgentCards]);
 
   const providerConnected = status?.provider.connected ?? false;
   const vectorStoreConnected = status?.vectorStore.connected ?? false;
@@ -57,15 +136,25 @@ export const AgentInfoSection = ({
   const overallReady = !loading && providerConnected;
 
   const agentStatusColor = (() => {
-    if (overallReady) return theme.palette.success.main;
     if (loading) return theme.palette.warning.main;
+    if (!providerConnected) return theme.palette.error.main;
+    if (hasAgentCards && agentStatus) {
+      const s = agentStatus.toLowerCase();
+      if (s === 'ready' || s === 'running' || s === 'active')
+        return theme.palette.success.main;
+      if (s === 'error' || s === 'failed') return theme.palette.error.main;
+      return theme.palette.warning.main;
+    }
+    if (overallReady) return theme.palette.success.main;
     return theme.palette.error.main;
   })();
 
   const agentStatusText = (() => {
-    if (loading) return 'Connecting...';
-    if (overallReady) return 'Ready';
-    return 'Offline';
+    if (loading) return t('agentInfo.connecting');
+    if (!providerConnected) return t('agentInfo.offline');
+    if (hasAgentCards && agentStatus) return agentStatus;
+    if (overallReady) return t('agentInfo.ready');
+    return t('agentInfo.offline');
   })();
 
   return (
@@ -143,16 +232,166 @@ export const AgentInfoSection = ({
             gap: 0.75,
           }}
         >
-          {/* Agent Team (multi-agent only) */}
-          {agents && agents.length > 0 && (
+          {/* Kagenti Agent Card Details — shown first for Kagenti */}
+          {hasAgentCards && agentCard && (
             <>
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  my: 0.5,
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: theme.palette.text.secondary,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
                 }}
               >
+                Agent Card
+              </Typography>
+              {agentCard.version && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: theme.palette.text.secondary,
+                    }}
+                  >
+                    Version
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontSize: '0.7rem', fontWeight: 500, ml: 'auto' }}
+                  >
+                    {agentCard.version}
+                  </Typography>
+                </Box>
+              )}
+              {agentCard.skills.length > 0 && (
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: theme.palette.text.secondary,
+                      mb: 0.25,
+                      display: 'block',
+                    }}
+                  >
+                    Skills
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {agentCard.skills.map((skill, idx) => (
+                      <Tooltip
+                        key={skill.id || idx}
+                        title={skill.description || ''}
+                        placement="left"
+                      >
+                        <Chip
+                          label={skill.name || skill.id || 'skill'}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            height: 18,
+                            fontSize: '0.6rem',
+                            '& .MuiChip-label': { px: 0.75 },
+                          }}
+                        />
+                      </Tooltip>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  Streaming
+                </Typography>
+                <Chip
+                  label={agentCard.streaming ? 'Yes' : 'No'}
+                  size="small"
+                  color={agentCard.streaming ? 'success' : 'default'}
+                  sx={{ height: 16, fontSize: '0.6rem', ml: 'auto' }}
+                />
+              </Box>
+            </>
+          )}
+
+          {/* Kagenti: no agent selected hint */}
+          {hasAgentCatalog && !agentCard && !effectiveAgent && (
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.7rem',
+                color: theme.palette.text.disabled,
+                fontStyle: 'italic',
+              }}
+            >
+              {t('agentInfo.selectAgentHint')}
+            </Typography>
+          )}
+
+          {/* Dashboard Links */}
+          {hasAgentCards &&
+            dashboards &&
+            Object.entries(dashboards).some(([, v]) => v) && (
+              <>
+                <Box
+                  sx={{
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    my: 0.5,
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    color: theme.palette.text.secondary,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Dashboards
+                </Typography>
+                {Object.entries(dashboards)
+                  .filter(([key, val]) => val && key !== 'domainName')
+                  .map(([key, url]) => (
+                    <Link
+                      key={key}
+                      href={url as string}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="hover"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        fontSize: '0.7rem',
+                        color: theme.palette.primary.main,
+                      }}
+                    >
+                      <OpenInNewIcon sx={{ fontSize: 12 }} />
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </Link>
+                  ))}
+              </>
+            )}
+
+          {/* Agent Team -- shown for all providers when agents are configured */}
+          {agents && agents.length > 0 && !agentCard && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <GroupIcon
                   sx={{ fontSize: 15, color: theme.palette.text.secondary }}
                 />
@@ -217,10 +456,7 @@ export const AgentInfoSection = ({
               })}
               <Box
                 sx={{
-                  borderBottom: `1px solid ${alpha(
-                    theme.palette.divider,
-                    0.2,
-                  )}`,
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                   my: 0.5,
                 }}
               />
@@ -238,10 +474,7 @@ export const AgentInfoSection = ({
               }}
             >
               <CloudOutlinedIcon
-                sx={{
-                  fontSize: 15,
-                  color: theme.palette.text.secondary,
-                }}
+                sx={{ fontSize: 15, color: theme.palette.text.secondary }}
               />
               <Typography
                 variant="caption"
@@ -258,61 +491,51 @@ export const AgentInfoSection = ({
             </Box>
           </Tooltip>
 
-          {/* Vector RAG */}
-          <Tooltip
-            title={
-              vectorStoreConnected
-                ? `Vector store: ${vectorStoreId || 'connected'}`
-                : 'Vector store unavailable (optional)'
-            }
-            placement="left"
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                cursor: 'help',
-              }}
+          {/* Vector RAG -- shown when capability is available */}
+          {status?.capabilities?.rag?.available !== false && (
+            <Tooltip
+              title={
+                vectorStoreConnected
+                  ? `Vector store: ${vectorStoreId || 'connected'}`
+                  : 'Vector store unavailable (optional)'
+              }
+              placement="left"
             >
-              <FolderOutlinedIcon
-                sx={{
-                  fontSize: 15,
-                  color: theme.palette.text.secondary,
-                }}
-              />
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.75rem',
-                  flex: 1,
-                  color: theme.palette.text.primary,
-                }}
-              >
-                Vector RAG
-                {vectorStoreConnected && docCount > 0
-                  ? ` (${docCount} docs)`
-                  : ''}
-              </Typography>
-              <StatusDot connected={vectorStoreConnected} optional />
-            </Box>
-          </Tooltip>
-
-          {/* MCP Servers */}
-          {mcpServers.length > 0 && (
-            <>
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1,
+                  cursor: 'help',
                 }}
               >
-                <McpIcon
+                <FolderOutlinedIcon
+                  sx={{ fontSize: 15, color: theme.palette.text.secondary }}
+                />
+                <Typography
+                  variant="caption"
                   sx={{
-                    fontSize: 15,
-                    color: theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    flex: 1,
+                    color: theme.palette.text.primary,
                   }}
+                >
+                  Vector RAG
+                  {vectorStoreConnected && docCount > 0
+                    ? ` (${docCount} docs)`
+                    : ''}
+                </Typography>
+                <StatusDot connected={vectorStoreConnected} optional />
+              </Box>
+            </Tooltip>
+          )}
+
+          {/* MCP Servers -- shown when any are configured */}
+          {mcpServers.length > 0 && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <McpIcon
+                  sx={{ fontSize: 15, color: theme.palette.text.secondary }}
                 />
                 <Typography
                   variant="caption"
@@ -329,15 +552,12 @@ export const AgentInfoSection = ({
                   optional
                 />
               </Box>
-
               {mcpServers.map(server => (
                 <Tooltip
                   key={server.id}
                   title={
                     server.connected
-                      ? `Connected: ${server.url}${
-                          server.toolCount ? ` · ${server.toolCount} tools` : ''
-                        }`
+                      ? `Connected: ${server.url}${server.toolCount ? ` · ${server.toolCount} tools` : ''}`
                       : server.error || 'Disconnected'
                   }
                   placement="left"

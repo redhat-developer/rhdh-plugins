@@ -498,6 +498,12 @@ export interface ProcessInstanceErrorDTO {
  */
 export interface ProcessInstanceListResultDTO {
     /**
+     * Total number of process instances matching the filter
+     * @type {number}
+     * @memberof ProcessInstanceListResultDTO
+     */
+    'totalCount'?: number;
+    /**
      * 
      * @type {Array<ProcessInstanceDTO>}
      * @memberof ProcessInstanceListResultDTO
@@ -559,6 +565,37 @@ export interface SearchRequest {
      * @memberof SearchRequest
      */
     'paginationInfo'?: PaginationInfoDTO;
+}
+/**
+ * 
+ * @export
+ * @interface WorkflowAvailabilityResponseDTO
+ */
+export interface WorkflowAvailabilityResponseDTO {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'isAvailable'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'statusCode'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'urlToFetch'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof WorkflowAvailabilityResponseDTO
+     */
+    'reason'?: string;
 }
 /**
  * 
@@ -719,11 +756,23 @@ export interface WorkflowOverviewDTO {
      */
     'isAvailable'?: boolean;
     /**
+     * 
+     * @type {WorkflowAvailabilityResponseDTO}
+     * @memberof WorkflowOverviewDTO
+     */
+    'availability'?: WorkflowAvailabilityResponseDTO;
+    /**
      * Workflow definition version
      * @type {string}
      * @memberof WorkflowOverviewDTO
      */
     'version'?: string;
+    /**
+     * 
+     * @type {WorkflowRunStatsDTO}
+     * @memberof WorkflowOverviewDTO
+     */
+    'workflowRunStats'?: WorkflowRunStatsDTO;
 }
 
 
@@ -900,6 +949,49 @@ export type WorkflowResultDTOOutputsInnerFormatEnum = typeof WorkflowResultDTOOu
  * @interface WorkflowResultDTOOutputsInnerValue
  */
 export interface WorkflowResultDTOOutputsInnerValue {
+}
+/**
+ * 
+ * @export
+ * @interface WorkflowRunStatsDTO
+ */
+export interface WorkflowRunStatsDTO {
+    /**
+     * Ratio of completed runs to total runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'successRatio'?: number;
+    /**
+     * Number of runs in the last 30 days
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'runsLastMonth'?: number;
+    /**
+     * Number of completed workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'successCount'?: number;
+    /**
+     * Number of failed workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'errorCount'?: number;
+    /**
+     * Total number of workflow runs
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'totalCount'?: number;
+    /**
+     * Average time to complete a workflow run in milliseconds
+     * @type {number}
+     * @memberof WorkflowRunStatsDTO
+     */
+    'averageTimeToComplete'?: number;
 }
 /**
  * 

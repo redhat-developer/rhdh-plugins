@@ -73,17 +73,19 @@ const scorecardTranslationIt = createTranslationMessages({
       'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
     'errors.userNotFoundInCatalogMessage':
       'Entità utente non trovata nel catalogo.',
-    'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
-    'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel':
+      'Punteggio massimo possibile',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entità, ciascuna {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} entità, ciascuna {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal':
+      'Punteggio totale {{total}}',
     'metric.drillDownCalculationFailures':
       'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
     'metric.filecheck.description':

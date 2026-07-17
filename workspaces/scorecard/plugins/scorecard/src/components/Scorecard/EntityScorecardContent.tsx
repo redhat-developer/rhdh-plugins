@@ -24,10 +24,12 @@ import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
+import { ScorecardStylesProvider } from '../ScorecardStylesProvider';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardLoading } from '../Common/CardLoading';
+import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
 
-export const EntityScorecardContent = () => {
+const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
   const { t } = useTranslation();
 
@@ -55,12 +57,10 @@ export const EntityScorecardContent = () => {
     >
       {scorecards?.map((metric: MetricResult) => {
         // Check if metric data unavailable
-        const isMetricDataError =
-          metric.status === 'error' || metric.result?.value === null;
+        const isMetricDataError = hasMetricDataError(metric);
 
         // Check if threshold has an error
-        const isThresholdError =
-          metric.result?.thresholdResult?.status === 'error';
+        const isThresholdError = hasThresholdError(metric);
 
         const statusConfig = getStatusConfig({
           evaluation: metric.result?.thresholdResult?.evaluation,
@@ -102,3 +102,9 @@ export const EntityScorecardContent = () => {
     </Box>
   );
 };
+
+export const EntityScorecardContent = () => (
+  <ScorecardStylesProvider>
+    <EntityScorecardContentInner />
+  </ScorecardStylesProvider>
+);

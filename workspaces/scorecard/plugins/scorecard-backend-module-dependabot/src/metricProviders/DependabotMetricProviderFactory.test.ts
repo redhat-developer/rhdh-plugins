@@ -20,6 +20,7 @@ import {
   createDependabotMetricProviders,
 } from './DependabotMetricProviderFactory';
 import { mockServices } from '@backstage/backend-test-utils';
+import { DEPENDABOT_THRESHOLDS } from './DependabotConfig';
 
 const mockConfig = new ConfigReader({
   integrations: { github: [{ host: 'github.com', token: 'test-token' }] },
@@ -36,17 +37,7 @@ describe('createDependabotMetricProvider', () => {
     expect(provider.getProviderId()).toBe('dependabot.alerts_high');
     expect(provider.getProviderDatasourceId()).toBe('dependabot');
     expect(provider.getMetricType()).toBe('number');
-  });
-
-  it('accepts optional thresholds', () => {
-    const thresholds = { rules: [{ key: 'ok', expression: '<1' }] };
-    const provider = createDependabotMetricProvider(
-      mockConfig,
-      mockLogger,
-      'critical',
-      thresholds,
-    );
-    expect(provider.getMetricThresholds()).toEqual(thresholds);
+    expect(provider.getMetricThresholds()).toBe(DEPENDABOT_THRESHOLDS);
   });
 });
 
@@ -60,17 +51,5 @@ describe('createDependabotMetricProviders', () => {
       'dependabot.alerts_medium',
       'dependabot.alerts_low',
     ]);
-  });
-
-  it('passes optional thresholds to all providers', () => {
-    const thresholds = { rules: [{ key: 'custom', expression: '>0' }] };
-    const providers = createDependabotMetricProviders(
-      mockConfig,
-      mockLogger,
-      thresholds,
-    );
-    providers.forEach(p => {
-      expect(p.getMetricThresholds()).toEqual(thresholds);
-    });
   });
 });

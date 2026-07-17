@@ -8,8 +8,8 @@ Thresholds are evaluated in order and the **first matching** threshold rule is a
 
 - **`key`**: The threshold category (e.g., `success`, `warning`, `error`, or custom keys)
 - **`expression`**: The condition that determines if a metric value matches this threshold
-- **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
-- **`icon`** (optional): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons))
+- **`color`** (optional for standard keys): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors)). Standard keys (`success`, `warning`, `error`) use default colors when omitted; **custom keys in metric threshold config must specify `color` and `icon`** (see [Threshold Colors](#threshold-colors) and [Threshold Icons](#threshold-icons))
+- **`icon`** (optional for standard keys): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons)). Standard keys use default icons when omitted; **custom keys in metric threshold config must specify both `icon` and `color`**
 
 ## Joint coverage (number metrics)
 
@@ -51,7 +51,8 @@ Validation **does not** require full coverage when:
 
 ### 1. Provider Default Thresholds
 
-Metric providers can define default thresholds that apply to all entities using that metric.
+Metric providers must define default thresholds that apply to all entities using that metric in `getMetricThresholds`.
+Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use in your metric provider.
 
 **Example Provider Implementation:**
 
@@ -73,45 +74,10 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults through app configuration (`app-config.yaml`). Your metric provider needs to support configuration-based thresholds.
-Duplicated threshold keys are not allowed (throws `ConfigFormatError`).
+You can override provider defaults with your custom thresholds through app configuration (`app-config.yaml`) under `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+follow the format `<myDatasource>.<myMetric>`. Batch providers that specify `<myDatasource>` as the `providerId` currently only allow to override global provider thresholds that apply to all metrics the provider defines.
 
-**Provider Implementation:**
-
-```typescript
-import {
-  MetricProvider,
-  validateThresholdsForMetric,
-  getThresholdsFromConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-
-export class MyMetricProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
-
-  private constructor(thresholds?: ThresholdConfig) {
-    // Use configured thresholds or fall back to defaults
-    this.thresholds = thresholds ?? this.getDefaultThresholds();
-  }
-
-  static fromConfig(config: Config): MyMetricProvider {
-    const configPath = 'scorecard.plugins.myDatasource.myMetric.thresholds';
-    // Validates structure, colors/icons, expressions, and number interval coverage (when applicable)
-    const configuredThresholds = getThresholdsFromConfig(
-      config,
-      configPath,
-      'number',
-    );
-
-    return new MyMetricProvider(configuredThresholds);
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-}
-```
-
-You can also call **`validateThresholdsForMetric(configuredThresholds, 'number')`** directly if you already have a config object (not reading from `Config`).
+Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
 
@@ -132,6 +98,22 @@ scorecard:
       myOtherMetric: ...
 ```
 
+**Example App Configuration for batch provider:**
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      thresholds:
+        rules:
+          - key: success
+            expression: '<10'
+          - key: warning
+            expression: '<=20'
+          - key: error
+            expression: '>20'
+```
+
 ### 3. Entity Annotation Overrides
 
 Override thresholds for specific entities using annotations in the entity's metadata:
@@ -149,6 +131,8 @@ metadata:
 spec:
   type: service
 ```
+
+You can only override existing threshold severity keys for provider. This means you can not specify new custom severity keys in entity annotations, they must be first configured for provider in app configuration.
 
 #### Annotation Format Reference
 
@@ -168,19 +152,19 @@ For **number** metrics, each overridden expression is validated in isolation fir
 
 **Counterexample:** Provider rules partition the line (`'<10'`, `'10-20'`, `'>20'`). Overriding only warning to `'11-20'` leaves **`10`** and **`(10, 11)`** uncovered on the merged set—fix the override or adjacent rules so the union again covers **(-∞, +∞)**.
 
-### 4. Aggregation KPI result thresholds (`average` type)
+### 4. Aggregation KPI result thresholds (`weightedStatusScore` type)
 
-These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`average`**.
+These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`weightedStatusScore`**.
 
 **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
 
-**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the average KPI donut). Expressions are **number**-style and are evaluated against **`averageScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+**YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the weightedStatusScore KPI donut). Custom keys in aggregation KPI thresholds **only require `color`** (not `icon`). Expressions are **number**-style and are evaluated against **`weightedStatusScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
 
-**Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`AverageAggregationStrategy`** applies **`DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
+**Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`WeightedStatusScoreAggregationStrategy`** applies **`DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
 
-**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Average KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+**Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. WeightedStatusScore KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
 
-**Further reading:** [Entity Aggregation](./aggregation.md) (`average` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
+**Further reading:** [Entity Aggregation](./aggregation.md) (`weightedStatusScore` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
 
 ## Threshold Priority Order
 
@@ -254,12 +238,12 @@ Example:
 
 ```yaml
 rules:
-  - key: error
-    expression: '>100'
-  - key: warning
-    expression: '80-100' # between 80 and 100 (inclusive)
   - key: success
     expression: '<80'
+  - key: warning
+    expression: '80-100' # between 80 and 100 (inclusive)
+  - key: error
+    expression: '>100'
 ```
 
 ### Boolean Metric
@@ -344,7 +328,7 @@ If no color is specified for a threshold rule, frontend will use these default c
 | warning  | `warning.main` (orange/yellow) |
 | error    | `error.main` (red)             |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify a `color` property. The configuration will fail validation if a custom key is used without a color. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** a `color` and an `icon` property. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI. (Aggregation KPI thresholds only require `color` for custom keys — see [§4 Aggregation KPI result thresholds](#4-aggregation-kpi-result-thresholds-average-type).)
 
 ## Threshold Icons
 
@@ -408,7 +392,7 @@ If no icon is specified for a threshold rule, the frontend uses default icons fo
 | warning  | `scorecardWarningStatusIcon` | WarningAmber         |
 | error    | `scorecardErrorStatusIcon`   | DangerousOutlined    |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify an `icon` property. The configuration will fail validation if a custom key is used without an icon. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** an `icon` and a `color` property — see the [Threshold Colors](#threshold-colors) section. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI.
 
 ## ThresholdEvaluator
 
@@ -419,7 +403,7 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: Validate expressions loaded from config in custom providers using **`validateThresholdsForMetric`** or **`getThresholdsFromConfig`** from `@red-hat-developer-hub/backstage-plugin-scorecard-node`. Invalid expressions or gap configurations fail at validation time; unchecked configs may error at evaluation time.
+4. **Error handling**: Thresholds from providers and custom thresholds from configuration are validated on startup (using [validateThresholdsForMetric](../../scorecard-node/src/utils/thresholds/validateThresholds.ts) from `@red-hat-developer-hub/backstage-plugin-scorecard-node`). Threshold errors caused by invalid providers or invalid configuration cause startup failures. Annotation-based threshold errors are reported in the UI at evaluation time.
 
 ### Best Practices
 
@@ -445,6 +429,6 @@ rules:
 
 ## Related documentation
 
-- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`** vs **`average`**
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`** vs **`weightedStatusScore`**
 - [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
 - [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

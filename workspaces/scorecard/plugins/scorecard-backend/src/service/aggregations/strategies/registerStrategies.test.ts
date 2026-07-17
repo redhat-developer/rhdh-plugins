@@ -18,11 +18,11 @@ import { mockServices } from '@backstage/backend-test-utils';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { createAggregationStrategyRegistry } from './registerStrategies';
-import { AverageAggregationStrategy } from './AverageAggregationStrategy';
+import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
 import { StatusGroupedAggregationStrategy } from './StatusGroupedAggregationStrategy';
 
 describe('createAggregationStrategyRegistry', () => {
-  it('registers statusGrouped and average strategies', () => {
+  it('registers statusGrouped and weightedStatusScore strategies', () => {
     const loader = {} as AggregatedMetricLoader;
     const logger = mockServices.logger.mock();
 
@@ -31,8 +31,8 @@ describe('createAggregationStrategyRegistry', () => {
     expect(registry.get(aggregationTypes.statusGrouped)).toBeInstanceOf(
       StatusGroupedAggregationStrategy,
     );
-    expect(registry.get(aggregationTypes.average)).toBeInstanceOf(
-      AverageAggregationStrategy,
+    expect(registry.get(aggregationTypes.weightedStatusScore)).toBeInstanceOf(
+      WeightedStatusScoreAggregationStrategy,
     );
     expect(registry.size).toBe(2);
   });

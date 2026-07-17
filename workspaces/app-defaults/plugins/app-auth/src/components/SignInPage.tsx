@@ -39,7 +39,9 @@ import Typography from '@mui/material/Typography';
 
 import {
   auth0AuthApiRef,
+  keycloakAuthApiRef,
   oidcAuthApiRef,
+  pingfederateAuthApiRef,
   samlAuthApiRef,
 } from '../AuthApiRefs';
 import { signInTranslationRef } from '../translations/signIn';
@@ -133,6 +135,24 @@ const createProviders = (t: (key: string, params?: any) => string) =>
       },
     ],
     [
+      'keycloak',
+      {
+        id: 'keycloak-auth-provider',
+        title: t('signIn.providers.keycloak.title'),
+        message: t('signIn.providers.keycloak.message'),
+        apiRef: keycloakAuthApiRef,
+      },
+    ],
+    [
+      'pingfederate',
+      {
+        id: 'pingfederate-auth-provider',
+        title: t('signIn.providers.pingfederate.title'),
+        message: t('signIn.providers.pingfederate.message'),
+        apiRef: pingfederateAuthApiRef,
+      },
+    ],
+    [
       'okta',
       {
         id: 'okta-auth-provider',
@@ -191,13 +211,18 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
   }
   const isDevEnv = authEnvironment === 'development';
 
-  const signInPageConfig = configApi.getOptional<string | string[]>(
-    'signInPage',
-  );
-  const configValue = signInPageConfig ?? DEFAULT_PROVIDER;
-  const providerNames = Array.isArray(configValue)
-    ? configValue
-    : [configValue];
+  const signInPage = configApi.getOptional<string | string[]>('signInPage');
+  let providerNames: string[];
+  if (signInPage === undefined) {
+    const fromAuth =
+      configApi
+        .getOptionalConfig('auth.providers')
+        ?.keys()
+        ?.filter(providerId => providerId !== 'guest') ?? [];
+    providerNames = fromAuth.length > 0 ? fromAuth : [DEFAULT_PROVIDER];
+  } else {
+    providerNames = Array.isArray(signInPage) ? signInPage : [signInPage];
+  }
 
   const providers = createProviders(t);
 

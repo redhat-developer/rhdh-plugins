@@ -49,6 +49,7 @@ const zeroSummary: ModulesStatusSummary = {
   running: 0,
   error: 0,
   cancelled: 0,
+  removed: 0,
 };
 
 describe('areEligibleModulesToRun', () => {
@@ -178,6 +179,7 @@ describe('areEligibleModulesToRun', () => {
           running: 2,
           error: 2,
           cancelled: 0,
+          removed: 0,
         },
       },
     };

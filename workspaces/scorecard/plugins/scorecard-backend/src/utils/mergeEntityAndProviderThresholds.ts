@@ -54,11 +54,12 @@ function parseEntityAnnotationThresholds(
 export function mergeEntityAndProviderThresholds(
   entity: Entity,
   provider: MetricProvider,
+  baseThresholds?: ThresholdConfig,
 ): ThresholdConfig {
   let isRulesMerged = false;
 
   const providerId = provider.getProviderId();
-  const providerThresholds = provider.getMetricThresholds();
+  const providerThresholds = baseThresholds ?? provider.getMetricThresholds();
   const providerMetricType = provider.getMetricType();
   const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,

@@ -7,7 +7,7 @@ To enable this you must configure the home-page plugin and replace the default H
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicCustomizableHomePage

@@ -25,7 +25,7 @@ import type {
  * Default implementation of {@link ResourcesApi}.
  *
  * Routes calls through the dcm-backend secure proxy to the
- * `/service-type-instances` endpoint of the DCM API Gateway.
+ * `/service-type-instances` endpoint of the DCM control plane.
  *
  * @public
  */

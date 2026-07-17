@@ -72,17 +72,17 @@ const scorecardTranslationJa = createTranslationMessages({
       'このスコアカードは、このバージョンのプラグインでサポートされていない集計タイプを使用しています。',
     'errors.userNotFoundInCatalogMessage':
       'カタログにユーザーエンティティーが見つかりません。',
-    'metric.averageCenterTooltipMaxLabel': '最高スコア',
-    'metric.averageCenterTooltipTotalLabel': '合計スコア',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel': '最高スコア',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': '合計スコア',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} 個のエンティティー、各 {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} 個のエンティティー、各 {{score}}',
-    'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
     'metric.filecheck.description':

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type express from 'express';
 import type { AgenticProvider } from '../providers';
@@ -53,6 +56,8 @@ export interface RouteContext {
   logger: LoggerService;
   config: import('@backstage/config').Config;
   provider: AgenticProvider;
+  /** Fallback provider for orchestration agents when primary is Kagenti */
+  orchestrationProvider?: AgenticProvider;
   sessions: ChatSessionService | undefined;
 
   /** Extract a safe error message string from an unknown caught value. */
@@ -93,5 +98,9 @@ export interface RouteContext {
     approved: boolean;
     toolName?: string;
     toolArguments?: string;
+    reason?: string;
   };
+
+  /** Backstage CacheService for shared caching across routes. */
+  cache?: CacheService;
 }

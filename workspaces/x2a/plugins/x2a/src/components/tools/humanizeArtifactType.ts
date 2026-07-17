@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ArtifactKind } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { TFuncX2A } from '../../hooks/useTranslation';
 
 /**
@@ -21,22 +23,21 @@ import { TFuncX2A } from '../../hooks/useTranslation';
  *
  * Keep in sync with constants produced by the backend.
  */
-export const humanizeArtifactType = (t: TFuncX2A, type: string): string => {
-  switch (type) {
-    case 'migration_plan':
-      return t('artifact.types.migration_plan');
-    case 'module_migration_plan':
-      return t('artifact.types.module_migration_plan');
-    case 'migrated_sources':
-      return t('artifact.types.migrated_sources');
-    case 'project_metadata':
-      return t('artifact.types.project_metadata');
-    case 'ansible_project':
-      return t('artifact.types.ansible_project');
-    default:
-      // Do not fail but let developers know...
-      // eslint-disable-next-line no-console
-      console.error(`humanizeArtifactType: Unknown artifact type: ${type}`);
-      return type;
-  }
+export const humanizeArtifactType = (
+  t: TFuncX2A,
+  kind: ArtifactKind,
+): string => {
+  if (kind.isMigrationPlan()) return t('artifact.types.migration_plan');
+  if (kind.isModuleMigrationPlan())
+    return t('artifact.types.module_migration_plan');
+  if (kind.isMigratedSources()) return t('artifact.types.migrated_sources');
+  if (kind.isProjectMetadata()) return t('artifact.types.project_metadata');
+  if (kind.isAnsibleProject()) return t('artifact.types.ansible_project');
+
+  // Do not fail but let developers know...
+  // eslint-disable-next-line no-console
+  console.error(
+    `humanizeArtifactType: Unknown artifact type: ${kind.toString()}`,
+  );
+  return kind.toString();
 };

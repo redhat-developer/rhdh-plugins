@@ -20,6 +20,8 @@ import type {
   FieldConfiguration,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
+import { pickNumericBound } from '../../utils/schemaUtils';
+import { type TFunction, makeTranslator } from '../../utils/formUtils';
 
 export type FieldRow = {
   /** Stable client-side identifier used as React list key. Never sent to the API. */
@@ -41,38 +43,215 @@ export type CatalogItemForm = {
   fields: FieldRow[];
 };
 
-const catalogItemSchema = yup.object({
-  display_name: yup
-    .string()
-    .required('Display name is required')
-    .min(1, 'Display name cannot be empty')
-    .max(63, 'Display name must be at most 63 characters'),
-  api_version: yup
-    .string()
-    .required('API version is required')
-    .matches(
-      /^v\d+(?:(?:alpha|beta)\d*)?$/,
-      'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1',
-    ),
-});
+function buildCatalogItemSchema(t?: TFunction) {
+  const m = makeTranslator(t);
+  return yup.object({
+    display_name: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.displayNameRequired',
+          'Display name is required',
+        ),
+      )
+      .min(
+        1,
+        m(
+          'validation.catalogItem.displayNameEmpty',
+          'Display name cannot be empty',
+        ),
+      )
+      .max(
+        63,
+        m(
+          'validation.catalogItem.displayNameMax',
+          'Display name must be at most 63 characters',
+        ),
+      ),
+    api_version: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.apiVersionRequired',
+          'API version is required',
+        ),
+      )
+      .matches(
+        /^v\d+(?:(?:alpha|beta)\d*)?$/,
+        m(
+          'validation.catalogItem.apiVersionPattern',
+          'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
+        ),
+      ),
+    service_type: yup
+      .string()
+      .required(
+        m(
+          'validation.catalogItem.serviceTypeRequired',
+          'Service type is required',
+        ),
+      ),
+  });
+}
 
 const { validate: validateScalar } = createYupValidator<CatalogItemForm>(
-  catalogItemSchema,
-  f => ({ display_name: f.display_name, api_version: f.api_version }),
+  buildCatalogItemSchema(),
+  f => ({
+    display_name: f.display_name,
+    api_version: f.api_version,
+    service_type: f.service_type,
+  }),
 );
 
 export function validateCatalogItemForm(
   f: CatalogItemForm,
+  t?: TFunction,
 ): Partial<Record<keyof CatalogItemForm, string>> {
-  return validateScalar(f);
+  if (!t) return validateScalar(f);
+  const { validate } = createYupValidator<CatalogItemForm>(
+    buildCatalogItemSchema(t),
+    ff => ({
+      display_name: ff.display_name,
+      api_version: ff.api_version,
+      service_type: ff.service_type,
+    }),
+  );
+  return validate(f);
 }
 
 export function hasValidFields(f: CatalogItemForm): boolean {
   return f.fields.some(row => row.path.trim() !== '');
 }
 
+/** Per-row validation errors for a {@link FieldRow}. */
+export type FieldRowErrors = {
+  path?: string;
+  default_value?: string;
+  validation_schema?: string;
+};
+
+/** Returns true if a string looks like intended JSON (and should therefore be valid JSON). */
+function looksLikeJson(s: string): boolean {
+  return s.startsWith('{') || s.startsWith('[') || s.startsWith('"');
+}
+
+/**
+ * Validates all field rows for:
+ * - Duplicate paths (only non-empty paths are checked)
+ * - `default_value` that looks like JSON but fails to parse
+ * - `validation_schema` that is non-empty but not a valid JSON object
+ *
+ * Returns a record keyed by row index; only rows with errors are included.
+ */
+
+export function validateFieldRows(
+  fields: FieldRow[],
+  t?: TFunction,
+): Record<number, FieldRowErrors> {
+  const m = makeTranslator(t);
+
+  const result: Record<number, FieldRowErrors> = {};
+  const seenPaths = new Map<string, number>();
+
+  fields.forEach((row, i) => {
+    const rowErrors: FieldRowErrors = {};
+    const trimmedPath = row.path.trim();
+
+    if (trimmedPath !== '') {
+      if (seenPaths.has(trimmedPath)) {
+        rowErrors.path = m(
+          'validation.catalogItem.duplicatePath',
+          'Duplicate path \u2014 paths must be unique',
+        );
+      } else {
+        seenPaths.set(trimmedPath, i);
+      }
+    }
+
+    const defaultTrimmed = row.default_value.trim();
+    if (defaultTrimmed && looksLikeJson(defaultTrimmed)) {
+      try {
+        JSON.parse(defaultTrimmed);
+      } catch {
+        rowErrors.default_value = m(
+          'validation.catalogItem.invalidJson',
+          'Invalid JSON \u2014 fix the syntax or use a plain string value',
+        );
+      }
+    }
+
+    const schemaTrimmed = row.validation_schema.trim();
+    let schemaMin: number | undefined;
+    let schemaMax: number | undefined;
+    if (schemaTrimmed) {
+      try {
+        const parsed = JSON.parse(schemaTrimmed);
+        if (
+          typeof parsed !== 'object' ||
+          parsed === null ||
+          Array.isArray(parsed)
+        ) {
+          rowErrors.validation_schema = m(
+            'validation.catalogItem.schemaMustBeObject',
+            'Must be a JSON object \u2014 e.g. {"type":"integer"}',
+          );
+        } else {
+          schemaMin = pickNumericBound(parsed, 'minimum', 'min');
+          schemaMax = pickNumericBound(parsed, 'maximum', 'max');
+          if (
+            schemaMin !== undefined &&
+            schemaMax !== undefined &&
+            schemaMin > schemaMax
+          ) {
+            rowErrors.validation_schema = m(
+              'validation.catalogItem.schemaMinMaxConflict',
+              `minimum (${schemaMin}) must not exceed maximum (${schemaMax})`,
+              { min: schemaMin, max: schemaMax },
+            );
+          }
+        }
+      } catch {
+        rowErrors.validation_schema = m(
+          'validation.catalogItem.schemaInvalidJson',
+          'Invalid JSON syntax',
+        );
+      }
+    }
+
+    const defaultNum = Number(defaultTrimmed);
+    if (
+      !rowErrors.default_value &&
+      !rowErrors.validation_schema &&
+      defaultTrimmed &&
+      Number.isFinite(defaultNum)
+    ) {
+      if (schemaMin !== undefined && defaultNum < schemaMin) {
+        rowErrors.default_value = m(
+          'validation.catalogItem.defaultBelowMin',
+          `Default value (${defaultNum}) is below the schema minimum (${schemaMin})`,
+          { value: defaultNum, min: schemaMin },
+        );
+      } else if (schemaMax !== undefined && defaultNum > schemaMax) {
+        rowErrors.default_value = m(
+          'validation.catalogItem.defaultAboveMax',
+          `Default value (${defaultNum}) exceeds the schema maximum (${schemaMax})`,
+          { value: defaultNum, max: schemaMax },
+        );
+      }
+    }
+
+    if (Object.keys(rowErrors).length > 0) {
+      result[i] = rowErrors;
+    }
+  });
+
+  return result;
+}
+
 export function isCatalogItemFormValid(f: CatalogItemForm): boolean {
-  return Object.keys(validateScalar(f)).length === 0 && hasValidFields(f);
+  if (Object.keys(validateScalar(f)).length !== 0) return false;
+  if (!hasValidFields(f)) return false;
+  return Object.keys(validateFieldRows(f.fields)).length === 0;
 }
 
 export function emptyFieldRow(): FieldRow {

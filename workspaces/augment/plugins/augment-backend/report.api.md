@@ -6,6 +6,8 @@
 import type { AdminConfigKey } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { AugmentStatus } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import type { CacheService } from '@backstage/backend-plugin-api';
+import type { ChatAgent } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ChatMessage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { ChatResponse } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -29,6 +31,7 @@ import { QuickAction } from '@red-hat-developer-hub/backstage-plugin-augment-com
 import { RAGSource } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
+import { Router } from 'express';
 import { SecurityMode } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import type { SyncResult } from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { ToolCallInfo } from '@red-hat-developer-hub/backstage-plugin-augment-common';
@@ -81,25 +84,47 @@ export class AdminConfigService {
 
 // @public
 export interface AgenticProvider {
+  // (undocumented)
   chat(request: ChatRequest): Promise<ChatResponse>;
+  // (undocumented)
   chatStream(
     request: ChatRequest,
     onEvent: (event: NormalizedStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void>;
+  // (undocumented)
   conversations?: ConversationCapability;
   readonly displayName: string;
+  // (undocumented)
   evaluation?: EvaluationCapability;
+  // (undocumented)
   generateSystemPrompt?(
     description: string,
     model?: string,
     capabilities?: PromptCapabilities,
   ): Promise<string>;
+  // (undocumented)
+  getAuthToken?(): Promise<string>;
+  // (undocumented)
   getEffectiveConfig?(): Promise<Record<string, unknown>>;
+  // (undocumented)
+  getSessionContextId?(backstageSessionId: string): Promise<string | undefined>;
+  // (undocumented)
   getStatus(): Promise<AgenticProviderStatus>;
+  // (undocumented)
+  hydrateSessionContext?(
+    backstageSessionId: string,
+    contextId: string,
+    model?: string,
+  ): Promise<void>;
   readonly id: string;
+  // (undocumented)
   initialize(): Promise<void>;
+  // (undocumented)
   invalidateRuntimeConfig?(): void;
+  // (undocumented)
+  listAgents?(): Promise<ChatAgent[]>;
+  // (undocumented)
   listModels?(): Promise<
     Array<{
       id: string;
@@ -107,12 +132,46 @@ export interface AgenticProvider {
       model_type?: string;
     }>
   >;
+  // (undocumented)
   postInitialize(): Promise<void>;
+  // (undocumented)
   rag?: RAGCapability;
+  // (undocumented)
   refreshDynamicConfig?(): Promise<void>;
+  // (undocumented)
+  registerRoutes?(router: Router, deps: unknown): void;
+  // (undocumented)
   safety?: SafetyCapability;
+  // (undocumented)
+  setUserContext?(userRef: string): void;
+  // (undocumented)
   shutdown?(): Promise<void>;
-  testModel?(model?: string): Promise<{
+  // (undocumented)
+  submitApproval?(approval: {
+    responseId: string;
+    callId: string;
+    approved: boolean;
+    toolName?: string;
+    toolArguments?: string;
+    reason?: string;
+  }): Promise<{
+    content?: string;
+    responseId?: string;
+    toolExecuted?: boolean;
+    toolOutput?: string;
+    pendingApproval?: {
+      approvalRequestId: string;
+      toolName: string;
+      serverLabel?: string;
+      arguments?: string;
+    };
+    handoff?: unknown;
+  }>;
+  // (undocumented)
+  testModel?(
+    model?: string,
+    baseUrl?: string,
+  ): Promise<{
     connected: boolean;
     modelFound: boolean;
     canGenerate: boolean;
@@ -146,6 +205,9 @@ export interface AgenticProviderStatus {
       available: boolean;
       reason?: string;
     };
+    agentCatalog?: boolean;
+    agentSelection?: boolean;
+    agentCards?: boolean;
   };
   // (undocumented)
   configurationErrors: string[];
@@ -230,6 +292,7 @@ export interface ChatRequest {
   enableRAG?: boolean;
   // (undocumented)
   messages: ChatMessage[];
+  model?: string;
   previousResponseId?: string;
   sessionId?: string;
 }
@@ -366,6 +429,8 @@ export { ConversationSummary };
 export interface CreateProviderOptions {
   // (undocumented)
   adminConfig?: AdminConfigService;
+  // (undocumented)
+  cache?: CacheService;
   // (undocumented)
   config: RootConfigService;
   // (undocumented)
@@ -602,7 +667,7 @@ export interface ProcessedMessage {
   ragSources?: ProcessedRagSource[];
   reasoning?: string;
   // (undocumented)
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   // (undocumented)
   text: string;
   // (undocumented)
@@ -745,6 +810,11 @@ export interface RAGCapability {
   }>;
   // (undocumented)
   syncDocuments(): Promise<SyncResult>;
+  // (undocumented)
+  updateVectorStore?(
+    vectorStoreId: string,
+    updates: Record<string, unknown>,
+  ): Promise<VectorStoreInfo>;
   // (undocumented)
   uploadDocument?(
     fileName: string,

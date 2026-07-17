@@ -24,6 +24,7 @@ import {
 import {
   MigrationPhase,
   Artifact,
+  ArtifactKind,
   JobStatus,
   Telemetry,
   Phase,
@@ -54,13 +55,7 @@ const telemetrySchema = z.object({
 
 const artifactSchema = z.object({
   id: z.string(),
-  type: z.enum([
-    'migration_plan',
-    'module_migration_plan',
-    'migrated_sources',
-    'project_metadata',
-    'ansible_project',
-  ]),
+  type: z.enum(ArtifactKind.values() as [string, ...string[]]),
   value: z.string(),
 });
 

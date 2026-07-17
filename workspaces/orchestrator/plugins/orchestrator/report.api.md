@@ -4,14 +4,15 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { Entity } from '@backstage/catalog-model';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @public (undocumented)
-export const IsOrchestratorCatalogTabAvailable: () => boolean;
+// @public
+export const IsOrchestratorCatalogTabAvailable: (entity: Entity) => boolean;
 
 // Warning: (ae-missing-release-tag) "OrchestratorCatalogTab" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -45,18 +46,27 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.headers.version': string;
     readonly 'table.headers.duration': string;
     readonly 'table.headers.status': string;
+    readonly 'table.headers.entity': string;
     readonly 'table.headers.runStatus': string;
     readonly 'table.headers.started': string;
     readonly 'table.headers.workflowStatus': string;
     readonly 'table.headers.lastRun': string;
     readonly 'table.headers.lastRunStatus': string;
+    readonly 'table.headers.runsLastMonth': string;
+    readonly 'table.headers.successRatio': string;
     readonly 'table.headers.workflowName': string;
+    readonly 'table.headers.runBy': string;
     readonly 'table.actions.run': string;
     readonly 'table.actions.runAsEvent': string;
     readonly 'table.actions.viewRuns': string;
     readonly 'table.actions.viewInputSchema': string;
+    readonly 'table.actions.viewRunVariables': string;
+    readonly 'table.filters.placeholder': string;
     readonly 'table.filters.status': string;
+    readonly 'table.filters.entity': string;
     readonly 'table.filters.started': string;
+    readonly 'table.filters.runBy': string;
+    readonly 'table.filters.clearAll': string;
     readonly 'table.filters.startedOptions.today': string;
     readonly 'table.filters.startedOptions.yesterday': string;
     readonly 'table.filters.startedOptions.last7days': string;
@@ -103,6 +113,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'run.status.failed': string;
     readonly 'run.status.completed': string;
     readonly 'run.status.aborted': string;
+    readonly 'run.status.abortedWithoutTime': string;
     readonly 'run.status.completedWithMessage': string;
     readonly 'run.status.failedAt': string;
     readonly 'run.status.completedAt': string;
@@ -135,14 +146,30 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.definition': string;
     readonly 'workflow.status.available': string;
     readonly 'workflow.status.unavailable': string;
+    readonly 'workflow.successRatio': string;
+    readonly 'workflow.inputSchema': string;
+    readonly 'workflow.inputSchemaDescription': string;
+    readonly 'workflow.successRatioDescription': string;
+    readonly 'workflow.runSuccess': string;
+    readonly 'workflow.ofTotal': string;
+    readonly 'workflow.statsSuccess': string;
+    readonly 'workflow.statsFailed': string;
+    readonly 'workflow.unavailable.title': string;
+    readonly 'workflow.unavailable.runTooltip': string;
+    readonly 'workflow.unavailable.requestFailed': string;
+    readonly 'workflow.unavailable.statusCodeLine': string;
+    readonly 'workflow.unavailable.statusTextLine': string;
     readonly 'workflow.fields.description': string;
     readonly 'workflow.fields.version': string;
     readonly 'workflow.fields.workflowId': string;
     readonly 'workflow.fields.duration': string;
+    readonly 'workflow.fields.entity': string;
     readonly 'workflow.fields.runStatus': string;
     readonly 'workflow.fields.started': string;
     readonly 'workflow.fields.workflowStatus': string;
+    readonly 'workflow.fields.runBy': string;
     readonly 'workflow.fields.workflow': string;
+    readonly 'workflow.fields.averageDuration': string;
     readonly 'workflow.fields.workflowIdCopied': string;
     readonly 'workflow.messages.areYouSureYouWantToRunThisWorkflow': string;
     readonly 'workflow.messages.userNotAuthorizedExecute': string;
@@ -152,6 +179,7 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.buttons.running': string;
     readonly 'workflow.buttons.runWorkflow': string;
     readonly 'workflow.buttons.runAgain': string;
+    readonly 'workflow.buttons.entireWorkflow': string;
     readonly 'workflow.buttons.fromFailurePoint': string;
     readonly 'workflow.buttons.runFailedAgain': string;
     readonly 'messages.noDataAvailable': string;
@@ -179,8 +207,20 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'permissions.notYourRun': string;
     readonly 'alerts.duplicateWorkflowIds.message': string;
     readonly 'alerts.duplicateWorkflowIds.learnMore': string;
+    readonly 'emptyState.workflows.title': string;
+    readonly 'emptyState.workflows.description': string;
+    readonly 'emptyState.workflows.viewDocumentation': string;
+    readonly 'emptyState.runs.title': string;
+    readonly 'emptyState.runs.description': string;
+    readonly 'emptyState.runs.runWorkflow': string;
+    readonly 'emptyState.illustrationAlt': string;
     readonly 'stepperObjectField.error': string;
     readonly 'formDecorator.error': string;
+    readonly 'samlSso.body': string;
+    readonly 'samlSso.title': string;
+    readonly 'samlSso.reauthorizeButton': string;
+    readonly 'samlSso.reauthorizeHint': string;
+    readonly 'samlSso.fallbackHint': string;
     readonly 'aria.close': string;
   }
 >;
@@ -190,8 +230,7 @@ export const orchestratorTranslations: TranslationResource<'plugin.orchestrator'
 
 // Warnings were encountered during analysis:
 //
-// src/components/catalogComponents/CatalogTab.d.ts:5:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
-// src/components/catalogComponents/CatalogTab.d.ts:6:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
+// src/components/catalogComponents/CatalogTab.d.ts:12:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 
 // (No @packageDocumentation comment for this package)
 ```

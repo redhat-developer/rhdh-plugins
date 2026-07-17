@@ -18,7 +18,6 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
 import {
   WorkflowLogProvider,
@@ -52,7 +51,6 @@ export const orchestratorPlugin = createBackendPlugin({
         auditor: coreServices.auditor,
         config: coreServices.rootConfig,
         discovery: coreServices.discovery,
-        catalogApi: catalogServiceRef,
         urlReader: coreServices.urlReader,
         permissions: coreServices.permissions,
         scheduler: coreServices.scheduler,

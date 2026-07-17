@@ -27,7 +27,9 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "e2e-test": "playwright test",
+    "e2e-test:live": "playwright test --project=live"
   },
   "workspaces": {
     "packages": [
@@ -40,12 +42,13 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm"
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.15.0",
   "devDependencies": {
     "@backstage/cli": "^0.35.2",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.16.2",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.60.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.0.0",
     "@types/webpack-env": "^1.18.4",
@@ -56,7 +59,7 @@
     "typescript": "~5.3.0"
   },
   "resolutions": {
-    "isolated-vm": "6.0.2",
+    "isolated-vm": "6.1.2",
     "better-sqlite3": "^12.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -1,0 +1,89 @@
+app:
+  title: Boost Dev
+  baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - app/routes:
+        config:
+          redirects:
+            - from: /
+              to: /ai-catalog
+
+organization:
+  name: Red Hat
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+  cache:
+    store: memory
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+
+auth:
+  environment: development
+  providers:
+    guest: {}
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow:
+        - Component
+        - System
+        - Group
+        - Resource
+        - Location
+        - Template
+        - API
+        - AiResource
+  locations:
+    - type: file
+      target: ../../fixtures/ai-catalog-fixtures.yaml
+      rules:
+        - allow: [AiResource, API, Component, Resource, Group]
+
+boost:
+  security:
+    mode: 'development-only-no-auth'
+    adminUsers:
+      - 'user:default/admin'
+      - 'user:default/guest'
+
+  providers:
+    llamastack:
+      baseUrl: ${BOOST_LLAMA_STACK_URL:-http://localhost:8321}
+      defaultModel: ${BOOST_MODEL:-default}
+    kagenti:
+      baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+      defaultAgent: default
+      namespaces:
+        - ${KAGENTI_NAMESPACE:-default}
+
+  kagenti:
+    baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}
+    namespace: ${KAGENTI_NAMESPACE:-default}
+    auth:
+      tokenEndpoint: ${KAGENTI_TOKEN_ENDPOINT:-}
+      clientId: ${KAGENTI_CLIENT_ID:-}
+      clientSecret: ${KAGENTI_CLIENT_SECRET:-}
+    showAllNamespaces: true
+    skipTlsVerify: true
+    verboseStreamLogging: true

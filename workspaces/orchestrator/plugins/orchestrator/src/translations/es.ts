@@ -54,6 +54,16 @@ const orchestratorTranslationEs = createTranslationMessages({
     'duration.months': '{{count}} meses',
     'duration.seconds': '{{count}} segundos',
     'duration.years': '{{count}} años',
+    'emptyState.illustrationAlt':
+      'Ilustración sin flujos de trabajo ni ejecuciones',
+    'emptyState.runs.description':
+      'Las ejecuciones de flujos de trabajo aparecerán aquí una vez que se hayan ejecutado.',
+    'emptyState.runs.runWorkflow': 'Ejecutar un flujo de trabajo',
+    'emptyState.runs.title': 'Aún no hay ejecuciones',
+    'emptyState.workflows.description':
+      'Para comenzar, agregue un nuevo flujo de trabajo.',
+    'emptyState.workflows.title': 'Aún no se han agregado flujos de trabajo',
+    'emptyState.workflows.viewDocumentation': 'Ver documentación',
     'formDecorator.error':
       'El decorador de formulario debe proporcionar datos de contexto.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
@@ -97,30 +107,31 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.inputs': 'Entradas',
     'run.logs.noLogsAvailable':
       'No hay registros disponibles para la ejecución de este flujo de trabajo.',
-    'run.logs.title': 'Registros de ejecución',
+    'run.logs.title': 'Registros del flujo de trabajo {{processName}}',
     'run.logs.viewLogs': 'Ver registros',
     'run.messages.eventTriggered':
       'Se envió un evento para activar este flujo de trabajo. Aparecerá una vez que comience la ejecución.',
     'run.pageTitle': 'Ejecución de {{processName}}',
     'run.results': 'Resultados',
     'run.retrigger': 'Reactivar',
-    'run.status.aborted': 'La ejecución se canceló',
+    'run.status.aborted': 'La ejecución se canceló hace {{time}}.',
+    'run.status.abortedWithoutTime': 'La ejecución se canceló.',
     'run.status.completed': 'Ejecución completada',
-    'run.status.completedAt': 'Ejecución completada {{time}}',
+    'run.status.completedAt': 'Ejecución completada el {{time}}',
     'run.status.completedWithMessage':
-      'Ejecución completada {{time}} con mensaje',
-    'run.status.failed': 'La ejecución falló {{time}}',
-    'run.status.failedAt': 'La ejecución falló {{time}}',
+      'Ejecución completada el {{time}} con mensaje',
+    'run.status.failed': 'La ejecución falló el {{time}}',
+    'run.status.failedAt': 'La ejecución falló el {{time}}',
     'run.status.noAdditionalInfo':
       'El flujo de trabajo no proporcionó información adicional sobre el estado.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       'Los resultados se mostrarán aquí una vez que se complete la ejecución.',
     'run.status.running':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.status.runningWaitingAtNode':
       'El flujo de trabajo está en ejecución; esperando en el nodo {{node}} desde {{formattedTime}}',
     'run.status.workflowIsRunning':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
     'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',
     'run.title': 'Ejecutar flujo de trabajo',
@@ -132,21 +143,30 @@ const orchestratorTranslationEs = createTranslationMessages({
     'table.actions.runAsEvent': 'Ejecutar como evento',
     'table.actions.viewInputSchema': 'Ver esquema de entrada',
     'table.actions.viewRuns': 'Ver ejecuciones',
+    'table.actions.viewRunVariables': 'Ver variables de ejecución',
     'table.filters.started': 'Iniciado',
+    'table.filters.entity': 'Entidad',
+    'table.filters.runBy': 'Ejecutado por',
     'table.filters.startedOptions.last7days': 'Últimos 7 días',
     'table.filters.startedOptions.thisMonth': 'Este mes',
     'table.filters.startedOptions.today': 'Hoy',
     'table.filters.startedOptions.yesterday': 'Ayer',
     'table.filters.status': 'Estado',
+    'table.filters.placeholder': 'Filtrar',
+    'table.filters.clearAll': 'Borrar todo',
     'table.headers.description': 'Descripción',
     'table.headers.duration': 'Duración',
     'table.headers.lastRun': 'Última ejecución',
     'table.headers.lastRunStatus': 'Estado de la última ejecución',
+    'table.headers.runsLastMonth': 'Ejecuciones (último mes)',
+    'table.headers.successRatio': 'Proporción de éxito',
     'table.headers.name': 'Nombre',
     'table.headers.runStatus': 'Estado de ejecución',
     'table.headers.started': 'Iniciado',
     'table.headers.status': 'Estado',
     'table.headers.version': 'Versión',
+    'table.headers.entity': 'Entidad',
+    'table.headers.runBy': 'Ejecutado por',
     'table.headers.workflowName': 'Nombre del flujo de trabajo',
     'table.headers.workflowStatus': 'Estado del flujo de trabajo',
     'table.status.aborted': 'Cancelado',
@@ -158,7 +178,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'table.title.allRuns': 'Todas las ejecuciones ({{count}})',
     'table.title.allWorkflowRuns':
       'Ejecuciones del flujo de trabajo ({{count}})',
-    'table.title.workflows': 'Flujos de trabajo',
+    'table.title.workflows': 'Flujos de trabajo ({{count}})',
     'tooltips.aborted': 'Cancelado',
     'tooltips.active': 'Activo',
     'tooltips.completed': 'Completado',
@@ -170,6 +190,7 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Usuario no autorizado para ejecutar el flujo de trabajo',
     'tooltips.workflowDown':
       'El flujo de trabajo está actualmente inactivo o en estado de error',
+    'workflow.buttons.entireWorkflow': 'Flujo de trabajo completo',
     'workflow.buttons.fromFailurePoint': 'Desde el punto de fallo',
     'workflow.buttons.run': 'Ejecutar',
     'workflow.buttons.runAgain': 'Ejecutar nuevamente',
@@ -178,6 +199,16 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.buttons.runWorkflow': 'Ejecutar flujo de trabajo',
     'workflow.buttons.running': 'En ejecución...',
     'workflow.definition': 'Definición de flujo de trabajo',
+    'workflow.inputSchema': 'Esquema de entrada',
+    'workflow.inputSchemaDescription':
+      'Define los campos de datos requeridos y la validación para este flujo de trabajo.',
+    'workflow.successRatio': 'Proporción de éxito',
+    'workflow.successRatioDescription':
+      'Proporción de ejecuciones completadas frente a ejecuciones fallidas de este flujo de trabajo.',
+    'workflow.runSuccess': 'Éxito de ejecución',
+    'workflow.ofTotal': 'de {{totalCount}}',
+    'workflow.statsSuccess': 'Éxito',
+    'workflow.statsFailed': 'Fallido',
     'workflow.details': 'Detalles',
     'workflow.errors.abortFailed':
       'Error al cancelar: La ejecución ya se completó.',
@@ -187,8 +218,11 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
     'workflow.fields.description': 'Descripción',
     'workflow.fields.duration': 'Duración',
+    'workflow.fields.averageDuration': 'Duración promedio',
+    'workflow.fields.entity': 'Entidad',
     'workflow.fields.runStatus': 'Estado de ejecución',
     'workflow.fields.started': 'Iniciado',
+    'workflow.fields.runBy': 'Ejecutado por',
     'workflow.fields.version': 'Versión',
     'workflow.fields.workflow': 'Flujo de trabajo',
     'workflow.fields.workflowId': 'ID de ejecución',
@@ -204,6 +238,20 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
+    'workflow.unavailable.title': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.runTooltip': 'Flujo de trabajo no disponible',
+    'workflow.unavailable.requestFailed':
+      'La solicitud HTTP GET a {{url}} falló.',
+    'workflow.unavailable.statusCodeLine': 'Código de estado: {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texto de estado: {{reason}}',
+    'samlSso.title': 'Sesión de GitHub SAML SSO expirada',
+    'samlSso.reauthorizeButton': 'Reautorizar SSO',
+    'samlSso.body':
+      'Su sesión de GitHub SAML SSO ha expirado. Su organización requiere una sesión SAML activa para acceder a sus recursos.',
+    'samlSso.reauthorizeHint':
+      "Haga clic en 'Reautorizar SSO' para volver a autenticarse con el proveedor de identidad de su organización.",
+    'samlSso.fallbackHint':
+      'Por favor, cierre sesión y vuelva a iniciar sesión desde Configuración > Proveedores de autenticación para restablecer su sesión SAML.',
   },
 });
 

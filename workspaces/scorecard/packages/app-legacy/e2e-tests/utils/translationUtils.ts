@@ -193,6 +193,22 @@ export function getSomeEntitiesNotReportingTooltip(
   );
 }
 
+/** Flat metric-namespace string by key (e.g. weightedStatusScoreCenterTooltipTotalLabel). */
+export function getMetricTranslation(
+  translations: ScorecardMessages,
+  key: string,
+): string {
+  const metric = translations.metric as unknown as Record<
+    string,
+    string | undefined
+  >;
+  const refMetric = scorecardMessages.metric as unknown as Record<
+    string,
+    string | undefined
+  >;
+  return metric[key] ?? refMetric[key] ?? key;
+}
+
 /** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
 export function getEntitiesTableFooterRowsLabel(
   translations: ScorecardMessages,
@@ -369,7 +385,31 @@ export function getDrillDownNoDataFoundSnapshot(
         `;
 }
 
-export function getThresholdsSnapshot(
+function getHomepageDrillDownLinkSnapshot(
+  translations: ScorecardMessages,
+  options: {
+    drillDownMetricId: string;
+    aggregationSegment: string;
+    healthy: string;
+    total: string;
+  },
+): string {
+  const drillDownLinkText = getHomepageEntityCalculationHealthText(
+    translations,
+    options.healthy,
+    options.total,
+  );
+  const drillDownUrl = `/scorecard/aggregations/${options.aggregationSegment}/metrics/${options.drillDownMetricId}`;
+  return options.healthy === options.total
+    ? `- link "${drillDownLinkText}":
+            - /url: ${drillDownUrl}`
+    : `- link "${getSomeEntitiesNotReportingTooltip(translations)}":
+            - /url: ${drillDownUrl}
+            - text: ${drillDownLinkText}`;
+}
+
+/** Snapshot for statusGrouped-type homepage KPI cards (pie chart + threshold legend). */
+export function getStatusGroupedCardSnapshot(
   translations: ScorecardMessages,
   options: {
     drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
@@ -391,16 +431,16 @@ export function getThresholdsSnapshot(
     healthy: '10',
     total: '10',
   };
-  const drillDownLinkText = getHomepageEntityCalculationHealthText(
-    translations,
+  const drillDownLinkSnapshot = getHomepageDrillDownLinkSnapshot(translations, {
+    drillDownMetricId,
+    aggregationSegment,
     healthy,
     total,
-  );
+  });
   return `
         - article:
           - text: ${cardTitle}
-          - link "${drillDownLinkText}":
-            - /url: /scorecard/aggregations/${aggregationSegment}/metrics/${drillDownMetricId}
+          ${drillDownLinkSnapshot}
           - button
           - separator
           - paragraph: ${cardDescription}
@@ -411,7 +451,48 @@ export function getThresholdsSnapshot(
         `;
 }
 
-/** Snapshot for the scorecard card on the drill-down page (same as thresholds but without the entities link). */
+/** Snapshot for weightedStatusScore-type homepage KPI cards (donut gauge, no threshold legend). */
+export function getWeightedStatusScoreCardSnapshot(
+  translations: ScorecardMessages,
+  options: {
+    drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
+    drillDownAggregationId?: string;
+    homepageCalculationHealth?: { healthy: string; total: string };
+    cardTitle: string;
+    cardDescription: string;
+    weightedStatusScoreLabel: string;
+  },
+): string {
+  const {
+    drillDownMetricId,
+    drillDownAggregationId,
+    cardTitle,
+    cardDescription,
+    weightedStatusScoreLabel,
+  } = options;
+  const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
+  const { healthy, total } = options.homepageCalculationHealth ?? {
+    healthy: '10',
+    total: '10',
+  };
+  const drillDownLinkSnapshot = getHomepageDrillDownLinkSnapshot(translations, {
+    drillDownMetricId,
+    aggregationSegment,
+    healthy,
+    total,
+  });
+  return `
+        - article:
+          - text: ${cardTitle}
+          ${drillDownLinkSnapshot}
+          - button
+          - separator
+          - paragraph: ${cardDescription}
+          - application: ${weightedStatusScoreLabel}
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page (same as statusGrouped but without the entities link). */
 export function getDrillDownCardSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',

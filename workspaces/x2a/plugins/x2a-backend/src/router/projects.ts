@@ -320,6 +320,7 @@ export function registerProjectRoutes(
       const { project, userRef } = await useEnforceProjectPermissions({
         req,
         readOnly: false,
+        doEnrichment: true,
         projectId,
         x2aDatabase,
         permissionsSvc,
@@ -351,23 +352,24 @@ export function registerProjectRoutes(
           })
           .optional(),
         userPrompt: z.string().optional(),
+        refresh: z.boolean().optional(),
       });
 
       const parsedBody = runRequestSchema.passthrough().safeParse(req.body);
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
-        parsedBody.data;
-
-      // Resolve git repositories with config-based token fallback
-      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
-        project,
+      const {
         sourceRepoAuth,
         targetRepoAuth,
-      });
+        aapCredentials,
+        userPrompt,
+        refresh,
+      } = parsedBody.data;
 
-      // Check for existing running init job
+      // Check for existing running init job before refresh validation so a
+      // pending resync (latest init job without artifacts yet) returns 409
+      // rather than 400 for missing migrationPlan on the in-flight job.
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
       const activeInitJobs = existingJobs.filter(
         job => job.phase === 'init' && JobStatus.from(job.status).isActive(),
@@ -389,6 +391,19 @@ export function registerProjectRoutes(
             'Please wait for the current job to complete or cancel it before starting a new one',
         });
       }
+
+      if (refresh && !project.migrationPlan) {
+        throw new InputError(
+          `Invalid body ${endpoint}: refresh requires an existing migration plan from a completed init phase`,
+        );
+      }
+
+      // Resolve git repositories with config-based token fallback
+      const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
+        project,
+        sourceRepoAuth,
+        targetRepoAuth,
+      });
 
       const callbackToken = CallbackToken.generate();
       const job = await x2aDatabase.createJob({
@@ -426,6 +441,7 @@ export function registerProjectRoutes(
         aapCredentials,
         userPrompt,
         acceptedRules,
+        refresh,
       });
 
       // Update job with k8s job name

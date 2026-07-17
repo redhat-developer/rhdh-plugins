@@ -23,6 +23,8 @@ import type { JSONSchema7 } from 'json-schema';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { getSortedStepEntries } from '../utils/getSortedStepEntries';
+import { resolveStepErrorSchema } from '../utils/resolveStepErrorSchema';
+import { useStepperContext } from '../utils/StepperContext';
 import OrchestratorFormStepper, {
   OrchestratorFormStep,
   OrchestratorFormToolbar,
@@ -39,14 +41,17 @@ const StepperObjectField = ({
   ...props
 }: FieldProps<JsonObject, JSONSchema7>) => {
   const { t } = useTranslation();
+  const { activeStep } = useStepperContext();
 
   const sortedStepEntries = useMemo(
-    () => getSortedStepEntries(schema),
-    [schema],
+    () => getSortedStepEntries(schema, formData),
+    [schema, formData],
   );
   if (sortedStepEntries === undefined) {
     throw new Error(t('stepperObjectField.error'));
   }
+
+  const activeStepKey = sortedStepEntries[activeStep]?.[0];
 
   const steps = sortedStepEntries.reduce<OrchestratorFormStep[]>(
     (prev, [key, subSchema]) => {
@@ -64,8 +69,8 @@ const StepperObjectField = ({
                 schema={{ ...subSchema, title: '' }} // the title is in the step
                 uiSchema={uiSchema?.[key] || {}}
                 formData={(formData?.[key] as JsonObject) || {}}
-                onChange={data => {
-                  onChange({ ...formData, [key]: data });
+                onChange={(data, newErrorSchema, id) => {
+                  onChange({ ...formData, [key]: data }, newErrorSchema, id);
                 }}
                 idSchema={idSchema[key] as IdSchema<JsonObject>}
                 registry={{
@@ -75,7 +80,11 @@ const StepperObjectField = ({
                     ObjectField: ObjectField, // undo override of objectfield
                   },
                 }}
-                errorSchema={errorSchema?.[key] as ErrorSchema<JsonObject>}
+                errorSchema={resolveStepErrorSchema(
+                  errorSchema as ErrorSchema<JsonObject>,
+                  key,
+                  activeStepKey,
+                )}
               />
               <OrchestratorFormToolbar />
             </>

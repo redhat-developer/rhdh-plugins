@@ -30,7 +30,11 @@ import {
   WorkflowRunStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { buildPagination, buildPaginationTmp } from '../../types/pagination';
+import {
+  buildPagination,
+  buildPaginationTmp,
+  Pagination,
+} from '../../types/pagination';
 import { OrchestratorService } from '../OrchestratorService';
 import { mapToWorkflowOverviewDTO } from './mapping/V2Mappings';
 import {
@@ -250,9 +254,13 @@ describe('getWorkflowOverview', () => {
     // Act
     const result: WorkflowOverviewListResultDTO = await v2.getWorkflowsOverview(
       buildPaginationTmp(mockRequest.paginationInfo),
+      mockRequest.filters,
     );
 
     // Assert
+    expect(mockOrchestratorService.fetchWorkflowOverviews).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: mockRequest.filters }),
+    );
     expect(result).toEqual({
       overviews: mockOverviewsV1.items.map((item: WorkflowOverview) =>
         mapToWorkflowOverviewDTO(item),
@@ -285,25 +293,16 @@ describe('getWorkflowOverviewById', () => {
     jest.clearAllMocks();
   });
 
-  it('0 items in workflow overview list', async () => {
+  it('not found - throws when overview is undefined', async () => {
     // Arrange
-    const mockOverviewsV1 = {
-      items: [],
-    };
     (
       mockOrchestratorService.fetchWorkflowOverview as jest.Mock
-    ).mockResolvedValue(mockOverviewsV1.items);
-    // Act
-    const overviewV2 = await v2.getWorkflowOverviewById('test_workflowId');
+    ).mockResolvedValue(undefined);
 
-    // Assert
-    expect(overviewV2).toBeDefined();
-    expect(overviewV2.workflowId).toBeUndefined();
-    expect(overviewV2.name).toBeUndefined();
-    expect(overviewV2.format).toBeUndefined();
-    expect(overviewV2.lastTriggeredMs).toBeUndefined();
-    expect(overviewV2.lastRunStatus).toBeUndefined();
-    expect(overviewV2.description).toBeUndefined();
+    // Act & Assert
+    await expect(v2.getWorkflowOverviewById('test_workflowId')).rejects.toThrow(
+      "Couldn't fetch workflow overview for test_workflowId",
+    );
   });
 
   it('1 item in workflow overview list', async () => {
@@ -506,24 +505,17 @@ describe('executeWorkflow as event type', () => {
       customAttrib: 'My customAttrib',
       isEvent: true,
     };
-    // Act
-    try {
-      await v2.executeWorkflow(
-        {
-          inputData: workflowData,
-          targetEntity: 'someEntity',
-        },
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
         workflowInfo.id,
         'someUserEntity',
         'someToken',
-      );
-    } catch (err) {
-      // Assert
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(err.message).toEqual(
-        'Error executing workflow with id test_workflowId, No States that match the start state',
-      );
-    }
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No States that match the start state',
+    );
   });
 
   it('executes a given workflow: event type, no start.stateName error', async () => {
@@ -538,24 +530,17 @@ describe('executeWorkflow as event type', () => {
       customAttrib: 'My customAttrib',
       isEvent: true,
     };
-    // Act
-    try {
-      await v2.executeWorkflow(
-        {
-          inputData: workflowData,
-          targetEntity: 'someEntity',
-        },
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
         workflowInfo.id,
         'someUserEntity',
         'someToken',
-      );
-    } catch (err) {
-      // Assert
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(err.message).toEqual(
-        'Error executing workflow with id test_workflowId, No States that match the start state',
-      );
-    }
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No States that match the start state',
+    );
   });
 
   it('executes a given workflow: event type, no event ref error', async () => {
@@ -569,24 +554,17 @@ describe('executeWorkflow as event type', () => {
       customAttrib: 'My customAttrib',
       isEvent: true,
     };
-    // Act
-    try {
-      await v2.executeWorkflow(
-        {
-          inputData: workflowData,
-          targetEntity: 'someEntity',
-        },
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
         workflowInfo.id,
         'someUserEntity',
         'someToken',
-      );
-    } catch (err) {
-      // Assert
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(err.message).toEqual(
-        'Error executing workflow with id test_workflowId, No event ref',
-      );
-    }
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No event ref',
+    );
   });
 
   it('executes a given workflow: event type, no start event for event ref error', async () => {
@@ -601,24 +579,17 @@ describe('executeWorkflow as event type', () => {
       customAttrib: 'My customAttrib',
       isEvent: true,
     };
-    // Act
-    try {
-      await v2.executeWorkflow(
-        {
-          inputData: workflowData,
-          targetEntity: 'someEntity',
-        },
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
         workflowInfo.id,
         'someUserEntity',
         'someToken',
-      );
-    } catch (err) {
-      // Assert
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(err.message).toEqual(
-        'Error executing workflow with id test_workflowId, No Events that match the start state eventRef',
-      );
-    }
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No Events that match the start state eventRef',
+    );
   });
 
   it('executes a given workflow: event type, no correlation context attribute', async () => {
@@ -633,24 +604,17 @@ describe('executeWorkflow as event type', () => {
       customAttrib: 'My customAttrib',
       isEvent: true,
     };
-    // Act
-    try {
-      await v2.executeWorkflow(
-        {
-          inputData: workflowData,
-          targetEntity: 'someEntity',
-        },
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
         workflowInfo.id,
         'someUserEntity',
         'someToken',
-      );
-    } catch (err) {
-      // Assert
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(err.message).toEqual(
-        'Error executing workflow with id test_workflowId, No correlation context attribute name found in event with event name lock-event',
-      );
-    }
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No correlation context attribute name found in event with event name lock-event',
+    );
   });
 });
 
@@ -711,6 +675,37 @@ describe('getInstances', () => {
     for (let i = 0; i < howmany; i++) {
       expect(processInstanceList.items?.[i].id).toEqual(processInstances[i].id);
     }
+    expect(processInstanceList.totalCount).toBe(howmany);
+  });
+
+  it('sets totalCount from unfiltered fetch when pagination returns a page subset', async () => {
+    const pageItems = generateProcessInstances(2);
+    const allItems = generateProcessInstances(10);
+    const pagedRequest: Pagination = { limit: 2, offset: 0 };
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockImplementation(
+      (args: { pagination?: Pagination }) =>
+        Promise.resolve(args.pagination ? pageItems : allItems),
+    );
+
+    const result = await v2.getInstances(pagedRequest);
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledTimes(2);
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(1, {
+      pagination: pagedRequest,
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(2, {
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(result.items).toHaveLength(2);
+    expect(result.totalCount).toBe(10);
+    expect(result.paginationInfo).toEqual({
+      pageSize: 2,
+      offset: 0,
+    });
   });
 });
 

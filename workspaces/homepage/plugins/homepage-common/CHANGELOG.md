@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-common
 
+## 0.2.1
+
+### Patch Changes
+
+- a25f33d: Renamed the frontend homepage plugin from `@red-hat-developer-hub/backstage-plugin-dynamic-home-page` to `@red-hat-developer-hub/backstage-plugin-homepage` for consistency with the sibling `homepage-backend` and `homepage-common` packages.
+
+## 0.2.0
+
+### Minor Changes
+
+- 1aa10e7: Backsatge version bump to v1.51.0
+
 ## 0.1.2
 
 ### Patch Changes

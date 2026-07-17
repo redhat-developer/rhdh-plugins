@@ -136,7 +136,15 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
 
   describe('bridgePredicate', () => {
     it('should match default localhost URL', () => {
-      const reader = newReader({});
+      const reader = newReader({
+        catalog: {
+          providers: {
+            modelCatalog: {
+              test: {},
+            },
+          },
+        },
+      });
       expect(
         reader.bridgePredicate(
           new URL('https://localhost:9090/modelcard/test'),

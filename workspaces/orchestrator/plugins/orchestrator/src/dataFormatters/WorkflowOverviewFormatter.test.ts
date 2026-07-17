@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { DateTime } from 'luxon';
+
 import {
   ProcessInstanceStatusDTO,
   WorkflowOverviewDTO,
@@ -42,11 +44,46 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.name).toBe(mockWorkflowOverview.name);
     expect(adaptedData.version).toBe('---');
     expect(adaptedData.lastTriggered).toBe(
-      new Date(mockWorkflowOverview.lastTriggeredMs!).toLocaleString(),
+      DateTime.fromMillis(mockWorkflowOverview.lastTriggeredMs!).toLocaleString(
+        DateTime.DATETIME_SHORT_WITH_SECONDS,
+      ),
     );
     expect(adaptedData.lastRunStatus).toBe(mockWorkflowOverview.lastRunStatus);
     expect(adaptedData.description).toBe(mockWorkflowOverview.description);
     expect(adaptedData.format).toBe('yaml'); // Adjust based on your expected value
+  });
+
+  it('should format workflow run stats when provided', () => {
+    const mockWorkflowOverview: WorkflowOverviewDTO = {
+      workflowId: 'wf-stats',
+      format: 'yaml',
+      workflowRunStats: {
+        runsLastMonth: 5300,
+        successRatio: 0.91,
+        successCount: 91,
+        errorCount: 9,
+        totalCount: 100,
+      },
+    };
+
+    const adaptedData = WorkflowOverviewFormatter.format(mockWorkflowOverview);
+
+    expect(adaptedData.runsLastMonth).toBe('5.3 k');
+    expect(adaptedData.successRatio).toBe(0.91);
+    expect(adaptedData.successRatioDisplay).toBe('91%');
+  });
+
+  it('should use unavailable placeholders when workflow run stats are missing', () => {
+    const mockWorkflowOverview: WorkflowOverviewDTO = {
+      workflowId: 'wf-no-stats',
+      format: 'yaml',
+    };
+
+    const adaptedData = WorkflowOverviewFormatter.format(mockWorkflowOverview);
+
+    expect(adaptedData.runsLastMonth).toBe('---');
+    expect(adaptedData.successRatio).toBeUndefined();
+    expect(adaptedData.successRatioDisplay).toBe('---');
   });
 
   it('should include version when provided', () => {
@@ -75,5 +112,63 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.description).toBe('---');
     expect(adaptedData.version).toBe('---');
     expect(adaptedData.format).toBe('yaml');
+  });
+
+  describe('availability formatting', () => {
+    it('should show "Available" when isAvailable is true', () => {
+      const mockWorkflowOverview: WorkflowOverviewDTO = {
+        workflowId: 'wf-avail',
+        format: 'yaml',
+        isAvailable: true,
+      };
+      const adaptedData =
+        WorkflowOverviewFormatter.format(mockWorkflowOverview);
+      expect(adaptedData.availability).toBe('Available');
+    });
+
+    it('should show "Unavailable" when isAvailable is false', () => {
+      const mockWorkflowOverview: WorkflowOverviewDTO = {
+        workflowId: 'wf-unavail',
+        format: 'yaml',
+        isAvailable: false,
+      };
+      const adaptedData =
+        WorkflowOverviewFormatter.format(mockWorkflowOverview);
+      expect(adaptedData.availability).toBe('Unavailable');
+    });
+
+    it('should show "---" when isAvailable is undefined', () => {
+      const mockWorkflowOverview: WorkflowOverviewDTO = {
+        workflowId: 'wf-unknown-avail',
+        format: 'yaml',
+      };
+      const adaptedData =
+        WorkflowOverviewFormatter.format(mockWorkflowOverview);
+      expect(adaptedData.availability).toBe('---');
+    });
+  });
+
+  describe('lastRunStatus formatting', () => {
+    it('should map ERROR status to FAILED', () => {
+      const mockWorkflowOverview: WorkflowOverviewDTO = {
+        workflowId: 'wf-err',
+        format: 'yaml',
+        lastRunStatus: 'ERROR',
+      };
+      const adaptedData =
+        WorkflowOverviewFormatter.format(mockWorkflowOverview);
+      expect(adaptedData.lastRunStatus).toBe('FAILED');
+    });
+
+    it('should map ACTIVE status to RUNNING', () => {
+      const mockWorkflowOverview: WorkflowOverviewDTO = {
+        workflowId: 'wf-active',
+        format: 'yaml',
+        lastRunStatus: 'ACTIVE',
+      };
+      const adaptedData =
+        WorkflowOverviewFormatter.format(mockWorkflowOverview);
+      expect(adaptedData.lastRunStatus).toBe('RUNNING');
+    });
   });
 });

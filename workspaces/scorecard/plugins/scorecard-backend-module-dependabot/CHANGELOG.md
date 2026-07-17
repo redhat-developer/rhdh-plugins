@@ -1,5 +1,46 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot
 
+## 0.3.1
+
+### Patch Changes
+
+- 7ead71c: Correct default threshold documentation and add missing threshold documentation in scorecard backend module READMEs to match provider code defaults.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.1
+
+## 0.3.0
+
+### Minor Changes
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- Updated dependencies [efb4c4f]
+- Updated dependencies [8c85bd4]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
+## 0.2.13
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.9
+
+## 0.2.12
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+- Updated dependencies [6699550]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.8
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
 ## 0.2.11
 
 ### Patch Changes

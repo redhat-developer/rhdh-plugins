@@ -22,6 +22,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
+import { formatCompactCount } from '../utils/formatCompactCount';
 import DataFormatter from './DataFormatter';
 
 export interface FormattedWorkflowOverview {
@@ -34,6 +35,10 @@ export interface FormattedWorkflowOverview {
   readonly description: string;
   readonly format: WorkflowFormatDTO;
   readonly availability?: string;
+  readonly availabilityDetails?: WorkflowOverviewDTO['availability'];
+  readonly runsLastMonth: string;
+  readonly successRatio?: number;
+  readonly successRatioDisplay: string;
 }
 
 const formatIsAvailable = (availability: boolean | undefined) => {
@@ -47,6 +52,24 @@ const formatLastRunStatus = (lastRunStatus: string | undefined) => {
   else if (lastRunStatus === 'ACTIVE') return 'RUNNING';
   else if (lastRunStatus) return lastRunStatus?.toString();
   return VALUE_UNAVAILABLE;
+};
+
+const formatRunsLastMonth = (runsLastMonth: number | undefined) => {
+  if (runsLastMonth === undefined) {
+    return VALUE_UNAVAILABLE;
+  }
+  return formatCompactCount(runsLastMonth);
+};
+
+const formatSuccessRatioDisplay = (successRatio: number | undefined) => {
+  if (
+    successRatio === undefined ||
+    Number.isNaN(successRatio) ||
+    !Number.isFinite(successRatio)
+  ) {
+    return VALUE_UNAVAILABLE;
+  }
+  return `${Math.round(successRatio * 100)}%`;
 };
 
 const WorkflowOverviewFormatter: DataFormatter<
@@ -68,6 +91,12 @@ const WorkflowOverviewFormatter: DataFormatter<
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
       availability: formatIsAvailable(data.isAvailable),
+      availabilityDetails: data.availability,
+      runsLastMonth: formatRunsLastMonth(data.workflowRunStats?.runsLastMonth),
+      successRatio: data.workflowRunStats?.successRatio,
+      successRatioDisplay: formatSuccessRatioDisplay(
+        data.workflowRunStats?.successRatio,
+      ),
     };
   },
 };

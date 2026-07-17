@@ -25,15 +25,15 @@ import {
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { isMetricIdDisabled } from '../../utils/metricUtils';
+import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
-import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ThresholdResolver } from '../../threshold/ThresholdResolver';
 
 type Options = Pick<
   SchedulerOptions,
@@ -44,6 +44,7 @@ type Options = Pick<
   | 'catalog'
   | 'auth'
   | 'thresholdEvaluator'
+  | 'thresholdResolver'
 >;
 
 export class PullMetricsByProviderTask implements SchedulerTask {
@@ -56,6 +57,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   private readonly scheduler: SchedulerService;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdEvaluator: ThresholdEvaluator;
+  private readonly thresholdResolver: ThresholdResolver;
 
   private static readonly CATALOG_BATCH_SIZE = 50;
 
@@ -76,6 +78,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     this.scheduler = options.scheduler;
     this.database = options.database;
     this.thresholdEvaluator = options.thresholdEvaluator;
+    this.thresholdResolver = options.thresholdResolver;
   }
 
   async start(): Promise<void> {
@@ -90,7 +93,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         const logger = this.logger.child({
           class: this.constructor.name,
           taskId: this.providerId,
-          taskInstanceId: uuid(),
+          taskInstanceId: randomUUID(),
         });
 
         try {
@@ -179,10 +182,11 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                   const value = resultsMap.get(metricId) as MetricValue;
 
                   try {
-                    const thresholds = mergeEntityAndProviderThresholds(
-                      entity,
-                      provider,
-                    );
+                    const thresholds =
+                      this.thresholdResolver.resolveEntityThresholds(
+                        entity,
+                        provider,
+                      );
 
                     const status =
                       this.thresholdEvaluator.getFirstMatchingThreshold(
@@ -249,7 +253,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
               value = await provider.calculateMetric(entity);
 
-              const thresholds = mergeEntityAndProviderThresholds(
+              const thresholds = this.thresholdResolver.resolveEntityThresholds(
                 entity,
                 provider,
               );

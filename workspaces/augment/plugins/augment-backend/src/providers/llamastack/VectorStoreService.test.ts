@@ -177,6 +177,8 @@ describe('VectorStoreService', () => {
       // Mock listing vector stores - no match
       mockClient.request
         .mockResolvedValueOnce({ data: [] })
+        // Mock resolveFromExistingStores → listVectorStores
+        .mockResolvedValueOnce({ data: [] })
         // Mock creation
         .mockResolvedValueOnce({
           id: 'vs_newly_created',
@@ -208,6 +210,8 @@ describe('VectorStoreService', () => {
       // Mock listing - no match
       mockClient.request
         .mockResolvedValueOnce({ data: [] })
+        // Mock resolveFromExistingStores → listVectorStores
+        .mockResolvedValueOnce({ data: [] })
         // Mock creation
         .mockResolvedValueOnce({
           id: 'vs_hybrid',
@@ -220,14 +224,14 @@ describe('VectorStoreService', () => {
       // Verify create was called with hybrid search params
       expect(mockClient.request).toHaveBeenLastCalledWith('/v1/vector_stores', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           name: 'test-vector-store',
           embedding_model: 'sentence-transformers/all-MiniLM-L6-v2',
           embedding_dimension: 384,
           search_mode: 'hybrid',
           bm25_weight: 0.3,
           semantic_weight: 0.7,
-        }),
+        },
       });
     });
 
@@ -240,6 +244,8 @@ describe('VectorStoreService', () => {
 
       // Mock listing - no match
       mockClient.request
+        .mockResolvedValueOnce({ data: [] })
+        // Mock resolveFromExistingStores → listVectorStores
         .mockResolvedValueOnce({ data: [] })
         // Mock creation failure
         .mockRejectedValueOnce(new Error('API rate limit exceeded'));

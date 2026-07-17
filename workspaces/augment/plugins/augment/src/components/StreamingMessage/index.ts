@@ -32,6 +32,7 @@ export type {
   StreamingPhase,
   PhaseInfo,
   HandoffInfo,
+  ReasoningSpanInfo,
 } from './StreamingMessage.types';
 
 // State management

@@ -38,6 +38,7 @@ import {
   canCancelPhase,
   downloadLogFile,
   formatDuration,
+  getEffectiveDurationSeconds,
   humanizeDate,
   secondsBetween,
 } from './tools';
@@ -179,10 +180,23 @@ export const PhaseDetails = (
   const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
+  const durationSeconds = phase
+    ? getEffectiveDurationSeconds(phase)
+    : undefined;
   const duration =
-    phase?.startedAt && phase?.finishedAt
-      ? formatDuration(t, secondsBetween(phase.startedAt, phase.finishedAt))
-      : empty;
+    durationSeconds === undefined ? empty : formatDuration(t, durationSeconds);
+
+  const attemptCount = phase?.attemptCount ?? (phase ? 1 : undefined);
+  const totalDuration =
+    attemptCount &&
+    attemptCount > 1 &&
+    phase?.firstAttemptAt &&
+    phase?.finishedAt
+      ? formatDuration(
+          t,
+          secondsBetween(phase.firstAttemptAt, phase.finishedAt),
+        )
+      : undefined;
 
   const canRunPhase = phase?.status !== 'running';
 
@@ -247,32 +261,48 @@ export const PhaseDetails = (
         />
       </Grid>
 
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.startedAt')}
           value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField label={t('modulePage.phases.duration')} value={duration} />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.attempts')}
+          value={String(attemptCount ?? empty)}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.totalElapsed')}
+          value={totalDuration || empty}
+        />
+      </Grid>
+
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.k8sJobName')}
           value={phase?.k8sJobName || empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.id')}
           value={phase?.id || empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.commitId')}
           value={phase?.commitId || empty}
         />
+      </Grid>
+      <Grid item xs={3}>
+        {/* space holder */}
       </Grid>
 
       {phase && (

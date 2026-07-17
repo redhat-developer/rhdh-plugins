@@ -72,6 +72,8 @@ describe('VectorStoreService — RAG lifecycle', () => {
 
     // Mock: GET /v1/vector_stores (no existing stores)
     client.request.mockResolvedValueOnce({ data: [] });
+    // Mock: resolveFromExistingStores → listVectorStores
+    client.request.mockResolvedValueOnce({ data: [] });
     // Mock: POST /v1/vector_stores (create)
     client.request.mockResolvedValueOnce({
       id: STORE_ID,
@@ -130,6 +132,15 @@ describe('VectorStoreService — RAG lifecycle', () => {
         },
       ],
       has_more: false,
+    });
+    // Mock: GET /v1/files/{id} (file details)
+    client.request.mockResolvedValueOnce({
+      id: FILE_ID,
+      object: 'file',
+      bytes: 35,
+      created_at: 1700000000,
+      filename: 'test.txt',
+      purpose: 'assistants',
     });
 
     const documents = await service.listDocuments(STORE_ID);

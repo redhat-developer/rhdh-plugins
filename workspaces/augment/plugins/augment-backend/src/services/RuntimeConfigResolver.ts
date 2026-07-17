@@ -351,7 +351,6 @@ export class RuntimeConfigResolver {
     if (typeof dbTemperature === 'number') config.temperature = dbTemperature;
     if (typeof dbSafetyIdentifier === 'string')
       config.safetyIdentifier = dbSafetyIdentifier;
-
     // Recompute guardrails from the effective inputShields/outputShields
     // so DB safety overrides propagate to the Responses API `guardrails` field.
     if (inputShields !== undefined || outputShields !== undefined) {

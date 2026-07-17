@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 71cfae4: Add blueprint architecture for grouped scorecard layouts
+
+  Implement blueprint pattern enabling platform engineers to configure grouped scorecard metrics via app-config.yaml. Layout extensions are auto-discovered through Backstage's New Frontend System (NFS).
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- Updated dependencies [8c85bd4]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
+## 2.7.9
+
+### Patch Changes
+
+- d86f9c6: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+
+## 2.7.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
 ## 2.7.7
 
 ### Patch Changes

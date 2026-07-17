@@ -225,7 +225,7 @@ The `export-csv` command parses extensions YAML files and generates CSV reports.
 
 - `name`, `title`, `author`, `categories`, `lifecycle`
 - `metadataDescription`, `specDescription`, `support`, `publisher`, `highlights`
-- `certified-by`, `verified-by`, `pre-installed`
+- `verified-by`, `pre-installed`
 - `packages`, `backend packages`, `frontend packages`
 
 **Package CSV columns:**

@@ -87,8 +87,88 @@ homepage:
   # For 1.x this references a mount point (`config.id`).
   # For 2.x this references a homepage widget extension (name).
   defaultWidgets:
+    - id: test-no-if
+      ref: headline
+      props:
+        title: 'This widget has no "if" condition and should always render'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user
+      ref: headline
+      if:
+        users: [user:development/guest]
+      props:
+        title: 'This widget has an "if" condition that allows only the guest user to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-another-user
+      ref: headline
+      if:
+        users: [user:development/another-user]
+      props:
+        title: 'This widget has an "if" condition that allows only another user to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-group
+      ref: headline
+      if:
+        groups: [group:development/guests]
+      props:
+        title: 'This widget has an "if" condition that allows only the guests group to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-another-group
+      ref: headline
+      if:
+        groups: [group:development/another-group]
+      props:
+        title: 'This widget has an "if" condition that allows only another group to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-catalog-entities
+      ref: headline
+      if:
+        permissions: [catalog.entity.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with catalog read permissions to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-create-catalog-entities
+      ref: headline
+      if:
+        permissions: [catalog.entity.create]
+      props:
+        title: 'This widget has an "if" condition that allows only users with catalog create permissions to see it'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-this-widget
+      ref: headline
+      if:
+        permissions: [homepage.default-widgets.read, catalog.entity.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with access to read default widgets to see it (id: test-if-user-can-read-this-widget)'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    - id: test-if-user-can-read-another-widget
+      ref: headline
+      if:
+        permissions: [homepage.default-widgets.read]
+      props:
+        title: 'This widget has an "if" condition that allows only users with access to read default widgets to see it (id: test-if-user-can-read-another-widget)'
+      layout:
+        xl: { w: 12, h: 1 }
+
     - id: onboarding
       ref: 'rhdh-onboarding-section'
+      tags: [public]
       layout:
         xl: { w: 12, h: 6 }
         lg: { w: 12, h: 6 }
@@ -98,6 +178,7 @@ homepage:
         xxs: { w: 12, h: 14 }
     - id: entity-list
       ref: 'rhdh-entity-section'
+      tags: [general]
       layout:
         xl: { w: 12, h: 7 }
         lg: { w: 12, h: 7 }
@@ -107,6 +188,7 @@ homepage:
         xxs: { w: 12, h: 15 }
     - id: template-list
       ref: 'rhdh-template-section'
+      tags: [developer]
       layout:
         xl: { w: 12, h: 5 }
         lg: { w: 12, h: 5 }
@@ -116,6 +198,7 @@ homepage:
         xxs: { w: 12, h: 13.5 }
     - id: quickaccess-card
       ref: quickaccess-card
+      tags: [general]
       layout:
         xl: { w: 6, h: 8, x: 6 }
         lg: { w: 6, h: 8, x: 6 }
@@ -128,6 +211,7 @@ homepage:
       children:
         - id: featured-docs-card
           ref: featured-docs-card
+          tags: [general]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -137,6 +221,7 @@ homepage:
             xxs: { w: 12, h: 4 }
         - id: catalog-starred-entities-card
           ref: catalog-starred-entities-card
+          tags: [general]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -149,6 +234,7 @@ homepage:
       children:
         - id: recently-visited-card
           ref: recently-visited-card
+          tags: [developer]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -158,6 +244,7 @@ homepage:
             xxs: { w: 12, h: 4 }
         - id: top-visited-card
           ref: top-visited-card
+          tags: [developer]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -165,6 +252,39 @@ homepage:
             sm: { w: 12, h: 4 }
             xs: { w: 12, h: 4 }
             xxs: { w: 12, h: 4 }
+
+    # --- tags + unless examples ---
+
+    # Visible to developers group but hidden from developer-user specifically
+    - id: test-unless-user
+      ref: headline
+      if:
+        groups: [group:default/developers]
+      unless:
+        users: [user:default/developer-user]
+      props:
+        title: 'Visible to developers group, but hidden from developer-user via "unless"'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    # Visible to everyone except the admins group
+    - id: test-unless-group
+      ref: headline
+      unless:
+        groups: [group:default/admins]
+      props:
+        title: 'Hidden from the admins group via "unless"'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    # Tagged 'admin' — not in the conditional policy tags, so RBAC will filter it out
+    - id: test-tagged-admin
+      ref: headline
+      tags: [admin]
+      props:
+        title: 'Tagged admin — filtered by RBAC since the policy only allows public/general/developer'
+      layout:
+        xl: { w: 12, h: 1 }
 
 organization:
   name: My Company
@@ -230,9 +350,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:default/guest-user
-      ownershipEntityRefs: []
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -279,6 +397,15 @@ permission:
       - homepage
     admin:
       users:
-        - name: user:default/guest-user
+        - name: user:development/guest
+
+      # if you make the guest user super admin here you might see "unexpected" default widgets
+      # on the homepage, as some widgets are only visible to users with access to read default widgets,
+      # which the guest user has then by default.
+      # You can either remove the guest user from the admin users or configure the superUsers instead.
       superUsers:
-        - name: user:default/guest-user
+        []
+        # - name: user:development/guest
+    policyFileReload: true
+    policies-csv-file: ../../rbac-policy.csv
+    conditionalPoliciesFile: ../../conditional-policies.yaml

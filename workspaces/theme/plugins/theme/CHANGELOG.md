@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.9
+
+### Patch Changes
+
+- eed88f3: Fix broken `config.d.ts` import path: change `import { ThemeConfig } from './src'` to `'./'` so the published package resolves correctly during config schema validation.
+
+## 0.14.8
+
+### Patch Changes
+
+- 6a1b1f0: Replace Material UI v4 imports with MUI v5 and add workspace ESLint restrictions to prevent v4 regressions.
+
+## 0.14.7
+
+### Patch Changes
+
+- 4d80582: fix(RHDHBUGS-2291): use `&.Mui-selected` syntax for MuiBottomNavigationAction to resolve CSS specificity console warning
+
+## 0.14.6
+
+### Patch Changes
+
+- bb01e90: Removed the box shadow from the AppBar component
+
 ## 0.14.5
 
 ### Patch Changes

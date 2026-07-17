@@ -22,6 +22,8 @@ import type {
   UserValue,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
+import { pickNumericBound } from '../../utils/schemaUtils';
+import { type TFunction, makeTranslator } from '../../utils/formUtils';
 
 /** One user-supplied field value, with string value for form binding. */
 export type UserValueRow = {
@@ -40,6 +42,8 @@ export type UserValueRow = {
   schemaMin?: number;
   /** Inclusive upper bound (from validation_schema.maximum). */
   schemaMax?: number;
+  /** Whether the field must be filled (from validation_schema.required). */
+  required?: boolean;
 };
 
 export type InstanceForm = {
@@ -50,28 +54,77 @@ export type InstanceForm = {
   user_values: UserValueRow[];
 };
 
-const instanceSchema = yup.object({
-  display_name: yup
-    .string()
-    .required('Display name is required')
-    .min(1, 'Display name cannot be empty')
-    .max(63, 'Display name must be at most 63 characters'),
-  catalog_item_id: yup.string().required('Catalog item is required'),
-  api_version: yup
-    .string()
-    .required('API version is required')
-    .matches(
-      /^v\d+(?:(?:alpha|beta)\d*)?$/,
-      'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1',
-    ),
-});
+function buildInstanceSchema(t?: TFunction) {
+  const m = makeTranslator(t);
+  return yup.object({
+    display_name: yup
+      .string()
+      .required(
+        m(
+          'validation.instance.displayNameRequired',
+          'Display name is required',
+        ),
+      )
+      .min(
+        1,
+        m(
+          'validation.instance.displayNameEmpty',
+          'Display name cannot be empty',
+        ),
+      )
+      .max(
+        63,
+        m(
+          'validation.instance.displayNameMax',
+          'Display name must be at most 63 characters',
+        ),
+      ),
+    catalog_item_id: yup
+      .string()
+      .required(
+        m(
+          'validation.instance.catalogItemRequired',
+          'Catalog item is required',
+        ),
+      ),
+    api_version: yup
+      .string()
+      .required(
+        m('validation.instance.apiVersionRequired', 'API version is required'),
+      )
+      .matches(
+        /^v\d+(?:(?:alpha|beta)\d*)?$/,
+        m(
+          'validation.instance.apiVersionPattern',
+          'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
+        ),
+      ),
+  });
+}
 
-export const { validate: validateInstanceForm, isValid: isInstanceFormValid } =
-  createYupValidator<InstanceForm>(instanceSchema, f => ({
+export function validateInstanceForm(
+  form: InstanceForm,
+  t?: TFunction,
+): Partial<Record<keyof InstanceForm, string>> {
+  const { validate } = createYupValidator<InstanceForm>(
+    buildInstanceSchema(t),
+    f => ({
+      display_name: f.display_name,
+      catalog_item_id: f.catalog_item_id,
+      api_version: f.api_version,
+    }),
+  );
+  return validate(form);
+}
+
+const { isValid: isInstanceScalarValid } = createYupValidator<InstanceForm>(
+  buildInstanceSchema(),
+  f => ({
     display_name: f.display_name,
     catalog_item_id: f.catalog_item_id,
     api_version: f.api_version,
-  }));
+  }),
+);
 
 export function emptyInstanceForm(): InstanceForm {
   return {
@@ -97,19 +150,86 @@ function defaultToString(val: unknown): string {
 /** Extract typed schema metadata from a {@link FieldConfiguration}. */
 function extractSchemaInfo(
   field: FieldConfiguration,
-): Pick<UserValueRow, 'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax'> {
+): Pick<
+  UserValueRow,
+  'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax' | 'required'
+> {
   const schema = field.validation_schema ?? {};
-  const schemaType = typeof schema.type === 'string' ? schema.type : undefined;
+  const schemaType =
+    typeof schema.type === 'string' ? schema.type.toLowerCase() : undefined;
   const enumValues =
     Array.isArray(schema.enum) &&
     schema.enum.every(v => typeof v === 'string' || typeof v === 'number')
       ? (schema.enum as (string | number)[]).map(String)
       : undefined;
-  const schemaMin =
-    typeof schema.minimum === 'number' ? schema.minimum : undefined;
-  const schemaMax =
-    typeof schema.maximum === 'number' ? schema.maximum : undefined;
-  return { schemaType, enumValues, schemaMin, schemaMax };
+  const schemaMin = pickNumericBound(schema, 'minimum', 'min');
+  const schemaMax = pickNumericBound(schema, 'maximum', 'max');
+  const required = schema.required === true;
+  return { schemaType, enumValues, schemaMin, schemaMax, required };
+}
+
+/**
+ * Validates user-value rows against their schema constraints.
+ * Returns a record keyed by row index; only rows with errors are included.
+ */
+export function validateUserValues(
+  rows: UserValueRow[],
+  t?: TFunction,
+): Record<number, string> {
+  const m = makeTranslator(t);
+
+  const errors: Record<number, string> = {};
+
+  rows.forEach((row, i) => {
+    const v = row.value.trim();
+
+    if (row.required && v === '') {
+      errors[i] = m(
+        'validation.instance.fieldRequired',
+        'This field is required',
+      );
+      return;
+    }
+
+    if (
+      v !== '' &&
+      (row.schemaType === 'integer' || row.schemaType === 'number')
+    ) {
+      const n = Number(v);
+      if (Number.isNaN(n)) {
+        errors[i] = m(
+          'validation.instance.fieldMustBeNumber',
+          'Must be a valid number',
+        );
+        return;
+      }
+      if (row.schemaMin !== undefined && n < row.schemaMin) {
+        errors[i] = m(
+          'validation.instance.fieldMin',
+          `Must be at least ${row.schemaMin}`,
+          { min: row.schemaMin },
+        );
+        return;
+      }
+      if (row.schemaMax !== undefined && n > row.schemaMax) {
+        errors[i] = m(
+          'validation.instance.fieldMax',
+          `Must be at most ${row.schemaMax}`,
+          { max: row.schemaMax },
+        );
+        return;
+      }
+    }
+  });
+
+  return errors;
+}
+
+export function isInstanceFormValid(f: InstanceForm): boolean {
+  return (
+    isInstanceScalarValid(f) &&
+    Object.keys(validateUserValues(f.user_values)).length === 0
+  );
 }
 
 /** Build UserValueRows from the selected catalog item's editable fields. */

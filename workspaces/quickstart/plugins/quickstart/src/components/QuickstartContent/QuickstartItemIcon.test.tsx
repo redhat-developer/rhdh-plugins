@@ -140,6 +140,12 @@ describe('QuickstartItemIcon', () => {
     expect(screen.getByTestId('SchoolOutlinedIcon')).toBeInTheDocument();
   });
 
+  it('should render Lightspeed common icon', () => {
+    const { container } = render(<QuickstartItemIcon icon="Lightspeed" />);
+    const svg = container.querySelector('svg.pf-v6-svg');
+    expect(svg).toBeInTheDocument();
+  });
+
   it('should render material icon for unknown string', () => {
     render(<QuickstartItemIcon icon="settings" />);
 

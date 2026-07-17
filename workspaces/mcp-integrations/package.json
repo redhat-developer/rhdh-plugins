@@ -19,6 +19,8 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
+    "test:unit": "backstage-cli repo test --testPathIgnorePatterns=integration\\.test",
+    "test:integration": "backstage-cli repo test --testPathPatterns=integration\\.test --watch=false",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
@@ -55,7 +57,7 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@microsoft/api-extractor": "7.58.7"
+    "@microsoft/api-extractor": "7.58.9"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {

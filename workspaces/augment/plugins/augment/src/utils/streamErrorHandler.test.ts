@@ -44,47 +44,45 @@ describe('handleStreamError', () => {
     });
   });
 
-  describe('Error instances (returns formatted message)', () => {
-    it('returns "Error: <message>" for standard Error', () => {
+  describe('Error instances (returns message or friendly equivalent)', () => {
+    it('returns raw message for unknown errors', () => {
       const err = new Error('Something went wrong');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Something went wrong',
+        'Something went wrong',
       );
     });
 
-    it('returns formatted message for network-like errors', () => {
+    it('returns raw message for "Failed to fetch"', () => {
       const err = new Error('Failed to fetch');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Failed to fetch',
+        'Failed to fetch',
       );
     });
 
-    it('returns formatted message for timeout errors', () => {
+    it('returns friendly message for timeout errors', () => {
       const err = new Error('Request timeout');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Request timeout',
+        'The request timed out. The agent may be under heavy load.',
       );
     });
 
-    it('returns formatted message for auth errors', () => {
+    it('returns friendly message for auth errors', () => {
       const err = new Error('Unauthorized: Invalid token');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Unauthorized: Invalid token',
+        'Authentication failed. Your session may have expired.',
       );
     });
 
-    it('returns formatted message for server errors', () => {
+    it('returns raw message for generic server errors', () => {
       const err = new Error('Internal Server Error');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Internal Server Error',
+        'Internal Server Error',
       );
     });
 
     it('handles Error with empty message', () => {
       const err = new Error('');
-      expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: ',
-      );
+      expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe('');
     });
 
     it('handles custom Error subclasses', () => {
@@ -96,7 +94,7 @@ describe('handleStreamError', () => {
       }
       const err = new CustomError('Custom failure');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Custom failure',
+        'Custom failure',
       );
     });
   });
@@ -138,24 +136,24 @@ describe('handleStreamError', () => {
   });
 
   describe('DOMException (non-AbortError)', () => {
-    it('returns formatted message for DOMException (extends Error)', () => {
+    it('returns raw message for DOMException (extends Error)', () => {
       const err = new DOMException('Quota exceeded', 'QuotaExceededError');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Quota exceeded',
+        'Quota exceeded',
       );
     });
 
-    it('returns formatted message for NetworkError DOMException', () => {
+    it('returns friendly message for NetworkError DOMException', () => {
       const err = new DOMException('Network error', 'NetworkError');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Network error',
+        'A network error occurred. Check your connection and try again.',
       );
     });
 
-    it('returns formatted message for TimeoutError DOMException', () => {
+    it('returns friendly message for TimeoutError DOMException', () => {
       const err = new DOMException('Operation timed out', 'TimeoutError');
       expect(handleStreamError(err, abortControllerRef, mountedRef)).toBe(
-        'Error: Operation timed out',
+        'The request timed out. The agent may be under heavy load.',
       );
     });
   });
@@ -164,9 +162,7 @@ describe('handleStreamError', () => {
     it('does not use abortControllerRef for decision (only mountedRef and err)', () => {
       const err = new Error('Test');
       const nullAbortRef = { current: null };
-      expect(handleStreamError(err, nullAbortRef, mountedRef)).toBe(
-        'Error: Test',
-      );
+      expect(handleStreamError(err, nullAbortRef, mountedRef)).toBe('Test');
     });
   });
 });

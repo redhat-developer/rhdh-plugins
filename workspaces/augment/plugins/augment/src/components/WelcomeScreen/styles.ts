@@ -15,7 +15,7 @@
  */
 
 import { Theme, alpha, SxProps } from '@mui/material/styles';
-import { createMinimalScrollbarStyles } from '../../theme/styles';
+import { scrollbarStyles } from '../../theme/tokens';
 
 export const CARD_GAP = 16;
 
@@ -32,20 +32,21 @@ export const getContainerSx = (theme: Theme): SxProps<Theme> => ({
   overflow: 'hidden',
 });
 
-/** Hero title + tagline. */
+/** Hero title + tagline + agent strip. */
 export const getHeroSx = (): SxProps<Theme> => ({
   textAlign: 'center',
-  mb: 2.5,
+  mb: 3,
   px: { xs: 2, sm: 3 },
+  pt: 2,
 });
 
-/** Title text. */
+/** Title text — prominent h4. */
 export const getTitleSx = (primaryColor: string): SxProps<Theme> => ({
-  fontWeight: 700,
-  fontSize: { xs: '1.25rem', sm: '1.375rem' },
-  letterSpacing: '-0.01em',
+  fontWeight: 800,
+  fontSize: { xs: '1.5rem', sm: '1.75rem' },
+  letterSpacing: '-0.02em',
   color: primaryColor,
-  mb: 0.25,
+  mb: 0.5,
 });
 
 /** Prompt groups scrollable area -- grows to fill, left-aligned, constrained width. */
@@ -64,7 +65,7 @@ export const getPromptGroupsContainerSx = (
   width: '100%',
   mx: 'auto',
   boxSizing: 'border-box',
-  ...(theme ? createMinimalScrollbarStyles(theme) : {}),
+  ...(theme ? scrollbarStyles(theme) : {}),
 });
 
 /** Lane header icon (small colored square). */
@@ -81,6 +82,70 @@ export const getLaneIconSx = (
   backgroundColor: laneColor,
   color: theme.palette.common.white,
   '& svg': { fontSize: 14 },
+});
+
+/** Compact hero for agent playground (no-agent-selected state). */
+export const getPlaygroundHeroSx = (): SxProps<Theme> => ({
+  textAlign: 'center',
+  pt: { xs: 3, sm: 4 },
+  pb: 1,
+  px: { xs: 2, sm: 3 },
+  flexShrink: 0,
+});
+
+/** Inline search bar container. */
+export const getSearchBarSx = (theme: Theme): SxProps<Theme> => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 1,
+  px: { xs: 2, sm: 3 },
+  pb: 1.5,
+  pt: 0.5,
+  flexShrink: 0,
+  maxWidth: 1100,
+  width: '100%',
+  mx: 'auto',
+  boxSizing: 'border-box',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 5,
+    fontSize: '0.85rem',
+    height: 42,
+    bgcolor: alpha(
+      theme.palette.background.paper,
+      theme.palette.mode === 'dark' ? 0.5 : 0.8,
+    ),
+    '&.Mui-focused': {
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
+    },
+  },
+});
+
+/** Responsive agent grid. */
+export const getAgentGridSx = (theme: Theme): SxProps<Theme> => ({
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'repeat(2, 1fr)',
+    md: 'repeat(3, 1fr)',
+  },
+  gap: 2,
+  px: { xs: 2, sm: 3 },
+  pb: 3,
+  maxWidth: 1100,
+  width: '100%',
+  mx: 'auto',
+  boxSizing: 'border-box',
+  ...(theme ? scrollbarStyles(theme) : {}),
+});
+
+/** Scrollable wrapper for the grid area. */
+export const getGridScrollAreaSx = (theme: Theme): SxProps<Theme> => ({
+  flex: '1 1 0',
+  minHeight: 0,
+  overflowY: 'auto',
+  overflowX: 'clip',
+  ...(theme ? scrollbarStyles(theme) : {}),
 });
 
 /** Individual swim lane card. */

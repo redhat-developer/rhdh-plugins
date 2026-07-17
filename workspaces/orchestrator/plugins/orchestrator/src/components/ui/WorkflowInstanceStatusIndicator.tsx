@@ -16,10 +16,10 @@
 
 import { Link } from '@backstage/core-components';
 
-import { Box } from '@material-ui/core';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import HourglassEmptyOutlined from '@mui/icons-material/HourglassEmptyOutlined';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import {
@@ -34,9 +34,11 @@ import { useWorkflowInstanceStateColors } from '../../hooks/useWorkflowInstanceS
 export const WorkflowInstanceStatusIndicator = ({
   status,
   instanceLink,
+  compact = false,
 }: {
   status?: ProcessInstanceStatusDTO;
   instanceLink?: string;
+  compact?: boolean;
 }) => {
   const { t } = useTranslation();
   const iconColor = useWorkflowInstanceStateColors(status);
@@ -45,15 +47,18 @@ export const WorkflowInstanceStatusIndicator = ({
     return VALUE_UNAVAILABLE;
   }
 
+  const iconSizeProps = compact ? { fontSize: 'small' as const } : undefined;
+  const progressSize = compact ? 20 : '1.15rem';
+
   let icon: React.ReactNode;
   let title: string = '';
   switch (status) {
     case ProcessInstanceStatusDTO.Active:
-      icon = <CircularProgress size="1.15rem" className={iconColor} />;
+      icon = <CircularProgress size={progressSize} className={iconColor} />;
       title = t('table.status.running');
       break;
     case ProcessInstanceStatusDTO.Completed:
-      icon = <CheckCircleOutlined className={iconColor} />;
+      icon = <CheckCircleOutlined className={iconColor} {...iconSizeProps} />;
       title = t('table.status.completed');
       break;
     case ProcessInstanceStatusDTO.Suspended:
@@ -65,16 +70,17 @@ export const WorkflowInstanceStatusIndicator = ({
       title = t('table.status.aborted');
       break;
     case ProcessInstanceStatusDTO.Error:
-      icon = <ErrorOutlineOutlined className={iconColor} />;
+      icon = <ErrorOutlineOutlined className={iconColor} {...iconSizeProps} />;
       title = t('table.status.failed');
       break;
     case ProcessInstanceStatusDTO.Pending:
-      icon = <HourglassEmptyOutlined className={iconColor} />;
+      icon = (
+        <HourglassEmptyOutlined className={iconColor} {...iconSizeProps} />
+      );
       title = t('table.status.pending');
       break;
     default:
-      icon = VALUE_UNAVAILABLE;
-      break;
+      return <>{VALUE_UNAVAILABLE}</>;
   }
 
   return (

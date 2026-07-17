@@ -38,14 +38,8 @@ export function registerProviderRoutes(
   router: import('express').Router,
   deps: AdminRouteDeps,
 ): void {
-  const {
-    logger,
-    sendRouteError,
-    adminConfig,
-    provider,
-    providerManager,
-    getUserRef,
-  } = deps;
+  const { logger, sendRouteError, adminConfig, providerManager, getUserRef } =
+    deps;
   const withRoute = createWithRoute(logger, sendRouteError);
 
   router.get(
@@ -58,7 +52,7 @@ export function registerProviderRoutes(
         res.json({
           success: true,
           providers: descriptors,
-          activeProviderId: provider.id,
+          activeProviderId: deps.provider.id,
           timestamp: new Date().toISOString(),
         });
       },
@@ -72,7 +66,8 @@ export function registerProviderRoutes(
       'Failed to get active provider',
       async (_req, res) => {
         const dbValue = await adminConfig.get('activeProvider');
-        const providerId = typeof dbValue === 'string' ? dbValue : provider.id;
+        const providerId =
+          typeof dbValue === 'string' ? dbValue : deps.provider.id;
 
         res.json({
           success: true,
@@ -121,7 +116,7 @@ export function registerProviderRoutes(
         const userRef = await getUserRef(req);
         await adminConfig.set('activeProvider', trimmed, userRef);
 
-        if (providerManager && trimmed !== provider.id) {
+        if (providerManager && trimmed !== deps.provider.id) {
           try {
             await providerManager.switchProvider(trimmed as ProviderType);
             logger.info(`Provider hot-swapped to "${trimmed}" by ${userRef}`);

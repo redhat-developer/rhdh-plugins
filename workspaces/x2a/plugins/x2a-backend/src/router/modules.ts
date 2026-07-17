@@ -69,7 +69,10 @@ export function registerModuleRoutes(
       catalog,
     });
 
-    const modules = await x2aDatabase.listModules({ projectId });
+    const modules = await x2aDatabase.listModules({
+      projectId,
+      includeRemoved: true,
+    });
     await listModulesWithReconciledStatuses(modules, {
       kubeService,
       x2aDatabase,
@@ -124,58 +127,6 @@ export function registerModuleRoutes(
 
     res.json(module);
   });
-
-  // TODO: This is a TEMPORARY endpoint for testing only.
-  // According to the ADR (lines 202-213), this endpoint should sync modules by:
-  // 1. Fetching the migration project plan from the target repo
-  // 2. Parsing it via LLM to extract the list of modules
-  // 3. Generating moduleIds for new ones and deleting missing modules
-  // This simple CRUD implementation allows testing the job infrastructure
-  // until the init phase integration is complete.
-  router.post(
-    '/projects/:projectId/modules',
-    async (req: express.Request, res: express.Response) => {
-      const endpoint =
-        'Temporary endpoint - for testing only. POST /projects/:projectId/modules';
-      const { projectId } = req.params;
-      logger.info(`${endpoint} request received: projectId=${projectId}`);
-
-      await useEnforceProjectPermissions({
-        req,
-        readOnly: false,
-        projectId,
-        x2aDatabase,
-        httpAuth,
-        permissionsSvc,
-        catalog,
-      });
-
-      // Validate request body
-      const createModuleRequestSchema = z.object({
-        name: z.string(),
-        sourcePath: z.string(),
-      });
-
-      const parsedBody = createModuleRequestSchema
-        .passthrough()
-        .safeParse(req.body);
-      if (!parsedBody.success) {
-        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
-      }
-      const { name, sourcePath } = parsedBody.data;
-
-      // Create module
-      const module = await x2aDatabase.createModule({
-        name,
-        sourcePath,
-        projectId,
-      });
-
-      logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
-
-      res.status(201).json(module);
-    },
-  );
 
   router.post(
     '/projects/:projectId/modules/:moduleId/run',

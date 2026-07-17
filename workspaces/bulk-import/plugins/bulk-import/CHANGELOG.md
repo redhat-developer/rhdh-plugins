@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.6
+
+### Patch Changes
+
+- 0c4bc08: Fixed French localization bug in the Preview PR side drawer where the title label displayed an unresolved `{{outil}}` placeholder instead of the translated tool name. Also improved French word order for the title, body, and details labels to use natural "Noun de {{tool}}" phrasing.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.6
+
 ## 7.3.5
 
 ### Patch Changes
