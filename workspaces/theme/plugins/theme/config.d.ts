@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 // Types are inlined to avoid importing from the package entry point,
 // which pulls in @mui/material types that break ts-json-schema-generator
 // (typeof window.matchMedia has no value declaration).
