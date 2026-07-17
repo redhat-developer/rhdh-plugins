@@ -17,14 +17,14 @@
 import type {
   LoggerService,
   RootConfigService,
-} from '@backstage/backend-plugin-api';
-import type { ResponsesApiClient } from '../ResponsesApiClient';
+} from "@backstage/backend-plugin-api";
+import type { ResponsesApiClient } from "../ResponsesApiClient";
 import type {
   SafetyConfig,
   ShieldInfo,
   ShieldRegistration,
-} from '../../../types';
-import { toErrorMessage } from '../../../services/utils';
+} from "../../../types";
+import { toErrorMessage } from "../../../services/utils";
 
 export type SafetyClientAccessor = () => ResponsesApiClient;
 
@@ -33,38 +33,38 @@ export function loadSafetyConfig(
   logger: LoggerService,
 ): SafetyConfig | null {
   try {
-    const safetyConfig = config.getOptionalConfig('augment.safety');
+    const safetyConfig = config.getOptionalConfig("augment.safety");
     if (!safetyConfig) {
       return { enabled: false };
     }
 
     const registerShieldsConfig =
-      safetyConfig.getOptionalConfigArray('registerShields');
+      safetyConfig.getOptionalConfigArray("registerShields");
     const registerShields: ShieldRegistration[] = [];
 
     if (registerShieldsConfig) {
       for (const shieldConfig of registerShieldsConfig) {
         registerShields.push({
-          shieldId: shieldConfig.getString('shieldId'),
-          providerId: shieldConfig.getString('providerId'),
-          providerShieldId: shieldConfig.getString('providerShieldId'),
+          shieldId: shieldConfig.getString("shieldId"),
+          providerId: shieldConfig.getString("providerId"),
+          providerShieldId: shieldConfig.getString("providerShieldId"),
         });
       }
     }
 
-    const onErrorValue = safetyConfig.getOptionalString('onError');
-    const onError: 'allow' | 'block' =
-      onErrorValue === 'allow' ? 'allow' : 'block';
+    const onErrorValue = safetyConfig.getOptionalString("onError");
+    const onError: "allow" | "block" =
+      onErrorValue === "allow" ? "allow" : "block";
 
     return {
-      enabled: safetyConfig.getOptionalBoolean('enabled') ?? false,
-      inputShields: safetyConfig.getOptionalStringArray('inputShields'),
-      outputShields: safetyConfig.getOptionalStringArray('outputShields'),
+      enabled: safetyConfig.getOptionalBoolean("enabled") ?? false,
+      inputShields: safetyConfig.getOptionalStringArray("inputShields"),
+      outputShields: safetyConfig.getOptionalStringArray("outputShields"),
       registerShields: registerShields.length > 0 ? registerShields : undefined,
       onError,
     };
   } catch (error) {
-    logger.debug('No safety configuration found');
+    logger.debug("No safety configuration found");
     return { enabled: false };
   }
 }
@@ -78,7 +78,7 @@ export async function loadAvailableShields(
     const client = getClient();
     const response = await client.request<
       { data?: ShieldInfo[] } | ShieldInfo[]
-    >('/v1/shields', { method: 'GET' });
+    >("/v1/shields", { method: "GET" });
 
     let shields = Array.isArray(response) ? response : response.data || [];
 
@@ -86,13 +86,13 @@ export async function loadAvailableShields(
 
     if (shields.length === 0) {
       logger.info(
-        'No shields found, attempting to register configured shields...',
+        "No shields found, attempting to register configured shields...",
       );
       await registerConfiguredShields(getClient, safetyConfig, logger);
 
       const reloadResponse = await client.request<
         { data?: ShieldInfo[] } | ShieldInfo[]
-      >('/v1/shields', { method: 'GET' });
+      >("/v1/shields", { method: "GET" });
       shields = Array.isArray(reloadResponse)
         ? reloadResponse
         : reloadResponse.data || [];
@@ -101,8 +101,8 @@ export async function loadAvailableShields(
     if (shields.length > 0) {
       logger.info(
         `Safety shields available: ${shields
-          .map(s => s.identifier)
-          .join(', ')}`,
+          .map((s) => s.identifier)
+          .join(", ")}`,
       );
     }
 
@@ -122,8 +122,8 @@ export async function registerConfiguredShields(
 
   if (!shieldsToRegister || shieldsToRegister.length === 0) {
     logger.info(
-      'No shields configured for registration (augment.safety.registerShields). ' +
-        'Safety checks will only work with pre-existing shields on the server.',
+      "No shields configured for registration (augment.safety.registerShields). " +
+        "Safety checks will only work with pre-existing shields on the server.",
     );
     return;
   }
@@ -136,8 +136,8 @@ export async function registerConfiguredShields(
 
   for (const shield of shieldsToRegister) {
     try {
-      await client.request('/v1/shields/register', {
-        method: 'POST',
+      await client.request("/v1/shields/register", {
+        method: "POST",
         body: {
           shield_id: shield.shieldId,
           provider_id: shield.providerId,
