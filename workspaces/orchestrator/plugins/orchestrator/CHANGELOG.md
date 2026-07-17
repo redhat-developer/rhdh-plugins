@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.9.2
+
+### Patch Changes
+
+- c0f62ab: Fix hardcoded English "at" in workflow status time translations - now each language uses its own grammatically correct preposition
+- 2d00ba5: Replace workflow execution progress list with a React Flow graph visualization.
+- Updated dependencies [eade824]
+- Updated dependencies [ea8563b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.3
+
 ## 5.9.1
 
 ### Patch Changes
