@@ -10980,7 +10980,10 @@ __metadata:
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.9.2"
     "@backstage/backend-test-utils": "npm:^1.11.4"
+    "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/cli": "npm:^0.36.3"
+    "@backstage/plugin-catalog-common": "npm:^1.1.10"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
   languageName: unknown
   linkType: soft
 

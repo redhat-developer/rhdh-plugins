@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Intelligent Assistant minor updates",
+      "matchFileNames": ["workspaces/intelligent-assistant/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Intelligent Assistant)"
+      ],
+      "addLabels": ["team/rhdh", "intelligent-assistant"]
+    },
+    {
+      "description": "all Intelligent Assistant patch updates",
+      "matchFileNames": ["workspaces/intelligent-assistant/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Intelligent Assistant)"
+      ],
+      "addLabels": ["team/rhdh", "intelligent-assistant"]
+    },
+    {
+      "description": "all Intelligent Assistant dev dependency updates",
+      "matchFileNames": ["workspaces/intelligent-assistant/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Intelligent Assistant)"
+      ],
+      "addLabels": ["team/rhdh", "intelligent-assistant"]
+    }
+  ]
+}

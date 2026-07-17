@@ -477,5 +477,76 @@ describe('DevModeService', () => {
 
       await launchPromise;
     });
+
+    it('should log an error when the child process emits an error event', async () => {
+      mockConfig.getOptionalString.mockImplementation((key: string) => {
+        if (key === 'orchestrator.sonataFlowService.baseUrl')
+          return 'http://localhost';
+        if (key === 'orchestrator.sonataFlowService.workflowsSource.localPath')
+          return '/test/workflows';
+        if (key === 'orchestrator.sonataFlowService.runtime') return 'docker';
+        return undefined;
+      });
+      mockConfig.getOptionalNumber.mockReturnValue(8080);
+
+      const mockProcess = new EventEmitter() as any;
+      mockSpawn.mockReturnValue(mockProcess);
+
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({ ok: false })
+        .mockResolvedValue({ ok: true });
+
+      const service = new DevModeService(mockConfig, mockLogger);
+      const launchPromise = service.launchDevMode();
+
+      await flushPromises();
+
+      const spawnError = new Error('spawn docker ENOENT');
+      mockProcess.emit('error', spawnError);
+
+      await flushPromises();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('SonataFlow process error'),
+      );
+
+      await launchPromise;
+    });
+
+    it('should log when the child process exits with a non-zero code', async () => {
+      mockConfig.getOptionalString.mockImplementation((key: string) => {
+        if (key === 'orchestrator.sonataFlowService.baseUrl')
+          return 'http://localhost';
+        if (key === 'orchestrator.sonataFlowService.workflowsSource.localPath')
+          return '/test/workflows';
+        if (key === 'orchestrator.sonataFlowService.runtime') return 'docker';
+        return undefined;
+      });
+      mockConfig.getOptionalNumber.mockReturnValue(8080);
+
+      const mockProcess = new EventEmitter() as any;
+      mockSpawn.mockReturnValue(mockProcess);
+
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({ ok: false })
+        .mockResolvedValue({ ok: true });
+
+      const service = new DevModeService(mockConfig, mockLogger);
+      const launchPromise = service.launchDevMode();
+
+      await flushPromises();
+
+      mockProcess.emit('exit', 1);
+
+      await flushPromises();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('SonataFlow process exited with code 1'),
+      );
+
+      await launchPromise;
+    });
   });
 });
