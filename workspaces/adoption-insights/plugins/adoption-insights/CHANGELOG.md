@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.8.4
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.4
+
 ## 0.8.3
 
 ### Patch Changes
