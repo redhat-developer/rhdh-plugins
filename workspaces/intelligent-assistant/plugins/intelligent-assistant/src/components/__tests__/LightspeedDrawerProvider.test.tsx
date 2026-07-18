@@ -76,7 +76,7 @@ jest.mock('@patternfly/chatbot', () => {
   };
 });
 
-jest.mock('../LightspeedChatContainer', () => ({
+jest.mock('../LightspeedChatContainerLazy', () => ({
   LightspeedChatContainer: () => (
     <div data-testid="lightspeed-chat-container">Chat Container</div>
   ),
