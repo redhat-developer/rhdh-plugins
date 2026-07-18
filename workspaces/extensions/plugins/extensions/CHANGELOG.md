@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.18.1
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- e24f46f: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes
