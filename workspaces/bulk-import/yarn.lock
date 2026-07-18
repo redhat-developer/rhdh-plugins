@@ -11156,7 +11156,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@playwright/test": "npm:1.61.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
@@ -11369,9 +11369,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0":
-  version: 0.14.3
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.3"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.11":
+  version: 0.14.11
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.11"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
@@ -11379,11 +11379,11 @@ __metadata:
   peerDependencies:
     "@backstage/core-plugin-api": ^1.12.4
     "@backstage/theme": ^0.7.2
-    "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/0ee4af21b78919b27e77db527f22b5f7b424a003186f245807cd876333d92ff621f55d8feb07b6deaf8f0867581357761b6488c06eb7d5a016b8060d268dbeee
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/3b3907cd3bff0de6e55a8b683230df12b199dbf7147dcd874cc91590915ad604e81f5398867aaff8028b5ec5e156e0c7e93bd62de0a74e4e9756f0d27b00cf1a
   languageName: node
   linkType: hard
 
@@ -16339,7 +16339,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:5.8.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:1.11.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
@@ -16430,7 +16430,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:5.8.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:1.11.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"

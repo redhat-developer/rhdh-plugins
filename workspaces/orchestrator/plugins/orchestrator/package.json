@@ -108,7 +108,7 @@
     "@backstage/ui": "^0.15.0",
     "@janus-idp/cli": "3.7.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",
