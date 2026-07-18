@@ -27,7 +27,7 @@ export {
 } from './plugin';
 export { LightspeedIcon } from './components/LightspeedIcon';
 export { LightspeedFAB } from './components/LightspeedFAB';
-export { LightspeedChatContainer } from './components/LightspeedChatContainer';
+export { LightspeedChatContainer } from './components/LightspeedChatContainerLazy';
 export { LightspeedDrawerStateExposer } from './components/LightspeedDrawerStateExposer';
 export type {
   DrawerStateExposerProps,

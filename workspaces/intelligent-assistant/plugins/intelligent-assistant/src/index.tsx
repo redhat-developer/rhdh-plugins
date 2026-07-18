@@ -41,7 +41,7 @@ import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
 import { notebooksApiRef } from './api/notebooksApi';
 import { NotebooksApiClient } from './api/NotebooksApiClient';
-import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainer';
+import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainerLazy';
 import { LightspeedDrawerProvider as LightspeedProvider } from './components/LightspeedDrawerProvider';
 import { LightspeedFABContent as LightspeedFABComponent } from './components/LightspeedFABContent';
 import {
