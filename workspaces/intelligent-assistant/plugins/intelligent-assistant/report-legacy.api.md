@@ -24,7 +24,7 @@ export type DrawerStateExposerProps = {
   onStateChange: (state: DrawerState) => void;
 };
 
-// @public (undocumented)
+// @public
 export const LightspeedChatContainer: () => JSX_2.Element;
 
 // @public
