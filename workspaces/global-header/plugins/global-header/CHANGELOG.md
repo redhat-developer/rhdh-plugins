@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.21.7
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- 735441d: Updated dependency `@scalprum/react-core` to `0.11.3`.
+
 ## 1.21.6
 
 ### Patch Changes
