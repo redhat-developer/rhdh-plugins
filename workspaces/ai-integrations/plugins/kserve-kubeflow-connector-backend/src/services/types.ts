@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Shared types and constants to avoid circular dependencies between InformerService.ts and Kfmr.ts
+// Shared types, constants, and utilities for the kserve-kubeflow-connector-backend plugin
 
 import * as k8s from '@kubernetes/client-node';
 
@@ -83,25 +83,6 @@ export interface InferenceServiceStatus {
   };
 }
 
-// KFMR Client interface
-export interface KFMRClient {
-  rootRegistryURL: string;
-  rootCatalogURL?: string;
-  token: string;
-  listRegisteredModels(): Promise<RegisteredModel[]>;
-  listInferenceServices(): Promise<KFMRInferenceService[]>;
-  listModelVersions(registeredModelId: string): Promise<ModelVersion[]>;
-  listModelArtifacts(modelVersionId: string): Promise<ModelArtifact[]>;
-  getServingEnvironment(
-    servingEnvironmentId: string,
-  ): Promise<ServingEnvironment>;
-  getModelVersion(modelVersionId: string): Promise<ModelVersion>;
-  getModelCard(
-    sourceId: string,
-    modelName: string,
-  ): Promise<string | undefined>;
-}
-
 // Metadata value interface (from openapi package)
 export interface MetadataValue {
   metadataStringValue?: {
@@ -116,89 +97,6 @@ export interface MetadataValue {
   metadataDoubleValue?: {
     doubleValue: number;
   };
-}
-
-// Model state enums
-export enum RegisteredModelState {
-  Live = 'LIVE',
-  Archived = 'ARCHIVED',
-}
-
-export enum ModelVersionState {
-  Live = 'LIVE',
-  Archived = 'ARCHIVED',
-}
-
-export enum InferenceServiceState {
-  Deployed = 'DEPLOYED',
-  Undeployed = 'UNDEPLOYED',
-}
-
-// KFMR model interfaces
-export interface RegisteredModel {
-  id?: string;
-  name: string;
-  lastUpdateTimeSinceEpoch?: string;
-  description?: string;
-  owner?: string;
-  state?: RegisteredModelState;
-  customProperties?: { [key: string]: MetadataValue };
-}
-
-export interface RegisteredModelList {
-  items: RegisteredModel[];
-}
-
-export interface ModelVersion {
-  id?: string;
-  name: string;
-  lastUpdateTimeSinceEpoch?: string;
-  registeredModelId?: string;
-  description?: string;
-  state?: ModelVersionState;
-  customProperties?: { [key: string]: MetadataValue };
-}
-
-export interface ModelVersionList {
-  items: ModelVersion[];
-}
-
-export interface ModelArtifact {
-  id?: string;
-  name?: string;
-  modelVersionId?: string;
-  modelSourceClass?: string;
-  modelSourceGroup?: string;
-  modelSourceName?: string;
-  uri?: string;
-  description?: string;
-  customProperties?: { [key: string]: MetadataValue };
-}
-
-export interface ModelArtifactList {
-  items: ModelArtifact[];
-}
-
-export interface KFMRInferenceService {
-  id?: string;
-  name?: string;
-  registeredModelId?: string;
-  modelVersionId?: string;
-  servingEnvironmentId?: string;
-  desiredState?: InferenceServiceState;
-  runtime?: string;
-  customProperties?: { [key: string]: MetadataValue };
-}
-
-export interface InferenceServiceList {
-  items: KFMRInferenceService[];
-}
-
-export interface ServingEnvironment {
-  id?: string;
-  name?: string;
-  description?: string;
-  customProperties?: { [key: string]: MetadataValue };
 }
 
 // CatalogModel interface (from catalog openapi package)
@@ -234,22 +132,13 @@ export interface KServeInferenceService {
 
 // ReconcilerConfig interface
 export interface ReconcilerConfig {
-  kfmrClients: Map<string, KFMRClient>;
-  kfmrRoutes: Map<string, Route>;
-  kfmrCatalogRoute?: Route;
+  catalogRoute?: Route;
   defaultLifecycle: string;
   defaultOwner: string;
   k8sToken?: string;
   routeClient?: k8s.CustomObjectsApi;
   coreClient?: k8s.CoreV1Api;
   informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>;
-}
-
-// Result type for loopOverKFMR
-export interface LoopOverKFMRResult {
-  registeredModels: RegisteredModel[];
-  modelVersionsMap: Map<string, ModelVersion[]>;
-  modelArtifactsMap: Map<string, Map<string, ModelArtifact[]>>;
 }
 
 // b GGM TODO so I could not get the @redhat-ai-dev/model-catalog-types node module dependency to reconcile, even though
@@ -422,4 +311,154 @@ export interface DiscoveryResponse {
   uris: string[];
 }
 
-// e GGM
+// Normalizer formats
+export enum NormalizerFormat {
+  JsonArrayFormat = 'json-array',
+  CatalogInfoYamlFormat = 'catalog-info.yaml',
+}
+
+// Custom property keys (from brdgtypes package)
+export const PropertyKeys = {
+  LicenseKey: 'license',
+  TechDocsKey: 'TechDocs',
+  RHOAIModelCatalogSourceModelVersion:
+    'rhoai-model-catalog-source-model-version',
+  RHOAIModelCatalogSourceModelKey: 'rhoai-model-catalog-source-model',
+  RHOAIModelCatalogRegisteredFromKey: 'rhoai-model-catalog-registered-from',
+  RHOAIModelCatalogProviderKey: 'rhoai-model-catalog-provider',
+  APITypeKey: 'api-type',
+  RHOAIModelRegistryRegisteredFromCatalogRepositoryName:
+    'rhoai-model-registry-registered-from-catalog-repository-name',
+  RHOAIModelRegistryLastModified: 'last-modified',
+  Owner: 'owner',
+  Lifecycle: 'lifecycle',
+  EthicsKey: 'ethics',
+  HowToUseKey: 'how-to-use',
+  SupportKey: 'support',
+  TrainingKey: 'training',
+  UsageKey: 'usage',
+  HomepageURLKey: 'homepage-url',
+  APISpecKey: 'api-spec',
+  DescriptionKey: 'description',
+};
+
+// Constants
+const TAG_REGEXP = '^[a-z0-9:+#]+(\\-[a-z0-9:+#]+)*$';
+
+// Helper function: Extract tags from custom properties
+// Converted from getTagsFromCustomProps (kfmr.go line 142)
+export function getTagsFromCustomProps(
+  lastMod: boolean,
+  props: { [key: string]: MetadataValue },
+): { [key: string]: string } {
+  const tags: { [key: string]: string } = {};
+  const regex = new RegExp(TAG_REGEXP);
+
+  for (const [cpk, cpv] of Object.entries(props)) {
+    // Skip certain keys (line 146-150)
+    if (cpk === PropertyKeys.LicenseKey || cpk === PropertyKeys.TechDocsKey) {
+      console.log('Skip adding TechDocs or License key to tags');
+      continue;
+    }
+
+    // Handle specific property keys (line 151-168)
+    if (
+      cpk === PropertyKeys.RHOAIModelCatalogSourceModelVersion ||
+      cpk === PropertyKeys.RHOAIModelCatalogSourceModelKey ||
+      cpk === PropertyKeys.RHOAIModelCatalogRegisteredFromKey ||
+      cpk === PropertyKeys.RHOAIModelCatalogProviderKey ||
+      cpk === PropertyKeys.APITypeKey ||
+      cpk === PropertyKeys.RHOAIModelRegistryRegisteredFromCatalogRepositoryName
+    ) {
+      let v = '';
+      if (cpv.metadataStringValue) {
+        v = cpv.metadataStringValue.stringValue.toLowerCase();
+      }
+      if (v.length > 0 && regex.test(v) && v.length <= 63) {
+        tags[cpk] = v;
+      }
+      continue;
+    }
+
+    // Handle last modified timestamp (line 169-185)
+    if (cpk === PropertyKeys.RHOAIModelRegistryLastModified && lastMod) {
+      let v = '';
+      if (cpv.metadataStringValue) {
+        v = cpv.metadataStringValue.stringValue;
+        v = v.replace(/:/g, '-');
+        v = v.replace(/\./g, '-');
+        v = v.replace(/T/g, '-');
+        v = v.replace(/Z/g, '');
+        v = `last-modified-time-${v}`;
+      }
+      if (v.length > 0 && regex.test(v) && v.length <= 63) {
+        v = v.toLowerCase();
+        tags[cpk] = v;
+      }
+      continue;
+    }
+
+    // Default handling (line 186-194)
+    let v = cpk;
+    if (
+      cpv.metadataStringValue &&
+      cpv.metadataStringValue.stringValue.length > 0
+    ) {
+      v = `${v}-${cpv.metadataStringValue.stringValue.toLowerCase()}`;
+    }
+    if (v.length > 0 && regex.test(v) && v.length <= 63) {
+      tags[cpk] = v;
+    }
+  }
+
+  return tags;
+}
+
+// Generic interface for objects with optional custom properties
+interface HasCustomProperties {
+  customProperties?: { [key: string]: MetadataValue };
+}
+
+// Helper function: Get string property value from custom properties
+// Checks each source in order, returning the first match found
+export function getStringPropVal(
+  key: string,
+  ...sources: HasCustomProperties[]
+): string | undefined {
+  for (const source of sources) {
+    if (source.customProperties) {
+      const value = innerGetStringPropVal(key, source.customProperties);
+      if (value) {
+        return value;
+      }
+    }
+  }
+  return undefined;
+}
+
+// Helper function: Inner get string property value
+function innerGetStringPropVal(
+  key: string,
+  vmap: { [key: string]: MetadataValue },
+): string | undefined {
+  const v = vmap[key];
+  if (!v) {
+    return undefined;
+  }
+
+  if (v.metadataStringValue) {
+    return v.metadataStringValue.stringValue;
+  }
+
+  return undefined;
+}
+
+// Sanitize name helper
+export function sanitizeName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+}
+
+// Sanitize model version helper
+export function sanitizeModelVersion(version: string): string {
+  return version.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+}
