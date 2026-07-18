@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import '@patternfly/chatbot/dist/css/main.css';
-
 import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -37,6 +32,8 @@ import {
   AppRootWrapperBlueprint,
   TranslationBlueprint,
 } from '@backstage/plugin-app-react';
+
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 
