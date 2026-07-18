@@ -8684,13 +8684,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openai/agents-core@npm:^0.11.0":
-  version: 0.11.6
-  resolution: "@openai/agents-core@npm:0.11.6"
+"@openai/agents-core@npm:^0.13.0":
+  version: 0.13.5
+  resolution: "@openai/agents-core@npm:0.13.5"
   dependencies:
     "@modelcontextprotocol/sdk": "npm:^1.26.0"
     debug: "npm:^4.4.0"
-    openai: "npm:^6.35.0"
+    openai: "npm:^6.46.0"
   peerDependencies:
     zod: ^4.0.0
   dependenciesMeta:
@@ -8699,7 +8699,7 @@ __metadata:
   peerDependenciesMeta:
     zod:
       optional: true
-  checksum: 10c0/50353202d06797d714c857f8ad4ad2a449b61ab8a0fbc384ac3aaaa20ee40fe40a30c3e71d19cb7e613755cea8a9f8705ae2707546bd26b477e0be3079b9f33f
+  checksum: 10c0/065489e933e53d689390502d00d911601eed127fb911dff74b9992f1a2f3be05995511ccdaa62b5b8c28516fbc2c90d77ac17d672b979238d12fd0070bef51b7
   languageName: node
   linkType: hard
 
@@ -11327,7 +11327,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.2"
     "@kagenti/adk": "npm:^0.8.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
-    "@openai/agents-core": "npm:^0.11.0"
+    "@openai/agents-core": "npm:^0.13.0"
     "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/express-session": "npm:^1.18.2"
@@ -28694,18 +28694,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^6.35.0":
-  version: 6.42.0
-  resolution: "openai@npm:6.42.0"
+"openai@npm:^6.46.0":
+  version: 6.48.0
+  resolution: "openai@npm:6.48.0"
   peerDependencies:
+    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
+    "@smithy/hash-node": ">=4.3.0 <5"
+    "@smithy/signature-v4": ">=5.4.0 <6"
     ws: ^8.18.0
     zod: ^3.25 || ^4.0
   peerDependenciesMeta:
+    "@aws-sdk/credential-provider-node":
+      optional: true
+    "@smithy/hash-node":
+      optional: true
+    "@smithy/signature-v4":
+      optional: true
     ws:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/df30024c14c758ad159885016a3d6ed7f6596b2b3de3cc7b7c625bebe032fd676f9b324fd2b9f4b5061e7ce64b0f7ae7e52060decc5b0c6cce9029cba3afd3fc
+  checksum: 10c0/1e6b792e94af7dc22541343a395282d747cea596fa52d28ccc27410d5fdd82912bc0e12589bc68a88317ae58d3afc10f5fed6cb5deff3ba445817a56870d3719
   languageName: node
   linkType: hard
 
