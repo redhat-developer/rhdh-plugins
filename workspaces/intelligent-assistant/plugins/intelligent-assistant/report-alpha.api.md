@@ -58,6 +58,9 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.rename.label': string;
     readonly 'notebooks.rename.placeholder': string;
     readonly 'notebooks.rename.action': string;
+    readonly 'notebook.rename.inline.tooltip': string;
+    readonly 'notebook.rename.inline.success': string;
+    readonly 'notebook.rename.inline.error': string;
     readonly 'notebooks.delete.title': string;
     readonly 'notebooks.delete.message': string;
     readonly 'notebooks.delete.action': string;

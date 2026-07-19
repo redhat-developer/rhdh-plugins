@@ -104,6 +104,7 @@ import {
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
+import { useRenameNotebook } from '../hooks/notebooks/useRenameNotebook';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
@@ -128,7 +129,6 @@ import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
-import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
@@ -704,7 +704,6 @@ export const LightspeedChat = ({
   const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
     null,
   );
-  const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
   const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
     null,
@@ -736,6 +735,37 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
+  const { mutateAsync: renameNotebookMutation } = useRenameNotebook();
+
+  const handleRenameNotebook = useCallback(
+    async (sessionId: string, newName: string) => {
+      try {
+        await renameNotebookMutation({ sessionId, name: newName });
+        setNotebookAlerts(prev => [
+          {
+            key: Date.now() + sessionId,
+            title: (t as Function)('notebook.rename.inline.success', {
+              notebookName: newName,
+            }) as string,
+            variant: 'success',
+          },
+          ...prev,
+        ]);
+      } catch {
+        setNotebookAlerts(prev => [
+          {
+            key: Date.now() + sessionId,
+            title: (t as Function)('notebook.rename.inline.error', {
+              notebookName: newName,
+            }) as string,
+            variant: 'danger',
+          },
+          ...prev,
+        ]);
+      }
+    },
+    [renameNotebookMutation, t],
+  );
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
   const [conversationId, setConversationId] = useState<string>('');
@@ -1905,16 +1935,6 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      {renameNotebookId && (
-        <RenameNotebookModal
-          isOpen={Boolean(renameNotebookId)}
-          onClose={() => setRenameNotebookId(null)}
-          sessionId={renameNotebookId}
-          currentName={
-            notebooks.find(n => n.session_id === renameNotebookId)?.name ?? ''
-          }
-        />
-      )}
       {deleteNotebookId && (
         <DeleteNotebookModal
           isOpen={Boolean(deleteNotebookId)}
@@ -2188,7 +2208,7 @@ export const LightspeedChat = ({
               onSelectNotebook={(notebook: NotebookSession) => {
                 navigate(`${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`);
               }}
-              onRename={setRenameNotebookId}
+              onRename={handleRenameNotebook}
               onDelete={setDeleteNotebookId}
               onCreateNotebook={handleCreateNotebook}
               t={t}

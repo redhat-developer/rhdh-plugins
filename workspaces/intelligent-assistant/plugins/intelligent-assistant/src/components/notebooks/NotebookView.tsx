@@ -52,6 +52,7 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
@@ -406,6 +407,41 @@ export const NotebookView = ({
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
+  const { mutateAsync: renameNotebook } = useRenameNotebook();
+
+  const handleRenameNotebook = useCallback(
+    async (newName: string) => {
+      try {
+        await renameNotebook({ sessionId, name: newName });
+        queryClient.invalidateQueries({
+          queryKey: ['notebooks', 'session', sessionId],
+        });
+        setToastAlerts(prev => [
+          {
+            key: Date.now() + newName,
+            title: (t as Function)('notebook.rename.inline.success', {
+              notebookName: newName,
+            }) as string,
+            variant: 'success',
+          },
+          ...prev,
+        ]);
+      } catch {
+        setToastAlerts(prev => [
+          {
+            key: Date.now() + sessionId,
+            title: (t as Function)('notebook.rename.inline.error', {
+              notebookName: notebookName,
+            }) as string,
+            variant: 'danger',
+          },
+          ...prev,
+        ]);
+      }
+    },
+    [renameNotebook, sessionId, notebookName, t, queryClient],
+  );
+
   const confirmDeleteDocument = useCallback(async () => {
     if (!deleteDocumentTarget) return;
     const { id: documentId, name: documentName } = deleteDocumentTarget;
@@ -579,6 +615,7 @@ export const NotebookView = ({
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
+        onRenameNotebook={handleRenameNotebook}
       />
     </DrawerPanelContent>
   );

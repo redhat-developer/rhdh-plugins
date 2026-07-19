@@ -44,6 +44,9 @@ export const intelligentAssistantMessages = {
   'notebooks.rename.label': 'New name',
   'notebooks.rename.placeholder': 'New name',
   'notebooks.rename.action': 'Submit',
+  'notebook.rename.inline.tooltip': 'Double-click to rename',
+  'notebook.rename.inline.success': '"{{notebookName}}" renamed successfully.',
+  'notebook.rename.inline.error': 'Failed to rename "{{notebookName}}".',
   'notebooks.delete.title': 'Delete {{name}}?',
   'notebooks.delete.message':
     "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your activity.",

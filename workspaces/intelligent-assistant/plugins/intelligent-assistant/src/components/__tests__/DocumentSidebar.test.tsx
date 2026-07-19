@@ -139,4 +139,75 @@ describe('DocumentSidebar', () => {
 
     expect(onToggleCollapse).toHaveBeenCalledTimes(1);
   });
+
+  describe('inline notebook title rename', () => {
+    const onRenameNotebook = jest.fn();
+
+    const titleRenameProps = {
+      ...defaultProps,
+      onRenameNotebook,
+    };
+
+    it('should enter edit mode on double-click', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('Test Notebook');
+    });
+
+    it('should call onRenameNotebook on Enter with new name', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'New Name' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameNotebook).toHaveBeenCalledWith('New Name');
+    });
+
+    it('should cancel editing on Escape', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'Changed' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+      expect(screen.getByText('Test Notebook')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('should not call onRenameNotebook if name is unchanged', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+    });
+
+    it('should not call onRenameNotebook if name is empty', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '   ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+    });
+
+    it('should show rename tooltip on notebook title', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      const title = screen.getByText('Test Notebook');
+      expect(title).toHaveAttribute('title', 'Double-click to rename');
+    });
+  });
 });

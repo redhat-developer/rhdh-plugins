@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { makeStyles, Typography } from '@material-ui/core';
 import {
@@ -24,6 +24,7 @@ import {
   DropdownList,
   MenuToggle,
   Spinner,
+  TextInput,
   Tooltip,
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
@@ -60,6 +61,20 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'nowrap',
     flex: 1,
     minWidth: 0,
+    cursor: 'pointer',
+  },
+  titleInput: {
+    flex: 1,
+    minWidth: 0,
+    '--pf-v6-c-form-control--FontSize': '1.25rem',
+    '--pf-v6-c-form-control--LineHeight': '2rem',
+    '--pf-v6-c-form-control--before--BorderStyle': 'none',
+    '& input': {
+      fontWeight: 500,
+      letterSpacing: '-0.25px',
+      padding: '0 4px',
+      outline: 'none',
+    },
   },
   collapseButton: {
     flexShrink: 0,
@@ -133,6 +148,7 @@ type DocumentSidebarProps = {
   onToggleCollapse: () => void;
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
+  onRenameNotebook?: (newName: string) => void;
 };
 
 export const DocumentSidebar = ({
@@ -146,10 +162,51 @@ export const DocumentSidebar = ({
   onToggleCollapse,
   onAddDocument,
   onDeleteDocument,
+  onRenameNotebook,
 }: DocumentSidebarProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const startEditingTitle = useCallback(() => {
+    setIsEditingTitle(true);
+    setEditTitle(notebookName);
+    setTimeout(() => {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select();
+    }, 0);
+  }, [notebookName]);
+
+  const cancelEditingTitle = useCallback(() => {
+    setIsEditingTitle(false);
+    setEditTitle('');
+  }, []);
+
+  const saveTitle = useCallback(() => {
+    const trimmed = editTitle.trim();
+    if (!trimmed || trimmed === notebookName) {
+      cancelEditingTitle();
+      return;
+    }
+    onRenameNotebook?.(trimmed);
+    cancelEditingTitle();
+  }, [editTitle, notebookName, onRenameNotebook, cancelEditingTitle]);
+
+  const handleTitleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveTitle();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        cancelEditingTitle();
+      }
+    },
+    [saveTitle, cancelEditingTitle],
+  );
 
   if (collapsed) {
     return null;
@@ -165,7 +222,25 @@ export const DocumentSidebar = ({
   return (
     <div className={classes.sidebar}>
       <div className={classes.titleRow}>
-        <Typography className={classes.title}>{notebookName}</Typography>
+        {isEditingTitle ? (
+          <TextInput
+            ref={titleInputRef}
+            className={classes.titleInput}
+            value={editTitle}
+            onChange={(_event, value) => setEditTitle(value)}
+            onBlur={cancelEditingTitle}
+            onKeyDown={handleTitleKeyDown}
+            aria-label={t('notebook.rename.inline.tooltip')}
+          />
+        ) : (
+          <Typography
+            className={classes.title}
+            title={t('notebook.rename.inline.tooltip')}
+            onDoubleClick={startEditingTitle}
+          >
+            {notebookName}
+          </Typography>
+        )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
           <Button
             variant="plain"
