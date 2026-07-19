@@ -164,13 +164,11 @@ test.describe('Intelligent assistant notebooks', () => {
       .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
       .click();
     await notebooks.renameNotebookOverflowMenuItem().click();
+    await notebooks.renameNotebookInline(RENAMED_NOTEBOOK_TITLE);
 
-    const renameModal = notebooks.renameNotebookDialog(
-      NOTEBOOK_UNTITLED_GRID_NAME,
-    );
-    await renameModal.enterNewDisplayedNameAndSubmit(RENAMED_NOTEBOOK_TITLE);
-
-    await expect(sharedPage.getByText(RENAMED_NOTEBOOK_TITLE)).toBeVisible();
+    await expect(
+      notebooks.notebookCardByDisplayedName(RENAMED_NOTEBOOK_TITLE),
+    ).toBeVisible();
 
     await notebooks
       .notebookCardOverflowMenuButton(
@@ -188,7 +186,5 @@ test.describe('Intelligent assistant notebooks', () => {
 
     await notebooks.expectNotebookCardAbsent(RENAMED_NOTEBOOK_TITLE);
     await notebooks.expectUntitledNotebookCardCount(untitledBefore);
-
-    await expect(sharedPage.getByText(RENAMED_NOTEBOOK_TITLE)).toBeHidden();
   });
 });

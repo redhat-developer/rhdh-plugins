@@ -739,6 +739,8 @@ export const LightspeedChat = ({
 
   const handleRenameNotebook = useCallback(
     async (sessionId: string, newName: string) => {
+      const currentName =
+        notebooks.find(n => n.session_id === sessionId)?.name ?? newName;
       try {
         await renameNotebookMutation({ sessionId, name: newName });
         setNotebookAlerts(prev => [
@@ -756,7 +758,7 @@ export const LightspeedChat = ({
           {
             key: Date.now() + sessionId,
             title: (t as Function)('notebook.rename.inline.error', {
-              notebookName: newName,
+              notebookName: currentName,
             }) as string,
             variant: 'danger',
           },
@@ -764,7 +766,7 @@ export const LightspeedChat = ({
         ]);
       }
     },
-    [renameNotebookMutation, t],
+    [renameNotebookMutation, t, notebooks],
   );
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
