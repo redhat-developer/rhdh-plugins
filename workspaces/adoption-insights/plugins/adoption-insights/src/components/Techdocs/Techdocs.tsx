@@ -191,7 +191,14 @@ const Techdocs = () => {
                   </TableCell>
                   <TableCell sx={{ width: '25%', minWidth: 0 }}>
                     {techdoc?.name ? (
-                      <Tooltip title={tooltipTitle}>
+                      <Tooltip
+                        title={tooltipTitle}
+                        componentsProps={{
+                          tooltip: {
+                            sx: { bgcolor: '#151515', color: '#ffffff' },
+                          },
+                        }}
+                      >
                         <Link
                           component="a"
                           target="_blank"
