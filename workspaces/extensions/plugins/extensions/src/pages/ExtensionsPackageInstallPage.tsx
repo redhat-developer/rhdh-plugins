@@ -64,7 +64,12 @@ const PackageEditHeader = () => {
         },
       }}
     >
-      <Header title={title} type="Packages" typeLink={packageLink} />
+      <Header
+        title={title}
+        pageTitleOverride={title}
+        type="Packages"
+        typeLink={packageLink}
+      />
     </Box>
   );
 };

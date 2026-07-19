@@ -35,7 +35,14 @@ const PackageHeader = () => {
   const displayName = pkg.data?.metadata.title ?? params.name;
   const packagesLink = useRouteRef(packagesRouteRef)();
 
-  return <Header title={displayName} type="Packages" typeLink={packagesLink} />;
+  return (
+    <Header
+      title={displayName}
+      pageTitleOverride={displayName}
+      type="Packages"
+      typeLink={packagesLink}
+    />
+  );
 };
 
 export const ExtensionsPackagePage = () => (
