@@ -237,17 +237,11 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.prompts.accessIssue.title': 'アクセスの問題を解決してください',
     'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
     'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
-    'notebooks.rename.action': '送信',
     'notebook.rename.inline.tooltip': 'ダブルクリックで名前を変更',
     'notebook.rename.inline.success':
       '「{{notebookName}}」の名前が変更されました。',
     'notebook.rename.inline.error':
       '「{{notebookName}}」の名前変更に失敗しました。',
-    'notebooks.rename.description':
-      'このノートブックの新しい名前を入力し、送信をクリックして続行してください。',
-    'notebooks.rename.label': '新しい名前',
-    'notebooks.rename.placeholder': '新しい名前',
-    'notebooks.rename.title': '{{name}} の名前を変更しますか?',
     'notebooks.title': 'マイノートブック',
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',

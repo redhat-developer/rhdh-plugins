@@ -38,12 +38,6 @@ export const intelligentAssistantMessages = {
   'notebooks.documents': 'Documents',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
-  'notebooks.rename.title': 'Rename {{name}}?',
-  'notebooks.rename.description':
-    'Please input the new name for this notebook and click submit to proceed.',
-  'notebooks.rename.label': 'New name',
-  'notebooks.rename.placeholder': 'New name',
-  'notebooks.rename.action': 'Submit',
   'notebook.rename.inline.tooltip': 'Double-click to rename',
   'notebook.rename.inline.success': '"{{notebookName}}" renamed successfully.',
   'notebook.rename.inline.error': 'Failed to rename "{{notebookName}}".',

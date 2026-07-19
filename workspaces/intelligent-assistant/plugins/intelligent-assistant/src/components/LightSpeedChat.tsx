@@ -327,6 +327,7 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    cursor: 'pointer',
   },
   notebookMenuButton: {
     color: theme.palette.text.secondary,

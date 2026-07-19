@@ -241,17 +241,11 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Quali sono i concetti chiave?',
     'notebooks.prompts.vulnerabilities.title':
       'Mostra le mie vulnerabilità critiche',
-    'notebooks.rename.action': 'Invia',
     'notebook.rename.inline.tooltip': 'Doppio clic per rinominare',
     'notebook.rename.inline.success':
       '"{{notebookName}}" rinominato con successo.',
     'notebook.rename.inline.error':
       'Impossibile rinominare "{{notebookName}}".',
-    'notebooks.rename.description':
-      'Inserisci il nuovo nome per questo quaderno e fai clic su Invia per continuare.',
-    'notebooks.rename.label': 'Nuovo nome',
-    'notebooks.rename.placeholder': 'Nuovo nome',
-    'notebooks.rename.title': 'Rinominare {{name}}?',
     'notebooks.title': 'I miei quaderni',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',
