@@ -28,6 +28,7 @@ const quickstartTranslationFr = createTranslationMessages({
     'button.gotIt': "J'ai compris",
     'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
     'button.quickstart': 'Démarrage rapide',
+    'content.loading': 'Chargement',
     'content.emptyState.title':
       "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
     'dev.currentState': 'État actuel du tiroir : {{state}}',
