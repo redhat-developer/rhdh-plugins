@@ -75,9 +75,39 @@ describe('NotebookCard', () => {
     expect(screen.getByText('My Notebook')).toBeInTheDocument();
   });
 
-  it('should render the document count', () => {
+  it('should render the document count for multiple documents', () => {
     render(<NotebookCard {...defaultProps} />);
-    expect(screen.getByText(/2/)).toBeInTheDocument();
+    expect(screen.getByText('2 documents')).toBeInTheDocument();
+  });
+
+  it('should render "No documents" when document_count is 0', () => {
+    render(
+      <NotebookCard
+        {...defaultProps}
+        notebook={{ ...mockNotebook, document_count: 0 }}
+      />,
+    );
+    expect(screen.getByText('No documents')).toBeInTheDocument();
+  });
+
+  it('should render "1 document" when document_count is 1', () => {
+    render(
+      <NotebookCard
+        {...defaultProps}
+        notebook={{ ...mockNotebook, document_count: 1 }}
+      />,
+    );
+    expect(screen.getByText('1 document')).toBeInTheDocument();
+  });
+
+  it('should render "No documents" when document_count is undefined', () => {
+    render(
+      <NotebookCard
+        {...defaultProps}
+        notebook={{ ...mockNotebook, document_count: undefined }}
+      />,
+    );
+    expect(screen.getByText('No documents')).toBeInTheDocument();
   });
 
   it('should call onClick with notebook when card is clicked', () => {
@@ -143,6 +173,6 @@ describe('NotebookCard', () => {
 
   it('should render document_count from the notebook session', () => {
     render(<NotebookCard {...defaultProps} />);
-    expect(screen.getByText(/2/)).toBeInTheDocument();
+    expect(screen.getByText('2 documents')).toBeInTheDocument();
   });
 });

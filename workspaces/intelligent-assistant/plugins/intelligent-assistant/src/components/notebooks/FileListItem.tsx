@@ -15,10 +15,9 @@
  */
 
 import { makeStyles } from '@material-ui/core/styles';
-import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { TimesIcon } from '@patternfly/react-icons';
 
 import { FileTypeIcon } from './FileTypeIcon';
 
@@ -28,7 +27,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     padding: '8px 12px',
     borderRadius: 8,
-    backgroundColor: theme.palette.type === 'dark' ? '#2a2a2a' : '#f5f5f5',
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--secondary--default)',
     marginBottom: 8,
     '&:last-child': {
       marginBottom: 0,
@@ -56,11 +57,17 @@ const useStyles = makeStyles(theme => ({
     marginRight: 8,
   },
   removeButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
     padding: 4,
-    color: theme.palette.action.active,
+    color: 'var(--pf-t--global--icon--color--subtle)',
     '&:hover': {
-      color: theme.palette.error.main,
+      color: 'var(--pf-t--global--icon--color--regular)',
     },
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontFamily: 'inherit',
   },
 }));
 
@@ -112,14 +119,14 @@ export const FileListItem = ({
       <Typography className={classes.fileSize}>
         {formatFileSize(file.size)}
       </Typography>
-      <IconButton
+      <button
+        type="button"
         className={classes.removeButton}
         onClick={onRemove}
         aria-label={removeAriaLabel}
-        size="small"
       >
-        <CloseIcon fontSize="small" />
-      </IconButton>
+        <TimesIcon style={{ width: 12, height: 12 }} />
+      </button>
     </Box>
   );
 };

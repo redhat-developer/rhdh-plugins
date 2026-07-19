@@ -50,8 +50,10 @@ describe('AddDocumentModal', () => {
   it('should render the modal when open', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
-    expect(screen.getByText('Add a document to Notebook')).toBeInTheDocument();
-    expect(screen.getByText('Drag and drop files here')).toBeInTheDocument();
+    expect(screen.getByText('Add resources')).toBeInTheDocument();
+    expect(
+      screen.getByText('Drag and drop files here, or click to browse'),
+    ).toBeInTheDocument();
   });
 
   it('should not render when isOpen is false', () => {
@@ -64,13 +66,13 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add (0)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
   });
 
   it('should have Add button disabled when no files selected', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
-    const addButton = screen.getByRole('button', { name: 'Add (0)' });
+    const addButton = screen.getByRole('button', { name: 'Add' });
     expect(addButton).toBeDisabled();
   });
 
@@ -96,7 +98,7 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -116,7 +118,7 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -138,7 +140,7 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -160,7 +162,7 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -193,7 +195,7 @@ describe('AddDocumentModal', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -215,7 +217,7 @@ describe('AddDocumentModal', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('test-file.txt')).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Add (0)' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
     });
   });
 
@@ -223,7 +225,7 @@ describe('AddDocumentModal', () => {
     const { rerender } = render(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const file = new File(['content'], 'test-file.txt', { type: 'text/plain' });
 
@@ -245,7 +247,7 @@ describe('AddDocumentModal', () => {
     expect(screen.queryByText('test-file.txt')).not.toBeInTheDocument();
   });
 
-  it('should call onDuplicatesFound for files that already exist', async () => {
+  it('should call onDuplicatesFound when Add is clicked with duplicate files', async () => {
     render(
       <AddDocumentModal
         {...defaultProps}
@@ -254,7 +256,7 @@ describe('AddDocumentModal', () => {
     );
 
     const dropzone = screen
-      .getByText('Drag and drop files here')
+      .getByText('Drag and drop files here, or click to browse')
       .closest('div');
     const existingFile = new File(['content'], 'existing-file.txt', {
       type: 'text/plain',
@@ -271,11 +273,17 @@ describe('AddDocumentModal', () => {
     });
 
     await waitFor(() => {
-      expect(defaultProps.onDuplicatesFound).toHaveBeenCalledWith([
-        existingFile,
-      ]);
       expect(screen.getByText('new-file.txt')).toBeInTheDocument();
-      expect(screen.queryByText('existing-file.txt')).not.toBeInTheDocument();
+      expect(screen.getByText('existing-file.txt')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add (2)' }));
+
+    await waitFor(() => {
+      expect(defaultProps.onDuplicatesFound).toHaveBeenCalledWith(
+        [existingFile],
+        [existingFile, newFile],
+      );
     });
   });
 });
