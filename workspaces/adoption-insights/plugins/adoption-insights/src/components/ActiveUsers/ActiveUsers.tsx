@@ -112,8 +112,7 @@ const ActiveUsers = () => {
                 data={data}
                 margin={{ top: 10, right: 50, left: 20, bottom: 0 }}
                 key={JSON.stringify(data.map(d => d))}
-                role="img"
-                aria-label={t('activeUsers.title')}
+                title={t('activeUsers.title')}
               >
                 <defs>
                   <linearGradient id="new_users" x1="0" y1="0" x2="0" y2="1">
