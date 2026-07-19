@@ -105,6 +105,13 @@ export const intelligentAssistantMessages = {
   'notebook.overwrite.modal.description':
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
+  'notebook.document.rename': 'Rename',
+  'notebook.document.rename.tooltip': 'Double-click to rename',
+  'notebook.document.rename.success':
+    '"{{documentName}}" renamed successfully.',
+  'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',
+  'notebook.document.rename.conflict':
+    'A document with this name already exists.',
   'notebook.document.delete': 'Delete',
   'notebook.document.delete.title': 'Remove resource?',
   'notebook.document.delete.description':

@@ -260,6 +260,74 @@ export class DocumentService {
   }
 
   /**
+   * Rename a document by updating its title attribute in the vector store.
+   * Deletes the old vector store file entry and re-creates it with the
+   * same underlying file but an updated title attribute.
+   * @param sessionId - Vector store ID
+   * @param currentTitle - Current document title
+   * @param newTitle - New document title
+   * @throws NotFoundError if document not found
+   * @throws ConflictError if newTitle conflicts with existing document
+   */
+  async renameDocument(
+    sessionId: string,
+    currentTitle: string,
+    newTitle: string,
+  ): Promise<void> {
+    const existingFile = await this.findFileByTitle(sessionId, currentTitle);
+    if (!existingFile) {
+      throw new NotFoundError(`Document not found: ${currentTitle}`);
+    }
+
+    const conflicting = await this.findFileByTitle(sessionId, newTitle);
+    if (conflicting) {
+      throw new ConflictError(
+        `A document with the title "${newTitle}" already exists in this session`,
+      );
+    }
+
+    const attrs = existingFile.attributes || {};
+    const fileId = existingFile.id;
+
+    await this.client.vectorStores.files.delete(sessionId, fileId);
+
+    try {
+      await this.client.vectorStores.files.create(sessionId, {
+        file_id: fileId,
+        chunking_strategy: this.chunkingStrategy,
+        attributes: {
+          ...attrs,
+          title: newTitle,
+          updated_at: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to re-create vector store entry after delete during rename of "${currentTitle}" to "${newTitle}". Attempting rollback.`,
+      );
+      try {
+        await this.client.vectorStores.files.create(sessionId, {
+          file_id: fileId,
+          chunking_strategy: this.chunkingStrategy,
+          attributes: attrs,
+        });
+        this.logger.info(
+          `Rollback succeeded: restored "${currentTitle}" in session ${sessionId}`,
+        );
+      } catch (rollbackError) {
+        this.logger.error(
+          `Rollback failed: document "${currentTitle}" (file ${fileId}) is orphaned in session ${sessionId}`,
+        );
+      }
+      throw error;
+    }
+
+    this.logger.info(
+      `Renamed document "${currentTitle}" to "${newTitle}" in session ${sessionId}`,
+    );
+  }
+
+  /**
    * Delete a document from the vector store and Files API
    * @param sessionId - Vector store ID
    * @param documentTitle - Document title to delete

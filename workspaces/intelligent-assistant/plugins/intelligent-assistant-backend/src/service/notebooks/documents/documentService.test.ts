@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { NotFoundError } from '@backstage/errors';
+import { ConflictError, NotFoundError } from '@backstage/errors';
 
 import { setupServer } from 'msw/node';
 
@@ -285,6 +285,64 @@ describe('DocumentService', () => {
         source_type: 'text',
       });
       expect(documents[0].created_at).toBeDefined();
+    });
+  });
+
+  describe('renameDocument', () => {
+    it('should rename a document successfully', async () => {
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Original Name',
+      );
+      await documentService.upsertDocument(
+        sessionId,
+        'Original Name',
+        'text',
+        fileId,
+      );
+
+      await documentService.renameDocument(
+        sessionId,
+        'Original Name',
+        'New Name',
+      );
+
+      const documents = await documentService.listDocuments(sessionId);
+      expect(documents).toHaveLength(1);
+      expect(documents[0].document_id).toBe('New Name');
+    });
+
+    it('should throw NotFoundError for non-existent document', async () => {
+      await expect(
+        documentService.renameDocument(sessionId, 'Non-existent', 'New Name'),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw ConflictError when new title already exists', async () => {
+      const fileId1 = await documentService.uploadFile('Content 1', 'Doc A');
+      await documentService.upsertDocument(sessionId, 'Doc A', 'text', fileId1);
+
+      const fileId2 = await documentService.uploadFile('Content 2', 'Doc B');
+      await documentService.upsertDocument(sessionId, 'Doc B', 'text', fileId2);
+
+      await expect(
+        documentService.renameDocument(sessionId, 'Doc A', 'Doc B'),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it('should preserve other documents when renaming', async () => {
+      const fileId1 = await documentService.uploadFile('Content 1', 'Doc A');
+      await documentService.upsertDocument(sessionId, 'Doc A', 'text', fileId1);
+
+      const fileId2 = await documentService.uploadFile('Content 2', 'Doc B');
+      await documentService.upsertDocument(sessionId, 'Doc B', 'text', fileId2);
+
+      await documentService.renameDocument(sessionId, 'Doc A', 'Doc A Renamed');
+
+      const documents = await documentService.listDocuments(sessionId);
+      expect(documents).toHaveLength(2);
+      expect(documents.map(d => d.document_id)).toContain('Doc A Renamed');
+      expect(documents.map(d => d.document_id)).toContain('Doc B');
     });
   });
 

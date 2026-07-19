@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { makeStyles, Typography } from '@material-ui/core';
 import {
@@ -22,8 +22,11 @@ import {
   Dropdown,
   DropdownItem,
   DropdownList,
+  HelperText,
+  HelperTextItem,
   MenuToggle,
   Spinner,
+  TextInput,
   Tooltip,
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
@@ -87,7 +90,7 @@ const useStyles = makeStyles(theme => ({
   },
   documentItem: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: theme.spacing(1),
     padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
     borderRadius: 4,
@@ -106,6 +109,40 @@ const useStyles = makeStyles(theme => ({
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
   },
+  renameContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
+    flex: 1,
+    minWidth: 0,
+  },
+  renameInput: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    // Optional: PF6 default is 1px which is barely visible; can be removed if subtle error border is acceptable
+    '--pf-v6-c-form-control--m-error--after--BorderWidth': '2px',
+    '--pf-v6-c-form-control--FontSize': '0.875rem',
+    '--pf-v6-c-form-control--LineHeight': '1.25rem',
+    '--pf-v6-c-form-control--before--BorderStyle': 'none',
+    '& input': {
+      padding: '2px 4px',
+      outline: 'none',
+    },
+  },
+  renameExtension: {
+    flexShrink: 0,
+    fontSize: '0.875rem',
+    lineHeight: '1.25rem',
+    whiteSpace: 'nowrap',
+  },
+  renameHelperText: {
+    width: '100%',
+    paddingTop: 4,
+    '& .pf-v6-c-helper-text__item-text': {
+      color: 'var(--pf-t--global--color--status--danger--default)',
+    },
+  },
   spinnerContainer: {
     flexShrink: 0,
   },
@@ -122,6 +159,18 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const splitFileName = (
+  fileName: string,
+): { baseName: string; extension: string } => {
+  if (!fileName) return { baseName: '', extension: '' };
+  const lastDot = fileName.lastIndexOf('.');
+  if (lastDot <= 0) return { baseName: fileName, extension: '' };
+  return {
+    baseName: fileName.slice(0, lastDot),
+    extension: fileName.slice(lastDot),
+  };
+};
+
 type DocumentSidebarProps = {
   notebookName: string;
   documents: SessionDocument[];
@@ -133,6 +182,7 @@ type DocumentSidebarProps = {
   onToggleCollapse: () => void;
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
+  onRenameDocument?: (documentId: string, newTitle: string) => void;
 };
 
 export const DocumentSidebar = ({
@@ -146,10 +196,82 @@ export const DocumentSidebar = ({
   onToggleCollapse,
   onAddDocument,
   onDeleteDocument,
+  onRenameDocument,
 }: DocumentSidebarProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const savingRef = useRef(false);
+
+  const startEditing = useCallback((docId: string, currentTitle: string) => {
+    const { baseName } = splitFileName(currentTitle);
+    setEditingDocId(docId);
+    setEditName(baseName);
+    setOpenMenuDocId(null);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+  }, []);
+
+  const cancelEditing = useCallback(() => {
+    setEditingDocId(null);
+    setEditName('');
+    savingRef.current = false;
+  }, []);
+
+  const getConflictError = useCallback(
+    (docId: string, originalTitle: string): string | null => {
+      const trimmedBase = editName.trim();
+      if (!trimmedBase) return null;
+      const { baseName, extension } = splitFileName(originalTitle);
+      if (trimmedBase === baseName) return null;
+      const newFullName = trimmedBase + extension;
+      const conflict = documents.some(
+        d => d.document_id !== docId && d.title === newFullName,
+      );
+      return conflict ? t('notebook.document.rename.conflict') : null;
+    },
+    [editName, documents, t],
+  );
+
+  const saveRename = useCallback(
+    (docId: string, originalTitle: string) => {
+      if (savingRef.current) return;
+      const trimmedBase = editName.trim();
+      const { baseName, extension } = splitFileName(originalTitle);
+      if (!trimmedBase || trimmedBase === baseName) {
+        cancelEditing();
+        return;
+      }
+      const newFullName = trimmedBase + extension;
+      if (
+        documents.some(d => d.document_id !== docId && d.title === newFullName)
+      ) {
+        return;
+      }
+      savingRef.current = true;
+      onRenameDocument?.(docId, newFullName);
+      cancelEditing();
+    },
+    [editName, documents, onRenameDocument, cancelEditing],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent, docId: string, originalTitle: string) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveRename(docId, originalTitle);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        cancelEditing();
+      }
+    },
+    [saveRename, cancelEditing],
+  );
 
   if (collapsed) {
     return null;
@@ -221,7 +343,50 @@ export const DocumentSidebar = ({
           {documents.map(doc => (
             <div key={doc.document_id} className={classes.documentItem}>
               <FileTypeIcon fileName={doc.title} />
-              <Typography className={classes.fileName}>{doc.title}</Typography>
+              {editingDocId === doc.document_id ? (
+                (() => {
+                  const conflictError = getConflictError(
+                    doc.document_id,
+                    doc.title,
+                  );
+                  return (
+                    <div className={classes.renameContainer}>
+                      <TextInput
+                        ref={inputRef}
+                        className={classes.renameInput}
+                        value={editName}
+                        onChange={(_event, value) => setEditName(value)}
+                        onBlur={cancelEditing}
+                        onKeyDown={event =>
+                          handleKeyDown(event, doc.document_id, doc.title)
+                        }
+                        validated={conflictError ? 'error' : 'default'}
+                        aria-label={t('notebook.document.rename')}
+                      />
+                      <Typography className={classes.renameExtension}>
+                        {splitFileName(doc.title).extension}
+                      </Typography>
+                      {conflictError && (
+                        <div className={classes.renameHelperText}>
+                          <HelperText>
+                            <HelperTextItem variant="error">
+                              {conflictError}
+                            </HelperTextItem>
+                          </HelperText>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <Typography
+                  className={classes.fileName}
+                  title={t('notebook.document.rename.tooltip')}
+                  onDoubleClick={() => startEditing(doc.document_id, doc.title)}
+                >
+                  {doc.title}
+                </Typography>
+              )}
               {deletingDocumentIds?.has(doc.document_id) ? (
                 <div className={classes.spinnerContainer}>
                   <Spinner
@@ -252,13 +417,22 @@ export const DocumentSidebar = ({
                           current === doc.document_id ? null : doc.document_id,
                         );
                       }}
-                      aria-label={t('notebook.document.delete')}
+                      aria-label={`${t('aria.options.label')} ${doc.title}`}
                     >
                       <EllipsisVIcon />
                     </MenuToggle>
                   )}
                 >
                   <DropdownList>
+                    <DropdownItem
+                      key="rename"
+                      onClick={event => {
+                        event.stopPropagation();
+                        startEditing(doc.document_id, doc.title);
+                      }}
+                    >
+                      {t('notebook.document.rename')}
+                    </DropdownItem>
                     <DropdownItem
                       key="delete"
                       onClick={event => {

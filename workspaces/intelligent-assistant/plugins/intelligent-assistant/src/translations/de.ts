@@ -179,6 +179,14 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'modal.save': 'Speichern',
     'modal.title.edit': 'Anhang bearbeiten',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
+    'notebook.document.rename': 'Umbenennen',
+    'notebook.document.rename.tooltip': 'Doppelklick zum Umbenennen',
+    'notebook.document.rename.success':
+      '"{{documentName}}" erfolgreich umbenannt.',
+    'notebook.document.rename.error':
+      'Umbenennung von "{{documentName}}" fehlgeschlagen.',
+    'notebook.document.rename.conflict':
+      'Ein Dokument mit diesem Namen existiert bereits.',
     'notebook.document.delete': 'Löschen',
     'notebook.document.delete.action': 'Entfernen',
     'notebook.document.delete.description':
