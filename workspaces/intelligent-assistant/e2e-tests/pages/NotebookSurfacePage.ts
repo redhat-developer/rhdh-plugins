@@ -223,8 +223,7 @@ export class NotebookSurfacePage {
   firstListedDocumentOverflowMenuToggle(): Locator {
     return this.chatbotRegion()
       .getByRole('button', {
-        name: this.t['notebook.document.delete'],
-        exact: true,
+        name: new RegExp(`^${this.t['aria.options.label']} `),
       })
       .first();
   }
