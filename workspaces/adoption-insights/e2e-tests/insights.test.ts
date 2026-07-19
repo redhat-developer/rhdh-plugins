@@ -232,7 +232,9 @@ test.describe(() => {
     const componentRow = page.getByText('example-website');
     await componentRow.scrollIntoViewIfNeeded();
     await componentRow.hover();
-    const componentTooltip = page.getByRole('tooltip');
+    const componentTooltip = page
+      .getByRole('tooltip', { name: /component:default/ })
+      .first();
     await expect(componentTooltip).toBeVisible();
     const text = (await componentTooltip.textContent()) ?? '';
     expect(
@@ -290,7 +292,9 @@ test.describe(() => {
     const templateRow = page.getByText('Example Node.js Template');
     await templateRow.scrollIntoViewIfNeeded();
     await templateRow.hover();
-    const templateTooltip = page.getByRole('tooltip');
+    const templateTooltip = page
+      .getByRole('tooltip', { name: /template:default/ })
+      .first();
     await expect(templateTooltip).toBeVisible();
     const text = (await templateTooltip.textContent()) ?? '';
     expect(

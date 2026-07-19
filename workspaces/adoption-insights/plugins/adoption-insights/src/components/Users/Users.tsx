@@ -124,7 +124,11 @@ const Users = () => {
                     stroke="none"
                   >
                     {data.map(entry => (
-                      <Cell key={entry.name} fill={entry.color} />
+                      <Cell
+                        key={entry.name}
+                        fill={entry.color}
+                        aria-label={entry.name}
+                      />
                     ))}
 
                     <Label

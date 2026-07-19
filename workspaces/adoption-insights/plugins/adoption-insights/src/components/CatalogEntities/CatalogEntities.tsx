@@ -215,7 +215,18 @@ const CatalogEntities = () => {
                   }}
                 >
                   <TableCell sx={{ width: '25%', minWidth: 0 }}>
-                    <Tooltip title={tooltipTitle}>
+                    <Tooltip
+                      title={tooltipTitle}
+                      disableInteractive
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            bgcolor: '#151515',
+                            color: '#fff',
+                          },
+                        },
+                      }}
+                    >
                       <Link
                         component="a"
                         href={entityLink({
