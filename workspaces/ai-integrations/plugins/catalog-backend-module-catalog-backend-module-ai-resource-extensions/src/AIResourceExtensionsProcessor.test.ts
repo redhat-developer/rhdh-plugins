@@ -170,6 +170,184 @@ describe('AIResourceExtensionsProcessor', () => {
     });
   });
 
+  describe('OCI validation in extensions processor', () => {
+    it('should reject OCI target without oci:// prefix', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'quay.io/org/model:latest',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('must start with the oci:// prefix');
+    });
+
+    it('should reject empty OCI target', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: '',
+        },
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('must be a non-empty string');
+    });
+
+    it('should accept a valid OCI target', async () => {
+      const entity = makeAIResource({
+        location: {
+          type: 'oci',
+          target: 'oci://quay.io/org/model:latest',
+        },
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+  });
+
+  describe('multiple extension errors reported together', () => {
+    it('should report both scope and OCI errors in a single response', async () => {
+      const entity = makeAIResource({
+        scope: 'invalid',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      const message = (error as Error).message;
+      expect(message).toContain('spec.scope');
+      expect(message).toContain('spec.location.target');
+    });
+
+    it('should include field path and value for scope error', async () => {
+      const entity = makeAIResource({
+        scope: 'invalid',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      const message = (error as Error).message;
+      expect(message).toContain("'invalid'");
+      expect(message).toContain("'organization', 'product', 'team'");
+    });
+
+    it('should include field path and constraint for OCI error', async () => {
+      const entity = makeAIResource({
+        scope: 'invalid',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      const message = (error as Error).message;
+      expect(message).toContain('oci:// prefix');
+    });
+
+    it('should not expose internal class names in multi-error response', async () => {
+      const entity = makeAIResource({
+        scope: 'invalid',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).not.toMatch(
+        /AIResourceExtensionsProcessor/,
+      );
+      expect((error as Error).message).not.toMatch(/AIResourceOciProcessor/);
+    });
+
+    it('should not expose stack traces in multi-error response', async () => {
+      const entity = makeAIResource({
+        scope: 'invalid',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).not.toMatch(/at\s+\w+\.\w+\s+\(/);
+    });
+
+    it('should return single error when only scope is invalid', async () => {
+      const entity = makeAIResource({ scope: 'enterprise' });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      const message = (error as Error).message;
+      expect(message).toContain('spec.scope');
+      expect(message).not.toContain('spec.location.target');
+    });
+
+    it('should return single error when only OCI target is invalid', async () => {
+      const entity = makeAIResource({
+        scope: 'organization',
+        location: {
+          type: 'oci',
+          target: 'quay.io/myorg/skills:latest',
+        },
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      const message = (error as Error).message;
+      expect(message).not.toContain('spec.scope');
+      expect(message).toContain('spec.location.target');
+    });
+
+    it('should pass valid entity without errors', async () => {
+      const entity = makeAIResource({
+        scope: 'team',
+        location: {
+          type: 'oci',
+          target: 'oci://quay.io/myorg/skills:latest',
+        },
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+  });
+
   describe('non-AIResource entities', () => {
     it('should pass through Component entities unchanged', async () => {
       const entity: Entity = {
