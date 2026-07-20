@@ -38,7 +38,7 @@
     "@backstage/core-components": "^0.18.6",
     "@backstage/core-plugin-api": "^1.12.2",
     "@backstage/theme": "^0.7.1",
-    "@material-ui/core": "^4.12.2",
+    "@mui/material": "^5.0.0",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
     "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^",

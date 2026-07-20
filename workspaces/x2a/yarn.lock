@@ -8522,7 +8522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:^5.12.2, @mui/material@npm:^5.15.14":
+"@mui/material@npm:^5.0.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.15.14":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -11359,9 +11359,9 @@ __metadata:
     "@backstage/core-plugin-api": "npm:^1.12.0"
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
-    "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@mui/material": "npm:^5.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^16.0.0"
     react: "npm:^18.0.0"
@@ -16050,8 +16050,8 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
     "@backstage/ui": "npm:^0.9.1"
-    "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
+    "@mui/material": "npm:^5.0.0"
     "@red-hat-developer-hub/backstage-plugin-x2a": "workspace:*"
     "@red-hat-developer-hub/backstage-plugin-x2a-dcr": "workspace:*"
     "@testing-library/dom": "npm:^9.0.0"
