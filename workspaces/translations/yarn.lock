@@ -9001,9 +9001,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0":
-  version: 0.14.8
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.8"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.10":
+  version: 0.14.11
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.11"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.15.1"
     "@backstage/plugin-app-react": "npm:^0.2.1"
@@ -9015,7 +9015,7 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/9dc6f44a9eca0f0a033609ef1887837908737bf4e3eba2ff614202c9ad1c4886ef6a52e30c5c25015607205104846786dceabbf37f760835037e7016711bac4e
+  checksum: 10c0/3b3907cd3bff0de6e55a8b683230df12b199dbf7147dcd874cc91590915ad604e81f5398867aaff8028b5ec5e156e0c7e93bd62de0a74e4e9756f0d27b00cf1a
   languageName: node
   linkType: hard
 
@@ -13765,7 +13765,7 @@ __metadata:
     "@mui/icons-material": "npm:^5.18.0"
     "@mui/material": "npm:^5.18.0"
     "@playwright/test": "npm:1.60.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.10"
     "@red-hat-developer-hub/backstage-plugin-translations": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-translations-test": "workspace:^"
     "@testing-library/dom": "npm:^9.0.0"
