@@ -42,7 +42,7 @@
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
-    "json-2-csv": "^5.5.8",
+    "json-2-csv": "^5.5.11",
     "knex": "^3.1.0",
     "luxon": "^3.5.0",
     "uuid": "^11.1.0",
