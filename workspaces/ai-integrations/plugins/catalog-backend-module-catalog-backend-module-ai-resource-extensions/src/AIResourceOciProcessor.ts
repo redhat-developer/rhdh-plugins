@@ -20,6 +20,7 @@ import {
 } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { collectOciErrors } from './collectOciErrors';
 
 /**
  * A CatalogProcessor that validates OCI-backed AIResource entities.
@@ -27,6 +28,10 @@ import { LocationSpec } from '@backstage/plugin-catalog-common';
  * Validates that `spec.location.target` uses the `oci://` URI scheme
  * when `spec.location.type` is `oci`. Makes zero outbound HTTP or
  * registry network calls — validation is format-only.
+ *
+ * When used alongside {@link AIResourceExtensionsProcessor}, OCI
+ * errors are already aggregated there. This processor is kept for
+ * standalone or backwards-compatible use.
  *
  * @public
  */
@@ -44,52 +49,11 @@ export class AIResourceOciProcessor implements CatalogProcessor {
       return entity;
     }
 
-    const specLocation = (entity.spec as Record<string, unknown> | undefined)
-      ?.location as Record<string, unknown> | undefined;
+    const errors = collectOciErrors(entity);
 
-    if (specLocation?.type !== 'oci') {
-      return entity;
-    }
-
-    const target = specLocation?.target;
-
-    if (typeof target !== 'string' || target.trim() === '') {
+    if (errors.length > 0) {
       throw new Error(
-        'Validation failed for AIResource entity: spec.location.target must be a non-empty string with an oci:// URI (e.g. oci://quay.io/org/model:tag)',
-      );
-    }
-
-    if (target !== target.trim()) {
-      throw new Error(
-        'Validation failed for AIResource entity: spec.location.target must not have leading or trailing whitespace (e.g. oci://quay.io/org/model:tag)',
-      );
-    }
-
-    if (!target.startsWith('oci://')) {
-      const sanitized = Array.from(String(target))
-        .filter(c => c.charCodeAt(0) > 0x1f)
-        .join('')
-        .slice(0, 200);
-      throw new Error(
-        `Validation failed for AIResource entity: spec.location.target '${sanitized}' must start with the oci:// prefix (e.g. oci://quay.io/org/model:tag)`,
-      );
-    }
-
-    const ociPath = target.slice('oci://'.length);
-    const parts = ociPath.split('/');
-
-    // Reject missing registry/repo, empty segments (e.g. trailing slash),
-    // and whitespace inside path segments (e.g. oci:// quay.io/...).
-    if (
-      parts.length < 2 ||
-      parts.some(part => part === '' || /\s/.test(part))
-    ) {
-      const sanitized = Array.from(String(target))
-        .filter(c => c.charCodeAt(0) > 0x1f)
-        .join('')
-        .slice(0, 200);
-      throw new Error(
-        `Validation failed for AIResource entity: spec.location.target '${sanitized}' is not a valid OCI reference; expected format oci://registry/repository[:tag|@digest]`,
+        `Validation failed for AIResource entity: ${errors.join('; ')}`,
       );
     }
 

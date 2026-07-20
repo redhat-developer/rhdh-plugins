@@ -17,10 +17,14 @@ import { createBackendModule } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 
 import { AIResourceExtensionsProcessor } from './AIResourceExtensionsProcessor';
-import { AIResourceOciProcessor } from './AIResourceOciProcessor';
 
 /**
  * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
+ *
+ * AIResourceExtensionsProcessor validates all RHDH extension
+ * constraints (spec.scope and OCI location) and aggregates errors
+ * into a single response. AIResourceOciProcessor is no longer
+ * registered here to avoid duplicate error reporting.
  *
  * @public
  */
@@ -35,7 +39,6 @@ export const catalogModuleCatalogBackendModuleAiResourceExtensions =
         },
         async init({ catalog }) {
           catalog.addProcessor(new AIResourceExtensionsProcessor());
-          catalog.addProcessor(new AIResourceOciProcessor());
         },
       });
     },
