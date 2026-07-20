@@ -12,7 +12,7 @@ SkillBundle entities are synced to SkillBundle nodes with properties mirroring b
 
 #### Scenario: SkillBundle entity synced to SkillBundle node
 
-- **WHEN** a SkillBundle entity (Component kind with `spec.type: 'ai-skill-bundle'`) is synced
+- **WHEN** a SkillBundle entity (AIResource kind with `spec.type: 'ai-skill-bundle'` and `rhdh.io/ai-asset-category: skill-bundle`) is synced
 - **THEN** the adapter creates or updates a `SkillBundle` node with properties:
   - `entityUid`: `metadata.uid`
   - `name`: `metadata.name`
@@ -38,14 +38,14 @@ SkillBundle-to-skill relationships are derived from the bundle's skill list.
   ```yaml
   spec:
     skills:
-      - component:default/skill-secret-scanner
-      - component:default/skill-sbom-generator
-      - component:default/skill-vuln-analyzer
+      - airesource:default/skill-secret-scanner
+      - airesource:default/skill-sbom-generator
+      - airesource:default/skill-vuln-analyzer
   ```
 - **THEN** the adapter creates relationships:
-  - `(bundle)-[:INCLUDES]->(skill1)` where `skill1.entityUid = 'component:default/skill-secret-scanner'`
-  - `(bundle)-[:INCLUDES]->(skill2)` where `skill2.entityUid = 'component:default/skill-sbom-generator'`
-  - `(bundle)-[:INCLUDES]->(skill3)` where `skill3.entityUid = 'component:default/skill-vuln-analyzer'`
+  - `(bundle)-[:INCLUDES]->(skill1)` where `skill1.entityUid = 'airesource:default/skill-secret-scanner'`
+  - `(bundle)-[:INCLUDES]->(skill2)` where `skill2.entityUid = 'airesource:default/skill-sbom-generator'`
+  - `(bundle)-[:INCLUDES]->(skill3)` where `skill3.entityUid = 'airesource:default/skill-vuln-analyzer'`
 - **AND** if a referenced skill is not yet in the graph, the relationship is deferred until the skill is synced
 
 #### Scenario: Skill reference removed from bundle deletes INCLUDES relationship
@@ -141,7 +141,7 @@ The adapter validates SkillBundle entity structure before syncing.
 #### Scenario: Invalid skill reference is logged and skipped
 
 - **WHEN** a SkillBundle entity has `spec.skills: ['invalid-reference']` (not a valid entity reference format)
-- **THEN** the adapter logs a warning: "SkillBundle {bundle.name}: Invalid skill reference 'invalid-reference', expected format 'component:{namespace}/{name}'"
+- **THEN** the adapter logs a warning: "SkillBundle {bundle.name}: Invalid skill reference 'invalid-reference', expected format 'airesource:{namespace}/{name}'"
 - **AND** skips creating the `INCLUDES` relationship for that reference
 - **AND** still syncs the SkillBundle node and valid relationships
 

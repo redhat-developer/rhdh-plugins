@@ -292,6 +292,6 @@ The connector supports multiple registry instances running sync cycles simultane
 - **WHEN** Quay registry emits entity `pdf-processor` in namespace `default`
 - **AND** GHCR registry emits entity `pdf-processor` in namespace `default`
 - **THEN** the connector emits both entities with unique entity refs:
-  - `resource:default/pdf-processor-quay-internal` (suffix from registry ID)
-  - `resource:default/pdf-processor-ghcr-external`
+  - `airesource:default/pdf-processor-quay-internal` (suffix from registry ID)
+  - `airesource:default/pdf-processor-ghcr-external`
 - **AND** logs warning: `Entity name collision for "pdf-processor", disambiguated with registry ID`

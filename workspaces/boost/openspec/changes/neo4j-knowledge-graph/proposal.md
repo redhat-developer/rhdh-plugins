@@ -25,7 +25,7 @@ A Neo4j graph database provides purpose-built relationship traversal, pattern ma
 - Creates typed relationships derived from catalog data:
   - `DEPENDS_ON` — skill version dependencies from `skillcard.yaml`
   - `USES_TOOL` — allowed-tools from `skillcard.yaml`
-  - `BELONGS_TO` — domain/category from tags and `rhdh.io/ai-asset-category`
+  - `BELONGS_TO` — domain from `domain:*` tags
   - `SIMILAR_TO` — computed from tag overlap using Jaccard similarity
   - `IMPLEMENTED_BY` — agent-to-skill mapping from catalog entity relations
   - `INCLUDES` — skill bundle composition

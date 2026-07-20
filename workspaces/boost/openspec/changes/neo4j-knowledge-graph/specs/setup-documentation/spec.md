@@ -58,9 +58,7 @@ Documentation covers adapter configuration in app-config and environment setup.
     secrets:
       neo4j:
         password:
-          $secret:
-            name: neo4j-credentials
-            key: password
+          $env: NEO4J_PASSWORD
   ```
 
 #### Scenario: Manual sync trigger API documented
@@ -109,14 +107,14 @@ Documentation includes a complete graph schema reference with all node types, re
 - **WHEN** a user reads the graph schema reference
 - **THEN** the docs include a table of relationship types:
 
-  | Relationship     | Source → Target      | Properties           | Derivation Rule                                                  |
-  | ---------------- | -------------------- | -------------------- | ---------------------------------------------------------------- |
-  | `DEPENDS_ON`     | Skill → Skill        | `versionConstraint`  | From `spec.skillcard.dependencies`                               |
-  | `USES_TOOL`      | Skill → Tool         | —                    | From `spec.skillcard.allowedTools`                               |
-  | `BELONGS_TO`     | Skill/Agent → Domain | —                    | From `metadata.tags` (`domain:*`) or `rhdh.io/ai-asset-category` |
-  | `SIMILAR_TO`     | Skill → Skill        | `similarity` (float) | Computed from tag overlap (Jaccard similarity)                   |
-  | `IMPLEMENTED_BY` | Agent → Skill        | —                    | From catalog entity relations (`spec.dependsOn`)                 |
-  | `INCLUDES`       | SkillBundle → Skill  | —                    | From `spec.skills` list in SkillBundle entity                    |
+  | Relationship     | Source → Target      | Properties           | Derivation Rule                                  |
+  | ---------------- | -------------------- | -------------------- | ------------------------------------------------ |
+  | `DEPENDS_ON`     | Skill → Skill        | `versionConstraint`  | From `spec.skillcard.dependencies`               |
+  | `USES_TOOL`      | Skill → Tool         | —                    | From `spec.skillcard.allowedTools`               |
+  | `BELONGS_TO`     | Skill/Agent → Domain | —                    | From `metadata.tags` (`domain:*` prefix)         |
+  | `SIMILAR_TO`     | Skill → Skill        | `similarity` (float) | Computed from tag overlap (Jaccard similarity)   |
+  | `IMPLEMENTED_BY` | Agent → Skill        | —                    | From catalog entity relations (`spec.dependsOn`) |
+  | `INCLUDES`       | SkillBundle → Skill  | —                    | From `spec.skills` list in SkillBundle entity    |
 
 #### Scenario: Catalog-as-source-of-truth architecture explained
 

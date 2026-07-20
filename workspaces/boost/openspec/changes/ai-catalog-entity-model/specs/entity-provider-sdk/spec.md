@@ -65,7 +65,7 @@ The SDK MUST be published as an installable npm package with shared validation u
 - **WHEN** `validateAIAssetEntity(entity)` is called with an entity missing `rhdh.io/ai-asset-category`
 - **THEN** it throws: `Error: Invalid or missing rhdh.io/ai-asset-category annotation`
 - **AND** **WHEN** called with an entity having `rhdh.io/ai-asset-category: invalid-value`
-- **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, mcp-server, ai-model, model-server`
+- **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 
 #### Scenario: SDK has README, CHANGELOG, semver (RHIDP-15260)
 
@@ -108,5 +108,5 @@ The SDK MUST define the TypeScript type for SkillBundle metadata (skillcard.yaml
 #### Scenario: OCI skill registry uses SkillBundleMetadata (RHIDP-15303)
 
 - **WHEN** the OCI skill registry provider parses an OCI artifact's `skillcard.yaml`
-- **THEN** it validates the YAML against the `SkillBundleMetadata` type
+- **THEN** it validates the YAML against the `SkillBundleMetadataSchema` Zod schema (`.parse()`) and uses the inferred TypeScript type `SkillBundleMetadata`
 - **AND** it emits a catalog entity with metadata derived from the skillcard (name, version, tags, runtime)

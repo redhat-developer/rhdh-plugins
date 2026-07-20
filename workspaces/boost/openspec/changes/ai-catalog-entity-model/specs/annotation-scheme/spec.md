@@ -8,20 +8,21 @@ Standardized annotation scheme for classifying AI assets (agents, skills, MCP se
 
 ### Requirement: rhdh.io/ai-asset-category Annotation Definition
 
-All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with one of five allowed values.
+All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with one of the allowed values.
 
 #### Scenario: Valid category annotation values
 
 - **WHEN** an entity provider emits an AI asset entity
-- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - **AND** the CatalogProcessor validator accepts the entity
 
-#### Scenario: Missing or invalid category annotation rejected
+#### Scenario: Missing or invalid category annotation rejected (AI entities only)
 
-- **WHEN** an entity is ingested with missing or invalid `rhdh.io/ai-asset-category` annotation
-- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, mcp-server, ai-model, model-server`
+- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has a missing or invalid `rhdh.io/ai-asset-category` value
+- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
+- **AND** entities without any `rhdh.io/ai-asset-*` annotation are NOT affected by this validator
 
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
@@ -102,9 +103,9 @@ A documented mapping from custom annotations to upstream Backstage entity kinds 
 #### Scenario: Migration design document exists (RHIDP-15302)
 
 - **WHEN** the migration-readiness spec is reviewed
-- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `Component` + `ai-agent` + `agent` → `AIAgent`, or `AIResource` + `ai-agent` + `agent` → `AIAgent` if RHDHPLAN-1113 path)
+- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `ai-agent` + `agent` → `AIAgent`)
 - **AND** it identifies consumer-facing changes during migration (e.g., catalog UI filters, queries, entity refs)
-- **AND** it documents both the interim Resource/Component path and the RHDHPLAN-1113 AIResource path per stakeholder alignment (2026-07-13)
+- **AND** it documents the AIResource starting point per RHDHPLAN-1113 (resolved 2026-07-20)
 
 #### Scenario: Upstream maintainer or RHDH architect sign-off (RHIDP-15302)
 

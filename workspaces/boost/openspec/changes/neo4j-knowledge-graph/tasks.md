@@ -25,7 +25,7 @@
 
 - [ ] 3.1 Implement DEPENDS_ON relationship creation from `spec.skillcard.dependencies` (RHIDP-15299)
 - [ ] 3.2 Implement USES_TOOL relationship creation from `spec.skillcard.allowedTools` (RHIDP-15299)
-- [ ] 3.3 Implement BELONGS_TO relationship creation from `metadata.tags` and `rhdh.io/ai-asset-category` (RHIDP-15299)
+- [ ] 3.3 Implement BELONGS_TO relationship creation from `metadata.tags` (`domain:*` prefix only) (RHIDP-15299)
 - [ ] 3.4 Implement SIMILAR_TO relationship creation with Jaccard similarity computation (RHIDP-15299)
 - [ ] 3.5 Implement IMPLEMENTED_BY relationship creation from catalog entity relations (RHIDP-15299)
 - [ ] 3.6 Implement relationship deletion logic (when relationship no longer applies) (RHIDP-15299)

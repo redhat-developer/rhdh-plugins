@@ -106,9 +106,9 @@ Skill-to-tool relationships are derived from `skillcard.yaml` allowed tools.
 - **THEN** the adapter deletes the corresponding `USES_TOOL` relationship
 - **AND** does not delete the Tool node
 
-### Requirement: BELONGS_TO Relationship from Domain Tags and Annotations
+### Requirement: BELONGS_TO Relationship from Domain Tags
 
-Skill/Agent-to-domain relationships are derived from tags and annotations.
+Skill/Agent-to-domain relationships are derived from `domain:*` tags.
 
 #### Scenario: Skill with domain tag creates BELONGS_TO relationship
 
@@ -151,8 +151,8 @@ Agent-to-skill relationships are derived from catalog `spec.dependsOn` relations
 
 #### Scenario: Agent depends on skill creates IMPLEMENTED_BY relationship
 
-- **WHEN** an agent entity has `spec.dependsOn: ['component:default/skill-jira-triage']`
-- **THEN** the adapter creates a relationship `(agent)-[:IMPLEMENTED_BY]->(skill)` where `skill.entityUid = 'component:default/skill-jira-triage'`
+- **WHEN** an agent entity has `spec.dependsOn: ['airesource:default/skill-jira-triage']`
+- **THEN** the adapter creates a relationship `(agent)-[:IMPLEMENTED_BY]->(skill)` where `skill.entityUid = 'airesource:default/skill-jira-triage'`
 
 #### Scenario: Agent no longer depends on skill deletes IMPLEMENTED_BY relationship
 

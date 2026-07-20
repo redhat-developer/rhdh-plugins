@@ -33,35 +33,31 @@ Entity providers MUST honor custom CA bundles from mounted Secret/ConfigMap for 
 
 Entity providers MUST accept K8s Secret references for all credentials and reject plaintext credentials at startup.
 
-#### Scenario: Secret reference format (RHIDP-15329, RHIDP-15265)
+#### Scenario: Credential reference format (RHIDP-15329, RHIDP-15265)
 
-- **WHEN** app-config specifies credentials via K8s Secret reference
-- **THEN** the format is:
+- **WHEN** app-config specifies credentials via K8s Secrets mounted as environment variables
+- **THEN** the format uses standard Backstage `$env` resolvers:
   ```yaml
   boost:
     providers:
       kagenti:
         clientId:
-          $secret:
-            name: kagenti-creds
-            key: client-id
+          $env: KAGENTI_CLIENT_ID
         clientSecret:
-          $secret:
-            name: kagenti-creds
-            key: client-secret
+          $env: KAGENTI_CLIENT_SECRET
   ```
-- **AND** the provider reads the secret values via Backstage's `$secret` resolver (or via K8s API if running in-cluster)
+- **AND** the K8s Secret is mounted into the container as env vars via Helm values or Operator CR (see reference configs below)
 
 #### Scenario: Plaintext credentials rejected at startup (RHIDP-15329, RHIDP-15265)
 
-- **WHEN** app-config specifies credentials as plaintext strings (e.g., `clientSecret: "my-secret"` instead of `$secret`)
-- **THEN** the provider throws at startup: `Error: Plaintext credentials not allowed. Use K8s Secret references ($secret.name / $secret.key).`
+- **WHEN** app-config specifies credentials as plaintext strings (e.g., `clientSecret: "my-secret"` instead of `$env`)
+- **THEN** the provider throws at startup: `Error: Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`
 - **AND** the Backstage backend fails to start with a descriptive error message
 
 #### Scenario: Startup validation with descriptive errors (RHIDP-15329, RHIDP-15265)
 
 - **WHEN** the provider module initializes
-- **THEN** it validates all credential fields are either `$secret` references or `$env` (for mounted secrets)
+- **THEN** it validates all credential fields use `$env` references (backed by mounted K8s Secrets)
 - **AND** it validates the secret name and key are non-empty strings
 - **AND** if validation fails, the error message includes: which field failed, expected format, example correct configuration
 
@@ -90,7 +86,7 @@ All registry endpoint URLs MUST be configurable via app-config with no hardcoded
 #### Scenario: Configuration schema documented (RHIDP-15265)
 
 - **WHEN** the provider module is documented
-- **THEN** the README includes the full configuration schema with: `baseUrl`, `caCertPath`, credential `$secret` references, sync schedule
+- **THEN** the README includes the full configuration schema with: `baseUrl`, `caCertPath`, credential `$env` references, sync schedule
 - **AND** the schema specifies default values (if any) and required fields
 
 ### Requirement: Reference Air-Gapped Configuration
@@ -108,13 +104,9 @@ Reference app-config YAML, Helm values, and Operator CR examples MUST be provide
         baseUrl: https://kagenti.internal.corp
         caCertPath: /etc/ssl/certs/custom-ca.pem
         clientId:
-          $secret:
-            name: kagenti-creds
-            key: client-id
+          $env: KAGENTI_CLIENT_ID
         clientSecret:
-          $secret:
-            name: kagenti-creds
-            key: client-secret
+          $env: KAGENTI_CLIENT_SECRET
         schedule:
           frequency: { minutes: 10 }
           timeout: { minutes: 5 }
@@ -144,6 +136,16 @@ Reference app-config YAML, Helm values, and Operator CR examples MUST be provide
     extraEnvVars:
       - name: NODE_EXTRA_CA_CERTS
         value: /etc/ssl/certs/custom-ca.pem
+      - name: KAGENTI_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: kagenti-creds
+            key: client-id
+      - name: KAGENTI_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: kagenti-creds
+            key: client-secret
   ```
 
 #### Scenario: Operator CR example (RHIDP-15266)
@@ -162,6 +164,16 @@ Reference app-config YAML, Helm values, and Operator CR examples MUST be provide
         envs:
           - name: NODE_EXTRA_CA_CERTS
             value: /etc/ssl/certs/custom-ca.pem
+          - name: KAGENTI_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: kagenti-creds
+                key: client-id
+          - name: KAGENTI_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: kagenti-creds
+                key: client-secret
       extraVolumes:
         - name: custom-ca
           secret:
@@ -175,5 +187,5 @@ Reference app-config YAML, Helm values, and Operator CR examples MUST be provide
 #### Scenario: Pattern is generic and reusable (RHIDP-15266)
 
 - **WHEN** a new connector Feature is implemented (e.g., OCI skill registry)
-- **THEN** it follows the same air-gapped configuration pattern: `$secret` credentials, `caCertPath`, `baseUrl`
+- **THEN** it follows the same air-gapped configuration pattern: `$env` credentials (backed by mounted K8s Secrets), `caCertPath`, `baseUrl`
 - **AND** the reference configuration is documented as a generic "AI Catalog connector configuration" pattern for all connectors

@@ -109,7 +109,7 @@ tarStream.on('entry', (header, stream, next) => {
 
 OCI registries provide content-addressable digests for images. A tag points to a digest. When a tag is re-pushed with different content, the digest changes.
 
-The connector maintains a cursor: `Map<tag, digest>` (stored in plugin state or database).
+The connector maintains a cursor: `Map<tag, digest>` (stored via `coreServices.cache`).
 
 Change detection algorithm:
 
@@ -322,7 +322,7 @@ Mitigation:
 
 - Require authentication (never use anonymous access)
 - Respect HTTP 429 responses and `Retry-After` headers
-- Configurable sync interval per registry (default: 15 minutes, recommend 60 minutes for public registries)
+- Configurable sync interval per registry (default: 30 minutes, recommend 60 minutes for public registries)
 - Cache manifest responses in plugin state to avoid redundant fetches
 
 **Risk 3: Invalid `skillcard.yaml` schema evolution**

@@ -21,11 +21,11 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 ## Stakeholder Alignment (2026-07-13)
 
-> Per RHDHPLAN-1505 stakeholder meeting:
+> Per RHDHPLAN-1505 stakeholder meeting (updated 2026-07-20):
 >
-> - **RHDHPLAN-1113 dependency:** Boost will use AIResource for skills/rules and will refrain from defining new catalog entity kind mappings. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK adopts AIResource/AIContext mappings directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, use Resource/Component as interim and migrate when RHDHPLAN-1113 merges.
-> - **MCP resource mapping deferred for RHDH 2.1** — upstream due diligence pending.
-> - **Entity kind strategy is conditional:** The mapping table in Decision 1 reflects the interim Resource/Component path. If RHDHPLAN-1113 provides AIResource kinds first, that table becomes the starting point instead.
+> - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AIResource for skills/rules directly. No interim Resource/Component mapping needed.
+> - **MCP → API mapping ships in RHDH 2.1** via RHDHPLAN-1510. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server`. What remains deferred is upstream due diligence on whether MCP gets its own entity kind — the API mapping is the 2.1 deliverable.
+> - **Entity kind strategy:** The mapping table in Decision 1 uses AIResource for skills/rules. Agent kind mapping is pending RHDHPLAN-1113. Model/model-server mappings are pending RHDHPLAN-404.
 
 ## Goals
 
@@ -38,7 +38,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 ## Non-Goals
 
-- Creating new upstream Backstage entity kinds (we use existing kinds: Resource, Component, API — or AIResource/AIContext if RHDHPLAN-1113 lands first)
+- Creating new upstream Backstage entity kinds (we use AIResource for skills/rules per RHDHPLAN-1113, API for MCP servers, and existing kinds for agents/models pending RHDHPLAN-1113/RHDHPLAN-404)
 - Changing Backstage catalog core behavior or mutation APIs
 - Implementing specific connectors (Kagenti/LlamaStack) — covered in separate changes
 - Neo4j knowledge graph ingestion pipeline — covered in `neo4j-knowledge-graph` change
@@ -48,7 +48,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 ### Decision 1: Annotation independence from entity kinds
 
-The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind.
+The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind.
 
 **Why:** Backstage entity kinds are structural categories (Component, Resource, API), not domain categories. A model is semantically a Resource, but so is a deployed MCP server instance. The annotation distinguishes them.
 
@@ -57,16 +57,18 @@ The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, 
 | Category       | Backstage Kind | spec.type         | Notes                                                             |
 | -------------- | -------------- | ----------------- | ----------------------------------------------------------------- |
 | `agent`        | Component      | `ai-agent`        | Mapping pending RHDHPLAN-1113 (owns agent entity kind definition) |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113 — Boost already uses this mapping    |
-| `mcp-server`   | API            | `mcp-server`      | API entity extension for MCP protocol endpoints                   |
+| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                                      |
+| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                                      |
+| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections; enables frontend browse category       |
+| `mcp-server`   | API            | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                               |
 | `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
 | `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
 
 This mapping is documented for reference — connectors MAY map differently based on their domain. The annotation is the source of truth for AI asset category, not the kind.
 
-> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (2026-07-13):** The `skill` category already uses `AIResource` kind and `spec.type: skill` per RHDHPLAN-1113. The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category uses the API entity extension with `spec.type: mcp-server`. When RHDHPLAN-1113 and RHDHPLAN-404 resolve their respective mappings, this table will be updated accordingly.
+> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` — this mapping ships in RHDH 2.1 via RHDHPLAN-1510.
 
-**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: Component` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. If RHDHPLAN-1113 provides AIResource kinds as the starting point, the migration path becomes `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
+**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
 
 ### Decision 2: SDK package scope and structure
 
@@ -74,7 +76,7 @@ Single npm package `@boost/entity-provider-sdk` exports:
 
 - Provider interface types (`AIAssetEntityProvider`, entity emission contract)
 - Annotation constants (`AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`)
-- Validation utilities (`validateAIAssetAnnotations()`, rejects entities with missing/invalid annotations)
+- Validation utilities (`validateAIAssetEntity()`, rejects entities with missing/invalid annotations)
 - Entity kind mapping reference (documented mapping table from Decision 1)
 - Neo4j sync adapter interface (`Neo4jSyncAdapter`, node/relationship creation contracts)
 - SkillBundle metadata schema (TypeScript types for skillcard.yaml structure)
@@ -108,23 +110,19 @@ interface DeltaSyncCursor {
 
 **Custom CA bundles:** Providers read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` environment variable or explicit `https.Agent` configuration. This is standard Node.js TLS.
 
-**K8s Secret-only credentials:** All credentials accept K8s Secret references in app-config:
+**K8s Secret-only credentials:** All credentials are supplied via K8s Secrets mounted as environment variables. Helm/Operator config mounts the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers:
 
 ```yaml
 boost:
   providers:
     kagenti:
       clientId:
-        $secret:
-          name: kagenti-creds
-          key: client-id
+        $env: KAGENTI_CLIENT_ID
       clientSecret:
-        $secret:
-          name: kagenti-creds
-          key: client-secret
+        $env: KAGENTI_CLIENT_SECRET
 ```
 
-Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use K8s Secret references ($secret.name / $secret.key).`
+Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`
 
 **Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
 

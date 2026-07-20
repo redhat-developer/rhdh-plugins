@@ -40,7 +40,7 @@ This design implements **Option A** for initial release.
 
 ### Decision 1: Catalog API Polling as Primary Sync Mechanism
 
-**Implementation:** Scheduled task runs every 30-60s (configurable), queries catalog search API for AI asset entities, compares against last-synced state tracked in Neo4j or in-memory cache, applies changes (node/relationship create/update/delete).
+**Implementation:** Scheduled task runs every 30-60s (configurable), queries catalog search API for AI asset entities, compares against last-synced state tracked in Neo4j or `coreServices.cache`, applies changes (node/relationship create/update/delete).
 
 **Why:**
 
@@ -123,7 +123,9 @@ neo4j-admin database drop neo4j
 neo4j-admin database create neo4j
 
 # Adapter will detect all entities as unsynchronized and rebuild graph
-curl -X POST http://backstage-backend/api/neo4j-sync/trigger-full-sync
+# Requires ai-catalog.admin permission
+curl -X POST http://backstage-backend/api/neo4j-sync/trigger-full-sync \
+  -H "Authorization: Bearer <admin-token>"
 ```
 
 ### Decision 4: Graph Schema Design
@@ -178,8 +180,8 @@ Each relationship type has documented rules for how it's derived from catalog en
 
 **BELONGS_TO:**
 
-- Source: `metadata.tags` containing `domain:*` or `metadata.annotations['rhdh.io/ai-asset-category']`
-- Rule: Parse domain/category, ensure Domain node exists, create `(skill|agent)-[:BELONGS_TO]->(domain)`
+- Source: `metadata.tags` containing `domain:*` prefix
+- Rule: Parse domain tag value, ensure Domain node exists, create `(skill|agent)-[:BELONGS_TO]->(domain)`
 
 **SIMILAR_TO:**
 

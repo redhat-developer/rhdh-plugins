@@ -29,7 +29,7 @@
 ## 3. Entity Emission (P0)
 
 - [ ] 3.1 Implement `OciSkillRegistryProvider` class extending `EntityProvider` interface (RHIDP-15296)
-- [ ] 3.2 Implement entity factory: convert `skillcard.yaml` to Backstage `Resource` entity (RHIDP-15296)
+- [ ] 3.2 Implement entity factory: convert `skillcard.yaml` to Backstage `AIResource` entity (RHIDP-15296)
 - [ ] 3.3 Populate required annotations: `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`, OCI references (RHIDP-15296)
 - [ ] 3.4 Implement entity ref sanitization (skill name → Backstage entity name) (RHIDP-15296)
 - [ ] 3.5 Write unit tests for entity emission with various skillcard inputs (RHIDP-15296)
@@ -37,7 +37,7 @@
 ## 4. Multi-Registry Configuration (P0)
 
 - [ ] 4.1 Define app-config schema for `ai-catalog-oci-skill-registry` with registry instances (RHIDP-15297)
-- [ ] 4.2 Implement config parser with validation (required fields: `id`, `url`, `namespaces`, `auth`) (RHIDP-15297)
+- [ ] 4.2 Implement Zod schema for app-config validation (required fields: `id`, `url`, `namespaces`, `auth`) (RHIDP-15297)
 - [ ] 4.3 Implement Secret loader for registry credentials (reject plaintext, validate Secret exists and has required keys) (RHIDP-15297)
 - [ ] 4.4 Implement ConfigMap/Secret loader for custom CA bundles (RHIDP-15297)
 - [ ] 4.5 Implement per-registry sync interval scheduling (RHIDP-15297)

@@ -7,12 +7,12 @@
 
 ## 1. Annotation Scheme Definition and Validation (P0) — _RHIDP-15258_
 
-- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
+- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
 - [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
 - [ ] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
-- [ ] 1.6 Implement CatalogProcessor validator rejecting entities with missing/invalid `rhdh.io/ai-asset-category` annotation (RHIDP-15255)
+- [ ] 1.6 Implement CatalogProcessor validator rejecting entities with missing/invalid `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, or `rhdh.io/ai-asset-source` annotations — gated to entities carrying any `rhdh.io/ai-asset-*` annotation (RHIDP-15255)
 - [ ] 1.7 Add unit tests for CatalogProcessor validator covering valid and invalid annotation values (RHIDP-15255)
 
 ## 2. Entity Provider SDK Package Scaffolding (P0) — _RHIDP-15258_
@@ -58,7 +58,7 @@
 - [ ] 6.1 Add custom CA bundle support via `NODE_EXTRA_CA_CERTS` environment variable for all providers (RHIDP-15329)
 - [ ] 6.2 Add custom CA bundle support via explicit `caCertPath` app-config field + `https.Agent` configuration (RHIDP-15329)
 - [ ] 6.3 Implement startup validation rejecting plaintext credentials with descriptive error message (RHIDP-15265)
-- [ ] 6.4 Add `$secret` reference support for all credential fields (clientId, clientSecret, API keys) (RHIDP-15265)
+- [ ] 6.4 Add `$env` reference support for all credential fields (clientId, clientSecret, API keys) backed by mounted K8s Secrets (RHIDP-15265)
 - [ ] 6.5 Implement configurable endpoint URLs (`baseUrl`) for all providers with startup validation (RHIDP-15265)
 - [ ] 6.6 Create reference app-config YAML example for air-gapped deployment (RHIDP-15266)
 - [ ] 6.7 Create reference Helm chart `values.yaml` example for air-gapped deployment (RHIDP-15266)
