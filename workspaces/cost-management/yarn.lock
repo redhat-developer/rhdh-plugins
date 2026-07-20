@@ -8745,7 +8745,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.1, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:^5.0.0, @mui/icons-material@npm:^5.16.1, @mui/icons-material@npm:^5.17.1":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -11160,8 +11160,8 @@ __metadata:
     "@backstage/theme": "npm:^0.7.2"
     "@material-table/core": "npm:^3.1.0"
     "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@mui/icons-material": "npm:^5.0.0"
     "@patternfly/react-charts": "npm:^8.3.0"
     "@patternfly/react-tokens": "npm:^6.1.0"
     "@red-hat-developer-hub/plugin-cost-management-common": "workspace:^"
