@@ -229,8 +229,8 @@ describe('OpenSSFMetricProvider', () => {
       const providerIds = providers.map(provider => provider.getProviderId());
       const expectedProviderIds = OPENSSF_METRICS.map(metric => {
         const normalizedName = metric.name
-          .replace(/-([a-zA-Z])/g, (_, c) => c.toUpperCase())
-          .replace(/^[A-Z]/, c => c.toLowerCase());
+          .toLowerCase()
+          .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
         return `openssf.${normalizedName}`;
       });
 
