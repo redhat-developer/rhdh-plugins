@@ -18,7 +18,6 @@ import { useApi } from '@backstage/core-plugin-api';
 import {
   AuthorizeResult,
   Permission,
-  ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import {
   AsyncPermissionResult,
@@ -26,8 +25,6 @@ import {
 } from '@backstage/plugin-permission-react';
 
 import useSWR from 'swr';
-
-type InputType = Exclude<Permission, ResourcePermission>;
 
 export type AsyncPermissionBatchResult = Omit<
   AsyncPermissionResult,
@@ -45,11 +42,11 @@ export type AsyncPermissionBatchResult = Omit<
  */
 
 export const usePermissionArray = (
-  permissions: InputType[],
+  permissions: Permission[],
 ): AsyncPermissionBatchResult => {
   const permissionApi = useApi(permissionApiRef);
 
-  const { data, error } = useSWR(permissions, async (args: InputType[]) => {
+  const { data, error } = useSWR(permissions, async (args: Permission[]) => {
     const result = await Promise.all(
       args.map(permission => permissionApi.authorize({ permission })),
     );
