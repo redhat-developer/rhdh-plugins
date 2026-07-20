@@ -25,11 +25,12 @@ import {
   searchBarWidget,
   featuredDocsCardWidget,
   catalogStarredWidget,
+  disableStarredEntities,
   disableToolkit,
   RecentlyVisitedWidget,
   TopVisitedWidget,
 } from './extensions/homePageCards';
-import { quickAccessApi } from './extensions/apis';
+import { quickAccessApi, defaultWidgetsApi } from './extensions/apis';
 
 describe('Dynamic Home Page plugin Alpha (NFS)', () => {
   describe('Modules', () => {
@@ -75,6 +76,7 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
       expect(searchBarWidget).toBeDefined();
       expect(featuredDocsCardWidget).toBeDefined();
       expect(catalogStarredWidget).toBeDefined();
+      expect(disableStarredEntities).toBeDefined();
       expect(disableToolkit).toBeDefined();
       expect(RecentlyVisitedWidget).toBeDefined();
       expect(TopVisitedWidget).toBeDefined();
@@ -84,6 +86,10 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
   describe('APIs', () => {
     it('should export quickAccessApi', () => {
       expect(quickAccessApi).toBeDefined();
+    });
+
+    it('should export defaultWidgetsApi', () => {
+      expect(defaultWidgetsApi).toBeDefined();
     });
   });
 });

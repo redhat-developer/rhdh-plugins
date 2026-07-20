@@ -92,7 +92,7 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
  * @alpha
  */
 export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
-  name: 'quick-access-card',
+  name: 'quickaccess-card',
   params: {
     name: 'Quick Access Card',
     title: homepageMessages.quickAccess.title,
@@ -165,20 +165,30 @@ export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
  * NFS widget: CatalogStarred (migrated from mountPoint home.page/cards).
  * @alpha
  */
-export const catalogStarredWidget = homePlugin
+export const catalogStarredWidget = HomePageWidgetBlueprint.make({
+  name: 'catalog-starred-entities-card',
+  params: {
+    name: 'CatalogStarred',
+    title: homepageMessages.starredEntities.title,
+    layout: defaultCardLayout,
+    components: () =>
+      import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
+        m => ({
+          Content: m.CatalogStarredEntitiesCard,
+          Renderer: upstreamHomeCardRenderer,
+        }),
+      ),
+  },
+});
+
+/**
+ * Disables the default home plugin starred-entities widget (replaced by catalogStarredWidget).
+ * @alpha
+ */
+export const disableStarredEntities = homePlugin
   .getExtension('home-page-widget:home/starred-entities')
   .override({
-    params: {
-      name: 'CatalogStarred',
-      title: homepageMessages.starredEntities.title,
-      components: () =>
-        import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
-          m => ({
-            Content: m.CatalogStarredEntitiesCard,
-            Renderer: upstreamHomeCardRenderer,
-          }),
-        ),
-    },
+    disabled: true,
   });
 
 /**
@@ -196,7 +206,7 @@ export const disableToolkit = homePlugin
  * @alpha
  */
 export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
-  name: 'recently-visited',
+  name: 'recently-visited-card',
   params: {
     layout: defaultCardLayout,
     name: 'Recently visited',
@@ -216,7 +226,7 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
  * @alpha
  */
 export const TopVisitedWidget = HomePageWidgetBlueprint.make({
-  name: 'top-visited',
+  name: 'top-visited-card',
   params: {
     layout: defaultCardLayout,
     name: 'Top visited',

@@ -18,6 +18,7 @@ import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
   catalogStarredWidget,
+  disableStarredEntities,
   disableToolkit,
   entitySectionWidget,
   featuredDocsCardWidget,
@@ -57,6 +58,7 @@ export const homePageModule = createFrontendModule({
     TopVisitedWidget,
     RecentlyVisitedWidget,
     catalogStarredWidget,
+    disableStarredEntities,
     disableToolkit,
   ],
 });
