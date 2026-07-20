@@ -25,7 +25,7 @@ import { TIMEOUTS } from '../utils/constants';
  *  - OIDC (Keycloak): clicks "Sign in", fills the Keycloak form in the popup.
  *
  * For OIDC, credentials come from OIDC_USERNAME / OIDC_PASSWORD env vars
- * (defaults: "guest" / "guest").
+ * (throws if not set).
  */
 export async function performLogin(page: Page) {
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -42,22 +42,35 @@ export async function performLogin(page: Page) {
       const which = await Promise.race([
         enterButton
           .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-          .then(() => 'guest' as const),
+          .then(() => 'guest' as const)
+          .catch(() => null),
         signInButton
           .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-          .then(() => 'oidc' as const),
+          .then(() => 'oidc' as const)
+          .catch(() => null),
         nav
           .waitFor({ state: 'visible', timeout: TIMEOUTS.table })
-          .then(() => 'already-logged-in' as const),
+          .then(() => 'already-logged-in' as const)
+          .catch(() => null),
       ]);
 
+      if (!which) {
+        throw new Error(
+          'Login page did not render Enter button, Sign in button, or nav within timeout',
+        );
+      }
       if (which === 'already-logged-in') return;
 
       if (which === 'guest') {
         await enterButton.click();
       } else {
-        const username = process.env.OIDC_USERNAME ?? 'guest';
-        const password = process.env.OIDC_PASSWORD ?? 'guest';
+        const username = process.env.OIDC_USERNAME;
+        const password = process.env.OIDC_PASSWORD;
+        if (!username || !password) {
+          throw new Error(
+            'OIDC login detected but OIDC_USERNAME and OIDC_PASSWORD env vars are not set',
+          );
+        }
 
         const popupPromise = page.waitForEvent('popup');
         await signInButton.click();

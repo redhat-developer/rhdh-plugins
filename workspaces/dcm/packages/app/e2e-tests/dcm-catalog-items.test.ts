@@ -78,28 +78,14 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     const drawerHeading = page.getByRole('heading', {
       name: 'Create catalog item',
     });
-    try {
-      await expect(drawerHeading).not.toBeVisible({
-        timeout: TIMEOUTS.dialog,
-      });
-    } catch {
-      await dcm.closeCatalogItemDrawer().catch(() => dcm.cancelDialog());
-      test.skip(
-        true,
-        'Catalog item creation rejected by API — drawer stayed open',
-      );
-      return;
-    }
+    await expect(drawerHeading).not.toBeVisible({
+      timeout: TIMEOUTS.dialog,
+    });
 
     await dcm.waitForTableRefresh();
 
     const itemCell = page.getByRole('cell', { name }).first();
-    try {
-      await expect(itemCell).toBeVisible({ timeout: TIMEOUTS.element });
-    } catch {
-      test.skip(true, 'Catalog item not found in table after creation');
-      return;
-    }
+    await expect(itemCell).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clickDeleteOnRow(name);
     await dcm.confirmDelete();
@@ -218,30 +204,16 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     const drawerHeading = page.getByRole('heading', {
       name: 'Create catalog item',
     });
-    try {
-      await expect(drawerHeading).not.toBeVisible({
-        timeout: TIMEOUTS.dialog,
-      });
-    } catch {
-      await dcm.closeCatalogItemDrawer().catch(() => dcm.cancelDialog());
-      test.skip(
-        true,
-        'Catalog item import rejected by API — drawer stayed open',
-      );
-      return;
-    }
+    await expect(drawerHeading).not.toBeVisible({
+      timeout: TIMEOUTS.dialog,
+    });
 
     await dcm.waitForTableRefresh();
 
     const importCell = page
       .getByRole('cell', { name: 'E2E Import Test Item' })
       .first();
-    try {
-      await expect(importCell).toBeVisible({ timeout: TIMEOUTS.element });
-    } catch {
-      test.skip(true, 'Imported catalog item not found in table');
-      return;
-    }
+    await expect(importCell).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clickDeleteOnRow('E2E Import Test Item');
     await dcm.confirmDelete();

@@ -398,9 +398,10 @@ export class DcmPage {
   }
 
   async getRowsPerPageValue(): Promise<string> {
-    const rppSelect = this.page
-      .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows|\d+/ });
+    const pagination = this.page.locator('[class*="MuiTablePagination"]');
+    const rppSelect = pagination.locator(
+      '[role="button"][aria-haspopup="listbox"]',
+    );
     if (
       await rppSelect
         .first()
@@ -409,9 +410,7 @@ export class DcmPage {
     ) {
       return (await rppSelect.first().textContent()) ?? '';
     }
-    const paginationSelect = this.page
-      .locator('select')
-      .filter({ hasText: /\d+/ });
+    const paginationSelect = pagination.locator('select');
     return (
       (await paginationSelect
         .first()
@@ -421,9 +420,10 @@ export class DcmPage {
   }
 
   async setRowsPerPage(value: string) {
-    const rppSelect = this.page
-      .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows|\d+/ });
+    const pagination = this.page.locator('[class*="MuiTablePagination"]');
+    const rppSelect = pagination.locator(
+      '[role="button"][aria-haspopup="listbox"]',
+    );
     if (
       await rppSelect
         .first()
@@ -433,7 +433,7 @@ export class DcmPage {
       await rppSelect.first().click();
       await this.page.getByRole('option', { name: value }).click();
     } else {
-      const selectEl = this.page.locator('select').filter({ hasText: /\d+/ });
+      const selectEl = pagination.locator('select');
       await selectEl.first().selectOption(value);
     }
     await this.page.waitForTimeout(TIMEOUTS.networkSettle);
@@ -455,14 +455,16 @@ export class DcmPage {
     const ariaField = this.page.getByLabel(label);
     if ((await ariaField.count()) > 0) {
       await ariaField.first().click();
-      await ariaField.first().fill(value);
+      await ariaField.first().fill('');
+      await ariaField.first().pressSequentially(value, { delay: 50 });
       return;
     }
     const cssField = this.page.locator(
       `label:has-text("${label}") + div input, label:has-text("${label}") + div textarea`,
     );
     await cssField.first().click();
-    await cssField.first().fill(value);
+    await cssField.first().fill('');
+    await cssField.first().pressSequentially(value, { delay: 50 });
   }
 
   private async selectOption(label: string, value: string) {

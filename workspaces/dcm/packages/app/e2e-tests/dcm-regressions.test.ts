@@ -142,12 +142,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     await dcm.waitForTableRefresh();
 
     const prevPageBtn = page.getByRole('button', { name: /previous page/i });
-    const prevDisabled = await prevPageBtn.isDisabled().catch(() => true);
-
-    if (!prevDisabled) {
-      await prevPageBtn.click();
-      await dcm.waitForTableRefresh();
-    }
+    await expect(prevPageBtn).toBeDisabled({ timeout: TIMEOUTS.element });
 
     const rows = page.locator('table tbody tr');
     await expect(rows.first()).toBeVisible({ timeout: TIMEOUTS.element });
@@ -267,7 +262,8 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
       .first()
       .or(page.getByLabel('Name *'));
 
-    await expect(nameInput.first()).toBeVisible();
+    await expect(nameInput.first()).toBeVisible({ timeout: TIMEOUTS.short });
+    await expect(nameInput.first()).toBeDisabled();
     const currentValue = await nameInput.first().inputValue();
     expect(currentValue).toBeTruthy();
 
@@ -373,6 +369,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
       schemaVersion: 'v1alpha1',
     });
     await dcm.submitDialog('Register');
+    await dcm.verifySuccessSnackbar();
     await dcm.waitForDialogClosed();
 
     await dcm.waitForTableRefresh();
@@ -395,6 +392,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
         'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
+    await dcm.verifySuccessSnackbar();
     await dcm.waitForDialogClosed();
 
     await dcm.waitForTableRefresh();
@@ -411,7 +409,7 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     const createBtn = page
       .locator('[role="dialog"]')
       .getByRole('button', { name: 'Create' });
-    await expect(createBtn).toBeVisible();
+    await expect(createBtn).toBeDisabled({ timeout: TIMEOUTS.element });
 
     await dcm.cancelDialog();
   });
