@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-quickstart",
-  "version": "1.10.0",
+  "version": "1.11.1",
   "license": "Apache-2.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
@@ -48,7 +48,7 @@
     "@patternfly/react-icons": "^6.5.0",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^0.0.5",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.21.0",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
     "react-use": "^17.6.0"
   },
   "peerDependencies": {
@@ -111,7 +111,7 @@
     "name": "red-hat-developer-hub.backstage-plugin-quickstart",
     "exposedModules": {
       "PluginRoot": "./src/index.tsx",
-      "QuickstartPlugin": "./src/index.ts",
+      "QuickstartPlugin": "./src/index.tsx",
       "Alpha": "./src/alpha.ts"
     }
   },

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { applySelectorArray, applySelectorString } from './applySelector';
+import {
+  applySelectorArray,
+  applySelectorObject,
+  applySelectorString,
+} from './applySelector';
 import { JsonObject } from '@backstage/types';
 
 describe('applySelectorArray', () => {
@@ -328,6 +332,45 @@ describe('applySelectorArray invalid JSONata', () => {
     await expect(
       applySelectorArray(withNum, 'n', true, true),
     ).resolves.toStrictEqual([]);
+  });
+});
+
+describe('applySelectorObject', () => {
+  const data: JsonObject = {
+    user: { name: 'Alice', age: 30 },
+    items: ['a', 'b'],
+    label: 'hello',
+  };
+
+  it('returns a JSON object when selector evaluates to an object', async () => {
+    await expect(applySelectorObject(data, 'user')).resolves.toEqual({
+      name: 'Alice',
+      age: 30,
+    });
+  });
+
+  it('throws when selector evaluates to a string (non-object)', async () => {
+    await expect(applySelectorObject(data, 'label')).rejects.toThrow(
+      'Unexpected result of "label" selector, expected object type.',
+    );
+  });
+
+  it('throws when selector evaluates to an array (non-object)', async () => {
+    await expect(applySelectorObject(data, 'items')).rejects.toThrow(
+      'Unexpected result of "items" selector, expected object type.',
+    );
+  });
+
+  it('throws for invalid JSONata syntax (compile error)', async () => {
+    await expect(applySelectorObject(data, '.')).rejects.toThrow(
+      'Invalid JSONata selector',
+    );
+  });
+
+  it('throws a wrapped error when JSONata evaluation throws (e.g. $error())', async () => {
+    await expect(
+      applySelectorObject(data, '$error("test error")'),
+    ).rejects.toThrow('JSONata evaluation failed for');
   });
 });
 

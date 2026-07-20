@@ -1,0 +1,22 @@
+# RBAC Policy Reference for Lightspeed + MCP
+# Format: p, <role>, <permission>, <action>, <allow|deny>
+#          g, <user/group entity ref>, <role>
+#
+# This is a reference file for local development/testing.
+# In production RHDH, policies are managed via ConfigMap.
+
+# --- Lightspeed permissions ---
+p, role:default/lightspeed-user, lightspeed.chat.read, read, allow
+p, role:default/lightspeed-user, lightspeed.chat.create, create, allow
+p, role:default/lightspeed-user, lightspeed.chat.delete, delete, allow
+p, role:default/lightspeed-user, lightspeed.chat.update, update, allow
+p, role:default/lightspeed-user, lightspeed.mcp.read, read, allow
+p, role:default/lightspeed-user, lightspeed.mcp.manage, update, allow
+p, role:default/lightspeed-user, lightspeed.notebooks.use, update, allow
+
+# --- Catalog permissions (needed for MCP tools to query entities) ---
+p, role:default/lightspeed-user, catalog.entity.read, read, allow
+p, role:default/lightspeed-user, catalog.location.read, read, allow
+
+# --- User → Role assignment ---
+# g, user:default/<your-github-username>, role:default/lightspeed-user

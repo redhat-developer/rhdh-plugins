@@ -93,18 +93,10 @@ Each configured file produces one boolean metric.
 - **Metric ID**: `filecheck.<id>` (where `<id>` is the key from the `files` config)
 - **Type**: Boolean
 - **Datasource**: `filecheck`
-- **Default thresholds**:
 
-  | Threshold key | Expression | Description            |
-  | ------------- | ---------- | ---------------------- |
-  | `exist`       | `==true`   | File exists (success)  |
-  | `missing`     | `==false`  | File is absent (error) |
+## Default thresholds
 
-### Threshold Configuration
-
-You can override the default thresholds via `app-config.yaml`. Check out the detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
-Example configuration:
+All configured file checks share the same default thresholds. Default thresholds for `filecheck` (applies to every `filecheck.<id>` metric):
 
 ```yaml
 # app-config.yaml
@@ -113,15 +105,19 @@ scorecard:
     filecheck:
       thresholds:
         rules:
-          - key: present
+          - key: exist
             expression: '==true'
             icon: scorecardSuccessStatusIcon
             color: 'success.main'
-          - key: absent
+          - key: missing
             expression: '==false'
             icon: scorecardErrorStatusIcon
             color: 'error.main'
 ```
+
+Custom threshold keys other than `success`, `warning`, or `error` must include `color` and `icon` in app-config.
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Schedule Configuration
 

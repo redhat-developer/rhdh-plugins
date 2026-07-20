@@ -29,9 +29,9 @@ const statusGroupedAggregationConfigSchema = z.object({
   type: z.literal(aggregationTypes.statusGrouped),
 });
 
-const averageAggregationConfigSchema = z.object({
+const weightedStatusScoreAggregationConfigSchema = z.object({
   ...baseAggregationConfigSchema.shape,
-  type: z.literal(aggregationTypes.average),
+  type: z.literal(aggregationTypes.weightedStatusScore),
   options: z.strictObject({
     statusScores: z
       .record(z.string(), z.number().finite())
@@ -54,5 +54,5 @@ const averageAggregationConfigSchema = z.object({
 
 export const aggregationConfigSchema = z.discriminatedUnion('type', [
   statusGroupedAggregationConfigSchema,
-  averageAggregationConfigSchema,
+  weightedStatusScoreAggregationConfigSchema,
 ]);

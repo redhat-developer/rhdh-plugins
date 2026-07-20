@@ -38,13 +38,13 @@ export interface Config {
         metricId: string;
         /** Type-specific settings */
         options?: {
-          /** Required under `options` when `type` is `average` */
+          /** Required under `options` when `type` is `weightedStatusScore` */
           statusScores?: {
             [thresholdRuleKey: string]: number;
           };
           /**
            * Optional: threshold rules for coloring the KPI headline value from the aggregation result
-           * (e.g. average percentage 0–100 for `average` KPIs).
+           * (e.g. weighted status score percentage 0–100 for `weightedStatusScore` KPIs).
            */
           thresholds?: {
             rules: AggregationThresholdRule[];

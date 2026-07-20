@@ -183,11 +183,8 @@ const orchestratorTranslationJa = createTranslationMessages({
       'ユーザーにワークフローの中止権限がありません',
     'tooltips.userNotAuthorizedExecute':
       'ユーザーにワークフローの実行権限がありません',
-    'tooltips.retriggerNotSupportedForAborted':
-      '中止箇所からの再トリガーはサポートされていません。同じ入力で新しい実行を開始するには、ワークフロー全体を使用してください。',
     'tooltips.workflowDown': 'ワークフローは現在停止しているかエラー状態です',
     'workflow.buttons.entireWorkflow': 'ワークフロー全体',
-    'workflow.buttons.fromAbortedPoint': '中止箇所から',
     'workflow.buttons.fromFailurePoint': '失敗箇所から',
     'workflow.buttons.run': '実行',
     'workflow.buttons.runAgain': '再実行',

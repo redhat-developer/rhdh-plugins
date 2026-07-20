@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Frontend plugin for the Boost AI platform — AI Catalog discovery, entity page extensions, and agentic chat UI for Red Hat Developer Hub.",
   "license": "Apache-2.0",
   "main": "src/index.ts",
@@ -75,7 +75,8 @@
     "@backstage/plugin-app-react": "^0.2.4",
     "@backstage/plugin-catalog-react": "^3.1.0",
     "@backstage/ui": "^0.16.0",
-    "@remixicon/react": "^4.6.0"
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
