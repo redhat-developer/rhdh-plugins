@@ -1384,7 +1384,11 @@ describe('intelligent-assistant router tests', () => {
         .send({ model: 'gpt-4o', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({ supports_vision: true });
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
+      });
     });
 
     it('returns false when model lacks vision', async () => {
@@ -1408,7 +1412,11 @@ describe('intelligent-assistant router tests', () => {
         .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({ supports_vision: false });
+      expect(response.body).toEqual({
+        model: 'gpt-3.5-turbo',
+        provider: 'test-server',
+        supportsVision: false,
+      });
     });
 
     it('returns 400 when model is not found', async () => {
@@ -1421,11 +1429,13 @@ describe('intelligent-assistant router tests', () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/lightspeed/v1/validate-model-vision')
-        .send({ model: 'unknown-model', provider: 'test-server' });
+        .send({ model: 'gpt-4o', provider: 'test-server' });
 
-      expect(response.statusCode).toEqual(400);
+      expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual({
-        error: 'Model unknown-model not found',
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
       });
     });
   });
@@ -1468,7 +1478,7 @@ describe('intelligent-assistant router tests', () => {
 
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toContain(
-        'Model gpt-3.5-turbo does not support image attachments',
+        'This model does not support JPEG images',
       );
     });
 

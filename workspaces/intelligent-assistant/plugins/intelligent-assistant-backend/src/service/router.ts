@@ -877,15 +877,17 @@ export async function createRouter(
     requirePermission(lightspeedChatReadPermission),
     async (request, response) => {
       const { model, provider } = request.body;
+      const cacheKey = `${provider}/${model}`;
       try {
-        logger.info(`Vision validation requested for model: ${model}`);
+        logger.info(`Vision validation requested for model: ${cacheKey}`);
 
         // Check cache
-        if (ModelCapabilitiesCache.has(model)) {
-          const supportsVision = ModelCapabilitiesCache.get(model)!;
-          logger.info(`Cache hit for ${model}: ${supportsVision}`);
+        if (ModelCapabilitiesCache.has(cacheKey)) {
+          const supportsVision = ModelCapabilitiesCache.get(cacheKey)!;
+          logger.info(`Cache hit for ${cacheKey}: ${supportsVision}`);
           response.json({
             model,
+            provider,
             supportsVision,
           });
           return;
@@ -899,7 +901,7 @@ export async function createRouter(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: `${provider}/${model}`,
+              model: cacheKey,
               input: [
                 {
                   type: 'message',
@@ -925,17 +927,17 @@ export async function createRouter(
           },
         );
         const supportsVision = testResponse.ok;
-        ModelCapabilitiesCache.set(model, supportsVision);
+        ModelCapabilitiesCache.set(cacheKey, supportsVision);
 
         logger.info(
-          `Vision test for ${model}: ${supportsVision ? 'PASS' : 'FAIL'}`,
+          `Vision test for ${cacheKey}: ${supportsVision ? 'PASS' : 'FAIL'}`,
         );
 
-        response.json({ model, supportsVision });
+        response.json({ model, provider, supportsVision });
       } catch (error) {
-        logger.error(`Vision test error for ${model}:`, error);
-        ModelCapabilitiesCache.set(model, false);
-        response.json({ model, supportsVision: false });
+        logger.error(`Vision test error for ${cacheKey}:`, error);
+        ModelCapabilitiesCache.set(cacheKey, false);
+        response.json({ model, provider, supportsVision: false });
       }
     },
   );

@@ -110,7 +110,7 @@ export const validateAttachmentsForModel = (
   res: Response,
   next: NextFunction,
 ) => {
-  const { model, attachments } = req.body;
+  const { model, provider, attachments } = req.body;
 
   if (!attachments || attachments.length === 0) {
     return next();
@@ -124,8 +124,10 @@ export const validateAttachmentsForModel = (
     return next();
   }
 
+  const cacheKey = `${provider}/${model}`;
+
   // Check if model has been validated
-  if (!ModelCapabilitiesCache.has(model)) {
+  if (!ModelCapabilitiesCache.has(cacheKey)) {
     return res.status(400).json({
       error:
         'Model vision capability not validated. Please call /v1/validate-model-vision first.',
@@ -134,7 +136,7 @@ export const validateAttachmentsForModel = (
   }
 
   // Check if model supports vision
-  const supportsVision = ModelCapabilitiesCache.get(model);
+  const supportsVision = ModelCapabilitiesCache.get(cacheKey);
   if (!supportsVision) {
     return res.status(400).json({
       error:
