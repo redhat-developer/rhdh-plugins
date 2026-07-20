@@ -227,14 +227,30 @@ describe('OpenSSFMetricProvider', () => {
       const providers = createOpenSSFMetricProvider();
 
       const providerIds = providers.map(provider => provider.getProviderId());
-      const expectedProviderIds = OPENSSF_METRICS.map(metric => {
-        const normalizedName = metric.name
-          .toLowerCase()
-          .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-        return `openssf.${normalizedName}`;
-      });
+      const metricIds = providers.map(provider => provider.getMetric().id);
+      const expectedProviderAndMetricIds = [
+        'openssf.binaryArtifacts',
+        'openssf.branchProtection',
+        'openssf.ciiBestPractices',
+        'openssf.ciTests',
+        'openssf.codeReview',
+        'openssf.contributors',
+        'openssf.dangerousWorkflow',
+        'openssf.dependencyUpdateTool',
+        'openssf.fuzzing',
+        'openssf.license',
+        'openssf.maintained',
+        'openssf.packaging',
+        'openssf.pinnedDependencies',
+        'openssf.sast',
+        'openssf.securityPolicy',
+        'openssf.signedReleases',
+        'openssf.tokenPermissions',
+        'openssf.vulnerabilities',
+      ];
 
-      expect(providerIds).toEqual(expectedProviderIds);
+      expect(providerIds).toEqual(expectedProviderAndMetricIds);
+      expect(metricIds).toEqual(expectedProviderAndMetricIds);
       providers.forEach(provider => {
         expect(provider.getProviderDatasourceId()).toBe('openssf');
         expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
