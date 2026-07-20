@@ -16,6 +16,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
@@ -100,6 +101,47 @@ export const validateLoadHistoryRequest = (
   }
 
   // TODO: Need to extract out the user_id from conversation_id, and verify with the login user entity
+
+  return next();
+};
+
+export const validateAttachmentsForModel = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { model, attachments } = req.body;
+
+  if (!attachments || attachments.length === 0) {
+    return next();
+  }
+
+  const hasImages = attachments.some(
+    (att: { attachment_type: string }) => att.attachment_type === 'image',
+  );
+
+  if (!hasImages) {
+    return next();
+  }
+
+  // Check if model has been validated
+  if (!ModelCapabilitiesCache.has(model)) {
+    return res.status(400).json({
+      error:
+        'Model vision capability not validated. Please call /v1/validate-model-vision first.',
+      model,
+    });
+  }
+
+  // Check if model supports vision
+  const supportsVision = ModelCapabilitiesCache.get(model);
+  if (!supportsVision) {
+    return res.status(400).json({
+      error:
+        'This model does not support JPEG images. Please select a vision-capable model.',
+      model,
+    });
+  }
 
   return next();
 };

@@ -38,10 +38,12 @@ import {
 
 import { Readable } from 'node:stream';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   EXPRESS_JSON_BODY_LIMIT,
+  TEST_VISION_JPEG,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -62,7 +64,10 @@ import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
 import { QueryRequestBody, RouterOptions } from './types';
 import { handleLCSFetchError, rewriteProxyPath } from './utils';
-import { validateCompletionsRequest } from './validation';
+import {
+  validateAttachmentsForModel,
+  validateCompletionsRequest,
+} from './validation';
 
 /**
  * MCP Server authentication modes for lightspeed.mcpServers entries.
@@ -718,6 +723,7 @@ export async function createRouter(
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     expensiveRateLimiter,
     validateCompletionsRequest,
+    validateAttachmentsForModel,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
@@ -725,6 +731,27 @@ export async function createRouter(
         const { userEntityRef, credentials } = getIdentity(request);
 
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
+
+        if (request.body.attachments?.length) {
+          logger.info(
+            `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
+          );
+
+          const contextParts: string[] = [];
+          for (const att of request.body.attachments as Array<{
+            attachment_type: string;
+            content_type: string;
+            content: string;
+          }>) {
+            if (att.attachment_type !== 'image') {
+              contextParts.push(att.content);
+            }
+          }
+          if (contextParts.length > 0) {
+            request.body.query = `${contextParts.join('\n')}\n\n${request.body.query}`;
+          }
+          delete request.body.attachments;
+        }
 
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
@@ -841,6 +868,74 @@ export async function createRouter(
         const errormsg = `Error while updating topic summary: ${error}`;
         logger.error(errormsg);
         response.status(500).json({ error: errormsg });
+      }
+    },
+  );
+
+  router.post(
+    '/v1/validate-model-vision',
+    requirePermission(lightspeedChatReadPermission),
+    async (request, response) => {
+      const { model, provider } = request.body;
+      try {
+        logger.info(`Vision validation requested for model: ${model}`);
+
+        // Check cache
+        if (ModelCapabilitiesCache.has(model)) {
+          const supportsVision = ModelCapabilitiesCache.get(model)!;
+          logger.info(`Cache hit for ${model}: ${supportsVision}`);
+          response.json({
+            model,
+            supportsVision,
+          });
+          return;
+        }
+
+        // Test model with minimal JPEG
+        const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
+        const testResponse = await fetch(
+          `${lightspeedCoreBaseUrl}/v1/responses`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: `${provider}/${model}`,
+              input: [
+                {
+                  type: 'message',
+                  role: 'user',
+                  content: [
+                    {
+                      type: 'input_image',
+                      image_url: testJpeg,
+                      detail: 'low',
+                    },
+                    {
+                      type: 'input_text',
+                      text: 'hi, respond with hi.',
+                    },
+                  ],
+                },
+              ],
+              tool_choice: 'none',
+              temperature: 0,
+              store: false,
+              stream: false,
+            }),
+          },
+        );
+        const supportsVision = testResponse.ok;
+        ModelCapabilitiesCache.set(model, supportsVision);
+
+        logger.info(
+          `Vision test for ${model}: ${supportsVision ? 'PASS' : 'FAIL'}`,
+        );
+
+        response.json({ model, supportsVision });
+      } catch (error) {
+        logger.error(`Vision test error for ${model}:`, error);
+        ModelCapabilitiesCache.set(model, false);
+        response.json({ model, supportsVision: false });
       }
     },
   );

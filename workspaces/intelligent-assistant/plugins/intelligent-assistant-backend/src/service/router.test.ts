@@ -29,6 +29,7 @@ import request from 'supertest';
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { intelligentAssistantPlugin } from '../plugin';
+import { ModelCapabilitiesCache } from './attachment-validation';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
@@ -1354,6 +1355,210 @@ describe('intelligent-assistant router tests', () => {
       );
 
       expect(modelsResponse.statusCode).toBe(200);
+    });
+  });
+
+  describe('POST /v1/validate-model-vision', () => {
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('returns true when model supports vision', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-4o',
+                provider_resource_id: 'gpt-4o',
+                supports_vision: true,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ supports_vision: true });
+    });
+
+    it('returns false when model lacks vision', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-3.5-turbo',
+                provider_resource_id: 'gpt-3.5-turbo',
+                supports_vision: false,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/validate-model-vision')
+        .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ supports_vision: false });
+    });
+
+    it('returns 400 when model is not found', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({ models: [] });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/validate-model-vision')
+        .send({ model: 'unknown-model', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body).toEqual({
+        error: 'Model unknown-model not found',
+      });
+    });
+  });
+
+  describe('POST /v1/query attachment validation', () => {
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('rejects attachments when model lacks vision', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-3.5-turbo',
+                provider_resource_id: 'gpt-3.5-turbo',
+                supports_vision: false,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: 'base64data',
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'Model gpt-3.5-turbo does not support image attachments',
+      );
+    });
+
+    it('accepts attachments when model supports vision', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-4o',
+                provider_resource_id: 'gpt-4o',
+                supports_vision: true,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: 'gpt-4o',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: 'base64data',
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts empty attachments regardless of vision support', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-3.5-turbo',
+                provider_resource_id: 'gpt-3.5-turbo',
+                supports_vision: false,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+          attachments: [],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts no attachments field regardless of vision support', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
+          return HttpResponse.json({
+            models: [
+              {
+                identifier: 'gpt-3.5-turbo',
+                provider_resource_id: 'gpt-3.5-turbo',
+                supports_vision: false,
+              },
+            ],
+          });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+        });
+
+      expect(response.statusCode).toEqual(200);
     });
   });
 });
