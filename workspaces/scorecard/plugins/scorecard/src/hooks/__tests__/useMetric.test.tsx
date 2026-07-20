@@ -46,7 +46,7 @@ describe('useMetric', () => {
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
-    threshold: { rules: [] },
+    thresholds: { rules: [] },
   };
 
   beforeEach(() => {

@@ -93,7 +93,7 @@ describe('DependabotMetricProvider', () => {
           DEPENDABOT_SEVERITY_METRIC[severity].description,
         );
         expect(metric.type).toBe('number');
-        expect(metric.threshold).toEqual(DEPENDABOT_THRESHOLDS);
+        expect(metric.thresholds).toEqual(DEPENDABOT_THRESHOLDS);
         expect(metric.history).toBe(true);
       },
     );

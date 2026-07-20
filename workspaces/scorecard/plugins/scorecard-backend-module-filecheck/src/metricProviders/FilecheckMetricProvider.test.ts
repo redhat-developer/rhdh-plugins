@@ -263,7 +263,7 @@ describe('FilecheckMetricProvider', () => {
       ]);
       metrics?.forEach(m => {
         expect(m.type).toBe('boolean');
-        expect(m.threshold).toEqual(DEFAULT_FILECHECK_THRESHOLDS);
+        expect(m.thresholds).toEqual(DEFAULT_FILECHECK_THRESHOLDS);
       });
     });
 
@@ -283,7 +283,7 @@ describe('FilecheckMetricProvider', () => {
         title: 'File: README.md',
         description: 'Checks if README.md exists in the repository.',
         type: 'boolean',
-        threshold: DEFAULT_FILECHECK_THRESHOLDS,
+        thresholds: DEFAULT_FILECHECK_THRESHOLDS,
         history: true,
       });
       expect(metrics?.[1]).toEqual({
@@ -291,7 +291,7 @@ describe('FilecheckMetricProvider', () => {
         title: 'File: CODEOWNERS',
         description: 'Checks if CODEOWNERS exists in the repository.',
         type: 'boolean',
-        threshold: DEFAULT_FILECHECK_THRESHOLDS,
+        thresholds: DEFAULT_FILECHECK_THRESHOLDS,
         history: true,
       });
     });

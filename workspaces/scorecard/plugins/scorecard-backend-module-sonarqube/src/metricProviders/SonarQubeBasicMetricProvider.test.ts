@@ -111,7 +111,7 @@ describe('SonarQubeBasicMetricProvider', () => {
         const metrics = provider.getMetrics();
         expect(metrics).toHaveLength(1);
         expect(metrics[0].type).toBe(type);
-        expect(metrics[0].threshold).toBe(emptyThresholds);
+        expect(metrics[0].thresholds).toBe(emptyThresholds);
       },
     );
   });

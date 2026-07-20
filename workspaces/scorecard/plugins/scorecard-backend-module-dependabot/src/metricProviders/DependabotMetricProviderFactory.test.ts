@@ -39,7 +39,7 @@ describe('createDependabotMetricProvider', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(1);
     expect(metrics[0].type).toBe('number');
-    expect(metrics[0].threshold).toBe(DEPENDABOT_THRESHOLDS);
+    expect(metrics[0].thresholds).toBe(DEPENDABOT_THRESHOLDS);
   });
 });
 

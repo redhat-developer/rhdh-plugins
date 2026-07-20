@@ -93,7 +93,7 @@ describe('OpenSSFMetricProvider', () => {
       expect(metric.id).toBe('openssf.maintained');
       expect(metric.title).toBe('OpenSSF Maintained');
       expect(metric.type).toBe('number');
-      expect(metric.threshold).toEqual(OPENSSF_THRESHOLDS);
+      expect(metric.thresholds).toEqual(OPENSSF_THRESHOLDS);
       expect(metric.history).toBe(true);
     });
 
@@ -228,7 +228,7 @@ describe('OpenSSFMetricProvider', () => {
       expect(providerIds).toEqual(expectedProviderIds);
       providers.forEach(provider => {
         expect(provider.getProviderDatasourceId()).toBe('openssf');
-        expect(provider.getMetrics()[0].threshold).toEqual(OPENSSF_THRESHOLDS);
+        expect(provider.getMetrics()[0].thresholds).toEqual(OPENSSF_THRESHOLDS);
       });
     });
   });

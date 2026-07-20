@@ -68,7 +68,7 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
         description:
           'Highlights the number of issues that are currently open in Jira.',
         type: 'number',
-        threshold: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
     ];

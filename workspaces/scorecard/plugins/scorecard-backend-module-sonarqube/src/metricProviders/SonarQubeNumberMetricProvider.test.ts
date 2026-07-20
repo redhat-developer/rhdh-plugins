@@ -58,8 +58,8 @@ describe('SonarQubeNumberMetricProvider', () => {
       );
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
-      expect(metrics[0].threshold).toBeDefined();
-      expect(metrics[0].threshold.rules).toBeDefined();
+      expect(metrics[0].thresholds).toBeDefined();
+      expect(metrics[0].thresholds.rules).toBeDefined();
     });
   });
 

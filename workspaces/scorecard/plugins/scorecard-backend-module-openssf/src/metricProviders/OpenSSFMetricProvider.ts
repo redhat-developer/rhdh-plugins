@@ -65,7 +65,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
         title: this.getMetricDisplayTitle(),
         description: this.getMetricDescription(),
         type: 'number',
-        threshold: OPENSSF_THRESHOLDS,
+        thresholds: OPENSSF_THRESHOLDS,
         history: true,
       },
     ];

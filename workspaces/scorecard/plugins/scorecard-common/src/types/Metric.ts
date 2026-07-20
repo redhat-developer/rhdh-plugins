@@ -38,7 +38,7 @@ export type Metric<T extends MetricType = MetricType> = {
   title: string;
   description: string;
   type: T;
-  threshold: ThresholdConfig;
+  thresholds: ThresholdConfig;
   history?: boolean;
 };
 

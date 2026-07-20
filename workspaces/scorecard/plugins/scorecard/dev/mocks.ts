@@ -80,7 +80,7 @@ export class MockScorecardApi implements ScorecardApi {
       title: m.metadata.title,
       description: m.metadata.description,
       type: m.metadata.type,
-      threshold: m.result.thresholdResult.definition ?? { rules: [] },
+      thresholds: m.result.thresholdResult.definition ?? { rules: [] },
       history: m.metadata.history,
     }));
     return { metrics: allMetrics };

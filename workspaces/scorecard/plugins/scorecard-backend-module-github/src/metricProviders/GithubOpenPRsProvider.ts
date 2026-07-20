@@ -48,7 +48,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
         description:
           'Current count of open Pull Requests for a given GitHub repository.',
         type: 'number',
-        threshold: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
     ];
