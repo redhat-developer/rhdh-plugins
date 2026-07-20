@@ -243,12 +243,12 @@ scorecard:
       title: GitHub Open PRs KPI
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
-      metricId: github.openPrs
+      metricId: github.openPRs
     openPrsWeightedKpi:
       title: GitHub Open PRs (weighted health)
       type: weightedStatusScore
       description: Weighted health score for open PRs by threshold status across your entities.
-      metricId: github.openPrs
+      metricId: github.openPRs
       options:
         statusScores:
           success: 100
@@ -283,7 +283,7 @@ scorecard:
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     github:
-      openPrs:
+      openPRs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

@@ -144,7 +144,7 @@ scorecard.io/{providerId}.thresholds.rules.{thresholdKey}: '{expression}'
 
 Where:
 
-- `{providerId}`: The metric provider ID (e.g., `github.openPrs`)
+- `{providerId}`: The metric provider ID (e.g., `github.openPRs`)
 - `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
 

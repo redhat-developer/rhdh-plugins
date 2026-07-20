@@ -41,7 +41,7 @@ describe('useMetric', () => {
   };
 
   const mockMetric: Metric = {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     title: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
@@ -64,7 +64,7 @@ describe('useMetric', () => {
     } as any);
 
     const { result } = renderHook(() =>
-      useMetric({ metricId: 'github.openPrs' }),
+      useMetric({ metricId: 'github.openPRs' }),
     );
 
     expect(result.current).toEqual({
@@ -82,7 +82,7 @@ describe('useMetric', () => {
     } as any);
 
     const { result } = renderHook(() =>
-      useMetric({ metricId: 'github.openPrs' }),
+      useMetric({ metricId: 'github.openPRs' }),
     );
 
     expect(result.current).toEqual({
@@ -101,7 +101,7 @@ describe('useMetric', () => {
     } as any);
 
     const { result } = renderHook(() =>
-      useMetric({ metricId: 'github.openPrs' }),
+      useMetric({ metricId: 'github.openPRs' }),
     );
 
     expect(result.current).toEqual({

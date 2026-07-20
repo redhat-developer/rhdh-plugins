@@ -23,7 +23,7 @@ import {
 
 export const mockScorecardSuccessData = [
   {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'success' as const,
     metadata: {
       title: 'GitHub open PRs',
@@ -135,7 +135,7 @@ export const mockScorecardErrorData = [
 
 export const mockAggregatedScorecardData = {
   [aggregationTypes.statusGrouped]: {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -159,7 +159,7 @@ export const mockAggregatedScorecardData = {
     },
   } as AggregatedMetricResult,
   [aggregationTypes.weightedStatusScore]: {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',

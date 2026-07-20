@@ -81,7 +81,7 @@ export const scorecardMessages = {
 
   // Metric translations
   metric: {
-    'github.openPrs': {
+    'github.openPRs': {
       title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',

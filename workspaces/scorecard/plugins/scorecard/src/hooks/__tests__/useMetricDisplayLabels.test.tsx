@@ -28,7 +28,7 @@ describe('useMetricDisplayLabels', () => {
   const mockT = jest.fn();
 
   const metric = {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     title: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
@@ -55,8 +55,8 @@ describe('useMetricDisplayLabels', () => {
 
   it('should return translated title and description when translation exists', () => {
     mockT.mockImplementation((key: string) => {
-      if (key === 'metric.github.openPrs.title') return 'Translated Title';
-      if (key === 'metric.github.openPrs.description')
+      if (key === 'metric.github.openPRs.title') return 'Translated Title';
+      if (key === 'metric.github.openPRs.description')
         return 'Translated Description';
       return key;
     });
@@ -83,7 +83,7 @@ describe('useMetricDisplayLabels', () => {
 
   it('should use translated title but original description when only title translation exists', () => {
     mockT.mockImplementation((key: string) => {
-      if (key === 'metric.github.openPrs.title') return 'Translated Title';
+      if (key === 'metric.github.openPRs.title') return 'Translated Title';
       return key;
     });
 

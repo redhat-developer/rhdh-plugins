@@ -30,8 +30,8 @@ export class ScorecardPage {
   get scorecardMetrics() {
     return [
       {
-        title: this.translations.metric['github.openPrs'].title,
-        description: this.translations.metric['github.openPrs'].description,
+        title: this.translations.metric['github.openPRs'].title,
+        description: this.translations.metric['github.openPRs'].description,
       },
       {
         title: this.translations.metric['jira.openIssues'].title,

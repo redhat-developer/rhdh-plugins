@@ -126,7 +126,7 @@ Requires `scorecard.metric.read` permission. Additionally:
 
 ```bash
 # Get aggregated metrics for a specific metric
-curl -X GET "{{url}}/api/scorecard/metrics/github.openPrs/catalog/aggregations" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations" \
   -H "Authorization: Bearer <token>"
 ```
 

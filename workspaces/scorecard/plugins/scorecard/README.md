@@ -296,7 +296,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
    import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    // GitHub open PRs
-   <ScorecardHomepageCard metricId="github.openPrs" />
+   <ScorecardHomepageCard metricId="github.openPRs" />
 
    // Jira open issues
    <ScorecardHomepageCard metricId="jira.openIssues" />
@@ -448,7 +448,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 ```typescript
 // In ref.ts
 metric: {
-  'github.openPrs': {
+  'github.openPRs': {
     title: 'GitHub open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },

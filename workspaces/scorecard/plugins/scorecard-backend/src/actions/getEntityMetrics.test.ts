@@ -41,7 +41,7 @@ describe('createGetEntityMetricsAction', () => {
 
     const mockMetrics = [
       {
-        id: 'github.openPrs',
+        id: 'github.openPRs',
         status: 'success',
         metadata: {
           title: 'Open PRs',
@@ -200,7 +200,7 @@ describe('createGetEntityMetricsAction', () => {
     const conditions = {
       rule: 'HAS_METRIC_ID',
       resourceType: 'scorecard-metric',
-      params: { metricIds: ['github.openPrs'] },
+      params: { metricIds: ['github.openPRs'] },
     };
     mockPermissions.authorizeConditional.mockResolvedValue([
       {
@@ -213,7 +213,7 @@ describe('createGetEntityMetricsAction', () => {
 
     const filteredMetrics = [
       {
-        id: 'github.openPrs',
+        id: 'github.openPRs',
         status: 'success',
         metadata: {
           title: 'Open PRs',

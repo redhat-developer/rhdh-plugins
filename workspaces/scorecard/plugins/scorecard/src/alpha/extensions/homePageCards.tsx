@@ -36,7 +36,7 @@ function AggregatedCardWithDeprecatedMetricIdContent() {
 }
 
 function AggregatedCardWithDefaultAggregationContent() {
-  return <ScorecardHomepageCardWithProvider aggregationId="github.openPrs" />;
+  return <ScorecardHomepageCardWithProvider aggregationId="github.openPRs" />;
 }
 
 function AggregatedCardWithJiraOpenIssuesContent() {

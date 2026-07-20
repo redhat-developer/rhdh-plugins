@@ -34,10 +34,10 @@ const createMockT = (translations: Record<string, string>): MockT => {
 describe('resolveMetricTranslation', () => {
   it('returns exact translation when key exists', () => {
     const t = createMockT({
-      'metric.github.openPrs.title': 'GitHub open PRs',
+      'metric.github.openPRs.title': 'GitHub open PRs',
     });
 
-    expect(resolveMetricTranslation(t as any, 'github.openPrs', 'title')).toBe(
+    expect(resolveMetricTranslation(t as any, 'github.openPRs', 'title')).toBe(
       'GitHub open PRs',
     );
   });
@@ -146,13 +146,13 @@ describe('resolveMetricTranslation', () => {
 
   it('prefers translation over fallback when translation exists', () => {
     const t = createMockT({
-      'metric.github.openPrs.title': 'GitHub open PRs',
+      'metric.github.openPRs.title': 'GitHub open PRs',
     });
 
     expect(
       resolveMetricTranslation(
         t as any,
-        'github.openPrs',
+        'github.openPRs',
         'title',
         'Fallback Title',
       ),

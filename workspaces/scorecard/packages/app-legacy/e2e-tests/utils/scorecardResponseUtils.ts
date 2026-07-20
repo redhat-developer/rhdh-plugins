@@ -26,7 +26,7 @@ const DEFAULT_NUMBER_THRESHOLDS = {
 
 export const customScorecardResponse = [
   {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -120,7 +120,7 @@ const jiraOpenIssues = {
 export const unavailableMetricResponse = [
   jiraOpenIssues,
   {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'error',
     metadata: {
       title: 'GitHub open PRs',
@@ -160,7 +160,7 @@ export const unavailableMetricResponse = [
 export const invalidThresholdResponse = [
   jiraOpenIssues,
   {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -175,7 +175,7 @@ export const invalidThresholdResponse = [
       thresholdResult: {
         status: 'error',
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.openPrs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.openPRs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
       },
     },
   },
@@ -219,7 +219,7 @@ export const openPrsWeightedKpiMetadataResponse = {
  * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
 export const openPrsWeightedAggregatedResponse = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -265,7 +265,7 @@ export const gitHubWeightedPartiallyAggregatedResponse = {
 };
 
 export const emptyOpenPrsWeightedAggregatedResponse = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -288,7 +288,7 @@ export const emptyOpenPrsWeightedAggregatedResponse = {
 
 /** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
 export const openPrsWeightedUnsupportedAggregationResponse = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -511,7 +511,7 @@ export const sonarqubeFailedQualityGateResponse = [
 
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 export const githubAggregatedResponse = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -622,7 +622,7 @@ export const emptyJiraAggregatedResponse = {
 };
 
 export const emptyGithubAggregatedResponse = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -646,9 +646,9 @@ export const emptyGithubAggregatedResponse = {
   },
 };
 
-/** Mock response for GET .../api/scorecard/metrics/github.openPrs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
+/** Mock response for GET .../api/scorecard/metrics/github.openPRs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
 export const githubEntitiesDrillDownResponse = {
-  metricId: 'github.openPrs',
+  metricId: 'github.openPRs',
   metricMetadata: {
     title: 'GitHub open PRs',
     description:

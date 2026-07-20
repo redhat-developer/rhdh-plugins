@@ -165,8 +165,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.unsupportedAggregationType': string;
     readonly 'errors.authenticationErrorMessage': string;
-    readonly 'metric.github.openPrs.title': string;
-    readonly 'metric.github.openPrs.description': string;
+    readonly 'metric.github.openPRs.title': string;
+    readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
     readonly 'metric.jira.openIssues.description': string;
     readonly 'metric.sonarqube.qualityGate.title': string;

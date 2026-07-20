@@ -38,7 +38,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.openPrs';
+    return 'github.openPRs';
   }
 
   getMetricType(): 'number' {

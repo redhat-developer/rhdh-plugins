@@ -26,7 +26,7 @@ import { DatabaseMetricValues } from '../../../database/DatabaseMetricValues';
 
 describe('StatusGroupedAggregationStrategy', () => {
   const metric = {
-    id: 'github.openPrs',
+    id: 'github.openPRs',
     title: 'Open PRs',
     description: 'desc',
     type: 'number',

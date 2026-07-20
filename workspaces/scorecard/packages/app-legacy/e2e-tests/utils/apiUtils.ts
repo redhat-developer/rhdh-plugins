@@ -232,7 +232,7 @@ export async function mockJiraDrillDownMissingPermission(
 export async function mockScorecardEntitiesDrillDown(
   page: Page,
   responseData: object,
-  metricId: 'github.openPrs' | 'jira.openIssues' = 'github.openPrs',
+  metricId: 'github.openPRs' | 'jira.openIssues' = 'github.openPRs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {
@@ -278,7 +278,7 @@ function sortEntitiesByStatus(
 export async function mockScorecardEntitiesDrillDownWithSort(
   page: Page,
   responseData: object,
-  metricId: 'github.openPrs' | 'jira.openIssues' = 'github.openPrs',
+  metricId: 'github.openPRs' | 'jira.openIssues' = 'github.openPRs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {

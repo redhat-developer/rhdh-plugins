@@ -154,7 +154,7 @@ createDevApp()
   .addPage({
     element: (
       <ScorecardWrapper>
-        <ScorecardHomepageCard metricId="github.openPrs" />
+        <ScorecardHomepageCard metricId="github.openPRs" />
       </ScorecardWrapper>
     ),
     title: 'Default Layout',
@@ -171,7 +171,7 @@ createDevApp()
           <Box key={label}>
             <Typography variant="caption">{label}</Typography>
             <Box sx={{ width, height }}>
-              <ScorecardHomepageCard aggregationId="github.openPrs" />
+              <ScorecardHomepageCard aggregationId="github.openPRs" />
             </Box>
           </Box>
         ))}
@@ -212,7 +212,7 @@ createDevApp()
       </ScorecardWrapper>
     ),
     title: 'Scorecard Entities',
-    path: '/scorecard/aggregations/github.openPrs/metrics/github.openPrs',
+    path: '/scorecard/aggregations/github.openPRs/metrics/github.openPRs',
   })
   .addPage({
     element: (

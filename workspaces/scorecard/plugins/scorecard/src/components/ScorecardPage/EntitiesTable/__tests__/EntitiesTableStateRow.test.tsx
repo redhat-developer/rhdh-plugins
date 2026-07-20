@@ -62,7 +62,7 @@ describe('EntitiesTableStateRow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseMetric.mockReturnValue({
-      metric: { id: 'github.openPrs', title: 'Open PRs' },
+      metric: { id: 'github.openPRs', title: 'Open PRs' },
     });
     mockUseMetricDisplayLabels.mockReturnValue({
       title: 'Open PRs',
@@ -104,7 +104,7 @@ describe('EntitiesTableStateRow', () => {
       <TestWrapper>
         <EntitiesTableStateRow
           colSpan={6}
-          metricId="github.openPrs"
+          metricId="github.openPRs"
           setMetricTitle={setMetricTitle}
         />
       </TestWrapper>,

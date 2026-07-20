@@ -88,9 +88,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',
-    'metric.github.openPrs.description':
+    'metric.github.openPRs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',
-    'metric.github.openPrs.title': 'GitHub のオープン状態の PR',
+    'metric.github.openPRs.title': 'GitHub のオープン状態の PR',
     'metric.homepageEntityCalculationHealth':
       'メトリクス計算エラーのないエンティティー: {{healthy}} / {{total}}',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',

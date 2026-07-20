@@ -149,7 +149,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'github.openPrs',
+        aggregationId: 'github.openPRs',
       },
     },
   },
@@ -345,7 +345,7 @@ const mountPoints: HomePageCardMountPoint[] = [
               default: 'jira.openIssues',
               enum: [
                 'jira.openIssues',
-                'github.openPrs',
+                'github.openPRs',
                 'filecheck.license',
                 'filecheck.codeowners',
               ],

@@ -119,7 +119,7 @@ describe('permissionUtils', () => {
           {
             rule: 'HAS_METRIC_ID',
             resourceType: 'scorecard-metric',
-            params: { metricIds: ['github.openPrs'] },
+            params: { metricIds: ['github.openPRs'] },
           },
         ],
       };
@@ -188,7 +188,7 @@ describe('permissionUtils', () => {
   const mockMetricIdPermissionCondition = {
     rule: 'HAS_METRIC_ID',
     resourceType: 'scorecard-metric',
-    params: { metricIds: ['github.openPrs'] },
+    params: { metricIds: ['github.openPRs'] },
   };
 
   describe('matches', () => {
@@ -210,7 +210,7 @@ describe('permissionUtils', () => {
       not: mockMetricIdPermissionCondition,
     };
 
-    const matchedMetric = createMockMetric('github.openPrs', 'GitHub Open PRs');
+    const matchedMetric = createMockMetric('github.openPRs', 'GitHub Open PRs');
     const nonMatchedMetric = createMockMetric(
       'jira.openIssues',
       'Jira Open Issues',
@@ -247,7 +247,7 @@ describe('permissionUtils', () => {
 
   describe('filterAuthorizedMetrics', () => {
     const metrics = [
-      createMockMetric('github.openPrs', 'GitHub Open PRs'),
+      createMockMetric('github.openPRs', 'GitHub Open PRs'),
       createMockMetric('jira.openIssues', 'Jira Open Issues'),
     ];
 
@@ -262,7 +262,7 @@ describe('permissionUtils', () => {
         anyOf: [mockMetricIdPermissionCondition],
       });
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('github.openPrs');
+      expect(result[0].id).toBe('github.openPRs');
     });
   });
 

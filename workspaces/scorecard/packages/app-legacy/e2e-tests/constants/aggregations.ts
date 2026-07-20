@@ -16,7 +16,7 @@
 
 export const AGGREGATED_CARDS_METRIC_IDS = {
   jiraMetricId: 'jira.openIssues',
-  githubMetricId: 'github.openPrs',
+  githubMetricId: 'github.openPRs',
   githubOpenPrsKpi: 'openPrsKpi',
   jiraOpenIssuesKpi: 'openIssuesKpi',
   gitHubOpenPrsWeightedKpi: 'openPrsWeightedKpi',
@@ -40,7 +40,7 @@ export const AGGREGATED_CARDS_METADATA = {
   githubDefaultAggregation: {
     id: AGGREGATED_CARDS_METRIC_IDS.githubMetricId,
     title: 'Scorecard: With default aggregation config (GitHub)',
-    metricId: 'github.openPrs',
+    metricId: 'github.openPRs',
   },
   jiraOpenIssuesKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.jiraOpenIssuesKpi,
@@ -50,11 +50,11 @@ export const AGGREGATED_CARDS_METADATA = {
   githubOpenPrsKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.githubOpenPrsKpi,
     title: 'Scorecard: GitHub open PRs',
-    metricId: 'github.openPrs',
+    metricId: 'github.openPRs',
   },
   githubOpenPrsWeightedKpi: {
     id: AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi,
     title: 'Scorecard: GitHub open PRs (weighted health)',
-    metricId: 'github.openPrs',
+    metricId: 'github.openPRs',
   },
 } as const;

@@ -27,14 +27,14 @@ export type ScorecardMessages = typeof scorecardMessages;
 
 /** English (ref) metric title – matches API metadata.title used when i18n falls back. */
 export function getMetricTitleEn(
-  metricId: 'jira.openIssues' | 'github.openPrs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ): string {
   return scorecardMessages.metric[metricId].title;
 }
 
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
-    // metric.github.openPrs.title -> metric['github.openPrs'].title
+    // metric.github.openPRs.title -> metric['github.openPRs'].title
     // metric.openPrsKpi.title -> metric['openPrsKpi'].title (KPI / aggregation id)
     if (key.startsWith('metric.')) {
       const parts = key.split('.');
@@ -358,7 +358,7 @@ export function getHomepageEntityCalculationHealthText(
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
 export function getDrillDownMissingPermissionSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.openIssues' | 'github.openPrs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ) {
   return `
         - article:
@@ -373,7 +373,7 @@ export function getDrillDownMissingPermissionSnapshot(
 /** Snapshot for the scorecard card on the drill-down page when there is no data (no entity count in UI). */
 export function getDrillDownNoDataFoundSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.openIssues' | 'github.openPrs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ) {
   return `
         - article:
@@ -412,7 +412,7 @@ function getHomepageDrillDownLinkSnapshot(
 export function getStatusGroupedCardSnapshot(
   translations: ScorecardMessages,
   options: {
-    drillDownMetricId: 'jira.openIssues' | 'github.openPrs';
+    drillDownMetricId: 'jira.openIssues' | 'github.openPRs';
     drillDownAggregationId?: string;
     /** Interpolation for homepage subheader (mock data uses 10/10). */
     homepageCalculationHealth?: { healthy: string; total: string };
@@ -455,7 +455,7 @@ export function getStatusGroupedCardSnapshot(
 export function getWeightedStatusScoreCardSnapshot(
   translations: ScorecardMessages,
   options: {
-    drillDownMetricId: 'jira.openIssues' | 'github.openPrs';
+    drillDownMetricId: 'jira.openIssues' | 'github.openPRs';
     drillDownAggregationId?: string;
     homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
@@ -495,7 +495,7 @@ export function getWeightedStatusScoreCardSnapshot(
 /** Snapshot for the scorecard card on the drill-down page (same as statusGrouped but without the entities link). */
 export function getDrillDownCardSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.openIssues' | 'github.openPrs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
   options?: {
     title?: string;
     description?: string;

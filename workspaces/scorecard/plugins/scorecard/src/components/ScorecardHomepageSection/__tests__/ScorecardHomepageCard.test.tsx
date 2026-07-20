@@ -143,7 +143,7 @@ jest.mock('../../../hooks/useTranslation', () => ({
 // --------------------
 
 const mockScorecard: AggregatedMetricResult = {
-  id: 'github.openPrs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',

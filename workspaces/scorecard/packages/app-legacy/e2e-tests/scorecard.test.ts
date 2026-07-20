@@ -151,7 +151,7 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
       await scorecardPage.verifyScorecardValues({
-        [translations.metric['github.openPrs'].title]: '9',
+        [translations.metric['github.openPRs'].title]: '9',
         [translations.metric['jira.openIssues'].title]: '8',
       });
 
@@ -599,16 +599,16 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toBeVisible();
         await homePage.clickDrillDownLink(card);
 
-        await scorecardDrillDownPage.expectOnPage('github.openPrs', {
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
           aggregationId: aggregationMetadata.id,
         });
 
         const githubOpenPrsTitle = evaluateMessage(
-          translations.metric['github.openPrs'].title,
-          'github.openPrs',
+          translations.metric['github.openPRs'].title,
+          'github.openPRs',
         );
         await scorecardDrillDownPage.expectPageTitle(
-          'github.openPrs',
+          'github.openPRs',
           githubOpenPrsTitle,
         );
       });
@@ -676,11 +676,11 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toBeVisible();
         await homePage.clickDrillDownLink(card, { healthy: '8', total: '8' });
 
-        await scorecardDrillDownPage.expectOnPage('github.openPrs', {
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
           aggregationId: aggregationMetadata.id,
         });
         await scorecardDrillDownPage.expectPageTitle(
-          'github.openPrs',
+          'github.openPRs',
           aggregatedResponse.metadata.title,
         );
       });
@@ -779,11 +779,11 @@ test.describe('Scorecard Plugin Tests', () => {
           await expect(card).toBeVisible();
           await homePage.clickDrillDownLink(card);
 
-          await scorecardDrillDownPage.expectOnPage('github.openPrs', {
+          await scorecardDrillDownPage.expectOnPage('github.openPRs', {
             aggregationId: aggregationMetadata.id,
           });
           await scorecardDrillDownPage.expectPageTitle(
-            'github.openPrs',
+            'github.openPRs',
             openPrsWeightedAggregatedResponse.metadata.title,
           );
         });

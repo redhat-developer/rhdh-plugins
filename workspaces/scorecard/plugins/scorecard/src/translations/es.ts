@@ -90,9 +90,9 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.filecheck.description':
       'Comprueba si el archivo {{name}} existe en el repositorio.',
     'metric.filecheck.title': 'Verificación de archivo: {{name}}',
-    'metric.github.openPrs.description':
+    'metric.github.openPRs.description':
       'Recuento actual de solicitudes de extracción abiertas para un repositorio de GitHub determinado.',
-    'metric.github.openPrs.title': 'PR abiertas de GitHub',
+    'metric.github.openPRs.title': 'PR abiertas de GitHub',
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} entidades sin errores de cálculo de métricas',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entidades',
