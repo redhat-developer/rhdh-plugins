@@ -7256,7 +7256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:^5.12.2":
+"@mui/material@npm:^5.0.0, @mui/material@npm:^5.12.2":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -9767,9 +9767,9 @@ __metadata:
     "@backstage/plugin-permission-react": "npm:^0.4.41"
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
-    "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
+    "@mui/material": "npm:^5.0.0"
     "@patternfly/patternfly": "npm:^6.3.1"
     "@patternfly/react-core": "npm:^6.3.1"
     "@patternfly/react-icons": "npm:^6.3.1"
@@ -14846,8 +14846,8 @@ __metadata:
     "@backstage/plugin-user-settings": "npm:^0.9.1"
     "@backstage/test-utils": "npm:^1.7.16"
     "@backstage/theme": "npm:^0.7.2"
-    "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
+    "@mui/material": "npm:^5.0.0"
     "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-konflux": "workspace:^"
     "@testing-library/dom": "npm:^9.0.0"

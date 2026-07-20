@@ -8211,7 +8211,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18":
+"@mui/material@npm:5.18.0, @mui/material@npm:^5.0.0, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18":
   version: 5.18.0
   resolution: "@mui/material@npm:5.18.0"
   dependencies:
@@ -14820,8 +14820,8 @@ __metadata:
     "@backstage/plugin-user-settings": "npm:^0.9.3"
     "@backstage/theme": "npm:^0.7.3"
     "@backstage/ui": "npm:^0.15.0"
-    "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
+    "@mui/material": "npm:^5.0.0"
     "@playwright/test": "npm:1.60.0"
     "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
