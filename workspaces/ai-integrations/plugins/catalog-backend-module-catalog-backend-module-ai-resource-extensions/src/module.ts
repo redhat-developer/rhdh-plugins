@@ -21,10 +21,9 @@ import { AIResourceExtensionsProcessor } from './AIResourceExtensionsProcessor';
 /**
  * catalogModuleCatalogBackendModuleAiResourceExtensions is the catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.
  *
- * AIResourceExtensionsProcessor validates all RHDH extension
- * constraints (spec.scope and OCI location) and aggregates errors
- * into a single response. AIResourceOciProcessor is no longer
- * registered here to avoid duplicate error reporting.
+ * Registers {@link AIResourceExtensionsProcessor}, which validates all
+ * RHDH extension constraints (spec.scope and OCI location) and
+ * aggregates errors into a single response.
  *
  * @public
  */
