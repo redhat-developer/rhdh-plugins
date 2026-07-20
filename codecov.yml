@@ -75,14 +75,13 @@ component_management:
   # Only workspaces that exist in this repository are included.
   # Note: workspaces with mixed support-level packages appear in multiple components.
   individual_components:
-    # Generally-Available Plugins — 6 workspace(s)
+    # Generally-Available Plugins — 5 workspace(s)
     - component_id: generally-available-plugins
       name: 'Generally-Available Plugins'
       paths:
         - workspaces/adoption-insights/
         - workspaces/global-header/
         - workspaces/homepage/
-        - workspaces/intelligent-assistant/
         - workspaces/orchestrator/
         - workspaces/quickstart/
     # Tech-Preview Plugins — 4 workspace(s)
