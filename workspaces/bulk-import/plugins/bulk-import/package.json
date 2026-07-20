@@ -65,7 +65,7 @@
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
     "@tanstack/react-query": "^4.29.21",
     "formik": "^2.4.5",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "lodash": "^4.17.21",
     "react-use": "^17.2.4",
     "tss-react": "^4.9.18",
