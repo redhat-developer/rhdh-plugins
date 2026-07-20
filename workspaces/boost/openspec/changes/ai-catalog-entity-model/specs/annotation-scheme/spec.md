@@ -10,6 +10,8 @@ Standardized annotation scheme for classifying AI assets (agents, skills, MCP se
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with one of the allowed values.
 
+The vocabulary includes `rule` and `skill-bundle` in addition to the original five values. `rule` covers AI decision rules — these are AIResource entities (same kind as skills) that need their own category value so the CatalogProcessor validator can validate them and the frontend can filter them in browse views. `skill-bundle` covers curated collections of related skills (e.g., "security-toolkit"); without a dedicated category value, SkillBundle entities would either fail the validator (unrecognized category) or require special-casing outside the annotation scheme. Both values ensure the annotation enum is the single source of truth for all AI entity types that pass through validation and frontend browse filtering.
+
 #### Scenario: Valid category annotation values
 
 - **WHEN** an entity provider emits an AI asset entity

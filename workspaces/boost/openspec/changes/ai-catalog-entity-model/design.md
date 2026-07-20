@@ -52,6 +52,8 @@ The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, 
 
 **Why:** Backstage entity kinds are structural categories (Component, Resource, API), not domain categories. A model is semantically a Resource, but so is a deployed MCP server instance. The annotation distinguishes them.
 
+**Why `rule` and `skill-bundle`:** The original five values (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) did not cover two entity types that pass through the CatalogProcessor validator and frontend browse filtering. `rule` covers AI decision rules — these are AIResource entities (same kind as skills per RHDHPLAN-1113) that need a distinct category so the validator can validate them and the browse UI can list them separately from skills. `skill-bundle` covers curated skill collections (e.g., "security-toolkit", "code-review skills"); without a dedicated category value, SkillBundle entities would fail the validator's enum check or require special-casing outside the annotation scheme. Both values close the gap between the annotation enum and the full set of AI entity types the system needs to validate and display.
+
 **Mapping reference (not a constraint):**
 
 | Category       | Backstage Kind | spec.type         | Notes                                                             |
