@@ -22,6 +22,18 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
 }
 
 // @public
+export class AIResourceOciProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  preProcessEntity(
+    entity: Entity,
+    _location: LocationSpec,
+    _emit: CatalogProcessorEmit,
+  ): Promise<Entity>;
+}
+
+// @public
 export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 // @public

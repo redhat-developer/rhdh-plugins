@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.14.11
+
+### Patch Changes
+
+- a3302ac: prevent overlapping scrollbars on TechDocs pages
+
 ## 0.14.10
 
 ### Patch Changes
