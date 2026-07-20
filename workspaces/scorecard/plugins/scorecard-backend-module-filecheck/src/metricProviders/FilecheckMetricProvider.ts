@@ -47,7 +47,7 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
       title: `File: ${f.path}`,
       description: `Checks if ${f.path} exists in the repository.`,
       type: 'boolean' as const,
-      threshold: DEFAULT_FILECHECK_THRESHOLDS,
+      thresholds: DEFAULT_FILECHECK_THRESHOLDS,
       history: true,
     }));
   }

@@ -30,7 +30,7 @@ describe('AggregatedMetricMapper', () => {
     title: 'Test Metric',
     description: 'Test description',
     type: 'number',
-    threshold: { rules: [] },
+    thresholds: { rules: [] },
   };
 
   describe('toAggregatedMetric', () => {

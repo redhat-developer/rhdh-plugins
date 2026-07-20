@@ -229,7 +229,7 @@ describe('mergeEntityAndProviderThresholds', () => {
         title: 'Custom Metric',
         description: 'Custom metric description.',
         type: 'number',
-        threshold: {
+        thresholds: {
           rules: [
             { key: 'low', expression: '<10', color: 'success.main' },
             {
@@ -274,7 +274,7 @@ describe('mergeEntityAndProviderThresholds', () => {
         title: 'Partition Metric',
         description: 'Test',
         type: 'number',
-        threshold: {
+        thresholds: {
           rules: [
             { key: 'success', expression: '<10' },
             { key: 'warning', expression: '10-20' },
@@ -370,7 +370,7 @@ describe('mergeEntityAndProviderThresholds', () => {
       title: 'Mock Number Metric',
       description: 'Mock number description.',
       type: 'number',
-      threshold: {
+      thresholds: {
         rules: [{ key: 'error', expression: '>40' }],
       },
     };

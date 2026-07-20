@@ -68,7 +68,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
         title: meta.title,
         description: meta.description,
         type: 'number',
-        threshold: DEPENDABOT_THRESHOLDS,
+        thresholds: DEPENDABOT_THRESHOLDS,
         history: true,
       },
     ];

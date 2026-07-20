@@ -59,7 +59,7 @@ export class MetricProvidersRegistry {
       }
 
       try {
-        validateThresholdsForMetric(metric.threshold, metric.type);
+        validateThresholdsForMetric(metric.thresholds, metric.type);
       } catch (error) {
         throw new ThresholdConfigFormatError(
           `Invalid default thresholds for metric provider '${providerId}', metric '${metricId}'`,

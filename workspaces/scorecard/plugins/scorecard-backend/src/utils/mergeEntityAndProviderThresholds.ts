@@ -59,7 +59,7 @@ export function mergeEntityAndProviderThresholds(
 ): ThresholdConfig {
   let isRulesMerged = false;
 
-  const providerThresholds = baseThresholds ?? metric.threshold;
+  const providerThresholds = baseThresholds ?? metric.thresholds;
   const metricType = metric.type;
   const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,

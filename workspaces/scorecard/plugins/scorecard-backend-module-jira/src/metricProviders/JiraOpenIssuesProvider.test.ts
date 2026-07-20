@@ -105,7 +105,7 @@ describe('JiraOpenIssuesProvider', () => {
         description:
           'Highlights the number of issues that are currently open in Jira.',
         type: 'number',
-        threshold: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       });
     });
@@ -138,7 +138,7 @@ describe('JiraOpenIssuesProvider', () => {
         mockAuthOptions,
       );
 
-      expect(provider.getMetrics()[0].threshold).toEqual(
+      expect(provider.getMetrics()[0].thresholds).toEqual(
         DEFAULT_NUMBER_THRESHOLDS,
       );
     });

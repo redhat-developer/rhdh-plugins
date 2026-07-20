@@ -51,7 +51,7 @@ export class SonarQubeBasicMetricProvider<T extends 'boolean' | 'number'> {
         title: meta.title,
         description: meta.description,
         type: this.metricType,
-        threshold: this.thresholds,
+        thresholds: this.thresholds,
         history: true,
       },
     ];

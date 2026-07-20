@@ -878,7 +878,7 @@ describe('createRouter', () => {
         expect.objectContaining({
           total: mockAggregatedMetric.total,
           timestamp: mockAggregatedMetric.timestamp,
-          thresholds: batchProvider.getMetrics()[0].threshold,
+          thresholds: batchProvider.getMetrics()[0].thresholds,
         }),
         expect.objectContaining({
           id: 'filecheck.license',

@@ -74,7 +74,7 @@ abstract class MockMetricProvider<T extends MetricType>
         title: this.title,
         description: this.description,
         type: this.metricType,
-        threshold: this.getDefaultThresholds(),
+        thresholds: this.getDefaultThresholds(),
       },
     ];
   }
@@ -134,7 +134,7 @@ export const githubNumberMetricMetadata = {
   title: 'Github Number Metric',
   description: 'Mock number description.',
   type: 'number' as const,
-  threshold: {
+  thresholds: {
     rules: [
       { key: 'error', expression: '>40' },
       { key: 'warning', expression: '>20' },
@@ -153,7 +153,7 @@ export const jiraBooleanMetricMetadata = {
   title: 'Mock Boolean Metric',
   description: 'Mock boolean description.',
   type: 'boolean' as const,
-  threshold: {
+  thresholds: {
     rules: [
       { key: 'success', expression: '==true' },
       { key: 'error', expression: '==false' },
@@ -189,7 +189,7 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
       title: `File: ${c.path}`,
       description: `Checks if ${c.path} exists.`,
       type: 'boolean' as const,
-      threshold: BOOLEAN_THRESHOLDS,
+      thresholds: BOOLEAN_THRESHOLDS,
     }));
   }
 
@@ -222,20 +222,20 @@ export const filecheckBatchMetrics = [
     title: 'File: README.md',
     description: 'Checks if README.md exists.',
     type: 'boolean' as const,
-    threshold: BOOLEAN_THRESHOLDS,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
   {
     id: 'filecheck.license',
     title: 'File: LICENSE',
     description: 'Checks if LICENSE exists.',
     type: 'boolean' as const,
-    threshold: BOOLEAN_THRESHOLDS,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
   {
     id: 'filecheck.codeowners',
     title: 'File: CODEOWNERS',
     description: 'Checks if CODEOWNERS exists.',
     type: 'boolean' as const,
-    threshold: BOOLEAN_THRESHOLDS,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
 ];

@@ -36,7 +36,7 @@ export class ThresholdResolver {
   }
 
   resolveMetricThresholds(metric: Metric, providerId: string): ThresholdConfig {
-    return this.configuredThresholds.get(providerId) ?? metric.threshold;
+    return this.configuredThresholds.get(providerId) ?? metric.thresholds;
   }
 
   resolveEntityThresholds(

@@ -35,7 +35,7 @@ describe('GithubOpenPRsProvider', () => {
       const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
-      expect(metrics[0].threshold).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
   });
 

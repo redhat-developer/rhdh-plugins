@@ -105,7 +105,7 @@ describe('MetricProvidersRegistry', () => {
               title: 'Invalid Threshold Metric',
               description: 'Test',
               type: 'number' as const,
-              threshold: {
+              thresholds: {
                 rules: [{ key: 'error', expression: 'Invalid expression' }],
               },
             },
@@ -166,7 +166,7 @@ describe('MetricProvidersRegistry', () => {
                 title: 'Invalid',
                 description: 'Invalid',
                 type: 'boolean' as const,
-                threshold: {
+                thresholds: {
                   rules: [
                     { key: 'success', expression: '==true' },
                     { key: 'error', expression: '==false' },
