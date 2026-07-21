@@ -14356,7 +14356,7 @@ __metadata:
     "@backstage/ui": "npm:^0.15.0"
     "@mui/icons-material": "npm:^5.18.0"
     "@mui/material": "npm:^5.18.0"
-    "@playwright/test": "npm:1.61.0"
+    "@playwright/test": "npm:1.61.1"
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
