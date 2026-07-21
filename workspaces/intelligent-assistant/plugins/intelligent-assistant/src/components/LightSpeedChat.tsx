@@ -34,7 +34,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button, makeStyles } from '@material-ui/core';
+import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import {
@@ -80,6 +80,7 @@ import {
 } from '@patternfly/react-icons';
 import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
 import { useQueryClient } from '@tanstack/react-query';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   LIGHTSPEED_PATH,
@@ -144,7 +145,7 @@ const ConditionalWrapper = ({
   children: React.ReactNode;
 }) => (condition ? wrapper(children) : children);
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   body: {
     // remove default margin and padding from common elements
     // lists excluded for proper formatting
@@ -164,11 +165,10 @@ const useStyles = makeStyles(theme => ({
     },
   },
   header: {
-    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
-      3,
-    )}px !important`,
+    padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
+    color: 'var(--pf-t--global--text--color--regular) !important',
   },
   errorContainer: {
     padding: theme.spacing(3),
@@ -357,7 +357,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
@@ -369,7 +369,7 @@ const useStyles = makeStyles(theme => ({
   fullscreenFooter: {
     '&>.pf-chatbot__footer-container': {
       width: '100% !important',
-      padding: `${theme.spacing(1.5)}px !important`,
+      padding: `${theme.spacing(1.5)} !important`,
       maxWidth: 'unset !important',
       margin: '0 auto',
     },
@@ -414,10 +414,10 @@ const useStyles = makeStyles(theme => ({
   // Inner scroll container we control: always scrollable so zoomed-in users see full content.
   chatbotContentScroll: {
     minHeight: 0,
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
+    flex: '1 !important' as any,
+    display: 'flex !important' as any,
+    flexDirection: 'column' as any,
+    overflowY: 'auto !important' as any,
     WebkitOverflowScrolling: 'touch',
   },
   chatbotContentScrollNewChat: {
@@ -425,8 +425,8 @@ const useStyles = makeStyles(theme => ({
       'var(--pf-t--global--background--color--floating--default) !important',
   },
   toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
+    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}`,
+    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}`,
     '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
     '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
   },
@@ -640,7 +640,7 @@ export const LightspeedChat = ({
   models,
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);

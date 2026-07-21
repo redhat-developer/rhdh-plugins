@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import { makeStyles, Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
 import { Button, Spinner } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -70,7 +71,7 @@ export const UploadResourceScreen = ({
   onUploadClick,
   isProcessing = false,
 }: UploadResourceScreenProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   return (

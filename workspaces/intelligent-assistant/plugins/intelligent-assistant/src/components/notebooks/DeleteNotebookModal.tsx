@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,11 +24,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import { useDeleteNotebook } from '../../hooks/notebooks/useDeleteNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   dialogPaper: {
     borderRadius: 16,
   },
@@ -88,7 +88,7 @@ export const DeleteNotebookModal = ({
   sessionId: string;
   name: string;
 }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const { mutateAsync: deleteNotebook, isError, error } = useDeleteNotebook();
 

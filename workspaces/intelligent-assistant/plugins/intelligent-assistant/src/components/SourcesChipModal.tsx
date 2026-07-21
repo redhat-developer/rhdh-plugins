@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
 import { SourcesCardProps } from '@patternfly/chatbot';
 import {
   Button,
@@ -26,13 +25,14 @@ import {
   Tooltip,
 } from '@patternfly/react-core';
 import { InfoCircleIcon, LinkIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { FileTypeIcon } from './notebooks/FileTypeIcon';
 
 const POPOVER_WIDTH = '400px';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   sourcesPopover: {
     '& .pf-v6-c-popover__title': {
       alignItems: 'flex-start',
@@ -104,7 +104,7 @@ type SourcesChipModalProps = {
 };
 
 export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
 
   const count = sources.sources?.length ?? 0;

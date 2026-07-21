@@ -16,8 +16,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -27,12 +25,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   dialogPaper: {
     borderRadius: 16,
   },
@@ -99,7 +99,7 @@ export const RenameNotebookModal = ({
   sessionId: string;
   currentName: string;
 }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const { mutateAsync: renameNotebook, isError, error } = useRenameNotebook();
   const [name, setName] = useState<string>('');

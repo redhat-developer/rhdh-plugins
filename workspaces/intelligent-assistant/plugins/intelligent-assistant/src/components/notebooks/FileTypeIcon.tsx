@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from 'tss-react/mui';
 
 const FILE_TYPE_COLORS: Record<string, string> = {
   pdf: '#C9190B',
@@ -35,7 +35,7 @@ const FILE_TYPE_COLORS: Record<string, string> = {
 
 const DEFAULT_COLOR = '#6A6E73';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   badge: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -65,7 +65,7 @@ const getExtension = (fileName: string): string => {
 };
 
 export const FileTypeIcon = ({ fileName, className }: FileTypeIconProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const ext = getExtension(fileName);
   const color = FILE_TYPE_COLORS[ext] ?? DEFAULT_COLOR;
   const label = ext || '?';

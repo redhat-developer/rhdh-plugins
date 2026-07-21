@@ -19,7 +19,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { makeStyles } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import IconButton from '@mui/material/IconButton';
@@ -46,6 +45,7 @@ import {
   TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { makeStyles } from 'tss-react/mui';
 
 import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
@@ -76,7 +76,7 @@ type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
 
 const SAVED_TOKEN_MASK = '********************';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   '@global': {
     '.pf-v6-c-backdrop': {
       zIndex: '1400 !important',
@@ -169,7 +169,7 @@ const useStyles = makeStyles(theme => ({
   },
   statusDisabled: {
     color:
-      theme.palette.type === 'dark'
+      theme.palette.mode === 'dark'
         ? 'var(--pf-t--global--text--color--subtle, #c7c7c7)'
         : 'var(--pf-t--global--text--color--subtle, #4d4d4d)',
   },
@@ -425,7 +425,7 @@ export const McpServersSettings = ({
   onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
