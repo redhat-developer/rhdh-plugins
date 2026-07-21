@@ -105,6 +105,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 - Both IDs must follow the format `<datasourceId>.<metricName>` where:
   - `datasourceId` matches the value returned by `getProviderDatasourceId()`
   - `metricName` is a non-empty identifier for the specific metric
+- Use `lowerCamelCase` for both `datasourceId` and `metricName` (e.g., `jira.openIssues`, `openssf.ciiBestPractices`)
 - The metric type returned by `getMetricType()` must match the `type` property in the metric returned by `getMetric()`
 - In `getMetric()`, always use `type: this.getMetricType()` instead of hardcoding the type value
 - Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).
