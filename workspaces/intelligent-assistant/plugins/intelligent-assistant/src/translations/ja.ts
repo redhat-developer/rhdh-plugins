@@ -125,7 +125,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'lcore.notConfigured.title': 'LLM に接続して始める',
     'mcp.settings.closeAriaLabel': 'MCP 設定を閉じる',
     'mcp.settings.closeConfigureModalAriaLabel': '設定モーダルを閉じる',
-    'mcp.settings.configureServerTitle': '{{serverName}} サーバーを設定',
+    'mcp.settings.configureServerTitle': '{{serverName}} MCP サーバー設定',
     'mcp.settings.edit': '編集',
     'mcp.settings.editServerAriaLabel': '{{serverName}} を編集',
     'mcp.settings.enabled': '有効',
@@ -135,6 +135,27 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       '認証情報は保存時に暗号化され、あなたのプロファイルに限定されます。インテリジェントアシスタントはあなたの権限で動作します。',
     'mcp.settings.modalDescriptionDcr':
       'このサーバーは Dynamic Client Registration (DCR) を使用しています。トークンはあなたの Backstage ID を使用して自動的に発行されるため、手動でのトークン入力は不要です。',
+    'mcp.settings.authenticationToken': '認証トークン',
+    'mcp.settings.modal.authenticationHeading': '認証',
+    'mcp.settings.modal.credentialMode.organization':
+      '組織のデフォルトトークンを使用',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      '管理者が設定したトークンを使用します。',
+    'mcp.settings.modal.credentialMode.personal': '個人トークンを使用',
+    'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
+    'mcp.settings.modal.loadingTools': 'ツールを読み込み中...',
+    'mcp.settings.modal.fetchingStatus': 'ステータスを取得中...',
+    'mcp.settings.modal.loadingStatus': '切断中...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'トークンが削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
+    'mcp.settings.modal.noToolsAvailable': '利用可能なツールがありません。',
+    'mcp.settings.modal.toolsLoadFailed': 'ツールの読み込みに失敗しました。',
+    'mcp.settings.modal.enabledDescription':
+      'このサーバーはアクティブで、チャットで利用できます。',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'このサーバーは無効になっており、チャットでは利用できません。',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'このサーバーは現在無効です。有効にするにはトークンを入力してください。',
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',
@@ -164,8 +185,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.token.validating': 'トークンを検証中...',
     'mcp.settings.token.validationFailed':
       '検証に失敗しました。サーバー URL とトークンを確認してください。',
-    'mcp.settings.usingAdminCredential':
-      '管理者が提供した認証情報を使用しています。アカウント用に上書きするには個人トークンを入力してください。',
     'menu.newConversation': '新しいチャット',
     'message.options.label': 'オプション',
     'modal.cancel': 'キャンセル',

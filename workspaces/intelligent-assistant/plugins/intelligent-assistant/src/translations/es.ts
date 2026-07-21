@@ -126,7 +126,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.closeAriaLabel': 'Cerrar configuración de MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Cerrar modal de configuración',
-    'mcp.settings.configureServerTitle': 'Configurar servidor {{serverName}}',
+    'mcp.settings.configureServerTitle':
+      '{{serverName}} — configuración del servidor MCP',
     'mcp.settings.edit': 'Editar',
     'mcp.settings.editServerAriaLabel': 'Editar {{serverName}}',
     'mcp.settings.enabled': 'Habilitado',
@@ -136,6 +137,28 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Las credenciales se almacenan cifradas y se limitan a tu perfil. El asistente inteligente funcionará con exactamente tus permisos.',
     'mcp.settings.modalDescriptionDcr':
       'Este servidor utiliza Dynamic Client Registration (DCR). Los tokens se generan automáticamente usando tu identidad de Backstage — no se necesita un token manual.',
+    'mcp.settings.authenticationToken': 'Token de autenticación',
+    'mcp.settings.modal.authenticationHeading': 'Autenticación',
+    'mcp.settings.modal.credentialMode.organization':
+      'Usar token predeterminado de la organización',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Usa el token configurado por su administrador.',
+    'mcp.settings.modal.credentialMode.personal': 'Usar token personal',
+    'mcp.settings.modal.toolsHeading': 'Herramientas ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Cargando herramientas...',
+    'mcp.settings.modal.fetchingStatus': 'Obteniendo estado...',
+    'mcp.settings.modal.loadingStatus': 'Desconectando...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Se eliminó el token. Para volver a usar este servidor MCP, proporcione un nuevo token.',
+    'mcp.settings.modal.noToolsAvailable': 'No hay herramientas disponibles.',
+    'mcp.settings.modal.toolsLoadFailed':
+      'No se pudieron cargar las herramientas.',
+    'mcp.settings.modal.enabledDescription':
+      'Este servidor está activo y disponible en el chat.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Este servidor está deshabilitado y no está disponible en el chat.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Este servidor está deshabilitado actualmente. Proporcione un token para habilitarlo.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
@@ -165,8 +188,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.token.validating': 'Validando token...',
     'mcp.settings.token.validationFailed':
       'La validación falló. Revisa la URL del servidor y el token.',
-    'mcp.settings.usingAdminCredential':
-      'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
     'modal.cancel': 'Cancelar',

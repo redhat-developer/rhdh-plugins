@@ -1,0 +1,347 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+export type ServerStatus =
+  | 'tokenRequired'
+  | 'disabled'
+  | 'ok'
+  | 'failed'
+  | 'unknown';
+
+export type McpServerSortColumn = 'name' | 'status';
+
+export type CredentialMode = 'organization' | 'personal';
+
+export type McpServerDisplayInput = {
+  enabled: boolean;
+  status: 'connected' | 'error' | 'unknown';
+  hasToken: boolean;
+};
+
+/** Shared server shape used by the configure-server modal and its hook. */
+export type McpConfigureServer = {
+  id: string;
+  name: string;
+  url?: string;
+  enabled: boolean;
+  status: 'connected' | 'error' | 'unknown';
+  toolCount: number;
+  hasToken: boolean;
+  hasUserToken: boolean;
+  hasOrgToken: boolean;
+  validationError?: string;
+  /** 'dcr' = tokens are minted automatically (no manual token needed). */
+  auth?: string;
+};
+
+export const formatApiError = (error: unknown): string => {
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (error && typeof error === 'object') {
+    if ('message' in error && typeof error.message === 'string') {
+      return error.message;
+    }
+    if ('error' in error) {
+      return formatApiError((error as { error: unknown }).error);
+    }
+  }
+  return '';
+};
+
+export const getDisplayStatus = (
+  server: McpServerDisplayInput,
+): ServerStatus => {
+  if (!server.hasToken) return 'tokenRequired';
+  if (!server.enabled) return 'disabled';
+  if (server.status === 'error') return 'failed';
+  if (server.status === 'connected') return 'ok';
+  return 'unknown';
+};
+
+export const getStatusSortRank = (status: ServerStatus): number => {
+  switch (status) {
+    case 'ok':
+      return 0;
+    case 'disabled':
+      return 1;
+    case 'unknown':
+      return 2;
+    case 'tokenRequired':
+      return 3;
+    case 'failed':
+      return 4;
+    default:
+      return 5;
+  }
+};
+
+export type McpServerSortInput = McpServerDisplayInput & {
+  name: string;
+  toolCount?: number;
+};
+
+export const compareMcpServers = (
+  a: McpServerSortInput,
+  b: McpServerSortInput,
+  sortColumn: McpServerSortColumn,
+  sortAsc: boolean,
+): number => {
+  const direction = sortAsc ? 1 : -1;
+
+  if (sortColumn === 'name') {
+    return direction * a.name.localeCompare(b.name);
+  }
+
+  const statusCompare =
+    getStatusSortRank(getDisplayStatus(a)) -
+    getStatusSortRank(getDisplayStatus(b));
+  if (statusCompare !== 0) {
+    return direction * statusCompare;
+  }
+
+  const toolCompare = (a.toolCount ?? 0) - (b.toolCount ?? 0);
+  if (toolCompare !== 0) {
+    return direction * toolCompare;
+  }
+
+  return direction * a.name.localeCompare(b.name);
+};
+
+export const isEnabledToggleUnavailable = (
+  displayStatus: ServerStatus,
+): boolean => displayStatus === 'failed' || displayStatus === 'tokenRequired';
+
+export const getEnabledToggleChecked = (
+  server: McpServerDisplayInput,
+  displayStatus: ServerStatus,
+): boolean =>
+  isEnabledToggleUnavailable(displayStatus) ? false : server.enabled;
+
+export const getInitialCredentialMode = (server: {
+  hasUserToken: boolean;
+  hasOrgToken: boolean;
+}): CredentialMode => {
+  if (server.hasUserToken) {
+    return 'personal';
+  }
+  if (server.hasOrgToken) {
+    return 'organization';
+  }
+  return 'personal';
+};
+
+export const getModalEffectiveHasToken = ({
+  hasOrgToken,
+  credentialMode,
+  tokenInputValue,
+  hasSavedPersonalTokenInModal,
+}: {
+  hasOrgToken: boolean;
+  credentialMode: CredentialMode;
+  tokenInputValue: string;
+  hasSavedPersonalTokenInModal: boolean;
+}): boolean => {
+  if (credentialMode === 'organization') {
+    return hasOrgToken;
+  }
+  return tokenInputValue.trim().length > 0 || hasSavedPersonalTokenInModal;
+};
+
+export const getModalVerifiedHasToken = ({
+  hasOrgToken,
+  credentialMode,
+  hasSavedPersonalTokenInModal,
+}: {
+  hasOrgToken: boolean;
+  credentialMode: CredentialMode;
+  hasSavedPersonalTokenInModal: boolean;
+}): boolean => {
+  if (credentialMode === 'organization') {
+    return hasOrgToken;
+  }
+  return hasSavedPersonalTokenInModal;
+};
+
+export const getModalDisplayHasToken = ({
+  modalVerifiedHasToken,
+  modalEnabled,
+  serverHasToken,
+}: {
+  modalVerifiedHasToken: boolean;
+  modalEnabled: boolean;
+  serverHasToken: boolean;
+}): boolean => modalVerifiedHasToken || (!modalEnabled && serverHasToken);
+
+export const hasModalUnsavedChanges = ({
+  tokenInputValue,
+  initialTokenInputValue,
+  modalEnabled,
+  serverEnabled,
+  credentialMode,
+  initialCredentialMode,
+}: {
+  tokenInputValue: string;
+  initialTokenInputValue: string;
+  modalEnabled: boolean;
+  serverEnabled: boolean;
+  credentialMode?: CredentialMode;
+  initialCredentialMode?: CredentialMode;
+}): boolean =>
+  tokenInputValue !== initialTokenInputValue ||
+  modalEnabled !== serverEnabled ||
+  (credentialMode !== undefined &&
+    initialCredentialMode !== undefined &&
+    credentialMode !== initialCredentialMode);
+
+export type TokenValidationState = 'idle' | 'validating' | 'success' | 'error';
+
+export const isSaveTokenDisabled = ({
+  tokenInputValue,
+  initialTokenInputValue,
+  modalEnabled,
+  serverEnabled,
+  credentialMode,
+  initialCredentialMode,
+  hasOrgToken,
+  hasSavedPersonalTokenInModal,
+  tokenValidationState = 'idle',
+  hasRemovedPersonalToken = false,
+  isDcrServer = false,
+}: {
+  tokenInputValue: string;
+  initialTokenInputValue: string;
+  modalEnabled: boolean;
+  serverEnabled: boolean;
+  credentialMode: CredentialMode;
+  initialCredentialMode: CredentialMode;
+  hasOrgToken: boolean;
+  hasSavedPersonalTokenInModal: boolean;
+  tokenValidationState?: TokenValidationState;
+  hasRemovedPersonalToken?: boolean;
+  isDcrServer?: boolean;
+}): boolean => {
+  if (
+    tokenValidationState === 'error' &&
+    tokenInputValue === initialTokenInputValue
+  ) {
+    return true;
+  }
+
+  if (hasRemovedPersonalToken) {
+    return false;
+  }
+
+  if (
+    !hasModalUnsavedChanges({
+      tokenInputValue,
+      initialTokenInputValue,
+      modalEnabled,
+      serverEnabled,
+      credentialMode,
+      initialCredentialMode,
+    })
+  ) {
+    return true;
+  }
+
+  if (isDcrServer) {
+    return false;
+  }
+
+  if (credentialMode === 'personal') {
+    return !getModalEffectiveHasToken({
+      hasOrgToken,
+      credentialMode,
+      tokenInputValue,
+      hasSavedPersonalTokenInModal,
+    });
+  }
+
+  return false;
+};
+
+export type McpServerModalInput = McpServerDisplayInput & {
+  hasUserToken?: boolean;
+};
+
+export const hasModalEnabledStateChange = ({
+  server,
+  modalEnabled,
+}: {
+  server?: McpServerModalInput;
+  modalEnabled: boolean;
+}): boolean => Boolean(server && modalEnabled !== server.enabled);
+
+export const getModalDisplayStatus = (
+  server: McpServerDisplayInput,
+  modalEnabled: boolean,
+): ServerStatus => getDisplayStatus({ ...server, enabled: modalEnabled });
+
+export type ModalEnabledDescriptionKey =
+  | 'mcp.settings.modal.enabledDescription'
+  | 'mcp.settings.modal.enabledDescriptionOff'
+  | 'mcp.settings.modal.enabledDescriptionTokenRequired';
+
+export const getModalEnabledDescriptionKey = (
+  isChecked: boolean,
+  displayStatus: ServerStatus,
+): ModalEnabledDescriptionKey => {
+  if (isChecked) {
+    return 'mcp.settings.modal.enabledDescription';
+  }
+  if (displayStatus === 'tokenRequired') {
+    return 'mcp.settings.modal.enabledDescriptionTokenRequired';
+  }
+  return 'mcp.settings.modal.enabledDescriptionOff';
+};
+
+export const isModalEnabledChecked = ({
+  displayStatus,
+  modalEnabled,
+}: {
+  displayStatus: ServerStatus;
+  modalEnabled: boolean;
+}): boolean =>
+  isEnabledToggleUnavailable(displayStatus) ? false : modalEnabled;
+
+/** Translation function shape accepted by {@link getDisplayDetail}. */
+type TranslateFn = (key: any, options?: any) => string;
+
+export const getDisplayDetail = (
+  server: { toolCount: number },
+  displayStatus: ServerStatus,
+  t: TranslateFn,
+): string => {
+  if (displayStatus === 'disabled') return t('mcp.settings.status.disabled');
+  if (displayStatus === 'tokenRequired')
+    return t('mcp.settings.status.tokenRequired');
+  if (displayStatus === 'failed') return t('mcp.settings.status.failed');
+  if (displayStatus === 'ok') {
+    if (server.toolCount === 1) {
+      return t('mcp.settings.status.oneTool', {
+        count: String(server.toolCount),
+      });
+    }
+    return t('mcp.settings.status.manyTools', {
+      count: String(server.toolCount),
+    });
+  }
+  return t('mcp.settings.status.unknown');
+};
