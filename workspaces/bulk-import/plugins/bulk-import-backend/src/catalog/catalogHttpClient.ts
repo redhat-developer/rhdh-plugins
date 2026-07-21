@@ -14,65 +14,52 @@
  * limitations under the License.
  */
 
-import type {
-  AuthService,
-  DiscoveryService,
-  LoggerService,
-} from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
+import type { AuthService, LoggerService } from '@backstage/backend-plugin-api';
 import type { LocationEntity } from '@backstage/catalog-model';
 import type { Config } from '@backstage/config';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 
-import fetch from 'node-fetch';
-
-import { getTokenForPlugin, logErrorIfNeeded } from '../helpers';
+import { logErrorIfNeeded } from '../helpers';
 import { filterLocations, getCatalogUrl } from './catalogUtils';
 import { CatalogLocation } from './types';
 
 export class CatalogHttpClient {
   private readonly logger: LoggerService;
   private readonly config: Config;
-  private readonly discovery: DiscoveryService;
   private readonly auth: AuthService;
-  private readonly catalogApi: CatalogApi;
+  private readonly catalog: CatalogService;
 
   constructor(deps: {
     logger: LoggerService;
     config: Config;
-    discovery: DiscoveryService;
     auth: AuthService;
-    catalogApi: CatalogApi;
+    catalog: CatalogService;
   }) {
     this.logger = deps.logger;
     this.config = deps.config;
-    this.discovery = deps.discovery;
     this.auth = deps.auth;
-    this.catalogApi = deps.catalogApi;
+    this.catalog = deps.catalog;
+  }
+
+  private async getCredentials() {
+    return this.auth.getOwnServiceCredentials();
   }
 
   // Wrapper for https://backstage.io/docs/features/software-catalog/software-catalog-api/#post-analyze-location
   async analyzeLocation(repoUrl: string): Promise<any[]> {
     this.logger.debug(`Forwarding request to analyze location: ${repoUrl}`);
-    const response = await fetch(
-      `${await this.discovery.getBaseUrl('catalog')}/analyze-location`,
+    const response = await this.catalog.analyzeLocation(
       {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${await getTokenForPlugin(
-            this.auth,
-            'catalog',
-          )}`,
+        location: {
+          type: 'github',
+          target: repoUrl,
         },
-        method: 'POST',
-        body: JSON.stringify({
-          location: {
-            type: 'github',
-            target: repoUrl,
-          },
-        }),
+      },
+      {
+        credentials: await this.getCredentials(),
       },
     );
-    return (await response.json()).generateEntities ?? [];
+    return response.generateEntities ?? [];
   }
 
   async listCatalogUrlLocations(
@@ -132,31 +119,21 @@ export class CatalogHttpClient {
     locations: CatalogLocation[];
     totalCount?: number;
   }> {
-    const url = `${await this.discovery.getBaseUrl('catalog')}/locations`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${await getTokenForPlugin(
-          this.auth,
-          'catalog',
-        )}`,
+    const { items: locations } = await this.catalog.getLocations(
+      {},
+      {
+        credentials: await this.getCredentials(),
       },
-      method: 'GET',
-    });
-    const locations = (await response.json()) as {
-      data: { id: string; target: string; type: string };
-    }[];
+    );
     if (!Array.isArray(locations)) {
       return { locations: [] };
     }
     const res = locations
-      .filter(
-        location => location.data?.target && location.data?.type === 'url',
-      )
+      .filter(location => location.target && location.type === 'url')
       .map(location => {
         return {
-          id: location.data?.id,
-          target: location.data.target,
+          id: location.id,
+          target: location.target,
           source: 'location',
         } as CatalogLocation;
       });
@@ -196,7 +173,7 @@ export class CatalogHttpClient {
     locations: CatalogLocation[];
     totalCount?: number;
   }> {
-    const result = await this.catalogApi.getEntities(
+    const result = await this.catalog.getEntities(
       {
         filter: {
           kind: 'Location',
@@ -208,7 +185,7 @@ export class CatalogHttpClient {
         order: { field: 'metadata.name', order: 'desc' },
       },
       {
-        token: await getTokenForPlugin(this.auth, 'catalog'),
+        credentials: await this.getCredentials(),
       },
     );
     const locations = (result?.items ?? []) as LocationEntity[];
@@ -235,14 +212,14 @@ export class CatalogHttpClient {
    */
   async verifyLocationExistence(repoCatalogUrl: string): Promise<boolean> {
     try {
-      const result = await this.catalogApi.addLocation(
+      const result = await this.catalog.addLocation(
         {
           type: 'url',
           target: repoCatalogUrl,
           dryRun: true,
         },
         {
-          token: await getTokenForPlugin(this.auth, 'catalog'),
+          credentials: await this.getCredentials(),
         },
       );
       // The `result.exists` field is only filled in dryRun mode
@@ -259,7 +236,7 @@ export class CatalogHttpClient {
   }
 
   async hasEntityInCatalog(entityName: string) {
-    return this.catalogApi
+    return this.catalog
       .queryEntities(
         {
           filter: {
@@ -268,7 +245,7 @@ export class CatalogHttpClient {
           limit: 1,
         },
         {
-          token: await getTokenForPlugin(this.auth, 'catalog'),
+          credentials: await this.getCredentials(),
         },
       )
       .then(resp => resp.items?.length > 0);
@@ -276,13 +253,13 @@ export class CatalogHttpClient {
 
   async possiblyCreateLocation(repoCatalogUrl: string) {
     try {
-      await this.catalogApi.addLocation(
+      await this.catalog.addLocation(
         {
           type: 'url',
           target: repoCatalogUrl,
         },
         {
-          token: await getTokenForPlugin(this.auth, 'catalog'),
+          credentials: await this.getCredentials(),
         },
       );
     } catch (error: any) {
@@ -300,18 +277,8 @@ export class CatalogHttpClient {
 
   async deleteCatalogLocationById(locationId: string): Promise<void> {
     try {
-      const url = `${await this.discovery.getBaseUrl(
-        'catalog',
-      )}/locations/${locationId}`;
-      await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${await getTokenForPlugin(
-            this.auth,
-            'catalog',
-          )}`,
-        },
-        method: 'DELETE',
+      await this.catalog.removeLocationById(locationId, {
+        credentials: await this.getCredentials(),
       });
     } catch (error: any) {
       logErrorIfNeeded(
@@ -323,8 +290,8 @@ export class CatalogHttpClient {
   }
 
   async deleteCatalogLocationEntityById(locationUid: string): Promise<void> {
-    await this.catalogApi.removeEntityByUid(locationUid, {
-      token: await getTokenForPlugin(this.auth, 'catalog'),
+    await this.catalog.removeEntityByUid(locationUid, {
+      credentials: await this.getCredentials(),
     });
   }
 
@@ -335,7 +302,7 @@ export class CatalogHttpClient {
   }
 
   async findLocationEntitiesByTargetUrl(targetUrl: string, limit?: number) {
-    return this.catalogApi
+    return this.catalog
       .queryEntities(
         {
           filter: [
@@ -345,7 +312,7 @@ export class CatalogHttpClient {
           limit,
         },
         {
-          token: await getTokenForPlugin(this.auth, 'catalog'),
+          credentials: await this.getCredentials(),
         },
       )
       .then(resp => resp.items);
@@ -384,8 +351,8 @@ export class CatalogHttpClient {
   ) {
     const entityRef = `${kind}:${namespace}/${name}`;
     this.logger.debug(`Refreshing entityRef: ${entityRef}`);
-    await this.catalogApi.refreshEntity(entityRef, {
-      token: await getTokenForPlugin(this.auth, 'catalog'),
+    await this.catalog.refreshEntity(entityRef, {
+      credentials: await this.getCredentials(),
     });
   }
 }

@@ -39,7 +39,7 @@ export const bulkImportPlugin = createBackendPlugin({
         permissions: coreServices.permissions,
         httpAuth: coreServices.httpAuth,
         auth: coreServices.auth,
-        catalogService: catalogServiceRef,
+        catalog: catalogServiceRef,
         auditor: coreServices.auditor,
         database: coreServices.database,
       },
@@ -52,7 +52,7 @@ export const bulkImportPlugin = createBackendPlugin({
         permissions,
         httpAuth,
         auth,
-        catalogService,
+        catalog,
         auditor,
         database,
       }) {
@@ -64,7 +64,7 @@ export const bulkImportPlugin = createBackendPlugin({
           logger,
           httpAuth,
           auth,
-          catalogApi: catalogService as any,
+          catalog,
           auditor,
           database,
         });

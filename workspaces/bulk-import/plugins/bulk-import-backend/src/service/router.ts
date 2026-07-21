@@ -25,9 +25,9 @@ import type {
   HttpAuthService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
@@ -93,7 +93,7 @@ export interface RouterOptions {
   discovery: DiscoveryService;
   httpAuth: HttpAuthService;
   auth: AuthService;
-  catalogApi: CatalogApi;
+  catalog: CatalogService;
   auditor: AuditorService;
   database: DatabaseService;
 }
@@ -179,8 +179,8 @@ export async function createRouter(
     config,
     cache,
     discovery,
-    catalogApi,
-    auditor: auditor,
+    catalog,
+    auditor,
     database,
   } = options;
 
@@ -201,9 +201,8 @@ export async function createRouter(
   const catalogHttpClient = new CatalogHttpClient({
     logger,
     config,
-    discovery,
     auth,
-    catalogApi,
+    catalog,
   });
   const catalogInfoGenerator = new CatalogInfoGenerator(
     logger,
@@ -524,7 +523,6 @@ export async function createRouter(
           logger,
           config,
           auth,
-          catalogApi,
           gitlabApiService,
           githubApiService,
           catalogInfoGenerator,
