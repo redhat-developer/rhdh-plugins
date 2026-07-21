@@ -228,13 +228,13 @@ describe('mergeEntityAndProviderThresholds', () => {
       }
 
       const provider = new MockColorNumberProvider(
-        'github.custom_metric',
+        'github.customMetric',
         'github',
       );
 
       entity.metadata.annotations = {
-        'scorecard.io/github.custom_metric.thresholds.rules.high': '10-60',
-        'scorecard.io/github.custom_metric.thresholds.rules.error': '>60',
+        'scorecard.io/github.customMetric.thresholds.rules.high': '10-60',
+        'scorecard.io/github.customMetric.thresholds.rules.error': '>60',
       };
 
       const result = mergeEntityAndProviderThresholds(entity, provider);
@@ -266,12 +266,11 @@ describe('mergeEntityAndProviderThresholds', () => {
         }
       }
       const provider = new PartitionProvider(
-        'github.partition_metric',
+        'github.partitionMetric',
         'github',
       );
       entity.metadata.annotations = {
-        'scorecard.io/github.partition_metric.thresholds.rules.warning':
-          '11-20',
+        'scorecard.io/github.partitionMetric.thresholds.rules.warning': '11-20',
       };
 
       expect(() => mergeEntityAndProviderThresholds(entity, provider)).toThrow(

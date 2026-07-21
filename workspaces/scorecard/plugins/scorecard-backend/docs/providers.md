@@ -49,12 +49,12 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 export class MyMetricProvider implements MetricProvider<'number'> {
   // The datasource identifier for this provider
   getProviderDatasourceId(): string {
-    return 'my_datasource';
+    return 'myDatasource';
   }
 
   // The unique provider ID that combines datasource and metric name
   getProviderId(): string {
-    return 'my_datasource.example_metric';
+    return 'myDatasource.exampleMetric';
   }
 
   // Returns the metric type
@@ -86,7 +86,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   // Use CATALOG_FILTER_EXISTS to check for the presence of specific annotations or fields.
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.my_datasource/project': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.myDatasource/project': CATALOG_FILTER_EXISTS,
     };
   }
 

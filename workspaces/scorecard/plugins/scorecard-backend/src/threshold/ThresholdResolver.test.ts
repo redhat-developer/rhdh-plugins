@@ -48,7 +48,7 @@ describe('ThresholdResolver', () => {
         scorecard: {
           plugins: {
             github: {
-              other_metric: {
+              otherMetric: {
                 thresholds: {
                   rules: [
                     { key: 'error', expression: '>100' },
@@ -61,7 +61,7 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [provider, new MockNumberProvider('github.other_metric', 'github')],
+      [provider, new MockNumberProvider('github.otherMetric', 'github')],
     );
 
     expect(resolver.resolveProviderThresholds(provider)).toEqual({
@@ -76,7 +76,7 @@ describe('ThresholdResolver', () => {
   it('uses configured thresholds before provider default thresholds', () => {
     const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      new MockNumberProvider('github.other_metric', 'github'),
+      new MockNumberProvider('github.otherMetric', 'github'),
       provider,
     ]);
 
@@ -116,7 +116,7 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [new MockNumberProvider('github.other_metric', 'github'), provider],
+      [new MockNumberProvider('github.otherMetric', 'github'), provider],
     );
 
     expect(resolver.resolveProviderThresholds(provider)).toEqual({
