@@ -74,18 +74,24 @@ export abstract class BaseEntityProvider<T extends Entity>
    *
    * When `install-dynamic-plugins` extracts extra catalog index images
    * (via `EXTRA_CATALOG_INDEX_IMAGES`), entities are placed under
-   * `<extensionsDir>/extra/<name>/catalog-entities/…`. This method
-   * detects the `extra/<name>/` segment and returns `<name>` as the
+   * `<extensionsRoot>/extra/<name>/catalog-entities/…`. This method
+   * computes the relative path from `extensionsRoot` and checks whether
+   * the first segment is `extra/` — if so, the second segment is the
    * source identifier. All other paths return `"primary"`.
    */
-  static deriveCatalogSource(filePath: string): string {
-    // Normalise to forward slashes so the regex works on all platforms.
-    const normalised = filePath.replace(/\\/g, '/');
-    const match = normalised.match(/\/extra\/([^/]+)\//);
-    return match ? match[1] : BaseEntityProvider.DEFAULT_CATALOG_SOURCE;
+  static deriveCatalogSource(filePath: string, extensionsRoot: string): string {
+    const relative = path.relative(extensionsRoot, filePath);
+    const [first, second] = relative.split(path.sep);
+    return first === 'extra' && second
+      ? second
+      : BaseEntityProvider.DEFAULT_CATALOG_SOURCE;
   }
 
-  private addProviderAnnotations(entity: T, filePath: string): T {
+  private addProviderAnnotations(
+    entity: T,
+    filePath: string,
+    extensionsRoot: string,
+  ): T {
     return {
       ...entity,
       metadata: {
@@ -95,13 +101,16 @@ export abstract class BaseEntityProvider<T extends Entity>
           [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
           [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
           [ExtensionsAnnotation.CATALOG_SOURCE]:
-            BaseEntityProvider.deriveCatalogSource(filePath),
+            BaseEntityProvider.deriveCatalogSource(filePath, extensionsRoot),
         },
       },
     };
   }
 
-  getEntities(allEntities: JsonFileData<T>[]): T[] {
+  getEntities(
+    allEntities: JsonFileData<T>[],
+    extensionsRoot: string = '',
+  ): T[] {
     if (allEntities.length === 0) {
       return [];
     }
@@ -143,7 +152,8 @@ export abstract class BaseEntityProvider<T extends Entity>
     }
 
     return Array.from(entitiesByEntityRef.values()).map(
-      ({ entity, filePath }) => this.addProviderAnnotations(entity, filePath),
+      ({ entity, filePath }) =>
+        this.addProviderAnnotations(entity, filePath, extensionsRoot),
     );
   }
 
@@ -239,7 +249,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
     }
 
-    const entities: T[] = this.getEntities(yamlData);
+    const entities: T[] = this.getEntities(yamlData, extensionsFilePath ?? '');
 
     await this.connection.applyMutation({
       type: 'full',

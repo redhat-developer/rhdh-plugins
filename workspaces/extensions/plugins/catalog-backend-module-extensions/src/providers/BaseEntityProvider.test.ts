@@ -139,17 +139,23 @@ describe('BaseEntityProvider collision policy', () => {
 });
 
 describe('BaseEntityProvider.deriveCatalogSource', () => {
+  const root = '/extensions';
+
   it('returns "primary" for paths in the main catalog-entities directory', () => {
     expect(
       BaseEntityProvider.deriveCatalogSource(
         '/extensions/catalog-entities/plugin.yaml',
+        root,
       ),
     ).toBe('primary');
   });
 
   it('returns "primary" for paths without the extra/ segment', () => {
     expect(
-      BaseEntityProvider.deriveCatalogSource('/extensions/plugins/foo.yaml'),
+      BaseEntityProvider.deriveCatalogSource(
+        '/extensions/plugins/foo.yaml',
+        root,
+      ),
     ).toBe('primary');
   });
 
@@ -157,6 +163,7 @@ describe('BaseEntityProvider.deriveCatalogSource', () => {
     expect(
       BaseEntityProvider.deriveCatalogSource(
         '/extensions/extra/community/catalog-entities/plugin.yaml',
+        root,
       ),
     ).toBe('community');
   });
@@ -165,6 +172,7 @@ describe('BaseEntityProvider.deriveCatalogSource', () => {
     expect(
       BaseEntityProvider.deriveCatalogSource(
         '/extensions/extra/partner/catalog-entities/plugins/plugin.yaml',
+        root,
       ),
     ).toBe('partner');
   });
@@ -174,6 +182,7 @@ describe('BaseEntityProvider.deriveCatalogSource', () => {
     expect(
       BaseEntityProvider.deriveCatalogSource(
         '/extensions/extra/quay.io_rhdh_index_1.10/catalog-entities/plugin.yaml',
+        root,
       ),
     ).toBe('quay.io_rhdh_index_1.10');
   });
@@ -182,14 +191,7 @@ describe('BaseEntityProvider.deriveCatalogSource', () => {
     expect(
       BaseEntityProvider.deriveCatalogSource(
         '/extensions/extra/community/catalog-entities/nested/deep/plugin.yaml',
-      ),
-    ).toBe('community');
-  });
-
-  it('handles Windows-style backslash paths', () => {
-    expect(
-      BaseEntityProvider.deriveCatalogSource(
-        'C:\\extensions\\extra\\community\\catalog-entities\\plugin.yaml',
+        root,
       ),
     ).toBe('community');
   });
@@ -204,13 +206,16 @@ describe('BaseEntityProvider source metadata annotations', () => {
     jest.restoreAllMocks();
   });
 
+  const root = '/extensions';
+
   it('sets catalog-source to "primary" for entities from the main catalog root', () => {
     const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const entity = createEntity({ metadata: { name: 'primary-plugin' } });
 
-    const entities = provider.getEntities([
-      createFileData('/extensions/catalog-entities/plugin.yaml', entity),
-    ]);
+    const entities = provider.getEntities(
+      [createFileData('/extensions/catalog-entities/plugin.yaml', entity)],
+      root,
+    );
 
     expect(entities).toHaveLength(1);
     expect(
@@ -222,12 +227,15 @@ describe('BaseEntityProvider source metadata annotations', () => {
     const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const entity = createEntity({ metadata: { name: 'community-plugin' } });
 
-    const entities = provider.getEntities([
-      createFileData(
-        '/extensions/extra/community/catalog-entities/plugin.yaml',
-        entity,
-      ),
-    ]);
+    const entities = provider.getEntities(
+      [
+        createFileData(
+          '/extensions/extra/community/catalog-entities/plugin.yaml',
+          entity,
+        ),
+      ],
+      root,
+    );
 
     expect(entities).toHaveLength(1);
     expect(
@@ -244,16 +252,19 @@ describe('BaseEntityProvider source metadata annotations', () => {
       metadata: { name: 'plugin-b' },
     });
 
-    const entities = provider.getEntities([
-      createFileData(
-        '/extensions/catalog-entities/plugin-a.yaml',
-        primaryPlugin,
-      ),
-      createFileData(
-        '/extensions/extra/community/catalog-entities/plugin-b.yaml',
-        communityPlugin,
-      ),
-    ]);
+    const entities = provider.getEntities(
+      [
+        createFileData(
+          '/extensions/catalog-entities/plugin-a.yaml',
+          primaryPlugin,
+        ),
+        createFileData(
+          '/extensions/extra/community/catalog-entities/plugin-b.yaml',
+          communityPlugin,
+        ),
+      ],
+      root,
+    );
 
     expect(entities).toHaveLength(2);
     const sourceA =
@@ -268,13 +279,16 @@ describe('BaseEntityProvider source metadata annotations', () => {
     const provider = new TestEntityProvider(taskRunner, undefined, logger);
     const entity = createEntity({ metadata: { name: 'dup-plugin' } });
 
-    const entities = provider.getEntities([
-      createFileData(
-        '/extensions/extra/community/catalog-entities/plugin.yaml',
-        entity,
-      ),
-      createFileData('/extensions/catalog-entities/plugin.yaml', entity),
-    ]);
+    const entities = provider.getEntities(
+      [
+        createFileData(
+          '/extensions/extra/community/catalog-entities/plugin.yaml',
+          entity,
+        ),
+        createFileData('/extensions/catalog-entities/plugin.yaml', entity),
+      ],
+      root,
+    );
 
     expect(entities).toHaveLength(1);
     // First-wins: the community entity was seen first
@@ -292,13 +306,19 @@ describe('BaseEntityProvider source metadata annotations', () => {
       metadata: { name: 'shared-name', namespace: 'community' },
     });
 
-    const entities = provider.getEntities([
-      createFileData('/extensions/catalog-entities/plugin.yaml', primaryEntity),
-      createFileData(
-        '/extensions/extra/community/catalog-entities/plugin.yaml',
-        communityEntity,
-      ),
-    ]);
+    const entities = provider.getEntities(
+      [
+        createFileData(
+          '/extensions/catalog-entities/plugin.yaml',
+          primaryEntity,
+        ),
+        createFileData(
+          '/extensions/extra/community/catalog-entities/plugin.yaml',
+          communityEntity,
+        ),
+      ],
+      root,
+    );
 
     expect(entities).toHaveLength(2);
     const sources = entities.map(
