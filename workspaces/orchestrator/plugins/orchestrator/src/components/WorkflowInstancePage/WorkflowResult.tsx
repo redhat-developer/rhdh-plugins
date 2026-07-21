@@ -62,6 +62,10 @@ import {
   WorkflowDescriptionModalProps,
 } from './WorkflowDescriptionModal';
 import { WorkflowLogsDialog } from './WorkflowLogsDialog';
+import {
+  extractIsoTimestamp,
+  extractWaitingNodeId,
+} from './WorkflowResult.helpers';
 
 const useStyles = makeStyles()(theme => ({
   cardContent: {
@@ -125,32 +129,10 @@ const ResultMessage = ({
   const errorMessage = error?.message || error?.toString();
   const executionSummaryArray: string[] = executionSummary ?? [];
 
-  const extractIsoTimestamp = (
-    keyword:
-      | 'started'
-      | 'failed'
-      | 'retriggered'
-      | 'waiting'
-      | 'completed'
-      | 'aborted',
-  ): string | undefined => {
-    const matchingMessage = executionSummaryArray.find(str =>
-      str.toLowerCase().includes(keyword),
-    );
-    if (!matchingMessage) {
-      return undefined;
-    }
-
-    const timeMatch = matchingMessage.match(
-      /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/,
-    );
-    return timeMatch?.[1];
-  };
-
   const getTimeFromExecutionSummary = (
     keyword: 'started' | 'failed' | 'retriggered' | 'waiting' | 'completed',
   ): string[] => {
-    const isoTime = extractIsoTimestamp(keyword);
+    const isoTime = extractIsoTimestamp(executionSummaryArray, keyword);
     if (!isoTime) {
       return [''];
     }
@@ -167,7 +149,8 @@ const ResultMessage = ({
   };
 
   const getAbortTimeAgo = (): string => {
-    const isoTime = extractIsoTimestamp('aborted') ?? end;
+    const isoTime =
+      extractIsoTimestamp(executionSummaryArray, 'aborted') ?? end;
     if (!isoTime) {
       return '';
     }
@@ -183,8 +166,7 @@ const ResultMessage = ({
       getTimeFromExecutionSummary('waiting');
 
     if (waitingMessage) {
-      const nodeMatch = waitingMessage.match(/node (\S+) since/);
-      const node = nodeMatch?.[1] ?? 'unknown';
+      const node = extractWaitingNodeId(waitingMessage) ?? 'unknown';
       return (
         <Trans
           message="run.status.runningWaitingAtNode"
