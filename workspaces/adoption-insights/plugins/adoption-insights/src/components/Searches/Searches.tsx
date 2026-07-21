@@ -90,7 +90,7 @@ const Searches = () => {
           alignItems="center"
           height={200}
         >
-          <CircularProgress />
+          <CircularProgress aria-label={t('common.loading')} />
         </Box>
       ) : (
         <>
