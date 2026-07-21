@@ -70,6 +70,8 @@ const bulkImportApi = ApiBlueprint.make({
  */
 const bulkImportPage = PageBlueprint.make({
   params: {
+    title: 'Bulk import',
+    icon: <BulkImportIcon />,
     path: '/bulk-import',
     routeRef: rootRouteRef,
     title: 'Bulk import',

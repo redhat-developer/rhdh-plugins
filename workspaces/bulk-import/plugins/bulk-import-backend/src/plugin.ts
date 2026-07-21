@@ -18,7 +18,7 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+import { CatalogClient } from '@backstage/catalog-client';
 
 import { createRouter } from './service/router';
 
@@ -39,7 +39,6 @@ export const bulkImportPlugin = createBackendPlugin({
         permissions: coreServices.permissions,
         httpAuth: coreServices.httpAuth,
         auth: coreServices.auth,
-        catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
         database: coreServices.database,
       },
@@ -52,10 +51,10 @@ export const bulkImportPlugin = createBackendPlugin({
         permissions,
         httpAuth,
         auth,
-        catalogApi,
         auditor,
         database,
       }) {
+        const catalogApi = new CatalogClient({ discoveryApi: discovery });
         const router = await createRouter({
           config,
           cache,
