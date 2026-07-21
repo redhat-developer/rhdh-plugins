@@ -132,7 +132,7 @@ describe('ExtensionsPluginInstallContent', () => {
   };
 
   const configYaml =
-    '- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions\n  disabled: false # DEBSMITA\n  pluginConfig:\n    dynamicPlugins:\n      frontend:\n        red-hat-developer-hub.backstage-plugin-extensions:\n          appIcons:\n            - name: extensions\n              importName: ExtensionsIcon\n          dynamicRoutes:\n            - path: /extensions/catalog\n              importName: DynamicExtensionsPluginRouter\n          mountPoints:\n            - mountPoint: internal.plugins/tab\n              importName: DynamicExtensionsPluginContent\n              config:\n                path: extensions\n                title: Catalog\n- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic\n  disabled: false\n';
+    '- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions\n  enabled: true # DEBSMITA\n  pluginConfig:\n    dynamicPlugins:\n      frontend:\n        red-hat-developer-hub.backstage-plugin-extensions:\n          appIcons:\n            - name: extensions\n              importName: ExtensionsIcon\n          dynamicRoutes:\n            - path: /extensions/catalog\n              importName: DynamicExtensionsPluginRouter\n          mountPoints:\n            - mountPoint: internal.plugins/tab\n              importName: DynamicExtensionsPluginContent\n              config:\n                path: extensions\n                title: Catalog\n- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic\n  enabled: true\n';
 
   const packages = [
     {
@@ -194,7 +194,7 @@ describe('ExtensionsPluginInstallContent', () => {
     expect(yamlString).toContain(
       'package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic',
     );
-    expect(yamlString).toContain('disabled: false');
+    expect(yamlString).toContain('enabled: true');
     expect(getByTestId('install')).toBeInTheDocument();
   });
 
