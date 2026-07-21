@@ -94,6 +94,6 @@ Rules MUST compose with standard Backstage permission criteria operators.
 
 #### Scenario: not composition
 
-- **WHEN** a deployer wants to deny access to everything except a specific category
+- **WHEN** a deployer wants to allow access to all categories except one
 - **THEN** they configure `not: isAiAssetCategory({ category: 'internal-tool' })` on an ALLOW policy
 - **AND** `toQuery()` produces a NOT clause wrapping the category filter
