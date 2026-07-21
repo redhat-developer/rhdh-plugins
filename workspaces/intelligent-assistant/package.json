@@ -52,7 +52,7 @@
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@jest/environment-jsdom-abstract": "^30.3.0",
-    "@playwright/test": "1.61.0",
+    "@playwright/test": "1.61.1",
     "@react-stately/layout": "^4.7.1",
     "@react-stately/overlays": "^3.7.1",
     "@react-types/table": "^3.14.0",
