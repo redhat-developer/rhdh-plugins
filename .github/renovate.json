@@ -47,6 +47,11 @@
       "allowedVersions": "=1.1.0"
     },
     {
+      "enabled": false,
+      "matchUpdateTypes": ["replacement"],
+      "matchPackageNames": ["/^@material-ui//"]
+    },
+    {
       "description": "all RHDH Plugins workspaces",
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
