@@ -21,7 +21,7 @@ import {
 import Box from '@mui/material/Box';
 import Portal from '@mui/material/Portal';
 import type { PieData } from '../../types';
-import { TooltipPosition } from '../AverageCard/types';
+import type { TooltipPosition } from '../types';
 
 type CardTooltipProps = {
   tooltipPosition: TooltipPosition;

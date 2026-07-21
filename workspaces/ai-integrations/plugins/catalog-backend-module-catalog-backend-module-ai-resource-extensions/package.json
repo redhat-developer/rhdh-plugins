@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "description": "The catalog-backend-module-ai-resource-extensions backend module for the catalog plugin.",
   "main": "src/index.ts",
@@ -30,7 +30,10 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.9.2"
+    "@backstage/backend-plugin-api": "^1.9.2",
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/plugin-catalog-common": "^1.1.10",
+    "@backstage/plugin-catalog-node": "^2.2.2"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.11.4",

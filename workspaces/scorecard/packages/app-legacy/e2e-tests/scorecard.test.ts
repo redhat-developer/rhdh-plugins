@@ -59,7 +59,7 @@ import {
   getTranslations,
   getEntityCount,
   getStatusGroupedCardSnapshot,
-  getAverageCardSnapshot,
+  getWeightedStatusScoreCardSnapshot,
   getTableFooterSnapshot,
   getEntitiesTableFooterRowsLabel,
 } from './utils/translationUtils';
@@ -73,10 +73,10 @@ import {
   setupHomepageAllCardsNoData,
 } from './utils/homepageWidgetUtils';
 import {
-  expectAverageCardCenterPercent,
-  verifyAverageDonutCenterTooltip,
-  verifyAverageCenterTooltipBreakdownRows,
-} from './utils/averageCardAssertions';
+  expectWeightedStatusScoreCardCenterPercent,
+  verifyWeightedStatusScoreDonutCenterTooltip,
+  verifyWeightedStatusScoreCenterTooltipBreakdownRows,
+} from './utils/weightedStatusScoreCardAssertions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ScorecardRoutes } from './constants/routes';
 import {
@@ -714,7 +714,7 @@ test.describe('Scorecard Plugin Tests', () => {
       });
     });
 
-    test.describe('Configured aggregation KPI - "average" type', () => {
+    test.describe('Configured aggregation KPI - "weightedStatusScore" type', () => {
       const aggregationMetadata =
         AGGREGATED_CARDS_METADATA.githubOpenPrsWeightedKpi;
 
@@ -726,7 +726,7 @@ test.describe('Scorecard Plugin Tests', () => {
         });
       });
 
-      test.describe('Validate "average" type card content', () => {
+      test.describe('Validate "weightedStatusScore" type card content', () => {
         let card: Locator;
 
         test.beforeAll(async () => {
@@ -755,19 +755,19 @@ test.describe('Scorecard Plugin Tests', () => {
 
         test('Verify center score percentage', async () => {
           await expect(card).toBeVisible();
-          await expectAverageCardCenterPercent(card, '51.5%');
+          await expectWeightedStatusScoreCardCenterPercent(card, '51.5%');
         });
 
         test('Verify center tooltip', async () => {
           await expect(card).toBeVisible();
-          await verifyAverageDonutCenterTooltip(
+          await verifyWeightedStatusScoreDonutCenterTooltip(
             page,
             card,
             translations,
-            openPrsWeightedAggregatedResponse.result.averageWeightedSum,
-            openPrsWeightedAggregatedResponse.result.averageMaxPossible,
+            openPrsWeightedAggregatedResponse.result.weightedStatusSum,
+            openPrsWeightedAggregatedResponse.result.weightedStatusMaxPossible,
           );
-          await verifyAverageCenterTooltipBreakdownRows(
+          await verifyWeightedStatusScoreCenterTooltipBreakdownRows(
             page,
             card,
             translations,
@@ -814,12 +814,12 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await expect(card).toBeVisible();
         await expect(card).toMatchAriaSnapshot(
-          getAverageCardSnapshot(translations, {
+          getWeightedStatusScoreCardSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             drillDownAggregationId: aggregationMetadata.id,
             cardTitle: partialResponse.metadata.title,
             cardDescription: partialResponse.metadata.description,
-            averageScoreLabel: `${partialResponse.result.averageScore}%`,
+            weightedStatusScoreLabel: `${partialResponse.result.weightedStatusScore}%`,
             homepageCalculationHealth: {
               healthy: String(entitiesConsidered - calculationErrorCount),
               total: String(entitiesConsidered),

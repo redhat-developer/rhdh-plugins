@@ -14,7 +14,30 @@
  * limitations under the License.
  */
 
-import { extractSsoReauthorizeUrl, isSamlSsoError } from './ErrorUtils';
+import {
+  extractSsoReauthorizeUrl,
+  getErrorObject,
+  isSamlSsoError,
+} from './ErrorUtils';
+
+describe('getErrorObject', () => {
+  it('returns the same Error instance', () => {
+    const err = new Error('boom');
+    expect(getErrorObject(err)).toBe(err);
+  });
+
+  it('wraps string errors', () => {
+    expect(getErrorObject('string failure')).toEqual(
+      new Error('string failure'),
+    );
+  });
+
+  it('falls back for unexpected values', () => {
+    expect(getErrorObject({ nope: true })).toEqual(
+      new Error('Unexpected error'),
+    );
+  });
+});
 
 describe('isSamlSsoError', () => {
   it('returns true for GitHub SAML SSO expired message', () => {

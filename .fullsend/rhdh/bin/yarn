@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+: "${FULLSEND_TARGET_REPO_DIR:?FULLSEND_TARGET_REPO_DIR is required}"
+
+yarn_js="${FULLSEND_TARGET_REPO_DIR}/.yarn/releases/yarn-4.12.0.cjs"
+if [ ! -f "${yarn_js}" ]; then
+  echo "vendored Yarn executable not found: ${yarn_js}" >&2
+  exit 1
+fi
+
+exec node "${yarn_js}" "$@"

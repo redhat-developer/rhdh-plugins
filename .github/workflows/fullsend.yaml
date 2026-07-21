@@ -1,16 +1,24 @@
+# This file is managed by fullsend. Do not edit it directly.
+# Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/.github/workflows/fullsend.yaml
+---
 # fullsend shim workflow (per-repo installation mode)
 # Routes events to agent workflows via reusable-dispatch.yml.
-#
-# Agents enabled: triage, coder, review, fix
-# Review auto-triggers on PRs touching workspaces/boost/ or workspaces/scorecard/.
-# All other agents are reachable via /fs-* slash commands.
-#
-# Auth gate: slash commands are restricted to org members/collaborators.
-# rhdh-plugins is a public repo — without this gate, any external user
-# could trigger Vertex AI inference via /fs-* comments.
+# All agent execution happens in this repo's context — no external
+# config repo is needed.
 #
 # Security: pull_request_target runs the BASE branch version of this workflow,
 # preventing PRs from modifying it to exfiltrate credentials.
+# This shim never checks out PR code, so it is not vulnerable to "pwn request"
+# attacks.
+#
+# Routing: this shim forwards the raw event context to reusable-dispatch.yml,
+# which determines the stage and conditionally calls the appropriate
+# reusable-{stage}.yml workflow. Adding a new stage requires only a case
+# branch in reusable-dispatch.yml — zero changes to this repo.
+#
+# Concurrency: per-role cancel-in-progress groups live in reusable-dispatch.yml
+# stage jobs and agent-scoped groups on reusable-{stage}.yml — not on this shim.
+# A monolithic shim group would serialize unrelated roles and drop pending runs (#2452).
 name: fullsend
 
 permissions:
@@ -31,31 +39,22 @@ on:
     paths:
       - "workspaces/boost/**"
       - "workspaces/scorecard/**"
+      - "workspaces/ai-integrations/**"
   pull_request_review:
     types: [submitted]
 
 jobs:
   dispatch:
-    concurrency:
-      group: fullsend-dispatch-${{ github.event.issue.number || github.event.pull_request.number }}
-      cancel-in-progress: false
     if: >-
       github.event_name != 'issue_comment'
-      || (
-        github.event.comment.user.type != 'Bot'
-        && (
-          github.event.comment.author_association == 'OWNER'
-          || github.event.comment.author_association == 'MEMBER'
-          || github.event.comment.author_association == 'COLLABORATOR'
-        )
-      )
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@32f73a4f93301493d2c31be3970aa4c51a26acc7 # v0
+      || github.event.comment.user.type != 'Bot'
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@807037ff09a6b5d18fbc339d06e57752af9cd522 # v0.30.0
     with:
       event_action: ${{ github.event.action }}
       install_mode: per-repo
       mint_url: ${{ vars.FULLSEND_MINT_URL }}
       gcp_region: ${{ vars.FULLSEND_GCP_REGION }}
-      fullsend_ai_ref: v0
+      runner_image: ubuntu-24.04
     secrets:
       FULLSEND_GCP_WIF_PROVIDER: ${{ secrets.FULLSEND_GCP_WIF_PROVIDER }}
       FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
@@ -73,7 +72,7 @@ jobs:
           || github.event.comment.author_association == 'CONTRIBUTOR'
           || github.event.comment.user.login == github.event.issue.user.login
         )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       issues: write

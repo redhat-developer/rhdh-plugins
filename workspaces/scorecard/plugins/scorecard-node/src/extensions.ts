@@ -15,7 +15,7 @@
  */
 
 import { createExtensionPoint } from '@backstage/backend-plugin-api';
-import { MetricProvider } from './api';
+import type { Collector, MetricProvider } from './api';
 
 /**
  * Interface for the Scorecard metrics extension point
@@ -32,4 +32,21 @@ export interface ScorecardMetricsExtensionPoint {
 export const scorecardMetricsExtensionPoint =
   createExtensionPoint<ScorecardMetricsExtensionPoint>({
     id: 'scorecard.metrics',
+  });
+
+/**
+ * Interface for the Scorecard collectors extension point
+ * @public
+ */
+export interface ScorecardCollectorsExtensionPoint {
+  addCollector(...collectors: Array<Collector>): void;
+}
+
+/**
+ * Extension point for adding collectors to the Scorecard plugin
+ * @public
+ */
+export const scorecardCollectorsExtensionPoint =
+  createExtensionPoint<ScorecardCollectorsExtensionPoint>({
+    id: 'scorecard.collectors',
   });

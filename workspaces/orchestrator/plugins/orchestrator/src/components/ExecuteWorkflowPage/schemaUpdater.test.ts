@@ -257,4 +257,128 @@ describe('getSchemaUpdater', () => {
       title: 'App-registration placeholder (updated)',
     });
   });
+
+  it('does nothing when schema has no properties', () => {
+    const setSchema = jest.fn();
+    const updateSchema = getSchemaUpdater(undefined, setSchema);
+
+    updateSchema({ placeholder: { type: 'string' } });
+
+    expect(setSchema).not.toHaveBeenCalled();
+  });
+
+  it('falls back to root when scopeId cannot be resolved', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const schema = {
+      type: 'object',
+      properties: {
+        placeholderTwo: { type: 'string', title: 'Root placeholder' },
+      },
+    } as JSONSchema7;
+    const setSchema = jest.fn();
+    const updateSchema = getSchemaUpdater(schema, setSchema);
+
+    updateSchema(
+      {
+        placeholderTwo: {
+          type: 'string',
+          title: 'Root placeholder (updated)',
+        },
+      },
+      'root_missing_schemaUpdater',
+    );
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to resolve scopeId'),
+    );
+    expect(setSchema).toHaveBeenCalledTimes(1);
+    expect(setSchema.mock.calls[0][0].properties.placeholderTwo).toEqual({
+      type: 'string',
+      title: 'Root placeholder (updated)',
+    });
+    warnSpy.mockRestore();
+  });
+
+  it('does not call setSchema when replacement chunk is unchanged', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        placeholderTwo: { type: 'string', title: 'Same' },
+      },
+    } as JSONSchema7;
+    const setSchema = jest.fn();
+    const updateSchema = getSchemaUpdater(schema, setSchema);
+
+    updateSchema({
+      placeholderTwo: { type: 'string', title: 'Same' },
+    });
+
+    expect(setSchema).not.toHaveBeenCalled();
+  });
+
+  it('replaces nested placeholders found via deep search at root scope', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        wrapper: {
+          type: 'object',
+          properties: {
+            placeholderTwo: {
+              type: 'string',
+              title: 'Nested deep placeholder',
+            },
+          },
+        },
+      },
+    } as JSONSchema7;
+    const setSchema = jest.fn();
+    const updateSchema = getSchemaUpdater(schema, setSchema);
+
+    updateSchema(
+      {
+        placeholderTwo: {
+          type: 'string',
+          title: 'Nested deep placeholder (updated)',
+        },
+      },
+      'root',
+    );
+
+    expect(setSchema).toHaveBeenCalledTimes(1);
+    const updated = setSchema.mock.calls[0][0] as JSONSchema7;
+    expect(
+      (updated.properties?.wrapper as JSONSchema7).properties?.placeholderTwo,
+    ).toEqual({
+      type: 'string',
+      title: 'Nested deep placeholder (updated)',
+    });
+  });
+
+  it('updates within the parent object when SchemaUpdater is a root property', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        schemaUpdater: { type: 'string' },
+        placeholderTwo: { type: 'string', title: 'Root sibling' },
+      },
+    } as JSONSchema7;
+    const setSchema = jest.fn();
+    const updateSchema = getSchemaUpdater(schema, setSchema);
+
+    updateSchema(
+      {
+        placeholderTwo: {
+          type: 'string',
+          title: 'Root sibling (updated)',
+        },
+      },
+      'root_schemaUpdater',
+    );
+
+    expect(setSchema).toHaveBeenCalledTimes(1);
+    expect(setSchema.mock.calls[0][0].properties.placeholderTwo).toEqual({
+      type: 'string',
+      title: 'Root sibling (updated)',
+    });
+  });
 });
