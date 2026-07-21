@@ -34,14 +34,18 @@ is format-only — the processor makes no outbound registry or HTTP calls.
 An `AIResource` entity uses `apiVersion: backstage.io/v1beta1` and
 `kind: AIResource`. The following `spec` fields are relevant:
 
-| Field                  | Required | Description                                                                                      |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `spec.type`            | yes      | The type of AI asset (e.g. `model`)                                                              |
-| `spec.lifecycle`       | yes      | Lifecycle stage (e.g. `experimental`, `production`)                                              |
-| `spec.owner`           | yes      | Owning entity reference (e.g. `team-data-science`)                                               |
-| `spec.scope`           | no       | RHDH extension. Accepted values: `organization`, `product`, `team`. Omitting the field is valid. |
-| `spec.location.type`   | yes      | Source type — `git` or `oci`                                                                     |
-| `spec.location.target` | yes      | Location URI. For `git`: a repository URL. For `oci`: an `oci://` URI (see below).               |
+| Field                  | Enforced by this module | Description                                                                                      |
+| ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `spec.type`            | no¹                     | The type of AI asset (e.g. `model`)                                                              |
+| `spec.lifecycle`       | no¹                     | Lifecycle stage (e.g. `experimental`, `production`)                                              |
+| `spec.owner`           | no¹                     | Owning entity reference (e.g. `team-data-science`)                                               |
+| `spec.scope`           | optional, validated     | RHDH extension. Accepted values: `organization`, `product`, `team`. Omitting the field is valid. |
+| `spec.location.type`   | no¹                     | Source type — `git` or `oci`                                                                     |
+| `spec.location.target` | when type is `oci`      | Location URI. For `git`: a repository URL. For `oci`: an `oci://` URI (see below).               |
+
+¹ These fields are typical for Backstage entities but are **not** validated or
+required by the processors in this module. Entities missing these fields will
+pass through without error.
 
 ### `spec.scope` Values
 
@@ -60,11 +64,10 @@ interfaces — no AIResource-specific registration flow is required.
 
 1. Create a `catalog-info.yaml` with `kind: AIResource` and
    `spec.location.type: git`.
-2. Add a `backstage.io/source-location` annotation pointing to the
-   repository URL. The standard Backstage `UrlReaderProcessor` uses this
-   annotation for ingestion.
-3. Register the file via the RHDH catalog URL registration UI or include
-   it in a catalog location for auto-discovery.
+2. Set `backstage.io/source-location` and `spec.location.target` to the
+   repository URL so consumers can locate the source repository.
+3. Register the entity YAML via the RHDH catalog URL registration UI or
+   include it in a catalog location for auto-discovery.
 
 See [`examples/ai-resource-git.yaml`](../../examples/ai-resource-git.yaml)
 for a complete example.

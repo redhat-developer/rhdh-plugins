@@ -14,7 +14,7 @@ metadata:
   name: summarization-skills
   description: Summarization prompt and skill pack published as an OCI artifact.
 spec:
-  type: model
+  type: skills
   lifecycle: experimental
   owner: team-ml-platform
   scope: team
