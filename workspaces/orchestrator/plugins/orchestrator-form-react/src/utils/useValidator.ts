@@ -31,6 +31,7 @@ import _validator from '@rjsf/validator-ajv8';
 import type { JSONSchema7 } from 'json-schema';
 
 import { getActiveStepKey } from './getSortedStepEntries';
+import { normalizeErrorSchema } from './resolveStepErrorSchema';
 import { useStepperContext } from './StepperContext';
 
 // add the activeStep to the validator to force rjsf form to rerender when activeStep changes. This doesn't happen because it assumes function are equal.
@@ -74,7 +75,10 @@ const useValidator = (isMultiStepSchema: boolean) => {
         errors: validationData.errors.filter(err =>
           err.property?.startsWith(`.${activeKey}.`),
         ),
-        errorSchema: validationData.errorSchema[activeKey] || {},
+        errorSchema:
+          normalizeErrorSchema(
+            validationData.errorSchema[activeKey] as ErrorSchema<JsonObject>,
+          ) || {},
       };
     },
 

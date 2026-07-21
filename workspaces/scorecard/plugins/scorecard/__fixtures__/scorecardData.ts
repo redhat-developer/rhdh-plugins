@@ -158,15 +158,15 @@ export const mockAggregatedScorecardData = {
       calculationErrorCount: 0,
     },
   } as AggregatedMetricResult,
-  [aggregationTypes.average]: {
+  [aggregationTypes.weightedStatusScore]: {
     id: 'github.open_prs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
-      description: 'Weighted health average for the Generative AI API group.',
+      description: 'Weighted health score for the Generative AI API group.',
       type: 'number',
       history: true,
-      aggregationType: aggregationTypes.average,
+      aggregationType: aggregationTypes.weightedStatusScore,
     },
     result: {
       values: [
@@ -177,9 +177,9 @@ export const mockAggregatedScorecardData = {
       total: 8,
       timestamp: '2024-01-15T10:30:00Z',
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
-      averageScore: 75,
-      averageWeightedSum: 18,
-      averageMaxPossible: 24,
+      weightedStatusScore: 75,
+      weightedStatusSum: 18,
+      weightedStatusMaxPossible: 24,
     },
   } as AggregatedMetricResult,
 };

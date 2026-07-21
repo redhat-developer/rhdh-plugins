@@ -83,3 +83,10 @@ export const homepageTranslationsModule = createFrontendModule({
  * @alpha
  */
 export { homepageTranslationRef, homepageTranslations } from '../translations';
+
+/**
+ * Default export required for Module Federation to emit the `alpha` NFS expose.
+ *
+ * @alpha
+ */
+export default homePageModule;

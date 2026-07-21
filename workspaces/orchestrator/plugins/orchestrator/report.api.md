@@ -4,14 +4,15 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { Entity } from '@backstage/catalog-model';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @public (undocumented)
-export const IsOrchestratorCatalogTabAvailable: () => boolean;
+// @public
+export const IsOrchestratorCatalogTabAvailable: (entity: Entity) => boolean;
 
 // Warning: (ae-missing-release-tag) "OrchestratorCatalogTab" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -180,7 +181,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.buttons.runAgain': string;
     readonly 'workflow.buttons.entireWorkflow': string;
     readonly 'workflow.buttons.fromFailurePoint': string;
-    readonly 'workflow.buttons.fromAbortedPoint': string;
     readonly 'workflow.buttons.runFailedAgain': string;
     readonly 'messages.noDataAvailable': string;
     readonly 'messages.noVariablesFound': string;
@@ -197,7 +197,6 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'tooltips.workflowDown': string;
     readonly 'tooltips.suspended': string;
     readonly 'tooltips.userNotAuthorizedAbort': string;
-    readonly 'tooltips.retriggerNotSupportedForAborted': string;
     readonly 'reviewStep.hiddenFieldsNote': string;
     readonly 'reviewStep.showHiddenParameters': string;
     readonly 'permissions.accessDenied': string;
@@ -231,8 +230,7 @@ export const orchestratorTranslations: TranslationResource<'plugin.orchestrator'
 
 // Warnings were encountered during analysis:
 //
-// src/components/catalogComponents/CatalogTab.d.ts:5:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
-// src/components/catalogComponents/CatalogTab.d.ts:6:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
+// src/components/catalogComponents/CatalogTab.d.ts:12:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 
 // (No @packageDocumentation comment for this package)
 ```

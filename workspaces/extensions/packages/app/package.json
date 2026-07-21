@@ -46,14 +46,14 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.3",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router-dom": "^6.30.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.61.1",
     "@types/react-dom": "*"
   },
   "browserslist": {

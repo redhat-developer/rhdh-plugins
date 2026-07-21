@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  MutableRefObject,
+  ReactNode,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { TranslationFunction } from '../hooks/useTranslation';
+import { isBackwardStepNavigable } from './isBackwardStepNavigable';
 
 export type StepperContext = {
   activeStep: number;
   handleNext: () => void;
   handleBack: () => void;
+  goToStep: (step: number) => void;
+  clearFormErrorsRef: MutableRefObject<(() => void) | undefined>;
   reviewStep: ReactNode;
   isValidating: boolean;
   handleValidateStarted: () => void;
@@ -54,14 +65,30 @@ export const StepperContextProvider = ({
   const [activeStep, setActiveStep] = useState<number>(0);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [fetchingCount, setFetchingCount] = useState<number>(0);
+  const clearFormErrorsRef = useRef<(() => void) | undefined>();
 
   const contextData = useMemo(() => {
+    const clearFormErrors = () => clearFormErrorsRef.current?.();
+
     return {
       activeStep,
+      clearFormErrorsRef,
       handleNext: () => {
         setActiveStep(curActiveStep => curActiveStep + 1);
       },
-      handleBack: () => setActiveStep(curActiveStep => curActiveStep - 1),
+      handleBack: () => {
+        clearFormErrors();
+        setActiveStep(curActiveStep => curActiveStep - 1);
+      },
+      goToStep: (step: number) => {
+        setActiveStep(curActiveStep => {
+          if (!isBackwardStepNavigable(step, curActiveStep)) {
+            return curActiveStep;
+          }
+          clearFormErrors();
+          return step;
+        });
+      },
       reviewStep,
       isValidating,
       handleValidateStarted: () => setIsValidating(true),
@@ -80,6 +107,7 @@ export const StepperContextProvider = ({
     setIsValidating,
     fetchingCount,
     setFetchingCount,
+    clearFormErrorsRef,
   ]);
   return <context.Provider value={contextData}>{children}</context.Provider>;
 };
