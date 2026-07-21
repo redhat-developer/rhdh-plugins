@@ -15,8 +15,23 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
+import {
+  coreServices,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
+import { CatalogClient } from '@backstage/catalog-client';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 
 const backend = createBackend();
+
+backend.add(
+  createServiceFactory({
+    service: catalogServiceRef,
+    deps: { discovery: coreServices.discovery },
+    factory: ({ discovery }) =>
+      new CatalogClient({ discoveryApi: discovery }) as any,
+  }),
+);
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));

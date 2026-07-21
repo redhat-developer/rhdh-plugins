@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { BackendFeature } from '@backstage/backend-plugin-api';
+import {
+  BackendFeature,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import type { CatalogClient } from '@backstage/catalog-client';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { rest } from 'msw';
@@ -166,7 +170,7 @@ export function addHandlersForGHTokenAppErrors(server: SetupServer) {
 }
 
 export async function startBackendServer(
-  _mockCatalogClient: CatalogClient,
+  mockCatalogClient: CatalogClient,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
   db?: any,
@@ -178,6 +182,11 @@ export async function startBackendServer(
       data: { ...BASE_CONFIG, ...(config || {}) },
     }),
     mockServices.cache.factory(),
+    createServiceFactory({
+      service: catalogServiceRef,
+      deps: {},
+      factory: () => mockCatalogClient as any,
+    }),
     db ?? mockServices.database.factory(),
   ];
   if (authorizeResult) {
