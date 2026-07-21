@@ -104,6 +104,7 @@ export const quickstartMessages = {
     hide: 'Hide',
   },
   content: {
+    loading: 'Loading',
     emptyState: {
       title: 'Quickstart content not available for your role.',
     },

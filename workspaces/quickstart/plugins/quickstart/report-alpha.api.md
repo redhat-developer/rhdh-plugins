@@ -50,6 +50,7 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'footer.progress': string;
     readonly 'footer.notStarted': string;
     readonly 'footer.hide': string;
+    readonly 'content.loading': string;
     readonly 'content.emptyState.title': string;
     readonly 'item.expandAriaLabel': string;
     readonly 'item.collapseAriaLabel': string;

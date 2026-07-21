@@ -28,6 +28,7 @@ const quickstartTranslationDe = createTranslationMessages({
     'button.gotIt': 'Habe es!',
     'button.openQuickstartGuide': 'Schnellstartanleitung öffnen',
     'button.quickstart': 'Schnellstart',
+    'content.loading': 'Wird geladen',
     'content.emptyState.title':
       'Schnellstartinhalte sind für Ihre Rolle nicht verfügbar.',
     'dev.currentState': 'Aktueller Schubladenstatus: {{state}}',
