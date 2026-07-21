@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules, using `permissions.authorize()` as the sole authorization mechanism. All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
+Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules. List endpoints use `permissions.authorizeConditional()` (returns ALLOW/DENY/CONDITIONAL); single-resource endpoints use `permissions.authorize()` with a resourceRef (returns ALLOW/DENY). All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
 
 ## ADDED Requirements
 
@@ -29,13 +29,12 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
 
 #### Scenario: Conditional list filtering (3-tier evaluation)
 
-- **WHEN** `boost.agent.list` is evaluated via `permissions.authorize()`
-- **THEN** the permission returns one of three results:
-  - **ALLOW** — return all agents (no filtering)
-  - **DENY** — return no agents (empty list)
-  - **CONDITIONAL** — attach conditions to the request for the handler to apply as filters
+- **WHEN** `boost.agent.list` is evaluated via `permissions.authorizeConditional()` (list endpoint, no resourceRef)
+- **THEN** the middleware receives one of three results:
+  - **ALLOW** — proceed; handler returns all agents
+  - **DENY** — fall back to `boost.admin`; if also denied, return 403 Unauthorized
+  - **CONDITIONAL** — attach conditions to `req.boostPermissionConditions` for the handler to apply as filters
 - **AND** deployers can configure visibility rules via RBAC policies (e.g., `IS_OWNER` to show only the user's own agents, `HAS_LIFECYCLE_STAGE` to show only published agents)
-- **AND** this aligns with the augment workspace's `augment.agent.list` design (PR #3331), enabling a shared 3-tier evaluation model across both workspaces
 
 #### Scenario: Self-approval prevention via IS_NOT_CREATOR rule
 
@@ -152,14 +151,14 @@ Non-lifecycle functional areas MUST have dedicated permissions for access contro
   | `boost.config.manage` | update | Modify admin configuration |
 - **AND** these supplement the lifecycle permissions for comprehensive coverage
 
-### Requirement: Augment Design Alignment
+### Requirement: 3-Tier Evaluation Model Consistency
 
-Boost and Augment MUST share the same permission evaluation model for agent list endpoints.
+Boost and Augment independently converge on the same 3-tier permission evaluation model for agent list endpoints. This is architectural alignment on the pattern, not shared implementation — each workspace maintains its own clean-room code.
 
-#### Scenario: Shared 3-tier evaluation model
+#### Scenario: Consistent 3-tier evaluation across workspaces
 
 - **WHEN** either `boost.agent.list` or `augment.agent.list` is evaluated
-- **THEN** both use the resource-based permission pattern with 3-tier evaluation (ALLOW/DENY/CONDITIONAL)
+- **THEN** both independently use the resource-based permission pattern with 3-tier evaluation (ALLOW/DENY/CONDITIONAL)
 - **AND** both define their list permission with a resource type (`boost-agent` / `augment-agent`)
 - **AND** both support `IS_OWNER` and `HAS_LIFECYCLE_STAGE` conditional rules for visibility filtering
-- **AND** the `authorizeLifecycleAction` middleware handles CONDITIONAL results by attaching conditions to the request for the route handler to apply as filters
+- **AND** each workspace's middleware independently handles CONDITIONAL results by attaching conditions to the request for the route handler to apply as filters

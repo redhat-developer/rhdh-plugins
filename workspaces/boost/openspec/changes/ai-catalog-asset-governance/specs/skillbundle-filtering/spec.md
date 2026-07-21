@@ -22,7 +22,7 @@ SkillBundle API responses MUST filter individual skills based on the requesting 
 
 - **WHEN** a user with conditional `ai-catalog.asset.read` (category-scoped or connector-scoped) requests a SkillBundle detail
 - **THEN** only skills matching the user's conditional policy are included in the response
-- **AND** the response includes `totalSkills` (full count) and `visibleSkills` (filtered count)
+- **AND** the response includes `totalSkills` (full count) and `visibleSkills` (filtered count). Exposing the total count is an accepted trade-off: it reveals how many skills are hidden but not their identities. Deployers who need full opacity can use default-deny at the bundle level to hide the entire bundle.
 - **AND** skill references that were filtered out are not exposed in any form (no IDs, no names, no placeholders)
 
 #### Scenario: No access to bundle contents

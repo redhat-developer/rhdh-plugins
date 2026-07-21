@@ -21,7 +21,7 @@ A conditional rule MUST filter AI assets by their category annotation.
 
 #### Scenario: Multiple categories via anyOf
 
-- **WHEN** a deployer wants to grant access to both `model` and `agent` categories
+- **WHEN** a deployer wants to grant access to both `ai-model` and `agent` categories
 - **THEN** they configure two rules composed with `anyOf`:
   ```
   anyOf:

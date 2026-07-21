@@ -20,6 +20,8 @@ import type { McpAuthType } from '@red-hat-developer-hub/backstage-plugin-boost-
 import type { McpServerRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { McpTransport } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { Permission } from '@backstage/plugin-permission-common';
+import { PermissionCondition } from '@backstage/plugin-permission-common';
+import { PermissionCriteria } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
@@ -120,6 +122,12 @@ export const boostAiProviderServiceFactory: ServiceFactory<
   'plugin',
   'singleton'
 >;
+
+// @public
+export interface BoostAuthorizedRequest extends Request_2 {
+  // (undocumented)
+  boostPermissionConditions?: PermissionCriteria<PermissionCondition>;
+}
 
 // @public
 export const boostConfigFields: {
