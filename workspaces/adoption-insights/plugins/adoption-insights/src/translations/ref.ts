@@ -103,6 +103,7 @@ export const adoptionInsightsMessages = {
       lastUsed: 'Last used',
       views: 'Views',
       executions: 'Executions',
+      estTimeSaved: 'Est. Time Saved',
       trend: 'Trend',
       entity: 'Entity',
     },
@@ -113,6 +114,22 @@ export const adoptionInsightsMessages = {
   filter: {
     all: 'All',
     selectKind: 'Select kind',
+  },
+  timeSavedBadge: {
+    estTimeSaved: 'Est. time saved: {{duration}}',
+    addEstTimeSaved: 'Add est. time saved',
+    presentTooltip:
+      'This number reflects the typical time to do this work without the template, as reported by the owner.',
+    absentTooltipInstruction:
+      'Help users see the value of your template.\nAdd this annotation to your template.yaml:',
+    annotationSnippet: "rhdh.redhat.com/time-saved: '<duration>'",
+    copied: 'Copied!',
+    copyAnnotation: 'Copy annotation',
+  },
+  units: {
+    days: '{{value}}d',
+    hours: '{{value}}h',
+    minutes: '{{value}} min',
   },
   common: {
     noResults: 'No results for this date range.',

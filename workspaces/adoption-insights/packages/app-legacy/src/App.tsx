@@ -50,7 +50,10 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { AdoptionInsightsPage } from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+import {
+  AdoptionInsightsPage,
+  TemplateCardWithBadge,
+} from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
 import { adoptionInsightsTranslations } from '@red-hat-developer-hub/backstage-plugin-adoption-insights/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
@@ -116,7 +119,16 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
+    <Route
+      path="/create"
+      element={
+        <ScaffolderPage
+          components={{
+            TemplateCardComponent: TemplateCardWithBadge,
+          }}
+        />
+      }
+    />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"

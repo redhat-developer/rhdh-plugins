@@ -31,6 +31,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
+import { computeTotalTimeSaved } from '../../utils/formatTimeSaved';
 
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
@@ -169,6 +170,7 @@ const Templates = () => {
                       sx={{
                         width: '50%',
                         minWidth: 0,
+                        overflow: 'hidden',
                       }}
                     >
                       <Tooltip title={tooltipTitle}>
@@ -193,8 +195,33 @@ const Templates = () => {
                         </Link>
                       </Tooltip>
                     </TableCell>
-                    <TableCell sx={{ width: '50%' }}>
+                    <TableCell sx={{ width: '30%' }}>
                       {Number(template.count).toLocaleString('en-US') ?? '--'}
+                    </TableCell>
+                    <TableCell sx={{ width: '20%' }}>
+                      {(() => {
+                        const result = computeTotalTimeSaved(
+                          entityMetadataMap[template.entityref]?.timeSaved,
+                          template.count,
+                        );
+                        if (!result) return '—';
+                        const parts: string[] = [];
+                        if (result.days > 0)
+                          parts.push(
+                            (t as any)('units.days', { value: result.days }),
+                          );
+                        if (result.hours > 0)
+                          parts.push(
+                            (t as any)('units.hours', { value: result.hours }),
+                          );
+                        if (result.minutes > 0 && result.days === 0)
+                          parts.push(
+                            (t as any)('units.minutes', {
+                              value: result.minutes,
+                            }),
+                          );
+                        return parts.join(' ') || '—';
+                      })()}
                     </TableCell>
                   </TableRow>
                 );
