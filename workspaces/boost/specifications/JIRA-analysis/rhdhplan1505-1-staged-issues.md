@@ -139,7 +139,7 @@ Create the `@boost/entity-provider-sdk` package with the AI Asset annotation sch
 
 From `openspec/changes/ai-catalog-entity-model/tasks.md` group 1 (RHIDP-15255):
 
-- 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum
+- 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`)
 - 1.2 Define `rhdh.io/ai-asset-version` annotation constant
 - 1.3 Define `rhdh.io/ai-asset-source` annotation constant
 - 1.4 Implement `normalizeAIAssetVersion(sourceVersion)` utility with all four normalization rules
@@ -511,7 +511,7 @@ From `openspec/changes/oci-skill-registry/tasks.md` group 2 (RHIDP-15296):
 From `openspec/changes/oci-skill-registry/tasks.md` group 3 (RHIDP-15296):
 
 - 3.1 Implement `OciSkillRegistryProvider` class extending `EntityProvider` interface
-- 3.2 Implement entity factory: convert `skillcard.yaml` to Backstage `Resource` entity
+- 3.2 Implement entity factory: convert `skillcard.yaml` to Backstage `AIResource` entity
 - 3.3 Populate required annotations: `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`
 - 3.4 Implement entity ref sanitization
 - 3.5 Write unit tests for entity emission
