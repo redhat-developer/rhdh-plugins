@@ -87,7 +87,7 @@ scorecard:
               expression: '<2'
 ```
 
-Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branch_protection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branchProtection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Troubleshooting
 

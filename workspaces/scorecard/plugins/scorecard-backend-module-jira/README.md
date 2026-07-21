@@ -186,7 +186,7 @@ This metric counts all jira issues that match the filter condition specified in 
 
 ## Default thresholds
 
-Default thresholds for `jira.open_issues`:
+Default thresholds for `jira.openIssues`:
 
 ```yaml
 # app-config.yaml

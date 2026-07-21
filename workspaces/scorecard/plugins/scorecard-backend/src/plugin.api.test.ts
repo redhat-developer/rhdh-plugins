@@ -43,13 +43,9 @@ const testMetricsModule = createBackendModule({
       deps: { metrics: scorecardMetricsExtensionPoint },
       async init({ metrics }) {
         metrics.addMetricProvider(
+          new MockNumberProvider('github.openPRs', 'github', 'GitHub Open PRs'),
           new MockNumberProvider(
-            'github.open_prs',
-            'github',
-            'GitHub Open PRs',
-          ),
-          new MockNumberProvider(
-            'github.open_issues',
+            'github.openIssues',
             'github',
             'GitHub Open Issues',
           ),
@@ -129,8 +125,8 @@ describe('scorecard plugin (startTestBackend)', () => {
       const ids = res.body.metrics.map((m: { id: string }) => m.id);
       expect(ids).toEqual(
         expect.arrayContaining([
-          'github.open_prs',
-          'github.open_issues',
+          'github.openPRs',
+          'github.openIssues',
           'sonar.quality',
         ]),
       );
@@ -138,12 +134,12 @@ describe('scorecard plugin (startTestBackend)', () => {
 
     it('filters metrics by metricIds', async () => {
       const res = await request(server).get(
-        '/api/scorecard/metrics?metricIds=github.open_prs',
+        '/api/scorecard/metrics?metricIds=github.openPRs',
       );
 
       expect(res.status).toBe(200);
       expect(res.body.metrics).toHaveLength(1);
-      expect(res.body.metrics[0].id).toBe('github.open_prs');
+      expect(res.body.metrics[0].id).toBe('github.openPRs');
     });
 
     it('filters metrics by datasource', async () => {
@@ -156,7 +152,7 @@ describe('scorecard plugin (startTestBackend)', () => {
 
       const ids = res.body.metrics.map((m: { id: string }) => m.id);
       expect(ids).toEqual(
-        expect.arrayContaining(['github.open_prs', 'github.open_issues']),
+        expect.arrayContaining(['github.openPRs', 'github.openIssues']),
       );
     });
 
@@ -175,7 +171,7 @@ describe('scorecard plugin (startTestBackend)', () => {
   describe('GET /api/scorecard/aggregations/:aggregationId/metadata', () => {
     it('returns metadata for a registered metric', async () => {
       const res = await request(server).get(
-        '/api/scorecard/aggregations/github.open_prs/metadata',
+        '/api/scorecard/aggregations/github.openPRs/metadata',
       );
 
       expect(res.status).toBe(200);
@@ -209,7 +205,7 @@ describe('scorecard plugin (startTestBackend)', () => {
 
     it('filters entity metrics by metricIds', async () => {
       const res = await request(server).get(
-        '/api/scorecard/metrics/catalog/component/default/my-service?metricIds=github.open_prs',
+        '/api/scorecard/metrics/catalog/component/default/my-service?metricIds=github.openPRs',
       );
 
       expect(res.status).toBe(200);
@@ -228,13 +224,13 @@ describe('scorecard plugin (startTestBackend)', () => {
   describe('GET /api/scorecard/aggregations/:aggregationId', () => {
     it('returns aggregated metrics for an authenticated user with owned entities', async () => {
       const res = await request(server).get(
-        '/api/scorecard/aggregations/github.open_prs',
+        '/api/scorecard/aggregations/github.openPRs',
       );
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(
         expect.objectContaining({
-          id: 'github.open_prs',
+          id: 'github.openPRs',
           status: 'success',
           metadata: expect.objectContaining({
             aggregationType: 'statusGrouped',
@@ -257,7 +253,7 @@ describe('scorecard plugin (startTestBackend)', () => {
 
     it('returns 401 when request has no user credentials', async () => {
       const res = await request(server)
-        .get('/api/scorecard/aggregations/github.open_prs')
+        .get('/api/scorecard/aggregations/github.openPRs')
         .set('Authorization', mockCredentials.none.header());
 
       expect(res.status).toBe(401);
@@ -284,7 +280,7 @@ describe('scorecard plugin with aggregationKPIs config', () => {
           title: 'Custom KPI',
           description: 'A custom KPI based on open PRs',
           type: 'weightedStatusScore',
-          metricId: 'github.open_prs',
+          metricId: 'github.openPRs',
           options: {
             statusScores: {
               error: 0,
@@ -322,7 +318,7 @@ describe('scorecard plugin with aggregationKPIs config', () => {
 
   it('still serves metric-based aggregation metadata', async () => {
     const res = await request(server).get(
-      '/api/scorecard/aggregations/github.open_prs/metadata',
+      '/api/scorecard/aggregations/github.openPRs/metadata',
     );
 
     expect(res.status).toBe(200);
