@@ -33,8 +33,8 @@ export const extractIsoTimestamp = (
     return undefined;
   }
 
-  const timeMatch = matchingMessage.match(
-    /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/,
+  const timeMatch = /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/.exec(
+    matchingMessage,
   );
   return timeMatch?.[1];
 };
@@ -42,6 +42,6 @@ export const extractIsoTimestamp = (
 export const extractWaitingNodeId = (
   waitingMessage: string,
 ): string | undefined => {
-  const nodeMatch = waitingMessage.match(/node (\S+) since/);
+  const nodeMatch = /node (\S+) since/.exec(waitingMessage);
   return nodeMatch?.[1];
 };

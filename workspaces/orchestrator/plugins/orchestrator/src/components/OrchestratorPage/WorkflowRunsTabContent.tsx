@@ -44,6 +44,7 @@ import TablePagination from '@mui/material/TablePagination';
 
 import {
   FieldFilter,
+  Filter,
   NestedFilter,
   orchestratorAdminViewPermission,
   orchestratorInstanceAdminViewPermission,

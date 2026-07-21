@@ -38,6 +38,7 @@ describe('mapProcessInstanceToDetails', () => {
       initiatorEntity: 'user:default/alice',
       targetEntity: 'component:default/app',
       workflowdata: { result: 'ok', input: { name: 'world' } },
+      nodes: [],
     } as ProcessInstanceDTO;
 
     const details = mapProcessInstanceToDetails(instance, t);
@@ -58,6 +59,7 @@ describe('mapProcessInstanceToDetails', () => {
       id: 'inst-2',
       processId: 'wf-2',
       state: ProcessInstanceStatusDTO.Active,
+      nodes: [],
     } as ProcessInstanceDTO;
 
     const details = mapProcessInstanceToDetails(instance, t);
