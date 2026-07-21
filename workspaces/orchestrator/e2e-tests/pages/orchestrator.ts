@@ -144,7 +144,6 @@ export class Orchestrator {
       ),
     ).toBeVisible({ timeout: 60_000 });
 
-    // TODO: Remove the ja branch when bug https://redhat.atlassian.net/browse/RHDHBUGS-3406 is fixed
     const resultsText =
       this.locale === 'ja'
         ? `${this.translations.run.results}${this.translations.table.actions.run}`
@@ -222,9 +221,11 @@ export class Orchestrator {
   async runGreetingWorkflowFromExecuteForm() {
     await this.orchestratorHelper.clickButton(this.translations.common.run);
     await expect(
-      this.page.getByText(this.translations.table.status.completed, {
-        exact: true,
-      }),
+      this.page
+        .getByText(this.translations.table.status.completed, {
+          exact: true,
+        })
+        .first(),
     ).toBeVisible({ timeout: 120_000 });
   }
 

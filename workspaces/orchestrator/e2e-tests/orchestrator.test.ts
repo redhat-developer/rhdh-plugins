@@ -313,21 +313,6 @@ test.describe('Orchestrator workflow runs', () => {
       await sharedPage
         .getByTestId('loading-indicator')
         .waitFor({ state: 'hidden', timeout: 60_000 });
-      const template = translations.table.title.allWorkflowRuns;
-      // await expect
-      //   .poll(
-      //     async () =>
-      //       parseCountFromHeading(
-      //         (await sharedPage
-      //           .getByText(countHeadingPattern(template))
-      //           .first()
-      //           .textContent({ timeout: 60_000 })) ?? '',
-      //         template,
-      //       ),
-      //     { timeout: 60_000 },
-      //   )
-      //   .toBe(runCount + 1);
-
       await orchestrator.verifyWorkflowRunsTabHeading(runCount + 1);
     });
   });

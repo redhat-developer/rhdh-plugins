@@ -35,13 +35,7 @@ export class OrchestratorHelper {
   }
 
   async verifyTableHeadings(texts: string[]) {
-    // // Wait for the table to load by checking for the presence of table rows
-    // await this.page.waitForSelector('table tbody tr', { state: 'visible' });
     for (const column of texts) {
-      // const columnSelector = `table th:has-text("${column}")`;
-      // // check if  columnSelector has at least one element or more
-      // const columnCount = await this.page.locator(columnSelector).count();
-      // expect(columnCount).toBeGreaterThan(0);
       await expect(
         this.page.getByRole('columnheader', { name: column, exact: true }),
       ).toBeVisible({ timeout: 60_000 });
@@ -53,18 +47,9 @@ export class OrchestratorHelper {
       this.page.locator('table tbody tr:not(:has(td[colspan]))').first(),
     ).toBeVisible({ timeout: 60_000 });
     await this.verifyTableHeadings(texts);
-    // Checks if the table has at least one row with data
-    // Excludes rows that have cells spanning multiple columns, such as "No data available" messages
-    // const rowSelector = `table tbody tr:not(:has(td[colspan]))`;
-    // await expect(this.page.locator(rowSelector).first()).toBeVisible({
-    //   timeout: 60_000,
-    // });
   }
 
   async searchInputPlaceholder(searchTerm: string) {
-    // await this.page
-    // .getByPlaceholder(this.translations.table.filters.placeholder)
-    // .fill(searchTerm);
     const filterLabel = this.translations.table.filters.placeholder;
     const filterInput = this.page
       .getByPlaceholder(filterLabel)

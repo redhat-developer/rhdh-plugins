@@ -40,7 +40,7 @@ export default defineConfig({
         {
           command: startCommand,
           port: 3000,
-          reuseExistingServer: false,
+          reuseExistingServer: !process.env.CI,
           cwd: __dirname,
         },
       ],
