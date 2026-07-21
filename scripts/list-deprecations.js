@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-import _ from 'lodash';
+// Based on: https://github.com/backstage/backstage/blob/master/scripts/list-deprecations.js
+
+import sortBy from 'lodash/sortBy.js';
+import groupBy from 'lodash/groupBy.js';
 import fs from 'fs-extra';
 import { glob } from 'node:fs/promises';
 import { resolve, relative, join } from 'node:path';
@@ -23,7 +26,7 @@ import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getPackages } from '@manypkg/get-packages';
 import { listWorkspaces } from './list-workspaces.js';
-import * as url from 'url';
+import * as url from 'node:url';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const execFile = promisify(execFileCb);
@@ -135,85 +138,83 @@ async function main() {
   const deprecations = [];
 
   await Promise.all(
-    Array(WORKER_COUNT)
-      .fill()
-      .map(async () => {
-        while (packageDirQueue.length) {
-          const packageDir = packageDirQueue.pop();
-          const srcDir = join(rootPath, packageDir, 'src');
+    new Array(WORKER_COUNT).fill().map(async () => {
+      while (packageDirQueue.length) {
+        const packageDir = packageDirQueue.pop();
+        const srcDir = join(rootPath, packageDir, 'src');
 
-          if (await fs.pathExists(srcDir)) {
-            const files = [];
-            for await (const file of glob('**/*.{js,jsx,ts,tsx,mjs,cjs}', {
-              cwd: srcDir,
-            })) {
-              files.push(file);
-            }
-            fileQueue.push(
-              ...files.map(file => ({
-                packageDir,
-                file: join(srcDir, file),
-              })),
-            );
+        if (await fs.pathExists(srcDir)) {
+          const files = [];
+          for await (const file of glob('**/*.{js,jsx,ts,tsx,mjs,cjs}', {
+            cwd: srcDir,
+          })) {
+            files.push(file);
           }
-        }
-
-        while (fileQueue.length) {
-          const { packageDir, file } = fileQueue.pop();
-          const content = await fs.readFile(file, 'utf8');
-          if (!deprecatedPattern.test(content)) {
-            continue;
-          }
-
-          const lines = content.split('\n');
-          for (const [index, line] of lines.entries()) {
-            if (deprecatedPattern.test(line)) {
-              deprecationQueue.push({
-                packageDir,
-                file,
-                lineNumber: index + 1,
-                lineContent: line,
-              });
-            }
-          }
-        }
-
-        while (deprecationQueue.length) {
-          const deprecation = deprecationQueue.pop();
-          const { file, packageDir, lineNumber: n } = deprecation;
-
-          const { stdout: blameOutput } = await execFile('git', [
-            'blame',
-            '--porcelain',
-            '-L',
-            `${n},${n}`,
-            file,
-          ]);
-
-          const blameInfo = Object.fromEntries(
-            blameOutput
-              .split('\n')
-              .slice(1, -2)
-              .map(line => {
-                const [key] = line.split(' ', 1);
-                return [key, line.slice(key.length + 1)];
-              }),
+          fileQueue.push(
+            ...files.map(file => ({
+              packageDir,
+              file: join(srcDir, file),
+            })),
           );
-          const [commit] = blameOutput.split(' ', 1);
-          const { author, ['author-time']: authorTime } = blameInfo;
-
-          const release = await releaseProvider.lookup(commit, packageDir);
-
-          deprecations.push({
-            file: relative(rootPath, file),
-            release,
-            commit,
-            author,
-            authorTime: new Date(authorTime * 1000),
-            lineNumber: n,
-          });
         }
-      }),
+      }
+
+      while (fileQueue.length) {
+        const { packageDir, file } = fileQueue.pop();
+        const content = await fs.readFile(file, 'utf8');
+        if (!deprecatedPattern.test(content)) {
+          continue;
+        }
+
+        const lines = content.split('\n');
+        for (const [index, line] of lines.entries()) {
+          if (deprecatedPattern.test(line)) {
+            deprecationQueue.push({
+              packageDir,
+              file,
+              lineNumber: index + 1,
+              lineContent: line,
+            });
+          }
+        }
+      }
+
+      while (deprecationQueue.length) {
+        const deprecation = deprecationQueue.pop();
+        const { file, packageDir, lineNumber: n } = deprecation;
+
+        const { stdout: blameOutput } = await execFile('git', [
+          'blame',
+          '--porcelain',
+          '-L',
+          `${n},${n}`,
+          file,
+        ]);
+
+        const blameInfo = Object.fromEntries(
+          blameOutput
+            .split('\n')
+            .slice(1, -2)
+            .map(line => {
+              const [key] = line.split(' ', 1);
+              return [key, line.slice(key.length + 1)];
+            }),
+        );
+        const [commit] = blameOutput.split(' ', 1);
+        const { author, ['author-time']: authorTime } = blameInfo;
+
+        const release = await releaseProvider.lookup(commit, packageDir);
+
+        deprecations.push({
+          file: relative(rootPath, file),
+          release,
+          commit,
+          author,
+          authorTime: new Date(authorTime * 1000),
+          lineNumber: n,
+        });
+      }
+    }),
   );
 
   if (deprecations.length === 0) {
@@ -223,14 +224,14 @@ async function main() {
 
   const maxAuthor = Math.max(...deprecations.map(d => d.author.length)) + 1;
 
-  const sortedByRelease = _.sortBy(
-    Object.entries(_.groupBy(deprecations, 'release')),
+  const sortedByRelease = sortBy(
+    Object.entries(groupBy(deprecations, 'release')),
     ([release]) => release,
   );
 
   for (const [release, ds] of sortedByRelease) {
     console.log(`\n### ${release === 'undefined' ? 'Not released' : release}`);
-    for (const d of _.sortBy(ds, 'authorTime', 'file', 'lineNumber')) {
+    for (const d of sortBy(ds, 'authorTime', 'file', 'lineNumber')) {
       console.log(
         [
           d.commit.slice(0, 8),
@@ -243,7 +244,9 @@ async function main() {
   }
 }
 
-main().catch(err => {
+try {
+  await main();
+} catch (err) {
   console.error(err.stack);
   process.exit(1);
-});
+}
