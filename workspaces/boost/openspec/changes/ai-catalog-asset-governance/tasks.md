@@ -54,6 +54,7 @@
 - [ ] 6.5 Implement `rhdh.io/ai-catalog-ingested-at` annotation stamping at ingestion time
 - [ ] 6.6 Implement configuration validation at startup (reject invalid values, warn on unknown categories/connectors)
 - [ ] 6.7 Add unit tests for default-deny posture (global, per-category, per-connector)
+- [ ] 6.8 Persist policy-change timestamp (via `AdminConfigService.setOverride()`) when admin changes default posture; read in `AICatalogRBACProvider.refresh()` to compare against `rhdh.io/ai-catalog-ingested-at`
 
 ## 7. Audit Logging (P1) — RHIDP-15277, RHIDP-15279, RHIDP-15280
 

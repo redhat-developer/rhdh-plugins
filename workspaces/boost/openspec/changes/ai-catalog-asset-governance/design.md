@@ -85,7 +85,7 @@ The `ai-catalog.rbac.defaultPolicy: allow|deny` config key is read at ingestion 
 
 Per-category defaults use conditional rules scoped to `rhdh.io/ai-asset-category` annotation values. Per-connector defaults use conditional rules scoped to a source-connector annotation.
 
-**Key design choice:** The config setting affects only _subsequently ingested_ assets — existing assets retain their current policy state. This is implemented by tagging entities with an `rhdh.io/ai-catalog-ingested-at` annotation at ingestion time and having the conditional rule check this timestamp against the policy-change timestamp.
+**Key design choice:** The config setting affects only _subsequently ingested_ assets — existing assets retain their current policy state. This is implemented by tagging entities with an `rhdh.io/ai-catalog-ingested-at` annotation at ingestion time and having the conditional rule check this timestamp against a policy-change timestamp. The policy-change timestamp is persisted in the database (via `AdminConfigService.setOverride()`) when an admin changes the default posture, and read by `AICatalogRBACProvider` during `refresh()` to determine which entities are "new" relative to the last policy change. See task 6.8 in tasks.md.
 
 ### Decision 5: Standalone admin page, not RBAC plugin extension
 
