@@ -1,3 +1,8 @@
+# Security: pull_request_target runs the base branch version of this workflow,
+# so PRs cannot modify it to exfiltrate credentials. Fork PR merge refs are
+# checked out only for inspection (git diff, package.json, changeset files);
+# backstage/actions/changeset-feedback does not execute code from the PR tree.
+# See https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
 name: Automate changeset feedback
 on:
   pull_request_target:
@@ -33,6 +38,10 @@ jobs:
           # Fetch the commit that's merged into the base rather than the target ref
           # This will let us diff only the contents of the PR, without fetching more history
           ref: 'refs/pull/${{ github.event.pull_request.number }}/merge'
+          # Required after actions/checkout backported fork-PR blocking to v4.
+          # Safe here: changeset-feedback inspects files only; no npm/build steps run.
+          allow-unsafe-pr-checkout: true
+          persist-credentials: false
       - name: fetch base
         run: git fetch --depth 1 origin "$GITHUB_BASE_REF"
 
