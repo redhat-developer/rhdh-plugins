@@ -77,6 +77,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/ # Needed for auth
 
+      - name: Install root dependencies
+        run: yarn install --immutable
+        working-directory: ${{ github.workspace }}
+
       - name: yarn install
         run: yarn install --immutable
 

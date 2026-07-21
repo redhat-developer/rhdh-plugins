@@ -25,8 +25,7 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
-    "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "new": "backstage-cli new --scope @red-hat-developer-hub"
   },
   "workspaces": {
     "packages": [

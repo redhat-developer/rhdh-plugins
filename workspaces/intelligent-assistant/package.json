@@ -32,8 +32,7 @@
     "lint:fix": "backstage-cli package lint --fix",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --write .",
-    "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "new": "backstage-cli new --scope @red-hat-developer-hub"
   },
   "workspaces": [
     "packages/*",

@@ -30,8 +30,7 @@
     "playwright": "bash -c 'if [[ \"$*\" == \"test\" ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "new": "backstage-cli new --scope @red-hat-developer-hub"
   },
   "workspaces": {
     "packages": [
