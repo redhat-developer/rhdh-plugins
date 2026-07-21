@@ -11821,7 +11821,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     express: "npm:^5.1.0"
     json-schema: "npm:^0.4.0"
-    jsonata: "npm:^2.0.6"
+    jsonata: "npm:^2.2.0"
     lodash: "npm:^4.18.1"
     msw: "npm:^1.0.0"
     react: "npm:^18.0.0"
@@ -27168,10 +27168,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonata@npm:^2.0.6":
-  version: 2.0.6
-  resolution: "jsonata@npm:2.0.6"
-  checksum: 10c0/6bc5ae471352e305b45c39933ccb6ade8d0770483d2eb7862fc1d213832ea0db2697041c2316ec973f8ddc830939cc5d0e34296ba1584f33b0685de24110b6f9
+"jsonata@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "jsonata@npm:2.2.0"
+  checksum: 10c0/03b2cc1c947e6dde047cba1b4c3eb1546ec596a4d8c6bb5ac52ab28e717924a7d1ad1f04106108c47ebde80ad2605cd910bd48bbe7f35008a0f7847f1e957271
   languageName: node
   linkType: hard
 

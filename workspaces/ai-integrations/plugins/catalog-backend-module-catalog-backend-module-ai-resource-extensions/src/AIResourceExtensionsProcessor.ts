@@ -20,6 +20,7 @@ import {
 } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { collectOciErrors } from './collectOciErrors';
 
 /**
  * Valid values for spec.scope on AIResource entities.
@@ -43,12 +44,14 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  * A CatalogProcessor that validates RHDH-specific extension
  * fields on AIResource entities.
  *
- * Currently validates:
+ * Validates:
  * - `spec.scope`: optional field restricted to 'organization',
  *   'product', or 'team'
+ * - `spec.location.target`: OCI URI format when
+ *   `spec.location.type` is `oci`
  *
- * OCI location validation is handled by the separate
- * {@link AIResourceOciProcessor}.
+ * All constraint violations are collected and reported in a single
+ * error rather than stopping at the first failure.
  *
  * @public
  */
@@ -82,6 +85,8 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
         `spec.scope has invalid value '${sanitized}'; accepted values are ${accepted}`,
       );
     }
+
+    errors.push(...collectOciErrors(entity));
 
     if (errors.length > 0) {
       throw new Error(

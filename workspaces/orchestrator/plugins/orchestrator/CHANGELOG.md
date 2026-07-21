@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.9.4
+
+### Patch Changes
+
+- f3e7e45: Fix accessibility violations (aria-progressbar-name, aria-prohibited-attr) in WorkflowSuccessRatioCell component.
+
 ## 5.9.3
 
 ### Patch Changes
