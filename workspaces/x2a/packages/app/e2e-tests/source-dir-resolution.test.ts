@@ -95,7 +95,7 @@ async function createProject(baseURL: string) {
       description: `FLPATH-4215: source_dir=. resolution test: ${name}`,
       sourceRepoUrl: SOURCE_REPO_METADATA,
       targetRepoUrl: TARGET_REPO,
-      sourceRepoBranch: 'main',
+      sourceRepoBranch: 'master',
       targetRepoBranch: 'main',
     },
   });

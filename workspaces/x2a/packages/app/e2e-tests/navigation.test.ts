@@ -39,7 +39,8 @@ test.describe('X2Ansible - Navigation @live', () => {
     expect(x2aPage.page.url()).toContain('/x2a');
   });
 
-  test('should navigate to scaffolder and back', async () => {
+  // FLPATH-4413: Scaffolder form fields don't render on RHDH 1.10+
+  test.skip('should navigate to scaffolder and back', async () => {
     await x2aPage.navigateToX2AByUrl();
     await x2aPage.verifyConversionHubPage();
 
@@ -51,7 +52,8 @@ test.describe('X2Ansible - Navigation @live', () => {
     await x2aPage.verifyConversionHubPage();
   });
 
-  test('should navigate through wizard steps and back', async () => {
+  // FLPATH-4413: Depends on scaffolder form fields rendering
+  test.skip('should navigate through wizard steps and back', async () => {
     await x2aPage.navigateToX2AByUrl();
     await x2aPage.clickStartFirstConversion();
     await x2aPage.verifyTemplateFormLoaded();

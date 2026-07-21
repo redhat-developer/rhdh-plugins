@@ -58,7 +58,9 @@ test.describe('X2Ansible - Conversion Flow @live', () => {
       await x2aPage.verifyTemplateFormLoaded();
     });
 
-    test('should display all required form fields in step 1', async () => {
+    // FLPATH-4413: Scaffolder RJSF form fields don't render on RHDH 1.10+.
+    // Blocked on FLPATH-4033 (upstream scaffolder update). Re-enable when fixed.
+    test.skip('should display all required form fields in step 1', async () => {
       await x2aPage.navigateToX2AByUrl();
       await x2aPage.clickStartFirstConversion();
       await x2aPage.verifyTemplateFormLoaded();
@@ -71,7 +73,8 @@ test.describe('X2Ansible - Conversion Flow @live', () => {
       await expect(x2aPage.page.getByLabel('Owned by group')).toBeVisible();
     });
 
-    test('should have Next button on step 1', async () => {
+    // FLPATH-4413: Depends on form fields rendering (same root cause)
+    test.skip('should have Next button on step 1', async () => {
       await x2aPage.navigateToX2AByUrl();
       await x2aPage.clickStartFirstConversion();
       await x2aPage.verifyTemplateFormLoaded();
@@ -83,7 +86,8 @@ test.describe('X2Ansible - Conversion Flow @live', () => {
   });
 
   test.describe('Happy Path - Full Conversion Wizard', () => {
-    test('should complete the full conversion wizard', async () => {
+    // FLPATH-4413: Depends on scaffolder form fields rendering (same root cause)
+    test.skip('should complete the full conversion wizard', async () => {
       test.setTimeout(180000);
 
       await x2aPage.navigateToX2AByUrl();

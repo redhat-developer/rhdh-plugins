@@ -31,7 +31,8 @@
 import { test, expect, request } from '@playwright/test';
 
 const SOURCE_REPO =
-  process.env.X2A_SOURCE_REPO || 'https://github.com/chef/chef-examples.git';
+  process.env.X2A_SOURCE_REPO ||
+  'https://github.com/x2ansible/chef-examples.git';
 const TARGET_REPO =
   process.env.X2A_TARGET_REPO ||
   'https://github.com/rhdh-orchestrator-test/x2a-e2e-target.git';

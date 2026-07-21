@@ -362,7 +362,10 @@ test.describe('X2Ansible - UI Smoke Tests @smoke @live', () => {
     });
   });
 
-  test('Scaffolder wizard loads with correct form fields', async ({ page }) => {
+  // FLPATH-4413: Scaffolder RJSF form fields don't render on RHDH 1.10+
+  test.skip('Scaffolder wizard loads with correct form fields', async ({
+    page,
+  }) => {
     const x2aPage = new X2AnsiblePage(page);
     await x2aPage.navigateToX2AByUrl();
     await x2aPage.clickStartConversion();
