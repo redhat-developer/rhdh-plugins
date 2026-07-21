@@ -304,6 +304,10 @@ test.describe(() => {
         .filter(Boolean),
     ).toHaveLength(3);
     await page.keyboard.press('Escape');
+    await page.waitForSelector('.v5-MuiTooltip-tooltip', {
+      state: 'detached',
+      timeout: 5000,
+    });
     await runAccessibilityTests(page, testInfo);
   });
 });
