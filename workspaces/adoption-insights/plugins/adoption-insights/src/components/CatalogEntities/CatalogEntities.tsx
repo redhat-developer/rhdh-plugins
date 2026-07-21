@@ -215,7 +215,14 @@ const CatalogEntities = () => {
                   }}
                 >
                   <TableCell sx={{ width: '25%', minWidth: 0 }}>
-                    <Tooltip title={tooltipTitle}>
+                    <Tooltip
+                      title={tooltipTitle}
+                      componentsProps={{
+                        tooltip: {
+                          sx: { bgcolor: '#151515', color: '#ffffff' },
+                        },
+                      }}
+                    >
                       <Link
                         component="a"
                         href={entityLink({

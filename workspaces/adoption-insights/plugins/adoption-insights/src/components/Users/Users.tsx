@@ -112,7 +112,15 @@ const Users = () => {
           <Box display="flex" alignItems="center" flex={7}>
             <Box sx={{ width: '100%', maxWidth: '240px' }}>
               <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
+                <PieChart
+                  role="img"
+                  aria-label={`${t(
+                    'users.title',
+                  )}: ${logged_in_users.toLocaleString('en-US')} ${t(
+                    'users.ofTotal' as any,
+                    { total: licensed_users.toLocaleString('en-US') },
+                  )}`}
+                >
                   <Pie
                     data={data}
                     dataKey="value"
