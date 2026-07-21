@@ -26,20 +26,15 @@ import {
   UserSettingsSignInAvatar,
   Settings as SidebarSettings,
 } from '@backstage/plugin-user-settings';
-import type { IconComponent } from '@backstage/core-plugin-api';
 import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@mui/icons-material/Menu';
 
-type NavItem = { to: string; text: string; icon: IconComponent; title: string };
-
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) => {
-      const mainItems = (items as NavItem[]).filter(
-        item => !item.to.includes('/settings'),
-      );
-      const footerItems = (items as NavItem[]).filter(item =>
-        item.to.includes('/settings'),
+    component: ({ navItems }) => {
+      const allItems = navItems.rest();
+      const mainItems = allItems.filter(
+        item => !item.href.includes('/settings'),
       );
       return (
         <Sidebar>
@@ -49,26 +44,19 @@ export const SidebarContent = NavContentBlueprint.make({
             <SidebarScrollWrapper>
               {mainItems.map(item => (
                 <SidebarItem
-                  key={item.to}
-                  icon={item.icon}
-                  to={item.to}
+                  key={item.href}
+                  icon={() => item.icon}
+                  to={item.href}
                   text={item.title}
                 />
               ))}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-          {footerItems.length > 0 && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                icon={<UserSettingsSignInAvatar />}
-              >
-                <SidebarSettings />
-              </SidebarGroup>
-            </>
-          )}
+          <SidebarDivider />
+          <SidebarGroup label="Settings" icon={<UserSettingsSignInAvatar />}>
+            <SidebarSettings />
+          </SidebarGroup>
         </Sidebar>
       );
     },
