@@ -69,7 +69,7 @@
     "eventsource-client": "^1.2.0",
     "express": "^4.17.1",
     "git-url-parse": "^14.0.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "just-kebab-case": "4.2.0",
     "knex": "^3.0.0",
     "luxon": "^3.4.4",
