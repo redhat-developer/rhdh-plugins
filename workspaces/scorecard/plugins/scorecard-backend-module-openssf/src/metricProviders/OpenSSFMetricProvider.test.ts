@@ -85,23 +85,16 @@ describe('OpenSSFMetricProvider', () => {
       expect(provider.getProviderDatasourceId()).toBe('openssf');
     });
 
-    it('returns number as metric type', () => {
+    it('returns metrics with correct type, threshold, and history', () => {
       const provider = new OpenSSFMetricProvider(maintainedConfig);
-      expect(provider.getMetricType()).toBe('number');
-    });
-
-    it('returns metric descriptor with history enabled', () => {
-      const provider = new OpenSSFMetricProvider(maintainedConfig);
-      const metric = provider.getMetric();
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      const metric = metrics[0];
       expect(metric.id).toBe('openssf.maintained');
       expect(metric.title).toBe('OpenSSF Maintained');
       expect(metric.type).toBe('number');
+      expect(metric.thresholds).toEqual(OPENSSF_THRESHOLDS);
       expect(metric.history).toBe(true);
-    });
-
-    it('returns configured thresholds', () => {
-      const provider = new OpenSSFMetricProvider(maintainedConfig);
-      expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
     });
 
     it('requires openssf/scorecard-location annotation in catalog filter', () => {
@@ -113,7 +106,7 @@ describe('OpenSSFMetricProvider', () => {
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('returns the score for the configured check', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -135,9 +128,9 @@ describe('OpenSSFMetricProvider', () => {
       });
 
       const provider = new OpenSSFMetricProvider(maintainedConfig);
-      const result = await provider.calculateMetric(entity);
+      const results = await provider.calculateMetrics(entity);
 
-      expect(result).toBe(8);
+      expect(results.get('openssf.maintained')).toBe(8);
       expect(fetch).toHaveBeenCalledWith(scorecardLocation, expect.any(Object));
     });
 
@@ -148,7 +141,7 @@ describe('OpenSSFMetricProvider', () => {
         .spyOn((provider as any).openSSFClient, 'getScorecard')
         .mockRejectedValue(propagatedError);
 
-      await expect(provider.calculateMetric(entity)).rejects.toBe(
+      await expect(provider.calculateMetrics(entity)).rejects.toBe(
         propagatedError,
       );
       expect(getScorecardSpy).toHaveBeenCalledWith(entity);
@@ -177,7 +170,7 @@ describe('OpenSSFMetricProvider', () => {
 
       const provider = new OpenSSFMetricProvider(maintainedConfig);
 
-      await expect(provider.calculateMetric(entity)).rejects.toThrow(
+      await expect(provider.calculateMetrics(entity)).rejects.toThrow(
         "OpenSSF check 'Maintained' not found in scorecard",
       );
     });
@@ -206,7 +199,7 @@ describe('OpenSSFMetricProvider', () => {
 
         const provider = new OpenSSFMetricProvider(maintainedConfig);
 
-        await expect(provider.calculateMetric(entity)).rejects.toThrow(
+        await expect(provider.calculateMetrics(entity)).rejects.toThrow(
           `OpenSSF check 'Maintained' has invalid score ${invalidScore}`,
         );
       },
@@ -235,7 +228,7 @@ describe('OpenSSFMetricProvider', () => {
       expect(providerIds).toEqual(expectedProviderIds);
       providers.forEach(provider => {
         expect(provider.getProviderDatasourceId()).toBe('openssf');
-        expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
+        expect(provider.getMetrics()[0].thresholds).toEqual(OPENSSF_THRESHOLDS);
       });
     });
   });

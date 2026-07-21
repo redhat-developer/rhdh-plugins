@@ -64,7 +64,12 @@ describe('ThresholdResolver', () => {
       [provider, new MockNumberProvider('github.other_metric', 'github')],
     );
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>20' },
@@ -80,7 +85,12 @@ describe('ThresholdResolver', () => {
       provider,
     ]);
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>50' },
@@ -119,7 +129,12 @@ describe('ThresholdResolver', () => {
       [new MockNumberProvider('github.other_metric', 'github'), provider],
     );
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         {
           key: 'present',
@@ -147,7 +162,13 @@ describe('ThresholdResolver', () => {
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>10' },
@@ -166,7 +187,13 @@ describe('ThresholdResolver', () => {
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>10' },
@@ -187,7 +214,13 @@ describe('ThresholdResolver', () => {
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>10' },
@@ -208,7 +241,13 @@ describe('ThresholdResolver', () => {
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'success', expression: '==false' },
         { key: 'error', expression: '==true' },
@@ -229,8 +268,14 @@ describe('ThresholdResolver', () => {
     const provider = new MockNumberProvider('github.number_metric', 'github');
     const resolver = new ThresholdResolver(mockConfig, [provider]);
 
-    resolver.resolveProviderThresholds(provider);
-    resolver.resolveProviderThresholds(provider);
+    resolver.resolveMetricThresholds(
+      provider.getMetrics()[0],
+      provider.getProviderId(),
+    );
+    resolver.resolveMetricThresholds(
+      provider.getMetrics()[0],
+      provider.getProviderId(),
+    );
 
     expect(mockConfig.getOptional).toHaveBeenCalledTimes(1);
   });

@@ -36,8 +36,10 @@ describe('createDependabotMetricProvider', () => {
     );
     expect(provider.getProviderId()).toBe('dependabot.alerts_high');
     expect(provider.getProviderDatasourceId()).toBe('dependabot');
-    expect(provider.getMetricType()).toBe('number');
-    expect(provider.getMetricThresholds()).toBe(DEPENDABOT_THRESHOLDS);
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(1);
+    expect(metrics[0].type).toBe('number');
+    expect(metrics[0].thresholds).toBe(DEPENDABOT_THRESHOLDS);
   });
 });
 

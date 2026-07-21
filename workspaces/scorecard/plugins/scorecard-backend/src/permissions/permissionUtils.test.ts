@@ -49,6 +49,7 @@ const createMockMetric = (
   title,
   description: `Description for ${title}`,
   type: 'number',
+  thresholds: { rules: [] },
   history: false,
 });
 

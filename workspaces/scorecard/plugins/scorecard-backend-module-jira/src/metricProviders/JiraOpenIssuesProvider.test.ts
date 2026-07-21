@@ -16,10 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import {
-  DEFAULT_NUMBER_THRESHOLDS,
-  Metric,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { JiraOpenIssuesProvider } from './JiraOpenIssuesProvider';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { JiraClient } from '../clients/base';
@@ -93,57 +90,24 @@ describe('JiraOpenIssuesProvider', () => {
     });
   });
 
-  describe('getMetricType', () => {
-    it('should return "number"', () => {
+  describe('getMetrics', () => {
+    it('should return correct metric metadata with threshold', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
         mockAuthOptions,
       );
-      expect(provider.getMetricType()).toEqual('number');
-    });
-  });
+      const metrics = provider.getMetrics();
 
-  describe('getMetric', () => {
-    let getMetricResult: Metric<'number'>;
-
-    beforeEach(() => {
-      jest.spyOn(JiraOpenIssuesProvider.prototype, 'getProviderId');
-      jest.spyOn(JiraOpenIssuesProvider.prototype, 'getMetricType');
-
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        mockConfig,
-        mockAuthOptions,
-      );
-      getMetricResult = provider.getMetric();
-    });
-
-    it('should return correct metric metadata', () => {
-      expect(getMetricResult).toEqual({
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0]).toEqual({
         id: 'jira.open_issues',
         title: 'Jira open blocking tickets',
         description:
           'Highlights the number of issues that are currently open in Jira.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       });
-    });
-
-    it('should call getProviderId', () => {
-      expect(JiraOpenIssuesProvider.prototype.getProviderId).toHaveBeenCalled();
-    });
-
-    it('should call getMetricType', () => {
-      expect(JiraOpenIssuesProvider.prototype.getMetricType).toHaveBeenCalled();
-    });
-  });
-
-  describe('getMetricThresholds', () => {
-    it('should return default provider thresholds', () => {
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        mockConfig,
-        mockAuthOptions,
-      );
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
   });
 
@@ -168,13 +132,15 @@ describe('JiraOpenIssuesProvider', () => {
   });
 
   describe('fromConfig', () => {
-    it('should create provider with default config when thresholds are not configured', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
         mockAuthOptions,
       );
 
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(provider.getMetrics()[0].thresholds).toEqual(
+        DEFAULT_NUMBER_THRESHOLDS,
+      );
     });
 
     it('should create provider with proxy connection strategy when proxy path is configured', () => {
@@ -203,7 +169,7 @@ describe('JiraOpenIssuesProvider', () => {
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('should return the count of open issues when Jira client processed successfully', async () => {
       mockJiraClient.getCountOpenIssues.mockResolvedValue(5);
 
@@ -211,9 +177,9 @@ describe('JiraOpenIssuesProvider', () => {
         mockConfig,
         mockAuthOptions,
       );
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(5);
+      expect(results.get('jira.open_issues')).toBe(5);
       expect(mockJiraClient.getCountOpenIssues).toHaveBeenCalledWith(
         mockEntity,
       );
@@ -231,7 +197,7 @@ describe('JiraOpenIssuesProvider', () => {
           mockConfig,
           mockAuthOptions,
         );
-        await expect(provider.calculateMetric(mockEntity)).rejects.toThrow(
+        await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
           'Jira API error',
         );
         expect(mockJiraClient.getCountOpenIssues).toHaveBeenCalledWith(

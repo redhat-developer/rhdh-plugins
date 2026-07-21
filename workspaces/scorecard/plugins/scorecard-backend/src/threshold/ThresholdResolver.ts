@@ -16,7 +16,10 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import type { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   getThresholdsFromConfig,
   type MetricProvider,
@@ -32,30 +35,32 @@ export class ThresholdResolver {
     }
   }
 
-  resolveProviderThresholds(provider: MetricProvider): ThresholdConfig {
-    return (
-      this.configuredThresholds.get(provider.getProviderId()) ??
-      provider.getMetricThresholds()
-    );
+  resolveMetricThresholds(metric: Metric, providerId: string): ThresholdConfig {
+    return this.configuredThresholds.get(providerId) ?? metric.thresholds;
   }
 
   resolveEntityThresholds(
     entity: Entity,
-    provider: MetricProvider,
+    metric: Metric,
+    providerId: string,
   ): ThresholdConfig {
     return mergeEntityAndProviderThresholds(
       entity,
-      provider,
-      this.resolveProviderThresholds(provider),
+      metric,
+      providerId,
+      this.resolveMetricThresholds(metric, providerId),
     );
   }
 
   private setConfiguredThresholds(provider: MetricProvider): void {
     const providerId = provider.getProviderId();
+    const metrics = provider.getMetrics();
+    if (metrics.length === 0) return;
+
     const thresholds = getThresholdsFromConfig(
       this.config,
       `scorecard.plugins.${providerId}.thresholds`,
-      provider.getMetricType(),
+      metrics[0].type,
     );
 
     if (thresholds) {

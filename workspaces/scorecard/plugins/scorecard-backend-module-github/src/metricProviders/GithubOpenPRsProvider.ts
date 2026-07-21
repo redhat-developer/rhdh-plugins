@@ -20,7 +20,6 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
@@ -41,23 +40,18 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return 'github.open_prs';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'GitHub open PRs',
-      description:
-        'Current count of open Pull Requests for a given GitHub repository.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'GitHub open PRs',
+        description:
+          'Current count of open Pull Requests for a given GitHub repository.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -70,7 +64,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return new GithubOpenPRsProvider(config);
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const repository = getRepositoryInformationFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
 
@@ -79,6 +73,8 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
       repository,
     );
 
-    return result;
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), result);
+    return results;
   }
 }
