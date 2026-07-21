@@ -97,6 +97,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.filteredBy': string;
     readonly 'common.invalidDateFormat': string;
     readonly 'common.csvFilename': string;
+    readonly 'common.loading': string;
     readonly 'permission.title': string;
     readonly 'permission.description': string;
   }

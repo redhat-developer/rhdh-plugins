@@ -134,7 +134,7 @@ const Techdocs = () => {
           {loading ? (
             <TableRow>
               <TableCell colSpan={TECHDOCS_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
+                <CircularProgress aria-label={t('common.loading')} />
               </TableCell>
             </TableRow>
           ) : (
@@ -191,7 +191,18 @@ const Techdocs = () => {
                   </TableCell>
                   <TableCell sx={{ width: '25%', minWidth: 0 }}>
                     {techdoc?.name ? (
-                      <Tooltip title={tooltipTitle}>
+                      <Tooltip
+                        title={tooltipTitle}
+                        disableInteractive
+                        slotProps={{
+                          tooltip: {
+                            sx: {
+                              bgcolor: '#151515',
+                              color: '#fff',
+                            },
+                          },
+                        }}
+                      >
                         <Link
                           component="a"
                           target="_blank"
