@@ -26,7 +26,7 @@ import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAgg
 
 describe('WeightedStatusScoreAggregationStrategy', () => {
   const metric = {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     title: 'Open PRs',
     description: 'desc',
     type: 'number',

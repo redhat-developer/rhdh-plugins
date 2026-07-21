@@ -77,7 +77,7 @@ describe('OpenSSFMetricProvider', () => {
 
     it('normalizes hyphenated check names for provider id', () => {
       const provider = new OpenSSFMetricProvider(hyphenatedCheckConfig);
-      expect(provider.getProviderId()).toBe('openssf.code_review');
+      expect(provider.getProviderId()).toBe('openssf.codeReview');
     });
 
     it('returns openssf as provider datasource id', () => {
@@ -227,12 +227,30 @@ describe('OpenSSFMetricProvider', () => {
       const providers = createOpenSSFMetricProvider();
 
       const providerIds = providers.map(provider => provider.getProviderId());
-      const expectedProviderIds = OPENSSF_METRICS.map(metric => {
-        const normalizedName = metric.name.toLowerCase().replace(/-/g, '_');
-        return `openssf.${normalizedName}`;
-      });
+      const metricIds = providers.map(provider => provider.getMetric().id);
+      const expectedProviderAndMetricIds = [
+        'openssf.binaryArtifacts',
+        'openssf.branchProtection',
+        'openssf.ciiBestPractices',
+        'openssf.ciTests',
+        'openssf.codeReview',
+        'openssf.contributors',
+        'openssf.dangerousWorkflow',
+        'openssf.dependencyUpdateTool',
+        'openssf.fuzzing',
+        'openssf.license',
+        'openssf.maintained',
+        'openssf.packaging',
+        'openssf.pinnedDependencies',
+        'openssf.sast',
+        'openssf.securityPolicy',
+        'openssf.signedReleases',
+        'openssf.tokenPermissions',
+        'openssf.vulnerabilities',
+      ];
 
-      expect(providerIds).toEqual(expectedProviderIds);
+      expect(providerIds).toEqual(expectedProviderAndMetricIds);
+      expect(metricIds).toEqual(expectedProviderAndMetricIds);
       providers.forEach(provider => {
         expect(provider.getProviderDatasourceId()).toBe('openssf');
         expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);

@@ -22,7 +22,7 @@ export interface Config {
     plugins?: {
       /** Github datasource configuration */
       github?: {
-        open_prs?: {
+        openPRs?: {
           thresholds?: {
             rules?: Array<{
               key: 'error' | 'warning' | 'success';

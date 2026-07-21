@@ -41,11 +41,11 @@ describe('mergeEntityAndProviderThresholds', () => {
   let entity: Entity;
 
   const numberMetricProvider = new MockNumberProvider(
-    'github.important_metric',
+    'github.importantMetric',
     'github',
   );
   const booleanMetricProvider = new MockBooleanProvider(
-    'jira.boolean_metric',
+    'jira.booleanMetric',
     'jira',
   );
 
@@ -104,7 +104,7 @@ describe('mergeEntityAndProviderThresholds', () => {
   describe('when entity has valid threshold overrides', () => {
     it('should override single provider threshold rule for number metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -122,9 +122,9 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should override multiple provider threshold rules for number metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
-        'scorecard.io/github.important_metric.thresholds.rules.warning': '>30',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<=30',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '>30',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<=30',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -142,7 +142,7 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should override provider threshold rule for boolean metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/jira.boolean_metric.thresholds.rules.success': '!=false',
+        'scorecard.io/jira.booleanMetric.thresholds.rules.success': '!=false',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -159,7 +159,7 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should ignore annotations with empty expression values', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -172,8 +172,8 @@ describe('mergeEntityAndProviderThresholds', () => {
     it('should ignore annotations that do not match the provider prefix', () => {
       entity.metadata.annotations = {
         'scorecard.io/other.provider.thresholds.rules.error': '>50',
-        'scorecard.io/github.important_metric.thresholds.rules.warning': '>30',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<=30',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '>30',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<=30',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -191,10 +191,9 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should handle range expressions in overrides', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>100',
-        'scorecard.io/github.important_metric.thresholds.rules.warning':
-          '0-100',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<0',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>100',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '0-100',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<0',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
@@ -229,13 +228,13 @@ describe('mergeEntityAndProviderThresholds', () => {
       }
 
       const provider = new MockColorNumberProvider(
-        'github.custom_metric',
+        'github.customMetric',
         'github',
       );
 
       entity.metadata.annotations = {
-        'scorecard.io/github.custom_metric.thresholds.rules.high': '10-60',
-        'scorecard.io/github.custom_metric.thresholds.rules.error': '>60',
+        'scorecard.io/github.customMetric.thresholds.rules.high': '10-60',
+        'scorecard.io/github.customMetric.thresholds.rules.error': '>60',
       };
 
       const result = mergeEntityAndProviderThresholds(entity, provider);
@@ -267,12 +266,11 @@ describe('mergeEntityAndProviderThresholds', () => {
         }
       }
       const provider = new PartitionProvider(
-        'github.partition_metric',
+        'github.partitionMetric',
         'github',
       );
       entity.metadata.annotations = {
-        'scorecard.io/github.partition_metric.thresholds.rules.warning':
-          '11-20',
+        'scorecard.io/github.partitionMetric.thresholds.rules.warning': '11-20',
       };
 
       expect(() => mergeEntityAndProviderThresholds(entity, provider)).toThrow(
@@ -286,7 +284,7 @@ describe('mergeEntityAndProviderThresholds', () => {
 
   it('should throw error for invalid threshold expression', () => {
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.error': 'invalid',
+      'scorecard.io/github.importantMetric.thresholds.rules.error': 'invalid',
     };
     expect(() =>
       mergeEntityAndProviderThresholds(entity, numberMetricProvider),
@@ -294,13 +292,13 @@ describe('mergeEntityAndProviderThresholds', () => {
     expect(() =>
       mergeEntityAndProviderThresholds(entity, numberMetricProvider),
     ).toThrow(
-      "Invalid threshold annotation 'scorecard.io/github.important_metric.thresholds.rules.error: invalid' in entity 'component:default/test-component'",
+      "Invalid threshold annotation 'scorecard.io/github.importantMetric.thresholds.rules.error: invalid' in entity 'component:default/test-component'",
     );
   });
 
   it('should throw ThresholdConfigFormatError with annotation path when boolean override expression is invalid', () => {
     entity.metadata.annotations = {
-      'scorecard.io/jira.boolean_metric.thresholds.rules.success': '>40',
+      'scorecard.io/jira.booleanMetric.thresholds.rules.success': '>40',
     };
     expect(() =>
       mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
@@ -308,14 +306,14 @@ describe('mergeEntityAndProviderThresholds', () => {
     expect(() =>
       mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
     ).toThrow(
-      "Invalid threshold annotation 'scorecard.io/jira.boolean_metric.thresholds.rules.success: >40' in entity 'component:default/test-component'",
+      "Invalid threshold annotation 'scorecard.io/jira.booleanMetric.thresholds.rules.success: >40' in entity 'component:default/test-component'",
     );
   });
 
   it('should preserve order of provider rules when overriding', () => {
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.success': '<=20',
-      'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
+      'scorecard.io/github.importantMetric.thresholds.rules.success': '<=20',
+      'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
     };
     const result = mergeEntityAndProviderThresholds(
       entity,
@@ -344,12 +342,9 @@ describe('mergeEntityAndProviderThresholds', () => {
         };
       }
     }
-    const mockedProvider = new MockProvider(
-      'github.important_metric',
-      'github',
-    );
+    const mockedProvider = new MockProvider('github.importantMetric', 'github');
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.success': '<=10',
+      'scorecard.io/github.importantMetric.thresholds.rules.success': '<=10',
     };
     expect(() =>
       mergeEntityAndProviderThresholds(entity, mockedProvider),
@@ -357,7 +352,7 @@ describe('mergeEntityAndProviderThresholds', () => {
     expect(() =>
       mergeEntityAndProviderThresholds(entity, mockedProvider),
     ).toThrow(
-      'Unable to override component:default/test-component thresholds by {"key":"success","expression":"<=10"}, metric provider github.important_metric does not support key success',
+      'Unable to override component:default/test-component thresholds by {"key":"success","expression":"<=10"}, metric provider github.importantMetric does not support key success',
     );
   });
 });
