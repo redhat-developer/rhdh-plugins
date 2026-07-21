@@ -22,53 +22,49 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import {
-  UserSettingsSignInAvatar,
-  Settings as SidebarSettings,
-} from '@backstage/plugin-user-settings';
-import type { IconComponent } from '@backstage/core-plugin-api';
-import { SidebarLogo } from './SidebarLogo';
+import { SidebarSearchModal } from '@backstage/plugin-search';
+import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import MenuIcon from '@mui/icons-material/Menu';
-
-type NavItem = { to: string; text: string; icon: IconComponent; title: string };
+import SearchIcon from '@mui/icons-material/Search';
+import { SidebarLogo } from './SidebarLogo';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) => {
-      const mainItems = (items as NavItem[]).filter(
-        item => !item.to.includes('/settings'),
-      );
-      const footerItems = (items as NavItem[]).filter(item =>
-        item.to.includes('/settings'),
-      );
+    component: ({ navItems }) => {
+      const nav = navItems.withComponent(item => (
+        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
+      ));
+
+      // Skipped items
+      nav.take('page:search'); // Using search modal instead
+
       return (
         <Sidebar>
           <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {nav.take('page:catalog')}
+            {nav.take('page:api-docs')}
+            {nav.take('page:techdocs')}
+            {nav.take('page:scaffolder')}
+            {nav.take('page:adoption-insights')}
+            <SidebarDivider />
             <SidebarScrollWrapper>
-              {mainItems.map(item => (
-                <SidebarItem
-                  key={item.to}
-                  icon={item.icon}
-                  to={item.to}
-                  text={item.title}
-                />
-              ))}
+              {nav.rest({ sortBy: 'title' })}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
-          {footerItems.length > 0 && (
-            <>
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                icon={<UserSettingsSignInAvatar />}
-              >
-                <SidebarSettings />
-              </SidebarGroup>
-            </>
-          )}
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            {nav.take('page:user-settings')}
+          </SidebarGroup>
         </Sidebar>
       );
     },

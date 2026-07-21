@@ -235,7 +235,7 @@ test.describe(() => {
 
     await verifyTableEntries(panel, 1, 'example-website');
     await page.keyboard.press('Escape');
-    const componentRow = page.getByText('example-website');
+    const componentRow = panel.getByText('example-website');
     await componentRow.scrollIntoViewIfNeeded();
     await componentRow.hover();
     const componentTooltip = page
@@ -295,7 +295,7 @@ test.describe(() => {
     await panel.scrollIntoViewIfNeeded();
     await verifyTableEntries(panel, 1, 'Example Node.js Template');
     await page.keyboard.press('Escape');
-    const templateRow = page.getByText('Example Node.js Template');
+    const templateRow = panel.getByText('Example Node.js Template');
     await templateRow.scrollIntoViewIfNeeded();
     await templateRow.hover();
     const templateTooltip = page
