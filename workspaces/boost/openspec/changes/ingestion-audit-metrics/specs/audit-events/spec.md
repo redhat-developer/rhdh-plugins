@@ -1,4 +1,4 @@
-# Spec: Ingestion Sync Audit Events
+# Ingestion Sync Audit Events
 
 > **Status:** 🔀 CONSOLIDATED into RHIDP-15280 (RHDHPLAN-1508)  
 > **Story:** RHIDP-15343 (Closed — absorbed by RHIDP-15280)  

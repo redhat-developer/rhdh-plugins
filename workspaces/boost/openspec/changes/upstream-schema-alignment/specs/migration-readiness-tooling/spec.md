@@ -1,8 +1,8 @@
-# Spec: Migration-Readiness Tooling Scaffold
+# Migration-Readiness Tooling Scaffold
 
-**Epic:** RHIDP-15334 — Upstream Schema Alignment Readiness  
-**Story:** RHIDP-15347 — Dry-run migration-readiness tooling scaffold  
-**Status:** 🟡 Draft
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Epic:** RHIDP-15334 (Upstream Schema Alignment Readiness). **Story:** RHIDP-15347 (Dry-run migration-readiness tooling scaffold).
 
 ## Overview
 

@@ -127,7 +127,7 @@ CREATE TABLE boost_quality_scores (
   id SERIAL PRIMARY KEY,
   skill_entity_ref VARCHAR(255) NOT NULL,
   eval_source VARCHAR(100) NOT NULL, -- 'lighteval', 'ibm-clear', 'guidellm', etc.
-  score DECIMAL(5, 3) NOT NULL, -- 0.000 to 1.000 (normalized)
+  score DECIMAL(5, 3) NOT NULL CHECK (score >= 0.0 AND score <= 1.0), -- 0.000 to 1.000 (normalized)
   timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
   metadata JSONB -- extensible for eval-framework-specific data
 );

@@ -1,8 +1,8 @@
-# Spec: Annotation Specification Document
+# Annotation Specification Document
 
-**Epic:** RHIDP-15334 — Upstream Schema Alignment Readiness  
-**Story:** RHIDP-15346 — Annotation specification document  
-**Status:** 🟡 Draft
+> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+>
+> **Epic:** RHIDP-15334 (Upstream Schema Alignment Readiness). **Story:** RHIDP-15346 (Annotation specification document).
 
 ## Overview
 

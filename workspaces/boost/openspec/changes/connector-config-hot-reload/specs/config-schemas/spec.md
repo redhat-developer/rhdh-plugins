@@ -34,16 +34,16 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 
 #### Scenario: Two-layer resolution with schema validation
 
-- **WHEN** `RuntimeConfigResolver.getConfig('connectors.jira')` is called
+- **WHEN** `RuntimeConfigResolver.resolve('boost.connectors.jira')` is called
 - **THEN** resolver reads YAML baseline from `ConfigApi` at `boost.connectors.jira`
-- **AND** resolver reads DB overrides from `AdminConfigService` for key `connectors.jira`
+- **AND** resolver reads DB overrides from `AdminConfigService` for key `boost.connectors.jira`
 - **AND** resolver merges YAML + DB, validating against Jira connector Zod schema
 - **AND** resolver returns merged config object with 30s TTL cache
 
 #### Scenario: DB override takes precedence over YAML
 
 - **WHEN** YAML config has `enabled: true` and DB override has `enabled: false`
-- **THEN** `RuntimeConfigResolver.getConfig('connectors.jira')` returns `enabled: false`
+- **THEN** `RuntimeConfigResolver.resolve('boost.connectors.jira')` returns `enabled: false`
 
 #### Scenario: YAML-only field rejects DB override
 
@@ -79,7 +79,7 @@ Connector config schemas support versioning for backward compatibility.
 
 #### Scenario: Schema version stored with DB override
 
-- **WHEN** admin writes DB override for `connectors.jira`
+- **WHEN** admin writes DB override for `boost.connectors.jira`
 - **THEN** DB entry includes schema version (e.g., `schemaVersion: 1`)
 - **AND** future reads validate against matching schema version
 

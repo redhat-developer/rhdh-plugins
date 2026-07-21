@@ -1,4 +1,4 @@
-# Spec: Analytics Metrics REST API
+# Analytics Metrics REST API
 
 > **Status:** 🔀 CONSOLIDATED into RHIDP-15277 (RHDHPLAN-1508)  
 > **Story:** RHIDP-15344 (Closed — absorbed by RHIDP-15277 epic scope)  

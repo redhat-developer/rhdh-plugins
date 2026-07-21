@@ -1,4 +1,4 @@
-# Spec: Eval Hub Integration for Skill Quality Scores
+# Eval Hub Integration for Skill Quality Scores
 
 > **Status:** 🔀 CONSOLIDATED into RHIDP-15277 (RHDHPLAN-1508)  
 > **Story:** RHIDP-15345 (Closed — absorbed by RHIDP-15277 epic scope)  

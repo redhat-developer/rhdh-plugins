@@ -2,7 +2,7 @@
 
 ## 1. Zod Schema Definitions (P0) — RHIDP-15340
 
-- [ ] 1.1 Define Jira connector config Zod schema with fields: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
+- [ ] 1.1 Define Jira connector config Zod schema with fields: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `tls.caFile` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
 - [ ] 1.2 Annotate each Jira config field with `configScope`: `enabled`, `endpoint`, `schedule.*`, `batchSize`, `timeout.*` → `db-overridable`; `credentials.*`, `namespace` → `yaml-only`
 - [ ] 1.3 Define GitHub connector config Zod schema with same field pattern
 - [ ] 1.4 Define GitLab connector config Zod schema with same field pattern
@@ -65,7 +65,7 @@
 
 ## 6. AdminConfigService Integration (P1)
 
-- [ ] 6.1 Extend existing `POST /api/boost/admin/config` endpoint to accept connector config keys (e.g., `{ key: "boost.connectors.jira.enabled", value: false }`). Add `GET /api/boost/admin/config?key=boost.connectors.:connectorId` for reading merged connector config.
+- [ ] 6.1 Extend existing `POST /api/boost/admin/config` endpoint to accept connector config keys (e.g., `{ key: "boost.connectors.jira.enabled", value: false }`). Add `GET /api/boost/admin/config?key=boost.connectors.<connectorId>` for reading merged connector config.
 - [ ] 6.2 Implement Zod schema validation in `setOverride()` method before DB write
 - [ ] 6.3 Implement `configScope` enforcement: reject writes for `yaml-only` fields
 - [ ] 6.4 Implement cache invalidation call to `RuntimeConfigResolver.invalidate()` after DB write
@@ -85,7 +85,7 @@
 ## 8. Documentation (P2)
 
 - [ ] 8.1 Document `RuntimeConfigResolver` extension for connector config in architecture docs
-- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`, `db-only`)
+- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`). Note: runtime operational state lives in the health store (`sync_attempts` table), not the config resolver.
 - [ ] 8.3 Document connector config admin UI usage (how to toggle, change endpoint/schedule)
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)
