@@ -560,6 +560,40 @@ describe('agent routes', () => {
       expect(res.status).toBe(403);
     });
 
+    it('passes through with conditions attached when authorizeConditional returns CONDITIONAL', async () => {
+      const agents = [makeAgent()];
+      const store = createMockStore({
+        list: jest.fn().mockResolvedValue(agents),
+      });
+
+      const conditions = {
+        resourceType: 'boost-agent',
+        rule: 'IS_OWNER',
+        params: { claims: ['user:default/testuser'] },
+      };
+
+      const authorizeConditionalMock = jest.fn().mockResolvedValueOnce([
+        {
+          result: AuthorizeResult.CONDITIONAL,
+          pluginId: 'boost',
+          resourceType: 'boost-agent',
+          conditions,
+        },
+      ]);
+
+      const permissions: PermissionsService = {
+        authorize: jest.fn(),
+        authorizeConditional: authorizeConditionalMock,
+      };
+      testApp = await createTestApp({ store, permissions });
+
+      const res = await fetchJson(testApp.url, '/agents');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ agents });
+      expect(authorizeConditionalMock).toHaveBeenCalledTimes(1);
+      expect(permissions.authorize).not.toHaveBeenCalled();
+    });
+
     it('allows via admin fallback when fine-grained denies', async () => {
       const agents = [makeAgent()];
       const store = createMockStore({
