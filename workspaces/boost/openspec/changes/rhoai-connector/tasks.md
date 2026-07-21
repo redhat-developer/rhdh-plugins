@@ -17,7 +17,7 @@
 - [ ] 1.4 Implement entity mapper: MCP catalog entry → API with `spec.type: mcp-server` in `src/providers/mcpCatalog/mapper.ts`
 - [ ] 1.5 Add `rhdh.io/mcp-protocol-version`, `rhdh.io/mcp-endpoint`, `rhdh.io/mcp-capabilities` annotations in mapper
 - [ ] 1.6 Implement `connect()` method with graceful 404 handling and `mcpApiAvailable` flag
-- [ ] 1.7 Implement `read()` method that returns empty array when `mcpApiAvailable` is false
+- [ ] 1.7 Implement refresh callback that calls `applyMutation({ type: 'full', entities: [] })` when `mcpApiAvailable` is false
 - [ ] 1.8 Implement retry logic: every 10th refresh cycle, retry API connection if previously unavailable
 - [ ] 1.9 Implement API response schema validation with Zod and version mismatch warnings
 - [ ] 1.10 Add `rhdh.io/api-version-mismatch` annotation when API version differs from expected

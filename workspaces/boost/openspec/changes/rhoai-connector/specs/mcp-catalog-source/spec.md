@@ -31,7 +31,7 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 - **AND** the API returns 404 Not Found or connection refused
 - **THEN** the provider logs a warning: `MCP catalog API not available (RHOAI 3.4+ required), disabling MCP source for this cycle`
 - **AND** it sets internal flag `mcpApiAvailable = false`
-- **AND** it returns empty entity array from `read()` without throwing an error
+- **AND** it calls `applyMutation({ type: 'full', entities: [] })` without throwing an error
 - **AND** on subsequent refresh cycles, it skips API calls while flag is false
 - **AND** every 10th refresh cycle, it retries the API connection (in case RHOAI was upgraded)
 

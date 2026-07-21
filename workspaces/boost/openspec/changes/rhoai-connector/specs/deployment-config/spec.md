@@ -82,8 +82,10 @@ The MCP catalog source must load authentication credentials from K8s Secrets.
 
 - **WHEN** the K8s Secret referenced in `auth.secretRef` does not exist
 - **THEN** the provider logs an error: `K8s Secret {namespace}/{name} not found for RHOAI MCP catalog provider`
-- **AND** it returns empty entity array from `read()` without crashing the catalog backend
+- **AND** it calls `applyMutation({ type: 'full', entities: [] })` without crashing the catalog backend
 - **AND** on the next refresh cycle, it retries loading the Secret (Secret may have been created)
+
+> **Rationale (graceful degradation vs. fail-fast):** The RHOAI connector degrades gracefully on missing Secret because the MCP catalog API is developer-preview (RHOAI 3.4+) and may not exist on older versions — retrying allows recovery after Secret creation or RHOAI upgrade. This differs from the MCP Registry connector (see `mcp-registry-connector/specs/auth-tls-hardening`), which fails to start on missing Secret because `auth.secretRef` is explicitly admin-configured and a missing Secret indicates a deployment error.
 
 #### Scenario: K8s Secret is updated (credential rotation)
 

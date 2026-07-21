@@ -4,7 +4,11 @@
 
 Connects to OCI-compliant registries, discovers skill repositories via tag listing, fetches image manifests, and extracts metadata annotations — all without vendor-specific SDKs.
 
-## Requirements
+## EXISTING Requirements
+
+None. This is a new OCI registry discovery implementation.
+
+## ADDED Requirements
 
 ### Requirement: OCI Distribution Spec Tag Listing
 

@@ -102,6 +102,8 @@ catalog:
 
 **AND** the error message includes remediation steps for creating the Secret.
 
+> **Rationale (fail-fast vs. graceful degradation):** The MCP Registry connector fails to start on missing Secret because `auth.secretRef` is explicitly configured by the admin — a missing Secret indicates a deployment error that should be surfaced immediately. This differs from the RHOAI connector's graceful degradation (see `rhoai-connector/specs/deployment-config`), where the MCP catalog API is developer-preview and may not exist on older RHOAI versions; retrying on next refresh cycle is the correct behavior there.
+
 ---
 
 **WHEN** the Kubernetes Secret exists but does not contain required keys (`username`/`password` or `token`):

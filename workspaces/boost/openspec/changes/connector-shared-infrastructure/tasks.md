@@ -22,7 +22,7 @@
 
 - [ ] 2.1 Define `ConnectorErrorContext` interface: `connectorId`, `endpoint`, `errorType`, `errorMessage`, `retryable`, `nextRetryAt`
 - [ ] 2.2 Create `createProviderWrapper(provider: EntityProvider, logger: LoggerService): EntityProvider` function
-- [ ] 2.3 Implement try/catch wrapper around `provider.run()` to catch unhandled rejections
+- [ ] 2.3 Implement try/catch wrapper around provider `connect()` and scheduled refresh callback to catch unhandled rejections
 - [ ] 2.4 Implement structured error logging with connector context fields
 - [ ] 2.5 Log errors via Backstage `LoggerService` for structured JSON output
 - [ ] 2.6 Ensure wrapper does NOT rethrow errors — allow catalog backend to continue

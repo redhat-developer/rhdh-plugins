@@ -4,7 +4,11 @@
 
 Implements digest-based incremental sync with caching, K8s pull secret authentication, custom CA bundles, and validates performance at 2,000-image scale.
 
-## Requirements
+## EXISTING Requirements
+
+None. This is a new incremental sync implementation.
+
+## ADDED Requirements
 
 ### Requirement: Digest-Based Change Detection
 

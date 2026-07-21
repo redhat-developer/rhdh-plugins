@@ -20,7 +20,7 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 ### Fault Isolation Wrapper
 
 - Per-provider entity bucket isolation (Backstage built-in)
-- Node process-level isolation: try/catch wrapper around provider `run()` to catch unhandled rejections
+- Node process-level isolation: try/catch wrapper around provider `connect()` and scheduled refresh callback (via `createSafeRefresh()`) to catch unhandled rejections
 - Structured error logging with connector context: connectorId, endpoint, errorType, errorMessage, retryable, nextRetryAt
 - One connector failure never affects other connectors or non-AI entities
 

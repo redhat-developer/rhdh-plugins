@@ -4,7 +4,11 @@
 
 Parses `skillcard.yaml` from OCI image layers, validates against the SDK schema, and emits AiResource entities with AI Asset annotations.
 
-## Requirements
+## EXISTING Requirements
+
+None. This is a new skillcard parsing implementation.
+
+## ADDED Requirements
 
 ### Requirement: Skillcard Blob Download
 

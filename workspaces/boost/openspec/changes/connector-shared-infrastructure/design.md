@@ -184,14 +184,18 @@ export default createBackendModule({
   moduleId: 'mcp-registry',
   register(env) {
     env.registerInit({
-      deps: { catalog: catalogServiceRef, config: coreServices.rootConfig },
-      async init({ catalog, config }) {
+      deps: {
+        catalog: catalogProcessingExtensionPoint,
+        config: coreServices.rootConfig,
+        logger: coreServices.logger,
+      },
+      async init({ catalog, config, logger }) {
         if (!isConnectorEnabled(config, 'mcpRegistry')) {
-          env.logger.info('MCP Registry connector is disabled');
+          logger.info('MCP Registry connector is disabled');
           return; // Exit early — never call catalog.addEntityProvider()
         }
 
-        const provider = new McpRegistryEntityProvider(config, env.logger);
+        const provider = new McpRegistryEntityProvider(config, logger);
         catalog.addEntityProvider(provider);
       },
     });
