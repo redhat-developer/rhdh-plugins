@@ -15,14 +15,23 @@
  */
 
 import {
-  type Metric,
-  type ThresholdConfig,
+  aggregationTypes,
+  scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { isScalarAggregationType } from './isScalarAggregationType';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+describe('isScalarAggregationType', () => {
+  it.each(scalarAggregationTypes)(
+    'should return true for scalar aggregation type %s',
+    type => {
+      expect(isScalarAggregationType(type)).toBe(true);
+    },
+  );
+
+  it.each([
+    aggregationTypes.statusGrouped,
+    aggregationTypes.weightedStatusScore,
+  ])('should return false for non-scalar aggregation type %s', type => {
+    expect(isScalarAggregationType(type)).toBe(false);
+  });
+});

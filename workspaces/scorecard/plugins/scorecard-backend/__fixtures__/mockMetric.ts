@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+export const mockGithubOpenPrsMetric = (
+  options: Partial<Metric> = {},
+): Metric => ({
+  id: 'github.open_prs',
+  title: 'Open PRs',
+  description: 'desc',
+  type: 'number',
+  ...options,
+});

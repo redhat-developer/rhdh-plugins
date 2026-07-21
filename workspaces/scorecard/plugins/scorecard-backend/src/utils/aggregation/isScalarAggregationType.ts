@@ -15,14 +15,12 @@
  */
 
 import {
-  type Metric,
-  type ThresholdConfig,
+  AggregationType,
+  scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
+export function isScalarAggregationType(
+  type: AggregationType,
+): type is (typeof scalarAggregationTypes)[number] {
+  return (scalarAggregationTypes as readonly string[]).includes(type);
+}

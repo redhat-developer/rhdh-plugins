@@ -15,25 +15,56 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  aggregationTypes,
+  scalarAggregationTypes,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { createAggregationStrategyRegistry } from './registerStrategies';
-import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
 import { StatusGroupedAggregationStrategy } from './StatusGroupedAggregationStrategy';
+import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
+import { ScalarAggregationStrategy } from './ScalarAggregationStrategy';
+
+jest.mock('./StatusGroupedAggregationStrategy');
+jest.mock('./WeightedStatusScoreAggregationStrategy');
+jest.mock('./ScalarAggregationStrategy');
 
 describe('createAggregationStrategyRegistry', () => {
-  it('registers statusGrouped and weightedStatusScore strategies', () => {
-    const loader = {} as AggregatedMetricLoader;
-    const logger = mockServices.logger.mock();
+  const loader = {} as AggregatedMetricLoader;
+  const logger = mockServices.logger.mock();
+  let registry: ReturnType<typeof createAggregationStrategyRegistry>;
 
-    const registry = createAggregationStrategyRegistry(loader, logger);
+  beforeEach(() => {
+    jest.clearAllMocks();
+    registry = createAggregationStrategyRegistry(loader, logger);
+  });
 
+  it('should register status grouped aggregation strategy with loader', () => {
+    expect(StatusGroupedAggregationStrategy).toHaveBeenCalledWith(loader);
     expect(registry.get(aggregationTypes.statusGrouped)).toBeInstanceOf(
       StatusGroupedAggregationStrategy,
+    );
+  });
+
+  it('should register weighted status score aggregation strategy with loader and logger', () => {
+    expect(WeightedStatusScoreAggregationStrategy).toHaveBeenCalledWith(
+      loader,
+      logger,
     );
     expect(registry.get(aggregationTypes.weightedStatusScore)).toBeInstanceOf(
       WeightedStatusScoreAggregationStrategy,
     );
-    expect(registry.size).toBe(2);
+  });
+
+  it.each(scalarAggregationTypes)(
+    'should register %s scalar aggregation strategy with loader and type',
+    type => {
+      expect(ScalarAggregationStrategy).toHaveBeenCalledWith(loader, type);
+      expect(registry.get(type)).toBeInstanceOf(ScalarAggregationStrategy);
+    },
+  );
+
+  it('should register all aggregation strategies', () => {
+    expect(registry.size).toBe(7);
   });
 });

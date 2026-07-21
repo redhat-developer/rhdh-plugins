@@ -34,6 +34,7 @@ import {
   AggregatedMetric,
   AggregatedMetricResult,
   aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -49,9 +50,10 @@ import {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
-import { AggregationsService } from './aggregations/AggregationService';
+import { AggregationsService } from './aggregations/AggregationsService';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { DbAggregatedMetric } from '../database/types';
+import { mockStatusGroupedAggregationResult } from '../../__fixtures__/mockAggregatedMetricResult';
 
 jest.mock('../utils/getEntitiesOwnedByUser', () => ({
   getEntitiesOwnedByUser: jest.fn(),
@@ -526,24 +528,7 @@ describe('createRouter', () => {
         history: undefined,
         aggregationType: 'statusGrouped',
       },
-      result: {
-        total: mockAggregatedMetric.total,
-        timestamp: mockAggregatedMetric.timestamp,
-        values: [
-          { count: 3, name: 'error' },
-          { count: 4, name: 'warning' },
-          { count: 5, name: 'success' },
-        ],
-        thresholds: {
-          rules: [
-            { key: 'error', expression: '>40' },
-            { key: 'warning', expression: '>20' },
-            { key: 'success', expression: '<=20' },
-          ],
-        },
-        entitiesConsidered: 2,
-        calculationErrorCount: 0,
-      },
+      result: mockStatusGroupedAggregationResult,
     };
 
     const mockDbAggregatedMetric: DbAggregatedMetric = {
@@ -1251,6 +1236,90 @@ describe('createRouter', () => {
         ['component:default/my-service', 'component:default/my-other-service'],
         'github.open_prs',
       );
+    });
+
+    it('should use KPI type sum and return scalar result', async () => {
+      const kpiConfig = new ConfigReader({
+        scorecard: {
+          aggregationKPIs: {
+            totalOpenPrs: {
+              title: 'Total Open PRs',
+              description: 'Sum of open PRs',
+              type: aggregationTypes.sum,
+              metricId: 'github.open_prs',
+            },
+          },
+        },
+      });
+      const kpiService = new CatalogMetricService({
+        catalog: mockCatalog,
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            token: 'test-token',
+          }),
+        }),
+        registry: metricRegistry,
+        database: mockDatabaseMetricValues,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+
+      const getSpy = jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricByEntityRefs',
+        )
+        .mockResolvedValue({
+          metric_id: 'github.open_prs',
+          value: 847,
+          total: 42,
+          latest_entity_count: 45,
+          calculation_error_count: 3,
+          max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+        });
+
+      jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockRestore();
+
+      const aggregationsServiceSum = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        kpiConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceSum,
+          catalogMetricService: kpiService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const kpiApp = express();
+      kpiApp.use(router);
+      kpiApp.use(mockErrorHandler());
+
+      const response = await request(kpiApp).get('/aggregations/totalOpenPrs');
+
+      expect(response.status).toBe(200);
+      expect(getSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.open_prs',
+        'sum',
+      );
+      expect(response.body.metadata.aggregationType).toBe(aggregationTypes.sum);
+      expect(response.body.result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2025-01-01T10:30:00.000Z',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      });
     });
   });
 

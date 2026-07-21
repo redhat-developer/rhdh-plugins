@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
+import type { AggregationOptions } from './types';
+import { parseValidatedAggregationConfig } from '../../utils/aggregation/parseValidatedAggregationConfig';
 import {
   type AggregatedMetricResult,
-  type AggregationConfig,
   type AggregationType,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Config } from '@backstage/config';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../../constants';
-import { buildAggregationConfig } from '../../utils/buildAggregationConfig';
-import type { AggregationOptions } from './types';
+import { buildAggregationConfig } from '../../utils/aggregation/buildAggregationConfig';
 import type { AggregationStrategy } from './strategies/types';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import { AggregatedMetricLoader } from './AggregatedMetricLoader';
 import { createAggregationStrategyRegistry } from './strategies/registerStrategies';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import type { MetricProvidersRegistry } from '../../providers/MetricProvidersRegistry';
 
 export type AggregationsServiceOptions = {
   config: Config;
@@ -41,18 +43,32 @@ export class AggregationsService {
   private readonly database: DatabaseMetricValues;
   private readonly strategyRegistry: Map<AggregationType, AggregationStrategy>;
   private readonly logger: LoggerService;
+  private readonly aggregationKpisConfigCache: Map<
+    string,
+    ValidatedAggregationConfig
+  >;
 
   constructor(options: AggregationsServiceOptions) {
     this.config = options.config;
     this.logger = options.logger;
     this.database = options.database;
+    this.aggregationKpisConfigCache = new Map();
     this.strategyRegistry = createAggregationStrategyRegistry(
       new AggregatedMetricLoader(this.database),
       this.logger,
     );
   }
 
-  getAggregationConfig(aggregationId: string): AggregationConfig {
+  getAggregationConfig(
+    aggregationId: string,
+    metricProviderRegistry: MetricProvidersRegistry,
+  ): ValidatedAggregationConfig {
+    const cachedConfig = this.aggregationKpisConfigCache.get(aggregationId);
+
+    if (cachedConfig) {
+      return cachedConfig;
+    }
+
     const config = this.config.getOptionalConfig(
       `${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}`,
     );
@@ -63,16 +79,26 @@ export class AggregationsService {
           `using default type "${aggregationTypes.statusGrouped}" with metricId="${aggregationId}" ` +
           '(same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.',
       );
+
+      const metric = metricProviderRegistry.getMetric(aggregationId);
+
       return {
         id: aggregationId,
-        type: aggregationTypes.statusGrouped,
         metricId: aggregationId,
-      } as AggregationConfig;
+        title: metric.title,
+        description: metric.description,
+        type: aggregationTypes.statusGrouped,
+      };
     }
 
-    return buildAggregationConfig(aggregationId, {
-      config,
-    });
+    const validatedConfig = parseValidatedAggregationConfig(
+      buildAggregationConfig(aggregationId, {
+        config,
+      }),
+    );
+    this.aggregationKpisConfigCache.set(aggregationId, validatedConfig);
+
+    return validatedConfig;
   }
 
   async getAggregatedMetricByEntityRefs(
