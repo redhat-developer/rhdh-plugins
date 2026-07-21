@@ -20,16 +20,16 @@ Admin UI provides toggle controls for enabling/disabling connectors.
 #### Scenario: Toggle connector off
 
 - **WHEN** admin clicks toggle to disable Jira connector
-- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: { enabled: false } }`
-- **AND** backend validates via Zod schema, writes DB override, invalidates cache
+- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.enabled", value: false }` (flat `BoostConfigKey` — each write targets a single leaf key, no nested objects)
+- **AND** backend validates via Zod schema, writes DB override, calls `RuntimeConfigResolver.invalidate()`
 - **AND** frontend shows immediate visual feedback: "Saved — will take effect within 30 seconds + next reconciliation cycle"
 - **AND** toggle UI updates to show "Disabled" state
 
 #### Scenario: Toggle connector on
 
 - **WHEN** admin clicks toggle to enable previously disabled Jira connector
-- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: { enabled: true } }`
-- **AND** backend writes DB override, invalidates cache
+- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.enabled", value: true }`
+- **AND** backend writes DB override, calls `RuntimeConfigResolver.invalidate()`
 - **AND** frontend shows immediate visual feedback
 - **AND** toggle UI updates to show "Enabled" state
 
@@ -48,8 +48,8 @@ Admin UI provides form fields for endpoint URL and sync schedule configuration.
 
 - **WHEN** admin edits endpoint URL to `https://jira-staging.example.com` and saves
 - **THEN** frontend validates URL format before submitting
-- **AND** frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: { endpoint: "https://jira-staging.example.com" } }`
-- **AND** backend validates, writes DB override, invalidates cache
+- **AND** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.endpoint", value: "https://jira-staging.example.com" }`
+- **AND** backend validates, writes DB override, calls `RuntimeConfigResolver.invalidate()`
 - **AND** UI shows: "Saved — new endpoint will be used on next sync (within schedule interval)"
 
 #### Scenario: Schedule interval field
@@ -61,8 +61,8 @@ Admin UI provides form fields for endpoint URL and sync schedule configuration.
 #### Scenario: Change schedule interval
 
 - **WHEN** admin changes schedule from "5 minutes" to "10 minutes" and saves
-- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: { schedule: { intervalMs: 600000 } } }`
-- **AND** backend validates, writes DB override, invalidates cache
+- **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.schedule.intervalMs", value: 600000 }`
+- **AND** backend validates, writes DB override, calls `RuntimeConfigResolver.invalidate()`
 - **AND** UI shows: "Saved — new schedule will take effect on next cycle"
 
 #### Scenario: Cron schedule field
@@ -99,13 +99,13 @@ Admin UI saves connector config changes via `AdminConfigService` with schema val
 - **THEN** frontend calls `POST /api/boost/admin/config` with payload:
   ```json
   {
-    "key": "connectors.jira",
-    "value": { "endpoint": "https://jira-staging.example.com" }
+    "key": "boost.connectors.jira.endpoint",
+    "value": "https://jira-staging.example.com"
   }
   ```
-- **AND** backend `AdminConfigService.setConfig()` validates via Jira connector Zod schema
+- **AND** backend `AdminConfigService.setOverride()` validates via Jira connector Zod schema
 - **AND** backend writes DB override to `admin_config` table
-- **AND** backend calls `RuntimeConfigResolver.invalidate('connectors.jira')`
+- **AND** backend calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation, no key parameter)
 - **AND** backend returns success response
 - **AND** frontend displays success notification
 

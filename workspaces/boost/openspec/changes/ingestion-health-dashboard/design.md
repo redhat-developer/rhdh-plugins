@@ -69,7 +69,7 @@ Timeout is configurable (default 10 minutes) via `boost.ingestion.forceSyncTimeo
 
 **Why:** Force Sync is a manual override for cases where scheduled sync failed or admin needs immediate refresh (e.g., after fixing auth credentials). Timeout prevents hung requests. Concurrency prevention avoids duplicate work and state corruption.
 
-**How to apply:** API handler checks connector run state (via in-memory run registry or `SchedulerService.getTaskStatus()`), returns 409 if running. Otherwise calls `SchedulerService.triggerTask()` or `provider.run()` with timeout wrapper. Response includes `runId` for polling status. UI polls `GET /api/boost/ingestion-health/:connectorId/force-sync/:runId` for completion.
+**How to apply:** API handler checks connector run state via `SchedulerService.getTaskStatus()` (preferred — multi-replica safe) or `coreServices.cache` (if scheduler integration is unavailable). No raw `Map<>` in-memory registries — they break in multi-replica deployments. Returns 409 if running. Otherwise calls `SchedulerService.triggerTask()` or `provider.run()` with timeout wrapper. Response includes `runId` for polling status. UI polls `GET /api/boost/ingestion-health/:connectorId/force-sync/:runId` for completion.
 
 ### Decision 3: Admin UI in existing boost admin panel — new route/tab
 

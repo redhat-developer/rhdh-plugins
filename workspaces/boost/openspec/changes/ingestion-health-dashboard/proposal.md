@@ -18,7 +18,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 
 - REST API exposing per-connector health: enabled state, last sync attempt/success timestamps, health status (healthy/degraded/failing), most recent error
 - Data model tracks sync attempts with timestamps and outcomes (success/failure, assets added/updated/removed counts, error type, error message)
-- Health status derivation: healthy = last 3 sync attempts succeeded, degraded = last sync succeeded but recent failures, failing = last 3 sync attempts failed
+- Health status derivation: healthy = last 3 sync attempts succeeded, degraded = mixed results (not all-success and not all-failure), failing = last 3 sync attempts failed
 - RBAC-gated via boost admin permissions
 - Force Sync API endpoint triggers provider's `run()` method outside scheduled cadence with configurable timeout
 
@@ -56,6 +56,6 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 - `plugins/boost-common/src/types/ingestion-health.ts` — health status types
 - `plugins/boost-backend/src/ingestion/health-tracker.ts` — health status derivation logic
 - `plugins/boost-backend/src/ingestion/error-classifier.ts` — error classification utilities
-- `workspaces/augment/plugins/augment/src/components/AdminPanels/IngestionHealthPanel.tsx` — admin UI component
-- `workspaces/augment/plugins/augment/src/components/AdminPanels/AdminLayout.tsx` — navigation integration
+- `plugins/boost/src/components/AdminPanels/IngestionHealthPanel.tsx` — admin UI component
+- `plugins/boost/src/components/AdminPanels/AdminLayout.tsx` — navigation integration
 - Connector providers (`github-connector`, `gitlab-connector`, `jira-connector`) — integrate health tracking hooks

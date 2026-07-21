@@ -16,7 +16,7 @@
 ## 2. RuntimeConfigResolver Extension (P0) — RHIDP-15340
 
 - [ ] 2.1 Extend `RuntimeConfigResolver` to support connector config scope (e.g., `connectors.jira`, `connectors.github`)
-- [ ] 2.2 Implement `getConfig(key: string)` method for connector config keys
+- [ ] 2.2 Extend `resolve(key: BoostConfigKey)` method to support connector config keys (e.g., `boost.connectors.jira`)
 - [ ] 2.3 Implement two-layer merge: YAML baseline from `ConfigApi` + DB overrides from `AdminConfigService`
 - [ ] 2.4 Implement cache with 30s TTL for merged connector config
 - [ ] 2.5 Implement immediate cache invalidation on DB override write
@@ -28,7 +28,7 @@
 
 ## 3. Hot-Reload Propagation (P0) — RHIDP-15341
 
-- [ ] 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.getConfig('connectors.jira')` at reconciliation cycle start
+- [ ] 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.resolve('boost.connectors.jira')` at reconciliation cycle start
 - [ ] 3.2 Implement enable/disable check: skip sync if `enabled: false`
 - [ ] 3.3 Implement endpoint URL propagation: use DB override endpoint if present, else YAML baseline
 - [ ] 3.4 Implement schedule change propagation: reschedule task with new `schedule.intervalMs` or `schedule.cron` from merged config
@@ -65,8 +65,8 @@
 
 ## 6. AdminConfigService Integration (P1)
 
-- [ ] 6.1 Add connector config endpoints to `AdminConfigService` backend API: `GET /api/boost/admin/config/connectors/:connectorId`, `POST /api/boost/admin/config/connectors/:connectorId`
-- [ ] 6.2 Implement Zod schema validation in `setConfig()` method before DB write
+- [ ] 6.1 Extend existing `POST /api/boost/admin/config` endpoint to accept connector config keys (e.g., `{ key: "boost.connectors.jira.enabled", value: false }`). Add `GET /api/boost/admin/config?key=boost.connectors.:connectorId` for reading merged connector config.
+- [ ] 6.2 Implement Zod schema validation in `setOverride()` method before DB write
 - [ ] 6.3 Implement `configScope` enforcement: reject writes for `yaml-only` fields
 - [ ] 6.4 Implement cache invalidation call to `RuntimeConfigResolver.invalidate()` after DB write
 - [ ] 6.5 Add audit logging for connector config changes (timestamp, user, changed fields, old/new values)

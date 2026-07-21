@@ -16,7 +16,7 @@ Connector config becomes a new scope under this existing infrastructure.
 
 ## Goals
 
-- Extend `RuntimeConfigResolver` to connector settings, not create a new config system
+- Extend `RuntimeConfigResolver` to connector settings (runtime sync-skip via `boost.connectors.*.enabled`), not create a new config system. Note: startup registration is governed by `catalog.providers.<connectorId>.enabled` at module init time (shared-infra Decision 4) — a provider never registered at startup cannot be hot-enabled at runtime. Hot-reload controls sync behavior of already-registered providers.
 - Hot-reload enable/disable, endpoint URL, and schedule changes within 30s
 - Preserve deployment-time config (TLS mount paths, K8s Secret references) as YAML-only
 - Admin UI for connector config with RBAC gating
@@ -46,8 +46,9 @@ This reuses proven infrastructure (tested in production for core boost settings)
 
 ```typescript
 // Connector entity provider reads config via RuntimeConfigResolver
-const connectorConfig =
-  await runtimeConfigResolver.getConfig('connectors.jira');
+const connectorConfig = await runtimeConfigResolver.resolve(
+  'boost.connectors.jira',
+);
 if (!connectorConfig.enabled) {
   this.logger.info('Jira connector disabled via runtime config, skipping sync');
   return;
@@ -77,11 +78,8 @@ Each connector config field is annotated with `configScope` to control which lay
 | `namespace`             | `yaml-only`      | Namespace is deployment-time config (can't change active provider's target namespace without restart) |
 | `batchSize`             | `db-overridable` | Admin can tune performance at runtime                                                                 |
 | `timeout.connectionMs`  | `db-overridable` | Admin can adjust for network conditions at runtime                                                    |
-| `lastSyncTimestamp`     | `db-only`        | Runtime state written by provider after sync — no YAML baseline exists                                |
-| `lastSyncOutcome`       | `db-only`        | Runtime state (success/failure) — written by provider, not configurable                               |
-| `runStatus`             | `db-only`        | Transient state (running/idle) — no deployment-time equivalent                                        |
 
-**Why db-only exists:** Some fields are pure runtime state — they are written by the system during operation and have no YAML baseline or admin-configurable equivalent. They live exclusively in the database and are never merged with YAML config. The `RuntimeConfigResolver` returns them as-is from the DB layer without two-layer merging.
+**Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
 **Why not make everything db-overridable:** Mount paths and Secret references can't change at runtime without a pod restart. Making them `db-overridable` would create false expectations of hot-reload capability.
 
@@ -131,8 +129,8 @@ Admin UI writes connector config changes via `AdminConfigService` — same patte
 1. Admin opens connector config section
 2. Form fields pre-populated with current merged config (YAML baseline + DB overrides)
 3. Admin toggles `enabled` or changes `endpoint`
-4. Frontend calls `POST /api/boost/admin/config` with `{ key: "connectors.jira", value: {...} }`
-5. Backend validates via Zod schema, writes DB override, invalidates cache
+4. Frontend calls `POST /api/boost/admin/config` with flat `BoostConfigKey` — e.g., `{ key: "boost.connectors.jira.enabled", value: false }`. Each write targets a single leaf key; no nested objects, no ambiguity about deep-merge vs replace.
+5. Backend validates via Zod schema, writes DB override, calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation)
 6. Frontend shows immediate visual feedback ("Saved — will take effect within 30s + next reconciliation cycle")
 
 **YAML-only fields (read-only in UI):** TLS mount paths, Secret references shown as read-only info. Tooltip: "Deployment-time config. Edit YAML to change."

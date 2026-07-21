@@ -102,15 +102,15 @@ Database override writes trigger immediate cache invalidation.
 #### Scenario: Cache invalidated on DB write
 
 - **WHEN** admin writes DB override via `AdminConfigService`
-- **THEN** `AdminConfigService` calls `RuntimeConfigResolver.invalidate('connectors.jira')`
-- **AND** cache entry for `connectors.jira` is deleted
-- **AND** next `RuntimeConfigResolver.getConfig('connectors.jira')` call fetches fresh YAML + DB overrides
+- **THEN** `AdminConfigService` calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation, no key parameter)
+- **AND** all cached config entries are cleared
+- **AND** next `RuntimeConfigResolver.resolve('boost.connectors.jira')` call fetches fresh YAML + DB overrides
 
 #### Scenario: TTL-based cache refresh
 
 - **WHEN** no DB override write occurs within 30s
 - **THEN** `RuntimeConfigResolver` cache entry expires after 30s TTL
-- **AND** next `getConfig` call fetches fresh YAML + DB overrides
+- **AND** next `resolve` call fetches fresh YAML + DB overrides
 - **AND** ensures eventual consistency even if invalidation signal is missed
 
 ### Requirement: Provider Behavior During Config Transition
