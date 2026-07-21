@@ -125,19 +125,19 @@ interface DigestCache {
 - Delta mutation: use `applyMutation({ type: 'delta', added: [...], removed: [...] })` for changes only
 - Cache warming: on startup, load from disk, then re-validate digests in background
 
-### Decision 4: Entity emission — AIResource with skill type
+### Decision 4: Entity emission — AiResource with skill type
 
 **Context:** Skills must be emitted as catalog entities. Options:
 
 - Custom entity kind `kind: Skill`
-- AIResource entity with `spec.type: skill`
+- AiResource entity with `spec.type: skill`
 - Component entity with `spec.type: skill`
 
-**Decision:** AIResource entity with `spec.type: skill`.
+**Decision:** AiResource entity with `spec.type: skill`.
 
 **Rationale:**
 
-- AIResource is the designated Backstage entity kind for AI-specific catalog assets (skills, prompts, tool definitions)
+- AiResource is the designated Backstage entity kind for AI-specific catalog assets (skills, prompts, tool definitions)
 - Follows the entity type strategy from RHDHPLAN-1507's `ai-catalog-entity-model` change
 - Component kind is for software components (skills are not deployable software, they're executable definitions)
 - AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci://<registry>/<namespace>/<image>`
@@ -146,7 +146,7 @@ interface DigestCache {
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
-kind: AIResource
+kind: AiResource
 metadata:
   name: my-skill
   annotations:
@@ -185,7 +185,7 @@ spec:
 
 - Use `Promise.all()` with concurrency limiter (e.g., `p-limit` library)
 - Emit entities in batches as they're processed — no wait for all 2,000 to finish
-- Config option: `oci.discovery.concurrency` (default 20, max 50)
+- Config option: `catalog.providers.ociSkill.discovery.concurrency` (default 20, max 50)
 
 ### Decision 6: Relationship to RHDHPLAN-1507 framework
 

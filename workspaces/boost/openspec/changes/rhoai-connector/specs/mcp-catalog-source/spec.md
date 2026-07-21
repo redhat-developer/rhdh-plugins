@@ -21,7 +21,7 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 - **WHEN** the `RhoaiMcpCatalogProvider` starts
 - **THEN** it reads endpoint URL from `catalog.providers.rhoai.mcpCatalog.endpoint`
 - **AND** it loads credentials from K8s Secret referenced in `catalog.providers.rhoai.mcpCatalog.auth.secretRef`
-- **AND** it loads custom CA bundle from `catalog.providers.rhoai.mcpCatalog.tls.caBundle` (if configured)
+- **AND** it loads custom CA bundle from `catalog.providers.rhoai.mcpCatalog.tls.caFile` (if configured)
 - **AND** it validates connectivity by calling `GET /api/mcp/v1/servers?limit=1`
 - **AND** on successful response, it marks `mcpApiAvailable = true`
 

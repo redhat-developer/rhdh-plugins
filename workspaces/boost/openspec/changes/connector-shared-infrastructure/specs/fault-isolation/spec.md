@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Connector fault isolation ensures one connector failure does not block other connectors or degrade non-AI catalog entities. Each entity provider runs in its own isolated bucket (Backstage built-in). Additional hardening: wrap each provider's `run()` in try/catch to prevent unhandled rejections from crashing the Node.js process. Actionable error details logged per connector on failure.
+Connector fault isolation ensures one connector failure does not block other connectors or degrade non-AI catalog entities. Each entity provider runs in its own isolated bucket (Backstage built-in). Additional hardening: wrap each provider's `connect()` and scheduled refresh callback in try/catch to prevent unhandled rejections from crashing the Node.js process. Actionable error details logged per connector on failure.
 
 ## EXISTING Requirements
 
@@ -18,13 +18,21 @@ One connector crash does not affect other connectors' entities or non-AI catalog
 - **AND** non-AI catalog entities (components, APIs, users, groups) remain unaffected
 - **AND** Backstage's entity bucket isolation prevents cross-provider entity corruption
 
-#### Scenario: Unhandled rejection caught by wrapper
+#### Scenario: Unhandled rejection in refresh caught by wrapper
 
-- **WHEN** a connector's `run()` method throws an unhandled promise rejection (e.g., network timeout)
-- **THEN** `createProviderWrapper()` catches the rejection in its try/catch block
+- **WHEN** a connector's scheduled refresh callback throws an unhandled promise rejection (e.g., network timeout)
+- **THEN** `createSafeRefresh()` catches the rejection in its try/catch block
 - **AND** logs a structured error with connector context
 - **AND** the catalog backend Node.js process continues running (does not crash)
 - **AND** other connectors' scheduled tasks continue executing
+
+#### Scenario: connect() failure caught by wrapper
+
+- **WHEN** a connector's `connect()` method throws during provider startup (e.g., invalid endpoint, DNS resolution failure)
+- **THEN** `createProviderWrapper()` catches the error in the wrapped `connect()` try/catch
+- **AND** logs a structured error with connector ID and failure details
+- **AND** the catalog backend continues starting other providers
+- **AND** the failed connector's entity bucket remains empty (no stale entities)
 
 ### Requirement: Structured Error Logging with Connector Context
 

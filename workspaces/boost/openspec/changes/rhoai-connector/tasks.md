@@ -26,7 +26,7 @@
 
 ## 2. Deployment Configuration — RHIDP-15323
 
-- [ ] 2.1 Define Zod config schema for `catalog.providers.rhoai.mcpCatalog` (enabled, endpoint, auth.secretRef, tls.caBundle)
+- [ ] 2.1 Define Zod config schema for `catalog.providers.rhoai.mcpCatalog` (enabled, endpoint, auth.secretRef, tls.caFile)
 - [ ] 2.2 Implement config validation in module startup (missing endpoint, invalid URL)
 - [ ] 2.3 Implement enable/disable toggle: skip provider registration when `enabled: false`
 - [ ] 2.4 Implement K8s Secret loader utility in `src/utils/secretLoader.ts` (supports `token` and `username`/`password` keys)

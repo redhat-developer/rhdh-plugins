@@ -34,7 +34,7 @@
 ## 2. TLS and Credential Hardening (P0) — RHIDP-15318
 
 - [ ] 2.1 Integrate shared CA bundle utility from RHIDP-15316 (`loadCaBundle()`)
-- [ ] 2.2 Add `catalog.providers.mcpRegistry.tls.ca` config schema
+- [ ] 2.2 Add `catalog.providers.mcpRegistry.tls.caFile` config schema
 - [ ] 2.3 Implement custom CA bundle loading from file path
 - [ ] 2.4 Add graceful degradation: invalid CA bundle falls back to system CA bundle
 - [ ] 2.5 Add warning logging for invalid/unreadable/malformed CA bundle files

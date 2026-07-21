@@ -105,7 +105,7 @@ Backstage already provides entity data isolation per provider via entity buckets
 
 **Boost's additional process-level isolation:**
 
-- Wrap each provider's `run()` in try/catch to catch unhandled promise rejections
+- Wrap each provider's `connect()` and scheduled refresh callback in try/catch to catch unhandled promise rejections
 - Log structured error with connector context
 - Allow catalog backend to continue operating even if one connector crashes
 
@@ -118,12 +118,12 @@ export function createProviderWrapper(
   logger: LoggerService,
 ): EntityProvider {
   return {
-    ...provider,
-    async run(taskRunner: SchedulerServiceTaskRunner): Promise<void> {
+    getProviderName: () => provider.getProviderName(),
+    async connect(connection: EntityProviderConnection): Promise<void> {
       try {
-        await provider.run(taskRunner);
+        await provider.connect(connection);
       } catch (error) {
-        logger.error('Connector provider failed', {
+        logger.error('Connector connect() failed', {
           connectorId: provider.getProviderName(),
           errorType: error.constructor.name,
           errorMessage: error.message,
@@ -134,9 +134,29 @@ export function createProviderWrapper(
     },
   };
 }
+
+// Wrap the scheduled task callback for refresh cycles
+export function createSafeRefresh(
+  refreshFn: () => Promise<void>,
+  connectorId: string,
+  logger: LoggerService,
+): () => Promise<void> {
+  return async () => {
+    try {
+      await refreshFn();
+    } catch (error) {
+      logger.error('Connector refresh failed', {
+        connectorId,
+        errorType: error.constructor.name,
+        errorMessage: error.message,
+        stack: error.stack,
+      });
+    }
+  };
+}
 ```
 
-**Why this is defensive, not replacing Backstage's isolation:** Backstage's entity bucket isolation handles the happy path. Process-level isolation defends against unexpected crashes (network timeouts, malformed API responses, unhandled exceptions in third-party HTTP clients).
+**Why this is defensive, not replacing Backstage's isolation:** Backstage's entity bucket isolation handles the happy path. Process-level isolation defends against unexpected crashes (network timeouts, malformed API responses, unhandled exceptions in third-party HTTP clients). Wrapping both `connect()` and the refresh callback covers the two failure points in the Backstage entity provider lifecycle.
 
 ### Decision 4: Enable/disable pattern
 

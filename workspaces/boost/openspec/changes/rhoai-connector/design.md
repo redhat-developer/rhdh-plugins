@@ -68,7 +68,7 @@ catalog:
             name: rhoai-mcp-catalog-secret
             namespace: rhdh
         tls:
-          caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
+          caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
 ```
 
 The provider uses the shared CA bundle utility from RHIDP-15316. K8s Secret credentials follow the same pattern as other RHDHPLAN-1510 connectors.
@@ -93,8 +93,7 @@ The provider uses the shared CA bundle utility from RHIDP-15316. K8s Secret cred
 **Impact:** Medium  
 **Mitigation:**
 
-- Refresh secrets on each `refresh()` cycle, not just at startup
-- Leverage RHIDP-15316's shared secret manager
+- Per-connector Secret refresh on each `refresh()` cycle using shared credential utilities from RHIDP-15316 (not a singleton secret manager — each connector loads its own Secret independently)
 - Prometheus metrics for auth failures
 
 ### Risk 3: Annotation Schema Divergence

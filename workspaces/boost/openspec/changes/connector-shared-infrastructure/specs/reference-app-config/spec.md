@@ -32,7 +32,7 @@ The reference YAML must demonstrate MCP Registry connector configuration fields.
         endpoint: https://registry.internal.example.com
         tls:
           # Custom CA bundle for private registry TLS
-          ca: /etc/ssl/certs/custom-ca-bundle.crt
+          caFile: /etc/ssl/certs/custom-ca-bundle.crt
         auth:
           # K8s Secret containing registry credentials (keys: username/password or token)
           secretRef: mcp-registry-credentials
@@ -64,7 +64,7 @@ The reference YAML must demonstrate RHOAI connector configuration fields.
               namespace: rhdh
           tls:
             # Custom CA for internal/self-signed certificates
-            caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
+            caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
   ```
 - **AND** the `enabled` field is documented with its default value (`true`)
 - **AND** the `auth.secretRef` format documents both `name` and `namespace` fields
@@ -92,7 +92,8 @@ The reference YAML must demonstrate OCI Skill connector configuration fields.
             namespace: ai-assets
             pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
             # Custom CA for self-signed registry certificate
-            caBundlePath: /etc/ssl/certs/harbor-ca.crt
+            tls:
+              caFile: /etc/ssl/certs/harbor-ca.crt
         discovery:
           # Parallel manifest fetch concurrency (default: 20)
           concurrency: 20

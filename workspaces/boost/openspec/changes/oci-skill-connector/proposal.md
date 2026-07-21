@@ -25,7 +25,7 @@ This change implements the connector for OCI-based skill discovery. It builds on
 - Parses `skillcard.yaml` from OCI image layers (selective blob download)
 - Validates required fields using SDK's schema validator (from RHDHPLAN-1507's RHIDP-15258)
 - Invalid skills rejected with descriptive errors — no abort on single failure
-- Emits AIResource entities with `spec.type: skill` and RHDH AI Asset annotations
+- Emits AiResource entities with `spec.type: skill` and RHDH AI Asset annotations
 - OCI registry reference in `rhdh.io/ai-asset-source: oci://<registry>/<namespace>/<image>`
 
 ### Incremental Sync and Caching

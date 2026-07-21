@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Parses `skillcard.yaml` from OCI image layers, validates against the SDK schema, and emits AIResource entities with AI Asset annotations.
+Parses `skillcard.yaml` from OCI image layers, validates against the SDK schema, and emits AiResource entities with AI Asset annotations.
 
 ## Requirements
 
@@ -69,16 +69,16 @@ The connector MUST parse `skillcard.yaml` and validate against the SDK's Zod sch
 - **AND** the connector logs the error with skill image reference and YAML syntax details
 - **AND** it does not emit an entity for this skill
 
-### Requirement: Entity Emission as AIResource with skill Type
+### Requirement: Entity Emission as AiResource with skill Type
 
-The connector MUST emit catalog entities as `kind: AIResource` with `spec.type: skill` and RHDH AI Asset annotations.
+The connector MUST emit catalog entities as `kind: AiResource` with `spec.type: skill` and RHDH AI Asset annotations.
 
-#### Scenario: Emit AIResource entity from valid skillcard
+#### Scenario: Emit AiResource entity from valid skillcard
 
 - **WHEN** the connector successfully validates a skillcard for `quay.io/skills/code-reviewer:latest`
-- **THEN** it builds an AIResource entity with:
+- **THEN** it builds an AiResource entity with:
   - `apiVersion: backstage.io/v1alpha1`
-  - `kind: AIResource`
+  - `kind: AiResource`
   - `metadata.name: code-reviewer`
   - `metadata.annotations['rhdh.io/ai-asset-category']: skill`
   - `metadata.annotations['rhdh.io/ai-asset-source']: oci://quay.io/skills/code-reviewer:latest`
@@ -98,7 +98,7 @@ The connector MUST emit catalog entities as `kind: AIResource` with `spec.type: 
 
 - **WHEN** the skillcard does not specify `owner` or `tags`
 - **THEN** the emitted entity uses default values:
-  - `spec.owner: unknown` (or configurable default from `oci.defaults.owner`)
+  - `spec.owner: unknown` (or configurable default from `catalog.providers.ociSkill.defaults.owner`)
   - `metadata.tags: []` (empty array)
 
 ### Requirement: Annotation Population

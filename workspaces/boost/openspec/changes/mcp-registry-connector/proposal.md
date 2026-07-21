@@ -75,7 +75,7 @@ catalog:
     mcpRegistry:
       endpoint: https://registry.internal.example.com # Mirror endpoint (optional)
       tls:
-        ca: /etc/ssl/certs/custom-ca-bundle.crt # Custom CA bundle path (optional)
+        caFile: /etc/ssl/certs/custom-ca-bundle.crt # Custom CA bundle path (optional)
       auth:
         secretRef: mcp-registry-credentials # K8s Secret name (optional)
 ```

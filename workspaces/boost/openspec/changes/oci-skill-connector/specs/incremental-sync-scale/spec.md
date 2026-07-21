@@ -85,7 +85,7 @@ The connector MUST authenticate to private OCI registries using Kubernetes pull 
 
 #### Scenario: Load credentials from K8s pull secret
 
-- **WHEN** the connector is configured with `oci.registries[0].pullSecretPath: /var/run/secrets/pull-secret/.dockerconfigjson`
+- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].pullSecretPath: /var/run/secrets/pull-secret/.dockerconfigjson`
 - **THEN** it reads the file and parses the Docker `config.json` format
 - **AND** it extracts the `auths` object containing registry credentials
 - **AND** it base64-decodes the `auth` field to get `username:password`
@@ -109,7 +109,7 @@ The connector MUST support custom CA bundles for registries using self-signed ce
 
 #### Scenario: Load custom CA bundle from mounted path
 
-- **WHEN** the connector is configured with `oci.registries[0].caBundlePath: /etc/ssl/certs/custom-ca.crt`
+- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].tls.caFile: /etc/ssl/certs/custom-ca.crt`
 - **THEN** it reads the PEM-encoded CA certificate(s) from the file
 - **AND** it uses the shared CA utility from RHIDP-15316 to configure the HTTPS agent
 - **AND** all requests to this registry trust the custom CA
@@ -134,15 +134,18 @@ The connector MUST support multiple registries with distinct credentials and CA 
 
 - **WHEN** the connector is configured with:
   ```yaml
-  oci:
-    registries:
-      - url: https://quay.io
-        namespace: skills
-        pullSecretPath: /var/run/secrets/quay-pull-secret/.dockerconfigjson
-      - url: https://harbor.internal
-        namespace: ai-assets
-        pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
-        caBundlePath: /etc/ssl/certs/harbor-ca.crt
+  catalog:
+    providers:
+      ociSkill:
+        registries:
+          - url: https://quay.io
+            namespace: skills
+            pullSecretPath: /var/run/secrets/quay-pull-secret/.dockerconfigjson
+          - url: https://harbor.internal
+            namespace: ai-assets
+            pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
+            tls:
+              caFile: /etc/ssl/certs/harbor-ca.crt
   ```
 - **THEN** it authenticates to Quay with credentials from `quay-pull-secret`
 - **AND** it authenticates to Harbor with credentials from `harbor-pull-secret` and trusts the custom CA
@@ -160,7 +163,7 @@ The connector MUST function in air-gapped environments with no external network 
 #### Scenario: Discover skills from air-gapped registry
 
 - **WHEN** the connector is deployed in an air-gapped environment with no internet access
-- **AND** it is configured with `oci.registries[0].url: https://registry.internal`
+- **AND** it is configured with `catalog.providers.ociSkill.registries[0].url: https://registry.internal`
 - **THEN** it connects to the internal registry without attempting external DNS resolution
 - **AND** it discovers skills normally
 
@@ -182,7 +185,7 @@ The connector MUST complete a full sync of 2,000 skill images within 5 minutes, 
 
 #### Scenario: Parallel manifest fetching
 
-- **WHEN** the connector is configured with `oci.discovery.concurrency: 20`
+- **WHEN** the connector is configured with `catalog.providers.ociSkill.discovery.concurrency: 20`
 - **AND** it discovers 2,000 skill images
 - **THEN** it fetches manifests in batches of 20 concurrent requests
 - **AND** it completes all 2,000 manifest fetches within ~2 minutes (assuming 50ms per fetch)

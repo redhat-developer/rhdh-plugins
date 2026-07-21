@@ -119,7 +119,7 @@ catalog:
 
       # Optional TLS configuration
       tls:
-        ca: /etc/ssl/certs/custom-ca-bundle.crt # Path to CA bundle
+        caFile: /etc/ssl/certs/custom-ca-bundle.crt # Path to CA bundle
 
       # Optional authentication
       auth:
@@ -129,7 +129,7 @@ catalog:
 **Validation rules:**
 
 - `endpoint` must be a valid HTTPS URL
-- `tls.ca` must be a readable file path
+- `tls.caFile` must be a readable file path
 - `auth.secretRef` must reference an existing Kubernetes Secret (validated at runtime)
 
 **Zero-internet guarantee:**
@@ -162,7 +162,7 @@ const caBundle = loadCaBundle(config, 'mcpRegistry');
 
 // Pass CA bundle to HTTP client
 const httpsAgent = new https.Agent({
-  ca: caBundlePEM,
+  ca: caBundle,
   rejectUnauthorized: true, // Always enforce TLS verification
 });
 ```

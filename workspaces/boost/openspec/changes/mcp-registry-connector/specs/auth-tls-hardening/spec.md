@@ -26,7 +26,7 @@ catalog:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
       tls:
-        ca: /etc/ssl/certs/custom-ca-bundle.crt
+        caFile: /etc/ssl/certs/custom-ca-bundle.crt
 ```
 
 **THEN** the connector loads the CA bundle from the specified file path using the shared `loadCaBundle()` utility from RHIDP-15316.
@@ -136,11 +136,11 @@ catalog:
     mcpRegistryPrimary:
       endpoint: https://registry-primary.internal.example.com
       tls:
-        ca: /etc/ssl/certs/primary-ca-bundle.crt
+        caFile: /etc/ssl/certs/primary-ca-bundle.crt
     mcpRegistrySecondary:
       endpoint: https://registry-secondary.internal.example.com
       tls:
-        ca: /etc/ssl/certs/secondary-ca-bundle.crt
+        caFile: /etc/ssl/certs/secondary-ca-bundle.crt
 ```
 
 **THEN** each connector instance uses its own CA bundle independently.

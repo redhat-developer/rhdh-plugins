@@ -12,20 +12,20 @@ The connector MUST discover skill repositories by listing tags from configurable
 
 #### Scenario: Registry connection and tag listing
 
-- **WHEN** the connector is configured with `oci.registries[0].url: https://quay.io` and `namespace: skills`
+- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].url: https://quay.io` and `namespace: skills`
 - **THEN** it sends `GET https://quay.io/v2/skills/<repository>/tags/list` for each repository in the namespace
 - **AND** it parses the JSON response to extract tag names
 - **AND** tag names are sorted by semantic version or creation time (registry-dependent)
 
 #### Scenario: Namespace filtering
 
-- **WHEN** the connector is configured with `oci.registries[0].namespace: skills/community`
+- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].namespace: skills/community`
 - **THEN** it only lists tags for repositories under `skills/community/` prefix
 - **AND** repositories outside this namespace are ignored
 
 #### Scenario: Multiple registry support
 
-- **WHEN** the connector is configured with multiple registries in `oci.registries[]`
+- **WHEN** the connector is configured with multiple registries in `catalog.providers.ociSkill.registries[]`
 - **THEN** it discovers skills from all configured registries in parallel
 - **AND** skill entity references include the registry URL to avoid name collisions (e.g., `oci://quay.io/skills/my-skill` vs. `oci://harbor.internal/skills/my-skill`)
 

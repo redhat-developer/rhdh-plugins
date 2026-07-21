@@ -23,7 +23,7 @@
 - [ ] 2.3 Implement YAML parsing using `js-yaml` with safe load
 - [ ] 2.4 Integrate SDK's Zod schema validator from RHDHPLAN-1507 RHIDP-15258
 - [ ] 2.5 Implement descriptive error logging for invalid skillcards (include image ref, validation failure details)
-- [ ] 2.6 Implement entity building as `kind: AIResource` with `spec.type: skill`
+- [ ] 2.6 Implement entity building as `kind: AiResource` with `spec.type: skill`
 - [ ] 2.7 Populate `metadata.annotations['rhdh.io/ai-asset-category']: skill`
 - [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci://<registry>/<namespace>/<image>`
 - [ ] 2.9 Populate `metadata.annotations['rhdh.io/ai-asset-digest']: <sha256>`
@@ -54,7 +54,7 @@
 - [ ] 4.3 Base64-decode `auth` field to get `username:password`
 - [ ] 4.4 Implement `Authorization: Basic <base64(username:password)>` header for registry requests
 - [ ] 4.5 Implement missing pull secret error handling (log error, attempt public access)
-- [ ] 4.6 Implement custom CA bundle loader from `caBundlePath`
+- [ ] 4.6 Implement custom CA bundle loader from `tls.caFile`
 - [ ] 4.7 Integrate shared CA utility from RHIDP-15316 for HTTPS agent configuration
 - [ ] 4.8 Implement fallback to system CA bundle if custom CA bundle is invalid
 - [ ] 4.9 Implement per-registry auth configuration (distinct credentials and CA bundles per registry)
@@ -69,7 +69,7 @@
 
 - [ ] 5.1 Create mock OCI registry test harness with 2,000 synthetic skill images
 - [ ] 5.2 Implement mock registry endpoints: `GET /v2/<name>/tags/list`, `GET /v2/<name>/manifests/<ref>`, `GET /v2/<name>/blobs/<digest>`
-- [ ] 5.3 Implement parallel manifest fetch with configurable concurrency (`oci.discovery.concurrency: 20`)
+- [ ] 5.3 Implement parallel manifest fetch with configurable concurrency (`catalog.providers.ociSkill.discovery.concurrency: 20`)
 - [ ] 5.4 Implement batch processing of manifests (100 per batch, configurable)
 - [ ] 5.5 Implement memory-bounded processing (no buffering all 2,000 manifests at once)
 - [ ] 5.6 Add integration test: validate full sync of 2,000 images completes within 5 minutes
@@ -118,7 +118,7 @@
 - [ ] 9.2 Document K8s pull secret setup (how to create and mount pull secrets)
 - [ ] 9.3 Document custom CA bundle setup for self-signed registries
 - [ ] 9.4 Document multi-registry configuration examples
-- [ ] 9.5 Document performance tuning parameters (`oci.discovery.concurrency`, batch size)
+- [ ] 9.5 Document performance tuning parameters (`catalog.providers.ociSkill.discovery.concurrency`, batch size)
 - [ ] 9.6 Document entity annotation scheme (`rhdh.io/ai-asset-*`)
 - [ ] 9.7 Document troubleshooting guide (common errors, authentication failures, rate limiting)
 - [ ] 9.8 Add architecture diagram showing OCI client → manifest fetch → skillcard parse → entity emission flow

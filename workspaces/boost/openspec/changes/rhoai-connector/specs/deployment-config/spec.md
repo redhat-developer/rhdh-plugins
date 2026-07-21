@@ -55,7 +55,7 @@ The MCP catalog source must support cross-cluster API endpoints with dedicated c
               name: rhoai-mcp-catalog-secret
               namespace: rhdh
           tls:
-            caBundle: /etc/rhdh/ca-bundles/rhoai-ca.pem
+            caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
   ```
 - **THEN** the `RhoaiMcpCatalogProvider` connects to the specified MCP catalog endpoint
 - **AND** it loads credentials from the K8s Secret `rhdh/rhoai-mcp-catalog-secret`
@@ -98,20 +98,20 @@ The MCP catalog source must support custom CA bundles for internal/self-signed c
 
 #### Scenario: Custom CA bundle is configured
 
-- **WHEN** `tls.caBundle` points to a PEM file on disk
+- **WHEN** `tls.caFile` points to a PEM file on disk
 - **THEN** the provider loads the CA bundle using the shared CA utility from RHIDP-15316
 - **AND** it configures the HTTPS client to trust the CA bundle for TLS validation
 - **AND** on CA bundle load failure, it logs an error and falls back to system CA bundle
 
 #### Scenario: Custom CA bundle is not configured
 
-- **WHEN** `tls.caBundle` is omitted from the config
+- **WHEN** `tls.caFile` is omitted from the config
 - **THEN** the provider uses the system's default CA bundle for TLS validation
 - **AND** it does NOT log a warning about missing CA bundle (this is a valid configuration)
 
 #### Scenario: Custom CA bundle file is missing
 
-- **WHEN** `tls.caBundle` is set to a file path that does not exist
+- **WHEN** `tls.caFile` is set to a file path that does not exist
 - **THEN** the provider logs an error: `CA bundle file not found: {path}`
 - **AND** it falls back to the system CA bundle
 - **AND** it continues connecting to the API endpoint (TLS validation may fail if a custom CA is required)
