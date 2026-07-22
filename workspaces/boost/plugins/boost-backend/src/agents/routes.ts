@@ -126,7 +126,7 @@ export function createAgentRoutes(options: AgentRoutesOptions): Router {
           // TODO: Apply conditions as filters when resource loader populates
           // createdBy/lifecycleStage on agent records. Until then, CONDITIONAL
           // results pass through unfiltered (same as ALLOW).
-          logger.debug(
+          logger.warn(
             'boost.agent.list returned CONDITIONAL — filtering deferred until resource loader is implemented',
           );
         }
