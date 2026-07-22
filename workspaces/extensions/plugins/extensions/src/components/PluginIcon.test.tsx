@@ -38,8 +38,9 @@ const testPlugin: ExtensionsPlugin = {
 describe('PluginIcon', () => {
   it('should render without error', () => {
     const { getByRole } = render(<PluginIcon plugin={testPlugin} size={40} />);
-    expect(getByRole('img')).toBeInTheDocument();
-    expect(getByRole('img').style.backgroundImage).toEqual(
+    const img = getByRole('img', { name: 'APIs with Test plugin' });
+    expect(img).toBeInTheDocument();
+    expect(img.style.backgroundImage).toEqual(
       'url("https://backstage.io/icons/test-plugin.png")',
     );
   });

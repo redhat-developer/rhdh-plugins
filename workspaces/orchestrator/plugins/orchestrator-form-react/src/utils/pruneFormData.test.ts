@@ -835,5 +835,185 @@ describe('pruneFormData', () => {
 
       expect(result).toEqual({ mode: 'simple', conditional: 'keep' });
     });
+
+    it('should resolve $ref via $defs when omitting nested fields', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        $defs: {
+          SecretStep: {
+            type: 'object',
+            properties: {
+              token: {
+                type: 'string',
+                omitFromWorkflowInput: true,
+              } as JSONSchema7,
+              name: { type: 'string' },
+            },
+          },
+        },
+        properties: {
+          step: { $ref: '#/$defs/SecretStep' },
+        },
+      };
+
+      const result = omitFromWorkflowInput(
+        { step: { token: 'secret', name: 'keep' } },
+        schema,
+      );
+
+      expect(result).toEqual({ step: { name: 'keep' } });
+    });
+
+    it('should omit entire arrays when items schema has omitFromWorkflowInput', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          keep: { type: 'string' },
+          secrets: {
+            type: 'array',
+            items: {
+              type: 'string',
+              omitFromWorkflowInput: true,
+            } as JSONSchema7,
+          },
+        },
+      };
+
+      const result = omitFromWorkflowInput(
+        { keep: 'yes', secrets: ['a', 'b'] },
+        schema,
+      );
+
+      expect(result).toEqual({ keep: 'yes' });
+    });
+
+    it('should prune object items inside arrays with omitFromWorkflowInput fields', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          rows: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                secret: {
+                  type: 'string',
+                  omitFromWorkflowInput: true,
+                } as JSONSchema7,
+              },
+            },
+          },
+        },
+      };
+
+      const result = omitFromWorkflowInput(
+        {
+          rows: [
+            { label: 'one', secret: 'x' },
+            { label: 'two', secret: 'y' },
+          ],
+        },
+        schema,
+      );
+
+      expect(result).toEqual({
+        rows: [{ label: 'one' }, { label: 'two' }],
+      });
+    });
+  });
+
+  describe('allOf if/then/else and schema-level oneOf', () => {
+    it('should keep then-branch properties when if condition matches', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          mode: { type: 'string' },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { mode: { const: 'advanced' } },
+            },
+            then: {
+              properties: {
+                detail: { type: 'string' },
+              },
+            },
+            else: {
+              properties: {
+                simpleNote: { type: 'string' },
+              },
+            },
+          },
+        ],
+      };
+
+      expect(
+        pruneFormData(
+          { mode: 'advanced', detail: 'keep', simpleNote: 'drop' },
+          schema,
+        ),
+      ).toEqual({ mode: 'advanced', detail: 'keep' });
+    });
+
+    it('should keep else-branch properties when if condition does not match', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          mode: { type: 'string' },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { mode: { const: 'advanced' } },
+            },
+            then: {
+              properties: {
+                detail: { type: 'string' },
+              },
+            },
+            else: {
+              properties: {
+                simpleNote: { type: 'string' },
+              },
+            },
+          },
+        ],
+      };
+
+      expect(
+        pruneFormData(
+          { mode: 'simple', detail: 'drop', simpleNote: 'keep' },
+          schema,
+        ),
+      ).toEqual({ mode: 'simple', simpleNote: 'keep' });
+    });
+
+    it('should fall back to all oneOf branch properties when no branch matches', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        oneOf: [
+          {
+            properties: {
+              kind: { const: 'a' },
+              aOnly: { type: 'string' },
+            },
+          },
+          {
+            properties: {
+              kind: { const: 'b' },
+              bOnly: { type: 'string' },
+            },
+          },
+        ],
+      };
+
+      // No formData keys participate in either branch, so the oneOf loop falls
+      // back to allowing every branch property — still dropping unrelated keys.
+      expect(pruneFormData({ unrelated: 'drop' }, schema)).toEqual({});
+      // kind:'c' matches neither const, so fallback keeps kind from all branches.
+      expect(pruneFormData({ kind: 'c' }, schema)).toEqual({ kind: 'c' });
+    });
   });
 });

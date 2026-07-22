@@ -11,7 +11,6 @@ import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
-import { IconComponent } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
@@ -116,13 +115,13 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'steps.generateCatalogInfoItems': string;
     readonly 'steps.editPullRequest': string;
     readonly 'steps.trackStatus': string;
-    readonly 'addRepositories.generateCatalogInfo': string;
-    readonly 'addRepositories.editPullRequest': string;
     readonly 'addRepositories.approvalTool.title': string;
     readonly 'addRepositories.approvalTool.tooltip': string;
     readonly 'addRepositories.approvalTool.github': string;
     readonly 'addRepositories.approvalTool.gitlab': string;
     readonly 'addRepositories.approvalTool.description': string;
+    readonly 'addRepositories.generateCatalogInfo': string;
+    readonly 'addRepositories.editPullRequest': string;
     readonly 'addRepositories.repositoryType.title': string;
     readonly 'addRepositories.repositoryType.group': string;
     readonly 'addRepositories.repositoryType.repository': string;
@@ -253,27 +252,6 @@ const _default: OverridableFrontendPlugin<
       >(
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
-    }>;
-    'nav-item:bulk-import': OverridableExtensionDefinition<{
-      kind: 'nav-item';
-      name: undefined;
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<
-        {
-          title: string;
-          icon: IconComponent;
-          routeRef: RouteRef<undefined>;
-        },
-        'core.nav-item.target',
-        {}
-      >;
-      inputs: {};
-      params: {
-        title: string;
-        icon: IconComponent;
-        routeRef: RouteRef<undefined>;
-      };
     }>;
     'page:bulk-import': OverridableExtensionDefinition<{
       kind: 'page';

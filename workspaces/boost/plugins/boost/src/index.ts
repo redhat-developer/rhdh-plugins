@@ -25,3 +25,10 @@
 export { boostPlugin as default, boostTranslationsModule } from './plugin';
 /** @public */
 export { boostTranslationRef, boostTranslations } from './translations';
+/** @public */
+export {
+  AiCatalogFilterBlueprint,
+  filterDefinitionDataRef,
+} from './blueprints/AiCatalogFilterBlueprint';
+/** @public */
+export type { FilterDefinition } from './blueprints/AiCatalogFilterBlueprint';

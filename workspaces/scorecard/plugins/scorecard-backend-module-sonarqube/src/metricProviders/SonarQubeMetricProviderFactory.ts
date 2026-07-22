@@ -30,7 +30,7 @@ export class SonarQubeMetricProviderFactory {
     logger: LoggerService,
     metricId: SonarQubeMetricId,
   ): MetricProvider {
-    if (metricId === 'quality_gate') {
+    if (metricId === 'qualityGate') {
       return SonarQubeBooleanMetricProvider.fromConfig(
         config,
         logger,

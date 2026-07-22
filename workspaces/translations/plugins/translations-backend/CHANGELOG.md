@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- 772a1a6: Backstage version bump to v1.52.1
+
 ## 0.3.1
 
 ### Patch Changes

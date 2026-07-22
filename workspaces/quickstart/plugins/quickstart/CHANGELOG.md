@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.12.1
+
+### Patch Changes
+
+- 23c83cc: Fix accessibility violations (aria-progressbar-name, list, nested-interactive) and remove suppression flag from e2e accessibility tests.
+
+## 1.12.0
+
+### Minor Changes
+
+- 60460f4: Backstage version bump to v1.52.1
+
 ## 1.11.1
 
 ### Patch Changes

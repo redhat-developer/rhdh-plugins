@@ -20,38 +20,31 @@ import {
   SidebarGroup,
   SidebarItem,
   SidebarScrollWrapper,
-  SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import {
-  Settings as SidebarSettings,
-  UserSettingsSignInAvatar,
-} from '@backstage/plugin-user-settings';
 import MenuIcon from '@mui/icons-material/Menu';
 import { SidebarLogo } from './SidebarLogo';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ items }) => (
-      <Sidebar>
-        <SidebarLogo />
-        <SidebarDivider />
-        <SidebarGroup label="Menu" icon={<MenuIcon />}>
-          {items.map((item, index) => (
-            <SidebarItem {...item} key={index} />
-          ))}
-        </SidebarGroup>
-        <SidebarScrollWrapper />
-        <SidebarSpace />
-        <SidebarDivider />
-        <SidebarGroup
-          label="Settings"
-          icon={<UserSettingsSignInAvatar />}
-          to="/settings"
-        >
-          <SidebarSettings />
-        </SidebarGroup>
-      </Sidebar>
-    ),
+    component: ({ navItems }) => {
+      return (
+        <Sidebar>
+          <SidebarLogo />
+          <SidebarDivider />
+          <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {navItems.rest().map(item => (
+              <SidebarItem
+                key={item.node.spec.id}
+                to={item.href}
+                text={item.title}
+                icon={() => item.icon}
+              />
+            ))}
+          </SidebarGroup>
+          <SidebarScrollWrapper />
+        </Sidebar>
+      );
+    },
   },
 });

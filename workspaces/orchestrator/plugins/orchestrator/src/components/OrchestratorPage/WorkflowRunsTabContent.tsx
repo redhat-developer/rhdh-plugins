@@ -41,7 +41,6 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
 import TablePagination from '@mui/material/TablePagination';
-import { DateTime } from 'luxon';
 
 import {
   FieldFilter,
@@ -88,6 +87,14 @@ import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusInd
 import { VariablesDialog } from '../WorkflowInstancePage/VariablesDialog';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowLogsDialog } from '../WorkflowInstancePage/WorkflowLogsDialog';
+import {
+  buildStartedDateRange,
+  combineFilters,
+  filterWorkflowRunsBySearch,
+  formatStartedRelative,
+  hasNextPageFromFetch,
+  trimOverflowPage,
+} from './WorkflowRunsTabContent.helpers';
 
 type WorkflowRunsFetchResult = {
   items: WorkflowRunDetail[];
@@ -108,14 +115,6 @@ const EntityRefTableCell = ({
   return <EntityRefLink entityRef={entityRef} defaultKind={defaultKind} />;
 };
 
-const formatStartedRelative = (startIso?: string) => {
-  if (!startIso) {
-    return VALUE_UNAVAILABLE;
-  }
-
-  return DateTime.fromISO(startIso).toRelative() ?? VALUE_UNAVAILABLE;
-};
-
 const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
   { label: t('table.status.running'), value: ProcessInstanceStatusDTO.Active },
   { label: t('table.status.failed'), value: ProcessInstanceStatusDTO.Error },
@@ -131,22 +130,6 @@ const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
 ];
 
 const ENTITY_FILTER_KINDS = ['Component', 'System'];
-
-const combineFilters = (
-  filters: (Filter | undefined)[],
-): Filter | undefined => {
-  const activeFilters = filters.filter(Boolean) as Filter[];
-  if (activeFilters.length === 0) {
-    return undefined;
-  }
-  if (activeFilters.length === 1) {
-    return activeFilters[0];
-  }
-  return {
-    operator: 'AND',
-    filters: activeFilters,
-  };
-};
 
 export const WorkflowRunsTabContent = ({
   showRunsEmptyState = true,
@@ -318,67 +301,12 @@ export const WorkflowRunsTabContent = ({
       let startedFilter: FieldFilter | undefined = undefined;
 
       if (startedSelectorValue !== Selector.AllItems) {
-        let dateRange: [string, string] | undefined = undefined;
-
-        const currentDate = new Date();
-        const endOfToday = new Date(currentDate);
-        endOfToday.setHours(23, 59, 59, 999);
-
-        switch (startedSelectorValue) {
-          case 'Today': {
-            const startOfToday = new Date();
-            startOfToday.setHours(0, 0, 0, 0);
-            dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
-            break;
-          }
-          case 'Yesterday': {
-            const startOfYesterday = new Date();
-            startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-            startOfYesterday.setHours(0, 0, 0, 0);
-
-            const endOfYesterday = new Date(startOfYesterday);
-            endOfYesterday.setHours(23, 59, 59, 999);
-
-            dateRange = [
-              startOfYesterday.toISOString(),
-              endOfYesterday.toISOString(),
-            ];
-            break;
-          }
-          case 'Last 7 days': {
-            const startOfLast7Days = new Date();
-            startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
-            startOfLast7Days.setHours(0, 0, 0, 0);
-
-            dateRange = [
-              startOfLast7Days.toISOString(),
-              endOfToday.toISOString(),
-            ];
-            break;
-          }
-          case 'This month': {
-            const startOfCurrentMonth = new Date();
-            startOfCurrentMonth.setDate(1);
-            startOfCurrentMonth.setHours(0, 0, 0, 0);
-
-            dateRange = [
-              startOfCurrentMonth.toISOString(),
-              endOfToday.toISOString(),
-            ];
-            break;
-          }
-          default:
-            dateRange = undefined;
-        }
-
-        startedFilter =
-          startedSelectorValue !== Selector.AllItems
-            ? {
-                operator: 'BETWEEN',
-                value: dateRange,
-                field: 'start',
-              }
-            : undefined;
+        const dateRange = buildStartedDateRange(startedSelectorValue);
+        startedFilter = {
+          operator: 'BETWEEN',
+          value: dateRange,
+          field: 'start',
+        };
       }
 
       let targetEntityFilter: NestedFilter | undefined;
@@ -698,31 +626,15 @@ export const WorkflowRunsTabContent = ({
     ];
   }, [canViewRunVariables, handleViewRunVariables, t]);
 
-  const data = useMemo(() => {
-    const items = runItems ?? [];
-    if (items.length === pageSize + 1) {
-      return items.slice(0, -1);
-    }
-    return items;
-  }, [runItems, pageSize]);
-  const hasNextPage = (runItems?.length ?? 0) === pageSize + 1;
-  const filteredData = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) {
-      return data;
-    }
-
-    return data.filter(
-      row =>
-        row.id.toLowerCase().includes(query) ||
-        row.processName.toLowerCase().includes(query) ||
-        (row.version?.toLowerCase().includes(query) ?? false) ||
-        (row.targetEntity?.toLowerCase().includes(query) ?? false) ||
-        (row.initiatorEntity?.toLowerCase().includes(query) ?? false) ||
-        (row.state?.toLowerCase().includes(query) ?? false) ||
-        row.start.toLowerCase().includes(query),
-    );
-  }, [data, search]);
+  const data = useMemo(
+    () => trimOverflowPage(runItems ?? [], pageSize),
+    [runItems, pageSize],
+  );
+  const hasNextPage = hasNextPageFromFetch(runItems?.length ?? 0, pageSize);
+  const filteredData = useMemo(
+    () => filterWorkflowRunsBySearch(data, search),
+    [data, search],
+  );
   const displayedRunCount = useMemo(() => {
     if (search.trim()) {
       return filteredData.length;

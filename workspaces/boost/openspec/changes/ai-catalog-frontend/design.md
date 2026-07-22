@@ -16,7 +16,6 @@ Boost has a backend with 30+ API routes and 9 plugin packages but no frontend. T
 
 - Chat UI, admin panels, or agent gallery (future domains)
 - Custom entity detail pages (use existing catalog pages)
-- RHDH dynamic plugin packaging (Scalprum/export-dynamic deferred)
 - Custom search collator for global search (rely on default catalog indexing)
 
 ## Decisions
@@ -51,6 +50,55 @@ BUI (`@backstage/ui`) is the component library for all new UI. MUI v5 as fallbac
 ### Decision 7: RBAC graceful degradation
 
 Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when the permission is not yet registered (RHDHPLAN-1508 not built). Content is shown, and enforcement activates automatically when RBAC lands.
+
+### Decision 8: Extensible browse filters via data-driven FilterDefinition
+
+The browse page filter sidebar becomes NFS-extensible using a **data-driven** approach. Filters are plain objects (`FilterDefinition`), not per-filter React components. The `FilterSidebar` renders a generic `<Select>` for each registered filter — the same pattern already used for all 4 current filters.
+
+**Architecture:**
+
+- A `FilterDefinition` interface defines each filter: `urlParam`, `label`, `getOptions(entities)`, `matchEntity(entity, values)`, `priority`
+- `AiCatalogFilterBlueprint` wraps a `FilterDefinition` as an NFS extension (kind: `ai-catalog-filter`) with a single custom `createExtensionDataRef`
+- Built-in filters are plain objects in `src/filters/builtInFilterDefinitions.ts`, registered as Blueprint extensions in `plugin.tsx`
+- The `aiCatalogPage` PageBlueprint uses `makeWithOverrides` to declare a `filters` input, resolves `FilterDefinition[]`, sorts by priority, and passes to the page component
+- `FilterSidebar` maps over the array and renders `<Select>` for each — no per-filter component files
+- `useUrlFilters` reads/writes URL params dynamically from the definition array
+- `applyEntityFilters` loops over active definitions calling `matchEntity` in AND logic
+
+**Deployer customization (app-config.yaml):**
+
+```yaml
+app:
+  extensions:
+    # Disable a built-in filter
+    - ai-catalog-filter:boost/owner: false
+    # Custom filter from a third-party module (just enable it)
+    - ai-catalog-filter:my-plugin/team-filter: {}
+```
+
+**Third-party filter contribution:**
+
+```typescript
+createFrontendModule({
+  pluginId: 'boost',
+  extensions: [
+    AiCatalogFilterBlueprint.make({
+      name: 'team-filter',
+      params: {
+        urlParam: 'team',
+        label: 'Team',
+        getOptions: entities =>
+          [...new Set(entities.map(e => e.spec?.team).filter(Boolean))]
+            .sort()
+            .map(t => ({ id: t, label: t })),
+        matchEntity: (entity, values) =>
+          values.some(v => v === entity.spec?.team),
+        priority: 200,
+      },
+    }),
+  ],
+});
+```
 
 ## Entity Model
 

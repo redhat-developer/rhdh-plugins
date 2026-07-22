@@ -49,12 +49,12 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 export class MyMetricProvider implements MetricProvider<'number'> {
   // The datasource identifier for this provider
   getProviderDatasourceId(): string {
-    return 'my_datasource';
+    return 'myDatasource';
   }
 
   // The unique provider ID that combines datasource and metric name
   getProviderId(): string {
-    return 'my_datasource.example_metric';
+    return 'myDatasource.exampleMetric';
   }
 
   // Returns the metric type
@@ -86,7 +86,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   // Use CATALOG_FILTER_EXISTS to check for the presence of specific annotations or fields.
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.my_datasource/project': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.myDatasource/project': CATALOG_FILTER_EXISTS,
     };
   }
 
@@ -105,6 +105,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 - Both IDs must follow the format `<datasourceId>.<metricName>` where:
   - `datasourceId` matches the value returned by `getProviderDatasourceId()`
   - `metricName` is a non-empty identifier for the specific metric
+- Use `lowerCamelCase` for both `datasourceId` and `metricName` (e.g., `jira.openIssues`, `openssf.ciiBestPractices`)
 - The metric type returned by `getMetricType()` must match the `type` property in the metric returned by `getMetric()`
 - In `getMetric()`, always use `type: this.getMetricType()` instead of hardcoding the type value
 - Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).

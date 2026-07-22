@@ -28,6 +28,7 @@ const quickstartTranslationJa = createTranslationMessages({
     'button.gotIt': '了解しました!',
     'button.openQuickstartGuide': 'クイックスタートガイドを開く',
     'button.quickstart': 'クイックスタート',
+    'content.loading': '読み込み中',
     'content.emptyState.title':
       '現在のロールではクイックスタートコンテンツを利用できません。',
     'dev.currentState': '現在のドロワーの状態: {{state}}',

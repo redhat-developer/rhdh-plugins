@@ -31,7 +31,7 @@ describe('validateConfigurationFormat', () => {
       plugins:
         - package: package1
         - package: package2
-          disabled: false
+          enabled: true
           integrity: dummyabcd
           pluginConfig:
             key: value
@@ -58,7 +58,7 @@ describe('validatePackageFormat', () => {
       testCase: 'correct package',
       yaml: `
         package: package1
-        disabled: true
+        enabled: false
         pluginConfig:
           key: value
           key2:
@@ -67,7 +67,7 @@ describe('validatePackageFormat', () => {
       `,
     },
     {
-      testCase: "missing 'disabled' and 'pluginConfig'",
+      testCase: "missing 'enabled' and 'pluginConfig'",
       yaml: `
         package: package1
       `,
@@ -86,7 +86,7 @@ describe('validatePackageFormat', () => {
     {
       testCase: "'package' is missing",
       yaml: `
-        disabled: false
+        enabled: true
       `,
       error: "'package' field in package item must be a non-empty string",
     },
@@ -98,12 +98,12 @@ describe('validatePackageFormat', () => {
       error: "'package' field in package item must be a non-empty string",
     },
     {
-      testCase: "'disabled' is not a boolean",
+      testCase: "'enabled' is not a boolean",
       yaml: `
         package: package1
-        disabled: "not a boolean"
+        enabled: "not a boolean"
       `,
-      error: "optional 'disabled' field in package item must be a boolean",
+      error: "optional 'enabled' field in package item must be a boolean",
     },
     {
       testCase: "'integrity' is not a string",
@@ -126,7 +126,7 @@ describe('validatePackageFormat', () => {
       testCase: "'packageName' differs",
       yaml: `
         package: package1
-        disabled: false
+        enabled: true
       `,
       error:
         "'package' field value in package item differs from 'different-package'",
@@ -152,7 +152,7 @@ describe('validatePluginFormat', () => {
     const doc = parseDocument(`
       - package: package1
       - package: package2
-        disabled: false
+        enabled: true
         pluginConfig:
           key: value
     `);

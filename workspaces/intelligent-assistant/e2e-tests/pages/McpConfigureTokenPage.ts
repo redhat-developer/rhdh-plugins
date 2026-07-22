@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import type { McpServersListMock } from '../fixtures/responses';
 import type { MockMcpServersOptions } from '../utils/devMode';
 import { mockMcpServers } from '../utils/devMode';
@@ -98,20 +98,12 @@ export class McpConfigureTokenPage {
     await closeMcpSettingsPanel(this.page, this.t);
   }
 
-  tokenField(): Locator {
-    return mcpPersonalAccessTokenInput(this.page);
-  }
-
-  async clearToken(): Promise<void> {
-    await mcpClearTokenInputButton(this.page, this.t).click();
-  }
-
   async typeThenClearToken(draft: string): Promise<void> {
-    const field = this.tokenField();
+    const field = mcpPersonalAccessTokenInput(this.page);
     await field.click();
     await field.fill(draft);
     await expect(field).toHaveValue(draft);
-    await this.clearToken();
+    await mcpClearTokenInputButton(this.page, this.t).click();
     await expect(field).toHaveValue('');
     await this.seeMessage(this.t['mcp.settings.enterToken']);
   }

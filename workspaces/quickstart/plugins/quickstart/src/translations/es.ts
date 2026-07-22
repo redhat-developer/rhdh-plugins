@@ -28,6 +28,7 @@ const quickstartTranslationEs = createTranslationMessages({
     'button.gotIt': '¡Entendido!',
     'button.openQuickstartGuide': 'Abrir la Guía de inicio rápido',
     'button.quickstart': 'Inicio rápido',
+    'content.loading': 'Cargando',
     'content.emptyState.title':
       'El contenido de inicio rápido no está disponible para su rol.',
     'dev.currentState': 'Estado actual del panel: {{state}}',
