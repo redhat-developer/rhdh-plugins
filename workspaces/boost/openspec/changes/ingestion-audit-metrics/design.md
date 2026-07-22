@@ -83,6 +83,8 @@ Audit log channel: RHDH audit log (same as RBAC events). Events persist to local
 
 Analytics endpoints serve the Admin Panel Analytics tab (RHDHPLAN-1509). All endpoints RBAC-gated with `ai-catalog.admin` permission.
 
+> **Permission namespace note:** `ai-catalog.admin` is a new permission under the `ai-catalog.*` namespace (RHDHPLAN-1508, RBAC for catalog entity visibility). It coexists with the existing `boost.admin` permission, which gates agent/operational features (agent CRUD, chat, MCP, skills, connector config). The distinction is intentional: `ai-catalog.*` covers catalog asset governance (ingestion analytics, entity visibility, versioning policy), while `boost.*` covers agent and operational concerns outside RHDHPLAN-1505 scope. Both namespaces may converge before feature freeze, but the separation avoids coupling catalog RBAC decisions to agent lifecycle permissions during parallel development.
+
 **Why:** Centralized analytics data layer. Frontend consumes clean JSON payloads without direct DB access. RBAC gating ensures only admins see sensitive sync/quality data.
 
 **How to apply:**

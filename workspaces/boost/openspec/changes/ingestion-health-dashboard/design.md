@@ -90,13 +90,15 @@ Each card shows:
 
 **How to apply:** Add route to `AdminLayout.tsx` routes array. `IngestionHealthPanel.tsx` fetches data from `GET /api/boost/ingestion-health` (returns array of connector health objects). Uses `useSWR` for polling (30s interval). Cards rendered in responsive grid layout (PatternFly `Gallery` component).
 
-### Decision 4: Disconnected-cluster UX — three-state model
+### Decision 4: Disconnected-cluster UX — five-state model
 
-The health UI distinguishes between three connector states:
+The health UI distinguishes between five connector states (matching Decision 1's health status enum):
 
 1. **Enabled + Healthy**: Green status badge, no error indicators, shows sync timestamps
-2. **Enabled + Failing**: Red status badge, error summary, diagnostic guidance, "Force Sync" action
-3. **Disabled**: Grey/muted status badge, no error indicators, shows "Disabled" label, no "Force Sync" action
+2. **Enabled + Degraded**: Yellow status badge, partial error summary, shows mixed sync results
+3. **Enabled + Failing**: Red status badge, error summary, diagnostic guidance, "Force Sync" action
+4. **Disabled**: Grey/muted status badge, no error indicators, shows "Disabled" label, no "Force Sync" action
+5. **Unknown**: Grey status badge with "?" indicator, shows "Never synced" label, "Force Sync" action available
 
 Disabled state is set via connector config (`enabled: false`). Health status derivation skips disabled connectors by default — they are excluded from the API response unless `?includeDisabled=true` is set. When included, disabled connectors render with muted treatment in the UI (grey badge, no error indicators).
 
