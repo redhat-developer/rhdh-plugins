@@ -22836,14 +22836,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-expression-matcher@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "path-expression-matcher@npm:1.5.0"
-  checksum: 10c0/646cb5bc66cd7d809a52288336f3ac1e6223f156fd8e912936e490e590f7f93e8056d4fd25fcbcc7da61bb698fa520112cb050372a3f65e7b79bd4afa0f77610
-  languageName: node
-  linkType: hard
-
-"path-expression-matcher@npm:^1.6.2":
+"path-expression-matcher@npm:^1.5.0, path-expression-matcher@npm:^1.6.2":
   version: 1.6.2
   resolution: "path-expression-matcher@npm:1.6.2"
   checksum: 10c0/8241302f563de367a81acacd417055a22dd3792a84700569dc2a7888da31aa18eb01131c55f05200c92790b6c45b01fee1984b02540cc5f15726ba1b73a8a075
