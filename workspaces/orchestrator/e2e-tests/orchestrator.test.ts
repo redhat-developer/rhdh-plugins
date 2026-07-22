@@ -224,7 +224,17 @@ test.describe('Orchestrator workflow runs', () => {
       ).toBeVisible();
       await sharedPage.getByRole('link', { name: 'my-component' }).click();
       await expect(sharedPage.getByText('my-component')).toBeVisible();
-      await sharedPage.getByRole('link', { name: 'Workflows' }).first().click();
+      if (process.env.APP_MODE === 'legacy') {
+        await sharedPage
+          .getByRole('tab', { name: 'Workflows' })
+          .first()
+          .click();
+      } else {
+        await sharedPage
+          .getByRole('link', { name: 'Workflows' })
+          .first()
+          .click();
+      }
       await expect(
         sharedPage
           .getByRole('row', { name: 'Hello World Workflow' })
