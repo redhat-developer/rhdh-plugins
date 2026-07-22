@@ -36,7 +36,7 @@ export class ThemeVerifier {
     await expect(
       this.page.locator('nav').getByText('Settings').first(),
     ).toBeVisible();
-    await this.page.getByRole('button', { name: `${theme}` }).click();
+    await this.page.getByRole('button', { name: theme, exact: true }).click();
     const themeButton = this.page.getByRole('button', {
       name: theme,
       exact: true,
