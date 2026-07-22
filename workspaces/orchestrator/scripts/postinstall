@@ -3,13 +3,5 @@ mydir=`pwd`
 cd ../../ && yarn install
 cd $mydir
 
-# Fix @backstage/plugin-kubernetes-react config.d.ts: stale import from ./src
-# that doesn't exist in the published package, breaking config:check.
-# Fixed upstream in backstage/backstage#34721; remove once shared-react updates its range.
-k8s_config="node_modules/@backstage/plugin-kubernetes-react/config.d.ts"
-if [ -f "$k8s_config" ] && grep -q "from './src/" "$k8s_config"; then
-  sed -i.bak "/from '\.\/src\//d" "$k8s_config" && rm -f "${k8s_config}.bak"
-fi
-
 cd plugins/orchestrator-common
 yarn openapi:check
