@@ -16,8 +16,8 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
-import type { CatalogClient } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
 import gitUrlParse from 'git-url-parse';
 
@@ -85,30 +85,14 @@ describe('bulkimports.ts unit tests', () => {
 
   beforeEach(() => {
     logger = mockServices.logger.mock();
-    const mockAuth = mockServices.auth.mock({
-      getPluginRequestToken: async () => {
-        return {
-          token: 'ey123.abc.xyzzz', // notsecret
-        };
-      },
-    });
+    const mockAuth = mockServices.auth();
     const mockCache = mockServices.cache.mock();
-    const mockDiscovery = mockServices.discovery.mock();
-    // TODO(rm3l): Use 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
-    //  once '@backstage/plugin-catalog-node' is upgraded
-    const mockCatalogClient = {
-      getEntitiesByRefs: jest.fn(),
-      validateEntity: jest.fn(),
-      addLocation: jest.fn(),
-      queryEntities: jest.fn(),
-      refreshEntity: jest.fn(),
-    } as unknown as CatalogClient;
+    const mockCatalogClient = catalogServiceMock.mock();
     mockCatalogHttpClient = new CatalogHttpClient({
       logger,
       config,
-      discovery: mockDiscovery,
       auth: mockAuth,
-      catalogApi: mockCatalogClient,
+      catalog: mockCatalogClient,
     });
     mockGithubApiService = new GithubApiService(logger, config, mockCache);
     initializeGithubApiServiceMock();

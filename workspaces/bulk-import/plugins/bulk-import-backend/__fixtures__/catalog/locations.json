@@ -1,72 +1,64 @@
-[
-  {
-    "data": {
+{
+  "items": [
+    {
       "id": "2",
       "target": "https://github.com/octocat/my-awesome-repo/blob/dev/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/2"
+    },
+    {
       "id": "3",
       "target": "https://github.com/my-ent-org-2/A2/blob/main/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/3"
+    },
+    {
       "id": "4",
       "target": "https://github.com/my-ent-org-2/A2/blob/main/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/4"
+    },
+    {
       "id": "5",
       "target": "https://github.com/my-ent-org-2/A2/blob/feature/myAwesomeFeat/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/5"
+    },
+    {
       "id": "7",
       "target": "https://github.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/plugins/my-plugin/examples/templates/01-some-template.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/7"
+    },
+    {
       "id": "8",
       "target": "https://gitlab.com/saltypig1/funtimes/blob/dev/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/8"
+    },
+    {
       "id": "9",
       "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/main/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/9"
+    },
+    {
       "id": "10",
       "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/main/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/10"
+    },
+    {
       "id": "11",
       "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/feature/myAwesomeFeat/catalog-info.yaml",
-      "type": "url"
-    }
-  },
-  {
-    "data": {
+      "type": "url",
+      "entityRef": "location:default/11"
+    },
+    {
       "id": "12",
       "target": "https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/plugins/my-plugin/examples/templates/01-some-template.yaml",
-      "type": "url"
+      "type": "url",
+      "entityRef": "location:default/12"
     }
-  }
-]
+  ]
+}
