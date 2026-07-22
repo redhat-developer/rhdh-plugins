@@ -51,9 +51,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AuthTokenDescriptor,
   capitalize,
-  isJsonObject,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
   ProcessInstanceDTO,
@@ -75,7 +73,6 @@ import {
   workflowRouteRef,
 } from '../../routes';
 import { orchestratorTranslationRef } from '../../translations';
-import { deepSearchObject } from '../../utils/deepSearchObject';
 import {
   extractSsoReauthorizeUrl,
   isSamlSsoError,
@@ -90,6 +87,11 @@ import {
   PermissionDeniedPanel,
 } from '../ui/PermissionDeniedPanel';
 import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
+import {
+  getAuthTokenDescriptors,
+  isAbortableState,
+  isRerunnableState,
+} from './WorkflowInstancePage.helpers';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -191,37 +193,6 @@ const AbortConfirmationDialogActions = (
   );
 };
 
-// For re-trigger, the wizard is not rendered, so there is no place where to instantiate the AuthRequester widget.
-// Let's parse the data input schema and try to find & interpret it.
-const getAuthTokenDescriptors = async (
-  dataInputSchema: JsonObject | undefined,
-): Promise<AuthTokenDescriptor[] | undefined> => {
-  if (!dataInputSchema) {
-    return undefined;
-  }
-
-  const authRequester = deepSearchObject(
-    dataInputSchema,
-    (obj: JsonObject): boolean => {
-      const uiWidget = obj['ui:widget'];
-      const uiProps = obj['ui:props'];
-
-      const authTokenDescriptors = isJsonObject(uiProps)
-        ? uiProps.authTokenDescriptors
-        : undefined;
-      return (
-        uiWidget === 'AuthRequester' && Array.isArray(authTokenDescriptors)
-      );
-    },
-  );
-  if (!authRequester) {
-    return undefined;
-  }
-
-  const uiProps = (authRequester as JsonObject)['ui:props'] as JsonObject;
-  return uiProps.authTokenDescriptors as AuthTokenDescriptor[];
-};
-
 // hack
 type LocalTranslationFunction =
   | TranslationFunction<typeof orchestratorTranslationRef.T>
@@ -316,14 +287,8 @@ export const WorkflowInstancePage = () => {
       return res.data?.inputSchema;
     }, [orchestratorApi, workflowId]);
 
-  const canAbort =
-    value?.state === ProcessInstanceStatusDTO.Active ||
-    value?.state === ProcessInstanceStatusDTO.Error;
-
-  const canRerun =
-    value?.state === ProcessInstanceStatusDTO.Completed ||
-    value?.state === ProcessInstanceStatusDTO.Aborted ||
-    value?.state === ProcessInstanceStatusDTO.Error;
+  const canAbort = isAbortableState(value?.state);
+  const canRerun = isRerunnableState(value?.state);
 
   const toggleAbortConfirmationDialog = useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
