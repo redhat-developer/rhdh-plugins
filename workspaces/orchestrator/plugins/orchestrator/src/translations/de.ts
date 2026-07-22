@@ -224,6 +224,7 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.version': 'Version',
     'workflow.fields.workflow': 'Workflow',
     'workflow.fields.workflowId': 'Lauf-ID',
+    'workflow.fields.workflowIdCopy': 'Lauf-ID kopieren',
     'workflow.fields.workflowIdCopied': 'Lauf-ID in die Zwischenablage kopiert',
     'workflow.fields.workflowStatus': 'Workflow-Status',
     'workflow.messages.areYouSureYouWantToRunThisWorkflow':
