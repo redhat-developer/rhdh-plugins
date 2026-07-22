@@ -104,7 +104,7 @@ Database override writes trigger immediate cache invalidation.
 - **WHEN** admin writes DB override via `AdminConfigService`
 - **THEN** `AdminConfigService` calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation, no key parameter)
 - **AND** all cached config entries are cleared
-- **AND** next `RuntimeConfigResolver.resolve('boost.connectors.jira')` call fetches fresh YAML + DB overrides
+- **AND** next `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` call fetches fresh YAML + DB override value
 
 #### Scenario: TTL-based cache refresh
 

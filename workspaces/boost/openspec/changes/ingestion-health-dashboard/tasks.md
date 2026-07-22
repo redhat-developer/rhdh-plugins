@@ -2,8 +2,8 @@
 
 ## 1. Health Data Model and Storage (P0) — RHIDP-15335
 
-- [ ] 1.1 Define `sync_attempts` table schema in database migration (connector_id, timestamp, outcome, error_type, error_message, assets_added/updated/removed, duration_ms)
-- [ ] 1.2 Create database migration file for `sync_attempts` table with indexes on (connector_id, timestamp DESC)
+- [ ] 1.1 Define `boost_sync_attempts` table schema in database migration (connector_id, timestamp, outcome, error_type, error_message, assets_added/updated/removed, duration_ms)
+- [ ] 1.2 Create database migration file for `boost_sync_attempts` table with indexes on (connector_id, timestamp DESC)
 - [ ] 1.3 Implement `SyncAttemptsRepository` class with methods: `insertSyncAttempt()`, `getLatestAttempts(connectorId, limit)`, `cleanupOldAttempts(connectorId, retentionLimit)`
 - [ ] 1.4 Add retention policy config schema to `boost.ingestion.healthRetention.maxAttemptsPerConnector` (default 100)
 - [ ] 1.5 Implement scheduled cleanup job for sync attempts (runs daily, enforces retention policy per connector)
@@ -35,7 +35,7 @@
 
 ## 4. Admin Health UI (P1) — RHIDP-15336, RHIDP-15339
 
-- [ ] 4.1 Create `IngestionHealthPanel.tsx` component in `workspaces/augment/plugins/augment/src/components/AdminPanels/`
+- [ ] 4.1 Create `IngestionHealthPanel.tsx` component in `plugins/boost/src/components/AdminPanels/`
 - [ ] 4.2 Implement health card rendering with PatternFly `Card`, `CardHeader`, `CardBody` components
 - [ ] 4.3 Add status badge rendering (PatternFly `Label` with success/warning/danger/outline variants for healthy/degraded/failing/disabled)
 - [ ] 4.4 Add timestamp rendering with `react-time-ago` (last sync attempt, last successful sync)
@@ -64,7 +64,7 @@
 ## 6. Force Sync (P1) — RHIDP-15335, RHIDP-15336
 
 - [ ] 6.1 Implement `POST /api/boost/ingestion-health/:connectorId/force-sync` route
-- [ ] 6.2 Add connector run state registry (in-memory or via SchedulerService.getTaskStatus())
+- [ ] 6.2 Add connector run state registry (via SchedulerService.getTaskStatus())
 - [ ] 6.3 Implement concurrent Force Sync prevention (return 409 if already running)
 - [ ] 6.4 Implement Force Sync trigger via SchedulerService.triggerTask() or direct provider.run() invocation
 - [ ] 6.5 Add Force Sync timeout wrapper (configurable via `boost.ingestion.forceSyncTimeout`, default 10 min)

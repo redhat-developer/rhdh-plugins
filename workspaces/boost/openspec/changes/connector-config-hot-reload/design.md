@@ -17,6 +17,14 @@ Connector config becomes a new scope under this existing infrastructure.
 ## Goals
 
 - Extend `RuntimeConfigResolver` to connector settings (runtime sync-skip via `boost.connectors.*.enabled`), not create a new config system. Note: startup registration is governed by `catalog.providers.<connectorId>.enabled` at module init time (shared-infra Decision 4) — a provider never registered at startup cannot be hot-enabled at runtime. Hot-reload controls sync behavior of already-registered providers.
+
+**Config namespace ownership:**
+
+| Namespace                  | Scope                                             | Fields                                                                                                         | Layer            |
+| -------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `catalog.providers.<id>.*` | Shared infrastructure (startup, TLS, credentials) | `enabled` (startup registration), `tls.caFile`, `credentials.secretRef`, `credentials.secretKey`, `namespace`  | YAML-only        |
+| `boost.connectors.<id>.*`  | Runtime behavior (hot-reloadable)                 | `enabled` (sync-skip), `endpoint`, `schedule.intervalMs`, `schedule.cron`, `batchSize`, `timeout.connectionMs` | `db-overridable` |
+
 - Hot-reload enable/disable, endpoint URL, and schedule changes within 30s
 - Preserve deployment-time config (TLS mount paths, K8s Secret references) as YAML-only
 - Admin UI for connector config with RBAC gating
@@ -45,18 +53,18 @@ This reuses proven infrastructure (tested in production for core boost settings)
 **Implementation pattern:**
 
 ```typescript
-// Connector entity provider reads config via RuntimeConfigResolver
-const connectorConfig = await runtimeConfigResolver.resolve(
-  'boost.connectors.jira',
+// Connector entity provider reads leaf keys via RuntimeConfigResolver
+const enabled = await runtimeConfigResolver.resolve(
+  'boost.connectors.jira.enabled',
 );
-if (!connectorConfig.enabled) {
+if (!enabled) {
   this.logger.info('Jira connector disabled via runtime config, skipping sync');
   return;
 }
 
 const endpoint =
-  connectorConfig.endpoint ||
-  this.config.getString('boost.connectors.jira.endpoint');
+  (await runtimeConfigResolver.resolve('boost.connectors.jira.endpoint')) ||
+  this.config.getString('catalog.providers.jira.endpoint');
 await this.syncClient.connect(endpoint);
 ```
 
@@ -71,7 +79,6 @@ Each connector config field is annotated with `configScope` to control which lay
 | `enabled`               | `db-overridable` | Admin can toggle without YAML change                                                                  |
 | `endpoint`              | `db-overridable` | Admin can switch environments without deployment                                                      |
 | `schedule.intervalMs`   | `db-overridable` | Admin can tune sync frequency at runtime                                                              |
-| `tls.caFile`            | `yaml-only`      | Mount path can't change at runtime (requires pod restart)                                             |
 | `credentials.secretRef` | `yaml-only`      | K8s Secret references are deployment-time config                                                      |
 | `credentials.secretKey` | `yaml-only`      | K8s Secret key names are deployment-time config                                                       |
 | `schedule.cron`         | `db-overridable` | Admin can change cron schedule at runtime                                                             |
@@ -79,7 +86,7 @@ Each connector config field is annotated with `configScope` to control which lay
 | `batchSize`             | `db-overridable` | Admin can tune performance at runtime                                                                 |
 | `timeout.connectionMs`  | `db-overridable` | Admin can adjust for network conditions at runtime                                                    |
 
-**Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
+**Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
 **Why not make everything db-overridable:** Mount paths and Secret references can't change at runtime without a pod restart. Making them `db-overridable` would create false expectations of hot-reload capability.
 

@@ -34,16 +34,16 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 
 #### Scenario: Two-layer resolution with schema validation
 
-- **WHEN** `RuntimeConfigResolver.resolve('boost.connectors.jira')` is called
-- **THEN** resolver reads YAML baseline from `ConfigApi` at `boost.connectors.jira`
-- **AND** resolver reads DB overrides from `AdminConfigService` for key `boost.connectors.jira`
-- **AND** resolver merges YAML + DB, validating against Jira connector Zod schema
-- **AND** resolver returns merged config object with 30s TTL cache
+- **WHEN** `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` is called
+- **THEN** resolver reads YAML baseline value from `ConfigApi` at key path `boost.connectors.jira.enabled`
+- **AND** resolver reads any DB override from `AdminConfigService` for leaf key `boost.connectors.jira.enabled`
+- **AND** resolver returns the DB override value if present, otherwise the YAML baseline value, validated against the Jira connector Zod schema
+- **AND** resolved value is cached with 30s TTL
 
 #### Scenario: DB override takes precedence over YAML
 
 - **WHEN** YAML config has `enabled: true` and DB override has `enabled: false`
-- **THEN** `RuntimeConfigResolver.resolve('boost.connectors.jira')` returns `enabled: false`
+- **THEN** `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` returns `false`
 
 #### Scenario: YAML-only field rejects DB override
 

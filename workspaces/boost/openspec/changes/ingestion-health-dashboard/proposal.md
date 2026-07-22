@@ -16,7 +16,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 
 ### Health Status API
 
-- REST API exposing per-connector health: enabled state, last sync attempt/success timestamps, health status (healthy/degraded/failing), most recent error
+- REST API exposing per-connector health: enabled state, last sync attempt/success timestamps, health status (healthy/degraded/failing/unknown), most recent error
 - Data model tracks sync attempts with timestamps and outcomes (success/failure, assets added/updated/removed counts, error type, error message)
 - Health status derivation: healthy = last 3 sync attempts succeeded, degraded = mixed results (not all-success and not all-failure), failing = last 3 sync attempts failed
 - RBAC-gated via boost admin permissions
@@ -27,7 +27,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 - Admin dashboard section showing per-connector health cards with status indicators (PatternFly green/yellow/red), timestamps, error summaries, "Force Sync" buttons
 - Built on PatternFly design system following existing admin panel patterns (model connection, system prompt, agent config sections)
 - Loading states, error states, empty states for zero connectors
-- Integrates into augment workspace's existing admin panel navigation
+- Integrates into boost workspace's existing admin panel navigation
 
 ### Error Classification
 
@@ -44,7 +44,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 
 ### Disconnected-Cluster Health View Differentiation
 
-- Three-state model: enabled+healthy, enabled+failing, disabled
+- Four-state model: enabled+healthy, enabled+failing, disabled, unknown (never synced)
 - Disabled connectors shown with grey/muted treatment (not error state)
 - Enabled+failing connectors shown with red/alert indicators
 - No "disabled" state generates alerts or error indicators — prevents false alarms in air-gapped environments

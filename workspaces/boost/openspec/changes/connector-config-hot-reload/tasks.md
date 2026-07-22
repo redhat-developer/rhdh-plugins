@@ -16,7 +16,7 @@
 ## 2. RuntimeConfigResolver Extension (P0) — RHIDP-15340
 
 - [ ] 2.1 Extend `RuntimeConfigResolver` to support connector config scope (e.g., `connectors.jira`, `connectors.github`)
-- [ ] 2.2 Extend `resolve(key: BoostConfigKey)` method to support connector config keys (e.g., `boost.connectors.jira`)
+- [ ] 2.2 Extend `resolve(key: BoostConfigKey)` method to support connector leaf config keys (e.g., `boost.connectors.jira.enabled`)
 - [ ] 2.3 Implement two-layer merge: YAML baseline from `ConfigApi` + DB overrides from `AdminConfigService`
 - [ ] 2.4 Implement cache with 30s TTL for merged connector config
 - [ ] 2.5 Implement immediate cache invalidation on DB override write
@@ -28,7 +28,7 @@
 
 ## 3. Hot-Reload Propagation (P0) — RHIDP-15341
 
-- [ ] 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.resolve('boost.connectors.jira')` at reconciliation cycle start
+- [ ] 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` (and other leaf keys) at reconciliation cycle start
 - [ ] 3.2 Implement enable/disable check: skip sync if `enabled: false`
 - [ ] 3.3 Implement endpoint URL propagation: use DB override endpoint if present, else YAML baseline
 - [ ] 3.4 Implement schedule change propagation: reschedule task with new `schedule.intervalMs` or `schedule.cron` from merged config
@@ -85,7 +85,7 @@
 ## 8. Documentation (P2)
 
 - [ ] 8.1 Document `RuntimeConfigResolver` extension for connector config in architecture docs
-- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`). Note: runtime operational state lives in the health store (`sync_attempts` table), not the config resolver.
+- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`). Note: runtime operational state lives in the health store (`boost_sync_attempts` table), not the config resolver.
 - [ ] 8.3 Document connector config admin UI usage (how to toggle, change endpoint/schedule)
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)

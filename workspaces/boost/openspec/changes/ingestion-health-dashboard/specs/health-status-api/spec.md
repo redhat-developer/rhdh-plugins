@@ -14,7 +14,7 @@ The API exposes connector health state for admin dashboard consumption.
 
 - **WHEN** `GET /api/boost/ingestion-health` is called with valid boost admin credentials
 - **THEN** the response is a JSON array of connector health objects
-- **AND** each object contains: `connectorId`, `connectorType`, `enabled`, `status` (healthy/degraded/failing/disabled), `lastSyncAttempt` (ISO timestamp), `lastSuccessfulSync` (ISO timestamp or null), `errorSummary` (object or null), `metrics` (object with assetsAdded/Updated/Removed counts)
+- **AND** each object contains: `connectorId`, `connectorType`, `enabled`, `status` (healthy/degraded/failing/disabled/unknown), `lastSyncAttempt` (ISO timestamp), `lastSuccessfulSync` (ISO timestamp or null), `errorSummary` (object or null), `metrics` (object with assetsAdded/Updated/Removed counts)
 - **AND** disabled connectors are excluded from the response unless `?includeDisabled=true` query parameter is set
 
 #### Scenario: Health status derivation logic
@@ -40,7 +40,7 @@ Each connector sync attempt is recorded in the database.
 #### Scenario: Sync attempt recorded in database
 
 - **WHEN** a connector completes a sync attempt (success or failure)
-- **THEN** a record is inserted into the `sync_attempts` table with: `connector_id`, `timestamp`, `outcome` (success/failure), `error_type`, `error_message`, `assets_added`, `assets_updated`, `assets_removed`, `duration_ms`
+- **THEN** a record is inserted into the `boost_sync_attempts` table with: `connector_id`, `timestamp`, `outcome` (success/failure), `error_type`, `error_message`, `assets_added`, `assets_updated`, `assets_removed`, `duration_ms`
 - **AND** the record is queryable via health API within 1 second
 
 #### Scenario: Retention policy enforced
@@ -80,7 +80,7 @@ Admins can manually trigger connector sync outside scheduled cadence.
 - **WHEN** `POST /api/boost/ingestion-health/:connectorId/force-sync` is called with valid boost admin credentials
 - **THEN** the connector provider's `run()` method is invoked immediately
 - **AND** the response includes a `runId` for polling status
-- **AND** the sync attempt is recorded in the `sync_attempts` table upon completion
+- **AND** the sync attempt is recorded in the `boost_sync_attempts` table upon completion
 
 #### Scenario: Force Sync timeout handling
 

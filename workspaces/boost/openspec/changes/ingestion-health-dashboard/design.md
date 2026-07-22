@@ -4,7 +4,7 @@
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed and consolidated into RHIDP-15277 (RHDHPLAN-1508). This health dashboard is unaffected — audit event patterns referenced in this design continue to come from RHIDP-15277. The Neo4j sync panel (RHIDP-15338) depends on RHIDP-15295 (RHDHPLAN-1507 Neo4j Knowledge Graph Sync Adapter) being implemented first.
 
-Boost implements the ingestion health dashboard as a standard admin panel section following the existing patterns established in the augment workspace's admin panel (model connection, system prompt, agent config sections). The augment reference prototype has no equivalent feature — this is net-new functionality for Boost. The design follows RHDH Extensions Catalog patterns for admin tooling: backend exposes REST API, frontend renders via PatternFly components, RBAC enforced at API layer.
+Boost implements the ingestion health dashboard as a standard admin panel section following the existing patterns established in the boost workspace's admin panel (model connection, system prompt, agent config sections). The augment reference prototype has no equivalent feature — this is net-new functionality for Boost. The design follows RHDH Extensions Catalog patterns for admin tooling: backend exposes REST API, frontend renders via PatternFly components, RBAC enforced at API layer.
 
 ## Goals
 
@@ -13,7 +13,7 @@ Boost implements the ingestion health dashboard as a standard admin panel sectio
 - Distinguish intentionally disabled connectors from unexpectedly failing ones in air-gapped clusters
 - Force Sync capability for manual intervention
 - Neo4j graph sync operational monitoring as distinct section
-- Integrate seamlessly into existing augment admin panel navigation
+- Integrate seamlessly into existing boost admin panel navigation
 
 ## Non-Goals
 
@@ -30,7 +30,7 @@ Boost implements the ingestion health dashboard as a standard admin panel sectio
 The health data model tracks sync attempts in a dedicated database table with schema:
 
 ```sql
-CREATE TABLE sync_attempts (
+CREATE TABLE boost_sync_attempts (
   id SERIAL PRIMARY KEY,
   connector_id TEXT NOT NULL,
   timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -43,7 +43,7 @@ CREATE TABLE sync_attempts (
   duration_ms INTEGER NOT NULL
 );
 
-CREATE INDEX idx_sync_attempts_connector_ts ON sync_attempts (connector_id, timestamp DESC);
+CREATE INDEX idx_boost_sync_attempts_connector_ts ON boost_sync_attempts (connector_id, timestamp DESC);
 ```
 
 Health status is derived from the last N sync attempts (default N=3):
@@ -73,7 +73,7 @@ Timeout is configurable (default 10 minutes) via `boost.ingestion.forceSyncTimeo
 
 ### Decision 3: Admin UI in existing boost admin panel — new route/tab
 
-The ingestion health UI is a new section in the augment workspace's existing admin panel at route `/admin/ingestion-health`. Follows the pattern established by `/admin/model-connection`, `/admin/system-prompt`, `/admin/agent-config`.
+The ingestion health UI is a new section in the boost workspace's existing admin panel at route `/admin/ingestion-health`. Follows the pattern established by `/admin/model-connection`, `/admin/system-prompt`, `/admin/agent-config`.
 
 Navigation: Adds "Ingestion Health" item to admin panel sidebar (`AdminLayout.tsx`). Content: `IngestionHealthPanel.tsx` renders per-connector health cards using PatternFly `Card`, `CardHeader`, `CardBody` with status badges (`Label` component with green/yellow/red variants).
 
