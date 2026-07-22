@@ -42,13 +42,13 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm"
   },
-  "packageManager": "yarn@4.15.0",
+  "packageManager": "yarn@4.17.1",
   "devDependencies": {
     "@backstage/cli": "^0.35.2",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.16.2",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.61.1",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.0.0",
     "@types/webpack-env": "^1.18.4",
