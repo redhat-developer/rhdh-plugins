@@ -10841,7 +10841,6 @@ __metadata:
     "@types/express": "npm:4.17.25"
     "@types/git-url-parse": "npm:^9.0.0"
     "@types/knex": "npm:^0.16.1"
-    "@types/node-fetch": "npm:^2.5.12"
     "@types/supertest": "npm:2.0.16"
     ajv-formats: "npm:^3.0.1"
     eventsource-client: "npm:^1.2.0"
@@ -10853,7 +10852,6 @@ __metadata:
     knex: "npm:^3.0.0"
     luxon: "npm:^3.4.4"
     msw: "npm:1.3.5"
-    node-fetch: "npm:^2.6.7"
     openapi-backend: "npm:^5.10.6"
     openapicmd: "npm:2.9.2"
     prettier: "npm:3.8.4"
@@ -14557,16 +14555,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:^2.5.12":
-  version: 2.6.13
-  resolution: "@types/node-fetch@npm:2.6.13"
-  dependencies:
-    "@types/node": "npm:*"
-    form-data: "npm:^4.0.4"
-  checksum: 10c0/6313c89f62c50bd0513a6839cdff0a06727ac5495ccbb2eeda51bb2bbbc4f3c0a76c0393a491b7610af703d3d2deb6cf60e37e59c81ceeca803ffde745dbf309
-  languageName: node
-  linkType: hard
-
 "@types/node-forge@npm:^1.3.0":
   version: 1.3.14
   resolution: "@types/node-forge@npm:1.3.14"
@@ -16912,7 +16900,6 @@ __metadata:
     "@types/git-url-parse": "npm:^9.0.0"
     "@types/knex": "npm:^0.16.1"
     "@types/luxon": "npm:^2.0.4"
-    "@types/node-fetch": "npm:^2.5.12"
     "@types/supertest": "npm:2.0.16"
     ajv-formats: "npm:^3.0.1"
     app: "link:../app"
@@ -16926,7 +16913,6 @@ __metadata:
     knex: "npm:^3.0.0"
     luxon: "npm:^3.4.4"
     msw: "npm:1.3.5"
-    node-fetch: "npm:^2.6.7"
     node-gyp: "npm:^10.0.0"
     openapi-backend: "npm:^5.10.6"
     openapicmd: "npm:2.9.2"
@@ -22024,7 +22010,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0, form-data@npm:^4.0.4, form-data@npm:^4.0.5":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.5":
   version: 4.0.6
   resolution: "form-data@npm:4.0.6"
   dependencies:
