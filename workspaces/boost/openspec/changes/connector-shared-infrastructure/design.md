@@ -79,7 +79,7 @@ function loadCaBundle(config: Config, connectorId: string): Buffer | undefined;
 - Reads `catalog.providers.<connectorId>.tls.caFile` or `catalog.providers.<connectorId>.tls.caSecret`
 - Returns `Buffer` containing PEM-encoded CA certificate(s) for `https.Agent` consumption
 - Handles missing CA file: log at WARN level with expected file path, return `undefined` (don't crash provider)
-- Handles invalid CA certificate: log error with certificate details (expiry, issuer), return `undefined`
+- Handles invalid CA certificate: log error indicating the file is not valid PEM, return `undefined`
 - Supports CA certificate chains (multiple PEM blocks concatenated)
 
 **Why graceful failure:** Air-gapped environments may have partial CA configuration during initial setup. The connector should start (with degraded HTTPS verification) rather than crash. Structured logging provides actionable debugging context.

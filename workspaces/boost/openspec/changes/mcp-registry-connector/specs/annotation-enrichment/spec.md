@@ -3,6 +3,8 @@
 > **Status: Draft** — Pre-implementation specification.
 >
 > **Cross-connector dependencies:** RHIDP-15319 is blocked by RHDHPLAN-1507's SDK (RHIDP-15258) which defines the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`) and SDK validation layer. The annotation constants and validation must be exported by the SDK before this enrichment pipeline can integrate.
+>
+> **Connector-specific extensions:** Individual connectors may define additional `rhdh.io/ai-asset-*` annotations beyond the core three. The OCI Skill connector defines `rhdh.io/ai-asset-digest` (OCI image digest for incremental sync). These extensions follow the same namespace but are not required by the SDK validation layer.
 
 ## Description
 
