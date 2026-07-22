@@ -10829,7 +10829,6 @@ __metadata:
     "@backstage/plugin-catalog-backend": "npm:^3.8.0"
     "@backstage/plugin-catalog-node": "npm:^2.2.2"
     "@backstage/plugin-permission-common": "npm:^0.9.9"
-    "@backstage/plugin-permission-node": "npm:^0.11.1"
     "@backstage/types": "npm:^1.2.2"
     "@gitbeaker/rest": "npm:^43.4.0"
     "@octokit/auth-app": "npm:^7.2.2"

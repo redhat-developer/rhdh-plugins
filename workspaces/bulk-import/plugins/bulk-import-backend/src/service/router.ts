@@ -29,7 +29,6 @@ import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
@@ -39,8 +38,6 @@ import {
   type Context,
   type Request as OpenAPIRequest,
 } from 'openapi-backend';
-
-import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
@@ -742,11 +739,6 @@ export async function createRouter(
 
   const router = Router();
   router.use(express.json());
-
-  const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: [bulkImportPermission],
-  });
-  router.use(permissionIntegrationRouter);
 
   // Strip x-scm-tokens from req.headers before the permission check and audit
   // middleware run so that OAuth tokens are never captured in audit logs.

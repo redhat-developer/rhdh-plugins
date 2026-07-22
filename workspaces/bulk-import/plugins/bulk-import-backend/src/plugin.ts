@@ -20,6 +20,8 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 
+import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
+
 import { createRouter } from './service/router';
 
 /**
@@ -37,6 +39,7 @@ export const bulkImportPlugin = createBackendPlugin({
         cache: coreServices.cache,
         discovery: coreServices.discovery,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
         httpAuth: coreServices.httpAuth,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
@@ -50,12 +53,15 @@ export const bulkImportPlugin = createBackendPlugin({
         cache,
         discovery,
         permissions,
+        permissionsRegistry,
         httpAuth,
         auth,
         catalog,
         auditor,
         database,
       }) {
+        permissionsRegistry.addPermissions([bulkImportPermission]);
+
         const router = await createRouter({
           config,
           cache,
