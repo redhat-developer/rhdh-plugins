@@ -160,7 +160,7 @@ describe('validateCompletionsRequest', () => {
       expect(statusMock).not.toHaveBeenCalled();
     });
 
-    it('should pass with attachments (size validation is in validateAttachmentsForModel)', () => {
+    it('should pass with attachments', () => {
       mockReq.body = {
         model: 'gpt-4',
         provider: 'openai',

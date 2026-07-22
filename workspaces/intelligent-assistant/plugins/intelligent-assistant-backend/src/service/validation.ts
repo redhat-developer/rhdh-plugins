@@ -60,7 +60,7 @@ function validateAttachments(attachments: Array<Attachments>): string | null {
       : 0;
 
     if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
-      return `Attachment "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+      return `Attachment with type "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
     }
 
     totalSize += attachmentSize;
@@ -120,13 +120,6 @@ export const validateCompletionsRequest = (
     });
   }
 
-  if (reqData.attachments && Array.isArray(reqData.attachments)) {
-    const attachmentError = validateAttachments(reqData.attachments);
-    if (attachmentError) {
-      return res.status(400).json({ error: attachmentError });
-    }
-  }
-
   return next();
 };
 
@@ -155,6 +148,11 @@ export const validateAttachmentsForModel = (
 
   if (!attachments || attachments.length === 0) {
     return next();
+  }
+
+  const attachmentError = validateAttachments(attachments);
+  if (attachmentError) {
+    return res.status(400).json({ error: attachmentError });
   }
 
   const hasImages = attachments.some(

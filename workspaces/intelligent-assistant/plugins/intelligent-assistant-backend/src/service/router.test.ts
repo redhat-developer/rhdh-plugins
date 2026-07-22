@@ -1365,22 +1365,14 @@ describe('intelligent-assistant router tests', () => {
 
     it('returns true when model supports vision', async () => {
       server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-4o',
-                provider_resource_id: 'gpt-4o',
-                supports_vision: true,
-              },
-            ],
-          });
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return HttpResponse.json({ id: 'resp-1', output: [] });
         }),
       );
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/validate-model-vision')
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
         .send({ model: 'gpt-4o', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
@@ -1393,22 +1385,17 @@ describe('intelligent-assistant router tests', () => {
 
     it('returns false when model lacks vision', async () => {
       server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return new HttpResponse(
+            JSON.stringify({ error: 'Model does not support vision' }),
+            { status: 400 },
+          );
         }),
       );
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/validate-model-vision')
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
         .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
@@ -1419,23 +1406,26 @@ describe('intelligent-assistant router tests', () => {
       });
     });
 
-    it('returns 400 when model is not found', async () => {
+    it('returns false when model is not found', async () => {
       server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({ models: [] });
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return new HttpResponse(
+            JSON.stringify({ error: 'Model not found' }),
+            { status: 404 },
+          );
         }),
       );
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/validate-model-vision')
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
         .send({ model: 'gpt-4o', provider: 'test-server' });
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual({
         model: 'gpt-4o',
         provider: 'test-server',
-        supportsVision: true,
+        supportsVision: false,
       });
     });
   });
@@ -1450,23 +1440,11 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('rejects attachments when model lacks vision', async () => {
-      server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
-        }),
-      );
+      ModelCapabilitiesCache.set('test-server/gpt-3.5-turbo', false);
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
+        .post('/api/intelligent-assistant/v1/query')
         .send({
           model: 'gpt-3.5-turbo',
           provider: 'test-server',
@@ -1487,23 +1465,11 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('accepts attachments when model supports vision', async () => {
-      server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-4o',
-                provider_resource_id: 'gpt-4o',
-                supports_vision: true,
-              },
-            ],
-          });
-        }),
-      );
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
 
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
+        .post('/api/intelligent-assistant/v1/query')
         .send({
           model: 'gpt-4o',
           provider: 'test-server',
@@ -1521,23 +1487,9 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('accepts empty attachments regardless of vision support', async () => {
-      server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
-        }),
-      );
-
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
+        .post('/api/intelligent-assistant/v1/query')
         .send({
           model: 'gpt-3.5-turbo',
           provider: 'test-server',
@@ -1549,23 +1501,9 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('accepts no attachments field regardless of vision support', async () => {
-      server.use(
-        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
-          return HttpResponse.json({
-            models: [
-              {
-                identifier: 'gpt-3.5-turbo',
-                provider_resource_id: 'gpt-3.5-turbo',
-                supports_vision: false,
-              },
-            ],
-          });
-        }),
-      );
-
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
+        .post('/api/intelligent-assistant/v1/query')
         .send({
           model: 'gpt-3.5-turbo',
           provider: 'test-server',
