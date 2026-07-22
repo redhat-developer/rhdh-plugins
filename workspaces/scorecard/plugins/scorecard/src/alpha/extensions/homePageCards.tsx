@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { ComponentType, ReactElement } from 'react';
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import type { RendererProps } from '@backstage/plugin-home-react';
 
@@ -32,11 +33,11 @@ const defaultCardLayout = {
 
 function lazyScorecardWidget(
   factory: (
-    ScorecardHomepageCardWithProvider: React.ComponentType<{
+    ScorecardHomepageCardWithProvider: ComponentType<{
       metricId?: string;
       aggregationId?: string;
     }>,
-  ) => () => JSX.Element,
+  ) => () => ReactElement,
 ) {
   return async () => {
     const { ScorecardHomepageCardWithProvider } = await import(
