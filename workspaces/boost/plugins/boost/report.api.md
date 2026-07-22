@@ -345,6 +345,7 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.copyCommand': string;
     readonly 'catalog.card.copied': string;
     readonly 'catalog.card.copyAriaLabel': string;
+    readonly 'catalog.card.adoptionDownloadZip': string;
     readonly 'catalog.empty.title': string;
     readonly 'catalog.empty.description': string;
     readonly 'catalog.empty.learnMore': string;

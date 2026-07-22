@@ -42,7 +42,8 @@ export const boostMessages = {
       versionCurrent: 'current',
       copyCommand: 'Copy',
       copied: 'Copied',
-      copyAriaLabel: 'Copy command',
+      copyAriaLabel: 'Copy command to clipboard',
+      adoptionDownloadZip: 'Download ZIP',
     },
     table: {
       name: 'Name',
