@@ -217,10 +217,10 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
     metadata: {
       ...entity.metadata,
       annotations: {
-        ...entity.metadata.annotations,
         'rhdh.io/ai-asset-category': 'mcp-server',
         'rhdh.io/ai-asset-version': extractVersion(entity) || 'unknown',
         'rhdh.io/ai-asset-source': 'mcp-registry',
+        ...entity.metadata.annotations,
       },
     },
   };

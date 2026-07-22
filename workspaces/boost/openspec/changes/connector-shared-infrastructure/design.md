@@ -33,7 +33,7 @@ The shared infrastructure lives in a standalone utility package (`@red-hat-devel
 plugins/boost-connector-utils/
 ├── package.json               # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
 ├── src/
-│   ├── index.ts              # Exports: loadCaBundle, createProviderWrapper, createSafeRefresh, isConnectorEnabled
+│   ├── index.ts              # Exports: loadCaBundle, createHttpsAgent, createProviderWrapper, createSafeRefresh, isConnectorEnabled, ConnectorErrorContext
 │   ├── ca-bundle.ts          # CA bundle loading logic
 │   ├── fault-isolation.ts    # Provider wrapper with error handling
 │   └── config.ts             # Enable/disable guard

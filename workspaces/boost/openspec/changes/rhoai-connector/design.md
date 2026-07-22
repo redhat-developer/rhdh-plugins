@@ -46,7 +46,7 @@ MCP catalog entries must map to RHDH entity types.
 
 The MCP catalog API is developer preview in RHOAI 3.4. Older RHOAI versions (< 3.4) will not have this API. The connector must not fail startup on API absence.
 
-**How to apply:** MCP catalog provider's `connect()` method tries the API endpoint. On 404 or connection error, log a warning (`MCP catalog API not available, disabling MCP source for this cycle`), set internal flag `mcpApiAvailable = false`, and call `applyMutation({ type: 'full', entities: [] })` in the refresh callback. On subsequent refreshes, skip API calls if flag is false. Do NOT throw an error that halts the entire catalog backend.
+**How to apply:** MCP catalog provider's `connect()` method tries the API endpoint. On 404 or connection error, log a warning (`MCP catalog API not available, disabling MCP source for this cycle`), set internal flag `mcpApiAvailable = false`, and call `applyMutation({ type: 'full', entities: [] })` in the refresh callback. On subsequent refreshes, skip API calls if flag is false. Every 10th refresh cycle, retry the API connection to detect RHOAI upgrades that add the MCP catalog API. Do NOT throw an error that halts the entire catalog backend.
 
 **Why:** RHOAI deployment versions vary across customers. The connector must handle API absence gracefully without crashing the catalog backend.
 
