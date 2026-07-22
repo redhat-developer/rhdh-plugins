@@ -25,7 +25,7 @@ import {
   TagGroup,
   Text,
 } from '@backstage/ui';
-import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import { RiUserLine } from '@remixicon/react';
 
 import { getCategoryMeta } from '../../utils/categoryMeta';
 import { entityHref, getSpecField } from '../../utils/entityHelpers';
@@ -97,7 +97,7 @@ export const AiAssetCard = ({ entity, onCategoryClick }: AiAssetCardProps) => {
           {owner && (
             <>
               <span className={styles.ownerIcon}>
-                <PersonOutlined fontSize="small" />
+                <RiUserLine size={16} />
               </span>
               <Text variant="body-x-small" color="secondary" truncate>
                 {owner}
