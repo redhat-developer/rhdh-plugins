@@ -291,6 +291,27 @@ test.afterEach(async ({ page }, testInfo) => {
 // ===========================================================================
 
 test.describe('X2Ansible - UI Smoke Tests @smoke @live', () => {
+  const baseURL = process.env.PLAYWRIGHT_URL || 'http://localhost:3000';
+  let smokeProjectId = '';
+
+  test.beforeAll(async () => {
+    try {
+      const project = await createProject(
+        baseURL,
+        `smoke-seed-${Date.now().toString(36)}`,
+      );
+      smokeProjectId = project.id;
+    } catch {
+      // Non-fatal: tests that need a project will fail individually
+    }
+  });
+
+  test.afterAll(async () => {
+    if (smokeProjectId) {
+      await deleteProject(baseURL, smokeProjectId).catch(() => {});
+    }
+  });
+
   test('Guest login renders RHDH welcome page', async ({ page }) => {
     await performLogin(page);
     await expect(page.getByRole('heading', { name: /welcome/i })).toBeVisible({
@@ -386,7 +407,8 @@ test.describe('X2Ansible - UI Smoke Tests @smoke @live', () => {
     }
   });
 
-  test('Wizard step navigation — forward and back with field retention', async ({
+  // FLPATH-4413: Scaffolder RJSF form fields don't render on RHDH 1.10+
+  test.skip('Wizard step navigation — forward and back with field retention', async ({
     page,
   }) => {
     const x2aPage = new X2AnsiblePage(page);
