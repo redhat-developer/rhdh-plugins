@@ -9,31 +9,31 @@ The system SHALL render a detail page for AIResource entities using the existing
 - **WHEN** a user navigates to the catalog URL of an AIResource entity
 - **THEN** the standard entity detail page renders with the entity metadata visible
 
-#### Scenario: Entity page displays for both git and oci sourced entities
+#### Scenario: Entity page displays for both git/HTTPS and OCI sourced entities
 
-- **WHEN** an AIResource entity has `spec.location.type: git` or `spec.location.type: oci`
+- **WHEN** an AIResource entity has a git/HTTPS or OCI `backstage.io/source-location`
 - **THEN** the same entity page layout renders for both and the location display adapts to the source type
 
 ---
 
-### Requirement: Asset location rendered from `spec.location.target`
+### Requirement: Asset location rendered from `backstage.io/source-location`
 
-The entity detail page SHALL display the asset location from `spec.location.target` as either a clickable link for git sources or copyable text for OCI sources.
+The entity detail page SHALL display the asset location from `backstage.io/source-location` as either a clickable link for git/HTTPS sources or copyable text for OCI sources.
 
-#### Scenario: Git location displayed as clickable link
+#### Scenario: Git/HTTPS location displayed as clickable link
 
-- **WHEN** an AIResource entity has `spec.location.type: git` and a valid URL in `spec.location.target`
-- **THEN** the entity page shows the URL as a clickable link labelled "Git Repository"
+- **WHEN** an AIResource entity has `backstage.io/source-location: url:https://…`
+- **THEN** the entity page shows the URL as a clickable link
 
 #### Scenario: OCI location displayed as copyable text
 
-- **WHEN** an AIResource entity has `spec.location.type: oci` and a valid `oci://` URI in `spec.location.target`
-- **THEN** the entity page displays the OCI URI as copyable text labelled "OCI Image" with a copy-to-clipboard affordance
+- **WHEN** an AIResource entity has `backstage.io/source-location: url:oci://…`
+- **THEN** the entity page displays the OCI URI as copyable text with a copy-to-clipboard affordance (not as a normal browser navigation link)
 
 #### Scenario: Location label indicates source type
 
 - **WHEN** the entity page renders the asset location
-- **THEN** the display is labelled to indicate whether the source is a git repository or OCI image
+- **THEN** the display indicates whether the source is a git/HTTPS URL or an OCI image reference
 
 ---
 
