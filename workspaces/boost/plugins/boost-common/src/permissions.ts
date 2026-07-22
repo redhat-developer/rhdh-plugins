@@ -239,7 +239,33 @@ export const boostKagentiAdminPermission = createPermission({
 });
 
 // ---------------------------------------------------------------------------
-// Functional permissions — 5 total
+// AI Catalog permissions
+// ---------------------------------------------------------------------------
+
+/**
+ * Resource type for AI catalog assets.
+ *
+ * @public
+ */
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
+/**
+ * View usage documentation for an AI catalog asset.
+ *
+ * @remarks
+ * Resource-scoped so that RBAC deployments can apply conditional rules
+ * (e.g. by category, connector, or tenant) once those rules land.
+ *
+ * @public
+ */
+export const boostAiCatalogUsageDocsPermission = createPermission({
+  name: 'ai-catalog.asset.read.usage-docs',
+  attributes: { action: 'read' },
+  resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+});
+
+// ---------------------------------------------------------------------------
+// Functional permissions
 // ---------------------------------------------------------------------------
 
 /**
@@ -392,7 +418,7 @@ export const boostEntityPermissions = [
 ] as const;
 
 /**
- * All 5 functional permissions.
+ * All functional permissions.
  *
  * @public
  */
@@ -437,6 +463,16 @@ export const boostToolResourcePermissions: ResourcePermission<
 ];
 
 /**
+ * All AI catalog resource permissions (those with resourceType
+ * `ai-catalog-asset`).
+ *
+ * @public
+ */
+export const boostAiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[] = [boostAiCatalogUsageDocsPermission];
+
+/**
  * All boost permissions combined for registration via
  * `permissionsRegistry.addPermissions()`.
  *
@@ -444,6 +480,7 @@ export const boostToolResourcePermissions: ResourcePermission<
  */
 export const boostPermissions = [
   ...boostEntityPermissions,
+  ...boostAiCatalogResourcePermissions,
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,

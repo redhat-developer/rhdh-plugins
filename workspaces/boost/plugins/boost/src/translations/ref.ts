@@ -58,6 +58,9 @@ export const boostMessages = {
       usageExternalLinks: 'External Links',
       usageNoDocumentation:
         'No usage documentation available. Contact the owner for access.',
+      usagePermissionDenied:
+        'You do not have permission to view usage documentation for this asset.',
+      usageContactOwner: 'Contact owner',
     },
     empty: {
       title: 'No AI assets available',

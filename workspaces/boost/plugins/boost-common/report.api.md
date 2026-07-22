@@ -29,6 +29,9 @@ export interface AgentRecord {
 }
 
 // @public
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
+// @public
 export interface ApprovalRequest {
   args: string;
   conversationId: string;
@@ -120,6 +123,14 @@ export const boostAgentUnpublishPermission: ResourcePermission<'boost-agent'>;
 export const boostAgentWithdrawPermission: ResourcePermission<'boost-agent'>;
 
 // @public
+export const boostAiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[];
+
+// @public
+export const boostAiCatalogUsageDocsPermission: ResourcePermission<'ai-catalog-asset'>;
+
+// @public
 export const boostChatCreatePermission: BasicPermission;
 
 // @public
@@ -184,6 +195,7 @@ export const boostPermissions: readonly [
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   BasicPermission,
+  ...ResourcePermission<'ai-catalog-asset'>[],
   BasicPermission,
   BasicPermission,
   BasicPermission,
