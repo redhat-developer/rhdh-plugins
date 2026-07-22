@@ -39,9 +39,10 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ## Impact
 
-- `plugins/boost-connector-utils/` — shared utility package (`@boost/connector-utils`)
+- `plugins/boost-connector-utils/` — shared utility package (`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`)
   - `loadCaBundle()` function
-  - `createProviderWrapper()` fault isolation wrapper
+  - `createProviderWrapper()` fault isolation wrapper for `connect()`
+  - `createSafeRefresh()` fault isolation wrapper for scheduled refresh callbacks
   - `isConnectorEnabled()` registration guard
 - `plugins/boost-backend-module-mcp-registry/` — consumes shared utilities
 - `plugins/boost-backend-module-rhoai/` — consumes shared utilities

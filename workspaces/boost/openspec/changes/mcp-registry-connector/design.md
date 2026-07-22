@@ -156,7 +156,7 @@ catalog:
 **Integration pattern:**
 
 ```typescript
-import { loadCaBundle } from '@boost/connector-utils';
+import { loadCaBundle } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
 const caBundle = loadCaBundle(config, 'mcpRegistry');
 
@@ -175,7 +175,7 @@ const httpsAgent = new https.Agent({
 
 **Dependency:**
 
-- `@boost/connector-utils` package exports `loadCaBundle()` utility
+- `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package exports `loadCaBundle()` utility
 - Shared utility handles file reading, PEM validation, and error logging
 
 ### Decision 4: Annotation Enrichment Pipeline After Entity Emission
@@ -288,4 +288,4 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
 - Shared annotation schema defined in RHDHPLAN-1507's `ai-catalog-entity-model`
 - SDK validation enforces annotation schema compliance
 - Automated tests verify annotation presence and correctness
-- Version annotation schema in `@boost/plugin-boost-common` package
+- Version annotation schema in `@red-hat-developer-hub/backstage-plugin-boost-common` package

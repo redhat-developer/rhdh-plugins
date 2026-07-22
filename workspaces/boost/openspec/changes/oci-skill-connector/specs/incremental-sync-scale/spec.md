@@ -54,9 +54,9 @@ The connector MUST emit incremental catalog updates using `applyMutation({ type:
 - **THEN** it calls `applyMutation({ type: 'full', entities: [...all discovered skills...] })`
 - **AND** subsequent syncs use delta mutations
 
-### Requirement: In-Memory Cache with Disk Backup
+### Requirement: Durable Digest Cache
 
-The connector MUST maintain a 5-minute TTL in-memory digest cache with disk persistence for durability across restarts.
+The connector MUST maintain a durable digest cache — an in-memory cache with disk persistence for durability across restarts. The in-memory layer provides runtime performance; the disk layer ensures the cache survives process restarts. If no disk cache exists on startup, the connector falls back to a full sync (safe, just slower).
 
 #### Scenario: Cache digest after successful sync
 

@@ -40,7 +40,7 @@ Missing or invalid CA files produce warnings, not crashes.
 
 - **WHEN** a connector is configured with `tls.caFile: /etc/ssl/missing.pem`
 - **AND** the file does not exist at that path
-- **THEN** `loadCaBundle()` logs a warning at INFO level with the expected file path
+- **THEN** `loadCaBundle()` logs a warning at WARN level with the expected file path
 - **AND** returns `undefined` (not an error thrown)
 - **AND** the connector continues startup without custom CA (uses system CA bundle)
 

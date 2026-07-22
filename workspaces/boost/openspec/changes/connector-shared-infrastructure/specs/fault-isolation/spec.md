@@ -53,7 +53,7 @@ Each connector failure produces actionable error details for debugging.
 
 - **WHEN** a connector logs an error via the shared fault isolation wrapper
 - **THEN** the log message uses Backstage's `LoggerService` for structured JSON output
-- **AND** the log level is ERROR for failures, INFO for warnings (e.g., missing CA file)
+- **AND** the log level is ERROR for failures, WARN for warnings (e.g., missing CA file)
 
 ### Requirement: Enable/Disable Config Check at Registration
 

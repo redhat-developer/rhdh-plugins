@@ -103,14 +103,14 @@
 
 ## 8. Packaging (P2)
 
-- [ ] 8.1 Create `boost-backend-module-oci-skill-connector` package with `createBackendModule`
+- [ ] 8.1 Create `boost-backend-module-oci-skill` package with `createBackendModule`
 - [ ] 8.2 Implement `OciSkillEntityProvider` extending SDK's `SkillEntityProvider` base class (from RHDHPLAN-1507 RHIDP-15294)
 - [ ] 8.3 Register provider with `catalogProcessingExtensionPoint.addEntityProvider()`
-- [ ] 8.4 Add package dependencies: `@boost/oci-skill-registry-sdk`, `js-yaml`, `p-limit`, `node-fetch`
+- [ ] 8.4 Add package dependencies: `@red-hat-developer-hub/backstage-plugin-boost-oci-skill-registry-sdk`, `js-yaml`, `p-limit`, `node-fetch`
 - [ ] 8.5 Configure RHDH dynamic plugin export (OCI)
 - [ ] 8.6 Create example `app-config.yaml` with OCI registry configuration
 - [ ] 8.7 Add README with setup instructions, authentication guide, scaling recommendations
-- [ ] 8.8 Publish to npm registry as `@boost/plugin-boost-backend-module-oci-skill-connector`
+- [ ] 8.8 Publish to npm registry as `@red-hat-developer-hub/backstage-plugin-boost-backend-module-oci-skill`
 
 ## 9. Documentation (P2)
 

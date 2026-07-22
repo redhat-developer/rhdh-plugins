@@ -107,7 +107,7 @@
 ## 5. Packaging and Documentation (P2)
 
 - [ ] 5.1 Create `plugins/boost-backend-module-mcp-registry/` package scaffold
-- [ ] 5.2 Add `package.json` with dependencies (`@backstage/backend-plugin-api`, `@boost/connector-utils`, etc.)
+- [ ] 5.2 Add `package.json` with dependencies (`@backstage/backend-plugin-api`, `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`, etc.)
 - [ ] 5.3 Add `config.d.ts` schema definition for app-config
 - [ ] 5.4 Implement `mcpRegistryModule` as Backstage backend module (`createBackendModule`)
 - [ ] 5.5 Implement `RhdhMcpRegistryProviderWrapper` class

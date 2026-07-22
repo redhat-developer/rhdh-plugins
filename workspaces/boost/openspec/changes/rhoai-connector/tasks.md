@@ -38,7 +38,7 @@
 
 ## 3. Module Scaffolding
 
-- [ ] 3.1 Create `plugins/catalog-backend-module-rhoai/` package directory
+- [ ] 3.1 Create `plugins/boost-backend-module-rhoai/` package directory
 - [ ] 3.2 Create `package.json` with Backstage backend module role and dependencies
 - [ ] 3.3 Create module entry point: `src/module.ts` with `createBackendModule({ pluginId: 'catalog', moduleId: 'rhoai' })`
 - [ ] 3.4 Register `RhoaiMcpCatalogProvider` via `catalogModule.addEntityProvider()` when enabled
@@ -57,7 +57,7 @@
 
 ## 5. Documentation
 
-- [ ] 5.1 Write README.md for `catalog-backend-module-rhoai` package
+- [ ] 5.1 Write README.md for `boost-backend-module-rhoai` package
 - [ ] 5.2 Document app-config schema with examples (MCP catalog, cross-cluster)
 - [ ] 5.3 Document K8s Secret format and required keys (`token` vs. `username`/`password`)
 - [ ] 5.4 Document CA bundle setup for self-signed certificates

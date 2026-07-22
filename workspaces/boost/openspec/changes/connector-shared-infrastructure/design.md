@@ -23,7 +23,7 @@ Boost builds three AI catalog connectors (MCP Registry, RHOAI, OCI Skill Registr
 
 ### Decision 1: Shared utility package — not a Backstage plugin
 
-The shared infrastructure lives in a standalone utility package (`@boost/connector-utils`) published as a Node.js library. It is NOT a Backstage plugin or backend module — just a utility package importable by all connector backend modules.
+The shared infrastructure lives in a standalone utility package (`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`) published as a Node.js library. It is NOT a Backstage plugin or backend module — just a utility package importable by all connector backend modules.
 
 **Why:** The three connectors are independent backend modules. Each module depends on the shared utilities but operates independently. A shared plugin would create unnecessary coupling and module-to-module dependencies. A utility package provides clear boundaries: connectors import functions, not Backstage extension points.
 
@@ -31,9 +31,9 @@ The shared infrastructure lives in a standalone utility package (`@boost/connect
 
 ```
 plugins/boost-connector-utils/
-├── package.json               # @boost/connector-utils
+├── package.json               # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
 ├── src/
-│   ├── index.ts              # Exports: loadCaBundle, createProviderWrapper, isConnectorEnabled
+│   ├── index.ts              # Exports: loadCaBundle, createProviderWrapper, createSafeRefresh, isConnectorEnabled
 │   ├── ca-bundle.ts          # CA bundle loading logic
 │   ├── fault-isolation.ts    # Provider wrapper with error handling
 │   └── config.ts             # Enable/disable guard
@@ -48,7 +48,7 @@ import {
   loadCaBundle,
   createProviderWrapper,
   isConnectorEnabled,
-} from '@boost/connector-utils';
+} from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 ```
 
 ### Decision 2: CA bundle loading strategy
@@ -78,7 +78,7 @@ function loadCaBundle(config: Config, connectorId: string): Buffer | undefined;
 
 - Reads `catalog.providers.<connectorId>.tls.caFile` or `catalog.providers.<connectorId>.tls.caSecret`
 - Returns `Buffer` containing PEM-encoded CA certificate(s) for `https.Agent` consumption
-- Handles missing CA file: log warning at INFO level, return `undefined` (don't crash provider)
+- Handles missing CA file: log at WARN level with expected file path, return `undefined` (don't crash provider)
 - Handles invalid CA certificate: log error with certificate details (expiry, issuer), return `undefined`
 - Supports CA certificate chains (multiple PEM blocks concatenated)
 

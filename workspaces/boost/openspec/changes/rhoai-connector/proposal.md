@@ -31,9 +31,9 @@ Boost must surface RHOAI's MCP catalog as first-class API entities in the RHDH c
 
 ## Impact
 
-- `plugins/catalog-backend-module-rhoai/` — new backend module with MCP catalog EntityProvider
-- `plugins/catalog-backend-module-rhoai/src/providers/mcpCatalog/` — MCP catalog API client and entity mapping
-- `plugins/catalog-backend-module-rhoai/src/utils/` — CA bundle loading (shared utility integration)
+- `plugins/boost-backend-module-rhoai/` — new backend module with MCP catalog EntityProvider
+- `plugins/boost-backend-module-rhoai/src/providers/mcpCatalog/` — MCP catalog API client and entity mapping
+- `plugins/boost-backend-module-rhoai/src/utils/` — CA bundle loading (shared utility integration)
 - Documentation referencing RHDH AI Asset annotations from RHDHPLAN-1507's entity model
 
 **Cross-references:**

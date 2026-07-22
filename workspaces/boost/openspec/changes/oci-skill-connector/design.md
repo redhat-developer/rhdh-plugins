@@ -98,7 +98,7 @@ We must decide between (a) direct HTTP client implementing these endpoints, or (
 - Digest-based: re-fetch only if manifest digest changed
 - Timestamp-based: re-fetch if manifest lastModified changed (not reliable across all registries)
 
-**Decision:** Digest-based change detection with 5-minute TTL in-memory cache and disk backup.
+**Decision:** Digest-based change detection with durable digest cache (in-memory with disk persistence).
 
 **Rationale:**
 
@@ -209,7 +209,7 @@ spec:
 - Custom CA bundle support
 - Scale validation test harness
 
-**Dependency direction:** `boost-backend-module-oci-skill-connector` → `@boost/oci-skill-registry-sdk` (from RHDHPLAN-1507)
+**Dependency direction:** `boost-backend-module-oci-skill` → `@red-hat-developer-hub/backstage-plugin-boost-oci-skill-registry-sdk` (from RHDHPLAN-1507)
 
 ## Risks
 

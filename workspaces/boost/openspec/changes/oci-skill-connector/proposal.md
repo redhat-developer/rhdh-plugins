@@ -52,10 +52,10 @@ This change implements the connector for OCI-based skill discovery. It builds on
 
 ## Impact
 
-- `plugins/boost-backend-module-oci-skill-connector/` — OCI skill registry entity provider module
-- `plugins/boost-backend-module-oci-skill-connector/src/oci/` — OCI Distribution Spec HTTP client
-- `plugins/boost-backend-module-oci-skill-connector/src/provider/` — entity provider, incremental sync engine
-- `plugins/boost-backend-module-oci-skill-connector/src/cache/` — digest-based cache with TTL and disk backup
-- `plugins/boost-backend-module-oci-skill-connector/src/auth/` — K8s pull secret parser, CA bundle loader
-- `plugins/boost-backend-module-oci-skill-connector/src/__tests__/` — mock registry harness, scale test suite
+- `plugins/boost-backend-module-oci-skill/` — OCI skill registry entity provider module
+- `plugins/boost-backend-module-oci-skill/src/oci/` — OCI Distribution Spec HTTP client
+- `plugins/boost-backend-module-oci-skill/src/provider/` — entity provider, incremental sync engine
+- `plugins/boost-backend-module-oci-skill/src/cache/` — digest-based cache with TTL and disk backup
+- `plugins/boost-backend-module-oci-skill/src/auth/` — K8s pull secret parser, CA bundle loader
+- `plugins/boost-backend-module-oci-skill/src/__tests__/` — mock registry harness, scale test suite
 - Cross-connector shared CA utility (RHIDP-15316) — used for custom CA bundles

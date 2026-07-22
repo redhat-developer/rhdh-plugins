@@ -2,13 +2,13 @@
 
 ## 1. CA Bundle Resolution Utility (P0) — RHIDP-15329
 
-- [ ] 1.1 Create `@boost/connector-utils` package with `package.json`, TypeScript config, and README
+- [ ] 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
 - [ ] 1.2 Define `loadCaBundle(config: Config, connectorId: string): Buffer | undefined` function signature
 - [ ] 1.3 Implement caFile resolution — read CA from `catalog.providers.<id>.tls.caFile` mount path
 - [ ] 1.4 Implement caSecret resolution — read CA from `catalog.providers.<id>.tls.caSecret.$env` environment variable
 - [ ] 1.5 Add per-connector config isolation — `loadCaBundle()` reads only the specified connector's CA config
 - [ ] 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
-- [ ] 1.7 Handle missing CA file: log INFO-level warning with expected file path, return `undefined` (don't crash)
+- [ ] 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
 - [ ] 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details (issuer, expiry), return `undefined`
 - [ ] 1.9 Support CA certificate chains (concatenated PEM blocks)
 - [ ] 1.10 Unit tests: CA loaded from file path
@@ -22,14 +22,15 @@
 
 - [ ] 2.1 Define `ConnectorErrorContext` interface: `connectorId`, `endpoint`, `errorType`, `errorMessage`, `retryable`, `nextRetryAt`
 - [ ] 2.2 Create `createProviderWrapper(provider: EntityProvider, logger: LoggerService): EntityProvider` function
-- [ ] 2.3 Implement try/catch wrapper around provider `connect()` and scheduled refresh callback to catch unhandled rejections
-- [ ] 2.4 Implement structured error logging with connector context fields
-- [ ] 2.5 Log errors via Backstage `LoggerService` for structured JSON output
-- [ ] 2.6 Ensure wrapper does NOT rethrow errors — allow catalog backend to continue
-- [ ] 2.7 Verify Backstage entity bucket isolation per provider (documentation + integration test)
-- [ ] 2.8 Unit test: Provider crash logs structured error and does not rethrow
-- [ ] 2.9 Unit test: Multiple providers can fail independently without cascading errors
-- [ ] 2.10 Unit test: Error log includes all required context fields (connectorId, endpoint, errorType, etc.)
+- [ ] 2.3 Implement try/catch wrapper around provider `connect()` via `createProviderWrapper()` to catch unhandled rejections
+- [ ] 2.4 Implement `createSafeRefresh()` — try/catch wrapper around scheduled refresh callback to catch unhandled rejections
+- [ ] 2.5 Implement structured error logging with connector context fields
+- [ ] 2.6 Log errors via Backstage `LoggerService` for structured JSON output
+- [ ] 2.7 Ensure wrappers do NOT rethrow errors — allow catalog backend to continue
+- [ ] 2.8 Verify Backstage entity bucket isolation per provider (documentation + integration test)
+- [ ] 2.9 Unit test: Provider crash logs structured error and does not rethrow
+- [ ] 2.10 Unit test: Multiple providers can fail independently without cascading errors
+- [ ] 2.11 Unit test: Error log includes all required context fields (connectorId, endpoint, errorType, etc.)
 
 ## 3. Enable/Disable Pattern (P0) — RHIDP-15330
 
@@ -46,7 +47,7 @@
 
 ## 4. Package and Documentation (P1)
 
-- [ ] 4.1 Export shared utilities from `src/index.ts`: `loadCaBundle`, `createHttpsAgent`, `createProviderWrapper`, `isConnectorEnabled`, `ConnectorErrorContext`
+- [ ] 4.1 Export shared utilities from `src/index.ts`: `loadCaBundle`, `createHttpsAgent`, `createProviderWrapper`, `createSafeRefresh`, `isConnectorEnabled`, `ConnectorErrorContext`
 - [ ] 4.2 Document app-config schema for CA bundle config in README with YAML examples
 - [ ] 4.3 Document enable/disable pattern in README with backend module example
 - [ ] 4.4 Document structured error logging pattern in README with example `ConnectorErrorContext` usage
@@ -76,9 +77,9 @@
 
 ## 7. Connector Integration (P2)
 
-- [ ] 7.1 Update MCP Registry connector to consume `@boost/connector-utils`
-- [ ] 7.2 Update RHOAI connector to consume `@boost/connector-utils`
-- [ ] 7.3 Update OCI Skill connector to consume `@boost/connector-utils`
+- [ ] 7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
+- [ ] 7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
+- [ ] 7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
 - [ ] 7.4 Verify all three connectors use consistent CA bundle loading pattern
 - [ ] 7.5 Verify all three connectors use consistent enable/disable config
 - [ ] 7.6 Verify all three connectors use consistent structured error logging
