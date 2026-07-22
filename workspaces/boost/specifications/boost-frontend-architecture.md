@@ -186,7 +186,7 @@ The frontend consumes 23 permissions from `boost-common`:
 | Infrastructure       | `boost.kagenti.admin`                                                                                                              |
 | Functional           | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage`                                                                |
 
-For AI Catalog specifically, RHDHPLAN-1508 defines two additional permissions: `ai-catalog.asset.read` and `ai-catalog.asset.read.usage-docs`. These are not yet in `boost-common` — they will be added as part of the RBAC feature (RHDHPLAN-1508).
+For AI Catalog specifically, RHDHPLAN-1508 defines three additional permissions: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, and `ai-catalog.admin`. These are not yet in `boost-common` — they will be added as part of the RBAC feature (RHDHPLAN-1508).
 
 ---
 
