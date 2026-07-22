@@ -74,8 +74,6 @@ const bulkImportPage = PageBlueprint.make({
     icon: <BulkImportIcon />,
     path: '/bulk-import',
     routeRef: rootRouteRef,
-    title: 'Bulk import',
-    icon: <BulkImportIcon />,
     noHeader: true,
     loader: () => import('./components').then(({ Router }) => <Router />),
   },
