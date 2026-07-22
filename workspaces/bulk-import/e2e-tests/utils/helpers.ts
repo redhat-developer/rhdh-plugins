@@ -51,7 +51,7 @@ export async function switchToLocale(
     await page.goto('/settings');
     await page.getByRole('button', { name: 'English' }).click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+    await page.goto('/');
     // Wait for page to settle after locale switch and reload
     await page.waitForLoadState('networkidle');
   }
