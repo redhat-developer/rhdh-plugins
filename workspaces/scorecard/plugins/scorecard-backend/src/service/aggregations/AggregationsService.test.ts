@@ -18,12 +18,12 @@ import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   aggregationTypes,
-  type AggregatedMetricAverageResult,
+  type WeightedStatusScoreAggregationResult,
   Metric,
   ThresholdConfig,
   type AggregationConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS } from '../../constants/aggregationKPIs';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../constants/aggregationKPIs';
 import { AggregationsService } from './AggregationService';
 import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import type { DbAggregatedMetric } from '../../database/types';
@@ -39,7 +39,7 @@ function createDatabaseMock(
 
 describe('AggregationsService', () => {
   const metric = {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     title: 'Open PRs',
     description: 'desc',
     type: 'number',
@@ -91,7 +91,7 @@ describe('AggregationsService', () => {
     );
   });
 
-  it('getAggregatedMetricByEntityRefs uses average strategy when configured', async () => {
+  it('getAggregatedMetricByEntityRefs uses weightedStatusScore strategy when configured', async () => {
     const dbRow: DbAggregatedMetric = {
       metric_id: metric.id,
       total: 3,
@@ -113,14 +113,14 @@ describe('AggregationsService', () => {
       entityRefs: ['component:default/a'],
       thresholds,
       aggregationConfig: {
-        id: 'avgKpi',
-        title: 'Average KPI',
-        description: 'Average KPI description',
+        id: 'weightedKpi',
+        title: 'Weighted health KPI',
+        description: 'Weighted health score across statuses',
         metricId: metric.id,
-        type: aggregationTypes.average,
+        type: aggregationTypes.weightedStatusScore,
         options: {
           statusScores: { error: 0, warning: 50, success: 100 },
-          thresholds: DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS,
+          thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
         },
       } as AggregationConfig,
     } as AggregationOptions);
@@ -130,12 +130,15 @@ describe('AggregationsService', () => {
       metric.id,
     );
 
-    const aggregationResult = result.result as AggregatedMetricAverageResult;
+    const aggregationResult =
+      result.result as WeightedStatusScoreAggregationResult;
 
-    expect(result.metadata?.aggregationType).toBe(aggregationTypes.average);
-    expect(aggregationResult.averageScore).toBe(50);
-    expect(aggregationResult.averageWeightedSum).toBe(150);
-    expect(aggregationResult.averageMaxPossible).toBe(300);
+    expect(result.metadata?.aggregationType).toBe(
+      aggregationTypes.weightedStatusScore,
+    );
+    expect(aggregationResult.weightedStatusScore).toBe(50);
+    expect(aggregationResult.weightedStatusSum).toBe(150);
+    expect(aggregationResult.weightedStatusMaxPossible).toBe(300);
   });
 
   it('getAggregatedMetricByEntityRefs throws when aggregation type is not registered', async () => {
@@ -168,13 +171,13 @@ describe('AggregationsService', () => {
         logger,
       });
 
-      const cfg = service.getAggregationConfig('github.open_prs');
+      const cfg = service.getAggregationConfig('github.openPRs');
 
-      expect(cfg.id).toBe('github.open_prs');
-      expect(cfg.metricId).toBe('github.open_prs');
+      expect(cfg.id).toBe('github.openPRs');
+      expect(cfg.metricId).toBe('github.openPRs');
       expect(cfg.type).toBe(aggregationTypes.statusGrouped);
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('github.open_prs'),
+        expect.stringContaining('github.openPRs'),
       );
     });
 
@@ -185,8 +188,8 @@ describe('AggregationsService', () => {
             myKpi: {
               title: 'KPI title',
               description: 'KPI desc',
-              type: aggregationTypes.average,
-              metricId: 'github.open_prs',
+              type: aggregationTypes.weightedStatusScore,
+              metricId: 'github.openPRs',
               options: {
                 statusScores: { error: 0, warning: 50, success: 100 },
               },
@@ -203,8 +206,8 @@ describe('AggregationsService', () => {
 
       const cfg = service.getAggregationConfig('myKpi');
 
-      expect(cfg.metricId).toBe('github.open_prs');
-      expect(cfg.type).toBe(aggregationTypes.average);
+      expect(cfg.metricId).toBe('github.openPRs');
+      expect(cfg.type).toBe(aggregationTypes.weightedStatusScore);
       expect(cfg.title).toBe('KPI title');
     });
   });

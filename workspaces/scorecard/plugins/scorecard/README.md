@@ -6,7 +6,7 @@ The plugin supports both the **legacy** Backstage frontend and the **New Fronten
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`average`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**.
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
 
 ## Getting started
@@ -235,7 +235,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 - `home-page-widget:home/scorecard-github-open-prs` — Homepage widget showing GitHub open PRs.
 - `home-page-widget:home/scorecard-github-filecheck-license` - Homepage widget showing file check "License".
 - `home-page-widget:home/scorecard-github-filecheck-codeowners` - Homepage widget showing file check "Codeowners".
-- `home-page-widget:home/scorecard-github-open-prs-weighted` - Homepage widget showing average GitHub open PRs.
+- `home-page-widget:home/scorecard-github-open-prs-weighted` - Homepage widget showing weighted status score for GitHub open PRs.
 
 #### Legacy app
 
@@ -296,10 +296,10 @@ The following modules and extensions are available from `@red-hat-developer-hub/
    import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    // GitHub open PRs
-   <ScorecardHomepageCard metricId="github.open_prs" />
+   <ScorecardHomepageCard metricId="github.openPRs" />
 
    // Jira open issues
-   <ScorecardHomepageCard metricId="jira.open_issues" />
+   <ScorecardHomepageCard metricId="jira.openIssues" />
    ```
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
@@ -343,9 +343,9 @@ The plugin exports **`ScorecardHomepageCard`** (see [`plugin.ts`](./src/plugin.t
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
 
-**`type: average`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.thresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
+**`type: weightedStatusScore`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.thresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
 
-For **`type: average`**, the homepage card shows a **centered donut** with the headline percentage. Hovering the **center** opens a tooltip with **total score**, **max possible score**, and a **per-status breakdown** (from aggregation **`result.values`**). There is **no side status legend**; **`statusGrouped`** cards use a multi-slice pie with a legend instead.
+For **`type: weightedStatusScore`**, the homepage card shows a **centered donut** with the headline percentage. Hovering the **center** opens a tooltip with **total score**, **max possible score**, and a **per-status breakdown** (from aggregation **`result.values`**). There is **no side status legend**; **`statusGrouped`** cards use a multi-slice pie with a legend instead.
 
 #### Card props
 
@@ -380,7 +380,7 @@ import { ComponentType } from 'react';
     layouts: { /* … */ },
     props: {
       aggregationId: 'openIssuesKpi',
-      // metricId: 'jira.open_issues', // legacy only; remove when only aggregationId is supported
+      // metricId: 'jira.openIssues', // legacy only; remove when only aggregationId is supported
     },
   },
 },
@@ -448,7 +448,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 ```typescript
 // In ref.ts
 metric: {
-  'github.open_prs': {
+  'github.openPRs': {
     title: 'GitHub open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },

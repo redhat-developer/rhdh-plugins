@@ -200,7 +200,7 @@ describe('InstallationDataService', () => {
     });
 
     it('should update package', () => {
-      const newConfig = stringify({ ...mockDynamicPackage11, disabled: false });
+      const newConfig = stringify({ ...mockDynamicPackage11, enabled: true });
       installationDataService.updatePackageConfig(
         mockDynamicPackage11.package,
         newConfig,
@@ -237,7 +237,7 @@ describe('InstallationDataService', () => {
     });
   });
 
-  describe('setPackageDisabled', () => {
+  describe('setPackageEnabled', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
@@ -246,19 +246,19 @@ describe('InstallationDataService', () => {
       });
     });
 
-    it('should set package with disabled', async () => {
-      installationDataService.setPackageDisabled(
+    it('should set package enabled', async () => {
+      installationDataService.setPackageEnabled(
         mockDynamicPackage11.package,
         false,
       );
 
       expect(
-        mockFileInstallationStorage.setPackageDisabled,
+        mockFileInstallationStorage.setPackageEnabled,
       ).toHaveBeenCalledWith(mockDynamicPackage11.package, false);
     });
   });
 
-  describe('setPluginDisabled', () => {
+  describe('setPluginEnabled', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
@@ -267,15 +267,13 @@ describe('InstallationDataService', () => {
       });
     });
 
-    it('should set plugin disabled', async () => {
-      await installationDataService.setPluginDisabled(plugin, true);
+    it('should set plugin enabled', async () => {
+      await installationDataService.setPluginEnabled(plugin, true);
+
+      expect(mockFileInstallationStorage.setPackagesEnabled).toHaveBeenCalled();
 
       expect(
-        mockFileInstallationStorage.setPackagesDisabled,
-      ).toHaveBeenCalled();
-
-      expect(
-        mockFileInstallationStorage.setPackagesDisabled,
+        mockFileInstallationStorage.setPackagesEnabled,
       ).toHaveBeenCalledWith(
         new Set([
           mockPackages[0].spec.dynamicArtifact,

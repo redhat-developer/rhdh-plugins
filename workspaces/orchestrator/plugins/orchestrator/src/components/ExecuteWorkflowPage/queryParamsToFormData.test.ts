@@ -647,4 +647,53 @@ describe('mergeQueryParamsIntoFormData', () => {
     expect(result).toEqual({ language: 'Spanish' });
     expect(baseData).toEqual({ language: 'English' });
   });
+
+  it('skips number/integer values that cannot be parsed', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        count: { type: 'number' },
+        amount: { type: 'integer' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('count=not-a-number&amount=nope');
+    const baseData = { count: 1, amount: 2 };
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ count: 1, amount: 2 });
+  });
+
+  it('ignores nested paths through broken $ref targets', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        broken: { $ref: '#/$defs/Missing' },
+        name: { type: 'string' },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('broken.child=x&name=ok');
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, {});
+
+    expect(result).toEqual({ name: 'ok' });
+  });
+
+  it('skips empty array coercion results', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        tags: {
+          type: 'array',
+          items: { type: 'integer' },
+        },
+      },
+    } as JSONSchema7;
+    const searchParams = new URLSearchParams('tags=a,b');
+    const baseData = { tags: [1] };
+
+    const result = mergeQueryParamsIntoFormData(schema, searchParams, baseData);
+
+    expect(result).toEqual({ tags: [1] });
+  });
 });

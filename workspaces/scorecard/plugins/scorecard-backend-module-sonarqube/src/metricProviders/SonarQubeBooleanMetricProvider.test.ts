@@ -52,7 +52,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
       expect(provider.getMetricThresholds()).toBeDefined();
       expect(provider.getMetricThresholds().rules).toHaveLength(2);
@@ -65,7 +65,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
       const result = await provider.calculateMetric(entity());
@@ -82,7 +82,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
       const result = await provider.calculateMetric(entity());
@@ -95,7 +95,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
       await provider.calculateMetric(entity('internal/my-project'));
@@ -110,7 +110,7 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
       const e = entity();
       delete e.metadata.annotations!['sonarqube.org/project-key'];

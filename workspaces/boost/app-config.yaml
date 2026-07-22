@@ -58,7 +58,7 @@ catalog:
     - type: file
       target: ../../fixtures/ai-catalog-fixtures.yaml
       rules:
-        - allow: [AiResource, API, Component, Resource]
+        - allow: [AiResource, API, Component, Resource, Group]
 
 boost:
   security:

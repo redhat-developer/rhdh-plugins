@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.4.0
+
+### Minor Changes
+
+- 838a80d: Add NFS (New Frontend System) support and graduate to stable. NFS extensions include PageBlueprint, ApiBlueprint, TranslationBlueprint, and AppRootWrapperBlueprint. OFS exports are now available at `./legacy`.
+- 6456930: Add pseudo-localization support using `i18next-pseudo` to help identify untranslated or hardcoded strings in the UI. Strings are transformed with diacritical marks and brackets (e.g., `"Settings"` → `"[Ṣḛḛţţḭḭṇḡṡ]"`). Activate via `?pseudolocalization=true` URL parameter or `i18n.pseudolocalization.enabled: true` in app-config. Includes a `PseudoLocalizationProvider` component for use as a dynamic plugin at the `application/provider` mount point.
+- 772a1a6: Backstage version bump to v1.52.1
+
 ## 0.3.1
 
 ### Patch Changes

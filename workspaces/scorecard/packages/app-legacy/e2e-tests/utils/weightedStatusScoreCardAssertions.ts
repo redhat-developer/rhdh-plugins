@@ -1,0 +1,145 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { expect, Locator, Page } from '@playwright/test';
+import {
+  getMetricTranslation,
+  type ScorecardMessages,
+} from './translationUtils';
+
+/** Interpolate `{{key}}` placeholders in a translation template string. */
+function interpolate(template: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce(
+    (acc, [k, v]) => acc.replaceAll(`{{${k}}}`, v),
+    template,
+  );
+}
+
+function weightedStatusScoreCenterTooltipBreakdownTemplateKey(
+  locale: string,
+  count: number,
+):
+  | 'weightedStatusScoreCenterTooltipBreakdownRow_one'
+  | 'weightedStatusScoreCenterTooltipBreakdownRow_other' {
+  if (Number.isNaN(count)) {
+    return 'weightedStatusScoreCenterTooltipBreakdownRow_other';
+  }
+  const category = new Intl.PluralRules(locale).select(count);
+  return category === 'one'
+    ? 'weightedStatusScoreCenterTooltipBreakdownRow_one'
+    : 'weightedStatusScoreCenterTooltipBreakdownRow_other';
+}
+
+function expectedWeightedStatusScoreCenterTooltipBreakdownLine(
+  translations: ScorecardMessages,
+  locale: string,
+  statusKey: string,
+  count: string,
+  score: string,
+): string {
+  const n = Number.parseInt(count, 10);
+  const templateKey = weightedStatusScoreCenterTooltipBreakdownTemplateKey(
+    locale,
+    n,
+  );
+  const template = getMetricTranslation(translations, templateKey);
+  const status =
+    statusKey in translations.thresholds
+      ? translations.thresholds[statusKey]
+      : statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+  return interpolate(template, { status, count, score });
+}
+
+export async function expectWeightedStatusScoreCardCenterPercent(
+  card: Locator,
+  percentLabel: string,
+): Promise<void> {
+  await expect(
+    card.getByTestId('weighted-status-score-card-center-percent'),
+  ).toHaveText(percentLabel);
+}
+
+export async function verifyWeightedStatusScoreDonutCenterTooltip(
+  page: Page,
+  card: Locator,
+  translations: ScorecardMessages,
+  weightedSum: number,
+  maxPossible: number,
+): Promise<void> {
+  await card
+    .getByTestId('weighted-status-score-card-center-percent-hit-area')
+    .hover();
+  await expect(
+    page.getByText(
+      getMetricTranslation(
+        translations,
+        'weightedStatusScoreCenterTooltipTotalLabel',
+      ),
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      getMetricTranslation(
+        translations,
+        'weightedStatusScoreCenterTooltipMaxLabel',
+      ),
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText(String(weightedSum), { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(String(maxPossible), { exact: true }),
+  ).toBeVisible();
+}
+
+/** Matches `openPrsWeightedAggregatedResponse.result.values` in scorecardResponseUtils.ts */
+const OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN: Array<{
+  statusKey: 'success' | 'warning' | 'error' | 'critical';
+  count: string;
+  score: string;
+}> = [
+  { statusKey: 'success', count: '3', score: '100' },
+  { statusKey: 'warning', count: '5', score: '40' },
+  { statusKey: 'error', count: '1', score: '15' },
+  { statusKey: 'critical', count: '1', score: '0' },
+];
+
+/**
+ * Per-status lines under total/max in the center donut tooltip (replaces old side-legend tooltips).
+ */
+export async function verifyWeightedStatusScoreCenterTooltipBreakdownRows(
+  page: Page,
+  card: Locator,
+  translations: ScorecardMessages,
+  locale: string,
+): Promise<void> {
+  await card
+    .getByTestId('weighted-status-score-card-center-percent-hit-area')
+    .hover();
+  for (const row of OPEN_PRS_WEIGHTED_MOCK_BREAKDOWN) {
+    const line = expectedWeightedStatusScoreCenterTooltipBreakdownLine(
+      translations,
+      locale,
+      row.statusKey,
+      row.count,
+      row.score,
+    );
+    await expect(page.getByText(line)).toBeVisible();
+  }
+}

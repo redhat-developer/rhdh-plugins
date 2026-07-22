@@ -50,7 +50,11 @@ ignore:
   - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/*.spec.tsx"
-  - "**/index.ts"
+  # Package entry points / NFS plugin wiring (createFrontendPlugin, blueprints).
+  # Nested index.ts(x) under api/, components/, services/ often hold real logic
+  # and must remain in the coverage denominator (hence the /src/ prefix).
+  - "**/src/index.ts"
+  - "**/src/index.tsx"
   - "**/__fixtures__/**"
   - "**/__tests__/**"
   - "**/__mocks__/**"
@@ -64,7 +68,24 @@ ignore:
   - "workspaces/*/packages/app/**"
   - "workspaces/*/packages/app-legacy/**"
   - "workspaces/*/packages/backend/**"
-  - "workspaces/plugins/*-test/**"
+  # Test-helper plugins live under workspaces/<workspace>/plugins/*-test
+  - "workspaces/*/plugins/*-test/**"
+  - "**/generated/**"
+  # Locale catalogs, test helpers, and Backstage plugin wiring (no business logic).
+  # Do not ignore src/alpha/** wholesale — those folders often contain real logic.
+  - "workspaces/*/plugins/*/src/translations/**"
+  - "workspaces/*/plugins/*/src/test-utils/**"
+  - "workspaces/*/plugins/*/src/plugin.ts"
+  - "workspaces/*/plugins/*/src/alpha.ts"
+  - "workspaces/*/plugins/*/src/alpha.tsx"
+  - "workspaces/*/plugins/*/src/alpha/index.ts"
+  - "workspaces/*/plugins/*/src/alpha/index.tsx"
+  - "workspaces/*/plugins/*/src/alpha/plugin.ts"
+  # Route tables / i18n wrappers; page behavior is covered by e2e where needed.
+  - "workspaces/*/plugins/*/src/components/Router.tsx"
+  - "workspaces/*/plugins/*/src/components/Trans.tsx"
+  # Frontend string/number constants only (not *-common constants modules).
+  - "workspaces/orchestrator/plugins/orchestrator/src/constants.ts"
 
 component_management:
   # GENERATED — do not edit by hand.
@@ -75,14 +96,13 @@ component_management:
   # Only workspaces that exist in this repository are included.
   # Note: workspaces with mixed support-level packages appear in multiple components.
   individual_components:
-    # Generally-Available Plugins — 6 workspace(s)
+    # Generally-Available Plugins — 5 workspace(s)
     - component_id: generally-available-plugins
       name: 'Generally-Available Plugins'
       paths:
         - workspaces/adoption-insights/
         - workspaces/global-header/
         - workspaces/homepage/
-        - workspaces/lightspeed/
         - workspaces/orchestrator/
         - workspaces/quickstart/
     # Tech-Preview Plugins — 4 workspace(s)
@@ -169,7 +189,7 @@ flag_management:
         - workspaces/konflux/
     - name: intelligent-assistant
       paths:
-        - workspaces/lightspeed/
+        - workspaces/intelligent-assistant/
     - name: mcp-integrations
       paths:
         - workspaces/mcp-integrations/

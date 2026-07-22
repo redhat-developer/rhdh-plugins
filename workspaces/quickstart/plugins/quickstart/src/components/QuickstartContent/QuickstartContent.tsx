@@ -20,6 +20,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { QuickstartItem } from './QuickstartItem';
 import { useState, useEffect } from 'react';
 import { QuickstartItemData } from '../../types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type QuickstartContentProps = {
   quickstartItems: QuickstartItemData[];
@@ -34,6 +35,7 @@ export const QuickstartContent = ({
   itemCount,
   isLoading,
 }: QuickstartContentProps) => {
+  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState<boolean[]>(
     new Array(itemCount).fill(false),
   );
@@ -55,7 +57,7 @@ export const QuickstartContent = ({
           width: '100%',
         }}
       >
-        <CircularProgress />
+        <CircularProgress aria-label={t('content.loading')} />
       </Box>
     );
   }

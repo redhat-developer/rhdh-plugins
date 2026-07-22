@@ -24,7 +24,7 @@ describe('buildAggregationConfig', () => {
       title: 'GitHub PRs',
       description: 'Open pull requests',
       type: aggregationTypes.statusGrouped,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPRs',
     });
 
     const result = buildAggregationConfig('openPrsKpi', { config });
@@ -34,16 +34,16 @@ describe('buildAggregationConfig', () => {
       title: 'GitHub PRs',
       description: 'Open pull requests',
       type: aggregationTypes.statusGrouped,
-      metricId: 'github.open_prs',
+      metricId: 'github.openPRs',
     });
   });
 
-  it('maps average KPI config including statusScores', () => {
+  it('maps weightedStatusScore KPI config including statusScores', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
+      metricId: 'github.openPRs',
       options: {
         statusScores: {
           error: 0,
@@ -53,14 +53,14 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result).toEqual({
-      id: 'avgKpi',
+      id: 'weightedKpi',
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
+      metricId: 'github.openPRs',
       options: {
         statusScores: { error: 0, warning: 50, success: 100 },
       },
@@ -68,12 +68,12 @@ describe('buildAggregationConfig', () => {
     expect(result.options?.thresholds).toBeUndefined();
   });
 
-  it('maps optional thresholds for average KPIs', () => {
+  it('maps optional thresholds for weightedStatusScore KPIs', () => {
     const config = new ConfigReader({
       title: 'Weighted health',
-      description: 'Average across statuses',
-      type: aggregationTypes.average,
-      metricId: 'github.open_prs',
+      description: 'Weighted health score across statuses',
+      type: aggregationTypes.weightedStatusScore,
+      metricId: 'github.openPRs',
       options: {
         statusScores: { success: 100, warning: 50, error: 0 },
         thresholds: {
@@ -86,7 +86,7 @@ describe('buildAggregationConfig', () => {
       },
     });
 
-    const result = buildAggregationConfig('avgKpi', { config });
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result.options?.thresholds?.rules).toEqual([
       { key: 'success', expression: '>=75', color: 'success.main' },

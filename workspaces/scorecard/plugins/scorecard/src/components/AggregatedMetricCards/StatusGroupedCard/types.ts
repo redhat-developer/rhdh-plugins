@@ -16,17 +16,17 @@
 
 import {
   AggregatedMetricResult,
+  AggregationMetadata,
+  aggregationTypes,
   StatusGroupedAggregationResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { AggregatedMetricCardBaseProps } from '../types';
 
-export type StatusGroupedCardComponentProps = {
-  scorecard: Omit<AggregatedMetricResult, 'result'> & {
+export type StatusGroupedCardComponentProps = AggregatedMetricCardBaseProps & {
+  scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
+    metadata: AggregationMetadata & {
+      aggregationType: typeof aggregationTypes.statusGrouped;
+    };
     result: StatusGroupedAggregationResult;
   };
-  cardTitle: string;
-  description: string;
-  aggregationId: string;
-  showSubheader?: boolean;
-  showInfo?: boolean;
-  dataTestId?: string;
 };

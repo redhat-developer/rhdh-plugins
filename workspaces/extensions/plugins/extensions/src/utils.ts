@@ -41,9 +41,9 @@ export enum ExtensionsStatus {
 
 export const DYNAMIC_PLUGIN_CONFIG_YAML = `plugins:
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-    disabled: false
+    enabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-    disabled: true`;
+    enabled: false`;
 
 export const EXTENSIONS_CONFIG_YAML = `extensions:
   installation:
@@ -99,7 +99,7 @@ export const applyContent = (
       plugins: [
         {
           package: packagePath,
-          disabled: false,
+          enabled: true,
           pluginConfig:
             typeof newContent === 'string' ? parse(newContent) : newContent,
         },
@@ -139,11 +139,11 @@ export const applyContent = (
       if (packagePath) {
         const newPlugin: {
           package: string;
-          disabled: boolean;
+          enabled: boolean;
           pluginConfig?: Document | JsonObject;
         } = {
           package: packagePath,
-          disabled: false,
+          enabled: true,
         };
         if (typeof newContent === 'string') {
           newPlugin.pluginConfig = parseDocument(newContent);
@@ -158,11 +158,11 @@ export const applyContent = (
     if (packagePath) {
       const newPlugin: {
         package: string;
-        disabled: boolean;
+        enabled: boolean;
         pluginConfig?: Document | JsonObject;
       } = {
         package: packagePath,
-        disabled: false,
+        enabled: true,
       };
       if (typeof newContent === 'string') {
         newPlugin.pluginConfig = parseDocument(newContent);

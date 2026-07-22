@@ -127,18 +127,18 @@ export const mockPackages = [
 
 export const mockDynamicPackage11 = {
   package: mockPackages[0].spec.dynamicArtifact,
-  disabled: true,
+  enabled: false,
 };
 
 export const mockDynamicPackage12 = {
   package: mockPackages[1].spec.dynamicArtifact,
-  disabled: true,
+  enabled: false,
   pluginConfig: mockPackages[1].spec.appConfigExamples?.at(0)?.content,
 };
 
 export const mockDynamicPackage21 = {
   package: mockPackages[2].spec.dynamicArtifact,
-  disabled: true,
+  enabled: false,
 };
 
 export const mockDynamicPlugin1 = [mockDynamicPackage11, mockDynamicPackage12];
@@ -161,8 +161,8 @@ export const mockFileInstallationStorage = {
   }),
   updatePackage: jest.fn(),
   updatePackages: jest.fn(),
-  setPackageDisabled: jest.fn(),
-  setPackagesDisabled: jest.fn(),
+  setPackageEnabled: jest.fn(),
+  setPackagesEnabled: jest.fn(),
 } as unknown as jest.Mocked<FileInstallationStorage>;
 
 export const mockInstallationDataService = {
@@ -171,8 +171,8 @@ export const mockInstallationDataService = {
   getInitializationError: jest.fn().mockReturnValue(undefined),
   updatePackageConfig: jest.fn(),
   updatePluginConfig: jest.fn(),
-  setPackageDisabled: jest.fn(),
-  setPluginDisabled: jest.fn(),
+  setPackageEnabled: jest.fn(),
+  setPluginEnabled: jest.fn(),
 } as unknown as jest.Mocked<InstallationDataService>;
 
 export const mockExtensionsApi = {

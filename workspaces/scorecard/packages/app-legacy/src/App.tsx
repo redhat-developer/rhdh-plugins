@@ -117,7 +117,7 @@ const mountPoints: HomePageCardMountPoint[] = [
       },
       props: {
         // The "metricId" represent deprecated logic and will be removed in the future
-        metricId: 'jira.open_issues',
+        metricId: 'jira.openIssues',
       },
     },
   },
@@ -149,7 +149,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'github.open_prs',
+        aggregationId: 'github.openPRs',
       },
     },
   },
@@ -342,10 +342,10 @@ const mountPoints: HomePageCardMountPoint[] = [
             metricId: {
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
-              default: 'jira.open_issues',
+              default: 'jira.openIssues',
               enum: [
-                'jira.open_issues',
-                'github.open_prs',
+                'jira.openIssues',
+                'github.openPRs',
                 'filecheck.license',
                 'filecheck.codeowners',
               ],

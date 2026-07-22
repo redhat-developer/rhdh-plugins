@@ -5,7 +5,8 @@
     ":rebaseStalePrs",
     "group:linters",
     "group:test",
-    ":preserveSemverRanges"
+    ":preserveSemverRanges",
+    ":disableMajorUpdates"
   ],
   "ignorePresets": [
     ":pinDevDependencies",
@@ -23,9 +24,6 @@
   },
   "npm": {
     "minimumReleaseAge": "3 days"
-  },
-  "major": {
-    "dependencyDashboardApproval": true
   },
   "packageRules": [
     {
@@ -49,6 +47,11 @@
       "allowedVersions": "=1.1.0"
     },
     {
+      "enabled": false,
+      "matchUpdateTypes": ["replacement"],
+      "matchPackageNames": ["/^@material-ui//"]
+    },
+    {
       "description": "all RHDH Plugins workspaces",
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
@@ -64,14 +67,15 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-ai-integrations-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-translations-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-header-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-lightspeed-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-intelligent-assistant-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-extensions-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-x2a-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-konflux-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-dcm-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-app-defaults-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-augment-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-boost-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-boost-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-install-dynamic-plugins-presets"
       ]
     },
     {

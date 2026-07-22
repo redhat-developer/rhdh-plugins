@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Install Dynamic Plugins minor updates",
+      "matchFileNames": ["workspaces/install-dynamic-plugins/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Install Dynamic Plugins)"
+      ],
+      "addLabels": ["install-dynamic-plugins"]
+    },
+    {
+      "description": "all Install Dynamic Plugins patch updates",
+      "matchFileNames": ["workspaces/install-dynamic-plugins/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Install Dynamic Plugins)"
+      ],
+      "addLabels": ["install-dynamic-plugins"]
+    },
+    {
+      "description": "all Install Dynamic Plugins dev dependency updates",
+      "matchFileNames": ["workspaces/install-dynamic-plugins/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Install Dynamic Plugins)"
+      ],
+      "addLabels": ["install-dynamic-plugins"]
+    }
+  ]
+}

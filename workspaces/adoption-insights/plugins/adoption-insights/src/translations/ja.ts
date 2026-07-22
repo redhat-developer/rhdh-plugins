@@ -42,6 +42,7 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'common.exportCSV': 'CSV エクスポート',
     'common.filteredBy': 'フィルタリング条件',
     'common.invalidDateFormat': '無効な日付形式',
+    'common.loading': '読み込み中',
     'common.noResults': 'この日付範囲の結果はありません。',
     'common.numberOfSearches': '検索数',
     'common.readMore': '続きを読む',

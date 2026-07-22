@@ -26,7 +26,7 @@ const DEFAULT_NUMBER_THRESHOLDS = {
 
 export const customScorecardResponse = [
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -52,7 +52,7 @@ export const customScorecardResponse = [
     },
   },
   {
-    id: 'jira.open_issues',
+    id: 'jira.openIssues',
     status: 'success',
     metadata: {
       title: 'Jira open blocking tickets',
@@ -82,7 +82,7 @@ export const customScorecardResponse = [
 export const emptyScorecardResponse = [];
 
 const jiraOpenIssues = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -120,7 +120,7 @@ const jiraOpenIssues = {
 export const unavailableMetricResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'error',
     metadata: {
       title: 'GitHub open PRs',
@@ -160,7 +160,7 @@ export const unavailableMetricResponse = [
 export const invalidThresholdResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -175,7 +175,7 @@ export const invalidThresholdResponse = [
       thresholdResult: {
         status: 'error',
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.open_prs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.openPRs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
       },
     },
   },
@@ -207,19 +207,19 @@ export const openIssuesKpiMetadataResponse = {
 export const openPrsWeightedKpiMetadataResponse = {
   title: 'GitHub Open PRs (weighted health)',
   description:
-    'Weighted health average for open PRs by threshold status across your entities.',
+    'Weighted health score for open PRs by threshold status across your entities.',
   type: 'number',
   history: true,
-  aggregationType: aggregationTypes.average,
+  aggregationType: aggregationTypes.weightedStatusScore,
 };
 
 /**
- * Average KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
+ * WeightedStatusScore KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
  * Includes `critical` as a non-threshold status name (no `thresholds.critical` copy).
  * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
  */
 export const openPrsWeightedAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -236,9 +236,9 @@ export const openPrsWeightedAggregatedResponse = {
     calculationErrorCount: 0,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 51.5,
-    averageWeightedSum: 515,
-    averageMaxPossible: 1000,
+    weightedStatusScore: 51.5,
+    weightedStatusSum: 515,
+    weightedStatusMaxPossible: 1000,
     aggregationChartDisplayColor: 'rgb(224, 189, 108)',
   },
 };
@@ -259,13 +259,13 @@ export const gitHubWeightedPartiallyAggregatedResponse = {
     total: 8,
     entitiesConsidered: 6,
     calculationErrorCount: 2,
-    averageScore: 46.7,
-    averageWeightedSum: 466.67,
+    weightedStatusScore: 46.7,
+    weightedStatusSum: 466.67,
   },
 };
 
 export const emptyOpenPrsWeightedAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -279,16 +279,16 @@ export const emptyOpenPrsWeightedAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
-    averageScore: 0,
-    averageWeightedSum: 0,
-    averageMaxPossible: 0,
+    weightedStatusScore: 0,
+    weightedStatusSum: 0,
+    weightedStatusMaxPossible: 0,
     aggregationChartDisplayColor: '#6bb300',
   },
 };
 
 /** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
 export const openPrsWeightedUnsupportedAggregationResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success' as const,
   metadata: {
     ...openPrsWeightedKpiMetadataResponse,
@@ -298,11 +298,11 @@ export const openPrsWeightedUnsupportedAggregationResponse = {
 };
 
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
-/** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
+/** Response for GET /api/scorecard/metrics?metricIds=jira.openIssues (metric metadata only). */
 export const jiraMetricMetadataResponse = {
   metrics: [
     {
-      id: 'jira.open_issues',
+      id: 'jira.openIssues',
       title: 'Jira open blocking tickets',
       description:
         'Highlights the number of issues that are currently open in Jira.',
@@ -359,7 +359,7 @@ const issueRules = [
 
 export const sonarqubeScorecardResponse = [
   {
-    id: 'sonarqube.quality_gate',
+    id: 'sonarqube.qualityGate',
     status: 'success',
     metadata: {
       title: 'SonarQube Quality Gate Status',
@@ -383,7 +383,7 @@ export const sonarqubeScorecardResponse = [
     },
   },
   sonarqubeNumberMetric(
-    'sonarqube.open_issues',
+    'sonarqube.openIssues',
     'SonarQube Open Issues',
     'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
     3,
@@ -395,7 +395,7 @@ export const sonarqubeScorecardResponse = [
     'warning',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.security_rating',
+    'sonarqube.securityRating',
     'SonarQube Security Rating',
     'SonarQube security rating.',
     1,
@@ -403,7 +403,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.security_issues',
+    'sonarqube.securityIssues',
     'SonarQube Security Issues',
     'Count of open security vulnerabilities in SonarQube.',
     0,
@@ -411,7 +411,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.security_review_rating',
+    'sonarqube.securityReviewRating',
     'SonarQube Security Review Rating',
     'SonarQube security review rating.',
     1,
@@ -419,7 +419,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.security_hotspots',
+    'sonarqube.securityHotspots',
     'SonarQube Security Hotspots',
     'Count of security hotspots to review in SonarQube.',
     2,
@@ -427,7 +427,7 @@ export const sonarqubeScorecardResponse = [
     'warning',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.reliability_rating',
+    'sonarqube.reliabilityRating',
     'SonarQube Reliability Rating',
     'SonarQube reliability rating.',
     1,
@@ -435,7 +435,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.reliability_issues',
+    'sonarqube.reliabilityIssues',
     'SonarQube Reliability Issues',
     'Count of open bugs in SonarQube.',
     0,
@@ -443,7 +443,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.maintainability_rating',
+    'sonarqube.maintainabilityRating',
     'SonarQube Maintainability Rating',
     'SonarQube maintainability rating.',
     1,
@@ -451,7 +451,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.maintainability_issues',
+    'sonarqube.maintainabilityIssues',
     'SonarQube Maintainability Issues',
     'Count of open code smells in SonarQube.',
     12,
@@ -463,7 +463,7 @@ export const sonarqubeScorecardResponse = [
     'warning',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.code_coverage',
+    'sonarqube.codeCoverage',
     'SonarQube Code Coverage',
     'Overall code coverage percentage in SonarQube.',
     82.5,
@@ -475,7 +475,7 @@ export const sonarqubeScorecardResponse = [
     'success',
   ),
   sonarqubeNumberMetric(
-    'sonarqube.code_duplications',
+    'sonarqube.codeDuplications',
     'SonarQube Code Duplications',
     'Percentage of duplicated lines in SonarQube.',
     3.2,
@@ -511,7 +511,7 @@ export const sonarqubeFailedQualityGateResponse = [
 
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 export const githubAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -572,7 +572,7 @@ export const gitHubPartiallyAggregatedResponse = {
 };
 
 export const jiraAggregatedResponse = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -597,7 +597,7 @@ export const jiraAggregatedResponse = {
 };
 
 export const emptyJiraAggregatedResponse = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -622,7 +622,7 @@ export const emptyJiraAggregatedResponse = {
 };
 
 export const emptyGithubAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -646,9 +646,9 @@ export const emptyGithubAggregatedResponse = {
   },
 };
 
-/** Mock response for GET .../api/scorecard/metrics/github.open_prs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
+/** Mock response for GET .../api/scorecard/metrics/github.openPRs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
 export const githubEntitiesDrillDownResponse = {
-  metricId: 'github.open_prs',
+  metricId: 'github.openPRs',
   metricMetadata: {
     title: 'GitHub open PRs',
     description:
@@ -771,9 +771,9 @@ export const githubEntitiesDrillDownResponse = {
   },
 };
 
-/** Mock response for GET .../api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
+/** Mock response for GET .../api/scorecard/metrics/jira.openIssues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
 export const jiraEntitiesDrillDownResponse = {
-  metricId: 'jira.open_issues',
+  metricId: 'jira.openIssues',
   metricMetadata: {
     title: 'Jira open blocking tickets',
     description:
@@ -838,7 +838,7 @@ export const jiraEntitiesDrillDownResponse = {
 
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
 export const jiraEntitiesDrillDownNoDataResponse = {
-  metricId: 'jira.open_issues',
+  metricId: 'jira.openIssues',
   metricMetadata: {
     title: 'Jira open blocking tickets',
     description:

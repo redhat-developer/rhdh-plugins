@@ -72,76 +72,76 @@ const scorecardTranslationJa = createTranslationMessages({
       'このスコアカードは、このバージョンのプラグインでサポートされていない集計タイプを使用しています。',
     'errors.userNotFoundInCatalogMessage':
       'カタログにユーザーエンティティーが見つかりません。',
-    'metric.averageCenterTooltipMaxLabel': '最高スコア',
-    'metric.averageCenterTooltipTotalLabel': '合計スコア',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel': '最高スコア',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': '合計スコア',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} 個のエンティティー、各 {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} 個のエンティティー、各 {{score}}',
-    'metric.averageLegendTooltipRowTotal': '合計スコア {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',
-    'metric.github.open_prs.description':
+    'metric.github.openPRs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',
-    'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
+    'metric.github.openPRs.title': 'GitHub のオープン状態の PR',
     'metric.homepageEntityCalculationHealth':
       'メトリクス計算エラーのないエンティティー: {{healthy}} / {{total}}',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
-    'metric.jira.open_issues.description':
+    'metric.jira.openIssues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
-    'metric.jira.open_issues.title':
+    'metric.jira.openIssues.title':
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.lastUpdated': '最終更新: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': '最終更新: 利用不可',
     'metric.someEntitiesNotReportingValues':
       'このメトリクスに関連する値を報告していないエンティティーがあります。',
-    'metric.sonarqube.code_coverage.description':
+    'metric.sonarqube.codeCoverage.description':
       'SonarQube におけるコードカバレッジ全体の割合。',
-    'metric.sonarqube.code_coverage.title': 'SonarQube のコードカバレッジ',
-    'metric.sonarqube.code_duplications.description':
+    'metric.sonarqube.codeCoverage.title': 'SonarQube のコードカバレッジ',
+    'metric.sonarqube.codeDuplications.description':
       'SonarQube の重複行の割合。',
-    'metric.sonarqube.code_duplications.title': 'SonarQube のコード重複',
-    'metric.sonarqube.maintainability_issues.description':
+    'metric.sonarqube.codeDuplications.title': 'SonarQube のコード重複',
+    'metric.sonarqube.maintainabilityIssues.description':
       'SonarQube におけるオープン状態のコードスメルの数。',
-    'metric.sonarqube.maintainability_issues.title':
+    'metric.sonarqube.maintainabilityIssues.title':
       'SonarQube の保守性に関する問題',
-    'metric.sonarqube.maintainability_rating.description':
+    'metric.sonarqube.maintainabilityRating.description':
       'SonarQube の保守性評価。',
-    'metric.sonarqube.maintainability_rating.title': 'SonarQube の保守性評価',
-    'metric.sonarqube.open_issues.description':
+    'metric.sonarqube.maintainabilityRating.title': 'SonarQube の保守性評価',
+    'metric.sonarqube.openIssues.description':
       'SonarQube におけるオープン状態のイシュー (OPEN、CONFIRMED、REOPENED) の数。',
-    'metric.sonarqube.open_issues.title': 'SonarQube のオープン状態のイシュー',
-    'metric.sonarqube.quality_gate.description':
+    'metric.sonarqube.openIssues.title': 'SonarQube のオープン状態のイシュー',
+    'metric.sonarqube.qualityGate.description':
       'プロジェクトが SonarQube の品質基準を合格しているかどうか。',
-    'metric.sonarqube.quality_gate.title': 'SonarQube の品質基準ステータス',
-    'metric.sonarqube.reliability_issues.description':
+    'metric.sonarqube.qualityGate.title': 'SonarQube の品質基準ステータス',
+    'metric.sonarqube.reliabilityIssues.description':
       'SonarQube におけるオープン状態のバグの数。',
-    'metric.sonarqube.reliability_issues.title':
+    'metric.sonarqube.reliabilityIssues.title':
       'SonarQube の信頼性に関する問題',
-    'metric.sonarqube.reliability_rating.description':
+    'metric.sonarqube.reliabilityRating.description':
       'SonarQube の信頼性評価。',
-    'metric.sonarqube.reliability_rating.title': 'SonarQube の信頼性評価',
-    'metric.sonarqube.security_hotspots.description':
+    'metric.sonarqube.reliabilityRating.title': 'SonarQube の信頼性評価',
+    'metric.sonarqube.securityHotspots.description':
       'SonarQube で確認すべきセキュリティーホットスポットの数。',
-    'metric.sonarqube.security_hotspots.title':
+    'metric.sonarqube.securityHotspots.title':
       'SonarQube のセキュリティーホットスポット',
-    'metric.sonarqube.security_issues.description':
+    'metric.sonarqube.securityIssues.description':
       'SonarQube におけるオープン状態のセキュリティー脆弱性の数。',
-    'metric.sonarqube.security_issues.title':
+    'metric.sonarqube.securityIssues.title':
       'SonarQube のセキュリティーに関する問題',
-    'metric.sonarqube.security_rating.description':
+    'metric.sonarqube.securityRating.description':
       'SonarQube のセキュリティー評価。',
-    'metric.sonarqube.security_rating.title': 'SonarQube セキュリティー評価',
-    'metric.sonarqube.security_review_rating.description':
+    'metric.sonarqube.securityRating.title': 'SonarQube セキュリティー評価',
+    'metric.sonarqube.securityReviewRating.description':
       'SonarQube のセキュリティーレビュー評価。',
-    'metric.sonarqube.security_review_rating.title':
+    'metric.sonarqube.securityReviewRating.title':
       'SonarQube のセキュリティーレビュー評価',
     'notFound.altText': 'ページが見つかりません',
     'notFound.contactSupport': 'サポートにお問い合わせください',

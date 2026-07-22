@@ -28,9 +28,9 @@ const boostPlugin: OverridableFrontendPlugin<
   },
   {},
   {
-    'entity-card:boost/ai-asset-summary': OverridableExtensionDefinition<{
+    'entity-card:boost/adoption': OverridableExtensionDefinition<{
       kind: 'entity-card';
-      name: 'ai-asset-summary';
+      name: 'adoption';
       config: {
         filter: FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
@@ -69,9 +69,9 @@ const boostPlugin: OverridableFrontendPlugin<
         type?: EntityCardType;
       };
     }>;
-    'entity-card:boost/download-adopt': OverridableExtensionDefinition<{
+    'entity-card:boost/summary': OverridableExtensionDefinition<{
       kind: 'entity-card';
-      name: 'download-adopt';
+      name: 'summary';
       config: {
         filter: FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
@@ -315,21 +315,42 @@ export const boostTranslationRef: TranslationRef<
   'plugin.boost',
   {
     readonly 'nav.aiCatalog': string;
+    readonly 'catalog.table.name': string;
+    readonly 'catalog.table.type': string;
+    readonly 'catalog.table.description': string;
+    readonly 'catalog.table.provider': string;
+    readonly 'catalog.table.owner': string;
+    readonly 'catalog.filter.type': string;
+    readonly 'catalog.filter.provider': string;
+    readonly 'catalog.filter.owner': string;
+    readonly 'catalog.filter.tag': string;
     readonly 'catalog.page.title': string;
     readonly 'catalog.page.subtitle': string;
     readonly 'catalog.error.title': string;
+    readonly 'catalog.error.description': string;
     readonly 'catalog.error.retry': string;
     readonly 'catalog.tab.usageTitle': string;
-    readonly 'catalog.tab.usageDescription': string;
+    readonly 'catalog.tab.usageDocumentation': string;
+    readonly 'catalog.tab.usageViewTechDocs': string;
+    readonly 'catalog.tab.usageExternalLinks': string;
+    readonly 'catalog.tab.usageNoDocumentation': string;
+    readonly 'catalog.toolbar.search': string;
+    readonly 'catalog.toolbar.allPrefix': string;
+    readonly 'catalog.toolbar.viewGrid': string;
+    readonly 'catalog.toolbar.viewTable': string;
     readonly 'catalog.card.summaryTitle': string;
-    readonly 'catalog.card.summaryDescription': string;
-    readonly 'catalog.card.downloadTitle': string;
-    readonly 'catalog.card.downloadDescription': string;
+    readonly 'catalog.card.adoptionTitle': string;
     readonly 'catalog.card.versionTitle': string;
-    readonly 'catalog.card.versionDescription': string;
+    readonly 'catalog.card.versionCurrent': string;
+    readonly 'catalog.card.copyCommand': string;
+    readonly 'catalog.card.copied': string;
+    readonly 'catalog.card.copyAriaLabel': string;
     readonly 'catalog.empty.title': string;
     readonly 'catalog.empty.description': string;
-    readonly 'catalog.empty.clearFilters': string;
+    readonly 'catalog.empty.learnMore': string;
+    readonly 'catalog.emptyFiltered.title': string;
+    readonly 'catalog.emptyFiltered.description': string;
+    readonly 'catalog.emptyFiltered.clearFilters': string;
   }
 >;
 
