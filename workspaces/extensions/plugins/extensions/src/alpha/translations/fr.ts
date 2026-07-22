@@ -158,8 +158,12 @@ const extensionsTranslationFr = createTranslationMessages({
       'Le paquet ne peut pas être géré en environnement de production.',
     'installedPackages.table.tooltips.installationDisabled':
       'Le paquet ne peut pas être géré car le plugin d’installation est désactivé. Pour l’activer, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      "L'entité de catalogue est manquante",
     'installedPackages.table.tooltips.enableActions':
-      'Pour activer les actions, ajoutez une entité de catalogue pour ce paquet',
+      'Pour activer les actions, ajoutez une entité de catalogue pour ce paquet.',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Voir la documentation',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Vous n’avez pas l’autorisation de télécharger la configuration. Contactez votre administrateur pour demander un accès ou une assistance.',
     'installedPackages.table.tooltips.noEditPermissions':
