@@ -47,7 +47,8 @@ export async function switchToLocale(
   const baseLocale = locale.split('-')[0];
   if (baseLocale !== 'en') {
     const displayName = getLocaleDisplayName(locale);
-    await page.getByRole('link', { name: 'Settings' }).click();
+    // Navigating directly avoids duplicate "Settings" links in sidebar.
+    await page.goto('/settings');
     await page.getByRole('button', { name: 'English' }).click();
     await page.getByRole('option', { name: displayName }).click();
     await page.locator('a').filter({ hasText: 'Home' }).click();
