@@ -37,7 +37,7 @@ This design covers the catalog-layer RBAC system. It is informed by:
 
 ## Non-Goals
 
-- Modifying the existing 23 application-layer boost permissions (agent/tool lifecycle)
+- Modifying the existing application-layer `boost.*` permissions (agent/tool lifecycle) beyond upgrading `boost.agent.list` to `ResourcePermission` for 3-tier list evaluation
 - Changing Backstage permission framework core behavior or upstream RBAC plugin
 - Creating new upstream entity kinds (covered by RHDHPLAN-1507/RHDHPLAN-1113)
 - Implementing specific entity provider connectors (covered by RHDHPLAN-1507, RHDHPLAN-1510)

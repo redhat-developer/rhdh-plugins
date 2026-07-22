@@ -560,7 +560,9 @@ describe('agent routes', () => {
       expect(res.status).toBe(403);
     });
 
-    it('passes through with conditions attached when authorizeConditional returns CONDITIONAL', async () => {
+    // CONDITIONAL returns all agents unfiltered until resource loader populates
+    // createdBy/lifecycleStage fields — filtering is intentionally deferred, not fail-open.
+    it('returns all agents when authorizeConditional returns CONDITIONAL (filtering deferred)', async () => {
       const agents = [makeAgent()];
       const store = createMockStore({
         list: jest.fn().mockResolvedValue(agents),

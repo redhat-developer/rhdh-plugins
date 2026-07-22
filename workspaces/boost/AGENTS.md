@@ -84,8 +84,11 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 ### Naming
 
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
-- Permission names: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-- Resource types: `boost-agent`, `boost-tool`
+- Permission names — two namespaces by design:
+  - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
+  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`
+- Config: `ai-catalog.rbac.*` for catalog RBAC config (e.g., `ai-catalog.rbac.defaultPolicy`)
+- Resource types: `boost-agent`, `boost-tool`, `ai-catalog-asset`
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`
 - Extension point: `boostProviderExtensionPoint`
 - Service ref: `boostAiProviderServiceRef`
