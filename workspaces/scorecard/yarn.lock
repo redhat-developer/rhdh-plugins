@@ -10449,7 +10449,6 @@ __metadata:
     "@backstage/ui": "npm:^0.15.0"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@mui/styles": "npm:5.18.0"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.13.0"
     "@tanstack/react-query": "npm:^5.95.2"

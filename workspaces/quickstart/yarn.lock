@@ -9931,7 +9931,6 @@ __metadata:
     "@backstage/theme": "npm:^0.7.3"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@mui/styles": "npm:5.18.0"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
