@@ -23,6 +23,11 @@ import { TestApiProvider } from '@backstage/test-utils';
 import { renderHook, waitFor } from '@testing-library/react';
 import { type ReactNode, createElement } from 'react';
 
+import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
+import {
+  categoryFilterDefinition,
+  tagsFilterDefinition,
+} from '../filters/builtInFilterDefinitions';
 import { useAiAssets } from './useAiAssets';
 
 const aiSkill: Entity = {
@@ -60,6 +65,9 @@ const mockCatalogApi: Pick<jest.Mocked<CatalogApi>, 'getEntities'> = {
   getEntities: jest.fn(),
 };
 
+const emptyFilters: FilterDefinition[] = [];
+const emptyValues = new Map<string, string[]>();
+
 function wrapper({ children }: { children: ReactNode }) {
   return createElement(
     TestApiProvider,
@@ -77,7 +85,10 @@ describe('useAiAssets', () => {
 
   it('returns loading true initially', () => {
     mockCatalogApi.getEntities.mockReturnValue(new Promise(() => {}));
-    const { result } = renderHook(() => useAiAssets(), { wrapper });
+    const { result } = renderHook(
+      () => useAiAssets(undefined, emptyFilters, emptyValues),
+      { wrapper },
+    );
     expect(result.current.loading).toBe(true);
     expect(result.current.entities).toEqual([]);
   });
@@ -87,7 +98,10 @@ describe('useAiAssets', () => {
       items: [aiSkill, aiAgent, nonAiComponent],
     });
 
-    const { result } = renderHook(() => useAiAssets(), { wrapper });
+    const { result } = renderHook(
+      () => useAiAssets(undefined, emptyFilters, emptyValues),
+      { wrapper },
+    );
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -106,7 +120,7 @@ describe('useAiAssets', () => {
     });
 
     const { result } = renderHook(
-      () => useAiAssets({ search: 'code review' }),
+      () => useAiAssets('code review', emptyFilters, emptyValues),
       { wrapper },
     );
 
@@ -118,14 +132,18 @@ describe('useAiAssets', () => {
     expect(result.current.entities[0].metadata.name).toBe('test-skill');
   });
 
-  it('filters by tags', async () => {
+  it('filters by tags via FilterDefinition', async () => {
     mockCatalogApi.getEntities.mockResolvedValue({
       items: [aiSkill, aiAgent],
     });
 
-    const { result } = renderHook(() => useAiAssets({ tags: ['agent'] }), {
-      wrapper,
-    });
+    const filters = [tagsFilterDefinition];
+    const values = new Map([['tag', ['agent']]]);
+
+    const { result } = renderHook(
+      () => useAiAssets(undefined, filters, values),
+      { wrapper },
+    );
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -135,14 +153,18 @@ describe('useAiAssets', () => {
     expect(result.current.entities[0].metadata.name).toBe('test-agent');
   });
 
-  it('filters by category (spec.type)', async () => {
+  it('filters by category via FilterDefinition', async () => {
     mockCatalogApi.getEntities.mockResolvedValue({
       items: [aiSkill, aiAgent],
     });
 
-    const { result } = renderHook(() => useAiAssets({ category: ['skill'] }), {
-      wrapper,
-    });
+    const filters = [categoryFilterDefinition];
+    const values = new Map([['type', ['skill']]]);
+
+    const { result } = renderHook(
+      () => useAiAssets(undefined, filters, values),
+      { wrapper },
+    );
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -155,7 +177,10 @@ describe('useAiAssets', () => {
   it('sets error on fetch failure', async () => {
     mockCatalogApi.getEntities.mockRejectedValue(new Error('Network error'));
 
-    const { result } = renderHook(() => useAiAssets(), { wrapper });
+    const { result } = renderHook(
+      () => useAiAssets(undefined, emptyFilters, emptyValues),
+      { wrapper },
+    );
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -172,8 +197,15 @@ describe('useAiAssets', () => {
     });
 
     const { result, rerender } = renderHook(
-      ({ filters }) => useAiAssets(filters),
-      { wrapper, initialProps: { filters: {} } },
+      ({ search, filters, values }) => useAiAssets(search, filters, values),
+      {
+        wrapper,
+        initialProps: {
+          search: undefined as string | undefined,
+          filters: emptyFilters,
+          values: emptyValues,
+        },
+      },
     );
 
     await waitFor(() => {
@@ -182,7 +214,7 @@ describe('useAiAssets', () => {
 
     expect(mockCatalogApi.getEntities).toHaveBeenCalledTimes(1);
 
-    rerender({ filters: { search: 'skill' } });
+    rerender({ search: 'skill', filters: emptyFilters, values: emptyValues });
 
     expect(mockCatalogApi.getEntities).toHaveBeenCalledTimes(1);
     expect(result.current.entities).toHaveLength(1);

@@ -16,6 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 
+import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { getCategoryMeta } from './categoryMeta';
 
 export function entityHref(entity: Entity): string {
@@ -34,22 +35,21 @@ export function getSpecField(
     | undefined;
 }
 
-export interface EntityFilters {
-  search?: string;
-  category?: string[];
-  tags?: string[];
-  owner?: string[];
-  provider?: string[];
-}
-
+/**
+ * Apply search + registered filter definitions in AND logic.
+ * Search is built-in (not a FilterDefinition). Each FilterDefinition
+ * with active values must match for the entity to be included.
+ */
 export function applyEntityFilters(
   items: Entity[],
-  filters: EntityFilters,
+  search: string | undefined,
+  filters: FilterDefinition[],
+  filterValues: Map<string, string[]>,
 ): Entity[] {
   let results = items;
 
-  if (filters.search) {
-    const term = filters.search.toLowerCase();
+  if (search) {
+    const term = search.toLowerCase();
     results = results.filter(
       e =>
         e.metadata.name.toLowerCase().includes(term) ||
@@ -59,36 +59,11 @@ export function applyEntityFilters(
     );
   }
 
-  if (filters.tags?.length) {
-    const tagSet = new Set(filters.tags.map(t => t.toLowerCase()));
-    results = results.filter(e =>
-      (e.metadata.tags ?? []).some(t => tagSet.has(t.toLowerCase())),
-    );
-  }
-
-  if (filters.category?.length) {
-    const cats = new Set(filters.category.map(c => c.toLowerCase()));
-    results = results.filter(e => {
-      const specType = getSpecField(e, 'type');
-      return specType !== undefined && cats.has(specType.toLowerCase());
-    });
-  }
-
-  if (filters.provider?.length) {
-    const providers = new Set(filters.provider.map(v => v.toLowerCase()));
-    results = results.filter(e => {
-      const src =
-        e.metadata.annotations?.['rhdh.io/ai-asset-source']?.toLowerCase();
-      return src !== undefined && providers.has(src);
-    });
-  }
-
-  if (filters.owner?.length) {
-    const owners = new Set(filters.owner.map(v => v.toLowerCase()));
-    results = results.filter(e => {
-      const o = getSpecField(e, 'owner');
-      return o !== undefined && owners.has(o.toLowerCase());
-    });
+  for (const filter of filters) {
+    const values = filterValues.get(filter.urlParam);
+    if (values && values.length > 0) {
+      results = results.filter(e => filter.matchEntity(e, values));
+    }
   }
 
   return results;
