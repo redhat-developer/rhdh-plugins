@@ -224,7 +224,7 @@ test.describe('Orchestrator workflow runs', () => {
       ).toBeVisible();
       await sharedPage.getByRole('link', { name: 'my-component' }).click();
       await expect(sharedPage.getByText('my-component')).toBeVisible();
-      await sharedPage.getByRole('tab', { name: 'Workflows' }).first().click();
+      await sharedPage.getByRole('link', { name: 'Workflows' }).first().click();
       await expect(
         sharedPage
           .getByRole('row', { name: 'Hello World Workflow' })

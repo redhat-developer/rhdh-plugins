@@ -63,8 +63,8 @@
     "react-use": "^17.4.0"
   },
   "devDependencies": {
-    "@backstage/test-utils": "^1.7.19",
     "@axe-core/playwright": "^4.10.0",
+    "@backstage/test-utils": "^1.7.19",
     "@playwright/test": "1.60.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
