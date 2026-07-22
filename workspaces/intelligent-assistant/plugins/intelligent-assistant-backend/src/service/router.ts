@@ -879,37 +879,34 @@ export async function createRouter(
 
         // Test model with minimal JPEG
         const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
-        const testResponse = await fetch(
-          `${lightspeedCoreBaseUrl}/v1/responses`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: cacheKey,
-              input: [
-                {
-                  type: 'message',
-                  role: 'user',
-                  content: [
-                    {
-                      type: 'input_image',
-                      image_url: testJpeg,
-                      detail: 'low',
-                    },
-                    {
-                      type: 'input_text',
-                      text: 'hi, respond with hi.',
-                    },
-                  ],
-                },
-              ],
-              tool_choice: 'none',
-              temperature: 0,
-              store: false,
-              stream: false,
-            }),
-          },
-        );
+        const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: cacheKey,
+            input: [
+              {
+                type: 'message',
+                role: 'user',
+                content: [
+                  {
+                    type: 'input_image',
+                    image_url: testJpeg,
+                    detail: 'low',
+                  },
+                  {
+                    type: 'input_text',
+                    text: 'hi, respond with hi.',
+                  },
+                ],
+              },
+            ],
+            tool_choice: 'none',
+            temperature: 0,
+            store: false,
+            stream: false,
+          }),
+        });
         const supportsVision = testResponse.ok;
         ModelCapabilitiesCache.set(cacheKey, supportsVision);
 

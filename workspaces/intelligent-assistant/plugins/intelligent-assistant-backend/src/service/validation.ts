@@ -22,7 +22,7 @@ import {
   MAX_QUERY_LENGTH,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from './constant';
-import { QueryRequestBody } from './types';
+import { Attachments, QueryRequestBody } from './types';
 
 const JPEG_MAGIC = [0xff, 0xd8, 0xff];
 
@@ -51,9 +51,7 @@ function isValidJson(content: string): boolean {
   }
 }
 
-function validateAttachments(
-  attachments: Array<{ name: string; content?: string }>,
-): string | null {
+function validateAttachments(attachments: Array<Attachments>): string | null {
   let totalSize = 0;
 
   for (const attachment of attachments) {
@@ -62,7 +60,7 @@ function validateAttachments(
       : 0;
 
     if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
-      return `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+      return `Attachment "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
     }
 
     totalSize += attachmentSize;

@@ -62,9 +62,11 @@ export interface QueryRequestBody {
   system_prompt?: string;
 
   // Attachments array (e.g. DOM context, screenshots)
-  attachments?: Array<{
-    attachment_type: string;
-    content_type: string;
-    content: string;
-  }>;
+  attachments?: Array<Attachments>;
+}
+
+export interface Attachments {
+  attachment_type: string;
+  content_type: string;
+  content: string;
 }
