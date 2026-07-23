@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  BackendFeature,
-  createServiceFactory,
-} from '@backstage/backend-plugin-api';
+import type { BackendFeature } from '@backstage/backend-plugin-api';
+import type { ServiceMock } from '@backstage/backend-test-utils';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
-import type { CatalogClient } from '@backstage/catalog-client';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+import type { CatalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { rest } from 'msw';
@@ -170,7 +168,7 @@ export function addHandlersForGHTokenAppErrors(server: SetupServer) {
 }
 
 export async function startBackendServer(
-  mockCatalogClient: CatalogClient,
+  mockCatalogClient: ServiceMock<CatalogServiceMock>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
   db?: any,
@@ -182,11 +180,7 @@ export async function startBackendServer(
       data: { ...BASE_CONFIG, ...(config || {}) },
     }),
     mockServices.cache.factory(),
-    createServiceFactory({
-      service: catalogServiceRef,
-      deps: {},
-      factory: () => mockCatalogClient,
-    }),
+    mockCatalogClient.factory,
     db ?? mockServices.database.factory(),
   ];
   if (authorizeResult) {
@@ -201,7 +195,7 @@ export async function startBackendServer(
 
 export function setupTest() {
   let server: SetupServer;
-  let mockCatalogClient: CatalogClient;
+  let mockCatalogClient: ServiceMock<CatalogServiceMock>;
 
   beforeAll(() => {
     server = setupServer(...DEFAULT_TEST_HANDLERS);
@@ -223,24 +217,20 @@ export function setupTest() {
   afterAll(() => server.close());
 
   beforeEach(() => {
-    // TODO(rm3l): Use 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
-    //  once '@backstage/plugin-catalog-node' is upgraded
-    mockCatalogClient = {
-      getEntities: jest.fn(),
-      getEntitiesByRefs: jest.fn(),
-      queryEntities: jest.fn(),
-      getEntityAncestors: jest.fn(),
-      getEntityByRef: jest.fn(),
+    mockCatalogClient = catalogServiceMock.mock({
+      getLocations: jest.fn().mockResolvedValue({ items: [] }),
+      getEntities: jest.fn().mockResolvedValue({ items: [] }),
+      queryEntities: jest
+        .fn()
+        .mockResolvedValue({ items: [], totalItems: 0, pageInfo: {} }),
+      addLocation: jest.fn().mockResolvedValue({}),
+      analyzeLocation: jest
+        .fn()
+        .mockResolvedValue({ generateEntities: [], existingEntityFiles: [] }),
+      removeLocationById: jest.fn(),
       removeEntityByUid: jest.fn(),
       refreshEntity: jest.fn(),
-      getEntityFacets: jest.fn(),
-      getLocationById: jest.fn(),
-      getLocationByRef: jest.fn(),
-      addLocation: jest.fn(),
-      removeLocationById: jest.fn(),
-      getLocationByEntity: jest.fn(),
-      validateEntity: jest.fn(),
-    } as unknown as CatalogClient;
+    });
   });
 
   afterEach(() => {

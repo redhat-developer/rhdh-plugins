@@ -19,10 +19,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import {
-  CATALOG_API_LOCATIONS_LOCAL_ADDR,
-  LOCAL_ADDR,
-} from '../../../../__fixtures__/handlers';
+import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
 import {
   addHandlersForGHTokenAppErrors,
   setupTest,
@@ -220,25 +217,19 @@ describe('repositories', () => {
       });
 
       it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-hello-world',
-                    target:
-                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-hello-world',
+              target:
+                'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-hello-world',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -277,41 +268,33 @@ describe('repositories', () => {
       });
 
       it('returns empty array when all repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-animated-happiness',
-                    target:
-                      'http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-                {
-                  data: {
-                    id: 'imported-hello-world',
-                    target:
-                      'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-                {
-                  data: {
-                    id: 'imported-lorem-ipsum',
-                    target:
-                      'http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-animated-happiness',
+              target:
+                'http://localhost:8765/octocat/animated-happiness/blob/master/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-animated-happiness',
+            },
+            {
+              id: 'imported-hello-world',
+              target:
+                'http://localhost:8765/octocat/Hello-World/blob/master/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-hello-world',
+            },
+            {
+              id: 'imported-lorem-ipsum',
+              target:
+                'http://localhost:8765/my-user/Lorem-Ipsum/blob/master/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-lorem-ipsum',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -331,25 +314,19 @@ describe('repositories', () => {
       });
 
       it('returns all repos even though a non-root catalog location exists', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-animated-happiness-sub',
-                    target:
-                      'http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-animated-happiness-sub',
+              target:
+                'http://localhost:8765/octocat/animated-happiness/blob/master/monorepo/nested/path/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-animated-happiness-sub',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,

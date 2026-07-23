@@ -19,7 +19,6 @@ import type {
   DiscoveryService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
 
@@ -390,7 +389,6 @@ async function handleAddedReposFromCreateImportJobs(
     logger: LoggerService;
     config: Config;
     auth: AuthService;
-    catalogApi: CatalogApi;
     gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
@@ -454,7 +452,6 @@ async function handlePrCreationRequest(
     logger: LoggerService;
     config: Config;
     auth: AuthService;
-    catalogApi: CatalogApi;
     gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
@@ -539,7 +536,6 @@ export async function createImportJobs(
     logger: LoggerService;
     config: Config;
     auth: AuthService;
-    catalogApi: CatalogApi;
     gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
@@ -617,7 +613,6 @@ async function dryRunCreateImportJobs(
     logger: LoggerService;
     config: Config;
     auth: AuthService;
-    catalogApi: CatalogApi;
     gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
@@ -652,7 +647,6 @@ async function performDryRunChecks(
   deps: {
     logger: LoggerService;
     auth: AuthService;
-    catalogApi: CatalogApi;
     config: Config;
     gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
