@@ -85,7 +85,7 @@ AI asset list endpoints MUST support 3-tier evaluation (ALLOW/DENY/CONDITIONAL) 
 - **WHEN** `ai-catalog.asset.read` is evaluated for a list endpoint (no specific resourceRef)
 - **THEN** the backend calls `permissions.authorizeConditional()` which returns one of:
   - **ALLOW** — return all assets (no filtering)
-  - **DENY** — fall back to `boost.admin` check; if also denied, return 403 Unauthorized
+  - **DENY** — fall back to `ai-catalog.admin` check; if also denied, return 403 Unauthorized
   - **CONDITIONAL** — apply conditions as database query filters via `toQuery()`
 - **AND** deployers can configure visibility rules via RBAC policies scoped to category, connector, or tenant
 
