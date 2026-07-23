@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -41,7 +41,7 @@ import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
 import { notebooksApiRef } from './api/notebooksApi';
 import { NotebooksApiClient } from './api/NotebooksApiClient';
-import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainerLazy';
+import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainer';
 import { LightspeedDrawerProvider as LightspeedProvider } from './components/LightspeedDrawerProvider';
 import { LightspeedFABContent as LightspeedFABComponent } from './components/LightspeedFABContent';
 import {
@@ -127,6 +127,13 @@ const LightspeedLegacyRedirect = ({ children }: { children: ReactNode }) => {
       });
     }
   }, [location, navigate]);
+
+  // Workaround: PF 6.6.0 base-no-reset.css sets container-type: inline-size on :root,
+  // breaking body height. Remove after https://github.com/patternfly/patternfly-react/issues/12568
+  useLayoutEffect(() => {
+    document.documentElement.style.containerType = 'normal';
+  }, []);
+
   return <>{children}</>;
 };
 

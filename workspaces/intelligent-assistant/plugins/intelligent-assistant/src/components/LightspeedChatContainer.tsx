@@ -105,10 +105,6 @@ const LightspeedChatContainerInner = () => {
     }
   }, [type]);
 
-  useLayoutEffect(() => {
-    document.documentElement.style.containerType = 'normal';
-  }, []);
-
   // Load last selected model from localStorage
   useEffect(() => {
     if (modelsItems.length > 0) {

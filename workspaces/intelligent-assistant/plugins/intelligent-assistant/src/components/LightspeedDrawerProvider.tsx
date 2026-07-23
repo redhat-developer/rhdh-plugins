@@ -21,7 +21,7 @@ import { ChatbotModal } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
-import { LightspeedChatContainer } from './LightspeedChatContainerLazy';
+import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
 const useStyles = makeStyles(theme => ({
