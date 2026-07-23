@@ -72,25 +72,20 @@ await this.syncClient.connect(endpoint);
 
 ### Decision 2: configScope annotation strategy
 
-Each connector config field is annotated with `configScope` to control which layer it lives in:
+Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these are the runtime-tunable fields. Deployment-time fields (`tls.caFile`, `credentials.*`, `namespace`) live under `catalog.providers.<id>.*` and are not part of this schema (see Goals namespace table above).
 
-| Field                   | configScope      | Rationale                                                                                             |
-| ----------------------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `enabled`               | `db-overridable` | Admin can toggle without YAML change                                                                  |
-| `endpoint`              | `db-overridable` | Admin can switch environments without deployment                                                      |
-| `schedule.intervalMs`   | `db-overridable` | Admin can tune sync frequency at runtime                                                              |
-| `credentials.secretRef` | `yaml-only`      | K8s Secret references are deployment-time config                                                      |
-| `credentials.secretKey` | `yaml-only`      | K8s Secret key names are deployment-time config                                                       |
-| `schedule.cron`         | `db-overridable` | Admin can change cron schedule at runtime                                                             |
-| `namespace`             | `yaml-only`      | Namespace is deployment-time config (can't change active provider's target namespace without restart) |
-| `batchSize`             | `db-overridable` | Admin can tune performance at runtime                                                                 |
-| `timeout.connectionMs`  | `db-overridable` | Admin can adjust for network conditions at runtime                                                    |
+| Field                  | configScope      | Rationale                                          |
+| ---------------------- | ---------------- | -------------------------------------------------- |
+| `enabled`              | `db-overridable` | Admin can toggle without YAML change               |
+| `endpoint`             | `db-overridable` | Admin can switch environments without deployment   |
+| `schedule.intervalMs`  | `db-overridable` | Admin can tune sync frequency at runtime           |
+| `schedule.cron`        | `db-overridable` | Admin can change cron schedule at runtime          |
+| `batchSize`            | `db-overridable` | Admin can tune performance at runtime              |
+| `timeout.connectionMs` | `db-overridable` | Admin can adjust for network conditions at runtime |
 
 **Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
-**Why not make everything db-overridable:** Mount paths and Secret references can't change at runtime without a pod restart. Making them `db-overridable` would create false expectations of hot-reload capability.
-
-**Why not make everything yaml-only:** Enable/disable and endpoint changes are the primary use case for hot-reload. Requiring YAML edits defeats the purpose.
+**Why all fields are db-overridable:** The `boost.connectors` schema only contains runtime-tunable fields by design. Deployment-time fields (mount paths, Secret references, namespace) belong to `catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
 
 ### Decision 3: Propagation mechanism — polling-based via reconciliation cycles
 

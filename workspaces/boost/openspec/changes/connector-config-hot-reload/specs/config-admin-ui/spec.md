@@ -104,7 +104,7 @@ Admin UI saves connector config changes via `AdminConfigService` with schema val
   }
   ```
 - **AND** backend `AdminConfigService.setOverride()` validates via Jira connector Zod schema
-- **AND** backend writes DB override to `admin_config` table
+- **AND** backend writes DB override to `boost_admin_config` table
 - **AND** backend calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation, no key parameter)
 - **AND** backend returns success response
 - **AND** frontend displays success notification
@@ -148,14 +148,14 @@ Admin UI connector config section requires admin role (RBAC permission check).
 
 #### Scenario: Admin user accesses connector config
 
-- **WHEN** user with `boost.admin` permission opens connector config section
+- **WHEN** user with `ai-catalog.admin` permission opens connector config section
 - **THEN** UI displays full connector config form with edit capabilities
 - **AND** all fields (except yaml-only) are editable
 - **AND** "Save" button is enabled
 
 #### Scenario: Non-admin user blocked from connector config
 
-- **WHEN** user without `boost.admin` permission attempts to access connector config section
+- **WHEN** user without `ai-catalog.admin` permission attempts to access connector config section
 - **THEN** UI displays permission error: "You do not have permission to configure connectors"
 - **AND** config section is not rendered
 - **AND** user is redirected to unauthorized page

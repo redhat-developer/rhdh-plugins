@@ -19,7 +19,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 - REST API exposing per-connector health: enabled state, last sync attempt/success timestamps, health status (healthy/degraded/failing/unknown), most recent error
 - Data model tracks sync attempts with timestamps and outcomes (success/failure, assets added/updated/removed counts, error type, error message)
 - Health status derivation: healthy = last 3 sync attempts succeeded, degraded = mixed results (not all-success and not all-failure), failing = last 3 sync attempts failed
-- RBAC-gated via boost admin permissions
+- RBAC-gated via `ai-catalog.admin` permission
 - Force Sync API endpoint triggers provider's `run()` method outside scheduled cadence with configurable timeout
 
 ### Admin Health UI
@@ -44,7 +44,7 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 
 ### Disconnected-Cluster Health View Differentiation
 
-- Four-state model: enabled+healthy, enabled+failing, disabled, unknown (never synced)
+- Five-state model: enabled+healthy, enabled+degraded, enabled+failing, disabled, unknown (never synced)
 - Disabled connectors shown with grey/muted treatment (not error state)
 - Enabled+failing connectors shown with red/alert indicators
 - No "disabled" state generates alerts or error indicators — prevents false alarms in air-gapped environments

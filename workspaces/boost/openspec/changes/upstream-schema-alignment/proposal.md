@@ -53,6 +53,6 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 ## Impact
 
 - **Documentation:** New annotation specification document in `workspaces/boost/specifications/` directory
-- **CLI Tooling:** New `@boost/migration-readiness` package with read-only catalog analysis
+- **CLI Tooling:** New `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` package with read-only catalog analysis
 - **No Production Changes:** No modifications to existing catalog entities, no catalog processor changes
 - **Customer Communication:** Migration-readiness assessment available, but actual migration is explicit future work

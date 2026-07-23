@@ -13,20 +13,20 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 #### Scenario: Jira connector config schema
 
 - **WHEN** Jira connector config schema is defined
-- **THEN** schema includes fields: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `tls.caFile` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
-- **AND** each field is annotated with `configScope`: `enabled` is `db-overridable`, `endpoint` is `db-overridable`, `schedule.intervalMs` is `db-overridable`, `schedule.cron` is `db-overridable`, `tls.caFile` is `yaml-only`, `credentials.secretRef` is `yaml-only`, `credentials.secretKey` is `yaml-only`, `namespace` is `yaml-only`, `batchSize` is `db-overridable`, `timeout.connectionMs` is `db-overridable`
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number)
+- **AND** all fields are `configScope: db-overridable` (deployment-time fields like `tls.caFile`, `credentials.*`, and `namespace` live under `catalog.providers.<id>.*` and are not part of this schema)
 
 #### Scenario: GitHub connector config schema
 
 - **WHEN** GitHub connector config schema is defined
-- **THEN** schema includes fields: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number)
-- **AND** `configScope` annotations match Jira pattern: `enabled`, `endpoint`, `schedule.intervalMs`, `batchSize` are `db-overridable`; `credentials.*`, `namespace` are `yaml-only`
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number)
+- **AND** all fields are `configScope: db-overridable` (matching Jira pattern)
 
 #### Scenario: GitLab connector config schema
 
 - **WHEN** GitLab connector config schema is defined
-- **THEN** schema includes fields: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number)
-- **AND** `configScope` annotations match Jira pattern
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number)
+- **AND** all fields are `configScope: db-overridable` (matching Jira pattern)
 
 ### Requirement: RuntimeConfigResolver Integration
 
@@ -45,11 +45,11 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 - **WHEN** YAML config has `enabled: true` and DB override has `enabled: false`
 - **THEN** `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` returns `false`
 
-#### Scenario: YAML-only field rejects DB override
+#### Scenario: Deployment-time field rejects DB override
 
-- **WHEN** admin attempts to write DB override for `credentials.secretRef`
-- **THEN** schema validation rejects the write because `credentials.secretRef` has `configScope: yaml-only`
-- **AND** admin receives error: "Field credentials.secretRef is yaml-only and cannot be overridden at runtime"
+- **WHEN** admin attempts to write DB override for a deployment-time field (e.g., `boost.connectors.jira.credentials.secretRef`)
+- **THEN** the write is rejected because `credentials.*`, `tls.*`, and `namespace` are `catalog.providers` fields not present in the `boost.connectors` Zod schema
+- **AND** admin receives error: "Unknown config key: credentials.secretRef is not a valid boost.connectors field"
 
 ### Requirement: Validation Rejection
 
@@ -77,11 +77,13 @@ Schema validation rejects invalid connector config values before write.
 
 Connector config schemas support versioning for backward compatibility.
 
-#### Scenario: Schema version stored with DB override
+#### Scenario: Schema version stored with connector-level DB overrides
 
-- **WHEN** admin writes DB override for `boost.connectors.jira`
-- **THEN** DB entry includes schema version (e.g., `schemaVersion: 1`)
-- **AND** future reads validate against matching schema version
+- **WHEN** admin writes DB override for a leaf key under `boost.connectors.jira` (e.g., `boost.connectors.jira.enabled`)
+- **THEN** the DB entry stores the leaf key and value (each write targets a single `BoostConfigKey`)
+- **AND** the connector-level `schemaVersion` (e.g., `schemaVersion: 1`) is stored alongside the leaf entries for migration tracking
+- **AND** `GET /api/boost/admin/config?key=boost.connectors.jira` returns all leaf overrides matching that prefix
+- **AND** Zod schema validation is applied at the connector level (aggregating all leaf values) to ensure cross-field consistency
 
 #### Scenario: Schema migration on version mismatch
 

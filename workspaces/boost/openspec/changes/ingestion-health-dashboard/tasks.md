@@ -13,9 +13,9 @@
 
 - [ ] 2.1 Define `ConnectorHealthStatus` type in `plugins/boost-common/src/types/ingestion-health.ts` (connectorId, connectorType, enabled, status, lastSyncAttempt, lastSuccessfulSync, errorSummary, metrics)
 - [ ] 2.2 Implement `GET /api/boost/ingestion-health` route returning array of connector health objects
-- [ ] 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing based on last 3 attempts)
+- [ ] 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - [ ] 2.4 Add `?includeDisabled=true` query parameter support for disabled connectors
-- [ ] 2.5 Implement RBAC gating via boost admin permissions check in route handler
+- [ ] 2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)
 - [ ] 2.6 Add audit logging for health API requests (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
 - [ ] 2.7 Implement empty state handling (returns `[]` for zero connectors)
 - [ ] 2.8 Add health API integration tests (authorized/unauthorized, enabled/disabled filters, health status derivation)
@@ -37,7 +37,7 @@
 
 - [ ] 4.1 Create `IngestionHealthPanel.tsx` component in `plugins/boost/src/components/AdminPanels/`
 - [ ] 4.2 Implement health card rendering with PatternFly `Card`, `CardHeader`, `CardBody` components
-- [ ] 4.3 Add status badge rendering (PatternFly `Label` with success/warning/danger/outline variants for healthy/degraded/failing/disabled)
+- [ ] 4.3 Add status badge rendering (PatternFly `Label` with success/warning/danger/outline variants for healthy/degraded/failing/disabled/unknown)
 - [ ] 4.4 Add timestamp rendering with `react-time-ago` (last sync attempt, last successful sync)
 - [ ] 4.5 Add sync metrics display (assets added/updated/removed counts)
 - [ ] 4.6 Add error summary section with error type badge and diagnostic guidance text
@@ -91,7 +91,7 @@
 
 ## 9. RBAC and Permissions (P1)
 
-- [ ] 9.1 Define boost admin permission check function (`requireBoostAdmin()` middleware)
+- [ ] 9.1 Implement RBAC permission check via `permissions.authorize()` with `ai-catalog.admin` permission (not custom middleware — per AGENTS.md, authorization goes through the permission framework)
 - [ ] 9.2 Add permission check to all ingestion health API routes (GET health, POST force-sync, GET Neo4j, POST Neo4j force-sync)
 - [ ] 9.3 Add 403 error handling in UI (show "Insufficient permissions" message)
 - [ ] 9.4 Add permission check integration tests (verify 403 for non-admin users)

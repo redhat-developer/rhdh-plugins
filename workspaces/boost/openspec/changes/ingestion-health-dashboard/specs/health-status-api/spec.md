@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-REST API exposing per-connector health status and force-sync capabilities. Data model tracks sync attempts with timestamps and outcomes. API is RBAC-gated via boost admin permissions.
+REST API exposing per-connector health status and force-sync capabilities. Data model tracks sync attempts with timestamps and outcomes. API is RBAC-gated via `ai-catalog.admin` permission.
 
 ## ADDED Requirements
 
@@ -12,7 +12,7 @@ The API exposes connector health state for admin dashboard consumption.
 
 #### Scenario: API returns per-connector health objects
 
-- **WHEN** `GET /api/boost/ingestion-health` is called with valid boost admin credentials
+- **WHEN** `GET /api/boost/ingestion-health` is called with valid `ai-catalog.admin` credentials
 - **THEN** the response is a JSON array of connector health objects
 - **AND** each object contains: `connectorId`, `connectorType`, `enabled`, `status` (healthy/degraded/failing/disabled/unknown), `lastSyncAttempt` (ISO timestamp), `lastSuccessfulSync` (ISO timestamp or null), `errorSummary` (object or null), `metrics` (object with assetsAdded/Updated/Removed counts)
 - **AND** disabled connectors are excluded from the response unless `?includeDisabled=true` query parameter is set
@@ -55,19 +55,19 @@ Each connector sync attempt is recorded in the database.
 - **THEN** `assets_added`, `assets_updated`, `assets_removed` counts are populated based on connector provider's diff logic
 - **AND** if the provider doesn't report metrics, all three fields default to 0
 
-### Requirement: RBAC Gating via Boost Admin Permissions
+### Requirement: RBAC Gating via `ai-catalog.admin` Permission
 
-Access to the health API is restricted to boost admins.
+Access to the health API is restricted to users with `ai-catalog.admin` permission.
 
 #### Scenario: Unauthorized user receives 403
 
-- **WHEN** `GET /api/boost/ingestion-health` is called without boost admin permissions
+- **WHEN** `GET /api/boost/ingestion-health` is called without `ai-catalog.admin` permission
 - **THEN** the response is HTTP 403 Forbidden with error message `"Insufficient permissions to view ingestion health"`
 - **AND** the request is logged in the audit log (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
 
 #### Scenario: Admin user receives health data
 
-- **WHEN** `GET /api/boost/ingestion-health` is called with valid boost admin credentials
+- **WHEN** `GET /api/boost/ingestion-health` is called with valid `ai-catalog.admin` credentials
 - **THEN** the response is HTTP 200 OK with connector health array
 - **AND** the request is logged in the audit log with user identity and timestamp
 
@@ -77,7 +77,7 @@ Admins can manually trigger connector sync outside scheduled cadence.
 
 #### Scenario: Force Sync triggers connector run
 
-- **WHEN** `POST /api/boost/ingestion-health/:connectorId/force-sync` is called with valid boost admin credentials
+- **WHEN** `POST /api/boost/ingestion-health/:connectorId/force-sync` is called with valid `ai-catalog.admin` credentials
 - **THEN** the connector provider's `run()` method is invoked immediately
 - **AND** the response includes a `runId` for polling status
 - **AND** the sync attempt is recorded in the `boost_sync_attempts` table upon completion
@@ -107,7 +107,7 @@ Neo4j Knowledge Graph Sync Adapter health exposed via dedicated endpoint.
 
 #### Scenario: Neo4j sync status retrieved
 
-- **WHEN** `GET /api/boost/ingestion-health/neo4j` is called with valid boost admin credentials
+- **WHEN** `GET /api/boost/ingestion-health/neo4j` is called with valid `ai-catalog.admin` credentials
 - **THEN** the response includes: `lastSyncTimestamp`, `outcome` (success/failure), `nodeCount`, `relationshipCount`, `errorSummary` (null if success)
 - **AND** counts represent the current state of the Neo4j graph (not delta)
 

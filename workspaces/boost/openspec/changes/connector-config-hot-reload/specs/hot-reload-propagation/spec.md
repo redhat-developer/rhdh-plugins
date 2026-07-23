@@ -12,7 +12,7 @@ Enable/disable changes propagate to active entity provider within 30s + reconcil
 
 #### Scenario: Disable connector via DB override
 
-- **WHEN** admin writes DB override `connectors.jira.enabled: false`
+- **WHEN** admin writes DB override `boost.connectors.jira.enabled: false`
 - **THEN** `RuntimeConfigResolver` cache is invalidated immediately
 - **AND** next entity provider reconciliation cycle (within 5 minutes) reads config
 - **AND** provider sees `enabled: false`, logs "Jira connector disabled via runtime config, skipping sync"
@@ -21,14 +21,14 @@ Enable/disable changes propagate to active entity provider within 30s + reconcil
 
 #### Scenario: Re-enable connector via DB override
 
-- **WHEN** admin writes DB override `connectors.jira.enabled: true` after previously disabling
+- **WHEN** admin writes DB override `boost.connectors.jira.enabled: true` after previously disabling
 - **THEN** next reconciliation cycle reads config via `RuntimeConfigResolver`
 - **AND** provider sees `enabled: true`, resumes normal sync
 - **AND** entities ingested as usual
 
 #### Scenario: Enable/disable with no DB override (YAML baseline only)
 
-- **WHEN** no DB override exists for `connectors.jira.enabled`
+- **WHEN** no DB override exists for `boost.connectors.jira.enabled`
 - **THEN** `RuntimeConfigResolver` returns YAML baseline value (e.g., `enabled: true`)
 - **AND** provider uses YAML baseline
 
@@ -38,7 +38,7 @@ Schedule changes take effect on next reconciliation cycle.
 
 #### Scenario: Increase schedule interval via DB override
 
-- **WHEN** admin writes DB override `connectors.jira.schedule.intervalMs: 600000` (10 minutes)
+- **WHEN** admin writes DB override `boost.connectors.jira.schedule.intervalMs: 600000` (10 minutes)
 - **THEN** current reconciliation cycle completes using old schedule (5 minutes)
 - **AND** next reconciliation cycle reads new config via `RuntimeConfigResolver`
 - **AND** provider reschedules task with new interval (10 minutes)
@@ -46,14 +46,14 @@ Schedule changes take effect on next reconciliation cycle.
 
 #### Scenario: Decrease schedule interval via DB override
 
-- **WHEN** admin writes DB override `connectors.jira.schedule.intervalMs: 60000` (1 minute)
+- **WHEN** admin writes DB override `boost.connectors.jira.schedule.intervalMs: 60000` (1 minute)
 - **THEN** next reconciliation cycle reads new config
 - **AND** provider reschedules task with new interval (1 minute)
 - **AND** subsequent cycles run every 1 minute
 
 #### Scenario: Switch from interval to cron schedule
 
-- **WHEN** admin writes DB override `connectors.jira.schedule.cron: "0 */2 * * *"` (every 2 hours) and removes `schedule.intervalMs`
+- **WHEN** admin writes DB override `boost.connectors.jira.schedule.cron: "0 */2 * * *"` (every 2 hours) and removes `schedule.intervalMs`
 - **THEN** next reconciliation cycle reads new config
 - **AND** provider switches from interval-based to cron-based scheduling
 - **AND** subsequent cycles run at cron-specified times
@@ -64,7 +64,7 @@ Endpoint URL changes take effect on next sync cycle.
 
 #### Scenario: Change Jira endpoint URL via DB override
 
-- **WHEN** admin writes DB override `connectors.jira.endpoint: "https://jira-staging.example.com"`
+- **WHEN** admin writes DB override `boost.connectors.jira.endpoint: "https://jira-staging.example.com"`
 - **THEN** current sync cycle completes using old endpoint
 - **AND** next sync cycle reads new config via `RuntimeConfigResolver`
 - **AND** provider connects to new endpoint `https://jira-staging.example.com`
@@ -72,7 +72,7 @@ Endpoint URL changes take effect on next sync cycle.
 
 #### Scenario: Invalid endpoint URL rejected before propagation
 
-- **WHEN** admin attempts to write DB override `connectors.jira.endpoint: "not-a-url"`
+- **WHEN** admin attempts to write DB override `boost.connectors.jira.endpoint: "not-a-url"`
 - **THEN** Zod schema validation rejects the write before cache invalidation
 - **AND** no cache invalidation occurs, provider continues using old endpoint
 

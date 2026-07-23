@@ -2,8 +2,8 @@
 
 ## 1. Zod Schema Definitions (P0) — RHIDP-15340
 
-- [ ] 1.1 Define Jira connector config Zod schema with fields: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `tls.caFile` (string), `credentials.secretRef` (string), `credentials.secretKey` (string), `namespace` (string), `batchSize` (number), `timeout.connectionMs` (number)
-- [ ] 1.2 Annotate each Jira config field with `configScope`: `enabled`, `endpoint`, `schedule.*`, `batchSize`, `timeout.*` → `db-overridable`; `credentials.*`, `namespace` → `yaml-only`
+- [ ] 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `catalog.providers` fields — not part of the `boost.connectors` schema.
+- [ ] 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*`)
 - [ ] 1.3 Define GitHub connector config Zod schema with same field pattern
 - [ ] 1.4 Define GitLab connector config Zod schema with same field pattern
 - [ ] 1.5 Add URL validation for `endpoint` field (must be valid https:// URL)
@@ -15,7 +15,7 @@
 
 ## 2. RuntimeConfigResolver Extension (P0) — RHIDP-15340
 
-- [ ] 2.1 Extend `RuntimeConfigResolver` to support connector config scope (e.g., `connectors.jira`, `connectors.github`)
+- [ ] 2.1 Extend `RuntimeConfigResolver` to support connector config scope (e.g., `boost.connectors.jira`, `boost.connectors.github`)
 - [ ] 2.2 Extend `resolve(key: BoostConfigKey)` method to support connector leaf config keys (e.g., `boost.connectors.jira.enabled`)
 - [ ] 2.3 Implement two-layer merge: YAML baseline from `ConfigApi` + DB overrides from `AdminConfigService`
 - [ ] 2.4 Implement cache with 30s TTL for merged connector config
@@ -51,7 +51,7 @@
 - [ ] 4.6 Implement save handler: call `POST /api/boost/admin/config` with connector key and updated fields
 - [ ] 4.7 Implement success notification: "Saved — will take effect within 30 seconds + next reconciliation cycle"
 - [ ] 4.8 Implement validation error feedback: display server-side Zod validation errors inline
-- [ ] 4.9 Implement RBAC gating: require `boost.admin` permission to access connector config section
+- [ ] 4.9 Implement RBAC gating: require `ai-catalog.admin` permission to access connector config section (via `permissions.authorize()`)
 - [ ] 4.10 Implement read-only view for non-admin users (if configured)
 - [ ] 4.11 Implement config change history view: display last 10 changes from audit log (timestamp, fields, old/new values, user)
 - [ ] 4.12 Add UI tests: toggle connector, verify POST request with correct payload
@@ -90,7 +90,7 @@
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)
 - [ ] 8.6 Add troubleshooting guide: "Config change not taking effect?" → check cache TTL, reconciliation schedule
-- [ ] 8.7 Document RBAC permissions required for connector config access (`boost.admin`)
+- [ ] 8.7 Document RBAC permissions required for connector config access (`ai-catalog.admin`)
 
 ## 9. Schema Migration (P2)
 

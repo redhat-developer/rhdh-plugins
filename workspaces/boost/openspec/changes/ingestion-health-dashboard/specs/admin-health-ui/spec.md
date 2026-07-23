@@ -15,7 +15,7 @@ Health cards display connector status in admin panel.
 - **WHEN** the Ingestion Health admin panel loads
 - **THEN** each configured connector renders as a PatternFly `Card` with `CardHeader` and `CardBody`
 - **AND** the card header shows connector name, type, and status badge (PatternFly `Label` with variant `success`/`warning`/`danger`/`outline`)
-- **AND** status badge colors: green for Healthy, yellow for Degraded, red for Failing, grey for Disabled
+- **AND** status badge colors: green for Healthy, yellow for Degraded, red for Failing, grey for Disabled, grey with "?" indicator for Unknown
 
 #### Scenario: Health card shows timestamps
 
@@ -85,10 +85,11 @@ Disabled connectors visually distinct from failing ones.
 
 #### Scenario: Disabled connector uses muted treatment
 
-- **WHEN** a connector is disabled (config `enabled: false`)
-- **THEN** the health card renders with grey/muted status badge (`variant="outline"` PatternFly Label)
+- **WHEN** a connector has `boost.connectors.*.enabled: false` (runtime sync-skip via `RuntimeConfigResolver`)
+- **THEN** the health card renders with grey/muted status badge (`variant="outline"` PatternFly Label) showing "Disabled"
 - **AND** no red/error indicators are shown
 - **AND** the card body shows "Connector is disabled. Enable in connector config to resume sync." message
+- **AND** note: connectors with `catalog.providers.*.enabled: false` (startup registration gate) are never registered and absent from the UI entirely
 
 #### Scenario: Failing connector uses alert treatment
 
