@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.22.1
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from GlobalHeaderComponent and GlobalHeader. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+
 ## 1.22.0
 
 ### Minor Changes
