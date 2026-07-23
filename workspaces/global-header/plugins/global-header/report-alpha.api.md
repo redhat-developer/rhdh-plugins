@@ -49,4 +49,350 @@ export const globalHeaderTranslationRef: TranslationRef<
 
 // @public
 export const globalHeaderTranslations: TranslationResource<'plugin.global-header'>;
+
+// @alpha
+export const globalHeaderTranslationsModule: FrontendModule;
+
+// @public (undocumented)
+export interface HeaderIconButtonProps {
+  // (undocumented)
+  ariaLabel?: string;
+  // (undocumented)
+  color?: 'inherit' | 'primary' | 'secondary' | 'default';
+  // (undocumented)
+  icon: string;
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  title: string;
+  // (undocumented)
+  titleKey?: string;
+  // (undocumented)
+  to: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
+// @alpha (undocumented)
+export const helpDropdownExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'help-dropdown';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const logoutMenuItemExtension: OverridableExtensionDefinition<{
+  kind: 'gh-menu-item';
+  name: 'logout';
+  config: {
+    priority: number | undefined;
+    title: string | undefined;
+    titleKey: string | undefined;
+    icon: string | undefined;
+    link: string | undefined;
+    sectionLabel: string | undefined;
+    sectionLink: string | undefined;
+    sectionLinkLabel: string | undefined;
+  };
+  configInput: {
+    link?: string | undefined;
+    title?: string | undefined;
+    icon?: string | undefined;
+    titleKey?: string | undefined;
+    priority?: number | undefined;
+    sectionLabel?: string | undefined;
+    sectionLink?: string | undefined;
+    sectionLinkLabel?: string | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderMenuItemData,
+    'global-header.menu-item',
+    {}
+  >;
+  inputs: {};
+  params: MenuItemParams;
+}>;
+
+// @alpha
+export interface MenuItemParams {
+  component?: ComponentType<any>;
+  // (undocumented)
+  icon?: string;
+  // (undocumented)
+  link?: string;
+  loader?: () => Promise<ComponentType<any>>;
+  // (undocumented)
+  onClick?: () => void;
+  // (undocumented)
+  priority?: number;
+  sectionLabel?: string;
+  sectionLink?: string;
+  sectionLinkLabel?: string;
+  // (undocumented)
+  subTitle?: string;
+  // (undocumented)
+  subTitleKey?: string;
+  // (undocumented)
+  target: string;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  titleKey?: string;
+}
+
+// @alpha (undocumented)
+export const myProfileMenuItemExtension: OverridableExtensionDefinition<{
+  kind: 'gh-menu-item';
+  name: 'my-profile';
+  config: {
+    priority: number | undefined;
+    title: string | undefined;
+    titleKey: string | undefined;
+    icon: string | undefined;
+    link: string | undefined;
+    sectionLabel: string | undefined;
+    sectionLink: string | undefined;
+    sectionLinkLabel: string | undefined;
+  };
+  configInput: {
+    link?: string | undefined;
+    title?: string | undefined;
+    icon?: string | undefined;
+    titleKey?: string | undefined;
+    priority?: number | undefined;
+    sectionLabel?: string | undefined;
+    sectionLink?: string | undefined;
+    sectionLinkLabel?: string | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderMenuItemData,
+    'global-header.menu-item',
+    {}
+  >;
+  inputs: {};
+  params: MenuItemParams;
+}>;
+
+// @alpha (undocumented)
+export const notificationButtonExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'notification-button';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const profileDropdownExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'profile-dropdown';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const searchExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'search';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const selfServiceButtonExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'self-service-button';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const settingsMenuItemExtension: OverridableExtensionDefinition<{
+  kind: 'gh-menu-item';
+  name: 'settings';
+  config: {
+    priority: number | undefined;
+    title: string | undefined;
+    titleKey: string | undefined;
+    icon: string | undefined;
+    link: string | undefined;
+    sectionLabel: string | undefined;
+    sectionLink: string | undefined;
+    sectionLinkLabel: string | undefined;
+  };
+  configInput: {
+    link?: string | undefined;
+    title?: string | undefined;
+    icon?: string | undefined;
+    titleKey?: string | undefined;
+    priority?: number | undefined;
+    sectionLabel?: string | undefined;
+    sectionLink?: string | undefined;
+    sectionLinkLabel?: string | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderMenuItemData,
+    'global-header.menu-item',
+    {}
+  >;
+  inputs: {};
+  params: MenuItemParams;
+}>;
+
+// @alpha (undocumented)
+export const spacerExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'spacer';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const starredDropdownExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'starred-dropdown';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
+}>;
+
+// @alpha (undocumented)
+export const supportButtonMenuItemExtension: OverridableExtensionDefinition<{
+  kind: 'gh-menu-item';
+  name: 'support-button';
+  config: {
+    priority: number | undefined;
+    title: string | undefined;
+    titleKey: string | undefined;
+    icon: string | undefined;
+    link: string | undefined;
+    sectionLabel: string | undefined;
+    sectionLink: string | undefined;
+    sectionLinkLabel: string | undefined;
+  };
+  configInput: {
+    link?: string | undefined;
+    title?: string | undefined;
+    icon?: string | undefined;
+    titleKey?: string | undefined;
+    priority?: number | undefined;
+    sectionLabel?: string | undefined;
+    sectionLink?: string | undefined;
+    sectionLinkLabel?: string | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderMenuItemData,
+    'global-header.menu-item',
+    {}
+  >;
+  inputs: {};
+  params: MenuItemParams;
+}>;
+
+// @alpha
+export interface ToolbarComponentParams {
+  component?: ComponentType<any>;
+  // (undocumented)
+  icon?: string;
+  layout?: Record<string, unknown>;
+  // (undocumented)
+  link?: string;
+  loader?: () => Promise<ComponentType<any>>;
+  // (undocumented)
+  onClick?: () => void;
+  // (undocumented)
+  priority?: number;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  titleKey?: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
+// @alpha
+export function useGlobalHeaderComponents(): GlobalHeaderComponentData[];
+
+// @alpha
+export function useGlobalHeaderMenuItems(
+  target: string,
+): GlobalHeaderMenuItemData[];
+
+// (No @packageDocumentation comment for this package)
 ```
