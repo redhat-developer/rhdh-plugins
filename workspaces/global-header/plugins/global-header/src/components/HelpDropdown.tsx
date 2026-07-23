@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import Box from '@mui/material/Box';
 
-import { useTranslation } from '../hooks/useTranslation';
-import { DropdownEmptyState } from './HeaderDropdownComponent/DropdownEmptyState';
+import { HeaderIcon } from '../../components/HeaderIcon/HeaderIcon';
+import { useTranslation } from '../../hooks/useTranslation';
+import { DropdownEmptyState } from '../../components/HeaderDropdownComponent/DropdownEmptyState';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
 /**
@@ -34,14 +34,16 @@ export const HelpDropdown = () => {
       trackValidity
       isIconButton
       tooltip={t('help.tooltip')}
-      buttonContent={<HelpOutlineIcon />}
+      buttonContent={<HeaderIcon icon="help_outline" size="medium" />}
       buttonProps={{ color: 'inherit' }}
       emptyState={
         <DropdownEmptyState
           title={t('help.noSupportLinks')}
           subTitle={t('help.noSupportLinksSubtitle')}
           icon={
-            <SupportAgentIcon sx={{ fontSize: 64, color: 'text.disabled' }} />
+            <Box sx={{ color: 'text.disabled', fontSize: 64, lineHeight: 1 }}>
+              <HeaderIcon icon="support_agent" size="large" />
+            </Box>
           }
         />
       }
