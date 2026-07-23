@@ -3,7 +3,6 @@
 ---
 
 **BREAKING**: Graduated the New Frontend System (NFS) bulk-import plugin to stable API.
-
 The NFS plugin (`createFrontendPlugin`) has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath now only exports translations. Legacy (OFS) exports (`bulkImportPlugin`, `BulkImportPage`, `BulkImportSidebarItem`, `BulkImportIcon`) have been moved to the new `./legacy` subpath.
 
 **Migration for NFS consumers (previously using `./alpha`):**
