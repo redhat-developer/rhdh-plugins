@@ -4,16 +4,12 @@
 
 ```ts
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { CSSProperties } from 'react';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { PropsWithChildren } from 'react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -81,92 +77,28 @@ const _default: OverridableFrontendPlugin<
 export default _default;
 
 // @public
-export type DrawerPartialState = {
-  id: string;
-  isDrawerOpen: boolean;
-  drawerWidth: number;
-  setDrawerWidth: (width: number) => void;
-  closeDrawer: () => void;
-};
-
-// @public
-export type DrawerStateExposerProps = {
-  onStateChange: (state: DrawerPartialState) => void;
-};
-
-// @public
-export const filterQuickstartItemsByRole: (
-  items: QuickstartItemData[],
-  userRole: string,
-) => QuickstartItemData[];
-
-// @public
-export const QuickstartButton: (
-  input: QuickstartButtonProps,
-) => JSX_2.Element | null;
-
-// @public
-export interface QuickstartButtonProps {
-  onClick?: () => void;
-  style?: CSSProperties;
-  title?: string;
-}
-
-// @public
-export const QuickstartDrawerContent: () => JSX_2.Element | null;
-
-// @public
-export interface QuickstartDrawerContextType {
-  closeDrawer: () => void;
-  drawerWidth: number;
-  isDrawerOpen: boolean;
-  openDrawer: () => void;
-  roleLoading: boolean;
-  setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
-  toggleDrawer: () => void;
-  userRole: UserRole | null;
-}
-
-// @public
-export const QuickstartDrawerProvider: (
-  input: PropsWithChildren,
-) => JSX_2.Element;
-
-// @public
-export const QuickstartDrawerStateExposer: (
-  input: DrawerStateExposerProps,
-) => null;
-
-// @public
 export const quickstartInitModule: FrontendModule;
-
-// @public
-export interface QuickstartItemCtaData {
-  link: string;
-  text: string;
-  textKey?: string;
-}
-
-// @public
-export interface QuickstartItemData {
-  cta?: QuickstartItemCtaData;
-  description: string;
-  descriptionKey?: string;
-  icon?: string;
-  roles?: string[];
-  title: string;
-  titleKey?: string;
-}
-
-// @public
-export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
 
 // @public
 export const quickstartTranslationRef: TranslationRef<
   'plugin.quickstart',
   {
+    readonly 'button.quickstart': string;
+    readonly 'button.openQuickstartGuide': string;
+    readonly 'button.closeDrawer': string;
+    readonly 'button.gotIt': string;
+    readonly 'item.expandAriaLabel': string;
+    readonly 'item.collapseAriaLabel': string;
+    readonly 'item.expandButtonAriaLabel': string;
+    readonly 'item.collapseButtonAriaLabel': string;
+    readonly 'content.loading': string;
+    readonly 'content.emptyState.title': string;
+    readonly 'footer.progress': string;
+    readonly 'footer.hide': string;
+    readonly 'footer.notStarted': string;
     readonly 'header.title': string;
     readonly 'header.subtitle': string;
+    readonly 'snackbar.helpPrompt': string;
     readonly 'steps.setupAuthentication.title': string;
     readonly 'steps.setupAuthentication.description': string;
     readonly 'steps.setupAuthentication.ctaTitle': string;
@@ -197,20 +129,6 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.getStartedWithLightspeed.title': string;
     readonly 'steps.getStartedWithLightspeed.description': string;
     readonly 'steps.getStartedWithLightspeed.ctaTitle': string;
-    readonly 'button.quickstart': string;
-    readonly 'button.openQuickstartGuide': string;
-    readonly 'button.closeDrawer': string;
-    readonly 'button.gotIt': string;
-    readonly 'snackbar.helpPrompt': string;
-    readonly 'footer.progress': string;
-    readonly 'footer.notStarted': string;
-    readonly 'footer.hide': string;
-    readonly 'content.loading': string;
-    readonly 'content.emptyState.title': string;
-    readonly 'item.expandAriaLabel': string;
-    readonly 'item.collapseAriaLabel': string;
-    readonly 'item.expandButtonAriaLabel': string;
-    readonly 'item.collapseButtonAriaLabel': string;
     readonly 'dev.pageTitle': string;
     readonly 'dev.pageDescription': string;
     readonly 'dev.drawerControls': string;
@@ -231,12 +149,6 @@ export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
 // @public
 export const quickstartTranslationsModule: FrontendModule;
-
-// @public
-export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;
-
-// @public
-export type UserRole = 'admin' | 'developer';
 
 // (No @packageDocumentation comment for this package)
 ```

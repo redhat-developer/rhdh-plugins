@@ -10,8 +10,22 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const quickstartTranslationRef: TranslationRef<
   'plugin.quickstart',
   {
+    readonly 'button.quickstart': string;
+    readonly 'button.openQuickstartGuide': string;
+    readonly 'button.closeDrawer': string;
+    readonly 'button.gotIt': string;
+    readonly 'item.expandAriaLabel': string;
+    readonly 'item.collapseAriaLabel': string;
+    readonly 'item.expandButtonAriaLabel': string;
+    readonly 'item.collapseButtonAriaLabel': string;
+    readonly 'content.loading': string;
+    readonly 'content.emptyState.title': string;
+    readonly 'footer.progress': string;
+    readonly 'footer.hide': string;
+    readonly 'footer.notStarted': string;
     readonly 'header.title': string;
     readonly 'header.subtitle': string;
+    readonly 'snackbar.helpPrompt': string;
     readonly 'steps.setupAuthentication.title': string;
     readonly 'steps.setupAuthentication.description': string;
     readonly 'steps.setupAuthentication.ctaTitle': string;
@@ -42,20 +56,6 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.getStartedWithLightspeed.title': string;
     readonly 'steps.getStartedWithLightspeed.description': string;
     readonly 'steps.getStartedWithLightspeed.ctaTitle': string;
-    readonly 'button.quickstart': string;
-    readonly 'button.openQuickstartGuide': string;
-    readonly 'button.closeDrawer': string;
-    readonly 'button.gotIt': string;
-    readonly 'snackbar.helpPrompt': string;
-    readonly 'footer.progress': string;
-    readonly 'footer.notStarted': string;
-    readonly 'footer.hide': string;
-    readonly 'content.loading': string;
-    readonly 'content.emptyState.title': string;
-    readonly 'item.expandAriaLabel': string;
-    readonly 'item.collapseAriaLabel': string;
-    readonly 'item.expandButtonAriaLabel': string;
-    readonly 'item.collapseButtonAriaLabel': string;
     readonly 'dev.pageTitle': string;
     readonly 'dev.pageDescription': string;
     readonly 'dev.drawerControls': string;
