@@ -21,6 +21,7 @@ import {
   scorecardCollectorsServiceRef,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { migrate } from './database/migration';
 import { DoraChangeFailureRateProvider } from './metricProviders/DoraChangeFailureRateProvider';
 import { DoraDeploymentFrequencyProvider } from './metricProviders/DoraDeploymentFrequencyProvider';
 import { DoraMedianLeadTimeForChangesProvider } from './metricProviders/DoraMedianLeadTimeForChangesProvider';
@@ -34,10 +35,13 @@ export const scorecardModuleDora = createBackendModule({
       deps: {
         collectorsService: scorecardCollectorsServiceRef,
         config: coreServices.rootConfig,
+        database: coreServices.database,
         logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ collectorsService, config, logger, metrics }) {
+      async init({ collectorsService, config, database, logger, metrics }) {
+        await migrate(database);
+
         metrics.addMetricProvider(
           DoraDeploymentFrequencyProvider.fromConfig(config, {
             collectorsService,

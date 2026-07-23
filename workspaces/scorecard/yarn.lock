@@ -9692,6 +9692,7 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+    knex: "npm:^3.1.0"
     zod: "npm:^3.22.4"
   languageName: unknown
   linkType: soft
