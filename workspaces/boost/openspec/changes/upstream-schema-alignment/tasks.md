@@ -2,7 +2,7 @@
 
 ## 1. Annotation Specification Document (P0) — RHIDP-15346
 
-- [ ] 1.1 Document all `rhdh.io/ai-asset-category` values (agent, skill, mcp-server, ai-model, model-server)
+- [ ] 1.1 Document all `rhdh.io/ai-asset-category` values (agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server)
 - [ ] 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
 - [ ] 1.3 Document `rhdh.io/ai-asset-source` annotation format
 - [ ] 1.4 Document entity kind + `spec.type` mapping table for all AI Asset types
@@ -32,7 +32,7 @@
 
 ## 3. Testing (P1)
 
-- [ ] 3.1 Unit test mapping logic with fixture entities (all five AI Asset types)
+- [ ] 3.1 Unit test mapping logic with fixture entities (all seven AI Asset types)
 - [ ] 3.2 Unit test confidence level assignment
 - [ ] 3.3 Unit test field transformation identification
 - [ ] 3.4 Integration test against mock catalog API
