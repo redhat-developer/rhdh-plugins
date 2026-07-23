@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [c7f89e7]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf
 
+## 1.0.0
+
+### Major Changes
+
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Patch Changes
+
+- Updated dependencies [c7f89e7]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 0.3.1
 
 ### Patch Changes
