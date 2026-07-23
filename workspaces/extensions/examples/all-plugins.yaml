@@ -9,9 +9,6 @@ spec:
     - ./plugins/3scale.yaml
     - ./plugins/acr.yaml
     - ./plugins/bulk-import.yaml
-    - ./plugins/certified-plugin-1-by-vendor-a.yaml
-    - ./plugins/certified-plugin-2-by-vendor-a.yaml
-    - ./plugins/certified-plugin-3-by-vendor-b.yaml
     - ./plugins/keycloak.yaml
     - ./plugins/extensions.yaml
     - ./plugins/no-icon-no-description.yaml
