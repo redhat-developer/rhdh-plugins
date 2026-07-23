@@ -16,7 +16,6 @@
 
 import type {
   AuditorService,
-  AuthService,
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -63,15 +62,4 @@ export async function permissionCheck(
     await auditorEvent.fail({ error: err, meta: { responseStatus: 403 } });
     throw err;
   }
-}
-
-export async function getTokenForPlugin(
-  auth: AuthService,
-  targetPluginId: string,
-): Promise<string> {
-  const resp = await auth.getPluginRequestToken({
-    onBehalfOf: await auth.getOwnServiceCredentials(),
-    targetPluginId,
-  });
-  return resp.token;
 }

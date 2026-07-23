@@ -116,6 +116,7 @@ export const orchestratorMessages = {
       started: 'Started',
       runBy: 'Run by',
       workflowId: 'Run ID',
+      workflowIdCopy: 'Copy Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
       version: 'Version',
     },

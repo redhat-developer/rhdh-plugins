@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useAsync } from 'react-use';
 
-import { CopyTextButton, Link } from '@backstage/core-components';
+import { Link } from '@backstage/core-components';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 import { EntityRefLink } from '@backstage/plugin-catalog-react';
 
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
@@ -50,12 +53,6 @@ const useStyles = makeStyles()(_ => ({
     '& > div': {
       width: '80%',
     },
-    '& > button': {
-      padding: '2px',
-      '& svg': {
-        fontSize: '1rem',
-      },
-    },
   },
 }));
 
@@ -64,6 +61,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
+  const [copied, setCopied] = useState(false);
   const orchestratorApi = useApi(orchestratorApiRef);
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
@@ -130,11 +128,24 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
             >
               {details.id}
             </Typography>
-            <CopyTextButton
-              text={details.id}
-              tooltipText={t('workflow.fields.workflowIdCopied')}
-              tooltipDelay={2000}
-            />
+            <Tooltip
+              title={
+                copied
+                  ? t('workflow.fields.workflowIdCopied')
+                  : t('workflow.fields.workflowIdCopy')
+              }
+            >
+              <IconButton
+                size="small"
+                onClick={async () => {
+                  await window.navigator.clipboard.writeText(details.id);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: '1rem' }} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </AboutField>
       </Grid>

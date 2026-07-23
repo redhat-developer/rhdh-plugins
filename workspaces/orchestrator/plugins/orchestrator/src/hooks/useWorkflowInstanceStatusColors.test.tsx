@@ -55,4 +55,36 @@ describe('useWorkflowInstanceStateColors', () => {
 
     expect(result.current).toBe('error-class');
   });
+
+  it('returns the class mapped to an active status', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInstanceStateColors(ProcessInstanceStatusDTO.Active),
+    );
+
+    expect(result.current).toBe('active-class');
+  });
+
+  it('returns the class mapped to a suspended status', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInstanceStateColors(ProcessInstanceStatusDTO.Suspended),
+    );
+
+    expect(result.current).toBe('suspended-class');
+  });
+
+  it('returns the class mapped to an aborted status', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInstanceStateColors(ProcessInstanceStatusDTO.Aborted),
+    );
+
+    expect(result.current).toBe('aborted-class');
+  });
+
+  it('returns the class mapped to a pending status', () => {
+    const { result } = renderHook(() =>
+      useWorkflowInstanceStateColors(ProcessInstanceStatusDTO.Pending),
+    );
+
+    expect(result.current).toBe('pending-class');
+  });
 });

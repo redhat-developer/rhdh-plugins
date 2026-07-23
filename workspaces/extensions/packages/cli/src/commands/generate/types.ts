@@ -22,7 +22,8 @@ export interface DynamicPluginsConfig {
 
 export interface DynamicPluginConfig {
   package: string;
-  disabled: boolean;
+  enabled?: boolean;
+  disabled?: boolean;
   pluginConfig: JsonObject;
 }
 

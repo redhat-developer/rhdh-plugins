@@ -19,13 +19,8 @@ import { ErrorBoundary } from '@backstage/core-components';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import { createGenerateClassName, StylesProvider } from '@mui/styles';
 
 import { useGlobalHeaderComponents } from '../extensions/GlobalHeaderContext';
-
-const generateClassName = createGenerateClassName({
-  seed: 'global-header',
-});
 
 /**
  * Global header bar. Reads toolbar items from GlobalHeaderContext
@@ -37,34 +32,32 @@ export const GlobalHeader = () => {
   const components = useGlobalHeaderComponents();
 
   return (
-    <StylesProvider generateClassName={generateClassName}>
-      <AppBar
-        position="sticky"
-        component="nav"
-        id="global-header"
+    <AppBar
+      position="sticky"
+      component="nav"
+      id="global-header"
+      sx={{
+        width: 'auto',
+        marginRight: 'var(--docked-drawer-width, 0px)',
+        transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
+      }}
+    >
+      <Toolbar
         sx={{
-          width: 'auto',
-          marginRight: 'var(--docked-drawer-width, 0px)',
-          transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
+          gap: 1,
+          color: theme =>
+            (theme as any).rhdh?.general?.appBarForegroundColor ??
+            theme.palette.text.primary,
         }}
       >
-        <Toolbar
-          sx={{
-            gap: 1,
-            color: theme =>
-              (theme as any).rhdh?.general?.appBarForegroundColor ??
-              theme.palette.text.primary,
-          }}
-        >
-          {components.map((item, index) => (
-            <ErrorBoundary key={`gh-component-${index}`}>
-              <Box sx={item.layout}>
-                <item.component />
-              </Box>
-            </ErrorBoundary>
-          ))}
-        </Toolbar>
-      </AppBar>
-    </StylesProvider>
+        {components.map((item, index) => (
+          <ErrorBoundary key={`gh-component-${index}`}>
+            <Box sx={item.layout}>
+              <item.component />
+            </Box>
+          </ErrorBoundary>
+        ))}
+      </Toolbar>
+    </AppBar>
   );
 };

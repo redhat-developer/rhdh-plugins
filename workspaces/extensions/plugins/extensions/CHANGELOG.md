@@ -1,5 +1,27 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.19.0
+
+### Minor Changes
+
+- 2636ed4: Replaced `disabled` field with `enabled` in plugin configuration
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 493df1f: Fix accessibility violations (role-img-alt, aria-prohibited-attr, label) and remove suppression flag from e2e accessibility tests.
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
+## 0.18.1
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- e24f46f: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes

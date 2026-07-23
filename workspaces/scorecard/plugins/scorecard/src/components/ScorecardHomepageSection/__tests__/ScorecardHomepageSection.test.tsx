@@ -87,7 +87,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const mockScorecard: AggregatedMetricResult = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -131,7 +131,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {
@@ -150,14 +150,14 @@ describe('ScorecardHomepageCard', () => {
     });
 
     render(
-      <ScorecardHomepageCard metricId="github.open_prs" aggregationId="" />,
+      <ScorecardHomepageCard metricId="github.openPRs" aggregationId="" />,
       {
         wrapper: TestWrapper,
       },
     );
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
-      aggregationId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
     });
   });
 
@@ -206,12 +206,12 @@ describe('ScorecardHomepageCard', () => {
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+    render(<ScorecardHomepageCard metricId="github.openPRs" />, {
       wrapper: TestWrapper,
     });
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
-      aggregationId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
     });
   });
 
@@ -224,7 +224,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="jira.open_issues"
+        metricId="jira.openIssues"
         aggregationId="openIssuesKpi"
       />,
       {
@@ -253,7 +253,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {
@@ -276,7 +276,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {
@@ -302,7 +302,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {
@@ -338,7 +338,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {
@@ -367,7 +367,7 @@ describe('ScorecardHomepageCard', () => {
 
     render(
       <ScorecardHomepageCard
-        metricId="github.open_prs"
+        metricId="github.openPRs"
         aggregationId="openPrsKpi"
       />,
       {

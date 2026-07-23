@@ -5,7 +5,8 @@
     ":rebaseStalePrs",
     "group:linters",
     "group:test",
-    ":preserveSemverRanges"
+    ":preserveSemverRanges",
+    ":disableMajorUpdates"
   ],
   "ignorePresets": [
     ":pinDevDependencies",
@@ -23,9 +24,6 @@
   },
   "npm": {
     "minimumReleaseAge": "3 days"
-  },
-  "major": {
-    "dependencyDashboardApproval": true
   },
   "packageRules": [
     {
@@ -47,6 +45,11 @@
     {
       "matchPackageNames": ["@protobufjs/inquire"],
       "allowedVersions": "=1.1.0"
+    },
+    {
+      "enabled": false,
+      "matchUpdateTypes": ["replacement"],
+      "matchPackageNames": ["/^@material-ui//"]
     },
     {
       "description": "all RHDH Plugins workspaces",
@@ -71,7 +74,8 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-dcm-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-app-defaults-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-augment-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-boost-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-boost-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-install-dynamic-plugins-presets"
       ]
     },
     {

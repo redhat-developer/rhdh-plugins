@@ -57,7 +57,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   getProviderId(): string {
     const normalizedName = this.getMetricName()
       .toLowerCase()
-      .replace(/-/g, '_');
+      .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     return `openssf.${normalizedName}`;
   }
 

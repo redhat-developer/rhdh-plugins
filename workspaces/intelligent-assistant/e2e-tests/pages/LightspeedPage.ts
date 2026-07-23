@@ -206,11 +206,11 @@ export function mcpPersonalAccessTokenInput(page: Page): Locator {
   return page.locator('#mcp-pat-input');
 }
 
-/** Configure-server modal that contains the PAT field (avoids matching other dialogs). */
+/** Configure-server modal for MCP settings (works for token and DCR flows). */
 export function mcpCredentialConfigureModal(page: Page): Locator {
   return page
     .getByRole('dialog')
-    .filter({ has: page.locator('#mcp-pat-input') });
+    .filter({ has: page.locator('#mcp-configure-modal-body') });
 }
 
 /** Clear (×) control on the PAT field (`mcp.settings.token.clearAriaLabel`). */
@@ -247,9 +247,9 @@ export function mcpConfigureModalMessage(
   page: Page,
   exactText: string,
 ): Locator {
-  return mcpCredentialConfigureModal(page).getByText(exactText, {
-    exact: true,
-  });
+  // PatternFly HelperTextItem appends ": error status;" for error variants; validation
+  // errors may also appear in the tools section. Substring match + first() avoids both.
+  return mcpCredentialConfigureModal(page).getByText(exactText).first();
 }
 
 /**
@@ -275,7 +275,7 @@ export async function clickMcpServersStatusColumn(
   t: LightspeedMessages,
 ) {
   await mcpServersTable(page, t)
-    .getByRole('columnheader', { name: t['mcp.settings.status'] })
+    .getByRole('button', { name: t['mcp.settings.status'] })
     .click();
 }
 
@@ -332,7 +332,7 @@ export async function verifyMcpSettingsPanel(
     table.getByRole('button', { name: t['mcp.settings.name'] }),
   ).toBeVisible();
   await expect(
-    table.getByRole('columnheader', { name: t['mcp.settings.status'] }),
+    table.getByRole('button', { name: t['mcp.settings.status'] }),
   ).toBeVisible();
 
   await clickMcpServersStatusColumn(page, t);

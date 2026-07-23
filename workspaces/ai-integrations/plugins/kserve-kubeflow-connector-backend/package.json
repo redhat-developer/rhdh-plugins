@@ -39,7 +39,7 @@
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.20.0",
     "@backstage/types": "^1.2.2",
-    "@kubernetes/client-node": "^0.20.0",
+    "@kubernetes/client-node": "^0.22.0",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "undici": "^6.19.0",

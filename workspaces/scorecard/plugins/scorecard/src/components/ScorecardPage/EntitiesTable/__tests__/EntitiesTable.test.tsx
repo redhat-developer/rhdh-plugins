@@ -172,7 +172,7 @@ describe('EntitiesTable', () => {
     render(
       <TestWrapper>
         <EntitiesTable
-          metricId="github.open_prs"
+          metricId="github.openPRs"
           setMetricTitle={setMetricTitle}
         />
       </TestWrapper>,
@@ -186,7 +186,7 @@ describe('EntitiesTable', () => {
   it('should show title with count when total > 0', () => {
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -219,7 +219,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -235,7 +235,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -251,7 +251,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -283,7 +283,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -294,7 +294,7 @@ describe('EntitiesTable', () => {
   it('should render EntitiesRow for each entity when data is loaded', () => {
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -339,7 +339,7 @@ describe('EntitiesTable', () => {
     render(
       <TestWrapper>
         <EntitiesTable
-          metricId="github.open_prs"
+          metricId="github.openPRs"
           setMetricTitle={setMetricTitle}
         />
       </TestWrapper>,

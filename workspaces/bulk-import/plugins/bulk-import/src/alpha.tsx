@@ -23,7 +23,6 @@ import {
   createRouteRef,
   createSubRouteRef,
   identityApiRef,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
@@ -32,7 +31,7 @@ import {
   bulkImportApiRef,
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
-import BulkImportIcon from './components/BulkImportSidebarItem';
+import BulkImportIcon from './components/BulkImportIcon';
 import { bulkImportTranslations } from './translations';
 
 // NFS Route References - created using @backstage/frontend-plugin-api
@@ -71,40 +70,12 @@ const bulkImportApi = ApiBlueprint.make({
  */
 const bulkImportPage = PageBlueprint.make({
   params: {
+    title: 'Bulk import',
+    icon: <BulkImportIcon />,
     path: '/bulk-import',
     routeRef: rootRouteRef,
     noHeader: true,
     loader: () => import('./components').then(({ Router }) => <Router />),
-  },
-});
-
-/**
- * Nav Item Extension
- *
- * NOTE: This nav item is always visible in the sidebar. Unlike the legacy
- * BulkImportSidebarItem component, NavItemBlueprint does not support runtime
- * permission checking because:
- *
- * 1. Extension factories run at app startup, before user authentication
- * 2. NavItemBlueprint only accepts static data (title, icon, routeRef)
- * 3. React hooks like usePermission cannot be used in extension factories
- *
- * Permission checking is handled at the PAGE level instead. Users without
- * the required permissions will see a permission error when accessing the page.
- *
- * For apps requiring permission-gated nav visibility, use the legacy
- * BulkImportSidebarItem component from the main package export:
- *
- * @example
- * ```tsx
- * import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
- * ```
- */
-const bulkImportNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'Bulk import',
-    routeRef: rootRouteRef,
-    icon: BulkImportIcon,
   },
 });
 
@@ -115,7 +86,7 @@ const bulkImportNavItem = NavItemBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'bulk-import',
-  extensions: [bulkImportApi, bulkImportPage, bulkImportNavItem],
+  extensions: [bulkImportApi, bulkImportPage],
   routes: {
     root: rootRouteRef,
     tasks: importHistoryRouteRef,

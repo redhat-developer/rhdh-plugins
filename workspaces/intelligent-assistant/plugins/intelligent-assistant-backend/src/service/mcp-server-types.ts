@@ -50,6 +50,8 @@ export interface McpServerResponse {
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  /** True when app-config defines a default token for this server. */
+  hasOrgToken: boolean;
   /** Authentication mode — `'dcr'` means tokens are minted automatically. */
   auth?: McpServerAuth;
 }

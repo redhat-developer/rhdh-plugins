@@ -25,7 +25,6 @@ import Divider from '@mui/material/Divider';
 import { ScorecardQueryProvider } from '../../api';
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
 import NotFoundState from '../Common/NotFoundState';
-import { ScorecardStylesProvider } from '../ScorecardStylesProvider';
 import { useTranslation } from '../../hooks/useTranslation';
 import { resolveMetricTranslation } from '../../utils/translationUtils';
 
@@ -126,9 +125,7 @@ export const ScorecardPage = () => {
  * when rendered outside a tree that already has a provider (e.g. on the homepage).
  */
 export const ScorecardPageWithProvider = () => (
-  <ScorecardStylesProvider>
-    <ScorecardQueryProvider>
-      <ScorecardPage />
-    </ScorecardQueryProvider>
-  </ScorecardStylesProvider>
+  <ScorecardQueryProvider>
+    <ScorecardPage />
+  </ScorecardQueryProvider>
 );

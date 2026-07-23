@@ -18,16 +18,16 @@ import { parseCommaSeparatedString } from './parseCommaSeparatedString';
 
 describe('parseCommaSeparatedString', () => {
   it('should return array with single value for non-comma string', () => {
-    const result = parseCommaSeparatedString('github.open_prs');
-    expect(result).toEqual(['github.open_prs']);
+    const result = parseCommaSeparatedString('github.openPRs');
+    expect(result).toEqual(['github.openPRs']);
   });
 
   it('should return array with trimmed whitespace multiple values when values are comma and space separated', () => {
     const result = parseCommaSeparatedString(
-      ' github.open_prs , github.open_issues ',
+      ' github.openPRs , github.openIssues ',
     );
 
-    expect(result).toEqual(['github.open_prs', 'github.open_issues']);
+    expect(result).toEqual(['github.openPRs', 'github.openIssues']);
   });
 
   it('should handle string with only whitespace', () => {

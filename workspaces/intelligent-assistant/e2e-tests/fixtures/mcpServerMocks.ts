@@ -25,11 +25,14 @@ export type McpServerMockEntry = {
   name: string;
   /** Optional — some backends send it; not shown in the MCP table name/status cells. */
   url?: string;
+  /** Optional auth mode (e.g. 'dcr' for Dynamic Client Registration servers). */
+  auth?: 'dcr';
   enabled: boolean;
   status: 'connected' | 'error' | 'unknown';
   toolCount: number;
   hasToken: boolean;
   hasUserToken: boolean;
+  hasOrgToken: boolean;
 };
 
 export type McpServersListMock = {
@@ -48,6 +51,7 @@ export function mcpServer(
     toolCount: 0,
     hasToken: true,
     hasUserToken: false,
+    hasOrgToken: true,
     ...overrides,
   };
 }
@@ -94,6 +98,7 @@ export const mcpServerScenarios = {
         toolCount: 14,
         hasToken: true,
         hasUserToken: false,
+        hasOrgToken: true,
       },
       {
         name: 'test-mcp-server',
@@ -103,6 +108,7 @@ export const mcpServerScenarios = {
         toolCount: 0,
         hasToken: false,
         hasUserToken: false,
+        hasOrgToken: false,
       },
     ],
   } satisfies McpServersListMock,
@@ -142,11 +148,13 @@ export const mcpServerScenarios = {
     servers: [
       mcpServer('needs-token-a', {
         hasToken: false,
+        hasOrgToken: false,
         toolCount: 0,
         status: 'unknown',
       }),
       mcpServer('needs-token-b', {
         hasToken: false,
+        hasOrgToken: false,
         toolCount: 0,
         status: 'unknown',
       }),
@@ -162,6 +170,7 @@ export const mcpServerScenarios = {
     servers: [
       mcpServer('needs-token', {
         hasToken: false,
+        hasOrgToken: false,
         toolCount: 0,
         status: 'unknown',
       }),
@@ -183,6 +192,7 @@ export const tokenCredentialValidationScenario = {
   servers: [
     mcpServer('credential-test-mcp', {
       hasToken: false,
+      hasOrgToken: false,
       toolCount: 0,
       status: 'unknown',
       url: 'http://127.0.0.1:7777/mcp',
@@ -195,6 +205,7 @@ export const tokenCredentialNoUrlScenario = {
   servers: [
     mcpServer('no-url-mcp', {
       hasToken: false,
+      hasOrgToken: false,
       toolCount: 0,
       status: 'unknown',
     }),

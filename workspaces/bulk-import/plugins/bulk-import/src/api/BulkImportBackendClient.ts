@@ -32,7 +32,7 @@ import {
   OrgAndRepoResponse,
   SortingOrderEnum,
 } from '../types';
-import { getApi } from '../utils/repository-utils';
+import { getApi } from '../utils/getApi';
 import { IBulkImportRESTPathProvider } from './BulkImportBackendClientBase';
 import { OrchestratorBulkImportBackendClientPathProvider } from './OrchestratorBulkImportBackendClientPathProvider';
 import { PRBulkImportBackendClientPathProvider } from './PRBulkImportBackendClientPathProvider';

@@ -68,7 +68,7 @@ describe('PullMetricsByProviderTask', () => {
     });
     mockCatalog = catalogServiceMock.mock();
     mockAuth = mockServices.auth.mock();
-    mockProvider = new MockNumberProvider('github.test_metric', 'github');
+    mockProvider = new MockNumberProvider('github.testMetric', 'github');
 
     mockThresholdEvaluator = {
       getFirstMatchingThreshold: jest.fn(),
@@ -137,7 +137,7 @@ describe('PullMetricsByProviderTask', () => {
 
     it('should get scheduled from config', () => {
       expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-        'scorecard.plugins.github.test_metric.schedule',
+        'scorecard.plugins.github.testMetric.schedule',
       );
     });
 
@@ -151,7 +151,7 @@ describe('PullMetricsByProviderTask', () => {
     it('should run the task runner', () => {
       expect(mockTaskRunner.run).toHaveBeenCalledTimes(1);
       expect(mockTaskRunner.run).toHaveBeenCalledWith({
-        id: 'github.test_metric',
+        id: 'github.testMetric',
         fn: expect.any(Function),
       });
     });
@@ -190,7 +190,7 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         1,
-        `Pulling metrics for github.test_metric`,
+        `Pulling metrics for github.testMetric`,
       );
     });
 
@@ -267,14 +267,14 @@ describe('PullMetricsByProviderTask', () => {
           entity_kind: 'component',
           entity_namespace: undefined,
           entity_owner: undefined,
-          metric_id: 'github.test_metric',
+          metric_id: 'github.testMetric',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
           status: 'success',
         },
         {
           catalog_entity_ref: 'component:default/test2',
-          metric_id: 'github.test_metric',
+          metric_id: 'github.testMetric',
           entity_kind: 'component',
           entity_namespace: undefined,
           entity_owner: undefined,
@@ -384,7 +384,7 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Completed metric pull for github.test_metric: processed 2 entities`,
+        `Completed metric pull for github.testMetric: processed 2 entities`,
       );
     });
 
@@ -395,7 +395,7 @@ describe('PullMetricsByProviderTask', () => {
         metadata: {
           name: 'excluded-entity',
           annotations: {
-            'scorecard.io/disabled-metrics': 'github.test_metric',
+            'scorecard.io/disabled-metrics': 'github.testMetric',
           },
         },
       };

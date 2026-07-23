@@ -374,6 +374,7 @@ As a plugin owner, you are responsible for the ongoing health and maintenance of
 - **Manage security updates and patches**:
   Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
   Renovate opens dependency PRs against `main`. If you must ship a fix on an older published line, follow [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines) using the `workspace/<workspace>` branch for that line.
+- **Report bugs** following the [Bug Reporting Guide](docs/bug-reporting.md).
 - **Justify Dependency-Related PR closures**:
   If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
 

@@ -349,14 +349,33 @@ export const intelligentAssistantMessages = {
     'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
   'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
   'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
-  'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
+  'mcp.settings.configureServerTitle': '{{serverName}} MCP server settings',
   'mcp.settings.closeConfigureModalAriaLabel': 'Close configure modal',
   'mcp.settings.modalDescription':
-    'Credentials are encrypted at rest and scoped to your profile. The intelligent assistant will operate with your exact permissions.',
+    'Credentials are encrypted and operations use your exact permissions.',
+  'mcp.settings.authenticationToken': 'Authentication token',
+  'mcp.settings.modal.authenticationHeading': 'Authentication',
+  'mcp.settings.modal.credentialMode.organization':
+    'Use organization default token',
+  'mcp.settings.modal.credentialMode.organizationDescription':
+    'Uses the token configured by your administrator.',
+  'mcp.settings.modal.credentialMode.personal': 'Use personal token',
+  'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
+  'mcp.settings.modal.loadingTools': 'Loading tools...',
+  'mcp.settings.modal.fetchingStatus': 'Fetching status...',
+  'mcp.settings.modal.loadingStatus': 'Disconnecting...',
+  'mcp.settings.modal.tokenRemovedWarning':
+    'Token has been removed. To use this MCP server again, provide a new token.',
+  'mcp.settings.modal.noToolsAvailable': 'No tools available.',
+  'mcp.settings.modal.toolsLoadFailed': 'Failed to load tools.',
+  'mcp.settings.modal.enabledDescription':
+    'This server is active and available in chat.',
+  'mcp.settings.modal.enabledDescriptionOff':
+    'This server is disabled and unavailable in chat.',
+  'mcp.settings.modal.enabledDescriptionTokenRequired':
+    'This server is currently disabled. Provide a token to enable.',
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
-  'mcp.settings.usingAdminCredential':
-    'Using Administrator provided credential. Enter a personal token to override for your account.',
   'mcp.settings.enterToken': 'Enter your token',
   'mcp.settings.removePersonalToken': 'Remove personal token',
   'mcp.settings.token.clearAriaLabel': 'Clear token input',

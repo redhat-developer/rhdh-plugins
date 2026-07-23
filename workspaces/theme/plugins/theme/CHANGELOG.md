@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.15.0
+
+### Minor Changes
+
+- 22d09cd: Backstage version bump to v1.52.1
+
+## 0.14.11
+
+### Patch Changes
+
+- a3302ac: prevent overlapping scrollbars on TechDocs pages
+
+## 0.14.10
+
+### Patch Changes
+
+- 9342bf0: Inline ThemeConfig types in config.d.ts to avoid importing from the package entry point, which pulls in @mui/material types that crash ts-json-schema-generator on `typeof window.matchMedia`.
+
+## 0.14.9
+
+### Patch Changes
+
+- eed88f3: Fix broken `config.d.ts` import path: change `import { ThemeConfig } from './src'` to `'./'` so the published package resolves correctly during config schema validation.
+
 ## 0.14.8
 
 ### Patch Changes

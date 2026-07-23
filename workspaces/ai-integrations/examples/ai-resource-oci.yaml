@@ -1,0 +1,23 @@
+---
+# Example: OCI-backed AIResource entity
+#
+# This entity represents an AI asset stored as an OCI artifact.
+# The AIResourceOciProcessor validates the oci:// URI format only —
+# it makes zero outbound network calls to the registry. This keeps
+# ingestion stateless and air-gap safe.
+#
+# Register this file via the RHDH catalog URL registration UI
+# or include it in a catalog location for auto-discovery.
+apiVersion: backstage.io/v1beta1
+kind: AIResource
+metadata:
+  name: summarization-skills
+  description: Summarization prompt and skill pack published as an OCI artifact.
+spec:
+  type: skills
+  lifecycle: experimental
+  owner: team-ml-platform
+  scope: team
+  location:
+    type: oci
+    target: oci://quay.io/my-org/summarization-skills:latest

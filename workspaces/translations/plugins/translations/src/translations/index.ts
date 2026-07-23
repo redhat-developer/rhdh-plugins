@@ -17,8 +17,7 @@ import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from './ref';
 
 /**
- *  @alpha
- *
+ * @public
  */
 export const translationsPluginTranslations = createTranslationResource({
   ref: translationsPluginTranslationRef,
@@ -30,7 +29,8 @@ export const translationsPluginTranslations = createTranslationResource({
     ja: () => import('./ja'),
   },
 });
+
 /**
- * @alpha
+ * @public
  */
 export { translationsPluginTranslationRef };

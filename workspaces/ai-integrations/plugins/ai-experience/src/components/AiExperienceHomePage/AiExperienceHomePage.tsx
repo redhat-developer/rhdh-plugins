@@ -18,7 +18,6 @@ import { Content, Page } from '@backstage/core-components';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AiExperienceStylesProvider } from '../AiExperienceStylesProvider';
 import useGreeting from '../../hooks/useGreeting';
 import { useTranslation } from '../../hooks/useTranslation';
 import LearnSection from '../LearnSection';
@@ -34,38 +33,36 @@ export const AiExperienceHomePage = () => {
   const { value: profile } = useAsync(() => identityApi.getProfileInfo());
 
   return (
-    <AiExperienceStylesProvider>
-      <QueryClientProvider client={new QueryClient()}>
-        <Page themeId="home">
-          <Content>
-            <Box>
-              <SectionWrapper
-                title={`${greeting} ${
-                  profile?.displayName ?? t('common.guest')
-                }!`}
-              >
-                <Box sx={{ padding: '20px 10px 30px 40px' }}>
-                  <LearnSection />
-                </Box>
-              </SectionWrapper>
-            </Box>
-            <Box sx={{ pt: 3 }}>
-              <SectionWrapper title={t('sections.exploreAiModels')}>
-                <Box sx={{ padding: '20px 10px 10px 0' }}>
-                  <ModelSection />
-                </Box>
-              </SectionWrapper>
-            </Box>
-            <Box sx={{ pt: 3 }}>
-              <SectionWrapper title={t('sections.exploreAiTemplates')}>
-                <Box sx={{ padding: '20px 10px 10px 0' }}>
-                  <TemplateSection />
-                </Box>
-              </SectionWrapper>
-            </Box>
-          </Content>
-        </Page>
-      </QueryClientProvider>
-    </AiExperienceStylesProvider>
+    <QueryClientProvider client={new QueryClient()}>
+      <Page themeId="home">
+        <Content>
+          <Box>
+            <SectionWrapper
+              title={`${greeting} ${
+                profile?.displayName ?? t('common.guest')
+              }!`}
+            >
+              <Box sx={{ padding: '20px 10px 30px 40px' }}>
+                <LearnSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+          <Box sx={{ pt: 3 }}>
+            <SectionWrapper title={t('sections.exploreAiModels')}>
+              <Box sx={{ padding: '20px 10px 10px 0' }}>
+                <ModelSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+          <Box sx={{ pt: 3 }}>
+            <SectionWrapper title={t('sections.exploreAiTemplates')}>
+              <Box sx={{ padding: '20px 10px 10px 0' }}>
+                <TemplateSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+        </Content>
+      </Page>
+    </QueryClientProvider>
   );
 };

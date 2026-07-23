@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Flex,
   Grid,
@@ -28,6 +28,7 @@ import {
 import GridViewOutlined from '@mui/icons-material/GridViewOutlined';
 import ViewListOutlined from '@mui/icons-material/ViewListOutlined';
 
+import type { FilterDefinition } from '../../blueprints/AiCatalogFilterBlueprint';
 import { useAiAssets } from '../../hooks/useAiAssets';
 import { useUrlFilters } from '../../hooks/useUrlFilters';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -42,17 +43,25 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { FilterSidebar } from './FilterSidebar';
 import styles from './AiCatalogPage.module.css';
 
-const AiCatalogPageContent = () => {
+interface AiCatalogPageProps {
+  filters: FilterDefinition[];
+}
+
+const AiCatalogPageContent = ({ filters }: AiCatalogPageProps) => {
   const { t } = useTranslation();
-  const urlState = useUrlFilters();
+
+  const filterParams = useMemo(() => filters.map(f => f.urlParam), [filters]);
+  const hasCategoryFilter = filters.some(f => f.urlParam === 'type');
+  const urlState = useUrlFilters(filterParams);
   const {
-    filters,
+    search,
     searchInputValue,
+    filterValues,
     viewMode,
     page,
     pageSize,
     setSearch,
-    setCategory,
+    setFilter,
     setViewMode,
     setPage,
     setPageSize,
@@ -65,18 +74,14 @@ const AiCatalogPageContent = () => {
     loading,
     error,
     retry,
-  } = useAiAssets(filters);
+  } = useAiAssets(search || undefined, filters, filterValues);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(
     null,
   );
-  const onSortChange = useCallback(
-    (descriptor: SortDescriptor) => setSortDescriptor(descriptor),
-    [],
-  );
   const sortState = useMemo(
-    () => ({ descriptor: sortDescriptor, onSortChange }),
-    [sortDescriptor, onSortChange],
+    () => ({ descriptor: sortDescriptor, onSortChange: setSortDescriptor }),
+    [sortDescriptor],
   );
 
   const sortedEntities = useMemo(() => {
@@ -104,12 +109,7 @@ const AiCatalogPageContent = () => {
   if (loading) return <LoadingState />;
   if (error) return <ErrorState onRetry={retry} />;
 
-  const hasActiveFilters =
-    filters.search ||
-    filters.category?.length ||
-    filters.provider?.length ||
-    filters.tags?.length ||
-    filters.owner?.length;
+  const hasActiveFilters = search || filterValues.size > 0;
 
   if (allEntities.length === 0 && !hasActiveFilters) {
     return <EmptyState />;
@@ -118,9 +118,10 @@ const AiCatalogPageContent = () => {
   return (
     <Flex gap="6" p="4" align="start" className={styles.layout}>
       <FilterSidebar
+        filters={filters}
         entities={allEntities}
-        state={{ filters }}
-        actions={urlState}
+        values={filterValues}
+        onFilterChange={setFilter}
       />
       <Flex direction="column" grow={1} className={styles.content}>
         <Flex align="center" justify="between" gap="4" mb="4">
@@ -170,7 +171,11 @@ const AiCatalogPageContent = () => {
               <Grid.Item key={entity.metadata.uid ?? entity.metadata.name}>
                 <AiAssetCard
                   entity={entity}
-                  onCategoryClick={cat => setCategory([cat])}
+                  onCategoryClick={
+                    hasCategoryFilter
+                      ? cat => setFilter('type', [cat])
+                      : undefined
+                  }
                 />
               </Grid.Item>
             ))}
@@ -201,14 +206,14 @@ const AiCatalogPageContent = () => {
   );
 };
 
-export const AiCatalogPage = () => {
+export const AiCatalogPage = ({ filters }: AiCatalogPageProps) => {
   const { t } = useTranslation();
   return (
     <ErrorBoundary
       title={t('catalog.error.title')}
       retryLabel={t('catalog.error.retry')}
     >
-      <AiCatalogPageContent />
+      <AiCatalogPageContent filters={filters} />
     </ErrorBoundary>
   );
 };

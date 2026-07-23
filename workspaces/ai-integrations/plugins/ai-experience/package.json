@@ -41,7 +41,6 @@
     "@backstage/theme": "^0.7.3",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^",
     "@tanstack/react-query": "^5.71.0",

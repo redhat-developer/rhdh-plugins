@@ -777,6 +777,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             },
+            // Prevent TechDocs double scrollbar: the page-inset max-height puts
+            // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.
+            // Letting <main> expand moves the scroll to the parent root instead.
+            "& > main:has([data-testid='techdocs-native-shadowroot'])": {
+              height: 'auto !important',
+              maxHeight: 'none !important',
+              borderRadius: '1rem',
+              marginRight: '0.5rem',
+            },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page
             // inset to look right.

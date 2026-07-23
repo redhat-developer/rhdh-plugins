@@ -116,20 +116,17 @@ describe('QuickstartContent', () => {
       />,
     );
 
-    const expandIcon1 = screen.getAllByRole('button', {
-      name: /expand item/i,
-    })[0];
-    const expandIcon2 = screen.getAllByRole('button', {
-      name: /expand item/i,
-    })[1];
+    const items = screen.getAllByRole('button', {
+      name: /expand .* details/i,
+    });
 
-    fireEvent.click(expandIcon1);
+    fireEvent.click(items[0]);
 
     await waitFor(() =>
       expect(screen.getByText('Description for Step 1')).toBeInTheDocument(),
     );
 
-    fireEvent.click(expandIcon2);
+    fireEvent.click(items[1]);
 
     await waitFor(() =>
       expect(screen.getByText('Description for Step 2')).toBeInTheDocument(),
