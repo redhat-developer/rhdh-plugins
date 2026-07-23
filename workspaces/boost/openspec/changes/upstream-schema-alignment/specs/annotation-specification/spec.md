@@ -33,7 +33,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 - `skill` (AIResource kind)
 - `mcp-server` (API kind)
 - `ai-model` (Resource kind)
-- `model-server` (Component kind)
+- `model-server` (Resource kind)
 - Each type includes: entity kind pairing, purpose, examples
 
 ---
@@ -59,7 +59,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **THEN** the mapping from RHDH AI Model and Model Server entities to RFC #33060 is documented:
 
 - **AI Model:** Current `kind: Resource`, `spec.type: ai-model` → Target `kind: ai-model` (RFC #33060)
-- **Model Server:** Current `kind: Component`, `spec.type: model-server` → Target `kind: ai-model-server` (RFC #33060)
+- **Model Server:** Current `kind: Resource`, `spec.type: ai-model-server` → Target `kind: ai-model-server` (RFC #33060). Note: if the upstream Backstage API extension ([backstage/backstage#34476](https://github.com/backstage/backstage/pull/34476)) becomes available, the Model Server mapping will pivot to that upstream kind.
 - Transformation requirements listed per entity type
 - Confidence level: Medium (RFC active but schema may evolve)
 
@@ -100,12 +100,12 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 - Published in `workspaces/boost/specifications/` directory
 - Follows the same structure as existing Boost specifications
 - Includes a last-updated date and draft status header
-- Cross-references existing `agent-creation-discovery/catalog-entities` spec
+- Cross-references `ai-catalog-entity-model/design.md` Decision 1 as the authoritative entity mapping source
 
 ---
 
-## Scenario: Spec references existing catalog-entities entity type strategy
+## Scenario: Spec references authoritative entity mapping
 
-**GIVEN** the `agent-creation-discovery` change defined the entity type strategy  
+**GIVEN** the `ai-catalog-entity-model` change defined the entity mapping table (Decision 1)  
 **WHEN** the annotation specification document is written  
-**THEN** it cross-references the `catalog-entities/spec.md` entity type strategy table as the source of truth for current RHDH AI Asset entity mappings
+**THEN** it cross-references `ai-catalog-entity-model/design.md` Decision 1 as the source of truth for current RHDH AI Asset entity mappings (covers all 7 category values including `skill`, `rule`, `skill-bundle`, and `model-server`)
