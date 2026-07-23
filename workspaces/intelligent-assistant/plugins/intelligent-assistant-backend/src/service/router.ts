@@ -28,10 +28,9 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  lightspeedChatUpdatePermission,
   lightspeedChatAccessPermission,
-  lightspeedChatUsePermission,
   lightspeedChatManagePermission,
+  lightspeedChatUsePermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
@@ -885,7 +884,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatUpdatePermission),
+    requirePermission(lightspeedChatManagePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
