@@ -16,7 +16,7 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
-/** This permission is used to access the lightspeed read conversations endpoint
+/** This permission is used to access intelligent-assistant chats
  * @public
  */
 export const iaChatAccessPermission = createPermission({
@@ -24,7 +24,7 @@ export const iaChatAccessPermission = createPermission({
   attributes: {},
 });
 
-/** This permission is used to access the lightspeed create conversations endpoint
+/** This permission is used to create intelligent-assistant chats
  * @public
  */
 export const iaChatUsePermission = createPermission({
@@ -32,7 +32,7 @@ export const iaChatUsePermission = createPermission({
   attributes: {},
 });
 
-/** This permission is used to access the lightspeed delete endpoint
+/** This permission is used to update and delete intelligent-assistant chats
  * @public
  */
 export const iaChatManagePermission = createPermission({
