@@ -81,15 +81,15 @@ All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebo
 
 Update permission names in your `rbac-policy.csv`:
 
-| Before                     | After                                        |
-| -------------------------- | -------------------------------------------- |
-| `lightspeed.chat.read`     | `intelligent-assistant.conversations.access` |
-| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`             |
-| `lightspeed.chat.delete`   | `intelligent-assistant.conversations.manage` |
-| `lightspeed.chat.update`   | `intelligent-assistant.chat.update`          |
-| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`        |
-| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`             |
-| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`           |
+| Before                     | After                                 |
+| -------------------------- | ------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat.access`   |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`      |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat.manage`   |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.manage`   |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
 
 #### 5. OFS dynamic plugin configuration
 
@@ -332,10 +332,9 @@ The Intelligent Assistant Backend plugin has support for the permission framewor
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access intelligent-assistant backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, intelligent-assistant.conversations.access, read, allow
-p, role:default/team_a, intelligent-assistant.chat.use, create, allow
-p, role:default/team_a, intelligent-assistant.conversations.manage, delete, allow
-p, role:default/team_a, intelligent-assistant.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat.access, use, allow
+p, role:default/team_a, intelligent-assistant.chat.use, use, allow
+p, role:default/team_a, intelligent-assistant.chat.manage, use, allow
 
 # Required for Notebooks feature (if enabled)
 p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
