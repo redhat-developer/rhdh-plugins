@@ -19,8 +19,8 @@ import { createPermission } from '@backstage/plugin-permission-common';
 /** This permission is used to access the lightspeed read conversations endpoint
  * @public
  */
-export const lightspeedConversationsAccessPermission = createPermission({
-  name: 'intelligent-assistant.conversations.access',
+export const lightspeedChatAccessPermission = createPermission({
+  name: 'intelligent-assistant.chat.access',
   attributes: {
     action: 'read',
   },
@@ -39,8 +39,8 @@ export const lightspeedChatUsePermission = createPermission({
 /** This permission is used to access the lightspeed delete endpoint
  * @public
  */
-export const lightspeedConversationsManagePermission = createPermission({
-  name: 'intelligent-assistant.conversations.manage',
+export const lightspeedChatManagePermission = createPermission({
+  name: 'intelligent-assistant.chat.manage',
   attributes: {
     action: 'delete',
   },
@@ -92,8 +92,8 @@ export const lightspeedNotebooksUsePermission = createPermission({
  * @public
  */
 export const lightspeedPermissions = [
-  lightspeedConversationsAccessPermission,
-  lightspeedConversationsManagePermission,
+  lightspeedChatAccessPermission,
+  lightspeedChatManagePermission,
   lightspeedChatUsePermission,
   lightspeedChatUpdatePermission,
   lightspeedMcpReadPermission,

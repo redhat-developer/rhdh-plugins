@@ -28,9 +28,9 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
+  lightspeedChatAccessPermission,
   lightspeedChatUsePermission,
   lightspeedConversationsAccessPermission,
-  lightspeedConversationsManagePermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
@@ -601,25 +601,25 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(lightspeedConversationsAccessPermission),
+    requirePermission(lightspeedChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(lightspeedConversationsAccessPermission),
+    requirePermission(lightspeedChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(lightspeedConversationsAccessPermission),
+    requirePermission(lightspeedChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedConversationsAccessPermission),
+    requirePermission(lightspeedChatAccessPermission),
     apiProxy,
   );
   router.delete(
@@ -631,7 +631,7 @@ export async function createRouter(
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(lightspeedConversationsAccessPermission),
+    requirePermission(lightspeedChatAccessPermission),
     apiProxy,
   );
 
