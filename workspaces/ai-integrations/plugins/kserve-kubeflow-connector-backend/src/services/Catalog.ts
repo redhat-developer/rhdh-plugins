@@ -106,8 +106,8 @@ export async function fetchModelCard(
   modelName: string,
   token: string,
 ): Promise<string | undefined> {
-  const encodedSourceId = sourceId.replace(/ /g, '%20');
-  const encodedModelName = modelName.replace(/ /g, '%20');
+  const encodedSourceId = encodeURIComponent(sourceId);
+  const encodedModelName = encodeURIComponent(modelName);
   const url =
     rootCatalogURL +
     GET_CATALOG_MODEL_URI.replace('%s', encodedSourceId).replace(
