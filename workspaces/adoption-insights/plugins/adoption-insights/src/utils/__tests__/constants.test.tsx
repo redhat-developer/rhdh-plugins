@@ -63,6 +63,7 @@ describe('Constants', () => {
     expect(TEMPLATE_TABLE_HEADERS).toEqual([
       { id: 'name', titleKey: 'table.headers.name' },
       { id: 'executions', titleKey: 'table.headers.executions' },
+      { id: 'estTimeSaved', titleKey: 'table.headers.estTimeSaved' },
     ]);
   });
 });

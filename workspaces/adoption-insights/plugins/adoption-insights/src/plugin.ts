@@ -64,6 +64,22 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
 );
 
 /**
+ * Notification settings component for the Settings page
+ * @public
+ */
+export const AdoptionInsightsNotificationSettings =
+  adoptionInsightsPlugin.provide(
+    createRoutableExtension({
+      name: 'AdoptionInsightsNotificationSettings',
+      component: () =>
+        import('./components/NotificationSettings/NotificationSettings').then(
+          m => m.default,
+        ),
+      mountPoint: rootRouteRef,
+    }),
+  );
+
+/**
  * @public
  */
 export const AdoptionInsightsIcon: IconComponent = MUIAdoptionInsightsIcon;
