@@ -208,4 +208,16 @@ describe('buildThresholdBuckets', () => {
 
     expect(result[0]).not.toHaveProperty('expression');
   });
+
+  it('should order buckets by threshold rule definition, not by metric input order', () => {
+    const metrics = [
+      createMetric('m1', 'error'),
+      createMetric('m2', 'success'),
+      createMetric('m3', 'warning'),
+    ];
+
+    const result = buildThresholdBuckets(metrics, mockT as any);
+
+    expect(result.map(b => b.key)).toEqual(['success', 'warning', 'error']);
+  });
 });

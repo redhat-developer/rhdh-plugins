@@ -82,5 +82,12 @@ export function buildThresholdBuckets(
     }
   }
 
+  const ruleOrder = new Map(rules.map((r, i) => [r.key, i]));
+  const fallback = rules.length;
+  buckets.sort(
+    (a, b) =>
+      (ruleOrder.get(a.key) ?? fallback) - (ruleOrder.get(b.key) ?? fallback),
+  );
+
   return buckets;
 }
