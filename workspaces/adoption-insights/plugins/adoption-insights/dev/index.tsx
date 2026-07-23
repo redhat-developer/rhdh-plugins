@@ -77,6 +77,27 @@ export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
   async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
     return mockUsers;
   }
+  async getNotificationPreference() {
+    return { frequency: 'weekly' as const };
+  }
+  async setNotificationPreference(frequency: string) {
+    return { frequency: frequency as any };
+  }
+  async getTimeSavedTotals() {
+    return {
+      data: {
+        total_time_saved_minutes: 540,
+        templates: [
+          {
+            entityref: 'template:default/example-nodejs-template',
+            execution_count: 3,
+            time_saved_per_execution: 180,
+            total_time_saved_minutes: 540,
+          },
+        ],
+      },
+    };
+  }
   async downloadBlob(options: APIsViewOptions): Promise<void> {
     // Simulate CSV download in dev mode - filename comes from frontend translation
     const csvContent =

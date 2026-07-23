@@ -24,6 +24,9 @@ import {
   TechdocsResponse,
   ActiveUsersResponse,
   SearchesResponse,
+  TimeSavedTotalsResponse,
+  NotificationFrequency,
+  NotificationPreferenceResponse,
 } from '../types';
 import { generateEventsUrl } from '../utils/utils';
 
@@ -186,6 +189,51 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const data = await response.json();
     return data as SearchesResponse;
+  }
+
+  async getNotificationPreference(): Promise<NotificationPreferenceResponse> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/notification-preferences`,
+    );
+    validateResponse(response, 'notification preference');
+    return (await response.json()) as NotificationPreferenceResponse;
+  }
+
+  async setNotificationPreference(
+    frequency: NotificationFrequency,
+  ): Promise<NotificationPreferenceResponse> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/notification-preferences`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ frequency }),
+      },
+    );
+    validateResponse(response, 'notification preference update');
+    return (await response.json()) as NotificationPreferenceResponse;
+  }
+
+  async getTimeSavedTotals(
+    options: APIsViewOptions,
+  ): Promise<TimeSavedTotalsResponse> {
+    if (!options.start_date || !options.end_date) {
+      return Promise.resolve({
+        data: { total_time_saved_minutes: 0, templates: [] },
+      });
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
+    validateResponse(response, 'time saved totals');
+
+    const data = await response.json();
+    return data as TimeSavedTotalsResponse;
   }
 
   async downloadBlob(options: APIsViewOptions): Promise<void> {
