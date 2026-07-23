@@ -61,7 +61,6 @@
     "@backstage/theme": "^0.7.3",
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.12.2",
-    "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
     "@tanstack/react-query": "^4.29.21",
     "formik": "^2.4.5",

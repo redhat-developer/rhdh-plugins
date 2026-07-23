@@ -10949,7 +10949,6 @@ __metadata:
     "@backstage/theme": "npm:^0.7.3"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@mui/styles": "npm:5.18.0"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
