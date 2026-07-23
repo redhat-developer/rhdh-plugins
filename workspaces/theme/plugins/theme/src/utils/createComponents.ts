@@ -630,9 +630,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
+          alignItems: 'stretch',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -652,7 +652,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           borderRadius: '6px',
-          width: 'calc(100% - 0.5rem) !important',
+          width: 'calc(100% - 1rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
