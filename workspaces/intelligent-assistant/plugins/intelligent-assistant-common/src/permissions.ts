@@ -19,7 +19,7 @@ import { createPermission } from '@backstage/plugin-permission-common';
 /** This permission is used to access the lightspeed read conversations endpoint
  * @public
  */
-export const lightspeedChatAccessPermission = createPermission({
+export const iaChatAccessPermission = createPermission({
   name: 'intelligent-assistant.chat.access',
   attributes: {},
 });
@@ -27,7 +27,7 @@ export const lightspeedChatAccessPermission = createPermission({
 /** This permission is used to access the lightspeed create conversations endpoint
  * @public
  */
-export const lightspeedChatUsePermission = createPermission({
+export const iaChatUsePermission = createPermission({
   name: 'intelligent-assistant.chat.use',
   attributes: {},
 });
@@ -35,7 +35,7 @@ export const lightspeedChatUsePermission = createPermission({
 /** This permission is used to access the lightspeed delete endpoint
  * @public
  */
-export const lightspeedChatManagePermission = createPermission({
+export const iaChatManagePermission = createPermission({
   name: 'intelligent-assistant.chat.manage',
   attributes: {},
 });
@@ -53,7 +53,7 @@ export const lightspeedMcpReadPermission = createPermission({
 /** This permission is used to add, update, delete, and validate MCP servers
  * @public
  */
-export const lightspeedMcpManagePermission = createPermission({
+export const iaMcpManagePermission = createPermission({
   name: 'intelligent-assistant.mcp.manage',
   attributes: {
     action: 'update',
@@ -63,7 +63,7 @@ export const lightspeedMcpManagePermission = createPermission({
 /** This permission is used to access AI Notebooks features
  * @public
  */
-export const lightspeedNotebooksUsePermission = createPermission({
+export const iaNotebooksUsePermission = createPermission({
   name: 'intelligent-assistant.notebooks.use',
   attributes: {
     action: 'update',
@@ -75,11 +75,11 @@ export const lightspeedNotebooksUsePermission = createPermission({
  *
  * @public
  */
-export const lightspeedPermissions = [
-  lightspeedChatAccessPermission,
-  lightspeedChatManagePermission,
-  lightspeedChatUsePermission,
-  lightspeedMcpReadPermission,
-  lightspeedMcpManagePermission,
-  lightspeedNotebooksUsePermission,
+export const iaPermissions = [
+  iaChatAccessPermission,
+  iaChatManagePermission,
+  iaChatUsePermission,
+  iaMcpReadPermission,
+  iaMcpManagePermission,
+  iaNotebooksUsePermission,
 ];
