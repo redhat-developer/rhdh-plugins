@@ -34,7 +34,7 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-import { lightspeedMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
@@ -292,7 +292,7 @@ export const McpServersSettings = ({
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
   const mcpManagePermission = usePermission({
-    permission: lightspeedMcpManagePermission,
+    permission: iaMcpManagePermission,
   });
   const canManageMcp = mcpManagePermission.allowed;
   const [servers, setServers] = useState<McpServer[]>([]);

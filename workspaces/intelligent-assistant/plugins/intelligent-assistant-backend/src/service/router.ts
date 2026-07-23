@@ -28,13 +28,13 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  lightspeedChatAccessPermission,
-  lightspeedChatManagePermission,
-  lightspeedChatUsePermission,
-  lightspeedMcpManagePermission,
-  lightspeedMcpReadPermission,
-  lightspeedPermissions,
-  lightspeedSavedPromptsManagePermission,
+  iaSavedPromptsManagePermission,
+  iaChatAccessPermission,
+  iaChatManagePermission,
+  iaChatUsePermission,
+  iaMcpManagePermission,
+  iaMcpReadPermission,
+  iaPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -275,7 +275,7 @@ export async function createRouter(
   });
 
   const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: lightspeedPermissions,
+    permissions: iaPermissions,
   });
   router.use(permissionIntegrationRouter);
 
@@ -317,7 +317,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -358,7 +358,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -393,7 +393,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/:name/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef, credentials } = getIdentity(req);
@@ -478,7 +478,7 @@ export async function createRouter(
   router.patch(
     '/mcp-servers/:name',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -606,63 +606,63 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(lightspeedChatAccessPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(lightspeedChatAccessPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(lightspeedChatAccessPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatAccessPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatManagePermission),
+    requirePermission(iaChatManagePermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(lightspeedChatAccessPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
 
   router.get(
     '/v1/saved-prompts/config',
     generalRateLimiter,
-    requirePermission(lightspeedSavedPromptsManagePermission),
+    requirePermission(iaSavedPromptsManagePermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(lightspeedSavedPromptsManagePermission),
+    requirePermission(iaSavedPromptsManagePermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
-    requirePermission(lightspeedSavedPromptsManagePermission),
+    requirePermission(iaSavedPromptsManagePermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(lightspeedChatUsePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -705,7 +705,7 @@ export async function createRouter(
   router.post(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(lightspeedSavedPromptsManagePermission),
+    requirePermission(iaSavedPromptsManagePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -750,7 +750,7 @@ export async function createRouter(
   router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(lightspeedChatUsePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -790,7 +790,7 @@ export async function createRouter(
     expensiveRateLimiter,
     validateCompletionsRequest,
     validateAttachmentsForModel,
-    requirePermission(lightspeedChatUsePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
@@ -884,7 +884,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatManagePermission),
+    requirePermission(iaChatManagePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
