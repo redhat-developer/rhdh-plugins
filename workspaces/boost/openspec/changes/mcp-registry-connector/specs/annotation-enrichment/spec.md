@@ -31,7 +31,7 @@ metadata:
   annotations:
     rhdh.io/ai-asset-category: 'mcp-server'
     rhdh.io/ai-asset-version: '1.0.0' # Extracted from MCP server manifest or "unknown"
-    rhdh.io/ai-asset-source: 'mcp-registry'
+    rhdh.io/ai-asset-source: 'mcp-registry/<instance-id>'
 ```
 
 **AND** the annotation enrichment happens synchronously within the entity emission pipeline.
@@ -140,11 +140,11 @@ metadata:
 
 **WHEN** the wrapper enriches an entity emitted by the MCP Registry connector:
 
-**THEN** the wrapper always populates `rhdh.io/ai-asset-source: "mcp-registry"`.
+**THEN** the wrapper populates `rhdh.io/ai-asset-source` using the format `mcp-registry/<instance-id>`, where `<instance-id>` is the configuration key under `catalog.providers` (e.g., `mcpRegistry`).
 
-**AND** the wrapper does NOT infer or vary the source based on MCP server metadata.
+**AND** the source prefix (`mcp-registry`) is constant — it identifies the connector type.
 
-**AND** all entities from the MCP Registry connector share the same source value.
+**AND** the instance suffix identifies which connector instance produced the entity.
 
 ---
 
@@ -159,11 +159,11 @@ catalog:
       endpoint: https://registry-secondary.internal.example.com
 ```
 
-**THEN** entities from both connector instances carry `rhdh.io/ai-asset-source: "mcp-registry"`.
+**THEN** entities from `mcpRegistryPrimary` carry `rhdh.io/ai-asset-source: "mcp-registry/mcpRegistryPrimary"`.
 
-**AND** the source annotation does NOT differentiate between connector instances (same source identifier).
+**AND** entities from `mcpRegistrySecondary` carry `rhdh.io/ai-asset-source: "mcp-registry/mcpRegistrySecondary"`.
 
-**AND** the entity's `metadata.annotations["backstage.io/managed-by-location"]` differentiates connector instances.
+**AND** the source annotation differentiates connector instances, enabling provenance tracking when an entity exists in multiple registries.
 
 ### Requirement: Annotation Enrichment Performance
 

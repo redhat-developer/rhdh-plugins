@@ -158,7 +158,8 @@ catalog:
 ```typescript
 import { loadCaBundle } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
-const caBundle = loadCaBundle(config, 'mcpRegistry');
+const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
+const caBundle = loadCaBundle(connectorConfig);
 
 // Pass CA bundle to HTTP client
 const httpsAgent = new https.Agent({
@@ -204,8 +205,8 @@ metadata:
     # Version metadata (extracted from MCP server manifest if available)
     rhdh.io/ai-asset-version: '1.0.0' # or "unknown" if not available
 
-    # Source identifier (always "mcp-registry" for this connector)
-    rhdh.io/ai-asset-source: mcp-registry
+    # Source identifier — connector type + config key (e.g., "mcp-registry/mcpRegistry")
+    rhdh.io/ai-asset-source: mcp-registry/<instance-id>
 ```
 
 **Enrichment logic:**
@@ -219,7 +220,7 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
       annotations: {
         'rhdh.io/ai-asset-category': 'mcp-server',
         'rhdh.io/ai-asset-version': extractVersion(entity) || 'unknown',
-        'rhdh.io/ai-asset-source': 'mcp-registry',
+        'rhdh.io/ai-asset-source': `mcp-registry/${connectorId}`,
         ...entity.metadata.annotations,
       },
     },

@@ -71,12 +71,18 @@ catalog:
 **Function signature:**
 
 ```typescript
-function loadCaBundle(config: Config, connectorId: string): Buffer | undefined;
+function loadCaBundle(connectorConfig: Config): Buffer | undefined;
 ```
+
+The caller passes the Config subtree that contains the `tls` block. This allows each connector to resolve its own config nesting before calling the shared utility:
+
+- MCP Registry: `loadCaBundle(config.getConfig('catalog.providers.mcpRegistry'))`
+- RHOAI MCP Catalog: `loadCaBundle(config.getConfig('catalog.providers.rhoai.mcpCatalog'))`
+- OCI per-registry: `loadCaBundle(registryConfig)` where `registryConfig` is the per-registry Config node
 
 **Behavior:**
 
-- Reads `catalog.providers.<connectorId>.tls.caFile` or `catalog.providers.<connectorId>.tls.caSecret`
+- Reads `tls.caFile` or `tls.caSecret` from the provided Config subtree
 - Returns `Buffer` containing PEM-encoded CA certificate(s) for `https.Agent` consumption
 - Handles missing CA file: log at WARN level with expected file path, return `undefined` (don't crash provider)
 - Handles invalid CA certificate: log error indicating the file is not valid PEM, return `undefined`
@@ -87,7 +93,8 @@ function loadCaBundle(config: Config, connectorId: string): Buffer | undefined;
 **Integration with HTTP client:**
 
 ```typescript
-const caBundle = loadCaBundle(config, 'mcpRegistry');
+const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
+const caBundle = loadCaBundle(connectorConfig);
 const agent = caBundle ? new https.Agent({ ca: caBundle }) : undefined;
 
 const client = axios.create({ httpsAgent: agent });

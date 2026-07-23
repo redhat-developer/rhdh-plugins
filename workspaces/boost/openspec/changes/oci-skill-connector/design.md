@@ -121,9 +121,9 @@ interface DigestCache {
 **Cache behavior:**
 
 - 5-minute TTL: re-validate digests every 5 minutes (registry might push new tag)
-- Disk backup: persist cache to `~/.backstage/cache/oci-skill-connector/digests.json` on shutdown
+- Persistent backing: use Backstage's `coreServices.cache` (`CacheService`) for durable storage across restarts — can be in-memory, Keyv/Redis, or DB-backed depending on the Backstage deployment
 - Delta mutation: use `applyMutation({ type: 'delta', added: [...], removed: [...] })` for changes only
-- Cache warming: on startup, load from disk, then re-validate digests in background
+- Cache warming: on startup, load from `CacheService`, then re-validate digests in background
 
 ### Decision 4: Entity emission — AiResource with skill type
 
@@ -140,7 +140,7 @@ interface DigestCache {
 - AiResource is the designated Backstage entity kind for AI-specific catalog assets (skills, prompts, tool definitions)
 - Follows the entity type strategy from RHDHPLAN-1507's `ai-catalog-entity-model` change
 - Component kind is for software components (skills are not deployable software, they're executable definitions)
-- AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci://<registry>/<namespace>/<image>`
+- AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci-skill-registry/<instance-id>`, `rhdh.io/oci-image-ref: oci://<registry>/<namespace>/<image>`
 
 **Entity structure:**
 
@@ -151,7 +151,8 @@ metadata:
   name: my-skill
   annotations:
     rhdh.io/ai-asset-category: skill
-    rhdh.io/ai-asset-source: oci://quay.io/skills/my-skill:latest
+    rhdh.io/ai-asset-source: oci-skill-registry/default
+    rhdh.io/oci-image-ref: oci://quay.io/skills/my-skill:latest
     rhdh.io/ai-asset-digest: sha256:abc123...
 spec:
   type: skill

@@ -71,16 +71,17 @@ The connector MUST maintain a durable digest cache — an in-memory cache with d
 - **AND** if the digest is unchanged, it updates the `lastSeen` timestamp and resets the TTL
 - **AND** if the digest has changed, it proceeds with blob download and entity emission
 
-#### Scenario: Persist cache to disk on shutdown
+#### Scenario: Persist cache via CacheService on shutdown
 
 - **WHEN** the Backstage backend shuts down gracefully
-- **THEN** the connector writes the in-memory cache to `~/.backstage/cache/oci-skill-connector/digests.json`
-- **AND** the file contains a JSON object mapping image refs to `{ digest, lastSeen, skillEntityRef }`
+- **THEN** the connector writes the in-memory digest cache to Backstage's `coreServices.cache` (`CacheService`)
+- **AND** the cache entries are keyed by image ref and contain `{ digest, lastSeen, skillEntityRef }`
+- **AND** the cache backend (in-memory, Keyv/Redis, or DB) is determined by the Backstage deployment's cache configuration
 
-#### Scenario: Load cache from disk on startup
+#### Scenario: Load cache from CacheService on startup
 
-- **WHEN** the connector starts and `~/.backstage/cache/oci-skill-connector/digests.json` exists
-- **THEN** it loads the cache into memory
+- **WHEN** the connector starts and cached digest entries exist in `CacheService`
+- **THEN** it loads the cached entries into the in-memory cache
 - **AND** it treats all loaded entries as expired (5-minute TTL has passed) and re-validates digests in the first sync
 
 ### Requirement: K8s Pull Secret Authentication

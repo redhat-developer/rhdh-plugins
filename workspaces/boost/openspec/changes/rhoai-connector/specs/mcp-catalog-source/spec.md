@@ -108,6 +108,13 @@ All emitted MCP server entities must include standard RHDH annotations.
 - **AND** it includes `metadata.annotations['rhdh.io/last-sync-time']` with the current timestamp
 - **AND** it includes `metadata.annotations['rhdh.io/api-version']` with the MCP catalog API version
 
+#### Scenario: MCP server entities include AI Asset annotations
+
+- **WHEN** the provider emits an MCP server entity
+- **THEN** it includes `metadata.annotations['rhdh.io/ai-asset-category']` set to `mcp-server`
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`, or `"unknown"` if the manifest omits version metadata
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `catalog.providers` (e.g., `rhoai`)
+
 ### Requirement: Full Sync via applyMutation
 
 The provider must use Backstage's `applyMutation` for full sync and incremental updates.
