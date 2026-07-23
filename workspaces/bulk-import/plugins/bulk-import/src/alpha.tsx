@@ -70,10 +70,10 @@ const bulkImportApi = ApiBlueprint.make({
  */
 const bulkImportPage = PageBlueprint.make({
   params: {
-    path: '/bulk-import',
-    routeRef: rootRouteRef,
     title: 'Bulk import',
     icon: <BulkImportIcon />,
+    path: '/bulk-import',
+    routeRef: rootRouteRef,
     noHeader: true,
     loader: () => import('./components').then(({ Router }) => <Router />),
   },

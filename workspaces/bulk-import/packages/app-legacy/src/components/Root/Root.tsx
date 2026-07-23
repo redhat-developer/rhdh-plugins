@@ -32,6 +32,7 @@ import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
+import { Administration } from '@backstage-community/plugin-rbac';
 import CreateComponentIcon from '@mui/icons-material/AddCircleOutline';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HomeIcon from '@mui/icons-material/Home';
@@ -106,6 +107,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             text="Orchestrator"
           />
           <BulkImportSidebarItem />
+          <Administration />
 
           {/* End global nav */}
           <SidebarDivider />

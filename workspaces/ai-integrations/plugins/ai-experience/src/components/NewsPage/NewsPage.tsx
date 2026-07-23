@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 import { Page, Content } from '@backstage/core-components';
-import { AiExperienceStylesProvider } from '../AiExperienceStylesProvider';
 import { NewsHeader } from './NewsHeader';
 import { NewsGrid } from './NewsGrid';
 
 export const NewsPage = () => {
   return (
-    <AiExperienceStylesProvider>
-      <Page themeId="ai-experience">
-        <NewsHeader />
-        <Content noPadding>
-          <NewsGrid />
-        </Content>
-      </Page>
-    </AiExperienceStylesProvider>
+    <Page themeId="ai-experience">
+      <NewsHeader />
+      <Content noPadding>
+        <NewsGrid />
+      </Content>
+    </Page>
   );
 };
