@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
-// Must load after @backstage/ui styles so RHDH AA secondary text wins.
-import './buiTokenBridge.css';
+/**
+ * Override Backstage UI --bui-fg-secondary after @backstage/ui/css/styles.css.
+ * Default oklch(0% 0 0 / 50%) (~#797979) fails WCAG AA on RHDH #f2f2f2 chrome.
+ * Unlayered + !important beats BUI @layer tokens.
+ */
+:root,
+[data-theme-mode='light'] {
+  --bui-fg-secondary: #6a6e73 !important;
+}
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+[data-theme-mode='dark'] {
+  --bui-fg-secondary: #c7c7c7 !important;
+}

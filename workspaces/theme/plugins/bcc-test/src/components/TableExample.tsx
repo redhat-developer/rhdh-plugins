@@ -206,5 +206,14 @@ const columns: TableColumn<User>[] = [
 ];
 
 export const TableExample = () => {
-  return <Table title="Table Example" columns={columns} data={users} />;
+  return (
+    <Table
+      title="Table Example"
+      columns={columns}
+      data={users}
+      // material-table defaults enable column drag handles inside TableSortLabel
+      // (nested-interactive). Keep sorting; disable drag for the a11y demo.
+      options={{ draggable: false }}
+    />
+  );
 };

@@ -43,15 +43,28 @@ const ThemeProvider = ({
 }: {
   theme: UnifiedTheme;
   children: ReactNode;
-}) => (
-  <UnifiedThemeProvider theme={theme}>
-    <StyledEngineProvider injectFirst>
-      <Mui5Provider theme={theme.getTheme('v5') as Mui5Theme}>
-        {children}
-      </Mui5Provider>
-    </StyledEngineProvider>
-  </UnifiedThemeProvider>
-);
+}) => {
+  const mui5Theme = theme.getTheme('v5') as Mui5Theme;
+  const secondary = mui5Theme.palette.text.secondary;
+  return (
+    <UnifiedThemeProvider theme={theme}>
+      <StyledEngineProvider injectFirst>
+        <Mui5Provider theme={mui5Theme}>
+          {/*
+            Native style tag (not Emotion) so the declaration is unlayered and
+            reliably overrides @backstage/ui @layer tokens for --bui-fg-secondary.
+          */}
+          <style>{`
+            :root, [data-theme-mode='light'], [data-theme-mode='dark'] {
+              --bui-fg-secondary: ${secondary} !important;
+            }
+          `}</style>
+          {children}
+        </Mui5Provider>
+      </StyledEngineProvider>
+    </UnifiedThemeProvider>
+  );
+};
 
 export const createThemeProvider = (
   theme: UnifiedTheme,
