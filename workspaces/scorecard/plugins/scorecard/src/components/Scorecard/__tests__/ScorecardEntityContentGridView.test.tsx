@@ -241,11 +241,11 @@ describe('ScorecardEntityContentGridView', () => {
       codeQuality: {
         title: 'Code Quality',
         description: 'Code quality metrics',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
       operations: {
         title: 'Operations',
-        metrics: ['jira.open_issues'],
+        metrics: ['jira.openIssues'],
       },
     };
 
@@ -259,10 +259,10 @@ describe('ScorecardEntityContentGridView', () => {
     expect(screen.getByText('Code Quality')).toBeInTheDocument();
     expect(screen.getByText('Operations')).toBeInTheDocument();
     expect(
-      screen.getByTestId('group-metric-github.open_prs'),
+      screen.getByTestId('group-metric-github.openPRs'),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId('group-metric-jira.open_issues'),
+      screen.getByTestId('group-metric-jira.openIssues'),
     ).toBeInTheDocument();
   });
 
@@ -276,7 +276,7 @@ describe('ScorecardEntityContentGridView', () => {
     const groups = {
       codeQuality: {
         title: 'Code Quality',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
       nonExistent: {
         title: 'Non Existent',
@@ -302,7 +302,7 @@ describe('ScorecardEntityContentGridView', () => {
     const groups = {
       codeQuality: {
         title: 'Code Quality',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
     };
 
@@ -352,7 +352,7 @@ describe('ScorecardEntityContentGridView', () => {
       codeQuality: {
         title: 'Code Quality',
         description: 'All code quality metrics',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
     };
 
@@ -396,7 +396,7 @@ describe('ScorecardEntityContentGridView', () => {
     const groups = {
       ordered: {
         title: 'Ordered Group',
-        metrics: ['sonar.coverage', 'github.open_prs'],
+        metrics: ['sonar.coverage', 'github.openPRs'],
       },
     };
 
@@ -412,7 +412,7 @@ describe('ScorecardEntityContentGridView', () => {
       .filter(id => id !== 'group-metric-count');
     expect(metricIds).toEqual([
       'group-metric-sonar.coverage',
-      'group-metric-github.open_prs',
+      'group-metric-github.openPRs',
     ]);
   });
 
@@ -426,7 +426,7 @@ describe('ScorecardEntityContentGridView', () => {
     const groups = {
       codeQuality: {
         title: 'Code Quality',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
     };
 
@@ -453,7 +453,7 @@ describe('ScorecardEntityContentGridView', () => {
     const groups = {
       prs: {
         title: 'Pull Requests',
-        metrics: ['github.open_prs'],
+        metrics: ['github.openPRs'],
       },
     };
 
