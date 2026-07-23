@@ -19,7 +19,7 @@ The mapping document and dry-run tool make the migration path transparent and me
 
 A formal specification covering all RHDH AI Asset annotations and entity kinds:
 
-- `rhdh.io/ai-asset-category` values (agent, skill, mcp-server, ai-model, model-server)
+- `rhdh.io/ai-asset-category` values (agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server)
 - `rhdh.io/ai-asset-version` annotation format and normalization rules
 - `rhdh.io/ai-asset-source` annotation format
 - Entity kind + `spec.type` mapping table showing current state → proposed RFC kind
@@ -48,6 +48,8 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 | Skill        | AIResource   | skill             | (no RFC yet)                 | Low        |
 | MCP Server   | API          | mcp-server        | McpServer (RFC #32062)       | Medium     |
 | AI Model     | Resource     | ai-model          | ai-model (RFC #33060)        | Medium     |
+| Rule         | AIResource   | rule              | (no RFC yet)                 | Low        |
+| Skill Bundle | AIResource   | skill-bundle      | (no RFC yet)                 | Low        |
 | Model Server | Resource     | ai-model-server   | ai-model-server (RFC #33060) | Medium     |
 
 > **Note:** If the upstream Backstage API extension for capturing AI model servers ([backstage/backstage#34476](https://github.com/backstage/backstage/pull/34476)) becomes available, the Model Server mapping will pivot to use that upstream kind instead of the current `Resource` mapping.

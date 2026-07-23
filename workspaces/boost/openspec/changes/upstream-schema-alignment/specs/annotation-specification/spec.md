@@ -16,7 +16,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **WHEN** the specification document is published  
 **THEN** all `rhdh.io/ai-asset-*` annotations are documented:
 
-- `rhdh.io/ai-asset-category` values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` values: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - `rhdh.io/ai-asset-version` format and normalization rules
 - `rhdh.io/ai-asset-source` format
 - Each annotation includes: purpose, valid values, format constraints, examples
