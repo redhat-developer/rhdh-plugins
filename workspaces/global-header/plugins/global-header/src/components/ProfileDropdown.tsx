@@ -21,14 +21,13 @@ import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { UserEntity } from '@backstage/catalog-model';
 
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
-import { useTranslation } from '../hooks/useTranslation';
+import { HeaderIcon } from '../../components/HeaderIcon/HeaderIcon';
+import { useTranslation } from '../../hooks/useTranslation';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
 /**
@@ -91,7 +90,9 @@ const ProfileButtonContent = () => {
               alt={t('profile.picture')}
             />
           ) : (
-            <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+            <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+              <HeaderIcon icon="account_circle" size="small" />
+            </Box>
           )}
           <Typography
             variant="body2"
@@ -105,9 +106,16 @@ const ProfileButtonContent = () => {
           </Typography>
         </>
       )}
-      <KeyboardArrowDownOutlinedIcon
-        sx={{ bgcolor: theme.palette.action.hover, borderRadius: '25%' }}
-      />
+      <Box
+        sx={{
+          bgcolor: theme.palette.action.hover,
+          borderRadius: '25%',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <HeaderIcon icon="keyboard_arrow_down" size="small" />
+      </Box>
     </Box>
   );
 };
