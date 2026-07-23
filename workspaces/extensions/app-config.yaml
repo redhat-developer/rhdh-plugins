@@ -120,24 +120,6 @@ catalog:
       rules:
         - allow: [User, Group]
 
-    # Test catalog
-    - type: file
-      target: ../../examples/all-orgs.yaml
-      rules:
-        - allow: [Group]
-    - type: file
-      target: ../../examples/all-plugins.yaml
-      rules:
-        - allow: [Plugin]
-    - type: file
-      target: ../../examples/all-collections.yaml
-      rules:
-        - allow: [PluginCollection]
-    - type: file
-      target: ../../examples/all-packages.yaml
-      rules:
-        - allow: [Package]
-
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
 
@@ -156,8 +138,10 @@ permission:
         - name: user:development/guest
 
 extensions:
-  # directory: ../../examples # YAML files are in the examples directory
-  ### Example for how to enable installation to a file.
+  # YAML files are in the examples directory
+  directory: ../../examples
+
+  # Example for how to enable installation to a file.
   # installation:
   #   enabled: true
   #   saveToSingleFile:
