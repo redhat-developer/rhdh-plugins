@@ -97,5 +97,3 @@ export {
   quickstartTranslationRef,
   quickstartTranslations,
 } from './translations';
-
-export * from './legacyExports';
