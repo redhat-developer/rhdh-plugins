@@ -24,16 +24,27 @@ import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 
 import EventApiController from './controllers/EventApiController';
+import { EventDatabase } from './database/event-database';
 import { QueryParams } from './types/event-request';
+import { NotificationFrequency } from './types/event';
+
+const VALID_FREQUENCIES: NotificationFrequency[] = [
+  'daily',
+  'weekly',
+  'monthly',
+  'none',
+];
 
 export async function createRouter({
   httpAuth,
   permissions,
   eventApiController,
+  db,
 }: {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   eventApiController: EventApiController;
+  db: EventDatabase;
 }): Promise<express.Router> {
   const router = Router();
 
@@ -75,6 +86,29 @@ export async function createRouter({
 
   router.post('/events', async (req, res) => {
     return eventApiController.trackEvents(req, res);
+  });
+
+  router.get('/notification-preferences', async (req, res) => {
+    const userRef = await getUserEntityRef(req);
+    const frequency = await db.getNotificationPreference(userRef);
+    res.json({ frequency });
+  });
+
+  router.put('/notification-preferences', async (req, res) => {
+    const userRef = await getUserEntityRef(req);
+    const { frequency } = req.body;
+
+    if (!VALID_FREQUENCIES.includes(frequency)) {
+      res.status(400).json({
+        error: `Invalid frequency. Allowed values: ${VALID_FREQUENCIES.join(
+          ', ',
+        )}`,
+      });
+      return;
+    }
+
+    await db.setNotificationPreference(userRef, frequency);
+    res.json({ frequency });
   });
 
   router.get('/health', (_, response) => {

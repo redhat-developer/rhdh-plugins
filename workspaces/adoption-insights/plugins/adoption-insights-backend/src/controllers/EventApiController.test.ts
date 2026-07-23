@@ -26,8 +26,17 @@ import { QUERY_TYPES, QueryParams } from '../types/event-request';
 import type { AuditorServiceEvent } from '@backstage/backend-plugin-api';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import { Event } from '../models/Event';
 
 let controller: EventApiController;
+
+const mockCatalog = {
+  getEntityByRef: jest.fn(),
+} as any;
+
+const mockAuth = {
+  getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+} as any;
 let req: Partial<Request>;
 let res: Partial<Response>;
 
@@ -42,6 +51,7 @@ const mockEventDb = {
   getTopTechDocsViews: jest.fn(),
   getTopTemplateViews: jest.fn(),
   getTopCatalogEntitiesViews: jest.fn(),
+  getTimeSavedTotals: jest.fn(),
   getTechdocsMetadata: jest.fn(),
 } as unknown as jest.Mocked<EventDatabase>;
 
@@ -82,6 +92,8 @@ describe('trackEvents', () => {
       mockProcessor,
       mockServices.rootConfig.mock(),
       mockAuditor,
+      mockCatalog,
+      mockAuth,
     );
 
     mockProcessIncomingEvents = jest.spyOn(
@@ -228,6 +240,8 @@ describe('GetInsights', () => {
       mockProcessor,
       mockServices.rootConfig.mock(),
       mockAuditor,
+      mockCatalog,
+      mockAuth,
     );
 
     global.fetch = jest.fn().mockResolvedValue({} as any);
@@ -301,6 +315,7 @@ describe('GetInsights', () => {
     mockEventDb.getTopTemplateViews.mockResolvedValue({} as any);
     mockEventDb.getTopTechDocsViews.mockResolvedValue({} as any);
     mockEventDb.getTopCatalogEntitiesViews.mockResolvedValue({} as any);
+    mockEventDb.getTimeSavedTotals.mockResolvedValue({} as any);
 
     for (const type of QUERY_TYPES) {
       req.query = {
@@ -321,6 +336,7 @@ describe('GetInsights', () => {
     expect(mockEventDb.getTopTemplateViews).toHaveBeenCalled();
     expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
     expect(mockEventDb.getTopCatalogEntitiesViews).toHaveBeenCalled();
+    expect(mockEventDb.getTimeSavedTotals).toHaveBeenCalled();
   });
 
   it('should call getTechdocsMetadata method', async () => {
@@ -473,5 +489,160 @@ describe('GetInsights', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  it('should return time_saved_totals data', async () => {
+    const timeSavedData = {
+      data: {
+        total_time_saved_minutes: 540,
+        templates: [
+          {
+            entityref: 'template:default/example-nodejs-template',
+            execution_count: 3,
+            time_saved_per_execution: 180,
+            total_time_saved_minutes: 540,
+          },
+        ],
+      },
+    };
+    mockEventDb.getTimeSavedTotals.mockResolvedValue(timeSavedData as any);
+
+    req.query = {
+      ...req.query,
+      type: 'time_saved_totals',
+    };
+
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(mockEventDb.getTimeSavedTotals).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith(timeSavedData);
+  });
+});
+
+describe('enrichScaffolderEvent', () => {
+  let enrichFn: (event: Event) => Promise<Event>;
+
+  beforeEach(() => {
+    controller = new EventApiController(
+      mockEventDb,
+      mockProcessor,
+      mockServices.rootConfig.mock(),
+      mockAuditor,
+      mockCatalog,
+      mockAuth,
+    );
+    enrichFn = (controller as any).enrichScaffolderEvent.bind(controller);
+    jest.clearAllMocks();
+  });
+
+  const makeScaffolderEvent = (entityRef: string): Event => {
+    const analyticsEvent: AnalyticsEvent = {
+      action: 'create',
+      subject: 'Task has been created',
+      context: {
+        routeRef: 'scaffolder',
+        pluginId: 'scaffolder',
+        extension: 'routeRef',
+        userName: 'user:default/guest',
+        userId: 'user:default/guest',
+        entityRef,
+      },
+    };
+    return new Event(analyticsEvent, false);
+  };
+
+  it('should enrich scaffolder event with time-saved value from catalog', async () => {
+    mockCatalog.getEntityByRef.mockResolvedValue({
+      metadata: {
+        annotations: { 'rhdh.redhat.com/time-saved': '180' },
+      },
+    });
+
+    const event = makeScaffolderEvent('template:default/my-template');
+    const result = await enrichFn(event);
+
+    expect(result.value).toBe(180);
+    expect(mockCatalog.getEntityByRef).toHaveBeenCalledWith(
+      'template:default/my-template',
+      expect.any(Object),
+    );
+  });
+
+  it('should skip non-scaffolder events', async () => {
+    const analyticsEvent: AnalyticsEvent = {
+      action: 'navigate',
+      subject: 'some page',
+      context: {
+        routeRef: 'catalog',
+        pluginId: 'catalog',
+        extension: 'routeRef',
+      },
+    };
+    const event = new Event(analyticsEvent, false);
+    const result = await enrichFn(event);
+
+    expect(result.value).toBeUndefined();
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+  });
+
+  it('should return event unchanged when entity is not found', async () => {
+    mockCatalog.getEntityByRef.mockResolvedValue(null);
+
+    const event = makeScaffolderEvent('template:default/missing');
+    const result = await enrichFn(event);
+
+    expect(result.value).toBeUndefined();
+  });
+
+  it('should return event unchanged when annotation is missing', async () => {
+    mockCatalog.getEntityByRef.mockResolvedValue({
+      metadata: { annotations: {} },
+    });
+
+    const event = makeScaffolderEvent('template:default/no-annotation');
+    const result = await enrichFn(event);
+
+    expect(result.value).toBeUndefined();
+  });
+
+  it('should return event unchanged when annotation is not a positive number', async () => {
+    mockCatalog.getEntityByRef.mockResolvedValue({
+      metadata: {
+        annotations: { 'rhdh.redhat.com/time-saved': '-10' },
+      },
+    });
+
+    const event = makeScaffolderEvent('template:default/negative');
+    const result = await enrichFn(event);
+
+    expect(result.value).toBeUndefined();
+  });
+
+  it('should handle catalog errors gracefully', async () => {
+    mockCatalog.getEntityByRef.mockRejectedValue(new Error('catalog down'));
+
+    const event = makeScaffolderEvent('template:default/error');
+    const result = await enrichFn(event);
+
+    expect(result.value).toBeUndefined();
+  });
+
+  it('should parse context when stored as JSON string', async () => {
+    mockCatalog.getEntityByRef.mockResolvedValue({
+      metadata: {
+        annotations: { 'rhdh.redhat.com/time-saved': '60' },
+      },
+    });
+
+    const event = makeScaffolderEvent('template:default/stringified');
+    (event as any).context = JSON.stringify({
+      entityRef: 'template:default/stringified',
+    });
+    const result = await enrichFn(event);
+
+    expect(result.value).toBe(60);
   });
 });

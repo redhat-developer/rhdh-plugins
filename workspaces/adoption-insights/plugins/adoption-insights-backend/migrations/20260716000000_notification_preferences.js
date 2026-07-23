@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const QUERY_TYPES = [
-  'total_users',
-  'active_users',
-  'top_plugins',
-  'top_templates',
-  'top_techdocs',
-  'top_searches',
-  'top_catalog_entities',
-  'time_saved_totals',
-] as const;
 
-export type QueryType = (typeof QUERY_TYPES)[number];
+exports.up = function (knex) {
+  return knex.schema.createTable('notification_preferences', function (table) {
+    table.text('user_ref').primary();
+    table.text('frequency').notNullable().defaultTo('weekly');
+    table.timestamp('updated_at').defaultTo(knex.fn.now());
+  });
+};
 
-export interface QueryParams {
-  type: QueryType;
-  start_date: string;
-  end_date: string;
-  limit?: string;
-  kind?: string;
-  format?: string;
-  licensedUsers?: number;
-}
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function (knex) {
+  return knex.schema.dropTable('notification_preferences');
+};

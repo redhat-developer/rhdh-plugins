@@ -17,6 +17,8 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { notificationService } from '@backstage/plugin-notifications-node';
 import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import { createRouter } from './router';
 import { migrate } from './database/migration';
@@ -24,6 +26,7 @@ import { DatabaseFactory } from './database/DatabaseFactory';
 import { EventBatchProcessor } from './domain/EventBatchProcessor';
 import EventApiController from './controllers/EventApiController';
 import { schedulePartition } from './database/partition';
+import { scheduleTimeSavedNotifications } from './notifications/scheduleTimeSavedNotifications';
 import { getConfigurationOptions } from './utils/config';
 
 /**
@@ -45,6 +48,9 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         scheduler: coreServices.scheduler,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        auth: coreServices.auth,
+        catalog: catalogServiceRef,
+        notification: notificationService,
       },
       async init({
         auditor,
@@ -56,6 +62,9 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         scheduler,
         permissions,
         permissionsRegistry,
+        auth,
+        catalog,
+        notification,
       }) {
         // Register plugin permission
         permissionsRegistry.addPermissions([
@@ -72,6 +81,8 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           processor,
           config,
           auditor,
+          catalog,
+          auth,
         );
 
         // Migrate database
@@ -82,11 +93,21 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           schedulePartition(client, { logger, scheduler });
         }
 
+        // Schedule weekly time-saved notification summary
+        await scheduleTimeSavedNotifications({
+          scheduler,
+          db,
+          notification,
+          logger,
+          config,
+        });
+
         httpRouter.use(
           await createRouter({
             httpAuth,
             permissions,
             eventApiController,
+            db,
           }),
         );
 
