@@ -258,5 +258,9 @@ export abstract class BaseEntityProvider<T extends Entity>
         locationKey: `file:${this.getProviderName()}`,
       })),
     });
+
+    this.logger?.info(
+      `${this.getProviderName()} applied ${entities.length} entities to the catalog.`,
+    );
   }
 }
