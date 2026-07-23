@@ -116,7 +116,7 @@ catalog:
         - allow: [Component]
     # Guest user and group
     - type: file
-      target: ../../examples/org.yaml
+      target: ../../org.yaml
       rules:
         - allow: [User, Group]
 
