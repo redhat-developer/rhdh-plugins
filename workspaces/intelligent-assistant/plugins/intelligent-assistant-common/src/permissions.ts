@@ -21,9 +21,7 @@ import { createPermission } from '@backstage/plugin-permission-common';
  */
 export const lightspeedChatAccessPermission = createPermission({
   name: 'intelligent-assistant.chat.access',
-  attributes: {
-    action: 'read',
-  },
+  attributes: {},
 });
 
 /** This permission is used to access the lightspeed create conversations endpoint
@@ -31,9 +29,7 @@ export const lightspeedChatAccessPermission = createPermission({
  */
 export const lightspeedChatUsePermission = createPermission({
   name: 'intelligent-assistant.chat.use',
-  attributes: {
-    action: 'create',
-  },
+  attributes: {},
 });
 
 /** This permission is used to access the lightspeed delete endpoint
@@ -41,19 +37,7 @@ export const lightspeedChatUsePermission = createPermission({
  */
 export const lightspeedChatManagePermission = createPermission({
   name: 'intelligent-assistant.chat.manage',
-  attributes: {
-    action: 'delete',
-  },
-});
-
-/** This permission is used to access the lightspeed update endpoint
- * @public
- */
-export const lightspeedChatUpdatePermission = createPermission({
-  name: 'intelligent-assistant.chat.update',
-  attributes: {
-    action: 'update',
-  },
+  attributes: {},
 });
 
 /** This permission is used to list configured MCP servers
@@ -95,7 +79,6 @@ export const lightspeedPermissions = [
   lightspeedChatAccessPermission,
   lightspeedChatManagePermission,
   lightspeedChatUsePermission,
-  lightspeedChatUpdatePermission,
   lightspeedMcpReadPermission,
   lightspeedMcpManagePermission,
   lightspeedNotebooksUsePermission,
