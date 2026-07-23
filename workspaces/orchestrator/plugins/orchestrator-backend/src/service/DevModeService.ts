@@ -147,6 +147,16 @@ export class DevModeService {
         : ['--add-host', 'host.docker.internal:host-gateway']),
     ];
 
+    // CI-specific flags: run detached with auto-cleanup, and enable Maven online mode
+    // for dependency resolution (the dev image runs Maven offline by default).
+    if (process.env.CI) {
+      launcherArgs.splice(1, 0, '-d', '--rm');
+      launcherArgs.push(
+        '-e',
+        'QUARKUS_EXTENSIONS=io.quarkus:quarkus-smallrye-health',
+      );
+    }
+
     // TODO: pass automatically a set of env variables from configuration, i.e. all config props with names starting at ENV_:
     //   config: orchestrator.sonataFlowService.ENV_foo
 
