@@ -34,19 +34,12 @@ import {
 import BulkImportIcon from './components/BulkImportIcon';
 import { bulkImportTranslations } from './translations';
 
-// NFS Route References - created using @backstage/frontend-plugin-api
-// These are separate from the legacy route refs in routes.ts
 const rootRouteRef = createRouteRef();
 const importHistoryRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/import-history/:repoUrl',
 });
 
-/**
- * API Extension
- *
- * Provides the BulkImportAPI for communicating with the bulk-import backend.
- */
 const bulkImportApi = ApiBlueprint.make({
   params: defineParams =>
     defineParams(
@@ -63,11 +56,6 @@ const bulkImportApi = ApiBlueprint.make({
     ),
 });
 
-/**
- * Page Extension
- *
- * Provides the main bulk import page at /bulk-import path.
- */
 const bulkImportPage = PageBlueprint.make({
   params: {
     title: 'Bulk import',
@@ -110,4 +98,9 @@ export const bulkImportTranslationsModule = createFrontendModule({
   ],
 });
 
-export * from './translations';
+export {
+  bulkImportTranslationRef,
+  bulkImportTranslations,
+} from './translations';
+
+export type { Messages } from './translations';

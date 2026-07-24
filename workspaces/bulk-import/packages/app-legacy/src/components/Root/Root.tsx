@@ -41,7 +41,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
-import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
 import {
   LogoFull,
   LogoIcon,
