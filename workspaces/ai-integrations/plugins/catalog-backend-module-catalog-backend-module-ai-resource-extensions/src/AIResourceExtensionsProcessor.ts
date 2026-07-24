@@ -47,8 +47,8 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  * Validates:
  * - `spec.scope`: optional field restricted to 'organization',
  *   'product', or 'team'
- * - `spec.location.target`: OCI URI format when
- *   `spec.location.type` is `oci`
+ * - `backstage.io/source-location`: OCI URI format when the
+ *   location-ref target uses the `oci://` scheme
  *
  * All constraint violations are collected and reported in a single
  * error rather than stopping at the first failure.

@@ -2,8 +2,8 @@
 # Example: Git-backed AIResource entity
 #
 # This entity represents an AI asset stored in a git repository.
-# Register via a normal catalog URL or location — no AIResource-specific
-# registration logic is required.
+# The source repository is declared via the standard
+# backstage.io/source-location annotation.
 #
 # Register this file via the RHDH catalog URL registration UI
 # or include it in a catalog location for auto-discovery.
@@ -19,6 +19,3 @@ spec:
   lifecycle: production
   owner: team-data-science
   scope: organization
-  location:
-    type: git
-    target: https://github.com/my-org/fraud-detection
