@@ -40,7 +40,7 @@ MCP catalog entries must map to RHDH entity types.
 
 **Why:** MCP servers expose a protocol interface for tool/resource access — API with `spec.type: mcp-server` captures this (a recent Backstage entity kind addition). Follows the entity type strategy from RHDHPLAN-1507's `agent-creation-discovery` change.
 
-**How to apply:** Entity mapper function in `src/providers/mcpCatalog/mapper.ts`. MCP catalog entries get `metadata.annotations['rhdh.io/mcp-protocol-version']`.
+**How to apply:** Entity mapper function in `src/providers/mcpCatalog/mapper.ts`. MCP catalog entries get `metadata.annotations['rhdh.io/mcp-protocol-version']`. Version annotation (`rhdh.io/ai-asset-version`) is populated by extracting the raw version from MCP server metadata and normalizing via `normalizeAIAssetVersion()` (SDK-exported from RHDHPLAN-1507), falling back to `"unknown"` if absent.
 
 ### Decision 2: Graceful Degradation for MCP Catalog API
 

@@ -25,7 +25,7 @@
 - [ ] 2.5 Implement descriptive error logging for invalid skillcards (include image ref, validation failure details)
 - [ ] 2.6 Implement entity building as `kind: AiResource` with `spec.type: skill`
 - [ ] 2.7 Populate `metadata.annotations['rhdh.io/ai-asset-category']: skill`
-- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<registry-id>` (where `<registry-id>` identifies the configured registry instance) and `metadata.annotations['rhdh.io/oci-image-ref']: <registry>/<namespace>/<image>:<tag>` for the full OCI reference
+- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `default`) and `metadata.annotations['rhdh.io/oci-image-ref']: <registry>/<namespace>/<image>:<tag>` for the full OCI reference
 - [ ] 2.9 Populate `metadata.annotations['rhdh.io/ai-asset-digest']: <sha256>`
 - [ ] 2.10 Implement default values for missing optional fields (`spec.owner: unknown`, `metadata.tags: []`)
 - [ ] 2.11 Implement entity metadata population from skillcard fields (`owner`, `tags`, `links`)
@@ -41,11 +41,11 @@
 - [ ] 3.3 Implement digest comparison logic: detect added, changed, removed skills
 - [ ] 3.4 Implement delta mutation emission via `applyMutation({ type: 'delta', added, removed })`
 - [ ] 3.5 Implement full mutation on first sync (`applyMutation({ type: 'full', entities })`)
-- [ ] 3.6 Implement disk persistence: write cache to `~/.backstage/cache/oci-skill-connector/digests.json` on shutdown
-- [ ] 3.7 Implement disk cache loading on startup (treat loaded entries as expired, re-validate digests)
+- [ ] 3.6 Implement durable cache persistence via Backstage's `coreServices.cache` (`CacheService`) — storage backend (in-memory, Keyv/Redis, or DB) is determined by the Backstage deployment config
+- [ ] 3.7 Implement cache warming on startup: load from `CacheService`, treat loaded entries as expired, re-validate digests in background
 - [ ] 3.8 Implement cache re-validation after TTL expiration (re-fetch manifest, update `lastSeen` if digest unchanged)
 - [ ] 3.9 Add unit tests for cache logic (add, change, remove detection, TTL expiration)
-- [ ] 3.10 Add integration tests for disk persistence (write on shutdown, load on startup)
+- [ ] 3.10 Add integration tests for cache persistence via `CacheService` (write, load on startup, re-validation)
 
 ## 4. Authentication and Air-Gapped (P0) — RHIDP-15327
 

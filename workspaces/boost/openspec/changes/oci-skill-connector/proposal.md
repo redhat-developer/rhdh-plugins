@@ -26,7 +26,7 @@ This change implements the connector for OCI-based skill discovery. It builds on
 - Validates required fields using SDK's schema validator (from RHDHPLAN-1507's RHIDP-15258)
 - Invalid skills rejected with descriptive errors — no abort on single failure
 - Emits AiResource entities with `spec.type: skill` and RHDH AI Asset annotations
-- OCI registry reference in `rhdh.io/ai-asset-source: oci-skill-registry/<registry-id>` (where `<registry-id>` identifies the configured registry instance), with the full OCI image reference stored separately in `rhdh.io/oci-image-ref: <registry>/<namespace>/<image>:<tag>`
+- OCI registry reference in `rhdh.io/ai-asset-source: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `default`), with the full OCI image reference stored separately in `rhdh.io/oci-image-ref: <registry>/<namespace>/<image>:<tag>`
 
 ### Incremental Sync and Caching
 

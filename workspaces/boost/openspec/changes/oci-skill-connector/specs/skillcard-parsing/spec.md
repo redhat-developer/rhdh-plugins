@@ -85,7 +85,7 @@ The connector MUST emit catalog entities as `kind: AiResource` with `spec.type: 
   - `kind: AiResource`
   - `metadata.name: code-reviewer`
   - `metadata.annotations['rhdh.io/ai-asset-category']: skill`
-  - `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<registry-id>` (where `<registry-id>` identifies the configured registry instance)
+  - `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `default`)
   - `metadata.annotations['rhdh.io/oci-image-ref']: quay.io/skills/code-reviewer:latest`
   - `metadata.annotations['rhdh.io/ai-asset-digest']: sha256:abc123...`
   - `spec.type: skill`
@@ -113,7 +113,7 @@ The connector MUST populate RHDH AI Asset annotations as defined in RHDHPLAN-150
 #### Scenario: Populate OCI registry reference annotation
 
 - **WHEN** the connector emits an entity for skill `quay.io/skills/my-skill:latest`
-- **THEN** it sets `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<registry-id>` (where `<registry-id>` identifies the configured registry instance, following the `connector-type/instance-id` convention)
+- **THEN** it sets `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `default`, following the `connector-type/instance-id` convention)
 - **AND** it sets `metadata.annotations['rhdh.io/oci-image-ref']: quay.io/skills/my-skill:latest` for the full OCI image reference
 
 #### Scenario: Populate manifest digest annotation
