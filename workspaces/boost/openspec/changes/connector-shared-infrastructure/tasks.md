@@ -35,8 +35,8 @@
 ## 3. Enable/Disable Pattern (P0) — RHIDP-15330
 
 - [ ] 3.1 Define enable/disable config schema in README: `catalog.providers.<id>.enabled: boolean`
-- [ ] 3.2 Create `isConnectorEnabled(config: Config, connectorId: string): boolean` utility
-- [ ] 3.3 Implement config reader: return `true` if `enabled` is omitted (default enabled)
+- [ ] 3.2 Create `isConnectorEnabled(connectorConfig: Config): boolean` utility — caller passes the Config subtree (same pattern as `loadCaBundle`)
+- [ ] 3.3 Implement config reader: read `enabled` from the provided Config subtree, return `true` if omitted (default enabled)
 - [ ] 3.4 Create registration guard pattern for backend module `init()` example in README
 - [ ] 3.5 Log INFO-level message when connector is disabled: `"<Connector Name> connector is disabled"`
 - [ ] 3.6 Verify disabled connector uses zero resources: no scheduled tasks, no HTTP client, no cache allocation

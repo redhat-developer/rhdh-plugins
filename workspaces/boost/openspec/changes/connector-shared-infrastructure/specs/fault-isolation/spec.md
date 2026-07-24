@@ -62,7 +62,7 @@ Disabled connectors are never registered, producing zero resource usage.
 #### Scenario: Disabled connector produces zero resource usage
 
 - **WHEN** a connector is configured with `catalog.providers.<connectorId>.enabled: false`
-- **THEN** `isConnectorEnabled(config, connectorId)` returns `false`
+- **THEN** `isConnectorEnabled(connectorConfig)` returns `false` (where `connectorConfig` is the connector's Config subtree)
 - **AND** the backend module's `init()` exits early without calling `catalog.addEntityProvider()`
 - **AND** no scheduled tasks are created for the disabled connector
 - **AND** no HTTP clients are initialized
@@ -72,7 +72,7 @@ Disabled connectors are never registered, producing zero resource usage.
 
 - **WHEN** a connector is configured with `catalog.providers.<connectorId>.enabled: true`
 - **OR** the `enabled` field is omitted (defaults to `true`)
-- **THEN** `isConnectorEnabled(config, connectorId)` returns `true`
+- **THEN** `isConnectorEnabled(connectorConfig)` returns `true`
 - **AND** the backend module proceeds with provider registration via `catalog.addEntityProvider()`
 
 #### Scenario: Info-level log for disabled connector

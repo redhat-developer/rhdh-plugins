@@ -197,7 +197,10 @@ export default createBackendModule({
         logger: coreServices.logger,
       },
       async init({ catalog, config, logger }) {
-        if (!isConnectorEnabled(config, 'mcpRegistry')) {
+        const connectorConfig = config.getConfig(
+          'catalog.providers.mcpRegistry',
+        );
+        if (!isConnectorEnabled(connectorConfig)) {
           logger.info('MCP Registry connector is disabled');
           return; // Exit early — never call catalog.addEntityProvider()
         }
