@@ -24,7 +24,7 @@ import { Config } from '@backstage/config';
 
 import express, { Router } from 'express';
 
-import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable, Transform } from 'stream';
 
@@ -117,10 +117,7 @@ export async function createNotebooksRouter(
   ): Promise<void> => {
     try {
       const { credentials } = getIdentity(req);
-      await authorizer.authorizeUser(
-        lightspeedNotebooksUsePermission,
-        credentials,
-      );
+      await authorizer.authorizeUser(iaNotebooksUsePermission, credentials);
       next();
     } catch (error) {
       handleError(logger, res, error, 'Permission denied');

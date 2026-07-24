@@ -18,6 +18,9 @@ import { render, screen } from '@testing-library/react';
 
 import { Trans } from '../Trans';
 
+const iaAccessPermissionName = 'intelligent-assistant.chat.access';
+const iaUsePermissionName = 'intelligent-assistant.chat.use';
+
 // Mock the useTranslation hook
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => ({
@@ -134,14 +137,12 @@ describe('Trans Component', () => {
     it('should handle permission description formatting', () => {
       render(
         <Trans
-          message="To view intelligent assistant plugin, contact your administrator to give the <b>intelligent-assistant.chat.read</b> and <b>intelligent-assistant.chat.create</b> permissions."
+          message={`To view intelligent assistant plugin, contact your administrator to give the <b>${iaAccessPermissionName}</b> and <b>${iaUsePermissionName}</b> permissions.`}
           components={{
-            '<b>intelligent-assistant.chat.read</b>': (
-              <b>intelligent-assistant.chat.read</b>
+            [`<b>${iaAccessPermissionName}</b>`]: (
+              <b>{iaAccessPermissionName}</b>
             ),
-            '<b>intelligent-assistant.chat.create</b>': (
-              <b>intelligent-assistant.chat.create</b>
-            ),
+            [`<b>${iaUsePermissionName}</b>`]: <b>{iaUsePermissionName}</b>,
           }}
         />,
       );
@@ -150,20 +151,12 @@ describe('Trans Component', () => {
       expect(
         screen.getByText(/To view intelligent assistant plugin/),
       ).toBeInTheDocument();
-      expect(
-        screen.getByText('intelligent-assistant.chat.read'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('intelligent-assistant.chat.create'),
-      ).toBeInTheDocument();
+      expect(screen.getByText(iaAccessPermissionName)).toBeInTheDocument();
+      expect(screen.getByText(iaUsePermissionName)).toBeInTheDocument();
 
       // Check that permission names are bold
-      expect(screen.getByText('intelligent-assistant.chat.read').tagName).toBe(
-        'B',
-      );
-      expect(
-        screen.getByText('intelligent-assistant.chat.create').tagName,
-      ).toBe('B');
+      expect(screen.getByText(iaAccessPermissionName).tagName).toBe('B');
+      expect(screen.getByText(iaUsePermissionName).tagName).toBe('B');
     });
   });
 

@@ -16,50 +16,34 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
-/** This permission is used to access the lightspeed read conversations endpoint
+/** This permission is used to access intelligent-assistant chats
  * @public
  */
-export const lightspeedChatReadPermission = createPermission({
-  name: 'intelligent-assistant.chat.read',
-  attributes: {
-    action: 'read',
-  },
+export const iaChatAccessPermission = createPermission({
+  name: 'intelligent-assistant.chat.access',
+  attributes: {},
 });
 
-/** This permission is used to access the lightspeed create conversations endpoint
+/** This permission is used to create intelligent-assistant chats
  * @public
  */
-export const lightspeedChatCreatePermission = createPermission({
-  name: 'intelligent-assistant.chat.create',
-  attributes: {
-    action: 'create',
-  },
+export const iaChatUsePermission = createPermission({
+  name: 'intelligent-assistant.chat.use',
+  attributes: {},
 });
 
-/** This permission is used to access the lightspeed delete endpoint
+/** This permission is used to update and delete intelligent-assistant chats
  * @public
  */
-export const lightspeedChatDeletePermission = createPermission({
-  name: 'intelligent-assistant.chat.delete',
-  attributes: {
-    action: 'delete',
-  },
-});
-
-/** This permission is used to access the lightspeed update endpoint
- * @public
- */
-export const lightspeedChatUpdatePermission = createPermission({
-  name: 'intelligent-assistant.chat.update',
-  attributes: {
-    action: 'update',
-  },
+export const iaChatManagePermission = createPermission({
+  name: 'intelligent-assistant.chat.manage',
+  attributes: {},
 });
 
 /** This permission is used to list configured MCP servers
  * @public
  */
-export const lightspeedMcpReadPermission = createPermission({
+export const iaMcpReadPermission = createPermission({
   name: 'intelligent-assistant.mcp.read',
   attributes: {
     action: 'read',
@@ -69,7 +53,7 @@ export const lightspeedMcpReadPermission = createPermission({
 /** This permission is used to add, update, delete, and validate MCP servers
  * @public
  */
-export const lightspeedMcpManagePermission = createPermission({
+export const iaMcpManagePermission = createPermission({
   name: 'intelligent-assistant.mcp.manage',
   attributes: {
     action: 'update',
@@ -79,7 +63,7 @@ export const lightspeedMcpManagePermission = createPermission({
 /** This permission is used to access AI Notebooks features
  * @public
  */
-export const lightspeedNotebooksUsePermission = createPermission({
+export const iaNotebooksUsePermission = createPermission({
   name: 'intelligent-assistant.notebooks.use',
   attributes: {
     action: 'update',
@@ -91,12 +75,11 @@ export const lightspeedNotebooksUsePermission = createPermission({
  *
  * @public
  */
-export const lightspeedPermissions = [
-  lightspeedChatReadPermission,
-  lightspeedChatCreatePermission,
-  lightspeedChatDeletePermission,
-  lightspeedChatUpdatePermission,
-  lightspeedMcpReadPermission,
-  lightspeedMcpManagePermission,
-  lightspeedNotebooksUsePermission,
+export const iaPermissions = [
+  iaChatAccessPermission,
+  iaChatManagePermission,
+  iaChatUsePermission,
+  iaMcpReadPermission,
+  iaMcpManagePermission,
+  iaNotebooksUsePermission,
 ];

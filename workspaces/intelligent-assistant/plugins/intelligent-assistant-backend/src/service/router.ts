@@ -28,12 +28,12 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  lightspeedChatCreatePermission,
-  lightspeedChatDeletePermission,
-  lightspeedChatReadPermission,
-  lightspeedMcpManagePermission,
-  lightspeedMcpReadPermission,
-  lightspeedPermissions,
+  iaChatAccessPermission,
+  iaChatManagePermission,
+  iaChatUsePermission,
+  iaMcpManagePermission,
+  iaMcpReadPermission,
+  iaPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -269,7 +269,7 @@ export async function createRouter(
   });
 
   const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: lightspeedPermissions,
+    permissions: iaPermissions,
   });
   router.use(permissionIntegrationRouter);
 
@@ -311,7 +311,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -352,7 +352,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -387,7 +387,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/:name/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef, credentials } = getIdentity(req);
@@ -472,7 +472,7 @@ export async function createRouter(
   router.patch(
     '/mcp-servers/:name',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -601,44 +601,44 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatDeletePermission),
+    requirePermission(iaChatManagePermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -681,7 +681,7 @@ export async function createRouter(
   router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -720,7 +720,7 @@ export async function createRouter(
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     expensiveRateLimiter,
     validateCompletionsRequest,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
@@ -809,7 +809,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);

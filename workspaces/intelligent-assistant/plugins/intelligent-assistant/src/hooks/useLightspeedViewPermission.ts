@@ -17,21 +17,23 @@
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import {
-  lightspeedChatCreatePermission,
-  lightspeedChatReadPermission,
+  iaChatAccessPermission,
+  iaChatUsePermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 export const useLightspeedViewPermission = () => {
   const canReadChats = usePermission({
-    permission: lightspeedChatReadPermission,
+    permission: iaChatAccessPermission,
   });
 
   const canCreateChats = usePermission({
-    permission: lightspeedChatCreatePermission,
+    permission: iaChatUsePermission,
   });
 
   return {
     loading: canReadChats.loading || canCreateChats.loading,
     allowed: canReadChats.allowed && canCreateChats.allowed,
+    lightspeedConversationsAccessPermissionName: iaChatAccessPermission.name,
+    lightspeedChatUsePermissionName: iaChatUsePermission.name,
   };
 };

@@ -1,22 +1,21 @@
-# RBAC Policy Reference for Lightspeed + MCP
+# RBAC Policy Reference for Intelligent Assistant for RHDH + MCP
 # Format: p, <role>, <permission>, <action>, <allow|deny>
 #          g, <user/group entity ref>, <role>
 #
 # This is a reference file for local development/testing.
 # In production RHDH, policies are managed via ConfigMap.
 
-# --- Lightspeed permissions ---
-p, role:default/lightspeed-user, lightspeed.chat.read, read, allow
-p, role:default/lightspeed-user, lightspeed.chat.create, create, allow
-p, role:default/lightspeed-user, lightspeed.chat.delete, delete, allow
-p, role:default/lightspeed-user, lightspeed.chat.update, update, allow
-p, role:default/lightspeed-user, lightspeed.mcp.read, read, allow
-p, role:default/lightspeed-user, lightspeed.mcp.manage, update, allow
-p, role:default/lightspeed-user, lightspeed.notebooks.use, update, allow
+# --- Intelligent Assistant for RHDH permissions ---
+p, role:default/intelligent-assistant-user, intelligent-assistant.chat.access, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.chat.use, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.chat.manage, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.mcp.read, read, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.mcp.manage, update, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.notebooks.use, update, allow
 
 # --- Catalog permissions (needed for MCP tools to query entities) ---
-p, role:default/lightspeed-user, catalog.entity.read, read, allow
-p, role:default/lightspeed-user, catalog.location.read, read, allow
+p, role:default/intelligent-assistant-user, catalog.entity.read, read, allow
+p, role:default/intelligent-assistant-user, catalog.location.read, read, allow
 
 # --- User → Role assignment ---
-# g, user:default/<your-github-username>, role:default/lightspeed-user
+# g, user:default/<your-github-username>, role:default/intelligent-assistant-user
