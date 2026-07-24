@@ -43,7 +43,7 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import { rhdhThemeModule } from '../src/alpha';
+import { rhdhThemeModule } from '../src';
 import { ThemeTestPage } from './ThemeTestPage';
 
 const rootRouteRef = createRouteRef({

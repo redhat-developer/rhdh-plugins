@@ -26,12 +26,20 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.ts",
+    "./legacy": "./src/legacyExports.ts",
+    "./rhdh-theme-module": "./src/rhdhThemeModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.ts"
+      ],
+      "legacy": [
+        "src/legacyExports.ts"
+      ],
+      "rhdh-theme-module": [
+        "src/rhdhThemeModuleExport.ts"
       ],
       "package.json": [
         "package.json"

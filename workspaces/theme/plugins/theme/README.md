@@ -19,6 +19,21 @@ Returns the latest, not released RHDH light and dark theme for your backstage/RH
 - `useThemes: () => AppTheme[]`
 - `useLoaderTheme: () => MUIv5.Theme`
 
+### New Frontend System (NFS)
+
+NFS is the primary package entry point. OFS (legacy) theme helpers remain available at `./legacy` (and are also re-exported from the main entry for compatibility).
+
+Register the theme module in an NFS app:
+
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme';
+
+export default createApp({
+  features: [rhdhThemeModule /* ...other features */],
+});
+```
+
 ## Install dependencies
 
 ```shell

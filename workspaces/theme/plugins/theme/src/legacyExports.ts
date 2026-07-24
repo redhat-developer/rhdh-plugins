@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-/**
- * The NFS theme module has graduated to the primary package entry point.
- * Import `rhdhThemeModule` from `@red-hat-developer-hub/backstage-plugin-theme` instead.
- *
- * @deprecated Use the root import instead.
- * @packageDocumentation
- */
+export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
+export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
-export {};
+import './assets/fonts/font.min.css';
+
+export * from './hooks';
+export * from './themes';
+export { LogoFull, LogoIcon } from './components';
+export type {
+  BackstageThemePalette,
+  RHDHThemePalette,
+  ThemeConfigPalette,
+  ThemeConfigPageTheme,
+  ThemeConfigOptions,
+  ThemeConfig,
+  Branding,
+  Config,
+} from './types';

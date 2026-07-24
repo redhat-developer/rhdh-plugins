@@ -14,21 +14,39 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+/**
+ * RHDH Theme plugin for Backstage.
+ * @packageDocumentation
+ */
 
-import './assets/fonts/font.min.css';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { ThemeBlueprint } from '@backstage/plugin-app-react';
 
-export * from './hooks';
-export * from './themes';
-export { LogoFull, LogoIcon } from './components';
-export type {
-  BackstageThemePalette,
-  RHDHThemePalette,
-  ThemeConfigPalette,
-  ThemeConfigPageTheme,
-  ThemeConfigOptions,
-  ThemeConfig,
-  Branding,
-  Config,
-} from './types';
+import { getAllThemes } from './themes';
+
+/**
+ * RHDH themes as NFS extensions (ThemeBlueprint).
+ * Only the app can register ThemeBlueprint; we use the same theme definitions
+ * from the theme plugin (getAllThemes()) so behavior matches the legacy app.
+ *
+ * @public
+ */
+export const rhdhThemeModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: getAllThemes().map(appTheme =>
+    ThemeBlueprint.make({
+      name: appTheme.id,
+      params: {
+        theme: {
+          id: appTheme.id,
+          title: appTheme.title,
+          variant: appTheme.variant,
+          icon: appTheme.icon,
+          Provider: appTheme.Provider,
+        },
+      },
+    }),
+  ),
+});
+
+export * from './legacyExports';
