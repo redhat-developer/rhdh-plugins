@@ -52,7 +52,7 @@ import scorecardPlugin, {
   scorecardCatalogModule,
   scorecardHomeModule,
   scorecardTranslationsModule,
-} from '../src/alpha';
+} from '../src';
 import { scorecardApiRef } from '../src/api';
 
 import { MockScorecardApi, mockCatalogApi } from './mocks';
