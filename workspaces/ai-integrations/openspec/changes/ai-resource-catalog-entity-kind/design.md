@@ -80,6 +80,8 @@ Backstage `parseLocationRef` splits on the first `:`, yielding `{ type: 'url', t
 
 **Rationale**: Registration indexes metadata. Fetching skill content from a registry is a separate, later capability.
 
+**Verification**: Git/HTTPS-sourced AIResource ingestion via the existing `UrlReaderProcessor` and `backstage.io/source-location` annotation was verified in RHIDP-14557 (happy path, missing source-location warning, and standard catalog registration). That establishes the git skill path; OCI does not need a UrlReader for registration.
+
 ### D5 - OCI ingestion performs format validation only
 
 **Choice**: When `backstage.io/source-location` has target scheme `oci://`, a dedicated processor validates format only (non-empty, no surrounding whitespace, well-formed `oci://registry/repository[:tag|@digest]`).
@@ -115,6 +117,8 @@ Backstage `parseLocationRef` splits on the first `:`, yielding `{ type: 'url', t
 **Choice**: Do not implement an OCI `UrlReader` in this change.
 
 **Rationale**: A UrlReader is only needed when a consumer must fetch content (or catalog YAML) from `oci://…`. Registration and format validation do not require it. When added later, it registers via `urlReaderFactoriesServiceRef` with `predicate: (url) => url.protocol === 'oci:'`.
+
+**Symmetry with git**: The existing Backstage URL readers already cover git/HTTPS skill sources; RHIDP-14557 confirmed that path for AIResource. Deferring an OCI UrlReader is therefore an intentional gap versus the verified git reader path, not an unverified assumption that “no reader is needed for either.”
 
 ## Risks / Trade-offs
 
