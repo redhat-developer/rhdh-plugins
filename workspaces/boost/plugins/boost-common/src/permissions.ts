@@ -354,7 +354,7 @@ export const BOOST_RULE_HAS_LIFECYCLE_STAGE = 'HAS_LIFECYCLE_STAGE';
  *
  * @public
  */
-export const boostAgentPermissions = [
+export const boostAgentPermissions = Object.freeze([
   boostAgentListPermission,
   boostAgentRegisterPermission,
   boostAgentConfigurePermission,
@@ -365,53 +365,53 @@ export const boostAgentPermissions = [
   boostAgentUnpublishPermission,
   boostAgentWithdrawPermission,
   boostAgentDeletePermission,
-] as const;
+] as const);
 
 /**
  * All 5 tool permissions.
  *
  * @public
  */
-export const boostToolPermissions = [
+export const boostToolPermissions = Object.freeze([
   boostToolPromotePermission,
   boostToolApprovePermission,
   boostToolDemotePermission,
   boostToolPublishPermission,
   boostToolUnpublishPermission,
-] as const;
+] as const);
 
 /**
  * All 16 entity permissions (10 agent + 5 tool + 1 kagenti-infra).
  *
  * @public
  */
-export const boostEntityPermissions = [
+export const boostEntityPermissions = Object.freeze([
   ...boostAgentPermissions,
   ...boostToolPermissions,
   boostKagentiAdminPermission,
-] as const;
+] as const);
 
 /**
  * All 5 functional permissions.
  *
  * @public
  */
-export const boostFunctionalPermissions = [
+export const boostFunctionalPermissions = Object.freeze([
   boostChatReadPermission,
   boostChatCreatePermission,
   boostDocumentsManagePermission,
   boostMcpManagePermission,
   boostConfigManagePermission,
-] as const;
+] as const);
 
 /**
  * All agent resource permissions (those with resourceType `boost-agent`).
  *
  * @public
  */
-export const boostAgentResourcePermissions: ResourcePermission<
+export const boostAgentResourcePermissions: readonly ResourcePermission<
   typeof BOOST_AGENT_RESOURCE_TYPE
->[] = [
+>[] = Object.freeze([
   boostAgentPromotePermission,
   boostAgentApprovePermission,
   boostAgentDemotePermission,
@@ -419,22 +419,22 @@ export const boostAgentResourcePermissions: ResourcePermission<
   boostAgentUnpublishPermission,
   boostAgentWithdrawPermission,
   boostAgentDeletePermission,
-];
+]);
 
 /**
  * All tool resource permissions (those with resourceType `boost-tool`).
  *
  * @public
  */
-export const boostToolResourcePermissions: ResourcePermission<
+export const boostToolResourcePermissions: readonly ResourcePermission<
   typeof BOOST_TOOL_RESOURCE_TYPE
->[] = [
+>[] = Object.freeze([
   boostToolPromotePermission,
   boostToolApprovePermission,
   boostToolDemotePermission,
   boostToolPublishPermission,
   boostToolUnpublishPermission,
-];
+]);
 
 /**
  * All boost permissions combined for registration via
@@ -442,9 +442,9 @@ export const boostToolResourcePermissions: ResourcePermission<
  *
  * @public
  */
-export const boostPermissions = [
+export const boostPermissions = Object.freeze([
   ...boostEntityPermissions,
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,
-] as const;
+] as const);
