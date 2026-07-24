@@ -49,7 +49,7 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 | MCP Server   | API          | mcp-server        | McpServer (RFC #32062)       | Medium     |
 | AI Model     | Resource     | ai-model          | ai-model (RFC #33060)        | Medium     |
 | Rule         | AIResource   | rule              | (no RFC yet)                 | Low        |
-| Skill Bundle | AIResource   | skill-bundle      | (no RFC yet)                 | Low        |
+| Skill Bundle | AIResource   | ai-skill-bundle   | (no RFC yet)                 | Low        |
 | Model Server | Resource     | ai-model-server   | ai-model-server (RFC #33060) | Medium     |
 
 > **Note:** If the upstream Backstage API extension for capturing AI model servers ([backstage/backstage#34476](https://github.com/backstage/backstage/pull/34476)) becomes available, the Model Server mapping will pivot to use that upstream kind instead of the current `Resource` mapping.
