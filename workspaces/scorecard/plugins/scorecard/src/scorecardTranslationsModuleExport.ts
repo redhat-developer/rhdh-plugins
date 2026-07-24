@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * Translations remain available at the `/alpha` export.
- * NFS plugin and modules have graduated to the primary package entry point.
- */
-export * from '../translations';
+export { scorecardTranslationsModule as default } from './index';

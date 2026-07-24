@@ -7,12 +7,28 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.tsx",
+    "./legacy": "./src/legacyExports.ts",
+    "./scorecard-catalog-module": "./src/scorecardCatalogModuleExport.ts",
+    "./scorecard-home-module": "./src/scorecardHomeModuleExport.ts",
+    "./scorecard-translations-module": "./src/scorecardTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.tsx"
+      ],
+      "legacy": [
+        "src/legacyExports.ts"
+      ],
+      "scorecard-catalog-module": [
+        "src/scorecardCatalogModuleExport.ts"
+      ],
+      "scorecard-home-module": [
+        "src/scorecardHomeModuleExport.ts"
+      ],
+      "scorecard-translations-module": [
+        "src/scorecardTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"
