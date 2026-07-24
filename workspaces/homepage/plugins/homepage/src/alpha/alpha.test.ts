@@ -25,6 +25,7 @@ import {
   searchBarWidget,
   featuredDocsCardWidget,
   catalogStarredWidget,
+  disableRandomJoke,
   disableToolkit,
   RecentlyVisitedWidget,
   TopVisitedWidget,
@@ -76,6 +77,7 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
       expect(featuredDocsCardWidget).toBeDefined();
       expect(catalogStarredWidget).toBeDefined();
       expect(disableToolkit).toBeDefined();
+      expect(disableRandomJoke).toBeDefined();
       expect(RecentlyVisitedWidget).toBeDefined();
       expect(TopVisitedWidget).toBeDefined();
     });

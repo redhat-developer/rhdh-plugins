@@ -88,5 +88,3 @@ export const QuickAccessCardContent = ({
 
   return content;
 };
-
-export { QuickAccessCard } from './legacy/QuickAccessCardLegacy';

@@ -29,6 +29,7 @@ const homepageTranslationDe = createTranslationMessages({
     'header.local': 'Lokal',
     'homePage.empty': 'Keine Homepage-Karten konfiguriert oder gefunden.',
     'search.placeholder': 'Suchen',
+    'search.clearButton': 'Löschen',
     'quickAccess.title': 'Schnellzugriff',
     'quickAccess.fetchError': 'Daten konnten nicht abgerufen werden.',
     'quickAccess.error': 'Unbekannter Fehler',
@@ -36,7 +37,11 @@ const homepageTranslationDe = createTranslationMessages({
     'featuredDocs.learnMore': ' Mehr erfahren',
     'starredEntities.title': 'Markierte Katalogentitäten',
     'recentlyVisited.title': 'Zuletzt besucht',
+    'recentlyVisited.description':
+      'Schnellzugriff auf kürzlich angesehene Entitäten und Seiten',
     'topVisited.title': 'Am häufigsten besucht',
+    'topVisited.description':
+      'Ihre am häufigsten aufgerufenen Entitäten und Services',
     'templates.title': 'Vorlagen erkunden',
     'templates.fetchError': 'Daten konnten nicht abgerufen werden.',
     'templates.error': 'Unbekannter Fehler',

@@ -29,6 +29,7 @@ const homepageTranslationFr = createTranslationMessages({
     'header.local': 'Locale',
     'homePage.empty': "Aucune carte de page d'accueil configurée ou trouvée.",
     'search.placeholder': 'Recherche',
+    'search.clearButton': 'Effacer',
     'quickAccess.title': 'Accès rapide',
     'quickAccess.fetchError': 'Impossible de récupérer les données.',
     'quickAccess.error': 'Erreur inconnue',
@@ -36,7 +37,11 @@ const homepageTranslationFr = createTranslationMessages({
     'featuredDocs.learnMore': ' En savoir plus',
     'starredEntities.title': 'Entités du catalogue favoris',
     'recentlyVisited.title': 'Récemment visités',
+    'recentlyVisited.description':
+      'Accès rapide aux entités et pages consultées récemment',
     'topVisited.title': 'Les plus visités',
+    'topVisited.description':
+      'Vos entités et services les plus fréquemment consultés',
     'templates.title': 'Explorer les modèles',
     'templates.fetchError': 'Impossible de récupérer les données.',
     'templates.error': 'Erreur inconnue',

@@ -80,7 +80,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test('Verify Add Widget Button Adds Cards', async () => {
-    await homePageCustomization.addWidget('Onboarding');
+    await homePageCustomization.addWidget('Red Hat Developer Hub - Onboarding');
     await expect(
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();

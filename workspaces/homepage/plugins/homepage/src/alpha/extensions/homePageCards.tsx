@@ -17,8 +17,19 @@
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
-import { homepageMessages } from '../../translations/ref';
 import { createTranslatedCardRenderer } from '../../utils/translatedCardRenderer';
+
+/**
+ * NFS homepage widgets.
+ *
+ * i18n follows the upstream `@backstage/plugin-home` model:
+ * - Blueprint `params.title` / `description` are English catalog labels.
+ *   `AddWidgetDialog` renders them as-is (no `t()`).
+ * - On-card headers are translated at render time via
+ *   {@link createTranslatedCardRenderer} or Content hooks such as
+ *   `useHomePageCardTitle`.
+ * - In-widget copy uses `homepageTranslationRef` through `useTranslation`.
+ */
 
 const defaultCardLayout = {
   width: {
@@ -59,7 +70,8 @@ export const entitySectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-entity-section',
   params: {
     name: 'Red Hat Developer Hub - Software Catalog',
-    title: homepageMessages.entities.title,
+    description:
+      'Browse the Systems, Components, Resources, and APIs that are available in your organization.',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/EntitySection/EntitySection').then(m => ({
@@ -77,7 +89,6 @@ export const templateSectionWidget = HomePageWidgetBlueprint.make({
   name: 'rhdh-template-section',
   params: {
     name: 'Red Hat Developer Hub - Explore templates',
-    title: homepageMessages.templates.title,
     layout: defaultCardLayout,
     components: () =>
       import('../../components/TemplateSection/TemplateSection').then(m => ({
@@ -95,7 +106,7 @@ export const quickAccessCardWidget = HomePageWidgetBlueprint.make({
   name: 'quick-access-card',
   params: {
     name: 'Quick Access Card',
-    title: homepageMessages.quickAccess.title,
+    title: 'Quick Access',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/QuickAccessCard').then(m => ({
@@ -151,7 +162,7 @@ export const featuredDocsCardWidget = HomePageWidgetBlueprint.make({
   name: 'featured-docs-card',
   params: {
     name: 'Featured docs',
-    title: homepageMessages.featuredDocs.title,
+    title: 'Featured Docs',
     layout: defaultCardLayout,
     components: () =>
       import('../../components/FeaturedDocsCard').then(m => ({
@@ -169,8 +180,8 @@ export const catalogStarredWidget = homePlugin
   .getExtension('home-page-widget:home/starred-entities')
   .override({
     params: {
-      name: 'CatalogStarred',
-      title: homepageMessages.starredEntities.title,
+      name: 'Catalog starred',
+      title: 'Starred Catalog Entities',
       components: () =>
         import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
           m => ({
@@ -192,6 +203,16 @@ export const disableToolkit = homePlugin
   });
 
 /**
+ * Disables the upstream demo random-joke widget.
+ * @alpha
+ */
+export const disableRandomJoke = homePlugin
+  .getExtension('home-page-widget:home/random-joke')
+  .override({
+    disabled: true,
+  });
+
+/**
  * NFS widget: RecentlyVisited (migrated from mountPoint home.page/cards).
  * @alpha
  */
@@ -200,7 +221,8 @@ export const RecentlyVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Recently visited',
-    title: homepageMessages.recentlyVisited.title,
+    title: 'Recently Visited',
+    description: 'Quick access to recently viewed entities and pages',
     components: () =>
       import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
         m => ({
@@ -220,7 +242,8 @@ export const TopVisitedWidget = HomePageWidgetBlueprint.make({
   params: {
     layout: defaultCardLayout,
     name: 'Top visited',
-    title: homepageMessages.topVisited.title,
+    title: 'Top Visited',
+    description: 'Your most frequently accessed entities and services',
     components: () =>
       import('../../components/legacy/TranslatedUpstreamHomePageCards').then(
         m => ({

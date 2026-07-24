@@ -29,8 +29,12 @@ const QuickAccessInfoCard = styled(InfoCard)({
 });
 
 /**
- * Creates a home page card Renderer that resolves the title via the plugin
- * translation system at render time (for NFS HomePageWidgetBlueprint widgets).
+ * Creates a home page card Renderer that resolves the on-card title via
+ * `homepageTranslationRef` at render time.
+ *
+ * Blueprint `params.title` stays English for the Add-widget catalog
+ * (`AddWidgetDialog` does not translate widget titles). This Renderer is
+ * the NFS equivalent of translating inside Content.
  */
 export function createTranslatedCardRenderer(
   titleKey: string,
