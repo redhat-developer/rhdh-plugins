@@ -20,9 +20,9 @@ If you want to install the plugin as a dynamic plugin in Red Hat Developer Hub:
 - Follow the [Installing plugins guide](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/installing-plugins.md)
 - Add the content of `app-config.dynamic.yaml` into your `app-config.local.yaml`
 
-#### Dynamic plugin configuration
+#### Dynamic plugin configuration (OFS)
 
-Add the extension point inside your `app-config.yaml` or `app-config.local.yaml` file:
+Legacy exports require `module: Legacy`. Add the extension point inside your `app-config.yaml` or `app-config.local.yaml` file:
 
 ```yaml
 dynamicPlugins:
@@ -34,16 +34,32 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
+          module: Legacy
         - mountPoint: application/internal/drawer-state
           importName: QuickstartDrawerStateExposer
+          module: Legacy
         - mountPoint: application/internal/drawer-content
           importName: QuickstartDrawerContent
+          module: Legacy
           config:
             id: quickstart
         - mountPoint: global.header/help
           importName: QuickstartButton
+          module: Legacy
           config:
             priority: 100
+```
+
+### Legacy / OFS consumers
+
+Legacy component imports have been **removed from the main package path**. OFS consumers must update imports to use the `./legacy` subpath:
+
+```ts
+// Before (no longer works)
+import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+
+// After (required)
+import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
 ```
 
 ### Static Installation
@@ -58,7 +74,7 @@ yarn add --cwd packages/app @red-hat-developer-hub/backstage-plugin-quickstart
 2. Add the plugin to your Backstage app by modifying `packages/app/src/App.tsx`:
 
 ```tsx
-import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
 
 // Wrap your app with the QuickstartDrawerProvider
 const App = () => (
@@ -171,7 +187,7 @@ app:
 Access quickstart drawer functionality in your components:
 
 ```tsx
-import { useQuickstartDrawerContext } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import { useQuickstartDrawerContext } from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
 
 const MyComponent = () => {
   const { openDrawer, closeDrawer, isDrawerOpen } =
