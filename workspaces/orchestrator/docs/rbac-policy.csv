@@ -1,8 +1,10 @@
+# Deprecated permissions with per workflow access specified by id
 #p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
 #p, role:default/workflowUser, orchestrator.workflow.wait-or-error, read, allow
 #p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
 #p, role:default/workflowUser, orchestrator.workflow.use.wait-or-error, update, allow
 
+# Basic permissions with full access to all workflows
 #p, role:default/workflowUser, orchestrator.workflow.use, update, allow
 #p, role:default/workflowUser, orchestrator.workflow, read, allow
 
