@@ -48,6 +48,7 @@
     "@backstage/plugin-search-backend-node": "^1.4.4",
     "@backstage/plugin-techdocs-backend": "^2.2.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^",
