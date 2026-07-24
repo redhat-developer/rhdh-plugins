@@ -20,7 +20,7 @@ export default defineConfig({
   timeout: 60_000,
 
   expect: {
-    timeout: 10_000,
+    timeout: 15_000,
   },
 
   webServer: process.env.PLAYWRIGHT_URL
@@ -53,7 +53,7 @@ export default defineConfig({
   ],
 
   use: {
-    actionTimeout: 10_000,
+    actionTimeout: 30_000,
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',

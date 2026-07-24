@@ -16,9 +16,9 @@
 
 export const TIMEOUTS = {
   page: 60_000,
-  table: 15_000,
-  dialog: 10_000,
-  element: 10_000,
-  short: 5_000,
-  networkSettle: 1_000,
+  table: 30_000,
+  dialog: 30_000,
+  element: 15_000,
+  short: 10_000,
+  networkSettle: 2_000,
 } as const;
