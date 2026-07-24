@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
+import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { Link } from '@backstage/core-components';
@@ -22,10 +23,17 @@ import { Link } from '@backstage/core-components';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import MuiLink from '@mui/material/Link';
+import Tooltip, {
+  tooltipClasses,
+  type TooltipProps,
+} from '@mui/material/Tooltip';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 
 import { ExtensionsPackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
@@ -35,9 +43,91 @@ import { usePackageConfig } from '../../hooks/usePackageConfig';
 import { usePackage } from '../../hooks/usePackage';
 import { downloadPackageYAML } from '../../utils/downloadPackageYaml';
 import { apiErrorMessage } from '../../utils';
+import { CATALOG_ENTITY_DOCS_URL } from '../../consts';
 import { usePluginConfigurationPermissions } from '../../hooks/usePluginConfigurationPermissions';
 import { useEnablePlugin } from '../../hooks/useEnablePlugin';
 import { useInstallationContext } from '../InstallationContext';
+
+/**
+ * MUI Light tooltip — white surface with shadow for rich content.
+ * @see https://v5.mui.com/material-ui/react-tooltip/#customization
+ */
+const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.common.white,
+    color: theme.palette.text.primary,
+    boxShadow: theme.shadows[2],
+    fontSize: theme.typography.body2.fontSize,
+    maxWidth: 280,
+    padding: theme.spacing(1.5),
+  },
+}));
+
+/**
+ * Forwards ref + DOM listeners so Tooltip works with disabled controls.
+ * @see https://v5.mui.com/material-ui/react-tooltip/#custom-child-element
+ */
+const TooltipChild = forwardRef<
+  HTMLSpanElement,
+  HTMLAttributes<HTMLSpanElement> & { children: ReactNode }
+>(function TooltipChild({ children, ...props }, ref) {
+  return (
+    <Box component="span" display="inline-flex" ref={ref} {...props}>
+      {children}
+    </Box>
+  );
+});
+
+const MissingCatalogEntityTooltip = ({
+  children,
+}: {
+  children: ReactElement;
+}) => {
+  const { t } = useTranslation();
+  const title: ReactNode = (
+    <Box>
+      <Typography
+        variant="subtitle2"
+        component="div"
+        sx={{ fontWeight: 600, mb: 0.5 }}
+      >
+        {t('installedPackages.table.tooltips.enableActionsTitle')}
+      </Typography>
+      <Typography
+        variant="body2"
+        component="div"
+        color="text.secondary"
+        sx={{ mb: 1.5 }}
+      >
+        {t('installedPackages.table.tooltips.enableActions')}
+      </Typography>
+      <MuiLink
+        href={CATALOG_ENTITY_DOCS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="body2"
+        underline="hover"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+        onClick={event => event.stopPropagation()}
+      >
+        {t('installedPackages.table.tooltips.enableActionsDocsLink')}
+        <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+      </MuiLink>
+    </Box>
+  );
+
+  return (
+    <LightTooltip title={title} describeChild>
+      <TooltipChild>{children}</TooltipChild>
+    </LightTooltip>
+  );
+};
 
 export type InstalledPackageRow = {
   displayName: string;
@@ -94,13 +184,16 @@ export const DownloadPackageYaml = ({
     !pkg.hasEntity || packageConfigPermission.data?.read !== 'ALLOW';
 
   if (disabled) {
+    if (!pkg.hasEntity) {
+      return (
+        <MissingCatalogEntityTooltip>
+          {disabledIcon}
+        </MissingCatalogEntityTooltip>
+      );
+    }
     return (
       <Tooltip
-        title={
-          pkg.hasEntity
-            ? t('installedPackages.table.tooltips.noDownloadPermissions')
-            : t('installedPackages.table.tooltips.enableActions')
-        }
+        title={t('installedPackages.table.tooltips.noDownloadPermissions')}
       >
         {disabledIcon}
       </Tooltip>
@@ -184,9 +277,9 @@ export const EditPackage = ({
 
   if (!pkg.hasEntity) {
     return (
-      <Tooltip title={t('installedPackages.table.tooltips.enableActions')}>
+      <MissingCatalogEntityTooltip>
         {disabledEditIcon}
-      </Tooltip>
+      </MissingCatalogEntityTooltip>
     );
   }
   const packagePath = getPackagePath({
@@ -314,13 +407,16 @@ export const TogglePackage = ({
   }
 
   if (!pkg.hasEntity || packageConfigPermission.data?.write !== 'ALLOW') {
+    if (!pkg.hasEntity) {
+      return (
+        <MissingCatalogEntityTooltip>
+          {disabledIcon}
+        </MissingCatalogEntityTooltip>
+      );
+    }
     return (
       <Tooltip
-        title={
-          pkg.hasEntity
-            ? t('installedPackages.table.tooltips.noTogglePermissions')
-            : t('installedPackages.table.tooltips.enableActions')
-        }
+        title={t('installedPackages.table.tooltips.noTogglePermissions')}
       >
         {disabledIcon}
       </Tooltip>
@@ -402,13 +498,22 @@ export const TogglePackage = ({
 export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   const { t } = useTranslation();
   if (!pkg.hasEntity || pkg.missingDynamicArtifact) {
+    if (!pkg.hasEntity) {
+      return (
+        <MissingCatalogEntityTooltip>
+          <IconButton
+            size="small"
+            disabled
+            sx={{ color: theme => theme.palette.action.disabled }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </MissingCatalogEntityTooltip>
+      );
+    }
     return (
       <Tooltip
-        title={
-          !pkg.hasEntity
-            ? t('installedPackages.table.tooltips.enableActions')
-            : t('tooltips.missingDynamicArtifact' as any, { type: 'package' })
-        }
+        title={t('tooltips.missingDynamicArtifact' as any, { type: 'package' })}
       >
         <IconButton
           size="small"

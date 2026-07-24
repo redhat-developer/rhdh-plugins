@@ -309,7 +309,9 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'installedPackages.table.columns.actions': string;
     readonly 'installedPackages.table.tooltips.installationDisabled': string;
     readonly 'installedPackages.table.tooltips.packageProductionDisabled': string;
+    readonly 'installedPackages.table.tooltips.enableActionsTitle': string;
     readonly 'installedPackages.table.tooltips.enableActions': string;
+    readonly 'installedPackages.table.tooltips.enableActionsDocsLink': string;
     readonly 'installedPackages.table.tooltips.noDownloadPermissions': string;
     readonly 'installedPackages.table.tooltips.noEditPermissions': string;
     readonly 'installedPackages.table.tooltips.noTogglePermissions': string;
