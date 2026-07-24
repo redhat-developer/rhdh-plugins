@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import '@patternfly/chatbot/dist/css/main.css';
-
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -37,6 +32,8 @@ import {
   AppRootWrapperBlueprint,
   TranslationBlueprint,
 } from '@backstage/plugin-app-react';
+
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 
@@ -130,6 +127,13 @@ const LightspeedLegacyRedirect = ({ children }: { children: ReactNode }) => {
       });
     }
   }, [location, navigate]);
+
+  // Workaround: PF 6.6.0 base-no-reset.css sets container-type: inline-size on :root,
+  // breaking body height. Remove after https://github.com/patternfly/patternfly-react/issues/12568
+  useLayoutEffect(() => {
+    document.documentElement.style.containerType = 'normal';
+  }, []);
+
   return <>{children}</>;
 };
 
