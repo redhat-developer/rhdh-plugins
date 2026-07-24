@@ -38,8 +38,8 @@
 
 **GIVEN** Neo4j is configured and syncing (or not syncing)  
 **WHEN** an admin calls any analytics endpoint (e.g., sync history, quality scores)  
-**THEN** the response includes a `neo4j_status` object: `{ connected: boolean, last_sync: string, entity_count: number }`  
-**AND** `connected` reflects the current Neo4j connection status  
+**THEN** the response includes Neo4j sync status fields: `{ neo4j_connected: boolean, last_sync: string, entity_count: number }`  
+**AND** `neo4j_connected` reflects the current Neo4j connection status  
 **AND** `last_sync` is the timestamp of the last successful Neo4j sync  
 **AND** `entity_count` is the count of entities in Neo4j (if connected)
 
