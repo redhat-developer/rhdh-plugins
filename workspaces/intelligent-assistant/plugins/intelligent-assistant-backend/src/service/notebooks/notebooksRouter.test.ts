@@ -311,6 +311,87 @@ describe('Notebooks Router', () => {
       });
     });
 
+    describe('PATCH /v1/sessions/:sessionId/documents/:documentId', () => {
+      it('should rename a document', async () => {
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Original Name')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content'), 'test.txt');
+
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Original Name')}`,
+          )
+          .send({ title: 'New Name' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.document_id).toBe('New Name');
+        expect(response.body.message).toContain('renamed successfully');
+
+        const listResponse = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}/documents`,
+        );
+        expect(
+          listResponse.body.documents.map((d: any) => d.document_id),
+        ).toContain('New Name');
+      });
+
+      it('should return 400 if title is missing', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('title is required');
+      });
+
+      it('should return 400 if title is empty string', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({ title: '   ' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('title is required');
+      });
+
+      it('should return 404 for non-existent document', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Non-existent')}`,
+          )
+          .send({ title: 'New Name' });
+
+        expect(response.status).toBe(404);
+      });
+
+      it('should return 409 when new title conflicts', async () => {
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Doc A')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content A'), 'a.txt');
+
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Doc B')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content B'), 'b.txt');
+
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Doc A')}`,
+          )
+          .send({ title: 'Doc B' });
+
+        expect(response.status).toBe(409);
+      });
+    });
+
     describe('DELETE /v1/sessions/:sessionId/documents/:documentId', () => {
       it('should delete document', async () => {
         await request(app)

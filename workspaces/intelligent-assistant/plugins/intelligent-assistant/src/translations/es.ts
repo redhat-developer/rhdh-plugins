@@ -196,6 +196,13 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'modal.save': 'Guardar',
     'modal.title.edit': 'Modificar archivo adjunto',
     'modal.title.preview': 'Previsualizar archivo adjunto',
+    'notebook.document.rename': 'Renombrar',
+    'notebook.document.rename.tooltip': 'Doble clic para renombrar',
+    'notebook.document.rename.success':
+      '"{{documentName}}" renombrado correctamente.',
+    'notebook.document.rename.error': 'Error al renombrar "{{documentName}}".',
+    'notebook.document.rename.conflict':
+      'Ya existe un documento con este nombre.',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
     'notebook.document.delete.description':

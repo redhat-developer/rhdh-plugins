@@ -139,4 +139,144 @@ describe('DocumentSidebar', () => {
 
     expect(onToggleCollapse).toHaveBeenCalledTimes(1);
   });
+
+  describe('inline rename', () => {
+    const onRenameDocument = jest.fn();
+    const documents = [mockDocument('doc-1', 'readme.md')];
+
+    const renameProps = {
+      ...defaultProps,
+      documents,
+      onRenameDocument,
+    };
+
+    it('should enter edit mode on double-click with base name only', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      const fileName = screen.getByText('readme.md');
+      fireEvent.doubleClick(fileName);
+
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('readme');
+      expect(screen.getByText('.md')).toBeInTheDocument();
+    });
+
+    it('should call onRenameDocument with full filename on Enter', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'updated' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameDocument).toHaveBeenCalledWith('doc-1', 'updated.md');
+    });
+
+    it('should cancel editing on Escape', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'changed' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+
+      expect(onRenameDocument).not.toHaveBeenCalled();
+      expect(screen.getByText('readme.md')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('should not call onRenameDocument if name is unchanged', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
+
+    it('should not call onRenameDocument if name is empty', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '   ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
+
+    it('should enter edit mode from kebab Rename action with base name', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      const kebab = screen.getByRole('button', {
+        name: /Options readme\.md/i,
+      });
+      fireEvent.click(kebab);
+
+      const renameItem = screen.getByText('Rename');
+      fireEvent.click(renameItem);
+
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('readme');
+      expect(screen.getByText('.md')).toBeInTheDocument();
+    });
+
+    it('should show rename tooltip on filename', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      const fileName = screen.getByText('readme.md');
+      expect(fileName).toHaveAttribute('title', 'Double-click to rename');
+    });
+
+    it('should show error and block save when name conflicts with existing document', () => {
+      const twoDocuments = [
+        mockDocument('doc-1', 'readme.md'),
+        mockDocument('doc-2', 'notes.md'),
+      ];
+      render(
+        <DocumentSidebar
+          {...defaultProps}
+          documents={twoDocuments}
+          onRenameDocument={onRenameDocument}
+        />,
+      );
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'notes' } });
+
+      expect(
+        screen.getByText('A document with this name already exists.'),
+      ).toBeInTheDocument();
+
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
+
+    it('should not show error when name does not conflict', () => {
+      const twoDocuments = [
+        mockDocument('doc-1', 'readme.md'),
+        mockDocument('doc-2', 'notes.md'),
+      ];
+      render(
+        <DocumentSidebar
+          {...defaultProps}
+          documents={twoDocuments}
+          onRenameDocument={onRenameDocument}
+        />,
+      );
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'unique-name' } });
+
+      expect(
+        screen.queryByText('A document with this name already exists.'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

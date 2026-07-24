@@ -442,6 +442,31 @@ export async function createNotebooksRouter(
     }),
   );
 
+  notebooksRouter.patch(
+    '/v1/sessions/:sessionId/documents/:documentId',
+    generalRateLimiter,
+    requireNotebooksPermission,
+    requireSessionOwnership(),
+    withAuth(async (req, res) => {
+      const { sessionId, documentId } = req.params;
+      const { title } = req.body;
+
+      if (!title || typeof title !== 'string' || !title.trim()) {
+        handleError(logger, res, 'title is required');
+        return;
+      }
+
+      await documentService.renameDocument(sessionId, documentId, title.trim());
+      res.json(
+        createDocumentResponse(
+          title.trim(),
+          sessionId,
+          'Document renamed successfully',
+        ),
+      );
+    }),
+  );
+
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
