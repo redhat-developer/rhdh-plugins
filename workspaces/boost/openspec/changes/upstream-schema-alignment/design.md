@@ -69,7 +69,7 @@ For each RHDH entity type, the mapping table shows:
 
 ### Decision 3: Dry-run tool as external CLI command
 
-The dry-run tool runs externally against the catalog API, not as a catalog processor. It's a standalone CLI command: `npx @boost/migration-readiness --catalog-url <url>`.
+The dry-run tool runs externally against the catalog API, not as a catalog processor. It's a standalone CLI command: `npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness --catalog-url <url>` (workspace path: `plugins/boost-migration-readiness/`).
 
 **Why:** External CLI is simpler and safer for read-only analysis. A catalog processor hook is future work once RFCs finalize and actual migration begins.
 

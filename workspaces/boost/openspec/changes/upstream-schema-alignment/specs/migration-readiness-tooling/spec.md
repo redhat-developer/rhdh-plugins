@@ -13,7 +13,7 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 ## Scenario: CLI enumerates AI Asset entities from catalog API
 
 **GIVEN** a Backstage catalog with AI Asset entities  
-**WHEN** the dry-run CLI is executed: `npx @boost/migration-readiness --catalog-url <url>`  
+**WHEN** the dry-run CLI is executed: `npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness --catalog-url <url>`  
 **THEN** the tool:
 
 - Queries the catalog API for all entities

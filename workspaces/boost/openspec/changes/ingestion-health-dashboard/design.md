@@ -80,7 +80,7 @@ Navigation: Adds "Ingestion Health" item to admin panel sidebar (`AdminLayout.ts
 Each card shows:
 
 - Connector name and type (GitHub, GitLab, Jira)
-- Status badge (Healthy/Degraded/Failing/Disabled)
+- Status badge (Healthy/Degraded/Failing/Unknown) plus Disabled overlay badge when `enabled: false`
 - Last sync attempt timestamp (relative time via `react-time-ago`)
 - Last successful sync timestamp (or "Never" if no success)
 - Error summary (if failing/degraded) with classification badge

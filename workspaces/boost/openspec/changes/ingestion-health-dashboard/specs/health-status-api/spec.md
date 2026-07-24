@@ -14,8 +14,9 @@ The API exposes connector health state for admin dashboard consumption.
 
 - **WHEN** `GET /api/boost/ingestion-health` is called with valid `ai-catalog.admin` credentials
 - **THEN** the response is a JSON array of connector health objects
-- **AND** each object contains: `connectorId`, `connectorType`, `enabled`, `status` (healthy/degraded/failing/disabled/unknown), `lastSyncAttempt` (ISO timestamp), `lastSuccessfulSync` (ISO timestamp or null), `errorSummary` (object or null), `metrics` (object with assetsAdded/Updated/Removed counts)
-- **AND** disabled connectors are excluded from the response unless `?includeDisabled=true` query parameter is set
+- **AND** each object contains: `connectorId`, `connectorType`, `enabled`, `status` (healthy/degraded/failing/unknown), `lastSyncAttempt` (ISO timestamp), `lastSuccessfulSync` (ISO timestamp or null), `errorSummary` (object or null), `metrics` (object with assetsAdded/Updated/Removed counts)
+- **AND** `status` reflects health derivation only — `disabled` is not a status value; disabled connectors are identified by `enabled: false`
+- **AND** disabled connectors (`enabled: false`) are excluded from the response unless `?includeDisabled=true` query parameter is set; when included, their `status` is derived normally from sync history (or `unknown` if never synced)
 
 #### Scenario: Health status derivation logic
 

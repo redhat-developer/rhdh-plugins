@@ -37,7 +37,7 @@
 
 - [ ] 4.1 Create `IngestionHealthPanel.tsx` component in `plugins/boost/src/components/AdminPanels/`
 - [ ] 4.2 Implement health card rendering with PatternFly `Card`, `CardHeader`, `CardBody` components
-- [ ] 4.3 Add status badge rendering (PatternFly `Label` with success/warning/danger/outline variants for healthy/degraded/failing/disabled/unknown)
+- [ ] 4.3 Add status badge rendering (PatternFly `Label` with success/warning/danger/outline variants for healthy/degraded/failing/unknown) plus disabled overlay badge when `enabled: false`
 - [ ] 4.4 Add timestamp rendering with `react-time-ago` (last sync attempt, last successful sync)
 - [ ] 4.5 Add sync metrics display (assets added/updated/removed counts)
 - [ ] 4.6 Add error summary section with error type badge and diagnostic guidance text

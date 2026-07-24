@@ -37,7 +37,8 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 - **WHEN** `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` is called
 - **THEN** resolver reads YAML baseline value from `ConfigApi` at key path `boost.connectors.jira.enabled`
 - **AND** resolver reads any DB override from `AdminConfigService` for leaf key `boost.connectors.jira.enabled`
-- **AND** resolver returns the DB override value if present, otherwise the YAML baseline value, validated against the Jira connector Zod schema
+- **AND** resolver returns the DB override value if present, otherwise the YAML baseline value, validated against the leaf field's Zod type (per-leaf validation on resolve/write — not the full connector schema)
+- **AND** connector-level aggregate validation (cross-field consistency checks) is applied only on `GET`-prefix queries that return all leaf overrides for a connector, not on individual leaf resolve
 - **AND** resolved value is cached with 30s TTL
 
 #### Scenario: DB override takes precedence over YAML
@@ -80,10 +81,10 @@ Connector config schemas support versioning for backward compatibility.
 #### Scenario: Schema version stored with connector-level DB overrides
 
 - **WHEN** admin writes DB override for a leaf key under `boost.connectors.jira` (e.g., `boost.connectors.jira.enabled`)
-- **THEN** the DB entry stores the leaf key and value (each write targets a single `BoostConfigKey`)
-- **AND** the connector-level `schemaVersion` (e.g., `schemaVersion: 1`) is stored alongside the leaf entries for migration tracking
-- **AND** `GET /api/boost/admin/config?key=boost.connectors.jira` returns all leaf overrides matching that prefix
-- **AND** Zod schema validation is applied at the connector level (aggregating all leaf values) to ensure cross-field consistency
+- **THEN** the DB entry stores the leaf key and value (each write targets a single `BoostConfigKey`); concurrent writes to different leaves under the same connector do not conflict
+- **AND** the connector-level schema version is stored as an explicit leaf key `boost.connectors.jira.__schemaVersion` (e.g., value `1`), bumped only during schema migrations — not on individual config writes
+- **AND** `GET /api/boost/admin/config?key=boost.connectors.jira` returns all leaf overrides matching that prefix, merged into a single object for the response
+- **AND** Zod schema validation is applied at the connector level (aggregating all leaf values) on GET-prefix queries to ensure cross-field consistency
 
 #### Scenario: Schema migration on version mismatch
 

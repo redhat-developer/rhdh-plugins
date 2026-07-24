@@ -14,8 +14,8 @@ The key distinction: Backstage's built-in `ConfigApi` loads config at startup wi
 
 ### Config Schemas
 
-- Zod schema definitions for per-connector settings: `enabled`, `endpoint`, `schedule`, `tls`, `credentials`
-- `configScope` annotation on each field: `yaml-only` (mount paths, K8s Secret references), `db-overridable` (enable/disable, endpoint URL, schedule). Runtime operational state (last sync timestamp, run status) lives in the health store (`boost_sync_attempts` table), not the config resolver.
+- Zod schema definitions for per-connector `boost.connectors.*` fields: `enabled`, `endpoint`, `schedule`, `batchSize`, `timeout` — all `configScope: db-overridable`. Deployment-time fields (`tls`, `credentials`, `namespace`) live under `catalog.providers.*` and are not part of these schemas.
+- Runtime operational state (last sync timestamp, run status) lives in the health store (`boost_sync_attempts` table), not the config resolver.
 - Schema validation rejects invalid connector config values before write
 - Integration with `RuntimeConfigResolver`'s two-layer resolution
 

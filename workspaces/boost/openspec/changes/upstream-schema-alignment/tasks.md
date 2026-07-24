@@ -17,7 +17,7 @@
 
 ## 2. Dry-Run Tooling Scaffold (P1) — RHIDP-15347
 
-- [ ] 2.1 Create `@boost/migration-readiness` CLI package structure
+- [ ] 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI package structure (workspace path: `plugins/boost-migration-readiness/`)
 - [ ] 2.2 Set up TypeScript configuration and build pipeline
 - [ ] 2.3 Implement catalog API client for entity enumeration
 - [ ] 2.4 Filter entities by `rhdh.io/ai-asset-category` annotation presence
@@ -45,7 +45,7 @@
 
 ## 4. Documentation (P1)
 
-- [ ] 4.1 Write README for `@boost/migration-readiness` package
+- [ ] 4.1 Write README for `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` package
 - [ ] 4.2 Document how to run dry-run tool (command-line usage)
 - [ ] 4.3 Document output interpretation (what each field means)
 - [ ] 4.4 Document confidence levels and their implications
