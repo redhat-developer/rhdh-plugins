@@ -238,8 +238,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
     'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
     'notebook.rename.inline.tooltip': 'ダブルクリックで名前を変更',
-    'notebook.rename.inline.success':
-      '「{{notebookName}}」の名前が変更されました。',
     'notebook.rename.inline.error':
       '「{{notebookName}}」の名前変更に失敗しました。',
     'notebooks.title': 'マイノートブック',

@@ -379,4 +379,45 @@ export class NotebookSurfacePage {
       this.t['notebooks.updated.today'],
     );
   }
+
+  /**
+   * Returns the title text span on a given notebook card (the element that supports double-click to rename).
+   */
+  notebookCardTitleText(card: Locator): Locator {
+    return card.locator(
+      `[title="${this.t['notebook.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Returns the inline rename textbox (visible after triggering rename via double-click or overflow menu).
+   */
+  inlineRenameInput(): Locator {
+    return this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.rename.inline.tooltip'],
+    });
+  }
+
+  /**
+   * Double-click the title text on a notebook card to trigger inline edit mode.
+   */
+  async doubleClickCardTitle(card: Locator): Promise<void> {
+    await this.notebookCardTitleText(card).dblclick();
+  }
+
+  /**
+   * Returns the sidebar title element (the one supporting double-click to rename inside the editor).
+   */
+  sidebarTitleText(): Locator {
+    return this.chatbotRegion().locator(
+      `[title="${this.t['notebook.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Double-click the sidebar title to trigger inline edit mode inside the notebook editor.
+   */
+  async doubleClickSidebarTitle(): Promise<void> {
+    await this.sidebarTitleText().dblclick();
+  }
 }

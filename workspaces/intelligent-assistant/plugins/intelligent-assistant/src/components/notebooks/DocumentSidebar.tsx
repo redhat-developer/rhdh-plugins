@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { makeStyles, Typography } from '@material-ui/core';
 import {
@@ -30,6 +30,7 @@ import {
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
 import { NOTEBOOK_MAX_FILES } from '../../const';
+import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
@@ -63,7 +64,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     cursor: 'pointer',
     borderRadius: 4,
-    padding: '2px 4px',
+    padding: '2px 6px',
     '&:hover': {
       backgroundColor:
         'var(--pf-t--global--background--color--action--plain--hover)',
@@ -173,46 +174,19 @@ export const DocumentSidebar = ({
   const classes = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const startEditingTitle = useCallback(() => {
-    setIsEditingTitle(true);
-    setEditTitle(notebookName);
-    setTimeout(() => {
-      titleInputRef.current?.focus();
-      titleInputRef.current?.select();
-    }, 0);
-  }, [notebookName]);
-
-  const cancelEditingTitle = useCallback(() => {
-    setIsEditingTitle(false);
-    setEditTitle('');
-  }, []);
-
-  const saveTitle = useCallback(() => {
-    const trimmed = editTitle.trim();
-    if (!trimmed || trimmed === notebookName) {
-      cancelEditingTitle();
-      return;
-    }
-    onRenameNotebook?.(trimmed);
-    cancelEditingTitle();
-  }, [editTitle, notebookName, onRenameNotebook, cancelEditingTitle]);
-
-  const handleTitleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        saveTitle();
-      } else if (event.key === 'Escape') {
-        event.preventDefault();
-        cancelEditingTitle();
-      }
-    },
-    [saveTitle, cancelEditingTitle],
-  );
+  const {
+    isEditing: isEditingTitle,
+    editValue: editTitle,
+    setEditValue: setEditTitle,
+    inputRef: titleInputRef,
+    startEditing: startEditingTitle,
+    save: saveTitle,
+    handleKeyDown: handleTitleKeyDown,
+  } = useInlineEdit({
+    currentName: notebookName,
+    onSave: newName => onRenameNotebook?.(newName),
+  });
 
   if (collapsed) {
     return null;

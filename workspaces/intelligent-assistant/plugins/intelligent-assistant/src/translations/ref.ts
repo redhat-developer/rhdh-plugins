@@ -39,7 +39,6 @@ export const intelligentAssistantMessages = {
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
   'notebook.rename.inline.tooltip': 'Double-click to rename',
-  'notebook.rename.inline.success': '"{{notebookName}}" renamed successfully.',
   'notebook.rename.inline.error': 'Failed to rename "{{notebookName}}".',
   'notebooks.delete.title': 'Delete {{name}}?',
   'notebooks.delete.message':

@@ -240,8 +240,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebooks.prompts.vulnerabilities.title':
       'Mostrar mis vulnerabilidades críticas',
     'notebook.rename.inline.tooltip': 'Doble clic para renombrar',
-    'notebook.rename.inline.success':
-      '"{{notebookName}}" renombrado correctamente.',
     'notebook.rename.inline.error': 'Error al renombrar "{{notebookName}}".',
     'notebooks.title': 'Mis cuadernos',
     'notebooks.updated.days': 'Actualizado hace {{days}} días',

@@ -244,8 +244,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.prompts.vulnerabilities.title':
       'Zeige meine kritischen Schwachstellen',
     'notebook.rename.inline.tooltip': 'Doppelklick zum Umbenennen',
-    'notebook.rename.inline.success':
-      '"{{notebookName}}" erfolgreich umbenannt.',
     'notebook.rename.inline.error':
       'Umbenennung von "{{notebookName}}" fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',

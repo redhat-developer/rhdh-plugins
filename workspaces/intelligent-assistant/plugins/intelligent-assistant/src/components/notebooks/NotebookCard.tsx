@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback } from 'react';
 
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
@@ -33,6 +33,7 @@ import {
 import { EllipsisVIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
+import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { intelligentAssistantTranslationRef } from '../../translations/ref';
 import { NotebookSession } from '../../types';
 import { formatUpdatedLabel } from '../../utils/notebooks-utils';
@@ -74,47 +75,20 @@ export const NotebookCard = ({
   t,
 }: NotebookCardProps) => {
   const isMenuOpen = openNotebookMenuId === notebook.session_id;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const startEditing = useCallback(() => {
-    setIsEditing(true);
-    setEditName(notebook.name);
-    setOpenNotebookMenuId(null);
-    setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }, 0);
-  }, [notebook.name, setOpenNotebookMenuId]);
-
-  const cancelEditing = useCallback(() => {
-    setIsEditing(false);
-    setEditName('');
-  }, []);
-
-  const saveRename = useCallback(() => {
-    const trimmed = editName.trim();
-    if (!trimmed || trimmed === notebook.name) {
-      cancelEditing();
-      return;
-    }
-    onRename(notebook.session_id, trimmed);
-    cancelEditing();
-  }, [editName, notebook.name, notebook.session_id, onRename, cancelEditing]);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        saveRename();
-      } else if (event.key === 'Escape') {
-        event.preventDefault();
-        cancelEditing();
-      }
-    },
-    [saveRename, cancelEditing],
-  );
+  const {
+    isEditing,
+    editValue: editName,
+    setEditValue: setEditName,
+    inputRef,
+    startEditing,
+    save: saveRename,
+    handleKeyDown,
+  } = useInlineEdit({
+    currentName: notebook.name,
+    onSave: newName => onRename(notebook.session_id, newName),
+    onStart: () => setOpenNotebookMenuId(null),
+  });
 
   const handleCardClick = useCallback(() => {
     if (!isEditing) {
