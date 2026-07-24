@@ -59,9 +59,15 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    flex: 1,
+    flex: '0 1 auto',
     minWidth: 0,
     cursor: 'pointer',
+    borderRadius: 4,
+    padding: '2px 4px',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
   titleInput: {
     flex: 1,
@@ -228,7 +234,7 @@ export const DocumentSidebar = ({
             className={classes.titleInput}
             value={editTitle}
             onChange={(_event, value) => setEditTitle(value)}
-            onBlur={cancelEditingTitle}
+            onBlur={saveTitle}
             onKeyDown={handleTitleKeyDown}
             aria-label={t('notebook.rename.inline.tooltip')}
           />

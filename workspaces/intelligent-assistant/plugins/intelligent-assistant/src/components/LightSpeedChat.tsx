@@ -328,6 +328,12 @@ const useStyles = makeStyles(theme => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     cursor: 'pointer',
+    borderRadius: 4,
+    padding: '2px 6px',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
   notebookMenuButton: {
     color: theme.palette.text.secondary,
@@ -744,16 +750,6 @@ export const LightspeedChat = ({
         notebooks.find(n => n.session_id === sessionId)?.name ?? newName;
       try {
         await renameNotebookMutation({ sessionId, name: newName });
-        setNotebookAlerts(prev => [
-          {
-            key: Date.now() + sessionId,
-            title: (t as Function)('notebook.rename.inline.success', {
-              notebookName: newName,
-            }) as string,
-            variant: 'success',
-          },
-          ...prev,
-        ]);
       } catch {
         setNotebookAlerts(prev => [
           {

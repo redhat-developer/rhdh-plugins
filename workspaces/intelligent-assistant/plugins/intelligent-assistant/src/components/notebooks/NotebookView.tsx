@@ -416,16 +416,6 @@ export const NotebookView = ({
         queryClient.invalidateQueries({
           queryKey: ['notebooks', 'session', sessionId],
         });
-        setToastAlerts(prev => [
-          {
-            key: Date.now() + newName,
-            title: (t as Function)('notebook.rename.inline.success', {
-              notebookName: newName,
-            }) as string,
-            variant: 'success',
-          },
-          ...prev,
-        ]);
       } catch {
         setToastAlerts(prev => [
           {

@@ -206,7 +206,7 @@ export const NotebookCard = ({
               style={titleInputStyle}
               value={editName}
               onChange={(_event, value) => setEditName(value)}
-              onBlur={cancelEditing}
+              onBlur={saveRename}
               onKeyDown={handleKeyDown}
               aria-label={t('notebook.rename.inline.tooltip')}
               onClick={e => e.stopPropagation()}
