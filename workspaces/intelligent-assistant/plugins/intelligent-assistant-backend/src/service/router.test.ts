@@ -29,6 +29,7 @@ import request from 'supertest';
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { intelligentAssistantPlugin } from '../plugin';
+import { ModelCapabilitiesCache } from './attachment-validation';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
@@ -1354,6 +1355,162 @@ describe('intelligent-assistant router tests', () => {
       );
 
       expect(modelsResponse.statusCode).toBe(200);
+    });
+  });
+
+  describe('POST /v1/validate-model-vision', () => {
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('returns true when model supports vision', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return HttpResponse.json({ id: 'resp-1', output: [] });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
+      });
+    });
+
+    it('returns false when model lacks vision', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return new HttpResponse(
+            JSON.stringify({ error: 'Model does not support vision' }),
+            { status: 400 },
+          );
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        model: 'gpt-3.5-turbo',
+        provider: 'test-server',
+        supportsVision: false,
+      });
+    });
+
+    it('returns false when model is not found', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return new HttpResponse(
+            JSON.stringify({ error: 'Model not found' }),
+            { status: 404 },
+          );
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: false,
+      });
+    });
+  });
+
+  describe('POST /v1/query attachment validation', () => {
+    const VALID_JPEG_B64 = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
+    ]).toString('base64');
+
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('rejects attachments when model lacks vision', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-3.5-turbo', false);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: VALID_JPEG_B64,
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'This model does not support JPEG images',
+      );
+    });
+
+    it('accepts attachments when model supports vision', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-4o',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: VALID_JPEG_B64,
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts empty attachments regardless of vision support', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+          attachments: [],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts no attachments field regardless of vision support', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+        });
+
+      expect(response.statusCode).toEqual(200);
     });
   });
 });
