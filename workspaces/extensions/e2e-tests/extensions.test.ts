@@ -108,14 +108,14 @@ test.describe('Admin > Extensions', () => {
       await extensions.selectDropdown(translations.search.author);
       await extensions.toggleOption('Red Hat');
       await sharedPage.keyboard.press(`Escape`);
-      await extensionHelper.verifyHeading('APIs with 3scale');
+      await extensionHelper.verifyHeading('Pipelines with Tekton');
       await extensionHelper.verifyTextInLocator(
         '',
         `${translations.metadata.by} Red Hat`,
         true,
       );
 
-      await extensionHelper.clickHeading('APIs with 3scale');
+      await extensionHelper.clickHeading('Pipelines with Tekton');
       await extensionHelper.verifyTableHeadingAndRows([
         translations.table.packageName,
         translations.table.version,

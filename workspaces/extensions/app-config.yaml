@@ -26,7 +26,6 @@ backend:
   # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format
   auth:
-    dangerouslyDisableDefaultAuthPolicy: true
     # keys:
     #   - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
@@ -101,37 +100,25 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow:
-        [
-          Component,
-          System,
-          API,
-          Resource,
-          Plugin,
-          PluginCollection,
-          Package,
-          Location,
-        ]
+        - Component
+        - System
+        - API
+        - Resource
+        - Plugin
+        - PluginCollection
+        - Package
+        - Location
+
   locations:
     - type: file
       target: ../../catalog-info.yaml
       rules:
         - allow: [Component]
+    # Guest user and group
     - type: file
-      target: ../../examples/all-orgs.yaml
+      target: ../../org.yaml
       rules:
-        - allow: [Group]
-    - type: file
-      target: ../../examples/all-plugins.yaml
-      rules:
-        - allow: [Plugin]
-    - type: file
-      target: ../../examples/all-collections.yaml
-      rules:
-        - allow: [PluginCollection]
-    - type: file
-      target: ../../examples/all-packages.yaml
-      rules:
-        - allow: [Package]
+        - allow: [User, Group]
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
@@ -151,10 +138,11 @@ permission:
         - name: user:development/guest
 
 extensions:
-  # directory: ../../examples # YAML files are in the examples directory
-  ### Example for how to enable installation to a file.
+  # YAML files are in the examples directory
+  directory: ../../examples
+
+  # Example for how to enable installation to a file.
   # installation:
   #   enabled: true
   #   saveToSingleFile:
   #     file: ${EXTENSIONS_PLUGIN_CONFIG}
-dangerouslyAllowSignInWithoutUserInCatalog: true

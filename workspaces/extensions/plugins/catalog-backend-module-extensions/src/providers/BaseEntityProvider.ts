@@ -28,6 +28,7 @@ import {
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
 import { Config } from '@backstage/config';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
 import path from 'path';
@@ -61,7 +62,36 @@ export abstract class BaseEntityProvider<T extends Entity>
   abstract getProviderName(): string;
   abstract getKind(): string;
 
-  private addProviderAnnotations(entity: T): T {
+  /**
+   * The default source identifier used for entities that do not reside
+   * under an `extra/<name>/` subdirectory — i.e. entities from the
+   * primary catalog index image.
+   */
+  static readonly DEFAULT_CATALOG_SOURCE = 'primary';
+
+  /**
+   * Derives a catalog source identifier from a file path.
+   *
+   * When `install-dynamic-plugins` extracts extra catalog index images
+   * (via `EXTRA_CATALOG_INDEX_IMAGES`), entities are placed under
+   * `<extensionsRoot>/extra/<name>/catalog-entities/…`. This method
+   * computes the relative path from `extensionsRoot` and checks whether
+   * the first segment is `extra/` — if so, the second segment is the
+   * source identifier. All other paths return `"primary"`.
+   */
+  static deriveCatalogSource(filePath: string, extensionsRoot: string): string {
+    const relative = path.relative(extensionsRoot, filePath);
+    const [first, second] = relative.split(path.sep);
+    return first === 'extra' && second
+      ? second
+      : BaseEntityProvider.DEFAULT_CATALOG_SOURCE;
+  }
+
+  private addProviderAnnotations(
+    entity: T,
+    filePath: string,
+    extensionsRoot: string,
+  ): T {
     return {
       ...entity,
       metadata: {
@@ -70,12 +100,17 @@ export abstract class BaseEntityProvider<T extends Entity>
           ...entity.metadata.annotations,
           [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
           [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
+          [ExtensionsAnnotation.CATALOG_SOURCE]:
+            BaseEntityProvider.deriveCatalogSource(filePath, extensionsRoot),
         },
       },
     };
   }
 
-  getEntities(allEntities: JsonFileData<T>[]): T[] {
+  getEntities(
+    allEntities: JsonFileData<T>[],
+    extensionsRoot: string = '',
+  ): T[] {
     if (allEntities.length === 0) {
       return [];
     }
@@ -116,8 +151,9 @@ export abstract class BaseEntityProvider<T extends Entity>
       );
     }
 
-    return Array.from(entitiesByEntityRef.values()).map(({ entity }) =>
-      this.addProviderAnnotations(entity),
+    return Array.from(entitiesByEntityRef.values()).map(
+      ({ entity, filePath }) =>
+        this.addProviderAnnotations(entity, filePath, extensionsRoot),
     );
   }
 
@@ -213,7 +249,7 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
     }
 
-    const entities: T[] = this.getEntities(yamlData);
+    const entities: T[] = this.getEntities(yamlData, extensionsFilePath ?? '');
 
     await this.connection.applyMutation({
       type: 'full',
@@ -222,5 +258,9 @@ export abstract class BaseEntityProvider<T extends Entity>
         locationKey: `file:${this.getProviderName()}`,
       })),
     });
+
+    this.logger?.info(
+      `${this.getProviderName()} applied ${entities.length} entities to the catalog.`,
+    );
   }
 }
