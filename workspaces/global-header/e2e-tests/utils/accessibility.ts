@@ -21,11 +21,20 @@ export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = 'accessibility-scan-results.json',
+  include?: string,
 ) {
-  const accessibilityScanResults = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .disableRules(['nested-interactive'])
-    .analyze();
+  let builder = new AxeBuilder({ page }).withTags([
+    'wcag2a',
+    'wcag2aa',
+    'wcag21a',
+    'wcag21aa',
+  ]);
+
+  if (include) {
+    builder = builder.include(include);
+  }
+
+  const accessibilityScanResults = await builder.analyze();
 
   await testInfo.attach(attachName, {
     body: JSON.stringify(accessibilityScanResults, null, 2),
