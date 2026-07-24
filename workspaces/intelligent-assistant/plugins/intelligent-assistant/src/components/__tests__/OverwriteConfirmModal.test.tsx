@@ -23,24 +23,40 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
+const createFile = (name: string) =>
+  new File(['content'], name, { type: 'text/plain' });
+
 describe('OverwriteConfirmModal', () => {
   const onClose = jest.fn();
   const onConfirm = jest.fn();
-  const fileNames = ['report.pdf', 'data.yaml', 'notes.txt'];
+  const onBack = jest.fn();
+
+  const allFiles = [
+    createFile('report.pdf'),
+    createFile('data.yaml'),
+    createFile('notes.txt'),
+  ];
+  const duplicateFileNames = ['report.pdf', 'data.yaml'];
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should render the modal with file list when open', () => {
+  const renderModal = (props = {}) =>
     render(
       <OverwriteConfirmModal
         isOpen
         onClose={onClose}
         onConfirm={onConfirm}
-        fileNames={fileNames}
+        onBack={onBack}
+        allFiles={allFiles}
+        duplicateFileNames={duplicateFileNames}
+        {...props}
       />,
     );
+
+  it('should render the modal with all files when open', () => {
+    renderModal();
 
     expect(screen.getByText('report.pdf')).toBeInTheDocument();
     expect(screen.getByText('data.yaml')).toBeInTheDocument();
@@ -48,106 +64,74 @@ describe('OverwriteConfirmModal', () => {
   });
 
   it('should not render when isOpen is false', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen={false}
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+    renderModal({ isOpen: false });
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('should render a warning alert', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+    renderModal();
 
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/2 files already exist/)).toBeInTheDocument();
+  });
+
+  it('should render radio options for replace and ignore', () => {
+    renderModal();
+
+    expect(screen.getByLabelText('Replace existing files')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Ignore duplicated files'),
+    ).toBeInTheDocument();
   });
 
   it('should render FileTypeIcon badges for each file', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+    renderModal();
 
     expect(screen.getByText('pdf')).toBeInTheDocument();
     expect(screen.getByText('yaml')).toBeInTheDocument();
     expect(screen.getByText('txt')).toBeInTheDocument();
   });
 
-  it('should call onConfirm when overwrite button is clicked', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+  it('should call onConfirm with all files when replace is selected', () => {
+    renderModal();
 
-    const overwriteButton = screen.getByRole('button', {
-      name: 'Overwrite',
+    const uploadButton = screen.getByRole('button', {
+      name: /Upload \(3\)/,
     });
-    fireEvent.click(overwriteButton);
+    fireEvent.click(uploadButton);
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledWith(allFiles);
   });
 
-  it('should call onClose when cancel button is clicked', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+  it('should call onConfirm with only new files when ignore is selected', () => {
+    renderModal();
 
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-    fireEvent.click(cancelButton);
+    const ignoreRadio = screen.getByLabelText('Ignore duplicated files');
+    fireEvent.click(ignoreRadio);
 
-    expect(onClose).toHaveBeenCalledTimes(1);
+    const uploadButton = screen.getByRole('button', {
+      name: /Upload \(1\)/,
+    });
+    fireEvent.click(uploadButton);
+
+    expect(onConfirm).toHaveBeenCalledWith([allFiles[2]]);
+  });
+
+  it('should call onBack when Back button is clicked', () => {
+    renderModal();
+
+    const backButton = screen.getByRole('button', { name: 'Back' });
+    fireEvent.click(backButton);
+
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   it('should call onClose when close icon button is clicked', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={fileNames}
-      />,
-    );
+    renderModal();
 
     const closeButton = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeButton);
 
     expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('should render an empty list for no files', () => {
-    render(
-      <OverwriteConfirmModal
-        isOpen
-        onClose={onClose}
-        onConfirm={onConfirm}
-        fileNames={[]}
-      />,
-    );
-
-    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
   });
 });
