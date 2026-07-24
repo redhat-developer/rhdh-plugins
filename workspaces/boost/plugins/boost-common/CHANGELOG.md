@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-common
 
+## 0.1.4
+
+### Patch Changes
+
+- 46f6034: Upgrade `boost.agent.list` from `BasicPermission` to `ResourcePermission` for conditional RBAC filtering via `authorizeConditional()`. Add `BoostAuthorizedRequest` type for attaching permission conditions to list-endpoint requests.
+
 ## 0.1.3
 
 ### Patch Changes
