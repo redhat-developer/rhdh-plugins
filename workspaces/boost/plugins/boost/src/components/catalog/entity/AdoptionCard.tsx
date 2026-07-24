@@ -17,8 +17,7 @@
 import { useCallback, useState } from 'react';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Button, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
-import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import { RiCheckLine, RiFileCopyLine } from '@remixicon/react';
 
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getSpecField } from '../../../utils/entityHelpers';
@@ -64,11 +63,7 @@ export const AdoptionCard = () => {
             onPress={handleCopy}
             aria-label={t('catalog.card.copyAriaLabel')}
             iconStart={
-              copied ? (
-                <CheckOutlined fontSize="small" />
-              ) : (
-                <ContentCopyOutlined fontSize="small" />
-              )
+              copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />
             }
           >
             {copied ? t('catalog.card.copied') : t('catalog.card.copyCommand')}
