@@ -72,7 +72,7 @@ metadata:
 }
 ```
 
-**THEN** the wrapper extracts the version field and populates `rhdh.io/ai-asset-version: "1.2.3"`.
+**THEN** the wrapper extracts the version field, normalizes it via `normalizeAIAssetVersion()` (SDK-exported from RHDHPLAN-1507), and populates `rhdh.io/ai-asset-version: "1.2.3"`.
 
 **AND** the wrapper validates the version string is non-empty.
 
