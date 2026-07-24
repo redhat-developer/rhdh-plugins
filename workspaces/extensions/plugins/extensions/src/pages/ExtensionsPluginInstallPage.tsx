@@ -79,7 +79,12 @@ const PluginInstallHeader = () => {
         },
       }}
     >
-      <Header title={getTitle()} type="Plugins" typeLink={pluginLink} />
+      <Header
+        title={getTitle()}
+        pageTitleOverride={getTitle()}
+        type="Plugins"
+        typeLink={pluginLink}
+      />
     </Box>
   );
 };

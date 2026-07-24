@@ -32,7 +32,10 @@ export const ExtensionsHomePage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title={t('header.title')} />
+        <Header
+          title={t('header.title')}
+          pageTitleOverride={t('header.title')}
+        />
         <Content>
           <ErrorBoundary>
             <ExtensionsCatalogContent />

@@ -48,7 +48,10 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title={t('header.title')} />
+        <Header
+          title={t('header.title')}
+          pageTitleOverride={t('header.title')}
+        />
         <TabbedLayout>
           <TabbedLayout.Route path="/catalog" title={t('header.pluginsPage')}>
             <ExtensionsCatalogContent />
