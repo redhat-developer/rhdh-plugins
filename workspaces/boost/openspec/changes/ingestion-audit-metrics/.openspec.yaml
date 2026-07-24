@@ -1,0 +1,8 @@
+schema: spec-driven
+created: 2026-07-08
+status: consolidated
+consolidation:
+  date: 2026-07-08
+  absorbed_by: RHIDP-15277
+  plan: RHDHPLAN-1508
+  reason: Ingestion audit logging scope consolidated into RBAC Audit Logging epic to avoid parallel audit implementations
