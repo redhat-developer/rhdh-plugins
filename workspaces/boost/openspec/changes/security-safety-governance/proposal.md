@@ -16,7 +16,7 @@ Enterprise AI platforms must treat security, safety, and governance as foundatio
 - 16 Backstage permissions across 2 resource types (`boost-agent`, `boost-tool`) plus functional permissions
 - Conditional rules: `IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`
 - `authorizeLifecycleAction` middleware as the sole authorization path — no scattered per-route guards
-- All authorization decisions use `permissions.authorize()` from day one
+- All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) from day one
 
 ### Identity & Authentication
 

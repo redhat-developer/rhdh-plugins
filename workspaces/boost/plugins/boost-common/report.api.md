@@ -83,11 +83,11 @@ export const boostAgentDeletePermission: ResourcePermission<'boost-agent'>;
 export const boostAgentDemotePermission: ResourcePermission<'boost-agent'>;
 
 // @public
-export const boostAgentListPermission: BasicPermission;
+export const boostAgentListPermission: ResourcePermission<'boost-agent'>;
 
 // @public
 export const boostAgentPermissions: readonly [
-  BasicPermission,
+  ResourcePermission<'boost-agent'>,
   BasicPermission,
   BasicPermission,
   ResourcePermission<'boost-agent'>,
@@ -133,7 +133,7 @@ export const boostDocumentsManagePermission: BasicPermission;
 
 // @public
 export const boostEntityPermissions: readonly [
-  BasicPermission,
+  ResourcePermission<'boost-agent'>,
   BasicPermission,
   BasicPermission,
   ResourcePermission<'boost-agent'>,
@@ -168,7 +168,7 @@ export const boostMcpManagePermission: BasicPermission;
 
 // @public
 export const boostPermissions: readonly [
-  BasicPermission,
+  ResourcePermission<'boost-agent'>,
   BasicPermission,
   BasicPermission,
   ResourcePermission<'boost-agent'>,

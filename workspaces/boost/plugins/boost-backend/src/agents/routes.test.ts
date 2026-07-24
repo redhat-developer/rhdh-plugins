@@ -58,7 +58,7 @@ function createMockPermissions(
 ): PermissionsService {
   return {
     authorize: jest.fn().mockResolvedValue([{ result }]),
-    authorizeConditional: jest.fn(),
+    authorizeConditional: jest.fn().mockResolvedValue([{ result }]),
   };
 }
 
@@ -560,28 +560,65 @@ describe('agent routes', () => {
       expect(res.status).toBe(403);
     });
 
+    // CONDITIONAL returns all agents unfiltered until resource loader populates
+    // createdBy/lifecycleStage fields — filtering is intentionally deferred, not fail-open.
+    it('returns all agents when authorizeConditional returns CONDITIONAL (filtering deferred)', async () => {
+      const agents = [makeAgent()];
+      const store = createMockStore({
+        list: jest.fn().mockResolvedValue(agents),
+      });
+
+      const conditions = {
+        resourceType: 'boost-agent',
+        rule: 'IS_OWNER',
+        params: { claims: ['user:default/testuser'] },
+      };
+
+      const authorizeConditionalMock = jest.fn().mockResolvedValueOnce([
+        {
+          result: AuthorizeResult.CONDITIONAL,
+          pluginId: 'boost',
+          resourceType: 'boost-agent',
+          conditions,
+        },
+      ]);
+
+      const permissions: PermissionsService = {
+        authorize: jest.fn(),
+        authorizeConditional: authorizeConditionalMock,
+      };
+      testApp = await createTestApp({ store, permissions });
+
+      const res = await fetchJson(testApp.url, '/agents');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ agents });
+      expect(authorizeConditionalMock).toHaveBeenCalledTimes(1);
+      expect(permissions.authorize).not.toHaveBeenCalled();
+    });
+
     it('allows via admin fallback when fine-grained denies', async () => {
       const agents = [makeAgent()];
       const store = createMockStore({
         list: jest.fn().mockResolvedValue(agents),
       });
 
+      const authorizeConditionalMock = jest
+        .fn()
+        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }]);
       const authorizeMock = jest
         .fn()
-        // First call: fine-grained → DENY
-        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }])
-        // Second call: admin → ALLOW
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
 
       const permissions: PermissionsService = {
         authorize: authorizeMock,
-        authorizeConditional: jest.fn(),
+        authorizeConditional: authorizeConditionalMock,
       };
       testApp = await createTestApp({ store, permissions });
 
       const res = await fetchJson(testApp.url, '/agents');
       expect(res.status).toBe(200);
-      expect(authorizeMock).toHaveBeenCalledTimes(2);
+      expect(authorizeConditionalMock).toHaveBeenCalledTimes(1);
+      expect(authorizeMock).toHaveBeenCalledTimes(1);
     });
   });
 });

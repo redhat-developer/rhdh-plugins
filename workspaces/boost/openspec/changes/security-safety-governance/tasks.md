@@ -11,7 +11,7 @@
 ## 2. Authorization Middleware (P0)
 
 - [ ] 2.1 Create `authorizeLifecycleAction(permission, resourceLoader)` middleware in `boost-backend/src/middleware/security.ts`
-- [ ] 2.2 Implement fine-grained permission check via `permissions.authorize()` → DENY → 403 pattern
+- [ ] 2.2 Implement fine-grained permission check via `permissions.authorize()` (single-resource) / `permissions.authorizeConditional()` (list endpoints) → DENY → 403 pattern
 - [ ] 2.3 Create resource loader functions for agents and tools (load from store, extract `createdBy` and `lifecycleStage`)
 
 ## 3. Agent Routes — Permission Integration (P1)

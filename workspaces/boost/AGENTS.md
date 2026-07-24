@@ -56,7 +56,7 @@ Frontend rendering decisions use `ProviderCapabilities` interface checks. Never 
 
 ### Permissions as sole authorization
 
-All authorization decisions use `permissions.authorize()` with fine-grained permissions (`boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`). No custom route-level authorization logic.
+All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) with fine-grained permissions (`boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`). No custom route-level authorization logic.
 
 ### Schema-driven validation
 
@@ -84,8 +84,11 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 ### Naming
 
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
-- Permission names: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-- Resource types: `boost-agent`, `boost-tool`
+- Permission names — two namespaces by design:
+  - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
+  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`
+- Config: `ai-catalog.rbac.*` for catalog RBAC config (e.g., `ai-catalog.rbac.defaultPolicy`)
+- Resource types: `boost-agent`, `boost-tool`, `ai-catalog-asset`
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`
 - Extension point: `boostProviderExtensionPoint`
 - Service ref: `boostAiProviderServiceRef`
@@ -107,5 +110,5 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not reference the `workspaces/augment/` codebase for implementation patterns — boost is a clean-room build
 - Do not use `augment` as a prefix for any new identifiers (config keys, permissions, tables, etc.)
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
-- Do not add authorization checks outside `permissions.authorize()`
+- Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
