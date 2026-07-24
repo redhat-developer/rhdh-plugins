@@ -3671,6 +3671,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-notifications-common@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@backstage/plugin-notifications-common@npm:0.2.3"
+  dependencies:
+    "@backstage/config": "npm:^1.3.8"
+    "@backstage/types": "npm:^1.2.2"
+  checksum: 10c0/d8a64fca1771d6b8b59d24f0fa06610484e5842c757b1fde4b7cdbd7ee98c6a35cbba0302a5208fcc6e9981b10a64123f8d73b8c0c07f400500f8fa749b28436
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-notifications@npm:^0.5.19":
+  version: 0.5.19
+  resolution: "@backstage/plugin-notifications@npm:0.5.19"
+  dependencies:
+    "@backstage/core-components": "npm:^0.18.12"
+    "@backstage/core-plugin-api": "npm:^1.12.8"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/frontend-plugin-api": "npm:^0.17.3"
+    "@backstage/plugin-notifications-common": "npm:^0.2.3"
+    "@backstage/plugin-signals-react": "npm:^0.0.24"
+    "@backstage/theme": "npm:^0.7.3"
+    "@backstage/ui": "npm:^0.17.0"
+    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
+    lodash: "npm:^4.17.21"
+    notistack: "npm:^3.0.1"
+    react-aria-components: "npm:~1.17.0"
+    react-relative-time: "npm:^0.0.9"
+    react-use: "npm:^17.2.4"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.2
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/ad348655ed3bce82b5c0b01ff1fbca9fd761fce6a17a48b7799e4916314df88e2136c08c84e625a0d925cc5870cf15660a6fcf7c2bcdd416165bd20b44ebb107
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-org@npm:^0.7.5":
   version: 0.7.6
   resolution: "@backstage/plugin-org@npm:0.7.6"
@@ -14306,6 +14346,7 @@ __metadata:
     "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/plugin-app-visualizer": "npm:^0.2.5"
     "@backstage/plugin-catalog": "npm:^2.0.6"
+    "@backstage/plugin-notifications": "npm:^0.5.19"
     "@backstage/plugin-search": "npm:^1.7.5"
     "@backstage/plugin-user-settings": "npm:^0.9.4"
     "@backstage/ui": "npm:^0.16.0"
@@ -16074,7 +16115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^1.0.2, clsx@npm:^1.0.4, clsx@npm:^1.1.1, clsx@npm:^1.2.1":
+"clsx@npm:^1.0.2, clsx@npm:^1.0.4, clsx@npm:^1.1.0, clsx@npm:^1.1.1, clsx@npm:^1.2.1":
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 10c0/34dead8bee24f5e96f6e7937d711978380647e936a22e76380290e35486afd8634966ce300fc4b74a32f3762c7d4c0303f442c3e259f4ce02374eb0c82834f27
@@ -17111,6 +17152,13 @@ __metadata:
   version: 2.6.21
   resolution: "csstype@npm:2.6.21"
   checksum: 10c0/e07f27f2100bce9890bb4c3cb9263af97388f0d99b50073b663f1e363fa51b68ac7e2c8a612cd911d2b33c52d83afd1b0b8bc4de1d3ca76ee019a230295daffb
+  languageName: node
+  linkType: hard
+
+"csstype@npm:^3.0.10":
+  version: 3.2.3
+  resolution: "csstype@npm:3.2.3"
+  checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
   languageName: node
   linkType: hard
 
@@ -20347,6 +20395,15 @@ __metadata:
     merge2: "npm:^1.4.1"
     slash: "npm:^3.0.0"
   checksum: 10c0/b39511b4afe4bd8a7aead3a27c4ade2b9968649abab0a6c28b1a90141b96ca68ca5db1302f7c7bd29eab66bf51e13916b8e0a3d0ac08f75e1e84a39b35691189
+  languageName: node
+  linkType: hard
+
+"goober@npm:^2.0.33":
+  version: 2.1.19
+  resolution: "goober@npm:2.1.19"
+  peerDependencies:
+    csstype: ^3.0.10
+  checksum: 10c0/f6a01f2e8abfef571ac539f96e650dcde964e7c0bef6c9055a8c8e110624ccd7b51ab90706a806ca570a56141ea689d355fb1cec3ee9209499c249638883990d
   languageName: node
   linkType: hard
 
@@ -26052,6 +26109,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"notistack@npm:^3.0.1":
+  version: 3.0.2
+  resolution: "notistack@npm:3.0.2"
+  dependencies:
+    clsx: "npm:^1.1.0"
+    goober: "npm:^2.0.33"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/82a0270ee1b9e70bc1dfad4d7e1d2bbb6dc08ac887b920986dcfa58cc2aa975bd48b71f7cf3afc2e11badd142ba9ade5f708c858ee2080b9d4cd950b80c43811
+  languageName: node
+  linkType: hard
+
 "npm-bundled@npm:^2.0.0":
   version: 2.0.1
   resolution: "npm-bundled@npm:2.0.1"
@@ -28767,6 +28837,15 @@ __metadata:
   version: 0.18.0
   resolution: "react-refresh@npm:0.18.0"
   checksum: 10c0/34a262f7fd803433a534f50deb27a148112a81adcae440c7d1cbae7ef14d21ea8f2b3d783e858cb7698968183b77755a38b4d4b5b1d79b4f4689c2f6d358fff2
+  languageName: node
+  linkType: hard
+
+"react-relative-time@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "react-relative-time@npm:0.0.9"
+  peerDependencies:
+    react: ">=0.13.0"
+  checksum: 10c0/8489deccdae251812698d1bdce3239076e8237131565739a8c11f994183f585b6aa5a2a3564b6dae57e6ecd07eae8edc7992104e3720ca84776269c8d51a6055
   languageName: node
   linkType: hard
 

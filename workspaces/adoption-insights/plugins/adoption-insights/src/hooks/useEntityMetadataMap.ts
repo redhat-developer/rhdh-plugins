@@ -20,10 +20,13 @@ import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
+const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';
+
 type EntityMetadata = {
   title?: string;
   description?: string;
   kind?: string;
+  timeSaved?: string;
 };
 
 type EntityMetadataMap = Record<string, EntityMetadata>;
@@ -102,6 +105,8 @@ export const useEntityMetadataMap = (entityRefs: string[]) => {
             title: entity?.metadata?.title?.trim(),
             description: entity?.metadata?.description?.trim(),
             kind: entity?.kind,
+            timeSaved:
+              entity?.metadata?.annotations?.[TIME_SAVED_ANNOTATION]?.trim(),
           };
         });
         setEntityMetadataMap(nextMap);

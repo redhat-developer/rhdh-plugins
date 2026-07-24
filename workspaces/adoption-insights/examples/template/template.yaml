@@ -5,6 +5,8 @@ metadata:
   name: example-nodejs-template
   title: Example Node.js Template
   description: An example template for the scaffolder that creates a simple Node.js service
+  annotations:
+    rhdh.redhat.com/time-saved: '180'
 spec:
   owner: user:guest
   type: service

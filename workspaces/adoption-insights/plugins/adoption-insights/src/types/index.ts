@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export type NotificationFrequency = 'daily' | 'weekly' | 'monthly' | 'none';
+
+export type NotificationPreferenceResponse = {
+  frequency: NotificationFrequency;
+};
+
 /**
  * API
  */
@@ -27,6 +33,13 @@ export interface AdoptionInsightsApi {
   getActiveUsers(options: APIsViewOptions): Promise<ActiveUsersResponse>;
   getSearches(options: APIsViewOptions): Promise<SearchesResponse>;
   getUsers(options: APIsViewOptions): Promise<UsersResponse>;
+  getTimeSavedTotals(
+    options: APIsViewOptions,
+  ): Promise<TimeSavedTotalsResponse>;
+  getNotificationPreference(): Promise<NotificationPreferenceResponse>;
+  setNotificationPreference(
+    frequency: NotificationFrequency,
+  ): Promise<NotificationPreferenceResponse>;
 }
 
 export type APIsViewOptions = {
@@ -86,6 +99,20 @@ export type Templates = {
 
 export type TemplatesResponse = {
   data: Templates[];
+};
+
+export type TimeSavedTemplate = {
+  entityref: string;
+  execution_count: number;
+  time_saved_per_execution: number;
+  total_time_saved_minutes: number;
+};
+
+export type TimeSavedTotalsResponse = {
+  data: {
+    total_time_saved_minutes: number;
+    templates: TimeSavedTemplate[];
+  };
 };
 
 /**
