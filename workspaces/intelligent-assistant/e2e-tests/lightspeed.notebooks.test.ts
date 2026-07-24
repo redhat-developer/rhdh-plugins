@@ -164,13 +164,11 @@ test.describe('Intelligent assistant notebooks', () => {
       .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
       .click();
     await notebooks.renameNotebookOverflowMenuItem().click();
+    await notebooks.renameNotebookInline(RENAMED_NOTEBOOK_TITLE);
 
-    const renameModal = notebooks.renameNotebookDialog(
-      NOTEBOOK_UNTITLED_GRID_NAME,
-    );
-    await renameModal.enterNewDisplayedNameAndSubmit(RENAMED_NOTEBOOK_TITLE);
-
-    await expect(sharedPage.getByText(RENAMED_NOTEBOOK_TITLE)).toBeVisible();
+    await expect(
+      notebooks.notebookCardByDisplayedName(RENAMED_NOTEBOOK_TITLE),
+    ).toBeVisible();
 
     await notebooks
       .notebookCardOverflowMenuButton(
@@ -188,7 +186,159 @@ test.describe('Intelligent assistant notebooks', () => {
 
     await notebooks.expectNotebookCardAbsent(RENAMED_NOTEBOOK_TITLE);
     await notebooks.expectUntitledNotebookCardCount(untitledBefore);
+  });
 
-    await expect(sharedPage.getByText(RENAMED_NOTEBOOK_TITLE)).toBeHidden();
+  test('grid: double-click card title triggers inline rename', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+    await notebooks.clickCloseNotebookEditor();
+
+    const card = notebooks.newestUntitledNotebookCard();
+    await expect(card).toBeVisible();
+
+    await notebooks.doubleClickCardTitle(card);
+    await expect(notebooks.inlineRenameInput()).toBeVisible();
+
+    const newName = 'DoubleClick Renamed';
+    await notebooks.inlineRenameInput().fill(newName);
+    await notebooks.inlineRenameInput().press('Enter');
+
+    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
+
+    await notebooks
+      .notebookCardOverflowMenuButton(
+        notebooks.notebookCardByDisplayedName(newName),
+      )
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
+    await confirmDelete.confirmDeletion();
+    await notebooks.expectNotebookCardAbsent(newName);
+  });
+
+  test('grid: Escape cancels inline rename', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+    await notebooks.clickCloseNotebookEditor();
+
+    const card = notebooks.newestUntitledNotebookCard();
+    await expect(card).toBeVisible();
+
+    await notebooks.notebookCardOverflowMenuButton(card).click();
+    await notebooks.renameNotebookOverflowMenuItem().click();
+    await expect(notebooks.inlineRenameInput()).toBeVisible();
+
+    await notebooks.inlineRenameInput().fill('Should Not Save');
+    await notebooks.inlineRenameInput().press('Escape');
+
+    await expect(notebooks.inlineRenameInput()).toBeHidden();
+    await expect(
+      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
+    ).toBeVisible();
+    await notebooks.expectNotebookCardAbsent('Should Not Save');
+
+    await notebooks
+      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
+      NOTEBOOK_UNTITLED_GRID_NAME,
+    );
+    await confirmDelete.confirmDeletion();
+  });
+
+  test('grid: blur saves inline rename', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+    await notebooks.clickCloseNotebookEditor();
+
+    const card = notebooks.newestUntitledNotebookCard();
+    await expect(card).toBeVisible();
+
+    await notebooks.doubleClickCardTitle(card);
+    await expect(notebooks.inlineRenameInput()).toBeVisible();
+
+    const newName = 'Blur Saved Name';
+    await notebooks.inlineRenameInput().fill(newName);
+    await notebooks.myNotebooksHeading().click();
+
+    await expect(notebooks.inlineRenameInput()).toBeHidden();
+    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
+
+    await notebooks
+      .notebookCardOverflowMenuButton(
+        notebooks.notebookCardByDisplayedName(newName),
+      )
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
+    await confirmDelete.confirmDeletion();
+    await notebooks.expectNotebookCardAbsent(newName);
+  });
+
+  test('grid: empty or unchanged name cancels rename', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+    await notebooks.clickCloseNotebookEditor();
+
+    const card = notebooks.newestUntitledNotebookCard();
+    await expect(card).toBeVisible();
+
+    await notebooks.doubleClickCardTitle(card);
+    await expect(notebooks.inlineRenameInput()).toBeVisible();
+
+    await notebooks.inlineRenameInput().fill('');
+    await notebooks.inlineRenameInput().press('Enter');
+
+    await expect(notebooks.inlineRenameInput()).toBeHidden();
+    await expect(
+      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
+    ).toBeVisible();
+
+    await notebooks.doubleClickCardTitle(
+      notebooks.newestUntitledNotebookCard(),
+    );
+    await expect(notebooks.inlineRenameInput()).toBeVisible();
+    await notebooks.inlineRenameInput().press('Enter');
+
+    await expect(notebooks.inlineRenameInput()).toBeHidden();
+    await expect(
+      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
+    ).toBeVisible();
+
+    await notebooks
+      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
+      NOTEBOOK_UNTITLED_GRID_NAME,
+    );
+    await confirmDelete.confirmDeletion();
+  });
+
+  test('sidebar: double-click title to rename inside editor', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+
+    await expect(notebooks.sidebarTitleText()).toBeVisible();
+    await notebooks.doubleClickSidebarTitle();
+
+    const sidebarInput = notebooks.inlineRenameInput();
+    await expect(sidebarInput).toBeVisible();
+
+    const newName = 'Sidebar Renamed';
+    await sidebarInput.fill(newName);
+    await sidebarInput.press('Enter');
+
+    await expect(notebooks.sidebarTitleText()).toContainText(newName);
+
+    await notebooks.clickCloseNotebookEditor();
+
+    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
+
+    await notebooks
+      .notebookCardOverflowMenuButton(
+        notebooks.notebookCardByDisplayedName(newName),
+      )
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
+    await confirmDelete.confirmDeletion();
+    await notebooks.expectNotebookCardAbsent(newName);
   });
 });

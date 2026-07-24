@@ -116,15 +116,16 @@ describe('NotebookCard', () => {
       expect(screen.getByText('Delete')).toBeInTheDocument();
     });
 
-    it('should call onRename and stop propagation when rename is clicked', () => {
+    it('should enter edit mode when rename is clicked', () => {
       render(<NotebookCard {...propsWithOpenMenu} />);
       onClick.mockClear();
 
       const renameItem = screen.getByText('Rename');
       fireEvent.click(renameItem);
 
-      expect(onRename).toHaveBeenCalledWith('session-123');
-      expect(setOpenNotebookMenuId).toHaveBeenCalledWith(null);
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('My Notebook');
       expect(onClick).not.toHaveBeenCalled();
     });
 
@@ -138,6 +139,87 @@ describe('NotebookCard', () => {
       expect(onDelete).toHaveBeenCalledWith('session-123');
       expect(setOpenNotebookMenuId).toHaveBeenCalledWith(null);
       expect(onClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('inline rename', () => {
+    const propsWithOpenMenu = {
+      ...defaultProps,
+      openNotebookMenuId: 'session-123',
+    };
+
+    it('should enter edit mode on double-click', () => {
+      render(<NotebookCard {...defaultProps} />);
+
+      fireEvent.doubleClick(screen.getByText('My Notebook'));
+
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('My Notebook');
+    });
+
+    it('should call onRename with sessionId and new name on Enter', () => {
+      render(<NotebookCard {...propsWithOpenMenu} />);
+
+      fireEvent.click(screen.getByText('Rename'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'New Name' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRename).toHaveBeenCalledWith('session-123', 'New Name');
+    });
+
+    it('should cancel editing on Escape', () => {
+      render(<NotebookCard {...propsWithOpenMenu} />);
+
+      fireEvent.click(screen.getByText('Rename'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'Changed' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+
+      expect(onRename).not.toHaveBeenCalled();
+      expect(screen.getByText('My Notebook')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('should not call onRename if name is unchanged', () => {
+      render(<NotebookCard {...propsWithOpenMenu} />);
+
+      fireEvent.click(screen.getByText('Rename'));
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRename).not.toHaveBeenCalled();
+    });
+
+    it('should not call onRename if name is empty', () => {
+      render(<NotebookCard {...propsWithOpenMenu} />);
+
+      fireEvent.click(screen.getByText('Rename'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '   ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRename).not.toHaveBeenCalled();
+    });
+
+    it('should block card click while editing', () => {
+      render(<NotebookCard {...defaultProps} />);
+
+      fireEvent.doubleClick(screen.getByText('My Notebook'));
+      onClick.mockClear();
+
+      const card = screen.getByLabelText(/Open notebook My Notebook/i);
+      fireEvent.click(card);
+
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it('should show rename tooltip on title', () => {
+      render(<NotebookCard {...defaultProps} />);
+
+      const title = screen.getByText('My Notebook');
+      expect(title).toHaveAttribute('title', 'Double-click to rename');
     });
   });
 

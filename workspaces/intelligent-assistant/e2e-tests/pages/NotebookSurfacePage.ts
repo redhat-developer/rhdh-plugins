@@ -22,7 +22,6 @@ import { openLightspeed } from '../utils/testHelper';
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
 import { NotebookDeleteDialogPage } from './NotebookDeleteDialogPage';
 import { NotebookOverwriteConfirmModalPage } from './NotebookOverwriteConfirmModalPage';
-import { RenameNotebookModalPage } from './RenameNotebookModalPage';
 
 /**
  * Display name for an untitled session on the grid (matches `UNTITLED_NOTEBOOK_NAME` from the plugin).
@@ -168,15 +167,17 @@ export class NotebookSurfacePage {
     return new NotebookDeleteDialogPage(this.page, this.t, notebookDisplayName);
   }
 
-  /** Shown after choosing Rename on a notebook card. `currentDisplayedName` is the title shown on that card. */
-  renameNotebookDialog(
-    currentDisplayedNotebookName: string,
-  ): RenameNotebookModalPage {
-    return new RenameNotebookModalPage(
-      this.page,
-      this.t,
-      currentDisplayedNotebookName,
-    );
+  /**
+   * After clicking Rename from the overflow menu, an inline TextInput appears on the card.
+   * Fill it and press Enter to commit the rename.
+   */
+  async renameNotebookInline(newName: string): Promise<void> {
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.rename.inline.tooltip'],
+    });
+    await expect(input).toBeVisible();
+    await input.fill(newName);
+    await input.press('Enter');
   }
 
   /**
@@ -377,5 +378,46 @@ export class NotebookSurfacePage {
     await expect(this.chatbotRegion()).toContainText(
       this.t['notebooks.updated.today'],
     );
+  }
+
+  /**
+   * Returns the title text span on a given notebook card (the element that supports double-click to rename).
+   */
+  notebookCardTitleText(card: Locator): Locator {
+    return card.locator(
+      `[title="${this.t['notebook.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Returns the inline rename textbox (visible after triggering rename via double-click or overflow menu).
+   */
+  inlineRenameInput(): Locator {
+    return this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.rename.inline.tooltip'],
+    });
+  }
+
+  /**
+   * Double-click the title text on a notebook card to trigger inline edit mode.
+   */
+  async doubleClickCardTitle(card: Locator): Promise<void> {
+    await this.notebookCardTitleText(card).dblclick();
+  }
+
+  /**
+   * Returns the sidebar title element (the one supporting double-click to rename inside the editor).
+   */
+  sidebarTitleText(): Locator {
+    return this.chatbotRegion().locator(
+      `[title="${this.t['notebook.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Double-click the sidebar title to trigger inline edit mode inside the notebook editor.
+   */
+  async doubleClickSidebarTitle(): Promise<void> {
+    await this.sidebarTitleText().dblclick();
   }
 }
