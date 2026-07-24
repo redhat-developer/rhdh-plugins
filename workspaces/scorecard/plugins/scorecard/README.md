@@ -2,7 +2,7 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. For NFS, the plugin currently provides three modules: a catalog module for the Scorecard entity tab, a home module for homepage widgets, and a translations module.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available at `./legacy` (and are also re-exported from the main entry for compatibility). Translations remain available at `./alpha`. For NFS, the plugin provides three modules: a catalog module for the Scorecard entity tab, a home module for homepage widgets, and a translations module.
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
@@ -43,19 +43,20 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
    ```
 
-2. Register the plugin in `packages/app/src/App.tsx` using the **alpha** export:
+2. Register the plugin in `packages/app/src/App.tsx`:
 
    ```tsx
    // In packages/app/src/App.tsx
    import { createApp } from '@backstage/frontend-defaults';
-   import {
+   import scorecardPlugin, {
      scorecardHomeModule,
      scorecardTranslationsModule,
      scorecardCatalogModule,
-   } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
+   } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    const app = createApp({
      features: [
+       scorecardPlugin,
        scorecardHomeModule,
        scorecardCatalogModule,
        scorecardTranslationsModule,
@@ -215,7 +216,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
 ##### Modules and extensions (NFS)
 
-The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
+The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard` for NFS apps:
 
 **Modules**
 
