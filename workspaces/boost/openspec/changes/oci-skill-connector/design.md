@@ -58,7 +58,7 @@ We must decide between (a) direct HTTP client implementing these endpoints, or (
 - Avoids dependency on external libraries (smaller bundle, fewer CVEs, no version conflicts)
 - Full control over retry logic, timeouts, and error handling
 - Easy to unit test with mock HTTP server
-- No dependency churn — OCI Distribution Spec is stable (v1.0 since 2018, v1.1 since 2023)
+- No dependency churn — OCI Distribution Spec is stable (v1.0 since 2021, v1.1 since 2024)
 
 **Implementation notes:**
 
