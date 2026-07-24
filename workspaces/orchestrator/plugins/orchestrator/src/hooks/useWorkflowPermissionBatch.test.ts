@@ -18,15 +18,16 @@ import { renderHook } from '@testing-library/react';
 
 import { useWorkflowPermissionBatch } from './useWorkflowPermissionBatch';
 
-const mockUsePermission = jest.fn();
 const mockUsePermissionArray = jest.fn();
-
-jest.mock('@backstage/plugin-permission-react', () => ({
-  usePermission: (...args: unknown[]) => mockUsePermission(...args),
-}));
+const mockUseResourcePermissionBatch = jest.fn();
 
 jest.mock('./usePermissionArray', () => ({
   usePermissionArray: (...args: unknown[]) => mockUsePermissionArray(...args),
+}));
+
+jest.mock('./useResourcePermissionBatch', () => ({
+  useResourcePermissionBatch: (...args: unknown[]) =>
+    mockUseResourcePermissionBatch(...args),
 }));
 
 describe('useWorkflowPermissionBatch', () => {
@@ -47,9 +48,15 @@ describe('useWorkflowPermissionBatch', () => {
     jest.clearAllMocks();
   });
 
-  it('skips specific checks when generic permission is allowed', () => {
-    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
-    mockUsePermissionArray.mockReturnValue({ allowed: [] });
+  it('returns allowed when resource permission grants access', () => {
+    mockUseResourcePermissionBatch.mockReturnValue({
+      loading: false,
+      allowed: [true, true],
+    });
+    mockUsePermissionArray.mockReturnValue({
+      loading: false,
+      allowed: [false, false],
+    });
 
     const { result } = renderHook(() =>
       useWorkflowPermissionBatch(
@@ -59,14 +66,18 @@ describe('useWorkflowPermissionBatch', () => {
       ),
     );
 
-    expect(mockUsePermissionArray).toHaveBeenCalledWith([]);
-    expect(specificPermissionFactory).not.toHaveBeenCalled();
     expect(result.current.allowed).toEqual([true, true]);
   });
 
-  it('skips specific checks while generic permission is loading', () => {
-    mockUsePermission.mockReturnValue({ loading: true, allowed: false });
-    mockUsePermissionArray.mockReturnValue({ allowed: [] });
+  it('falls back to legacy permissions when resource permission denies', () => {
+    mockUseResourcePermissionBatch.mockReturnValue({
+      loading: false,
+      allowed: [false, false],
+    });
+    mockUsePermissionArray.mockReturnValue({
+      loading: false,
+      allowed: [true, false],
+    });
 
     const { result } = renderHook(() =>
       useWorkflowPermissionBatch(
@@ -76,14 +87,18 @@ describe('useWorkflowPermissionBatch', () => {
       ),
     );
 
-    expect(mockUsePermissionArray).toHaveBeenCalledWith([]);
-    // generic.allowed is false and specific.allowed has no entries yet while loading
-    expect(result.current.allowed).toEqual([undefined, undefined]);
+    expect(result.current.allowed).toEqual([true, false]);
   });
 
-  it('uses per-workflow permissions when generic permission is denied', () => {
-    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
-    mockUsePermissionArray.mockReturnValue({ allowed: [true, false] });
+  it('reports loading when either source is loading', () => {
+    mockUseResourcePermissionBatch.mockReturnValue({
+      loading: true,
+      allowed: [false, false],
+    });
+    mockUsePermissionArray.mockReturnValue({
+      loading: false,
+      allowed: [false, false],
+    });
 
     const { result } = renderHook(() =>
       useWorkflowPermissionBatch(
@@ -93,18 +108,6 @@ describe('useWorkflowPermissionBatch', () => {
       ),
     );
 
-    expect(specificPermissionFactory).toHaveBeenCalledWith('wf-1');
-    expect(specificPermissionFactory).toHaveBeenCalledWith('wf-2');
-    expect(mockUsePermissionArray).toHaveBeenCalledWith([
-      {
-        name: 'orchestrator.workflow.use.wf-1',
-        attributes: { action: 'use' },
-      },
-      {
-        name: 'orchestrator.workflow.use.wf-2',
-        attributes: { action: 'use' },
-      },
-    ]);
-    expect(result.current.allowed).toEqual([true, false]);
+    expect(result.current.loading).toBe(true);
   });
 });

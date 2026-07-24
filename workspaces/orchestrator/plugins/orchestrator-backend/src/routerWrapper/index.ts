@@ -19,6 +19,7 @@ import type {
   DiscoveryService,
   HttpAuthService,
   LoggerService,
+  PermissionsRegistryService,
   PermissionsService,
   SchedulerService,
   UrlReaderService,
@@ -30,6 +31,7 @@ import express from 'express';
 
 import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { DevModeService } from '../service/DevModeService';
+import { PublicServices } from '../service/initPublicServices';
 import { createBackendRouter } from '../service/router';
 
 export interface RouterOptions {
@@ -40,9 +42,11 @@ export interface RouterOptions {
   urlReader: UrlReaderService;
   scheduler: SchedulerService;
   permissions: PermissionsService;
+  permissionsRegistry: PermissionsRegistryService;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry;
+  publicServices: PublicServices;
 }
 
 export async function createRouter(
@@ -71,8 +75,10 @@ export async function createRouter(
     urlReader: args.urlReader,
     scheduler: args.scheduler,
     permissions: args.permissions,
+    permissionsRegistry: args.permissionsRegistry,
     httpAuth: args.httpAuth,
     userInfo: args.userInfo,
     workflowLogsProvidersRegistry: args.workflowLogsProvidersRegistry,
+    publicServices: args.publicServices,
   });
 }

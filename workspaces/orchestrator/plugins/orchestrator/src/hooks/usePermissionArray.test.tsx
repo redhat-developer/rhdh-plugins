@@ -26,10 +26,7 @@ import {
   orchestratorWorkflowUsePermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import {
-  usePermissionArray,
-  usePermissionArrayDecision,
-} from './usePermissionArray';
+import { usePermissionArray } from './usePermissionArray';
 
 const mockUseApi = jest.fn();
 
@@ -105,55 +102,5 @@ describe('usePermissionArray', () => {
     });
     expect(result.current.error).toBe(error);
     expect(result.current.allowed).toEqual([false, false]);
-  });
-});
-
-describe('usePermissionArrayDecision', () => {
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
-  );
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('returns allowed=true when at least one permission is allowed', async () => {
-    const authorize = jest
-      .fn()
-      .mockResolvedValueOnce({ result: AuthorizeResult.DENY })
-      .mockResolvedValueOnce({ result: AuthorizeResult.ALLOW });
-    mockUseApi.mockReturnValue({ authorize });
-
-    const { result } = renderHook(
-      () => usePermissionArrayDecision(permissions),
-      {
-        wrapper,
-      },
-    );
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-    expect(result.current.allowed).toBe(true);
-  });
-
-  it('returns allowed=false when no permission is allowed', async () => {
-    const authorize = jest
-      .fn()
-      .mockResolvedValueOnce({ result: AuthorizeResult.DENY })
-      .mockResolvedValueOnce({ result: AuthorizeResult.CONDITIONAL });
-    mockUseApi.mockReturnValue({ authorize });
-
-    const { result } = renderHook(
-      () => usePermissionArrayDecision(permissions),
-      {
-        wrapper,
-      },
-    );
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-    expect(result.current.allowed).toBe(false);
   });
 });

@@ -17,7 +17,7 @@
 import { useApi } from '@backstage/core-plugin-api';
 import {
   AuthorizeResult,
-  Permission,
+  ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import {
   AsyncPermissionResult,
@@ -26,7 +26,7 @@ import {
 
 import useSWR from 'swr';
 
-export type AsyncPermissionBatchResult = Omit<
+export type AsyncResourcePermissionBatchResult = Omit<
   AsyncPermissionResult,
   'allowed'
 > & {
@@ -34,31 +34,34 @@ export type AsyncPermissionBatchResult = Omit<
 };
 
 /**
- * Like usePermission() from '@backstage/plugin-permission-react' but for multiple permissions at once.
- *
- * @deprecated Only used for legacy dynamic permissions. Remove in next release.
- * @param permissions
- * @returns Object similar to AsyncPermissionResult but the "allowed" is a boolean array.
+ * Batch variant of usePermission for resource permissions with per-resource refs.
  */
-
-export const usePermissionArray = (
-  permissions: Permission[],
-): AsyncPermissionBatchResult => {
+export const useResourcePermissionBatch = (
+  permission: ResourcePermission,
+  resourceRefs: string[],
+): AsyncResourcePermissionBatchResult => {
   const permissionApi = useApi(permissionApiRef);
 
-  const { data, error } = useSWR(permissions, async (args: Permission[]) => {
-    const result = await Promise.all(
-      args.map(permission => permissionApi.authorize({ permission })),
-    );
+  const { data, error } = useSWR(
+    [permission.name, ...resourceRefs],
+    async () => {
+      if (resourceRefs.length === 0) {
+        return [];
+      }
 
-    return result;
-  });
+      return Promise.all(
+        resourceRefs.map(resourceRef =>
+          permissionApi.authorize({ permission, resourceRef }),
+        ),
+      );
+    },
+  );
 
   if (error) {
-    return { error, loading: false, allowed: permissions.map(_ => false) };
+    return { error, loading: false, allowed: resourceRefs.map(() => false) };
   }
   if (data === undefined) {
-    return { loading: true, allowed: permissions.map(_ => false) };
+    return { loading: true, allowed: resourceRefs.map(() => false) };
   }
 
   return {

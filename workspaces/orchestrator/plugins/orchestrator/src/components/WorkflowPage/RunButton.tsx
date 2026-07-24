@@ -17,6 +17,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -28,7 +29,6 @@ import {
   orchestratorWorkflowUseSpecificPermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityWorkflowRouteRef,
@@ -64,11 +64,18 @@ export const RunButton = ({
     navigate(buildExecuteUrl());
   };
 
-  const { loading: loadingPermission, allowed: canRun } =
-    usePermissionArrayDecision([
-      orchestratorWorkflowUsePermission,
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ]);
+  const { loading: loadingConditional, allowed: conditionalAllowed } =
+    usePermission({
+      permission: orchestratorWorkflowUsePermission,
+      resourceRef: workflowId,
+    });
+  // @deprecated Remove this legacy fallback block in next release
+  const { loading: loadingLegacy, allowed: legacyAllowed } = usePermission({
+    permission: orchestratorWorkflowUseSpecificPermission(workflowId),
+  });
+
+  const loadingPermission = loadingConditional || loadingLegacy;
+  const canRun = conditionalAllowed || legacyAllowed;
 
   let tooltipText = '';
   if (!canRun) {
