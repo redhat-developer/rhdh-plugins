@@ -26,19 +26,21 @@ import extensionsTranslationJa from '../../plugins/extensions/src/alpha/translat
 
 export type ExtensionsMessages = typeof extensionsMessages;
 
-function transform(messages: typeof extensionsTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof extensionsTranslationDe.messages,
+) {
+  const messages = {} as Record<string, any>;
+  for (const key of Object.keys(flatMessages)) {
     const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i ? messages[key] : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
-
-  return result as ExtensionsMessages;
+    let current = messages;
+    for (let i = 0; i < path.length - 1; i++) {
+      current[path[i]] = current[path[i]] || {};
+      current = current[path[i]] as Record<string, any>;
+    }
+    current[path[path.length - 1]] =
+      flatMessages[key as keyof typeof flatMessages];
+  }
+  return messages as ExtensionsMessages;
 }
 
 export function getTranslations(locale: string) {
@@ -46,15 +48,15 @@ export function getTranslations(locale: string) {
     case 'en':
       return extensionsMessages;
     case 'de':
-      return transform(extensionsTranslationDe.messages);
+      return transformFlatMessagesIntoTree(extensionsTranslationDe.messages);
     case 'es':
-      return transform(extensionsTranslationEs.messages);
+      return transformFlatMessagesIntoTree(extensionsTranslationEs.messages);
     case 'fr':
-      return transform(extensionsTranslationFr.messages);
+      return transformFlatMessagesIntoTree(extensionsTranslationFr.messages);
     case 'it':
-      return transform(extensionsTranslationIt.messages);
+      return transformFlatMessagesIntoTree(extensionsTranslationIt.messages);
     case 'ja':
-      return transform(extensionsTranslationJa.messages);
+      return transformFlatMessagesIntoTree(extensionsTranslationJa.messages);
     default:
       return extensionsMessages;
   }
