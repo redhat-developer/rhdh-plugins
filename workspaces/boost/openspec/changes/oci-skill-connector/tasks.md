@@ -37,7 +37,7 @@
 ## 3. Incremental Sync and Caching (P1) — RHIDP-15326
 
 - [ ] 3.1 Implement in-memory digest cache with structure `{ [imageRef]: { digest, lastSeen, skillEntityRef } }`
-- [ ] 3.2 Implement 5-minute TTL on cache entries with automatic expiration
+- [ ] 3.2 Implement configurable TTL on cache entries (default 5 minutes via `catalog.providers.ociSkill.cache.ttlMinutes`) with automatic expiration
 - [ ] 3.3 Implement digest comparison logic: detect added, changed, removed skills
 - [ ] 3.4 Implement delta mutation emission via `applyMutation({ type: 'delta', added, removed })`
 - [ ] 3.5 Implement full mutation on first sync (`applyMutation({ type: 'full', entities })`)

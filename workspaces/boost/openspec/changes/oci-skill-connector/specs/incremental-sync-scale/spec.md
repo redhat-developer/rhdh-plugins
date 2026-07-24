@@ -62,11 +62,11 @@ The connector MUST maintain a durable digest cache — an in-memory cache with d
 
 - **WHEN** the connector successfully emits an entity for skill `quay.io/skills/my-skill:latest` with digest `sha256:abc123`
 - **THEN** it stores the digest in the in-memory cache: `cache.set('quay.io/skills/my-skill:latest', { digest: 'sha256:abc123', lastSeen: Date.now() })`
-- **AND** it sets a 5-minute TTL on the cache entry
+- **AND** it sets a TTL on the cache entry (default 5 minutes, configurable via `catalog.providers.ociSkill.cache.ttlMinutes`)
 
 #### Scenario: Cache expiration triggers re-validation
 
-- **WHEN** a cache entry reaches its 5-minute TTL
+- **WHEN** a cache entry reaches its TTL (default 5 minutes)
 - **THEN** the connector re-fetches the manifest to validate the digest
 - **AND** if the digest is unchanged, it updates the `lastSeen` timestamp and resets the TTL
 - **AND** if the digest has changed, it proceeds with blob download and entity emission
@@ -82,7 +82,7 @@ The connector MUST maintain a durable digest cache — an in-memory cache with d
 
 - **WHEN** the connector starts and cached digest entries exist in `CacheService`
 - **THEN** it loads the cached entries into the in-memory cache
-- **AND** it treats all loaded entries as expired (5-minute TTL has passed) and re-validates digests in the first sync
+- **AND** it treats all loaded entries as expired (TTL has elapsed during shutdown) and re-validates digests in the first sync
 
 ### Requirement: K8s Pull Secret Authentication
 
@@ -209,6 +209,23 @@ The connector MUST complete a full sync of 2,000 skill images within 5 minutes, 
 - **THEN** it skips blob download for 1,800 unchanged skills
 - **AND** it downloads blobs for 200 changed skills
 - **AND** it completes the incremental sync within 2 minutes
+
+#### Scenario: Partial parse failure during sync
+
+- **WHEN** the connector processes 2,000 skill images during an incremental sync
+- **AND** 200 skills (10%) fail skillcard parsing (invalid YAML, schema validation failure, or blob download error)
+- **THEN** the connector continues processing the remaining 1,800 skills without aborting
+- **AND** it emits a delta mutation containing only the successfully parsed entities
+- **AND** failed skills are NOT removed from the cache (their previous digest entry is preserved so they are retried on the next sync cycle)
+- **AND** the sync summary log includes: `"Sync completed: 1800 emitted, 200 failed (10.0%). Failed skills retained in cache for next cycle."`
+- **AND** individual parse failures are logged at ERROR level with skill image ref and failure details
+
+#### Scenario: TTL behavior during an active sync
+
+- **WHEN** a sync cycle is in progress and takes longer than the configured TTL (e.g., 5 minutes for a large registry)
+- **THEN** cache entries that expire mid-sync are NOT evicted or re-validated until the current sync completes
+- **AND** the TTL clock resets for all successfully processed entries at the end of the sync cycle
+- **AND** the connector does not start a concurrent sync while one is already running (Backstage's `TaskScheduleDefinition` enforces single-execution)
 
 #### Scenario: Mock registry test harness at scale
 

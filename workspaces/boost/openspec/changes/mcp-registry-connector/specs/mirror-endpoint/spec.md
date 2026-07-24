@@ -116,11 +116,15 @@ catalog:
 
 **THEN** the connector validates that the endpoint URL is well-formed (scheme://host[:port][/path]).
 
-**AND** the connector validates that the endpoint responds to health check requests (HTTP GET to `/health` or `/`).
+**AND** the connector validates connectivity by sending `GET <endpoint>/health` with a 10-second timeout.
 
-**AND** the connector logs the validation result (success or failure).
+**AND** a successful health check is HTTP 200 with any response body (the body is not parsed — only the status code matters).
 
-**AND** if validation fails, the connector logs a warning but proceeds (mirror may be temporarily unreachable).
+**AND** if `/health` returns HTTP 404, the connector falls back to `GET <endpoint>/` and accepts HTTP 200 as success.
+
+**AND** the connector logs the validation result: on success, INFO-level with endpoint URL and response time; on failure, WARN-level with endpoint URL, HTTP status (or network error), and elapsed time.
+
+**AND** if validation fails (non-200 status, timeout, or network error), the connector logs a warning but proceeds (mirror may be temporarily unreachable at startup).
 
 ---
 

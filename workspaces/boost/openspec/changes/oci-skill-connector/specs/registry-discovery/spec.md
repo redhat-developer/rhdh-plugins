@@ -18,7 +18,9 @@ The connector MUST discover skill repositories by listing tags from configurable
 
 - **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].url: https://quay.io` and `namespace: skills`
 - **THEN** it sends `GET https://quay.io/v2/skills/<repository>/tags/list` for each repository in the namespace
-- **AND** it parses the JSON response to extract tag names
+- **AND** on HTTP 200, it parses the JSON response body `{ "name": "<repository>", "tags": ["v1.0", "v1.1", "latest"] }` to extract tag names
+- **AND** on HTTP 401, it treats the error as non-retryable and logs an authentication failure (see fault isolation spec)
+- **AND** on HTTP 5xx, it retries with exponential backoff (1s, 2s, 4s, 8s — max 4 retries) before marking the registry as unavailable for this cycle
 - **AND** tag names are sorted by semantic version or creation time (registry-dependent)
 
 #### Scenario: Namespace filtering
@@ -36,8 +38,9 @@ The connector MUST discover skill repositories by listing tags from configurable
 #### Scenario: Tag listing pagination
 
 - **WHEN** a repository has more than 100 tags (registry default page size)
-- **THEN** the connector follows pagination via the `Link` header or `last` query parameter (OCI Distribution Spec allows both)
-- **AND** it fetches all pages until no more tags remain
+- **THEN** the connector follows pagination via the `Link: </v2/<name>/tags/list?last=<tag>&n=100>; rel="next"` header (preferred) or `last` query parameter fallback (OCI Distribution Spec allows both)
+- **AND** it fetches all pages until the response contains no `Link` header with `rel="next"` and the `tags` array is empty or smaller than the page size
+- **AND** it caps pagination at 100 pages (10,000 tags) to prevent infinite loops from misbehaving registries
 
 ### Requirement: OCI Manifest Fetching with Content Negotiation
 

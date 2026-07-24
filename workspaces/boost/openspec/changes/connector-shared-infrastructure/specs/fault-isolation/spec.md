@@ -46,8 +46,10 @@ Each connector failure produces actionable error details for debugging.
 - **AND** `endpoint` is the external API URL that failed
 - **AND** `errorType` is the error constructor name (e.g., `'FetchError'`, `'TimeoutError'`)
 - **AND** `errorMessage` is the human-readable error message
-- **AND** `retryable` is a boolean indicating whether the error is transient
-- **AND** `nextRetryAt` is the ISO timestamp of the next scheduled retry
+- **AND** `retryable` is a boolean indicating whether the error is transient, classified as:
+  - **Retryable (transient):** `ECONNREFUSED`, `ECONNRESET`, `ETIMEDOUT`, `EPIPE`, `EAI_AGAIN`, HTTP 429, HTTP 500, HTTP 502, HTTP 503, HTTP 504, `FetchError` with network cause
+  - **Non-retryable (fatal):** HTTP 400, HTTP 401, HTTP 403, HTTP 404, `TypeError` (malformed URL), Zod validation errors, certificate errors (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `CERT_HAS_EXPIRED`), `SyntaxError` (invalid JSON/YAML)
+- **AND** `nextRetryAt` is the ISO timestamp of the next scheduled retry (present only when `retryable: true`; `undefined` for non-retryable errors)
 
 #### Scenario: Logger uses Backstage LoggerService
 
