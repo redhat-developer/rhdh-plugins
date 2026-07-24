@@ -105,7 +105,7 @@ test('Verify Global header to be visible', async ({
     - link "${translations.notifications.title}":
       - /url: /notifications
     `);
-  await runAccessibilityTests(page, testInfo);
+  await runAccessibilityTests(page, testInfo, undefined, '#global-header');
 });
 
 test('Verify Hover texts to be visible', async () => {
