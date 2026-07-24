@@ -5,7 +5,6 @@
 ```ts
 import { AppTheme } from '@backstage/core-plugin-api';
 import { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
-import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
 import { ReactNode } from 'react';
@@ -56,9 +55,6 @@ export const LogoFull: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
 
 // @public (undocumented)
 export const LogoIcon: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
-
-// @public
-export const rhdhThemeModule: FrontendModule;
 
 // @public (undocumented)
 export interface RHDHThemePalette {

@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * The NFS theme module has graduated to the primary package entry point.
- * Import `rhdhThemeModule` from `@red-hat-developer-hub/backstage-plugin-theme` instead.
- *
- * @deprecated Use the root import instead.
- * @packageDocumentation
- */
-
-export {};
+export { rhdhThemeModule as default } from './index';
