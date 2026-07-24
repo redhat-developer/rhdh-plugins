@@ -6,12 +6,12 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 
 **Feature → Epic mapping:**
 
-| Feature       | Epics                                                                                                                                                               |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RHDHPLAN-1507 | RHIDP-15258 (Entity Model), RHIDP-15294 (OCI Skill Registry), RHIDP-15295 (Neo4j Knowledge Graph)                                                                   |
-| RHDHPLAN-1508 | RHIDP-15270 (Graduated Visibility), RHIDP-15274 (Version Policy Cascade), RHIDP-15277 (Audit Logging), RHIDP-15304 (RBAC Admin UI), RHIDP-15305 (Conditional Rules) |
-| RHDHPLAN-1510 | RHIDP-15313 (MCP Registry), RHIDP-15314 (RHOAI Connector), RHIDP-15316 (Cross-Connector Shared Infra)                                                               |
-| RHDHPLAN-1513 | RHIDP-15331 (Health Dashboard), RHIDP-15332 (Hot-Reload), RHIDP-15334 (Schema Alignment)                                                                            |
+| Feature       | Epics                                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| RHDHPLAN-1507 | RHIDP-15258 (Entity Model), RHIDP-15294 (OCI Skill Registry), RHIDP-15295 (Neo4j Knowledge Graph)                                  |
+| RHDHPLAN-1508 | RHIDP-15270 (Graduated Visibility), RHIDP-15274 (Version Policy Cascade), RHIDP-15277 (Audit Logging), RHIDP-15304 (RBAC Admin UI) |
+| RHDHPLAN-1510 | RHIDP-15313 (MCP Registry), RHIDP-15314 (RHOAI Connector), RHIDP-15316 (Cross-Connector Shared Infra)                              |
+| RHDHPLAN-1513 | RHIDP-15331 (Health Dashboard), RHIDP-15332 (Hot-Reload), RHIDP-15334 (Schema Alignment)                                           |
 
 **Cross-feature dependencies (RHDHPLAN-1509):**
 
@@ -183,7 +183,7 @@ _GitHub issue not yet created_
 **Labels:** `ready-to-code`
 **Dependencies:** None
 **RHIDP Stories:** RHIDP-15271, RHIDP-15272, RHIDP-15306 (permission definitions), RHIDP-15312
-**Feature:** RHDHPLAN-1508 — Epics RHIDP-15270, RHIDP-15305
+**Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 
 Define AI Catalog permission constants (`ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`), implement graduated visibility backend enforcement (Tier 1 entity-level + Tier 2 field-level filtering), and implement conditional permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) with `toQuery()` support. The default-deny config implementation is in Issue 20.
 
@@ -969,6 +969,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 6 (RHIDP-1530
 - 6.5 Implement `rhdh.io/ai-catalog-ingested-at` annotation stamping at ingestion time
 - 6.6 Implement configuration validation at startup
 - 6.7 Add unit tests for default-deny posture
+- 6.8 Persist policy-change timestamp (via `AdminConfigService.setOverride()`) when admin changes default posture; read in `AICatalogRBACProvider.refresh()` to compare against `rhdh.io/ai-catalog-ingested-at`
 
 ### Specifications
 
