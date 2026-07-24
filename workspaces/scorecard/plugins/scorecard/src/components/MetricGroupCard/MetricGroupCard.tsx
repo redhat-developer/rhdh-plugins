@@ -36,9 +36,12 @@ export const MetricGroupCard = ({
   metrics,
 }: MetricGroupCardProps) => {
   const { t } = useTranslation();
-  const buckets = buildThresholdBuckets(metrics, t);
   const [dataSourcesOpen, setDataSourcesOpen] = useState(false);
   const [initialFilters, setInitialFilters] = useState<string[]>([]);
+  const buckets = useMemo(
+    () => buildThresholdBuckets(metrics, t),
+    [metrics, t],
+  );
 
   const handleOpenDataSources = useCallback(() => {
     setInitialFilters([]);

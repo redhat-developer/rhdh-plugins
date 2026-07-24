@@ -30,11 +30,11 @@ interface ThresholdLegendProps {
   onToggleFilter: (key: string) => void;
 }
 
-export function ThresholdLegend({
+export const ThresholdLegend = ({
   buckets,
   activeFilters,
   onToggleFilter,
-}: ThresholdLegendProps) {
+}: ThresholdLegendProps) => {
   const theme = useTheme();
 
   const handleKeyDown = useCallback(
@@ -114,4 +114,4 @@ export function ThresholdLegend({
       })}
     </Box>
   );
-}
+};

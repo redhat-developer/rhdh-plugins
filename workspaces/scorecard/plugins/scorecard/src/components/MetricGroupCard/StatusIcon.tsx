@@ -24,7 +24,7 @@ interface StatusIconProps {
   color: string;
 }
 
-export function StatusIcon({ icon, color }: StatusIconProps) {
+export const StatusIcon = ({ icon, color }: StatusIconProps) => {
   const theme = useTheme();
   const resolvedColor = resolveStatusColor(theme, color);
 
@@ -37,4 +37,4 @@ export function StatusIcon({ icon, color }: StatusIconProps) {
       sx={{ fontSize: 18, color: resolvedColor }}
     />
   );
-}
+};

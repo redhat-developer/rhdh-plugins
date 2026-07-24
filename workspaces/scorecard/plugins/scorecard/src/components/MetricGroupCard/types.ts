@@ -16,11 +16,11 @@
 
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export interface MetricGroupCardProps {
+export type MetricGroupCardProps = {
   title: string;
   description?: string;
   metrics: MetricResult[];
-}
+};
 
 export type ThresholdBucket = {
   key: string;
