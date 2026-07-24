@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.7
+
+### Patch Changes
+
+- 798b7d4: Updated dependency `monaco-editor` to `^0.56.0`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.7
+
 ## 2.8.6
 
 ### Patch Changes
