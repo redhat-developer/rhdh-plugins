@@ -1,5 +1,11 @@
 # backend
 
+## 0.0.59
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-backend@2.8.7
+
 ## 0.0.58
 
 ### Patch Changes
