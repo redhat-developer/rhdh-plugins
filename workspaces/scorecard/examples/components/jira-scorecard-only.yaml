@@ -1,9 +1,7 @@
----
-# Component with Jira Scorecard only
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: jira-scorecard-only-service
+  name: jira-scorecard-only
   annotations:
     jira/project-key: RSPT
 spec:

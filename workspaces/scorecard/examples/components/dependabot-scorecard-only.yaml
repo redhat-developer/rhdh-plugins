@@ -1,5 +1,3 @@
----
-# Component with OpenSSF Scorecard
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
