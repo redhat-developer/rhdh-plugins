@@ -25,9 +25,17 @@ export const InlineStyles = () => {
 
       <h1>
         Default button with{' '}
-        <code>{"style={{ padding: 32, backgroundColor: 'gray' }}"}</code>
+        <code>
+          {
+            "style={{ padding: 32, backgroundColor: '#424242', color: '#ffffff' }}"
+          }
+        </code>
       </h1>
-      <Button style={{ padding: 32, backgroundColor: 'gray' }}>a button</Button>
+      <Button
+        style={{ padding: 32, backgroundColor: '#424242', color: '#ffffff' }}
+      >
+        a button
+      </Button>
 
       <h1>
         Default button with{' '}
