@@ -92,7 +92,7 @@ Each card shows:
 
 ### Decision 4: Disconnected-cluster UX — five-state model
 
-The health UI distinguishes between five connector states (matching Decision 1's health status enum):
+The health UI distinguishes between five connector states (extending Decision 1's health status enum with Disabled as an enabled=false overlay):
 
 1. **Enabled + Healthy**: Green status badge, no error indicators, shows sync timestamps
 2. **Enabled + Degraded**: Yellow status badge, partial error summary, shows mixed sync results
