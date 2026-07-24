@@ -1,5 +1,53 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 8.0.0
+
+### Major Changes
+
+- 6e61d04: **BREAKING**: Graduated the New Frontend System (NFS) bulk-import plugin to stable API.
+  The NFS plugin (`createFrontendPlugin`) has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath now only exports translations. Legacy (OFS) exports (`bulkImportPlugin`, `BulkImportPage`, `BulkImportSidebarItem`, `BulkImportIcon`) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+  + import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  ```
+
+  **Migration for OFS consumers:**
+
+  ```diff
+  - import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  + import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
+  ```
+
+  **Migration for dynamic plugin configurations:**
+
+  Legacy exports require `module: Legacy` — they are not available on the default module.
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-bulk-import:
+        # Legacy exports require `module: Legacy`
+        dynamicRoutes:
+          - path: /bulk-import
+            importName: BulkImportPage
+            module: Legacy
+  ```
+
+### Minor Changes
+
+- 02db099: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin Router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+- 8eb345e: Updated dependency `js-yaml` to `^4.3.0`.
+- 4e7416a: optimize bulk-import
+- Updated dependencies [02db099]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.0
+
 ## 7.3.7
 
 ### Patch Changes
