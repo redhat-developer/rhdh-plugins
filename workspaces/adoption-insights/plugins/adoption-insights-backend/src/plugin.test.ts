@@ -41,7 +41,7 @@ describe('plugin', () => {
           ],
           end_date: ['end_date is required. Use YYYY-MM-DD (e.g., 2025-03-02)'],
           type: [
-            'Invalid type. Allowed values: total_users,active_users,top_plugins,top_templates,top_techdocs,top_searches,top_catalog_entities',
+            'Invalid type. Allowed values: total_users,active_users,top_plugins,top_templates,top_techdocs,top_searches,top_catalog_entities,time_saved_totals',
           ],
         },
       });

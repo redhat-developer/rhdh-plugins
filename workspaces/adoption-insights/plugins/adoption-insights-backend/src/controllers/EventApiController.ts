@@ -28,42 +28,86 @@ import { ValidationError } from '../validation/ValidationError';
 import {
   AuditorService,
   AuditorServiceEvent,
+  AuthService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
+import { CatalogService } from '@backstage/plugin-catalog-node';
 import { getLicensedUsersCount } from '../utils/config';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
+
+const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';
 
 class EventApiController {
   private readonly database: EventDatabase;
   private readonly config: RootConfigService;
   private readonly processor: EventBatchProcessor;
   private readonly auditor: AuditorService;
+  private readonly catalog: CatalogService;
+  private readonly auth: AuthService;
 
   constructor(
     eventDatabase: EventDatabase,
     processor: EventBatchProcessor,
     config: RootConfigService,
     auditor: AuditorService,
+    catalog: CatalogService,
+    auth: AuthService,
   ) {
     this.database = eventDatabase;
     this.processor = processor;
     this.config = config;
     this.auditor = auditor;
+    this.catalog = catalog;
+    this.auth = auth;
   }
 
   async getBaseUrl(pluginId: string): Promise<string> {
     return `${this.config.getString('backend.baseUrl')}/api/${pluginId}`;
   }
 
-  private processIncomingEvents(
+  private async enrichScaffolderEvent(event: Event): Promise<Event> {
+    if (
+      event.action !== 'create' ||
+      event.subject !== 'Task has been created' ||
+      event.plugin_id !== 'scaffolder'
+    ) {
+      return event;
+    }
+
+    try {
+      const context =
+        typeof event.context === 'string'
+          ? JSON.parse(event.context)
+          : event.context;
+      const entityRef = context?.entityRef;
+      if (!entityRef) return event;
+
+      const entity = await this.catalog.getEntityByRef(entityRef, {
+        credentials: await this.auth.getOwnServiceCredentials(),
+      });
+      if (!entity) return event;
+
+      const timeSaved = entity.metadata?.annotations?.[TIME_SAVED_ANNOTATION];
+      if (!timeSaved) return event;
+
+      const parsed = Number(timeSaved);
+      if (!Number.isFinite(parsed) || parsed <= 0) return event;
+
+      return Object.assign(event, { value: parsed });
+    } catch {
+      return event;
+    }
+  }
+
+  private async processIncomingEvents(
     events: AnalyticsEvent[],
     auditEvent: AuditorServiceEvent,
-  ): void {
-    const proccessedEvents = events
+  ): Promise<void> {
+    const processedEvents = events
       .filter(e => !!e.context?.userId)
       .map(event => new Event(event, this.database.isJsonSupported()));
 
-    proccessedEvents.forEach(event => {
+    for (const event of processedEvents) {
       const result = EventSchema.safeParse(event);
 
       if (!result.success) {
@@ -73,8 +117,9 @@ class EventApiController {
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
       auditEvent.success({ meta: { eventId: event.id } });
-      return this.processor.addEvent(event);
-    });
+      const enriched = await this.enrichScaffolderEvent(event);
+      this.processor.addEvent(enriched);
+    }
   }
 
   async trackEvents(
@@ -89,7 +134,7 @@ class EventApiController {
     });
 
     try {
-      this.processIncomingEvents(events, auditEvent);
+      await this.processIncomingEvents(events, auditEvent);
       res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
       auditEvent.fail({
@@ -146,6 +191,7 @@ class EventApiController {
       top_techdocs: () => db.getTopTechDocsViews(),
       top_templates: () => db.getTopTemplateViews(),
       top_catalog_entities: () => db.getTopCatalogEntitiesViews(),
+      time_saved_totals: () => db.getTimeSavedTotals(),
     };
 
     try {

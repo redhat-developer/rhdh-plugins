@@ -64,16 +64,24 @@ describe('createRouter', () => {
       }),
     };
 
+    const mockCatalog = { getEntityByRef: jest.fn() } as any;
+    const mockAuth = {
+      getPluginRequestToken: jest.fn().mockResolvedValue({ token: 'mock' }),
+      getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+    } as any;
     const eventApiController = new EventApiController(
       mockEventDatabase as any,
       mockEventBatchProcessor as any,
       mockServices.rootConfig.mock(),
       mockAuditor as any,
+      mockCatalog,
+      mockAuth,
     );
 
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       eventApiController,
+      db: mockEventDatabase as any,
       permissions: mockServices.permissions.mock({
         authorize: async () => [{ result: authorizeResult }],
       }),

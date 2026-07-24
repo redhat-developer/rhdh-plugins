@@ -22,6 +22,8 @@ import {
   Grouping,
   ResponseData,
   ResponseWithGrouping,
+  UserTimeSaved,
+  NotificationFrequency,
 } from '../../types/event';
 import { convertToTargetTimezone } from '../../utils/date';
 
@@ -428,6 +430,89 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       data,
     };
   };
+
+  async getTimeSavedTotals(): Promise<Knex.QueryBuilder> {
+    this.ensureFiltersSet();
+    const { start_date, end_date } = this.filters!;
+    const db = this.db;
+
+    const rows = await db('events')
+      .select(
+        db.raw(`context->>'entityRef' AS entityref`),
+        db.raw('CAST(COUNT(*) AS INTEGER) AS execution_count'),
+        db.raw(
+          'CAST(COALESCE(AVG(CAST(value AS REAL)), 0) AS INTEGER) AS time_saved_per_execution',
+        ),
+        db.raw(
+          'CAST(COALESCE(SUM(CAST(value AS REAL)), 0) AS INTEGER) AS total_time_saved_minutes',
+        ),
+      )
+      .where({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      })
+      .whereNotNull('value')
+      .whereBetween('created_at', [start_date, end_date])
+      .groupByRaw('entityref')
+      .orderBy('total_time_saved_minutes', 'desc');
+
+    const grandTotal = rows.reduce(
+      (sum: number, row: { total_time_saved_minutes: number }) =>
+        sum + (row.total_time_saved_minutes || 0),
+      0,
+    );
+
+    return {
+      data: {
+        total_time_saved_minutes: grandTotal,
+        templates: rows,
+      },
+    } as any;
+  }
+
+  async getNotificationPreference(
+    userRef: string,
+  ): Promise<NotificationFrequency> {
+    const row = await this.db('notification_preferences')
+      .select('frequency')
+      .where({ user_ref: userRef })
+      .first();
+    return (row?.frequency as NotificationFrequency) ?? 'weekly';
+  }
+
+  async setNotificationPreference(
+    userRef: string,
+    frequency: NotificationFrequency,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    await this.db('notification_preferences')
+      .insert({ user_ref: userRef, frequency, updated_at: now })
+      .onConflict('user_ref')
+      .merge({ frequency, updated_at: now });
+  }
+
+  async getTimeSavedPerUser(since: string): Promise<UserTimeSaved[]> {
+    const db = this.db;
+
+    return db('events')
+      .select(
+        'user_ref',
+        db.raw('CAST(COUNT(*) AS INTEGER) AS execution_count'),
+        db.raw(
+          'CAST(COALESCE(SUM(CAST(value AS REAL)), 0) AS INTEGER) AS total_time_saved_minutes',
+        ),
+      )
+      .where({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      })
+      .whereNotNull('value')
+      .where('created_at', '>=', since)
+      .groupBy('user_ref')
+      .orderBy('total_time_saved_minutes', 'desc');
+  }
 
   ensureFiltersSet() {
     if (!this.filters) {
