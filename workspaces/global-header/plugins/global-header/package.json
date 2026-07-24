@@ -6,12 +6,24 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.ts",
+    "./legacy": "./src/legacy.ts",
+    "./global-header-module": "./src/globalHeaderModuleExport.ts",
+    "./global-header-translations-module": "./src/globalHeaderTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.ts"
+      ],
+      "legacy": [
+        "src/legacy.ts"
+      ],
+      "global-header-module": [
+        "src/globalHeaderModuleExport.ts"
+      ],
+      "global-header-translations-module": [
+        "src/globalHeaderTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"
@@ -101,5 +113,15 @@
     "dist",
     "config.d.ts"
   ],
-  "configSchema": "config.d.ts"
+  "configSchema": "config.d.ts",
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-global-header",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha/index.ts",
+      "Legacy": "./src/legacy.ts",
+      "GlobalHeaderModule": "./src/globalHeaderModuleExport.ts",
+      "GlobalHeaderTranslationsModule": "./src/globalHeaderTranslationsModuleExport.ts"
+    }
+  }
 }

@@ -25,7 +25,7 @@ import type {
  * Extension data ref carrying toolbar component data from a plugin to the
  * global header wrapper.
  *
- * @alpha
+ * @public
  */
 export const globalHeaderComponentDataRef =
   createExtensionDataRef<GlobalHeaderComponentData>().with({
@@ -36,7 +36,7 @@ export const globalHeaderComponentDataRef =
  * Extension data ref carrying menu item data from a plugin to the
  * global header wrapper.
  *
- * @alpha
+ * @public
  */
 export const globalHeaderMenuItemDataRef =
   createExtensionDataRef<GlobalHeaderMenuItemData>().with({

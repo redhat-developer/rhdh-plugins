@@ -26,7 +26,7 @@ import { useGlobalHeaderComponents } from '../extensions/GlobalHeaderContext';
  * Global header bar. Reads toolbar items from GlobalHeaderContext
  * and renders them in a sticky AppBar.
  *
- * @alpha
+ * @public
  */
 export const GlobalHeader = () => {
   const components = useGlobalHeaderComponents();

@@ -39,7 +39,7 @@ import {
  * Plugin providing the default global header toolbar items and
  * dropdown menu items.
  *
- * @alpha
+ * @public
  */
 const globalHeaderPlugin = createFrontendPlugin({
   pluginId: 'global-header',

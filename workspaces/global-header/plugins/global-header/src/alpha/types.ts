@@ -20,7 +20,7 @@ import type { ComponentType } from 'react';
  * Data produced by a `GlobalHeaderComponentBlueprint` extension.
  * Represents a single toolbar-level item in the global header.
  *
- * @alpha
+ * @public
  */
 export interface GlobalHeaderComponentData {
   component: ComponentType<any>;
@@ -42,7 +42,7 @@ export interface GlobalHeaderComponentData {
  * which provides `<MenuItem>` wrapping, `<Link>` navigation, section headers
  * and dividers.
  *
- * @alpha
+ * @public
  */
 export interface GlobalHeaderMenuItemData {
   target: string;

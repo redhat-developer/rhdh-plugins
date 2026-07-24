@@ -41,7 +41,7 @@ import {
 
 /**
  * All default toolbar component extensions.
- * @alpha
+ * @public
  */
 export const defaultToolbarExtensions = [
   companyLogoExtension,
@@ -58,7 +58,7 @@ export const defaultToolbarExtensions = [
 
 /**
  * All default menu item extensions.
- * @alpha
+ * @public
  */
 export const defaultMenuItemExtensions = [
   settingsMenuItemExtension,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 
 import type {
   GlobalHeaderComponentData,
@@ -26,10 +26,20 @@ interface GlobalHeaderContextValue {
   menuItems: GlobalHeaderMenuItemData[];
 }
 
-const GlobalHeaderContext = createContext<GlobalHeaderContextValue>({
-  components: [],
-  menuItems: [],
-});
+const CONTEXT_KEY = '__global_header_context__' as keyof typeof globalThis;
+
+function getOrCreateContext(): React.Context<GlobalHeaderContextValue> {
+  const existing = (globalThis as any)[CONTEXT_KEY];
+  if (existing) return existing as React.Context<GlobalHeaderContextValue>;
+  const ctx = createContext<GlobalHeaderContextValue>({
+    components: [],
+    menuItems: [],
+  });
+  (globalThis as any)[CONTEXT_KEY] = ctx;
+  return ctx;
+}
+
+const GlobalHeaderContext = getOrCreateContext();
 
 /**
  * Provider that distributes collected header extension data to child components.
@@ -56,7 +66,7 @@ export const GlobalHeaderProvider = ({
 /**
  * Returns all toolbar-level header components, sorted by priority (highest first).
  *
- * @alpha
+ * @public
  */
 export function useGlobalHeaderComponents(): GlobalHeaderComponentData[] {
   return useContext(GlobalHeaderContext).components;
@@ -65,7 +75,7 @@ export function useGlobalHeaderComponents(): GlobalHeaderComponentData[] {
 /**
  * Returns menu items for a specific dropdown target, sorted by priority (highest first).
  *
- * @alpha
+ * @public
  */
 export function useGlobalHeaderMenuItems(
   target: string,

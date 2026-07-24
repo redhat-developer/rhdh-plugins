@@ -15,8 +15,20 @@
  */
 
 /**
+ * Legacy frontend system API surface for the global header plugin.
+ *
  * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
  * @packageDocumentation
  */
 
-export * from '../translations';
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
+
+export * from './plugin';
+
+export * from './translations';
