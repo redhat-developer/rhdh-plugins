@@ -33,9 +33,9 @@
 
 ## 2. TLS and Credential Hardening (P0) — RHIDP-15318
 
-- [ ] 2.1 Integrate shared CA bundle utility from RHIDP-15316 (`loadCaBundle()`)
+- [ ] 2.1 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
 - [ ] 2.2 Add `catalog.providers.mcpRegistry.tls.caFile` config schema
-- [ ] 2.3 Implement custom CA bundle loading from file path
+- [ ] 2.3 Implement custom CA bundle loading via `loadCaBundle(config.getConfig('catalog.providers.mcpRegistry'))`
 - [ ] 2.4 Add graceful degradation: invalid CA bundle falls back to system CA bundle
 - [ ] 2.5 Add warning logging for invalid/unreadable/malformed CA bundle files
 - [ ] 2.6 Implement HTTPS agent configuration with custom CA bundle
@@ -65,11 +65,11 @@
 
 ## 3. Annotation Enrichment (P1) — RHIDP-15319
 
-- [ ] 3.1 Implement `RhdhMcpRegistryProviderWrapper` class wrapping upstream connector
+- [ ] 3.1 Implement `RhdhMcpRegistryProviderWrapper` class wrapping upstream connector via `createProviderWrapper()` for fault isolation, `createSafeRefresh()` for scheduled refresh
 - [ ] 3.2 Implement entity emission interception before `applyMutation`
 - [ ] 3.3 Implement annotation enrichment logic (`enrichWithAiAssetAnnotations()`)
 - [ ] 3.4 Add `rhdh.io/ai-asset-category: "mcp-server"` annotation population
-- [ ] 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry"` annotation population
+- [ ] 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry/<instance-id>"` annotation population (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `mcpRegistry`)
 - [ ] 3.6 Implement version metadata extraction from MCP server manifest
 - [ ] 3.7 Add `rhdh.io/ai-asset-version` annotation population (extracted or "unknown")
 - [ ] 3.8 Add graceful degradation: enrichment failure logs warning, emits entity without annotations

@@ -3,10 +3,10 @@
 ## 1. CA Bundle Resolution Utility (P0) — RHIDP-15329
 
 - [ ] 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
-- [ ] 1.2 Define `loadCaBundle(config: Config, connectorId: string): Buffer | undefined` function signature
-- [ ] 1.3 Implement caFile resolution — read CA from `catalog.providers.<id>.tls.caFile` mount path
-- [ ] 1.4 Implement caSecret resolution — read CA from `catalog.providers.<id>.tls.caSecret.$env` environment variable
-- [ ] 1.5 Add per-connector config isolation — `loadCaBundle()` reads only the specified connector's CA config
+- [ ] 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
+- [ ] 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
+- [ ] 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
+- [ ] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
 - [ ] 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
 - [ ] 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
 - [ ] 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details (issuer, expiry), return `undefined`

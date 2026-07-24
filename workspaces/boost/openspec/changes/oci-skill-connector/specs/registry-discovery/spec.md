@@ -31,7 +31,7 @@ The connector MUST discover skill repositories by listing tags from configurable
 
 - **WHEN** the connector is configured with multiple registries in `catalog.providers.ociSkill.registries[]`
 - **THEN** it discovers skills from all configured registries in parallel
-- **AND** skill entity references include the registry URL to avoid name collisions (e.g., `oci://quay.io/skills/my-skill` vs. `oci://harbor.internal/skills/my-skill`)
+- **AND** skill entity references include the registry URL to avoid name collisions (e.g., `quay.io/skills/my-skill` vs. `harbor.internal/skills/my-skill` stored in `rhdh.io/oci-image-ref`)
 
 #### Scenario: Tag listing pagination
 

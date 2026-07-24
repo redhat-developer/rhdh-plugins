@@ -140,7 +140,7 @@ interface DigestCache {
 - AiResource is the designated Backstage entity kind for AI-specific catalog assets (skills, prompts, tool definitions)
 - Follows the entity type strategy from RHDHPLAN-1507's `ai-catalog-entity-model` change
 - Component kind is for software components (skills are not deployable software, they're executable definitions)
-- AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci-skill-registry/<instance-id>`, `rhdh.io/oci-image-ref: oci://<registry>/<namespace>/<image>`
+- AI Asset annotations from RHDHPLAN-1507 RHIDP-15258: `rhdh.io/ai-asset-category: skill`, `rhdh.io/ai-asset-source: oci-skill-registry/<instance-id>`, `rhdh.io/oci-image-ref: <registry>/<namespace>/<image>:<tag>`
 
 **Entity structure:**
 
@@ -152,7 +152,7 @@ metadata:
   annotations:
     rhdh.io/ai-asset-category: skill
     rhdh.io/ai-asset-source: oci-skill-registry/default
-    rhdh.io/oci-image-ref: oci://quay.io/skills/my-skill:latest
+    rhdh.io/oci-image-ref: quay.io/skills/my-skill:latest
     rhdh.io/ai-asset-digest: sha256:abc123...
 spec:
   type: skill

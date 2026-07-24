@@ -10,8 +10,8 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ### CA Bundle Resolution Utility
 
-- `loadCaBundle(config: Config, connectorId: string): Buffer | undefined` function
-- Per-connector config path: `catalog.providers.<connectorId>.tls.caFile` or `catalog.providers.<connectorId>.tls.caSecret`
+- `loadCaBundle(connectorConfig: Config): Buffer | undefined` function — caller passes the Config subtree containing the `tls` block
+- Caller resolves config nesting before calling: e.g., `config.getConfig('catalog.providers.mcpRegistry')` for MCP, `config.getConfig('catalog.providers.rhoai.mcpCatalog')` for RHOAI, per-registry Config node for OCI
 - Reads CA bundles from K8s Secret/ConfigMap mounts or direct file paths
 - Creates `https.Agent` with custom CA for HTTP client injection
 - Handles missing/invalid CA gracefully: log warning, return undefined, don't crash provider

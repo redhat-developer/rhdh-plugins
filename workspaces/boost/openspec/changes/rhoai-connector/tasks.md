@@ -30,7 +30,7 @@
 - [ ] 2.2 Implement config validation in module startup (missing endpoint, invalid URL)
 - [ ] 2.3 Implement enable/disable toggle: skip provider registration when `enabled: false`
 - [ ] 2.4 Implement K8s Secret loader utility in `src/utils/secretLoader.ts` (supports `token` and `username`/`password` keys)
-- [ ] 2.5 Integrate shared CA bundle utility from RHIDP-15316 (reuse cross-connector CA loading)
+- [ ] 2.5 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` — call `loadCaBundle(config.getConfig('catalog.providers.rhoai.mcpCatalog'))` for RHOAI's nested config
 - [ ] 2.6 Implement Secret refresh on each `refresh()` cycle (no credential caching across cycles)
 - [ ] 2.7 Implement CA bundle fallback to system CA when custom bundle is missing or fails to load
 - [ ] 2.8 Add startup logging: enabled/disabled status, endpoint URL, Secret ref
@@ -76,7 +76,7 @@
 ## 7. Version Normalization — RHIDP-15321
 
 - [ ] 7.1 Define version normalization rules: extract version string from MCP server manifest metadata
-- [ ] 7.2 Implement `normalizeVersion(rawVersion: string): string` utility — semver normalization, strip `v` prefix, handle `latest`/`nightly` tags
+- [ ] 7.2 Implement `normalizeAIAssetVersion(rawVersion: string): string` utility — semver normalization, strip `v` prefix, handle `latest`/`nightly` tags (SDK-exported name from RHDHPLAN-1507)
 - [ ] 7.3 Populate `rhdh.io/ai-asset-version` annotation with normalized version on all emitted MCP server entities
 - [ ] 7.4 Handle missing version metadata: set `rhdh.io/ai-asset-version: "unknown"` with DEBUG log
 - [ ] 7.5 Handle invalid version strings (empty, malformed): set `rhdh.io/ai-asset-version: "unknown"` with WARNING log

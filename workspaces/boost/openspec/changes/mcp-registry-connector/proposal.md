@@ -40,7 +40,7 @@ This change layers productization on top of the upstream connector, adding air-g
 
 ### AI Asset Annotation Enrichment
 
-- **Annotation population during entity emission** — entities carry `rhdh.io/ai-asset-category: mcp-server`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source: mcp-registry` annotations
+- **Annotation population during entity emission** — entities carry `rhdh.io/ai-asset-category: mcp-server`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source: mcp-registry/<instance-id>` annotations (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `mcpRegistry`)
 - **Enrichment pipeline** — annotations added after upstream connector emits entities, before `applyMutation`
 - **SDK validation integration** — enriched entities pass through RHDHPLAN-1507's SDK validation layer
 - **Missing annotation handling** — entities without version metadata get annotation placeholders

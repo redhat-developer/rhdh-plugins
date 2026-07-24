@@ -13,7 +13,7 @@ Each connector can configure a custom CA bundle for HTTPS verification via confi
 #### Scenario: CA loaded from file path
 
 - **WHEN** a connector is configured with `catalog.providers.<connectorId>.tls.caFile: /etc/ssl/certs/custom-ca.pem`
-- **THEN** `loadCaBundle(config, connectorId)` reads the PEM file from the specified path
+- **THEN** `loadCaBundle(connectorConfig)` reads the PEM file from the `tls.caFile` path within the provided Config subtree
 - **AND** returns a `Buffer` containing the CA certificate(s)
 - **AND** the connector uses this buffer to create an `https.Agent` with custom CA
 
@@ -28,8 +28,8 @@ Each connector can configure a custom CA bundle for HTTPS verification via confi
 
 - **WHEN** MCP Registry connector has `tls.caFile: /etc/ssl/mcp-ca.pem`
 - **AND** RHOAI connector has `tls.caFile: /etc/ssl/rhoai-ca.pem`
-- **THEN** `loadCaBundle(config, 'mcpRegistry')` returns only the MCP Registry CA bundle
-- **AND** `loadCaBundle(config, 'rhoai')` returns only the RHOAI CA bundle
+- **THEN** `loadCaBundle(mcpRegistryConfig)` returns only the MCP Registry CA bundle (where `mcpRegistryConfig = config.getConfig('catalog.providers.mcpRegistry')`)
+- **AND** `loadCaBundle(rhoaiMcpCatalogConfig)` returns only the RHOAI CA bundle (where `rhoaiMcpCatalogConfig = config.getConfig('catalog.providers.rhoai.mcpCatalog')`)
 - **AND** each connector's `https.Agent` uses its own CA, not the other connector's CA
 
 ### Requirement: Graceful Failure Handling

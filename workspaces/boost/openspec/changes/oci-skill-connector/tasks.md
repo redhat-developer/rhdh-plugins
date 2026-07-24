@@ -25,7 +25,7 @@
 - [ ] 2.5 Implement descriptive error logging for invalid skillcards (include image ref, validation failure details)
 - [ ] 2.6 Implement entity building as `kind: AiResource` with `spec.type: skill`
 - [ ] 2.7 Populate `metadata.annotations['rhdh.io/ai-asset-category']: skill`
-- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci://<registry>/<namespace>/<image>`
+- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<registry-id>` (where `<registry-id>` identifies the configured registry instance) and `metadata.annotations['rhdh.io/oci-image-ref']: <registry>/<namespace>/<image>:<tag>` for the full OCI reference
 - [ ] 2.9 Populate `metadata.annotations['rhdh.io/ai-asset-digest']: <sha256>`
 - [ ] 2.10 Implement default values for missing optional fields (`spec.owner: unknown`, `metadata.tags: []`)
 - [ ] 2.11 Implement entity metadata population from skillcard fields (`owner`, `tags`, `links`)
@@ -54,8 +54,8 @@
 - [ ] 4.3 Base64-decode `auth` field to get `username:password`
 - [ ] 4.4 Implement `Authorization: Basic <base64(username:password)>` header for registry requests
 - [ ] 4.5 Implement missing pull secret error handling (log error, attempt public access)
-- [ ] 4.6 Implement custom CA bundle loader from `tls.caFile`
-- [ ] 4.7 Integrate shared CA utility from RHIDP-15316 for HTTPS agent configuration
+- [ ] 4.6 Implement custom CA bundle loading via `loadCaBundle(registryConfig)` where `registryConfig` is the per-registry Config node
+- [ ] 4.7 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
 - [ ] 4.8 Implement fallback to system CA bundle if custom CA bundle is invalid
 - [ ] 4.9 Implement per-registry auth configuration (distinct credentials and CA bundles per registry)
 - [ ] 4.10 Implement credential reuse optimization (load pull secret once if shared across registries)
