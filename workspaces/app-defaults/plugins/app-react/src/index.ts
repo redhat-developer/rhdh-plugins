@@ -26,3 +26,7 @@ export { DrawerPanel } from './drawer';
 export type { ApplicationDrawerProps } from './drawer';
 export type { DrawerPanelProps } from './drawer';
 export type { AppDrawerContent, AppDrawerApi } from './drawer';
+
+export { ApplicationSidebar } from './sidebar';
+export type { ApplicationSidebarProps } from './sidebar';
+export type { AppSidebarItem } from './sidebar';

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-/**
- * New Frontend System extension APIs for the RHDH app shell.
- *
- * @packageDocumentation
- */
+export { ApplicationSidebar } from './components/ApplicationSidebar';
 
-export * from './drawer';
-export * from './sidebar';
+export { appSidebarItemDataRef } from './extensions/appSidebarItemDataRef';
+export { AppSidebarItemBlueprint } from './extensions/AppSidebarItemBlueprint';
+export { appSidebarModule } from './extensions/appSidebarModule';
+
+export type { ApplicationSidebarProps } from './components/ApplicationSidebar';
+export type { AppSidebarItem } from './types';

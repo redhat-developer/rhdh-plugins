@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-/**
- * New Frontend System extension APIs for the RHDH app shell.
- *
- * @packageDocumentation
- */
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-export * from './drawer';
-export * from './sidebar';
+import type { AppSidebarItem } from '../types';
+
+/**
+ * Extension data ref carrying a sidebar item from a plugin to the host.
+ *
+ * @alpha
+ */
+export const appSidebarItemDataRef =
+  createExtensionDataRef<AppSidebarItem>().with({
+    id: 'app.sidebar.item',
+  });

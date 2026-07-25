@@ -8,6 +8,7 @@ import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import type { NavContentNavItems } from '@backstage/plugin-app-react';
 
 // @public
 export interface AppDrawerApi {
@@ -80,6 +81,59 @@ export interface ApplicationDrawerProps {
   children: React.ReactNode;
   contents: AppDrawerContent[];
 }
+
+// @public
+export const ApplicationSidebar: (
+  input: ApplicationSidebarProps,
+) => JSX_2.Element;
+
+// @public
+export interface ApplicationSidebarProps {
+  items: AppSidebarItem[];
+  navItems: NavContentNavItems;
+}
+
+// @public
+export interface AppSidebarItem {
+  icon: React.ComponentType;
+  id: string;
+  priority?: number;
+  title: string;
+  to?: string;
+}
+
+// @alpha
+export const AppSidebarItemBlueprint: ExtensionBlueprint<{
+  kind: 'app-sidebar-item';
+  params: {
+    id: string;
+    title: string;
+    icon: React.ComponentType;
+    to?: string;
+    priority?: number;
+  };
+  output: ExtensionDataRef<AppSidebarItem, 'app.sidebar.item', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    item: ConfigurableExtensionDataRef<AppSidebarItem, 'app.sidebar.item', {}>;
+  };
+}>;
+
+// @alpha
+export const appSidebarItemDataRef: ConfigurableExtensionDataRef<
+  AppSidebarItem,
+  'app.sidebar.item',
+  {}
+>;
+
+// @alpha
+export const appSidebarModule: FrontendModule;
 
 // @public
 export const DrawerPanel: (props: DrawerPanelProps) => JSX_2.Element;

@@ -9473,6 +9473,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-app-react@workspace:plugins/app-react"
   dependencies:
     "@backstage/cli": "npm:^0.36.3"
+    "@backstage/core-components": "npm:^0.18.11"
     "@backstage/core-plugin-api": "npm:^1.12.7"
     "@backstage/frontend-plugin-api": "npm:^0.17.2"
     "@backstage/plugin-app-react": "npm:^0.2.4"
