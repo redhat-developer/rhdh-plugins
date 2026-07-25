@@ -14,62 +14,64 @@
  * limitations under the License.
  */
 
-import type { SvgIconComponent } from '@mui/icons-material';
-import AutoFixHighOutlined from '@mui/icons-material/AutoFixHighOutlined';
-import GppGoodOutlined from '@mui/icons-material/GppGoodOutlined';
-import DnsOutlined from '@mui/icons-material/DnsOutlined';
-import SmartToyOutlined from '@mui/icons-material/SmartToyOutlined';
-import PsychologyOutlined from '@mui/icons-material/PsychologyOutlined';
-import HandymanOutlined from '@mui/icons-material/HandymanOutlined';
-import StorageOutlined from '@mui/icons-material/StorageOutlined';
+import type { RemixiconComponentType } from '@remixicon/react';
+import {
+  RiBrainLine,
+  RiDatabase2Line,
+  RiMagicLine,
+  RiRobotLine,
+  RiServerLine,
+  RiShieldCheckLine,
+  RiToolsLine,
+} from '@remixicon/react';
 
 export interface CategoryMeta {
   label: string;
-  icon: SvgIconComponent;
+  icon: RemixiconComponentType;
   color: string;
 }
 
 const categoryMetaMap: Record<string, CategoryMeta> = {
   skill: {
     label: 'Skills',
-    icon: AutoFixHighOutlined,
+    icon: RiMagicLine,
     color: 'var(--boost-color-skill, #4ade80)',
   },
   rule: {
     label: 'Rules',
-    icon: GppGoodOutlined,
+    icon: RiShieldCheckLine,
     color: 'var(--boost-color-rule, #c084fc)',
   },
   'mcp-server': {
     label: 'MCP Servers',
-    icon: DnsOutlined,
+    icon: RiServerLine,
     color: 'var(--boost-color-mcp-server, #38bdf8)',
   },
   'ai-agent': {
     label: 'Agents',
-    icon: SmartToyOutlined,
+    icon: RiRobotLine,
     color: 'var(--boost-color-agent, #60a5fa)',
   },
   'ai-model': {
     label: 'Models',
-    icon: PsychologyOutlined,
+    icon: RiBrainLine,
     color: 'var(--boost-color-model, #f472b6)',
   },
   'ai-tool': {
     label: 'Tools',
-    icon: HandymanOutlined,
+    icon: RiToolsLine,
     color: 'var(--boost-color-tool, #fb923c)',
   },
   'vector-store': {
     label: 'Vector Stores',
-    icon: StorageOutlined,
+    icon: RiDatabase2Line,
     color: 'var(--boost-color-vector-store, #2dd4bf)',
   },
 };
 
 const fallbackMeta: CategoryMeta = {
   label: 'Unknown',
-  icon: PsychologyOutlined,
+  icon: RiBrainLine,
   color: 'var(--boost-color-unknown, #6b7280)',
 };
 

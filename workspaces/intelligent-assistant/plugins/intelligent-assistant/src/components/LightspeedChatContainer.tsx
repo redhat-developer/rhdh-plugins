@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import '@patternfly/chatbot/dist/css/main.css';
+
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
@@ -93,8 +96,7 @@ const LightspeedChatContainerInner = () => {
     [models],
   );
 
-  // Handle dark theme class on document
-  useEffect(() => {
+  useLayoutEffect(() => {
     const htmlTagElement = document.documentElement;
     if (type === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
