@@ -244,6 +244,19 @@ describe('AIResourceExtensionsProcessor', () => {
       ).rejects.toThrow('bare oci://');
     });
 
+    it('should reject bare oci:// with multiple leading spaces', async () => {
+      const entity = makeAIResource(
+        {},
+        {
+          'backstage.io/source-location': '  oci://quay.io/org/skills:latest',
+        },
+      );
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('bare oci://');
+    });
+
     it('should reject malformed url:oci:// with empty target', async () => {
       const entity = makeAIResource(
         {},

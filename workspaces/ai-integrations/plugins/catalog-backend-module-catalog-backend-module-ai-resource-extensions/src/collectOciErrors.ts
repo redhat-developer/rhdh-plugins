@@ -42,7 +42,7 @@ export function collectOciErrors(entity: Entity): string[] {
   // Detect bare `oci://…` without the required `url:` prefix.
   // A bare `oci://…` parses as location type `oci` with a non-URL target,
   // which breaks future UrlReader integration.
-  if (raw.startsWith('oci://') || raw.startsWith(' oci://')) {
+  if (raw.trimStart().startsWith('oci://')) {
     const sanitized = Array.from(raw.trim())
       .filter(c => c.charCodeAt(0) > 0x1f)
       .join('')
