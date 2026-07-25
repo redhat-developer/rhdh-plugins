@@ -359,6 +359,17 @@ describe('Notebooks Router', () => {
         expect(response.body.error).toBe('title is required');
       });
 
+      it('should return 400 if title exceeds 255 characters', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({ title: 'a'.repeat(256) });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toContain('255 characters or less');
+      });
+
       it('should return 404 for non-existent document', async () => {
         const response = await request(app)
           .patch(

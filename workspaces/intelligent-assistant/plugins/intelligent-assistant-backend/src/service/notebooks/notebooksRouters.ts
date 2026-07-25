@@ -414,7 +414,7 @@ export async function createNotebooksRouter(
       // Upload document to vector store in background
       const docName = newTitle || title;
       documentService
-        .upsertDocument(sessionId, title, fileType, fileId, newTitle)
+        .upsertDocument(sessionId, title, { fileType, fileId, newTitle })
         .then(() => logger.info(`Background upload succeeded: ${docName}`))
         .catch((err: any) =>
           logger.error(`Background upload failed: ${docName}`, err),
@@ -456,7 +456,19 @@ export async function createNotebooksRouter(
         return;
       }
 
-      await documentService.renameDocument(sessionId, documentId, title.trim());
+      const MAX_TITLE_LENGTH = 255;
+      if (title.trim().length > MAX_TITLE_LENGTH) {
+        handleError(
+          logger,
+          res,
+          `title must be ${MAX_TITLE_LENGTH} characters or less`,
+        );
+        return;
+      }
+
+      await documentService.upsertDocument(sessionId, documentId, {
+        newTitle: title.trim(),
+      });
       res.json(
         createDocumentResponse(
           title.trim(),
