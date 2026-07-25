@@ -135,14 +135,14 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                  title: 'Code Quality'
                  description: 'SonarQube code quality metrics'
                  metrics:
-                   - sonarqube.reliability_issues
-                   - sonarqube.code_coverage
-                   - sonarqube.security_issues
+                   - sonarqube.reliabilityIssues
+                   - sonarqube.codeCoverage
+                   - sonarqube.securityIssues
                operations:
                  title: 'Operations'
                  metrics:
-                   - github.open_prs
-                   - jira.open_issues
+                   - github.openPrs
+                   - jira.openIssues
    ```
 
    **Groups config schema:**

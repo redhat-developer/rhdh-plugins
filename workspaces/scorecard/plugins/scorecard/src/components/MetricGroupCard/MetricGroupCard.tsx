@@ -20,7 +20,10 @@ import Box from '@mui/material/Box';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { buildThresholdBuckets } from './thresholdBucketUtils';
+import {
+  buildThresholdBuckets,
+  dedupeMetricsById,
+} from './thresholdBucketUtils';
 import { ThresholdBucketTile } from './ThresholdBucketTile';
 import { MetricGroupCardMenu } from './MetricGroupCardMenu';
 import type { MenuAction } from './MetricGroupCardMenu';
@@ -38,9 +41,10 @@ export const MetricGroupCard = ({
   const { t } = useTranslation();
   const [dataSourcesOpen, setDataSourcesOpen] = useState(false);
   const [initialFilters, setInitialFilters] = useState<string[]>([]);
+  const uniqueMetrics = useMemo(() => dedupeMetricsById(metrics), [metrics]);
   const buckets = useMemo(
-    () => buildThresholdBuckets(metrics, t),
-    [metrics, t],
+    () => buildThresholdBuckets(uniqueMetrics, t),
+    [uniqueMetrics, t],
   );
 
   const handleOpenDataSources = useCallback(() => {
@@ -109,7 +113,7 @@ export const MetricGroupCard = ({
           open={dataSourcesOpen}
           onClose={handleCloseDataSources}
           title={title}
-          metrics={metrics}
+          metrics={uniqueMetrics}
           initialFilters={initialFilters}
         />
       )}

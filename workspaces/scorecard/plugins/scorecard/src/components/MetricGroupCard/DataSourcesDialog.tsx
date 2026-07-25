@@ -41,12 +41,17 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useLanguage } from '../../hooks/useLanguage';
 import {
   getStatusConfig,
-  getTranslatedStatus,
   getLastUpdatedLabel,
   extractPluginName,
   resolveMetricTranslation,
 } from '../../utils';
-import { buildThresholdBuckets } from './thresholdBucketUtils';
+import {
+  buildThresholdBuckets,
+  getMetricBucketKey,
+  getMetricBucketLabel,
+  hasMetricEvaluation,
+  MISSING_EVALUATION_LABEL,
+} from './thresholdBucketUtils';
 import { StatusIcon } from './StatusIcon';
 import { ThresholdLegend } from './ThresholdLegend';
 
@@ -63,12 +68,19 @@ interface SourceRow extends TableItem {
   checkTitle: string;
   checkDescription: string;
   value: string;
-  evaluationKey: string | null;
+  evaluationKey: string;
   statusLabel: string;
   statusIcon: string;
   statusColor: string;
   lastSynced: string;
   thresholdExpression: string | null;
+}
+
+function formatMetricValue(value: MetricResult['result']): string {
+  if (value?.value === null || value?.value === undefined) {
+    return MISSING_EVALUATION_LABEL;
+  }
+  return String(value.value);
 }
 
 export const DataSourcesDialog = ({
@@ -89,21 +101,20 @@ export const DataSourcesDialog = ({
   const rows = useMemo<SourceRow[]>(
     () =>
       metrics.map((metric, index) => {
-        const evaluationKey =
-          metric.result?.thresholdResult?.evaluation ?? null;
-
+        const evaluationKey = getMetricBucketKey(metric);
+        const evaluated = hasMetricEvaluation(metric);
         const thresholdRules =
-          metric.result?.thresholdResult?.definition?.rules;
+          metric.result?.thresholdResult?.definition?.rules ?? [];
 
         const statusConfig = getStatusConfig({
-          evaluation: evaluationKey,
+          evaluation: evaluated ? evaluationKey : null,
           thresholdStatus: metric.result?.thresholdResult?.status,
           metricStatus: metric.status,
           thresholdRules,
         });
 
-        const matchedRule = evaluationKey
-          ? thresholdRules?.find(r => r.key === evaluationKey)
+        const matchedRule = evaluated
+          ? thresholdRules.find(r => r.key === evaluationKey)
           : undefined;
 
         return {
@@ -119,19 +130,14 @@ export const DataSourcesDialog = ({
             'description',
             metric.metadata.description,
           ),
-          value:
-            metric.result?.value !== null && metric.result?.value !== undefined
-              ? String(metric.result.value)
-              : '—',
+          value: formatMetricValue(metric.result),
           evaluationKey,
-          statusLabel: evaluationKey
-            ? getTranslatedStatus(evaluationKey, t)
-            : '—',
-          statusIcon: statusConfig.icon ?? '',
+          statusLabel: getMetricBucketLabel(evaluationKey, t),
+          statusIcon: evaluated ? statusConfig.icon ?? '' : '',
           statusColor: statusConfig.color,
           lastSynced: metric.result?.timestamp
             ? getLastUpdatedLabel(metric.result.timestamp, locale)
-            : '—',
+            : MISSING_EVALUATION_LABEL,
           thresholdExpression: matchedRule?.expression ?? null,
         };
       }),
@@ -162,9 +168,7 @@ export const DataSourcesDialog = ({
   const filteredRows = useMemo(
     () =>
       activeFilters.size > 0
-        ? rows.filter(
-            r => r.evaluationKey !== null && activeFilters.has(r.evaluationKey),
-          )
+        ? rows.filter(r => activeFilters.has(r.evaluationKey))
         : rows,
     [rows, activeFilters],
   );
@@ -346,22 +350,6 @@ export const DataSourcesDialog = ({
       return sorted;
     },
   });
-
-  const handleOverlayClick = useCallback(
-    (e: MouseEvent) => {
-      const dialog = document.querySelector('[role="dialog"]');
-      if (dialog && !dialog.contains(e.target as Node)) {
-        onClose();
-      }
-    },
-    [onClose],
-  );
-
-  useEffect(() => {
-    if (!open) return undefined;
-    document.addEventListener('mousedown', handleOverlayClick);
-    return () => document.removeEventListener('mousedown', handleOverlayClick);
-  }, [open, handleOverlayClick]);
 
   return (
     <>

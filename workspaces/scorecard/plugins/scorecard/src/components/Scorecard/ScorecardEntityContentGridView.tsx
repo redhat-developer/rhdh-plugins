@@ -26,6 +26,7 @@ import NoScorecardsState from '../Common/NoScorecardsState';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
 import { MetricGroupCard } from '../MetricGroupCard';
+import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
 import Scorecard from './Scorecard';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
@@ -56,9 +57,11 @@ export const ScorecardEntityContentGridView = ({
   const groupedMetrics = new Map<string, MetricResult[]>();
 
   Object.entries(groups).forEach(([groupKey, groupConfig]) => {
-    const metricsInOrder = groupConfig.metrics
-      .map(id => scorecards.find(m => m.id === id))
-      .filter((m): m is MetricResult => m !== undefined);
+    const metricsInOrder = dedupeMetricsById(
+      groupConfig.metrics
+        .map(id => scorecards.find(m => m.id === id))
+        .filter((m): m is MetricResult => m !== undefined),
+    );
 
     if (metricsInOrder.length > 0) {
       groupedMetrics.set(groupKey, metricsInOrder);

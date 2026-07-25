@@ -44,6 +44,7 @@ const mockBuckets: ThresholdBucket[] = [
 
 jest.mock('../thresholdBucketUtils', () => ({
   buildThresholdBuckets: jest.fn(() => mockBuckets),
+  dedupeMetricsById: (metrics: unknown[]) => metrics,
 }));
 
 jest.mock('../ThresholdBucketTile', () => ({
@@ -132,7 +133,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const mockMetric: MetricResult = {
-  id: 'sonarqube.reliability_issues',
+  id: 'sonarqube.reliabilityIssues',
   status: 'success',
   metadata: {
     title: 'SonarQube Reliability Issues',

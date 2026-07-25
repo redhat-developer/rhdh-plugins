@@ -116,6 +116,16 @@ jest.mock('../../../utils', () => ({
 
 jest.mock('../thresholdBucketUtils', () => ({
   buildThresholdBuckets: () => [],
+  MISSING_EVALUATION_BUCKET_KEY: 'noEvaluation',
+  MISSING_EVALUATION_LABEL: '—',
+  getMetricBucketKey: (metric: {
+    result?: { thresholdResult?: { evaluation?: string | null } };
+  }) => metric.result?.thresholdResult?.evaluation ?? 'noEvaluation',
+  hasMetricEvaluation: (metric: {
+    result?: { thresholdResult?: { evaluation?: string | null } };
+  }) => Boolean(metric.result?.thresholdResult?.evaluation),
+  getMetricBucketLabel: (bucketKey: string) =>
+    bucketKey === 'noEvaluation' ? '—' : bucketKey,
 }));
 
 jest.mock('../StatusIcon', () => ({
@@ -134,7 +144,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 
 const mockMetrics: MetricResult[] = [
   {
-    id: 'sonarqube.reliability_issues',
+    id: 'sonarqube.reliabilityIssues',
     status: 'success',
     metadata: {
       title: 'SonarQube Reliability Issues',
@@ -159,7 +169,7 @@ const mockMetrics: MetricResult[] = [
     },
   },
   {
-    id: 'sonarqube.code_coverage',
+    id: 'sonarqube.codeCoverage',
     status: 'success',
     metadata: {
       title: 'SonarQube Code Coverage',
@@ -239,7 +249,7 @@ describe('DataSourcesDialog', () => {
 
     expect(capturedData).toHaveLength(2);
     expect(capturedData[0].plugin).toBe('Sonarqube');
-    expect(capturedData[0].checkTitle).toBe('sonarqube.reliability_issues');
+    expect(capturedData[0].checkTitle).toBe('sonarqube.reliabilityIssues');
     expect(capturedData[0].value).toBe('8');
     expect(capturedData[0].statusLabel).toBe('error');
     expect(capturedData[1].plugin).toBe('Sonarqube');
@@ -259,7 +269,7 @@ describe('DataSourcesDialog', () => {
   it("should show '—' for null/undefined values", () => {
     const metricsWithNull: MetricResult[] = [
       {
-        id: 'sonarqube.null_metric',
+        id: 'sonarqube.nullMetric',
         status: 'error',
         metadata: {
           title: 'Null Metric',
@@ -292,5 +302,6 @@ describe('DataSourcesDialog', () => {
 
     expect(capturedData[0].value).toBe('—');
     expect(capturedData[0].statusLabel).toBe('—');
+    expect(capturedData[0].evaluationKey).toBe('noEvaluation');
   });
 });

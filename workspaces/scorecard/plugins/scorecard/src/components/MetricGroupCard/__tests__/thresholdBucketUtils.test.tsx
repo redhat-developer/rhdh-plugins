@@ -20,6 +20,7 @@ import { buildThresholdBuckets } from '../thresholdBucketUtils';
 
 jest.mock('../../../utils', () => ({
   getTranslatedStatus: jest.fn(),
+  SCORECARD_ERROR_STATE_COLOR: 'error.main',
 }));
 
 jest.mock('../../../utils/thresholdUtils', () => ({
@@ -116,7 +117,23 @@ describe('buildThresholdBuckets', () => {
     });
   });
 
-  it('should handle metrics without threshold results', () => {
+  it('should count duplicate metric IDs only once', () => {
+    const metrics = [
+      createMetric('openssf.codeReview', 'error'),
+      createMetric('openssf.contributors', 'success'),
+      createMetric('openssf.codeReview', 'error'),
+    ];
+
+    const result = buildThresholdBuckets(metrics, mockT as any);
+
+    const countsByKey = Object.fromEntries(result.map(b => [b.key, b.count]));
+    expect(countsByKey).toEqual({
+      success: 1,
+      error: 1,
+    });
+  });
+
+  it('should count metrics without evaluation in a "—" bucket', () => {
     const metricNoResult: MetricResult = {
       id: 'no-result',
       status: 'error',
@@ -124,25 +141,43 @@ describe('buildThresholdBuckets', () => {
       result: undefined as any,
     };
     const metricNoThreshold: MetricResult = {
-      id: 'no-threshold',
+      id: 'sonarqube.codeCoverage',
       status: 'success',
-      metadata: { title: 'no-threshold', description: '', type: 'number' },
+      metadata: {
+        title: 'sonarqube.codeCoverage',
+        description: '',
+        type: 'number',
+      },
       result: {
-        value: 1,
+        value: null as any,
         timestamp: new Date().toISOString(),
-        thresholdResult: undefined as any,
+        thresholdResult: {
+          status: 'success',
+          definition: { rules: thresholdRules },
+          evaluation: null,
+        },
       },
     };
     const metricWithData = createMetric('has-data', 'success');
+    const metricError = createMetric('has-error', 'error');
 
     const result = buildThresholdBuckets(
-      [metricNoResult, metricNoThreshold, metricWithData],
+      [metricNoResult, metricNoThreshold, metricWithData, metricError],
       mockT as any,
     );
 
-    expect(result).toHaveLength(1);
-    expect(result[0].key).toBe('success');
-    expect(result[0].count).toBe(1);
+    const countsByKey = Object.fromEntries(result.map(b => [b.key, b.count]));
+    expect(countsByKey).toEqual({
+      success: 1,
+      error: 1,
+      noEvaluation: 2, // no-result + codeCoverage
+    });
+    expect(result.find(b => b.key === 'noEvaluation')?.label).toBe('—');
+    expect(result.map(b => b.key)).toEqual([
+      'success',
+      'error',
+      'noEvaluation',
+    ]);
   });
 
   it('should use correct label from getTranslatedStatus', () => {

@@ -57,9 +57,9 @@ export function resolveMetricTranslation(
  * Extracts the plugin name from a metric ID.
  * The plugin name is the first segment of the metric ID.
  * E.g. filecheck.codeowners -> Filecheck
- *      github.open_prs -> Github
- *      gitlab.open_issues -> Gitlab
- *      sonarqube.code_smells -> Sonarqube
+ *      github.openPrs -> Github
+ *      gitlab.openIssues -> Gitlab
+ *      sonarqube.codeSmells -> Sonarqube
  *      etc.
  * @param metricId - The metric ID.
  * @param fallback - The fallback value if the metric ID is undefined.
