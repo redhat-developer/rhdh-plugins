@@ -255,6 +255,46 @@ export class NotebookSurfacePage {
     await this.deleteDocumentConfirmButton().click();
   }
 
+  /** Locates a document filename element in the sidebar by its text. */
+  documentFileName(name: string): Locator {
+    return this.chatbotRegion().getByText(name, { exact: true }).first();
+  }
+
+  /** "Rename" menu item in the document kebab dropdown. */
+  documentRowRenameMenuItem(): Locator {
+    return this.page.getByRole('menuitem', {
+      name: this.t['notebook.document.rename'],
+      exact: true,
+    });
+  }
+
+  /** Double-clicks the filename, clears input, types new name, presses Enter. */
+  async renameDocumentInlineViaDoubleClick(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.documentFileName(oldName).dblclick();
+    const input = this.chatbotRegion().getByRole('textbox');
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
+  }
+
+  /** Clicks kebab on the document row, clicks Rename, clears input, types new name, presses Enter. */
+  async renameDocumentViaKebabMenu(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.documentRowRenameMenuItem().click();
+    const input = this.chatbotRegion().getByRole('textbox');
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
+  }
+
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {
     await expect(
       this.chatbotRegion().getByText(fileName, { exact: true }).first(),

@@ -249,9 +249,7 @@ describe('DocumentSidebar', () => {
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'notes' } });
 
-      expect(
-        screen.getByText('A document with this name already exists.'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Name already exists.')).toBeInTheDocument();
 
       fireEvent.keyDown(input, { key: 'Enter' });
       expect(onRenameDocument).not.toHaveBeenCalled();
@@ -275,8 +273,47 @@ describe('DocumentSidebar', () => {
       fireEvent.change(input, { target: { value: 'unique-name' } });
 
       expect(
-        screen.queryByText('A document with this name already exists.'),
+        screen.queryByText('Name already exists.'),
       ).not.toBeInTheDocument();
+    });
+
+    it('should save rename on blur', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'blurred-name' } });
+      fireEvent.blur(input);
+
+      expect(onRenameDocument).toHaveBeenCalledWith('doc-1', 'blurred-name.md');
+    });
+
+    it('should show error and block save when title exceeds 255 characters', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      const longName = 'a'.repeat(260);
+      fireEvent.change(input, { target: { value: longName } });
+
+      expect(screen.getByText('Name too long (max 255)')).toBeInTheDocument();
+
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
+
+    it('should exit edit mode on blur when title is too long', () => {
+      render(<DocumentSidebar {...renameProps} />);
+
+      fireEvent.doubleClick(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      const longName = 'a'.repeat(260);
+      fireEvent.change(input, { target: { value: longName } });
+      fireEvent.blur(input);
+
+      expect(onRenameDocument).not.toHaveBeenCalled();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(screen.getByText('readme.md')).toBeInTheDocument();
     });
   });
 });
