@@ -1768,6 +1768,7 @@ export const LightspeedChat = ({
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
+          attachButtonPosition="start"
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}
@@ -1965,9 +1966,6 @@ export const LightspeedChat = ({
             handleSelectedModel={handleSelectedModel}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
-            isModelSelectorDisabled={
-              isSendButtonDisabled || messages.length > 0
-            }
             hideModelSelector
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}
