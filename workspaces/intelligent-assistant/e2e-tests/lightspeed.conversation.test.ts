@@ -351,5 +351,118 @@ test.describe('Intelligent assistant conversation', () => {
         sharedPage.getByLabel(translations['reasoning.thinking']),
       ).toContainText(thinkingContent);
     });
+
+    test.describe('Model Selector', () => {
+      test.beforeEach(async () => {
+        await sharedPage.reload();
+        await sharedPage
+          .locator('.pf-chatbot__messagebox')
+          .waitFor({ state: 'visible' });
+      });
+
+      test('Model selector is enabled before sending a message', async () => {
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await expect(toggle).toBeVisible();
+        await expect(toggle).toBeEnabled();
+
+        await toggle.click();
+        await expect(
+          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
+        ).toBeVisible();
+        await sharedPage.keyboard.press('Escape');
+      });
+
+      test('Model selector becomes disabled after sending a message', async () => {
+        await sendMessage(
+          LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
+          sharedPage,
+          translations,
+        );
+
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await expect(toggle).toBeDisabled();
+      });
+
+      test('Disabled model selector shows tooltip on hover', async () => {
+        await sendMessage(
+          LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
+          sharedPage,
+          translations,
+        );
+
+        const toggleWrapper = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await toggleWrapper.hover();
+        await expect(
+          sharedPage.getByText(translations['modelSelector.disabledTooltip']),
+        ).toBeVisible();
+      });
+
+      test('Model selector dropdown closes when user clicks Send', async () => {
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await toggle.click();
+        await expect(
+          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
+        ).toBeVisible();
+
+        const input = sharedPage.getByRole('textbox', {
+          name: translations['chatbox.message.placeholder'],
+        });
+        await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);
+        const sendButton = sharedPage.getByRole('button', { name: 'Send' });
+        await sendButton.click();
+
+        await expect(
+          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
+        ).toBeHidden();
+      });
+
+      test('Model selector dropdown closes when user presses Enter', async () => {
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await toggle.click();
+        await expect(
+          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
+        ).toBeVisible();
+
+        const input = sharedPage.getByRole('textbox', {
+          name: translations['chatbox.message.placeholder'],
+        });
+        await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);
+        await input.press('Enter');
+
+        await expect(
+          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
+        ).toBeHidden();
+      });
+
+      test('Model selector is re-enabled on new chat', async () => {
+        await sendMessage(
+          LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
+          sharedPage,
+          translations,
+        );
+
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+        await expect(toggle).toBeDisabled();
+
+        const newChatButton = sharedPage.getByRole('button', {
+          name: translations['button.newChat'],
+        });
+        await newChatButton.click();
+
+        await expect(toggle).toBeEnabled();
+      });
+    });
   });
 });
