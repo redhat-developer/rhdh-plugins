@@ -19,23 +19,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { SortDescriptor } from '@backstage/ui';
 import {
-  Cell,
-  CellText,
-  ColumnConfig,
   Dialog,
   DialogBody,
   DialogFooter,
   DialogHeader,
-  Flex,
   Table,
-  TableItem,
-  Text,
   useTable,
   Button,
-  Column,
 } from '@backstage/ui';
 import Box from '@mui/material/Box';
-import MuiTooltip from '@mui/material/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -52,7 +44,12 @@ import {
   hasMetricEvaluation,
   MISSING_EVALUATION_LABEL,
 } from './thresholdBucketUtils';
-import { StatusIcon } from './StatusIcon';
+import {
+  buildColumnConfig,
+  formatMetricValue,
+  sortSourceRows,
+  type SourceRow,
+} from './DataSourcesDialogColumns';
 import { ThresholdLegend } from './ThresholdLegend';
 
 interface DataSourcesDialogProps {
@@ -63,25 +60,8 @@ interface DataSourcesDialogProps {
   initialFilters?: string[];
 }
 
-interface SourceRow extends TableItem {
-  plugin: string;
-  checkTitle: string;
-  checkDescription: string;
-  value: string;
-  evaluationKey: string;
-  statusLabel: string;
-  statusIcon: string;
-  statusColor: string;
-  lastSynced: string;
-  thresholdExpression: string | null;
-}
-
-function formatMetricValue(value: MetricResult['result']): string {
-  if (value?.value === null || value?.value === undefined) {
-    return MISSING_EVALUATION_LABEL;
-  }
-  return String(value.value);
-}
+/** Scopes dialog style overrides to this instance (set on BUI ModalOverlay). */
+const DATA_SOURCES_DIALOG_ATTR = 'data-scorecard-data-sources-dialog';
 
 export const DataSourcesDialog = ({
   open,
@@ -173,147 +153,7 @@ export const DataSourcesDialog = ({
     [rows, activeFilters],
   );
 
-  /**
-   * Renders the column configuration for the table.
-   * @returns The column configuration for the table.
-   */
-  const columnConfig = useMemo<ColumnConfig<SourceRow>[]>(() => {
-    const headerStyle = {
-      fontSize: '0.875rem',
-      fontWeight: 700,
-      cursor: 'pointer',
-    } as const;
-
-    const renderHeader =
-      (
-        id: string,
-        label: string,
-        opts?: {
-          isRowHeader?: boolean;
-          width?: ColumnConfig<SourceRow>['width'];
-        },
-      ) =>
-      () =>
-        (
-          <Column
-            id={id}
-            allowsSorting
-            isRowHeader={opts?.isRowHeader}
-            width={opts?.width}
-          >
-            <Text
-              variant="body-large"
-              weight="bold"
-              color="secondary"
-              style={headerStyle}
-            >
-              {label}
-            </Text>
-          </Column>
-        );
-
-    return [
-      {
-        id: 'plugin',
-        label: t('dataSourcesDialog.columns.plugin'),
-        header: renderHeader('plugin', t('dataSourcesDialog.columns.plugin'), {
-          width: '1fr' as ColumnConfig<SourceRow>['width'],
-        }),
-        cell: item => <CellText title={item.plugin} />,
-        isSortable: true,
-        width: '1fr' as ColumnConfig<SourceRow>['width'],
-      },
-      {
-        id: 'check',
-        label: t('dataSourcesDialog.columns.check'),
-        header: renderHeader('check', t('dataSourcesDialog.columns.check'), {
-          isRowHeader: true,
-          width: '2.5fr' as ColumnConfig<SourceRow>['width'],
-        }),
-        cell: item => (
-          <Cell style={{ padding: '1.5rem 0.75rem' }}>
-            <Flex direction="column" gap="0.5">
-              <Text variant="body-medium" style={{ fontWeight: 400 }}>
-                {item.checkTitle}
-              </Text>
-              <Text
-                variant="body-small"
-                color="secondary"
-                style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {item.checkDescription}
-              </Text>
-            </Flex>
-          </Cell>
-        ),
-        isSortable: true,
-        isRowHeader: true,
-        width: '2.5fr' as ColumnConfig<SourceRow>['width'],
-      },
-      {
-        id: 'value',
-        label: t('dataSourcesDialog.columns.value'),
-        header: renderHeader('value', t('dataSourcesDialog.columns.value'), {
-          width: '0.7fr' as ColumnConfig<SourceRow>['width'],
-        }),
-        cell: item => <CellText title={item.value} />,
-        isSortable: true,
-        width: '0.7fr' as ColumnConfig<SourceRow>['width'],
-      },
-      {
-        id: 'status',
-        label: t('dataSourcesDialog.columns.status'),
-        header: renderHeader('status', t('dataSourcesDialog.columns.status'), {
-          width: '1fr' as ColumnConfig<SourceRow>['width'],
-        }),
-        cell: item => {
-          const tooltipText =
-            item.thresholdExpression && item.evaluationKey
-              ? t('dataSourcesDialog.statusTooltip', {
-                  value: item.value,
-                  status: item.statusLabel,
-                  expression: item.thresholdExpression,
-                } as any)
-              : '';
-          return (
-            <Cell>
-              <MuiTooltip title={tooltipText} placement="bottom" arrow>
-                <Flex gap="1.5" style={{ alignItems: 'center' }}>
-                  <StatusIcon icon={item.statusIcon} color={item.statusColor} />
-                  <Text
-                    variant="body-medium"
-                    weight="bold"
-                    style={{ fontWeight: 500, fontSize: '1rem' }}
-                  >
-                    {item.statusLabel}
-                  </Text>
-                </Flex>
-              </MuiTooltip>
-            </Cell>
-          );
-        },
-        isSortable: true,
-        width: '1fr' as ColumnConfig<SourceRow>['width'],
-      },
-      {
-        id: 'lastSynced',
-        label: t('dataSourcesDialog.columns.lastSynced'),
-        header: renderHeader(
-          'lastSynced',
-          t('dataSourcesDialog.columns.lastSynced'),
-          { width: '1.2fr' as ColumnConfig<SourceRow>['width'] },
-        ),
-        cell: item => <CellText title={item.lastSynced} />,
-        isSortable: true,
-        width: '1.2fr' as ColumnConfig<SourceRow>['width'],
-      },
-    ];
-  }, [t]);
+  const columnConfig = useMemo(() => buildColumnConfig(t), [t]);
 
   const { tableProps } = useTable({
     mode: 'complete',
@@ -321,50 +161,23 @@ export const DataSourcesDialog = ({
     paginationOptions: { type: 'none' },
     sort: sortDescriptor,
     onSortChange: setSortDescriptor,
-    sortFn: (data, sort) => {
-      const colToField: Record<string, keyof SourceRow> = {
-        plugin: 'plugin',
-        check: 'checkTitle',
-        value: 'value',
-        status: 'statusLabel',
-        lastSynced: 'lastSynced',
-      };
-      const field = colToField[sort.column as string] ?? 'plugin';
-      const sorted = [...data];
-      const dir = sort.direction === 'ascending' ? 1 : -1;
-      sorted.sort((a, b) => {
-        if (field === 'value') {
-          const numA = parseFloat(a.value);
-          const numB = parseFloat(b.value);
-          const aIsNum = !Number.isNaN(numA);
-          const bIsNum = !Number.isNaN(numB);
-          if (aIsNum && bIsNum) return dir * (numA - numB);
-          if (aIsNum) return -dir;
-          if (bIsNum) return dir;
-          return 0;
-        }
-        const valA = String(a[field] ?? '');
-        const valB = String(b[field] ?? '');
-        return dir * valA.localeCompare(valB);
-      });
-      return sorted;
-    },
+    sortFn: sortSourceRows,
   });
 
   return (
     <>
       {open && (
         <style>{`
-          [class*="DialogOverlay"] {
+          [${DATA_SOURCES_DIALOG_ATTR}] {
             background: rgba(0, 0, 0, 0.5);
           }
-          
-          [slot="title"] {
+
+          [${DATA_SOURCES_DIALOG_ATTR}] [slot="title"] {
             font-size: 1.25rem;
             font-weight: 700;
           }
 
-          [slot="close"] svg {
+          [${DATA_SOURCES_DIALOG_ATTR}] [slot="close"] svg {
             width: 1.5rem;
             height: 1.5rem;
           }
@@ -374,6 +187,7 @@ export const DataSourcesDialog = ({
         isOpen={open}
         onOpenChange={isOpen => !isOpen && onClose()}
         width={900}
+        {...{ [DATA_SOURCES_DIALOG_ATTR]: '' }}
       >
         <DialogHeader style={{ padding: '1rem 1.5rem' }}>
           {t('dataSourcesDialog.title', { title } as any)}

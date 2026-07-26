@@ -47,7 +47,7 @@ describe('useScorecards', () => {
 
   const mockScorecardData: MetricResult[] = [
     {
-      id: 'github.pull_requests_open',
+      id: 'github.pullRequestsOpen',
       status: 'success',
       metadata: {
         title: 'GitHub open PRs',
@@ -73,7 +73,7 @@ describe('useScorecards', () => {
       },
     },
     {
-      id: 'jira.blocking_tickets',
+      id: 'jira.blockingTickets',
       status: 'success',
       metadata: {
         title: 'Jira blocking tickets',
@@ -142,7 +142,7 @@ describe('useScorecards', () => {
     });
 
     it('should pass metricIds in useAsync deps and to getScorecards', async () => {
-      const metricIds = ['github.pull_requests_open', 'jira.blocking_tickets'];
+      const metricIds = ['github.pullRequestsOpen', 'jira.blockingTickets'];
       mockScorecardApi.getScorecards.mockResolvedValue(mockScorecardData);
       mockUseAsync.mockImplementation(() => ({
         loading: false,
