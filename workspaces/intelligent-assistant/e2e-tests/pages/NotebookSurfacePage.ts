@@ -274,7 +274,9 @@ export class NotebookSurfacePage {
     newName: string,
   ): Promise<void> {
     await this.documentFileName(oldName).dblclick();
-    const input = this.chatbotRegion().getByRole('textbox');
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
     await expect(input).toBeVisible({ timeout: 5_000 });
     await input.clear();
     await input.fill(newName);
@@ -288,7 +290,9 @@ export class NotebookSurfacePage {
   ): Promise<void> {
     await this.firstListedDocumentOverflowMenuToggle().click();
     await this.documentRowRenameMenuItem().click();
-    const input = this.chatbotRegion().getByRole('textbox');
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
     await expect(input).toBeVisible({ timeout: 5_000 });
     await input.clear();
     await input.fill(newName);
