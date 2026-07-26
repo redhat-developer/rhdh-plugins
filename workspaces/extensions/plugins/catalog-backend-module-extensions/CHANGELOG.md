@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.19.0
+
+### Minor Changes
+
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
+## 0.18.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes

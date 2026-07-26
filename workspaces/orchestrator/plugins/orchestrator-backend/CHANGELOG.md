@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.10.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+- Updated dependencies [eade824]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.3
+
+## 8.10.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.2
+
 ## 8.10.1
 
 ### Patch Changes

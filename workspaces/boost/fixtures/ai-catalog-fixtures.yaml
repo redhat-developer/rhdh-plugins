@@ -3,6 +3,57 @@
 # Used by the dev app for local development and testing.
 
 # ---------------------------------------------------------------------------
+# Owner groups — referenced by AI asset entities below
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-ai-platform
+  description: AI Platform team responsible for core AI infrastructure and skills.
+spec:
+  type: team
+  profile:
+    displayName: AI Platform
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-security
+  description: Security team responsible for governance rules and compliance.
+spec:
+  type: team
+  profile:
+    displayName: Security
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-integrations
+  description: Integrations team responsible for MCP servers and external tools.
+spec:
+  type: team
+  profile:
+    displayName: Integrations
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-ml-ops
+  description: ML Ops team responsible for model deployment and management.
+spec:
+  type: team
+  profile:
+    displayName: ML Ops
+  children: []
+
+---
+# ---------------------------------------------------------------------------
 # AiResource / skill
 # ---------------------------------------------------------------------------
 apiVersion: backstage.io/v1alpha1
@@ -33,6 +84,9 @@ spec:
     - code-quality
   agents:
     - component:default/developer-assistant
+  location:
+    type: git
+    target: https://github.com/example/code-review-skill
 
 ---
 # ---------------------------------------------------------------------------
@@ -58,6 +112,9 @@ spec:
   owner: team-security
   category: security
   rationale: Hardcoded secrets in source code can be extracted by attackers, leading to credential compromise and unauthorized access to systems.
+  location:
+    type: git
+    target: https://github.com/example/no-hardcoded-secrets-rule
 
 ---
 # ---------------------------------------------------------------------------
@@ -88,7 +145,7 @@ spec:
       version: 0.9.0
   remotes:
     - url: https://mcp.example.com/github
-      transport: streamable-http
+      type: streamable-http
 
 ---
 # ---------------------------------------------------------------------------
@@ -112,6 +169,9 @@ spec:
   type: ai-agent
   lifecycle: production
   owner: team-ai-platform
+  location:
+    type: git
+    target: https://github.com/example/developer-assistant-agent
 
 ---
 # ---------------------------------------------------------------------------

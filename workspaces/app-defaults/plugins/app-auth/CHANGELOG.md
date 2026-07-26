@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 0.1.0
+
+### Minor Changes
+
+- bf36f65: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- d7f7899: Make signInPage config optional and derive signInPage cards from configs defined under auth.providers
+
 ## 0.0.3
 
 ### Patch Changes

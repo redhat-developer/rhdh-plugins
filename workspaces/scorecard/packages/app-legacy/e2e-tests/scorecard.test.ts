@@ -59,7 +59,7 @@ import {
   getTranslations,
   getEntityCount,
   getStatusGroupedCardSnapshot,
-  getAverageCardSnapshot,
+  getWeightedStatusScoreCardSnapshot,
   getTableFooterSnapshot,
   getEntitiesTableFooterRowsLabel,
 } from './utils/translationUtils';
@@ -73,10 +73,10 @@ import {
   setupHomepageAllCardsNoData,
 } from './utils/homepageWidgetUtils';
 import {
-  expectAverageCardCenterPercent,
-  verifyAverageDonutCenterTooltip,
-  verifyAverageCenterTooltipBreakdownRows,
-} from './utils/averageCardAssertions';
+  expectWeightedStatusScoreCardCenterPercent,
+  verifyWeightedStatusScoreDonutCenterTooltip,
+  verifyWeightedStatusScoreCenterTooltipBreakdownRows,
+} from './utils/weightedStatusScoreCardAssertions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ScorecardRoutes } from './constants/routes';
 import {
@@ -151,8 +151,8 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
       await scorecardPage.verifyScorecardValues({
-        [translations.metric['github.open_prs'].title]: '9',
-        [translations.metric['jira.open_issues'].title]: '8',
+        [translations.metric['github.openPRs'].title]: '9',
+        [translations.metric['jira.openIssues'].title]: '8',
       });
 
       for (const metric of scorecardPage.scorecardMetrics) {
@@ -351,21 +351,21 @@ test.describe('Scorecard Plugin Tests', () => {
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(
-        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+        page.getByText(translations.metric['sonarqube.qualityGate'].title),
       ).toBeVisible({ timeout: 10000 });
 
       const expectedValues: Record<string, string> = {
-        [translations.metric['sonarqube.open_issues'].title]: '3',
-        [translations.metric['sonarqube.security_rating'].title]: '1',
-        [translations.metric['sonarqube.security_issues'].title]: '0',
-        [translations.metric['sonarqube.security_review_rating'].title]: '1',
-        [translations.metric['sonarqube.security_hotspots'].title]: '2',
-        [translations.metric['sonarqube.reliability_rating'].title]: '1',
-        [translations.metric['sonarqube.reliability_issues'].title]: '0',
-        [translations.metric['sonarqube.maintainability_rating'].title]: '1',
-        [translations.metric['sonarqube.maintainability_issues'].title]: '12',
-        [translations.metric['sonarqube.code_coverage'].title]: '82.5',
-        [translations.metric['sonarqube.code_duplications'].title]: '3.2',
+        [translations.metric['sonarqube.openIssues'].title]: '3',
+        [translations.metric['sonarqube.securityRating'].title]: '1',
+        [translations.metric['sonarqube.securityIssues'].title]: '0',
+        [translations.metric['sonarqube.securityReviewRating'].title]: '1',
+        [translations.metric['sonarqube.securityHotspots'].title]: '2',
+        [translations.metric['sonarqube.reliabilityRating'].title]: '1',
+        [translations.metric['sonarqube.reliabilityIssues'].title]: '0',
+        [translations.metric['sonarqube.maintainabilityRating'].title]: '1',
+        [translations.metric['sonarqube.maintainabilityIssues'].title]: '12',
+        [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
+        [translations.metric['sonarqube.codeDuplications'].title]: '3.2',
       };
 
       for (const [title, value] of Object.entries(expectedValues)) {
@@ -379,7 +379,7 @@ test.describe('Scorecard Plugin Tests', () => {
       const qualityGateCard = page
         .locator('[role="article"]')
         .filter({
-          hasText: translations.metric['sonarqube.quality_gate'].title,
+          hasText: translations.metric['sonarqube.qualityGate'].title,
         })
         .first();
       await expect(
@@ -398,13 +398,13 @@ test.describe('Scorecard Plugin Tests', () => {
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(
-        page.getByText(translations.metric['sonarqube.quality_gate'].title),
+        page.getByText(translations.metric['sonarqube.qualityGate'].title),
       ).toBeVisible({ timeout: 10000 });
 
       const qualityGateCard = page
         .locator('[role="article"]')
         .filter({
-          hasText: translations.metric['sonarqube.quality_gate'].description,
+          hasText: translations.metric['sonarqube.qualityGate'].description,
         })
         .first();
       await expect(
@@ -526,16 +526,16 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toBeVisible();
         await homePage.clickDrillDownLink(card);
 
-        await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
+        await scorecardDrillDownPage.expectOnPage('jira.openIssues', {
           aggregationId: aggregationMetadata.id,
         });
 
         const jiraOpenIssuesTitle = evaluateMessage(
-          translations.metric['jira.open_issues'].title,
-          'jira.open_issues',
+          translations.metric['jira.openIssues'].title,
+          'jira.openIssues',
         );
         await scorecardDrillDownPage.expectPageTitle(
-          'jira.open_issues',
+          'jira.openIssues',
           jiraOpenIssuesTitle,
         );
       });
@@ -599,16 +599,16 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toBeVisible();
         await homePage.clickDrillDownLink(card);
 
-        await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
           aggregationId: aggregationMetadata.id,
         });
 
         const githubOpenPrsTitle = evaluateMessage(
-          translations.metric['github.open_prs'].title,
-          'github.open_prs',
+          translations.metric['github.openPRs'].title,
+          'github.openPRs',
         );
         await scorecardDrillDownPage.expectPageTitle(
-          'github.open_prs',
+          'github.openPRs',
           githubOpenPrsTitle,
         );
       });
@@ -676,11 +676,11 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toBeVisible();
         await homePage.clickDrillDownLink(card, { healthy: '8', total: '8' });
 
-        await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
           aggregationId: aggregationMetadata.id,
         });
         await scorecardDrillDownPage.expectPageTitle(
-          'github.open_prs',
+          'github.openPRs',
           aggregatedResponse.metadata.title,
         );
       });
@@ -714,7 +714,7 @@ test.describe('Scorecard Plugin Tests', () => {
       });
     });
 
-    test.describe('Configured aggregation KPI - "average" type', () => {
+    test.describe('Configured aggregation KPI - "weightedStatusScore" type', () => {
       const aggregationMetadata =
         AGGREGATED_CARDS_METADATA.githubOpenPrsWeightedKpi;
 
@@ -726,7 +726,7 @@ test.describe('Scorecard Plugin Tests', () => {
         });
       });
 
-      test.describe('Validate "average" type card content', () => {
+      test.describe('Validate "weightedStatusScore" type card content', () => {
         let card: Locator;
 
         test.beforeAll(async () => {
@@ -755,19 +755,19 @@ test.describe('Scorecard Plugin Tests', () => {
 
         test('Verify center score percentage', async () => {
           await expect(card).toBeVisible();
-          await expectAverageCardCenterPercent(card, '51.5%');
+          await expectWeightedStatusScoreCardCenterPercent(card, '51.5%');
         });
 
         test('Verify center tooltip', async () => {
           await expect(card).toBeVisible();
-          await verifyAverageDonutCenterTooltip(
+          await verifyWeightedStatusScoreDonutCenterTooltip(
             page,
             card,
             translations,
-            openPrsWeightedAggregatedResponse.result.averageWeightedSum,
-            openPrsWeightedAggregatedResponse.result.averageMaxPossible,
+            openPrsWeightedAggregatedResponse.result.weightedStatusSum,
+            openPrsWeightedAggregatedResponse.result.weightedStatusMaxPossible,
           );
-          await verifyAverageCenterTooltipBreakdownRows(
+          await verifyWeightedStatusScoreCenterTooltipBreakdownRows(
             page,
             card,
             translations,
@@ -779,11 +779,11 @@ test.describe('Scorecard Plugin Tests', () => {
           await expect(card).toBeVisible();
           await homePage.clickDrillDownLink(card);
 
-          await scorecardDrillDownPage.expectOnPage('github.open_prs', {
+          await scorecardDrillDownPage.expectOnPage('github.openPRs', {
             aggregationId: aggregationMetadata.id,
           });
           await scorecardDrillDownPage.expectPageTitle(
-            'github.open_prs',
+            'github.openPRs',
             openPrsWeightedAggregatedResponse.metadata.title,
           );
         });
@@ -814,12 +814,12 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await expect(card).toBeVisible();
         await expect(card).toMatchAriaSnapshot(
-          getAverageCardSnapshot(translations, {
+          getWeightedStatusScoreCardSnapshot(translations, {
             drillDownMetricId: aggregationMetadata.metricId,
             drillDownAggregationId: aggregationMetadata.id,
             cardTitle: partialResponse.metadata.title,
             cardDescription: partialResponse.metadata.description,
-            averageScoreLabel: `${partialResponse.result.averageScore}%`,
+            weightedStatusScoreLabel: `${partialResponse.result.weightedStatusScore}%`,
             homepageCalculationHealth: {
               healthy: String(entitiesConsidered - calculationErrorCount),
               total: String(entitiesConsidered),
@@ -959,7 +959,7 @@ test.describe('Scorecard Plugin Tests', () => {
         await mockScorecardEntitiesDrillDownWithSort(
           page,
           jiraEntitiesDrillDownResponse,
-          'jira.open_issues',
+          'jira.openIssues',
         );
 
         await setupHomepageAggregationCard(page, homePage, {
@@ -998,15 +998,15 @@ test.describe('Scorecard Plugin Tests', () => {
           await homePage.clickDrillDownLink(
             homePage.getCard(aggregationMetadata.id),
           );
-          await scorecardDrillDownPage.expectOnPage('jira.open_issues', {
+          await scorecardDrillDownPage.expectOnPage('jira.openIssues', {
             aggregationId: aggregationMetadata.id,
           });
           await scorecardDrillDownPage.expectPageTitle(
-            'jira.open_issues',
+            'jira.openIssues',
             jiraAggregatedResponse.metadata.title,
           );
           await scorecardDrillDownPage.expectDrillDownCardSnapshot(
-            'jira.open_issues',
+            'jira.openIssues',
             {
               aggregationId: aggregationMetadata.id,
               cardTitle: jiraAggregatedResponse.metadata.title,
@@ -1042,13 +1042,13 @@ test.describe('Scorecard Plugin Tests', () => {
           jiraMetricMetadataResponse,
         );
         await page.goto(
-          '/scorecard/aggregations/jira.open_issues/metrics/jira.open_issues',
+          '/scorecard/aggregations/jira.openIssues/metrics/jira.openIssues',
         );
-        await scorecardDrillDownPage.expectOnPage('jira.open_issues');
-        await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+        await scorecardDrillDownPage.expectOnPage('jira.openIssues');
+        await scorecardDrillDownPage.expectPageTitle('jira.openIssues');
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectCardHasMissingPermission(
-          'jira.open_issues',
+          'jira.openIssues',
         );
         await scorecardDrillDownPage.expectTableHasMissingPermission();
       });
@@ -1059,17 +1059,17 @@ test.describe('Scorecard Plugin Tests', () => {
         await mockScorecardEntitiesDrillDown(
           page,
           jiraEntitiesDrillDownNoDataResponse,
-          'jira.open_issues',
+          'jira.openIssues',
         );
         await page.goto(
-          '/scorecard/aggregations/jira.open_issues/metrics/jira.open_issues',
+          '/scorecard/aggregations/jira.openIssues/metrics/jira.openIssues',
         );
-        await scorecardDrillDownPage.expectOnPage('jira.open_issues');
-        await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+        await scorecardDrillDownPage.expectOnPage('jira.openIssues');
+        await scorecardDrillDownPage.expectPageTitle('jira.openIssues');
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectTableNoDataFound();
         await scorecardDrillDownPage.expectCardHasNoDataFound(
-          'jira.open_issues',
+          'jira.openIssues',
         );
       });
     });

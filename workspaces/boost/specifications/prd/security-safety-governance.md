@@ -17,7 +17,7 @@ This PRD defines the enterprise trust model: multi-level access control with fin
 
 ## What This Product Does
 
-Boost implements a three-tier security mode system, fine-grained role-based access control via Backstage RBAC (16 permissions across agent, tool, and infrastructure resource types), agent lifecycle governance (Draft → Pending → Published → Archived) with configurable approval workflows (built-in or SonataFlow-managed), service-account Keycloak authentication for Kagenti via OAuth2 Client Credentials Grant, content safety shields on both inputs and outputs, SSRF protection on all backend HTTP paths, optional zero data retention mode, and resilience patterns. All authorization decisions use Backstage `permissions.authorize()` from day one — no parallel authorization systems in route handlers. The security posture is configurable per environment — from zero-auth development mode to full production lockdown with OAuth token propagation to both MCP servers and AI providers.
+Boost implements a three-tier security mode system, fine-grained role-based access control via Backstage RBAC (16 permissions across agent, tool, and infrastructure resource types), agent lifecycle governance (Draft → Pending → Published → Archived) with configurable approval workflows (built-in or SonataFlow-managed), service-account Keycloak authentication for Kagenti via OAuth2 Client Credentials Grant, content safety shields on both inputs and outputs, SSRF protection on all backend HTTP paths, optional zero data retention mode, and resilience patterns. All authorization decisions use Backstage `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) from day one — no parallel authorization systems in route handlers. The security posture is configurable per environment — from zero-auth development mode to full production lockdown with OAuth token propagation to both MCP servers and AI providers.
 
 ## Who It's For
 
@@ -90,7 +90,7 @@ Security and governance UI surfaces (access-denied pages, approval queues, revie
 
 | Permission              | Resource Type | Conditional Rules                       | Description                                         |
 | ----------------------- | ------------- | --------------------------------------- | --------------------------------------------------- |
-| `boost.agent.list`      | —             | —                                       | View agent list (visibility filtering by ownership) |
+| `boost.agent.list`      | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | View agent list (visibility filtering by ownership) |
 | `boost.agent.register`  | —             | —                                       | Register a new agent for governance                 |
 | `boost.agent.promote`   | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE`       | Submit draft agent for review (draft→pending)       |
 | `boost.agent.approve`   | `boost-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending agent (pending→published)           |
@@ -269,7 +269,7 @@ Frontend Layer
 Backend Middleware (5 layers)
 ├── Backstage HTTP           — user-cookie / unauthenticated
 ├── requirePluginAccess      — boost.access / skipped
-├── authorizeLifecycleAction — fine-grained permission check via permissions.authorize()
+├── authorizeLifecycleAction — fine-grained permission check via permissions.authorize() / authorizeConditional()
 ├── User identity            — real user principal (OIDC) / user-default/guest
 └── MCP OAuth                — mcpOAuth config / N/A / N/A
 

@@ -142,7 +142,11 @@ export const BadgeTriange = ({ plugin }: { plugin: ExtensionsPlugin }) => {
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute' }}>
         <Tooltip title={options.tooltip} placement="top" arrow>
-          <div style={{ width: size, height: size }}>
+          <div
+            role="img"
+            aria-label={options.tooltip}
+            style={{ width: size, height: size }}
+          >
             <div
               style={{
                 position: 'absolute',

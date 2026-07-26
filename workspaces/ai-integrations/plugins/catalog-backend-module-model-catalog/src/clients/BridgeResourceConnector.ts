@@ -29,10 +29,14 @@ export interface ModelCatalogKeys {
  */
 export async function fetchModelCatalogKeys(
   baseUrl: string,
+  token: { token: string },
 ): Promise<string[]> {
-  // ToDo: Discover catalog-info endpoint?
   const res = await fetch(`${baseUrl}/list`, {
     method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token.token}`,
+      'Content-Type': 'application/json',
+    },
   });
 
   if (!res.ok) {
@@ -50,9 +54,20 @@ export async function fetchModelCatalogKeys(
 export async function fetchModelCatalogFromKey(
   baseUrl: string,
   modelCatalogKey: string,
+  token?: { token: string },
 ): Promise<ModelCatalog> {
-  const res = await fetch(`${baseUrl}${modelCatalogKey}`, {
+  let tok = '';
+  if (token) {
+    tok = token?.token;
+  }
+  const url = `${baseUrl}/models/${modelCatalogKey}`;
+  console.log(`Fetching model catalog key ${url}`);
+  const res = await fetch(url, {
     method: 'GET',
+    headers: {
+      Authorization: `Bearer ${tok}`,
+      'Content-Type': 'application/json',
+    },
   });
 
   if (!res.ok) {

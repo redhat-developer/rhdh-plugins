@@ -121,7 +121,7 @@ export const DownloadPackageYaml = ({
                 `./dynamic-plugins/dist/${pkg.packageName}`;
               const minimalYaml = `plugins:
   - package: ${JSON.stringify(dynamicArtifact)}
-    disabled: false
+    enabled: true
 `;
               // eslint-disable-next-line no-console
               console.info(
@@ -344,7 +344,7 @@ export const TogglePackage = ({
       const res = await enablePlugin({
         namespace: pkg.namespace ?? 'default',
         name: pkg.name!,
-        disabled: !newValue,
+        enabled: newValue,
       });
 
       if (res?.status === 'OK') {

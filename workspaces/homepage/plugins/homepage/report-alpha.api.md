@@ -8,7 +8,9 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
-export const homePageModule: FrontendModule;
+const homePageModule: FrontendModule;
+export default homePageModule;
+export { homePageModule };
 
 // @public
 export const homepageTranslationRef: TranslationRef<

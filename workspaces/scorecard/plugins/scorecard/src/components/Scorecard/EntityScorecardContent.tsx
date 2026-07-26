@@ -24,7 +24,6 @@ import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
-import { ScorecardStylesProvider } from '../ScorecardStylesProvider';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardLoading } from '../Common/CardLoading';
 import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
@@ -103,8 +102,4 @@ const EntityScorecardContentInner = () => {
   );
 };
 
-export const EntityScorecardContent = () => (
-  <ScorecardStylesProvider>
-    <EntityScorecardContentInner />
-  </ScorecardStylesProvider>
-);
+export const EntityScorecardContent = () => <EntityScorecardContentInner />;

@@ -42,9 +42,9 @@ workspace/konflux:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/konflux/**']
 
-workspace/lightspeed:
+workspace/intelligent-assistant:
   - changed-files:
-      - any-glob-to-any-file: ['workspaces/lightspeed/**']
+      - any-glob-to-any-file: ['workspaces/intelligent-assistant/**']
 
 workspace/mcp-integrations:
   - changed-files:

@@ -81,62 +81,62 @@ export const scorecardMessages = {
 
   // Metric translations
   metric: {
-    'github.open_prs': {
+    'github.openPRs': {
       title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
     },
-    'jira.open_issues': {
+    'jira.openIssues': {
       title: 'Jira open blocking tickets',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
-    'sonarqube.quality_gate': {
+    'sonarqube.qualityGate': {
       title: 'SonarQube Quality Gate Status',
       description: 'Whether the project passes its SonarQube quality gate.',
     },
-    'sonarqube.open_issues': {
+    'sonarqube.openIssues': {
       title: 'SonarQube Open Issues',
       description:
         'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
     },
-    'sonarqube.security_rating': {
+    'sonarqube.securityRating': {
       title: 'SonarQube Security Rating',
       description: 'SonarQube security rating.',
     },
-    'sonarqube.security_issues': {
+    'sonarqube.securityIssues': {
       title: 'SonarQube Security Issues',
       description: 'Count of open security vulnerabilities in SonarQube.',
     },
-    'sonarqube.security_review_rating': {
+    'sonarqube.securityReviewRating': {
       title: 'SonarQube Security Review Rating',
       description: 'SonarQube security review rating.',
     },
-    'sonarqube.security_hotspots': {
+    'sonarqube.securityHotspots': {
       title: 'SonarQube Security Hotspots',
       description: 'Count of security hotspots to review in SonarQube.',
     },
-    'sonarqube.reliability_rating': {
+    'sonarqube.reliabilityRating': {
       title: 'SonarQube Reliability Rating',
       description: 'SonarQube reliability rating.',
     },
-    'sonarqube.reliability_issues': {
+    'sonarqube.reliabilityIssues': {
       title: 'SonarQube Reliability Issues',
       description: 'Count of open bugs in SonarQube.',
     },
-    'sonarqube.maintainability_rating': {
+    'sonarqube.maintainabilityRating': {
       title: 'SonarQube Maintainability Rating',
       description: 'SonarQube maintainability rating.',
     },
-    'sonarqube.maintainability_issues': {
+    'sonarqube.maintainabilityIssues': {
       title: 'SonarQube Maintainability Issues',
       description: 'Count of open code smells in SonarQube.',
     },
-    'sonarqube.code_coverage': {
+    'sonarqube.codeCoverage': {
       title: 'SonarQube Code Coverage',
       description: 'Overall code coverage percentage in SonarQube.',
     },
-    'sonarqube.code_duplications': {
+    'sonarqube.codeDuplications': {
       title: 'SonarQube Code Duplications',
       description: 'Percentage of duplicated lines in SonarQube.',
     },
@@ -148,16 +148,17 @@ export const scorecardMessages = {
     lastUpdatedNotAvailable: 'Last updated: Not available',
     someEntitiesNotReportingValues:
       'Some entities are not reporting values related to this metric.',
-    averageCenterTooltipTotalLabel: 'Total score',
-    averageCenterTooltipMaxLabel: 'Max possible score',
-    averageCenterTooltipBreakdownRow_one:
+    weightedStatusScoreCenterTooltipTotalLabel: 'Total score',
+    weightedStatusScoreCenterTooltipMaxLabel: 'Max possible score',
+    weightedStatusScoreCenterTooltipBreakdownRow_one:
       '{{status}}: {{count}} entity, score: {{score}}',
-    averageCenterTooltipBreakdownRow_other:
+    weightedStatusScoreCenterTooltipBreakdownRow_other:
       '{{status}}: {{count}} entities, score: {{score}}',
-    averageLegendTooltipEntitiesEach_one: '{{count}} entity, each {{score}}',
-    averageLegendTooltipEntitiesEach_other:
+    weightedStatusScoreLegendTooltipEntitiesEach_one:
+      '{{count}} entity, each {{score}}',
+    weightedStatusScoreLegendTooltipEntitiesEach_other:
       '{{count}} entities, each {{score}}',
-    averageLegendTooltipRowTotal: 'Total score {{total}}',
+    weightedStatusScoreLegendTooltipRowTotal: 'Total score {{total}}',
     drillDownCalculationFailures:
       'One or more entities failed while calculating this metric.',
     homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',

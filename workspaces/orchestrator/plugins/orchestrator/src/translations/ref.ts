@@ -116,6 +116,7 @@ export const orchestratorMessages = {
       started: 'Started',
       runBy: 'Run by',
       workflowId: 'Run ID',
+      workflowIdCopy: 'Copy Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
       version: 'Version',
     },
@@ -140,7 +141,6 @@ export const orchestratorMessages = {
       running: 'Running...',
       entireWorkflow: 'Entire workflow',
       fromFailurePoint: 'From failure point',
-      fromAbortedPoint: 'From aborted point',
       runFailedAgain: 'Run failed again',
     },
   },
@@ -168,16 +168,16 @@ export const orchestratorMessages = {
     },
     status: {
       completed: 'Run completed',
-      failed: 'Run has failed {{time}}',
+      failed: 'Run has failed at {{time}}',
       aborted: 'Run was aborted {{time}} ago.',
       abortedWithoutTime: 'Run was aborted.',
-      completedWithMessage: 'Run completed {{time}} with message',
-      failedAt: 'Run has failed {{time}}',
-      completedAt: 'Run completed {{time}}',
-      running: 'Workflow is running. Started {{time}}',
+      completedWithMessage: 'Run completed at {{time}} with message',
+      failedAt: 'Run has failed at {{time}}',
+      completedAt: 'Run completed at {{time}}',
+      running: 'Workflow is running. Started at {{time}}',
       runningWaitingAtNode:
         'Workflow is running - waiting at node {{node}} since {{formattedTime}}',
-      workflowIsRunning: 'Workflow is running. Started {{time}}',
+      workflowIsRunning: 'Workflow is running. Started at {{time}}',
       noAdditionalInfo:
         'The workflow provided no additional info about the status.',
       resultsWillBeDisplayedHereOnceTheRunIsComplete:
@@ -201,8 +201,6 @@ export const orchestratorMessages = {
     workflowDown: 'Workflow is currently down or in an error state',
     userNotAuthorizedAbort: 'user not authorized to abort workflow',
     userNotAuthorizedExecute: 'user not authorized to execute workflow',
-    retriggerNotSupportedForAborted:
-      'Retrigger from the abort point is not supported. Use Entire workflow to start a new run with the same inputs.',
   },
   messages: {
     noDataAvailable: 'No data available',

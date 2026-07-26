@@ -123,7 +123,7 @@ const Plugins = () => {
                   colSpan={PLUGINS_TABLE_HEADERS.length}
                   align="center"
                 >
-                  <CircularProgress />
+                  <CircularProgress aria-label={t('common.loading')} />
                 </TableCell>
               </TableRow>
             ) : (

@@ -27,6 +27,7 @@
     "@backstage/plugin-app-react": "^0.2.4",
     "@backstage/plugin-app-visualizer": "^0.2.5",
     "@backstage/plugin-catalog": "^2.0.6",
+    "@backstage/plugin-org": "^0.7.5",
     "@backstage/plugin-user-settings": "^0.9.4",
     "@backstage/ui": "^0.16.0",
     "@mui/icons-material": "^5.17.1",

@@ -73,80 +73,81 @@ const scorecardTranslationIt = createTranslationMessages({
       'Questa scorecard utilizza un tipo di aggregazione non supportato da questa versione del plugin.',
     'errors.userNotFoundInCatalogMessage':
       'Entità utente non trovata nel catalogo.',
-    'metric.averageCenterTooltipMaxLabel': 'Punteggio massimo possibile',
-    'metric.averageCenterTooltipTotalLabel': 'Punteggio totale',
-    'metric.averageCenterTooltipBreakdownRow_one':
+    'metric.weightedStatusScoreCenterTooltipMaxLabel':
+      'Punteggio massimo possibile',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Punteggio totale',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
       '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.averageCenterTooltipBreakdownRow_other':
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
       '{{status}}: {{count}} entities, score: {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_one':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entità, ciascuna {{score}}',
-    'metric.averageLegendTooltipEntitiesEach_other':
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
       '{{count}} entità, ciascuna {{score}}',
-    'metric.averageLegendTooltipRowTotal': 'Punteggio totale {{total}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal':
+      'Punteggio totale {{total}}',
     'metric.drillDownCalculationFailures':
       'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
     'metric.filecheck.description':
       'Verifica se il file {{name}} esiste nel repository.',
     'metric.filecheck.title': 'Verifica del file: {{name}}',
-    'metric.github.open_prs.description':
+    'metric.github.openPRs.description':
       'Numero attuale di richiesta pull aperte per un determinato repository di GitHub.',
-    'metric.github.open_prs.title': 'RP aperte su GitHub',
+    'metric.github.openPRs.title': 'RP aperte su GitHub',
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} entità senza errori di calcolo della metrica',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entità',
-    'metric.jira.open_issues.description':
+    'metric.jira.openIssues.description':
       'Evidenzia il numero di problemi critici e bloccanti attualmente aperti in Jira.',
-    'metric.jira.open_issues.title': 'Ticket di blocco aperti in Jira',
+    'metric.jira.openIssues.title': 'Ticket di blocco aperti in Jira',
     'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Ultimo aggiornamento: non disponibile',
     'metric.someEntitiesNotReportingValues':
       'Alcune entità non comunicano i valori relativi a questa metrica.',
-    'metric.sonarqube.code_coverage.description':
+    'metric.sonarqube.codeCoverage.description':
       'Percentuale complessiva di copertura codice in SonarQube.',
-    'metric.sonarqube.code_coverage.title': 'Copertura codice in SonarQube',
-    'metric.sonarqube.code_duplications.description':
+    'metric.sonarqube.codeCoverage.title': 'Copertura codice in SonarQube',
+    'metric.sonarqube.codeDuplications.description':
       'Percentuale di linee duplicate in SonarQube.',
-    'metric.sonarqube.code_duplications.title':
+    'metric.sonarqube.codeDuplications.title':
       'Duplicazioni del codice in SonarQube',
-    'metric.sonarqube.maintainability_issues.description':
+    'metric.sonarqube.maintainabilityIssues.description':
       'Numero di code smell non risolti in SonarQube.',
-    'metric.sonarqube.maintainability_issues.title':
+    'metric.sonarqube.maintainabilityIssues.title':
       'Problemi di manutenibilità di SonarQube',
-    'metric.sonarqube.maintainability_rating.description':
+    'metric.sonarqube.maintainabilityRating.description':
       'Valutazione di manutenibilità di SonarQube.',
-    'metric.sonarqube.maintainability_rating.title':
+    'metric.sonarqube.maintainabilityRating.title':
       'Valutazione di manutenibilità di SonarQube',
-    'metric.sonarqube.open_issues.description':
+    'metric.sonarqube.openIssues.description':
       'Numero dei problemi aperti (APERTI, CONFERMATI, RIAPERTI) in SonarQube.',
-    'metric.sonarqube.open_issues.title': 'Problemi aperti in SonarQube',
-    'metric.sonarqube.quality_gate.description':
+    'metric.sonarqube.openIssues.title': 'Problemi aperti in SonarQube',
+    'metric.sonarqube.qualityGate.description':
       'Se il progetto supera il quality gate di SonarQube.',
-    'metric.sonarqube.quality_gate.title':
-      'Stato del Quality Gate di SonarQube',
-    'metric.sonarqube.reliability_issues.description':
+    'metric.sonarqube.qualityGate.title': 'Stato del Quality Gate di SonarQube',
+    'metric.sonarqube.reliabilityIssues.description':
       'Numero di bug aperti in SonarQube.',
-    'metric.sonarqube.reliability_issues.title':
+    'metric.sonarqube.reliabilityIssues.title':
       'Problemi di affidabilità di SonarQube',
-    'metric.sonarqube.reliability_rating.description':
+    'metric.sonarqube.reliabilityRating.description':
       'Valutazione di affidabilità di SonarQube.',
-    'metric.sonarqube.reliability_rating.title':
+    'metric.sonarqube.reliabilityRating.title':
       'Valutazione di affidabilità di SonarQube',
-    'metric.sonarqube.security_hotspots.description':
+    'metric.sonarqube.securityHotspots.description':
       'Numero di hotspot di sicurezza da rivedere in SonarQube.',
-    'metric.sonarqube.security_hotspots.title':
+    'metric.sonarqube.securityHotspots.title':
       'Hotspot di sicurezza di SonarQube',
-    'metric.sonarqube.security_issues.description':
+    'metric.sonarqube.securityIssues.description':
       'Numero di vulnerabilità di sicurezza aperte in SonarQube.',
-    'metric.sonarqube.security_issues.title':
+    'metric.sonarqube.securityIssues.title':
       'Problemi di sicurezza di SonarQube',
-    'metric.sonarqube.security_rating.description':
+    'metric.sonarqube.securityRating.description':
       'Valutazione di sicurezza di SonarQube.',
-    'metric.sonarqube.security_rating.title':
+    'metric.sonarqube.securityRating.title':
       'Valutazione di sicurezza di SonarQube',
-    'metric.sonarqube.security_review_rating.description':
+    'metric.sonarqube.securityReviewRating.description':
       'Valutazione di sicurezza di SonarQube.',
-    'metric.sonarqube.security_review_rating.title':
+    'metric.sonarqube.securityReviewRating.title':
       'Valutazione di sicurezza di SonarQube',
     'notFound.altText': 'Pagina non trovata',
     'notFound.contactSupport': 'Contatta il supporto',

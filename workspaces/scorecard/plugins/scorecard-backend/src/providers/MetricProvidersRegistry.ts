@@ -61,12 +61,12 @@ export class MetricProvidersRegistry {
         );
       }
 
-      // Validate: Provider ID format (datasource.metric_name)
+      // Validate: Provider ID format (datasource.metricName)
       const expectedPrefix = `${providerDatasource}.`;
       if (!metricId.startsWith(expectedPrefix) || metricId === expectedPrefix) {
         throw new Error(
           `Invalid metric provider with ID ${metricId}, must have format ` +
-            `'${providerDatasource}.<metric_name>' where metric name is not empty`,
+            `'${providerDatasource}.<metricName>' where metric name is not empty`,
         );
       }
 

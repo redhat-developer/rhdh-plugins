@@ -23,7 +23,10 @@ import type {
 import {
   AuthorizeResult,
   type Permission,
+  type ResourcePermission,
   type AuthorizePermissionRequest,
+  type PermissionCriteria,
+  type PermissionCondition,
 } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
 import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -130,22 +133,37 @@ export interface AuthorizeLifecycleActionOptions {
 }
 
 /**
+ * A request augmented with permission conditions for list-endpoint filtering.
+ * When `authorizeLifecycleAction` receives a CONDITIONAL result on a list
+ * endpoint (no resourceRef), it attaches the conditions here so the route
+ * handler can apply them as filters.
+ *
+ * @public
+ */
+export interface BoostAuthorizedRequest extends Request {
+  boostPermissionConditions?: PermissionCriteria<PermissionCondition>;
+}
+
+/**
  * Express middleware that enforces fine-grained permission checks
  * for lifecycle actions on agents and tools.
  *
  * The authorization flow:
- * 1. Check the fine-grained `permission` via `permissions.authorize()`.
- * 2. If ALLOW, proceed.
- * 3. If DENY, fall back to checking `boost.admin` permission.
- * 4. If admin ALLOW, proceed.
- * 5. If admin DENY, respond with 403.
+ * 1. For list endpoints (resource-scoped permission, no resourceRef):
+ *    call `authorizeConditional()` — can return ALLOW, DENY, or CONDITIONAL.
+ *    CONDITIONAL attaches conditions to the request for the handler to
+ *    apply as filters.
+ * 2. For single-resource endpoints: call `authorize()` with the resourceRef —
+ *    conditions are pre-evaluated, returns only ALLOW or DENY.
+ * 3. If ALLOW, proceed.
+ * 4. If DENY, fall back to checking `boost.admin` permission.
+ * 5. If admin ALLOW, proceed.
+ * 6. If admin DENY, respond with 403.
  *
  * This enables deployments that prefer coarse-grained control to work
  * with just `boost.admin` without configuring all 16 permissions.
  *
- * @param permission - The fine-grained permission to check. Resource-scoped permissions
- *   are accepted but conditional authorization is deferred to a later issue — for now
- *   the check is non-conditional (ALLOW/DENY only).
+ * @param permission - The fine-grained permission to check.
  * @param _resourceLoader - Loads the resource for conditional checks (reserved for future use).
  * @param options - Services needed for authorization.
  * @returns Express middleware handler.
@@ -162,22 +180,42 @@ export function authorizeLifecycleAction(
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const credentials = await httpAuth.credentials(req);
-
-      // Step 1: Try fine-grained permission
-      // For resource-scoped permissions, include the resource ref from the URL
       const resourceRef = req.params?.id;
-      const request =
-        permission.type === 'resource' && resourceRef
-          ? { permission, resourceRef }
-          : { permission };
 
-      const [decision] = await permissions.authorize(
-        [request as AuthorizePermissionRequest],
-        { credentials },
-      );
+      // Step 1: Try fine-grained permission.
+      // List endpoints (resource-scoped permission, no resourceRef) use
+      // authorizeConditional() which can return CONDITIONAL with filter
+      // conditions. Single-resource endpoints use authorize() which
+      // pre-evaluates conditions against the resourceRef.
+      if (permission.type === 'resource' && !resourceRef) {
+        const [decision] = await permissions.authorizeConditional(
+          [{ permission: permission as ResourcePermission }],
+          { credentials },
+        );
 
-      if (decision.result === AuthorizeResult.ALLOW) {
-        return next();
+        if (decision.result === AuthorizeResult.ALLOW) {
+          return next();
+        }
+
+        if (decision.result === AuthorizeResult.CONDITIONAL) {
+          (req as BoostAuthorizedRequest).boostPermissionConditions =
+            decision.conditions;
+          return next();
+        }
+      } else {
+        const request =
+          permission.type === 'resource' && resourceRef
+            ? { permission, resourceRef }
+            : { permission };
+
+        const [decision] = await permissions.authorize(
+          [request as AuthorizePermissionRequest],
+          { credentials },
+        );
+
+        if (decision.result === AuthorizeResult.ALLOW) {
+          return next();
+        }
       }
 
       // Step 2: Fall back to admin permission

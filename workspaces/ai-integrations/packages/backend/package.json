@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.0.13",
+  "version": "0.0.0",
   "main": "dist/index.cjs.js",
   "types": "src/index.ts",
   "private": true,
@@ -50,6 +50,7 @@
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",

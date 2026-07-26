@@ -70,7 +70,7 @@ export function buildAggregationConfig(
     description: config.getString('description'),
   } as AggregationConfig;
 
-  if (aggregationConfig.type === aggregationTypes.average) {
+  if (aggregationConfig.type === aggregationTypes.weightedStatusScore) {
     aggregationConfig.options = {
       statusScores: buildStatusScores(config),
       thresholds: buildAggregationThresholdsConfig(config),

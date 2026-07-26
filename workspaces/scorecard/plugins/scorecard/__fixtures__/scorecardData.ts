@@ -23,7 +23,7 @@ import {
 
 export const mockScorecardSuccessData = [
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success' as const,
     metadata: {
       title: 'GitHub open PRs',
@@ -49,7 +49,7 @@ export const mockScorecardSuccessData = [
     },
   },
   {
-    id: 'jira.open_issues',
+    id: 'jira.openIssues',
     status: 'success' as const,
     metadata: {
       title: 'Jira open blocking tickets',
@@ -78,7 +78,7 @@ export const mockScorecardSuccessData = [
 
 export const mockScorecardErrorData = [
   {
-    id: 'github.open_issues',
+    id: 'github.openIssues',
     status: 'error' as const,
     metadata: {
       title: 'GitHub open Issues',
@@ -105,7 +105,7 @@ export const mockScorecardErrorData = [
     error: 'HttpError: API rate limit exceeded.',
   },
   {
-    id: 'sonar.security_issues',
+    id: 'sonar.securityIssues',
     status: 'success' as const,
     metadata: {
       title: 'Sonar number of security issues',
@@ -127,7 +127,7 @@ export const mockScorecardErrorData = [
         evaluation: 'warning',
         status: 'error' as const,
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.security_issues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.securityIssues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
       },
     },
   },
@@ -135,7 +135,7 @@ export const mockScorecardErrorData = [
 
 export const mockAggregatedScorecardData = {
   [aggregationTypes.statusGrouped]: {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -158,15 +158,15 @@ export const mockAggregatedScorecardData = {
       calculationErrorCount: 0,
     },
   } as AggregatedMetricResult,
-  [aggregationTypes.average]: {
-    id: 'github.open_prs',
+  [aggregationTypes.weightedStatusScore]: {
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
-      description: 'Weighted health average for the Generative AI API group.',
+      description: 'Weighted health score for the Generative AI API group.',
       type: 'number',
       history: true,
-      aggregationType: aggregationTypes.average,
+      aggregationType: aggregationTypes.weightedStatusScore,
     },
     result: {
       values: [
@@ -177,9 +177,9 @@ export const mockAggregatedScorecardData = {
       total: 8,
       timestamp: '2024-01-15T10:30:00Z',
       thresholds: DEFAULT_NUMBER_THRESHOLDS,
-      averageScore: 75,
-      averageWeightedSum: 18,
-      averageMaxPossible: 24,
+      weightedStatusScore: 75,
+      weightedStatusSum: 18,
+      weightedStatusMaxPossible: 24,
     },
   } as AggregatedMetricResult,
 };

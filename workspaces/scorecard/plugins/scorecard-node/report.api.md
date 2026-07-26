@@ -11,8 +11,34 @@ import type { JsonValue } from '@backstage/types';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ServiceRef } from '@backstage/backend-plugin-api';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { z } from 'zod';
+
+// @public
+export interface Collector<
+  TInputSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny = z.ZodTypeAny,
+> {
+  collect(options: {
+    entity: Entity;
+    input: z.infer<TInputSchema>;
+  }): Promise<z.infer<TOutputSchema>>;
+  getCollectorDescription(): string;
+  getCollectorId(): string;
+  getInputSchema(): TInputSchema;
+  getOutputSchema(): TOutputSchema;
+}
+
+// @public
+export type CollectorContract<
+  TInputSchema extends z.ZodTypeAny,
+  TOutputSchema extends z.ZodTypeAny,
+> = {
+  inputSchema: TInputSchema;
+  outputSchema: TOutputSchema;
+};
 
 // @public
 export type ComparisonOperator = {
@@ -55,6 +81,40 @@ export type RangeOperator = {
   operator: '-';
   values: [number, number];
 };
+
+// @public
+export interface ScorecardCollectorsExtensionPoint {
+  // (undocumented)
+  addCollector(...collectors: Array<Collector>): void;
+}
+
+// @public
+export const scorecardCollectorsExtensionPoint: ExtensionPoint<ScorecardCollectorsExtensionPoint>;
+
+// @public
+export interface ScorecardCollectorsService {
+  // (undocumented)
+  collect<
+    TInputSchema extends z.ZodTypeAny,
+    TOutputSchema extends z.ZodTypeAny,
+  >(options: {
+    collectorId: string;
+    contract: CollectorContract<TInputSchema, TOutputSchema>;
+    entity: Entity;
+    input: unknown;
+  }): Promise<z.infer<TOutputSchema>>;
+  // (undocumented)
+  hasCollector(collectorId: string): boolean;
+  // (undocumented)
+  init(options: { collectors: Array<Collector> }): void;
+}
+
+// @public
+export const scorecardCollectorsServiceRef: ServiceRef<
+  ScorecardCollectorsService,
+  'plugin',
+  'singleton'
+>;
 
 // @public
 export interface ScorecardMetricsExtensionPoint {

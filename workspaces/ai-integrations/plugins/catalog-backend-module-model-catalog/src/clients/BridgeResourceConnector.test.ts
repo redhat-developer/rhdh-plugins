@@ -38,13 +38,16 @@ const fakeCatalog: ModelCatalog = {
 
 // Mock different fetch results based on the url passed in, to trigger success vs. error scenarios
 global.fetch = jest.fn(url => {
-  if (url === 'errorTest/list') {
+  if (
+    url === 'errorTest/list' ||
+    (typeof url === 'string' && url.startsWith('errorTest/models/'))
+  ) {
     return Promise.resolve({
       ok: false,
       status: 401,
       json: () => 'error',
     });
-  } else if (url === 'fake-url/example-model') {
+  } else if (url === 'fake-url/models/example-model') {
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -70,7 +73,9 @@ describe('fetchModelCatalogKeys', () => {
       streamStream.emit('data', 'test');
       streamStream.emit('end');
     });
-    const catalogKeys: string[] = await fetchModelCatalogKeys('fake-url');
+    const catalogKeys: string[] = await fetchModelCatalogKeys('fake-url', {
+      token: 'fake-token',
+    });
     expect(catalogKeys.length).toEqual(3);
     expect(catalogKeys).toEqual(['example-model', 'model-two', 'model-three']);
   });
@@ -82,7 +87,8 @@ describe('fetchModelCatalogKeys', () => {
       streamStream.emit('end');
     });
     await expect(
-      async () => await fetchModelCatalogKeys('errorTest'),
+      async () =>
+        await fetchModelCatalogKeys('errorTest', { token: 'fake-token' }),
     ).rejects.toThrow();
   });
 });
@@ -97,7 +103,7 @@ describe('fetchModelCatalogFromKey', () => {
     });
     const catalog: ModelCatalog = await fetchModelCatalogFromKey(
       'fake-url',
-      '/example-model',
+      'example-model',
     );
     expect(catalog.models === undefined).toBe(false);
     expect(catalog.models.length).toEqual(1);
@@ -111,7 +117,10 @@ describe('fetchModelCatalogFromKey', () => {
       streamStream.emit('end');
     });
     await expect(
-      async () => await fetchModelCatalogKeys('errorTest'),
+      async () =>
+        await fetchModelCatalogFromKey('errorTest', 'some-key', {
+          token: 'fake-token',
+        }),
     ).rejects.toThrow();
   });
 });

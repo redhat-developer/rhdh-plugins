@@ -19,7 +19,7 @@ import { NodeInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchest
 import { compareNodes } from './NodeInstanceUtils';
 
 const newMockNodeInstance = (
-  enter: NodeInstanceDTO['enter'] = new Date().toString(),
+  enter: NodeInstanceDTO['enter'] = new Date().toISOString(),
   exit?: NodeInstanceDTO['exit'],
   id: NodeInstanceDTO['id'] = '1',
 ): NodeInstanceDTO => {
@@ -125,8 +125,8 @@ describe('NodeInstanceUtils.ts', () => {
           // arrange
           const now = Date.now();
           const nodeA: NodeInstanceDTO = newMockNodeInstance(
-            new Date(now).toString(),
-            new Date(now + 1).toString(),
+            new Date(now).toISOString(),
+            new Date(now + 1).toISOString(),
           );
           const nodeB: NodeInstanceDTO = newMockNodeInstance(
             new Date(now).toISOString(),

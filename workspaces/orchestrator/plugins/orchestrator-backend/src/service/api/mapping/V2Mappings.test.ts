@@ -72,11 +72,7 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
     expect(result.format).toBe(overview.format);
     expect(result.lastTriggeredMs).toBe(overview.lastTriggeredMs);
 
-    expect(result.lastRunStatus).toBe(
-      overview.lastRunStatus
-        ? getProcessInstancesStatusDTOFromString(overview.lastRunStatus)
-        : undefined,
-    );
+    expect(result.lastRunStatus).toBe(ProcessInstanceStatusDTO.Completed);
     expect(result.description).toBe(overview.description);
   });
 
@@ -119,11 +115,7 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.end).toBeUndefined();
     expect(result.duration).toBeUndefined();
     expect(result.state).toBeDefined();
-    expect(result.state).toEqual(
-      getProcessInstancesStatusDTOFromString(
-        result.state as ProcessInstanceStatusDTO,
-      ),
-    );
+    expect(result.state).toBe(ProcessInstanceStatusDTO.Active);
     expect(result.description).toEqual(processInstanceV1.description);
     expect(result.workflowdata).toEqual(
       // @ts-ignore
@@ -154,18 +146,9 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.duration).toEqual(duration);
 
     expect(result).toBeDefined();
-    if (!result.state) {
-      throw new Error('result.state should be defined');
-    }
-    expect(result.state).toEqual(
-      getProcessInstancesStatusDTOFromString(result.state),
-    );
+    expect(result.state).toBeDefined();
+    expect(result.state).toBe(ProcessInstanceStatusDTO.Active);
     expect(processIntanceV1.state).toBeDefined();
-    expect(result.state).toEqual(
-      getProcessInstancesStatusDTOFromString(
-        processIntanceV1.state as ProcessInstanceStatusDTO,
-      ),
-    );
     expect(result.end).toEqual(processIntanceV1.end);
     expect(result.duration).toEqual(duration);
     expect(result.description).toEqual(processIntanceV1.description);
@@ -187,5 +170,50 @@ describe('scenarios to verify mapToWorkflowRunStatusDTO', () => {
     expect(mappedValue.value).toBeDefined();
     expect(mappedValue.key).toEqual('Active');
     expect(mappedValue.value).toEqual('ACTIVE');
+  });
+});
+
+describe('scenarios to verify getProcessInstancesStatusDTOFromString', () => {
+  it('maps ACTIVE state to ProcessInstanceStatusDTO.Active', () => {
+    const result = getProcessInstancesStatusDTOFromString(
+      ProcessInstanceState.Active,
+    );
+    expect(result).toBe(ProcessInstanceStatusDTO.Active);
+  });
+
+  it('maps ERROR state to ProcessInstanceStatusDTO.Error', () => {
+    const result = getProcessInstancesStatusDTOFromString(
+      ProcessInstanceState.Error,
+    );
+    expect(result).toBe(ProcessInstanceStatusDTO.Error);
+  });
+
+  it('maps COMPLETED state to ProcessInstanceStatusDTO.Completed', () => {
+    const result = getProcessInstancesStatusDTOFromString(
+      ProcessInstanceState.Completed,
+    );
+    expect(result).toBe(ProcessInstanceStatusDTO.Completed);
+  });
+
+  it('maps ABORTED state to ProcessInstanceStatusDTO.Aborted', () => {
+    const result = getProcessInstancesStatusDTOFromString(
+      ProcessInstanceState.Aborted,
+    );
+    expect(result).toBe(ProcessInstanceStatusDTO.Aborted);
+  });
+
+  it('maps SUSPENDED state to ProcessInstanceStatusDTO.Suspended', () => {
+    const result = getProcessInstancesStatusDTOFromString(
+      ProcessInstanceState.Suspended,
+    );
+    expect(result).toBe(ProcessInstanceStatusDTO.Suspended);
+  });
+
+  it('throws for an invalid state string', () => {
+    expect(() => {
+      getProcessInstancesStatusDTOFromString('INVALID_STATE');
+    }).toThrow(
+      'state INVALID_STATE is not one of the values of type ProcessInstanceStatusDTO',
+    );
   });
 });

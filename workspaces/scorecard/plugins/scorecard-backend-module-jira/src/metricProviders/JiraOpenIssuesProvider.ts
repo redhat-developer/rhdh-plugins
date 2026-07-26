@@ -62,7 +62,7 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'jira.open_issues';
+    return 'jira.openIssues';
   }
 
   getMetricType(): 'number' {

@@ -27,14 +27,14 @@ export type ScorecardMessages = typeof scorecardMessages;
 
 /** English (ref) metric title – matches API metadata.title used when i18n falls back. */
 export function getMetricTitleEn(
-  metricId: 'jira.open_issues' | 'github.open_prs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ): string {
   return scorecardMessages.metric[metricId].title;
 }
 
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
-    // metric.github.open_prs.title -> metric['github.open_prs'].title
+    // metric.github.openPRs.title -> metric['github.openPRs'].title
     // metric.openPrsKpi.title -> metric['openPrsKpi'].title (KPI / aggregation id)
     if (key.startsWith('metric.')) {
       const parts = key.split('.');
@@ -193,7 +193,7 @@ export function getSomeEntitiesNotReportingTooltip(
   );
 }
 
-/** Flat metric-namespace string by key (e.g. averageCenterTooltipTotalLabel). */
+/** Flat metric-namespace string by key (e.g. weightedStatusScoreCenterTooltipTotalLabel). */
 export function getMetricTranslation(
   translations: ScorecardMessages,
   key: string,
@@ -358,7 +358,7 @@ export function getHomepageEntityCalculationHealthText(
 /** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
 export function getDrillDownMissingPermissionSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.open_issues' | 'github.open_prs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ) {
   return `
         - article:
@@ -373,7 +373,7 @@ export function getDrillDownMissingPermissionSnapshot(
 /** Snapshot for the scorecard card on the drill-down page when there is no data (no entity count in UI). */
 export function getDrillDownNoDataFoundSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.open_issues' | 'github.open_prs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
 ) {
   return `
         - article:
@@ -412,7 +412,7 @@ function getHomepageDrillDownLinkSnapshot(
 export function getStatusGroupedCardSnapshot(
   translations: ScorecardMessages,
   options: {
-    drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
+    drillDownMetricId: 'jira.openIssues' | 'github.openPRs';
     drillDownAggregationId?: string;
     /** Interpolation for homepage subheader (mock data uses 10/10). */
     homepageCalculationHealth?: { healthy: string; total: string };
@@ -451,16 +451,16 @@ export function getStatusGroupedCardSnapshot(
         `;
 }
 
-/** Snapshot for average-type homepage KPI cards (donut gauge, no threshold legend). */
-export function getAverageCardSnapshot(
+/** Snapshot for weightedStatusScore-type homepage KPI cards (donut gauge, no threshold legend). */
+export function getWeightedStatusScoreCardSnapshot(
   translations: ScorecardMessages,
   options: {
-    drillDownMetricId: 'jira.open_issues' | 'github.open_prs';
+    drillDownMetricId: 'jira.openIssues' | 'github.openPRs';
     drillDownAggregationId?: string;
     homepageCalculationHealth?: { healthy: string; total: string };
     cardTitle: string;
     cardDescription: string;
-    averageScoreLabel: string;
+    weightedStatusScoreLabel: string;
   },
 ): string {
   const {
@@ -468,7 +468,7 @@ export function getAverageCardSnapshot(
     drillDownAggregationId,
     cardTitle,
     cardDescription,
-    averageScoreLabel,
+    weightedStatusScoreLabel,
   } = options;
   const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
   const { healthy, total } = options.homepageCalculationHealth ?? {
@@ -488,14 +488,14 @@ export function getAverageCardSnapshot(
           - button
           - separator
           - paragraph: ${cardDescription}
-          - application: ${averageScoreLabel}
+          - application: ${weightedStatusScoreLabel}
         `;
 }
 
 /** Snapshot for the scorecard card on the drill-down page (same as statusGrouped but without the entities link). */
 export function getDrillDownCardSnapshot(
   translations: ScorecardMessages,
-  metricId: 'jira.open_issues' | 'github.open_prs',
+  metricId: 'jira.openIssues' | 'github.openPRs',
   options?: {
     title?: string;
     description?: string;

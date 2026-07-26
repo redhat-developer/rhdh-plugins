@@ -42,4 +42,14 @@ describe('useLanguage', () => {
 
     expect(result.current).toBe('ja');
   });
+
+  it('returns undefined when language is not set', () => {
+    mockUseApi.mockReturnValue({
+      getLanguage: jest.fn().mockReturnValue({ language: undefined }),
+    });
+
+    const { result } = renderHook(() => useLanguage());
+
+    expect(result.current).toBeUndefined();
+  });
 });

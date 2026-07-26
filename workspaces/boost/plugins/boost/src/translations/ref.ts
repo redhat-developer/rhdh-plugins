@@ -20,30 +20,61 @@ export const boostMessages = {
   catalog: {
     page: {
       title: 'AI Catalog',
-      subtitle: 'Discover AI agents, skills, MCP servers, models, and more.',
+      subtitle:
+        'Browse, search, filter, and download AI skills, agents, and rules from your organization',
+    },
+    toolbar: {
+      allPrefix: 'All',
+      search: 'Search',
+      viewGrid: 'Card view',
+      viewTable: 'Table view',
+    },
+    filter: {
+      type: 'Type',
+      provider: 'Provider',
+      owner: 'Owner',
+      tag: 'Tag',
     },
     card: {
-      summaryTitle: 'AI Asset Summary',
-      summaryDescription:
-        'Category, version, source, and lifecycle information.',
-      downloadTitle: 'Download / Adopt',
-      downloadDescription:
-        'Download or adoption actions based on asset location type.',
+      summaryTitle: 'Summary',
+      adoptionTitle: 'Get Started',
       versionTitle: 'Versions',
-      versionDescription: 'All versions of this asset.',
+      versionCurrent: 'current',
+      copyCommand: 'Copy',
+      copied: 'Copied',
+      copyAriaLabel: 'Copy command',
+    },
+    table: {
+      name: 'Name',
+      type: 'Type',
+      owner: 'Owner',
+      provider: 'Provider',
+      description: 'Description',
     },
     tab: {
       usageTitle: 'Usage',
-      usageDescription:
-        'Usage documentation, TechDocs content, or external links.',
+      usageDocumentation: 'Documentation',
+      usageViewTechDocs: 'View TechDocs',
+      usageExternalLinks: 'External Links',
+      usageNoDocumentation:
+        'No usage documentation available. Contact the owner for access.',
     },
     empty: {
-      title: 'No AI assets found',
-      description: 'No AI assets match your current filters.',
+      title: 'No AI assets available',
+      description:
+        'AI assets will appear here once they are published to the OCI registry or synced from your catalog.',
+      learnMore: 'Learn How to Publish',
+    },
+    emptyFiltered: {
+      title: 'No AI assets match your filters',
+      description:
+        'Try adjusting your search or filter criteria to find what you are looking for.',
       clearFilters: 'Clear filters',
     },
     error: {
       title: 'Failed to load AI assets',
+      description:
+        'There was a problem connecting to the catalog. Check your network connection and try again.',
       retry: 'Retry',
     },
   },

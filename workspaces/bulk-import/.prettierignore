@@ -5,6 +5,7 @@ coverage
 .eslintrc.js
 report.api.md
 report-alpha.api.md
+report-legacy.api.md
 
 # Generated
 plugins/bulk-import-backend/api-docs

@@ -1,0 +1,43 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-intelligent-assistant:
+      # NFS (New Frontend System) deployment requires these extensions in app-config.yaml:
+      # app:
+      #   extensions:
+      #     - app-root-wrapper:app/drawer
+      #     - app-root-wrapper:app/intelligent-assistant-fab
+      #     - app-drawer-content:intelligent-assistant/intelligent-assistant
+      #     - translation:app/intelligent-assistant-translations
+      #     - api:app/app-language:
+      #         config:
+      #           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+      #           defaultLanguage: 'en'
+      # ------------------------------------------------------------
+
+      # OFS (Old Frontend System) deployment configuration:
+
+      # Legacy exports require `module: Legacy` — they are not available on the default module.
+      translationResources:
+        - importName: lightspeedTranslations
+          module: Alpha
+          ref: intelligentAssistantTranslationRef
+      dynamicRoutes:
+        - path: /intelligent-assistant
+          importName: LightspeedPage
+          module: Legacy
+      mountPoints:
+        - mountPoint: application/listener
+          importName: LightspeedFAB
+          module: Legacy
+        - mountPoint: application/provider
+          importName: LightspeedDrawerProvider
+          module: Legacy
+        - mountPoint: application/internal/drawer-state
+          importName: LightspeedDrawerStateExposer
+          module: Legacy
+        - mountPoint: application/internal/drawer-content
+          importName: LightspeedChatContainer
+          module: Legacy
+          config:
+            id: intelligent-assistant
+            priority: 100

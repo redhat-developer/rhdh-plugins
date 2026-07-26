@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.7
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- 172d39f: Fixed approval tool selection resetting to GitHub when clicking Preview file by preventing unintended router navigation that stripped the approvalTool query parameter from the URL.
+- a85170e: Replace Material UI v4 imports with MUI v5 and migrate makeStyles to sx prop to prevent style collisions.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- 259b76f: Updated dependency `@openapitools/openapi-generator-cli` to `2.39.0`.
+  Updated dependency `@playwright/test` to `1.61.0`.
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.7
+
 ## 7.3.6
 
 ### Patch Changes

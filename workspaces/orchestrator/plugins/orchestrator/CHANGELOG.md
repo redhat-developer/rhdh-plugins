@@ -1,5 +1,58 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.9.4
+
+### Patch Changes
+
+- f3e7e45: Fix accessibility violations (aria-progressbar-name, aria-prohibited-attr) in WorkflowSuccessRatioCell component.
+
+## 5.9.3
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+
+## 5.9.2
+
+### Patch Changes
+
+- c0f62ab: Fix hardcoded English "at" in workflow status time translations - now each language uses its own grammatically correct preposition
+- 2d00ba5: Replace workflow execution progress list with a React Flow graph visualization.
+- Updated dependencies [eade824]
+- Updated dependencies [ea8563b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.3
+
+## 5.9.1
+
+### Patch Changes
+
+- cb02f14: Fix intermittent page load failures in dynamic plugin mode by removing the explicit Alpha module from translationResources, letting RHDH default to PluginRoot and avoiding a module initialization race on the Alpha default export.
+- 00f80fc: Fix workflow instance page layout overlap when `cardHeightMode` is set to `content`.
+- 41fe374: Fix unintended Workflows tab on User profile pages by converting the entity tab condition from a React hook-based component to a plain predicate function and using the built-in hasAnnotation checker in dynamic plugin config
+- 992efa0: Fix incorrect aria-label on Run again and Abort buttons when the user is authorized to execute the workflow.
+
+## 5.9.0
+
+### Minor Changes
+
+- 2fd75ad: Improve Orchestrator UI for workflows, runs, and workflow details, and place the sidebar item under Administration.
+
+### Patch Changes
+
+- 1dde4e4: Remove the retrigger dropdown menu for aborted workflow runs.
+- 1e4f9ed: Fix the workflows list when RBAC restricts read access to specific workflows.
+- 06755cb: Use instance `totalCount` from the API for the All runs tab title and pagination instead of the current page size.
+- e2df0a3: Show unavailable workflow error details in tooltips and disable run actions when a workflow is not available.
+- de71949: Add frontend unit test coverage for orchestrator hooks and status components, and harden the status indicator fallback for unknown states.
+- Updated dependencies [19f7643]
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.2
+
 ## 5.8.1
 
 ### Patch Changes

@@ -15,14 +15,6 @@ export type AggregatedMetric = {
 };
 
 // @public (undocumented)
-export type AggregatedMetricAverageResult = StatusGroupedAggregationResult & {
-  averageScore: number;
-  averageWeightedSum: number;
-  averageMaxPossible: number;
-  aggregationChartDisplayColor: string;
-};
-
-// @public (undocumented)
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
@@ -65,7 +57,7 @@ export type AggregationMetadata = {
 // @public (undocumented)
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | AggregatedMetricAverageResult;
+  | WeightedStatusScoreAggregationResult;
 
 // @public
 export type AggregationThresholdRule = Pick<
@@ -80,7 +72,7 @@ export type AggregationType =
 // @public
 export const aggregationTypes: Readonly<{
   statusGrouped: 'statusGrouped';
-  average: 'average';
+  weightedStatusScore: 'weightedStatusScore';
 }>;
 
 // @public
@@ -218,6 +210,15 @@ export type ThresholdRule = {
   color?: string;
   icon?: string;
 };
+
+// @public (undocumented)
+export type WeightedStatusScoreAggregationResult =
+  StatusGroupedAggregationResult & {
+    weightedStatusScore: number;
+    weightedStatusSum: number;
+    weightedStatusMaxPossible: number;
+    aggregationChartDisplayColor: string;
+  };
 
 // (No @packageDocumentation comment for this package)
 ```

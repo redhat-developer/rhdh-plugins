@@ -77,12 +77,12 @@ describe('QuickstartItem)', () => {
     ).toBeInTheDocument();
   });
 
-  it('calls handleOpen when expand/collapse icon is clicked', async () => {
+  it('calls handleOpen when item is clicked', async () => {
     await renderItem(false);
-    const toggleBtn = screen.getByRole('button', {
-      name: /expand item/i,
+    const listItem = screen.getByRole('button', {
+      name: /expand test step details/i,
     });
-    fireEvent.click(toggleBtn);
+    fireEvent.click(listItem);
     expect(mockHandleOpen).toHaveBeenCalled();
   });
 

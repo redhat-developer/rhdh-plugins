@@ -34,6 +34,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
     - [Opt-in to Knip Reports Check](#opt-in-to-knip-reports-check)
+    - [Opt-in to List Deprecations Check](#opt-in-to-list-deprecations-check)
   - [Archiving a plugin or workspace](#archiving-a-plugin-or-workspace)
     - [When to archive](#when-to-archive)
     - [Steps](#steps)
@@ -373,6 +374,7 @@ As a plugin owner, you are responsible for the ongoing health and maintenance of
 - **Manage security updates and patches**:
   Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
   Renovate opens dependency PRs against `main`. If you must ship a fix on an older published line, follow [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines) using the `workspace/<workspace>` branch for that line.
+- **Report bugs** following the [Bug Reporting Guide](docs/bug-reporting.md).
 - **Justify Dependency-Related PR closures**:
   If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
 
@@ -415,6 +417,10 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 Plugin owners can opt in to Knip reports check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/bcp.json`) and adding `{ "knip-reports": true }`. This ensures that knip reports in your workspace stay up to date.
 
 [Knip](https://knip.dev/) is a tool that helps with clean-up and maintenance by identifying unused dependencies within workspaces. Regularly reviewing and addressing these reports can significantly improve code quality and reduce bloat.
+
+### Opt-in to List Deprecations Check
+
+Plugin owners can opt in to the list deprecations check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/bcp.json`) and adding `{ "listDeprecations": true }`. This runs `backstage-cli repo list-deprecations` against your workspace, which fails the build if any deprecated API is still being used, helping you catch and remove usages of deprecated APIs before they become a problem.
 
 ## Archiving a plugin or workspace
 

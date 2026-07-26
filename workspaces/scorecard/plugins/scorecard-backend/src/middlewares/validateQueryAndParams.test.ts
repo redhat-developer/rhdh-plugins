@@ -81,7 +81,7 @@ describe('Validators', () => {
     });
 
     it('should call next when metricIds is a valid string', () => {
-      const req = mockReq({ query: { metricIds: 'github.open_prs' } });
+      const req = mockReq({ query: { metricIds: 'github.openPRs' } });
 
       validateMetricIdsQueryParams(req, res, next);
 

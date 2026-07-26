@@ -59,14 +59,12 @@ export const WorkflowSuccessRatioCell = ({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Box
-        sx={{ position: 'relative', display: 'inline-flex' }}
-        aria-label={`${percent}%`}
-      >
+      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
         <CircularProgress
           variant="determinate"
           value={100}
           size={PROGRESS_SIZE}
+          aria-hidden="true"
           sx={{ color: trackColor }}
         />
         <CircularProgress
@@ -74,6 +72,7 @@ export const WorkflowSuccessRatioCell = ({
           value={percent}
           size={PROGRESS_SIZE}
           color={color}
+          aria-label={`${percent}% success ratio`}
           sx={{ position: 'absolute', left: 0 }}
         />
       </Box>

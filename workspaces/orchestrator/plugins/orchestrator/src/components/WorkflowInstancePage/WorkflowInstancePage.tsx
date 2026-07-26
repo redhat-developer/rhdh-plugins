@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -34,7 +34,6 @@ import { JsonObject } from '@backstage/types';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import Close from '@mui/icons-material/Close';
 import Error from '@mui/icons-material/Error';
-import ReplayOutlined from '@mui/icons-material/ReplayOutlined';
 import Start from '@mui/icons-material/Start';
 import SwipeRightAltOutlined from '@mui/icons-material/SwipeRightAltOutlined';
 import Alert from '@mui/material/Alert';
@@ -52,9 +51,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AuthTokenDescriptor,
   capitalize,
-  isJsonObject,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
   ProcessInstanceDTO,
@@ -76,7 +73,6 @@ import {
   workflowRouteRef,
 } from '../../routes';
 import { orchestratorTranslationRef } from '../../translations';
-import { deepSearchObject } from '../../utils/deepSearchObject';
 import {
   extractSsoReauthorizeUrl,
   isSamlSsoError,
@@ -91,6 +87,11 @@ import {
   PermissionDeniedPanel,
 } from '../ui/PermissionDeniedPanel';
 import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
+import {
+  getAuthTokenDescriptors,
+  isAbortableState,
+  isRerunnableState,
+} from './WorkflowInstancePage.helpers';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -123,6 +124,15 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }));
+
+const withPermissionTooltip = (tooltipText: string, node: ReactElement) =>
+  tooltipText ? (
+    <Tooltip title={tooltipText}>
+      <span>{node}</span>
+    </Tooltip>
+  ) : (
+    node
+  );
 
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
@@ -181,37 +191,6 @@ const AbortConfirmationDialogActions = (
       </Button>
     </>
   );
-};
-
-// For re-trigger, the wizard is not rendered, so there is no place where to instantiate the AuthRequester widget.
-// Let's parse the data input schema and try to find & interpret it.
-const getAuthTokenDescriptors = async (
-  dataInputSchema: JsonObject | undefined,
-): Promise<AuthTokenDescriptor[] | undefined> => {
-  if (!dataInputSchema) {
-    return undefined;
-  }
-
-  const authRequester = deepSearchObject(
-    dataInputSchema,
-    (obj: JsonObject): boolean => {
-      const uiWidget = obj['ui:widget'];
-      const uiProps = obj['ui:props'];
-
-      const authTokenDescriptors = isJsonObject(uiProps)
-        ? uiProps.authTokenDescriptors
-        : undefined;
-      return (
-        uiWidget === 'AuthRequester' && Array.isArray(authTokenDescriptors)
-      );
-    },
-  );
-  if (!authRequester) {
-    return undefined;
-  }
-
-  const uiProps = (authRequester as JsonObject)['ui:props'] as JsonObject;
-  return uiProps.authTokenDescriptors as AuthTokenDescriptor[];
 };
 
 // hack
@@ -308,14 +287,8 @@ export const WorkflowInstancePage = () => {
       return res.data?.inputSchema;
     }, [orchestratorApi, workflowId]);
 
-  const canAbort =
-    value?.state === ProcessInstanceStatusDTO.Active ||
-    value?.state === ProcessInstanceStatusDTO.Error;
-
-  const canRerun =
-    value?.state === ProcessInstanceStatusDTO.Completed ||
-    value?.state === ProcessInstanceStatusDTO.Aborted ||
-    value?.state === ProcessInstanceStatusDTO.Error;
+  const canAbort = isAbortableState(value?.state);
+  const canRerun = isRerunnableState(value?.state);
 
   const toggleAbortConfirmationDialog = useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
@@ -424,12 +397,7 @@ export const WorkflowInstancePage = () => {
   const handleOptionClick = (option: 'retrigger' | 'rerun') => {
     handleCloseMenu();
     if (option === 'rerun') handleRerun();
-    else if (
-      option === 'retrigger' &&
-      value?.state !== ProcessInstanceStatusDTO.Aborted
-    ) {
-      handleRetrigger();
-    }
+    else if (option === 'retrigger') handleRetrigger();
   };
 
   const combinedError: Error | undefined = error || inputSchemaError;
@@ -471,27 +439,14 @@ export const WorkflowInstancePage = () => {
     return <ResponseErrorPanel error={combinedError} />;
   };
 
-  const showRerunMenu =
-    value?.state === ProcessInstanceStatusDTO.Error ||
-    value?.state === ProcessInstanceStatusDTO.Aborted;
+  const showRerunMenu = value?.state === ProcessInstanceStatusDTO.Error;
 
-  const fromRecoveryPointLabel =
-    value?.state === ProcessInstanceStatusDTO.Aborted
-      ? t('workflow.buttons.fromAbortedPoint')
-      : t('workflow.buttons.fromFailurePoint');
-
-  const fromRecoveryPointIcon =
-    value?.state === ProcessInstanceStatusDTO.Aborted ? (
-      <ReplayOutlined />
-    ) : (
-      <SwipeRightAltOutlined />
-    );
-
-  const isAbortedRun = value?.state === ProcessInstanceStatusDTO.Aborted;
-  const retriggerFromPointDisabled = isAbortedRun || !inputSchema;
-  const retriggerFromPointTooltip = isAbortedRun
-    ? t('tooltips.retriggerNotSupportedForAborted')
-    : '';
+  const abortTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedAbort');
+  const runAgainTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedExecute');
 
   return (
     <BaseOrchestratorPage
@@ -522,11 +477,9 @@ export const WorkflowInstancePage = () => {
             </InfoDialog>
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
-                {canAbort && (
-                  <Tooltip
-                    title={t('tooltips.userNotAuthorizedAbort')}
-                    disableHoverListener={permittedToUse.allowed}
-                  >
+                {canAbort &&
+                  withPermissionTooltip(
+                    abortTooltipText,
                     <Button
                       variant="outlined"
                       color="primary"
@@ -534,15 +487,12 @@ export const WorkflowInstancePage = () => {
                       onClick={toggleAbortConfirmationDialog}
                     >
                       {t('run.abort.button')}
-                    </Button>
-                  </Tooltip>
-                )}
+                    </Button>,
+                  )}
               </Grid>
               <Grid item>
-                <Tooltip
-                  title={t('tooltips.userNotAuthorizedExecute')}
-                  disableHoverListener={permittedToUse.allowed}
-                >
+                {withPermissionTooltip(
+                  runAgainTooltipText,
                   <Button
                     ref={anchorRef}
                     variant="contained"
@@ -562,8 +512,8 @@ export const WorkflowInstancePage = () => {
                     ) : (
                       t('workflow.buttons.runAgain')
                     )}
-                  </Button>
-                </Tooltip>
+                  </Button>,
+                )}
 
                 <Menu
                   anchorEl={anchorRef.current}
@@ -583,20 +533,13 @@ export const WorkflowInstancePage = () => {
                     <Start />
                     {t('workflow.buttons.entireWorkflow')}
                   </MenuItem>
-                  <Tooltip
-                    title={retriggerFromPointTooltip}
-                    disableHoverListener={!retriggerFromPointTooltip}
+                  <MenuItem
+                    onClick={() => handleOptionClick('retrigger')}
+                    disabled={!inputSchema}
                   >
-                    <Box component="span" sx={{ display: 'inline-flex' }}>
-                      <MenuItem
-                        onClick={() => handleOptionClick('retrigger')}
-                        disabled={retriggerFromPointDisabled}
-                      >
-                        {fromRecoveryPointIcon}
-                        {fromRecoveryPointLabel}
-                      </MenuItem>
-                    </Box>
-                  </Tooltip>
+                    <SwipeRightAltOutlined />
+                    {t('workflow.buttons.fromFailurePoint')}
+                  </MenuItem>
                 </Menu>
               </Grid>
             </Grid>

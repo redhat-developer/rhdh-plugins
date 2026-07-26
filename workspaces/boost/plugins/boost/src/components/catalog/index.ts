@@ -15,3 +15,5 @@
  */
 
 export { AiCatalogPage } from './AiCatalogPage';
+export { AiAssetCard } from './AiAssetCard';
+export type { AiAssetCardProps } from './AiAssetCard';

@@ -71,10 +71,10 @@ describe('DependabotMetricProvider', () => {
 
   describe('getProviderId / getMetric', () => {
     it.each([
-      ['critical', 'dependabot.alerts_critical', 'Dependabot Critical Alerts'],
-      ['high', 'dependabot.alerts_high', 'Dependabot High Alerts'],
-      ['medium', 'dependabot.alerts_medium', 'Dependabot Medium Alerts'],
-      ['low', 'dependabot.alerts_low', 'Dependabot Low Alerts'],
+      ['critical', 'dependabot.alertsCritical', 'Dependabot Critical Alerts'],
+      ['high', 'dependabot.alertsHigh', 'Dependabot High Alerts'],
+      ['medium', 'dependabot.alertsMedium', 'Dependabot Medium Alerts'],
+      ['low', 'dependabot.alertsLow', 'Dependabot Low Alerts'],
     ] as const)(
       'for %s returns id %s and title %s',
       (severity, expectedId, expectedTitle) => {

@@ -193,10 +193,10 @@ Hot-swaps between configured providers at runtime. Monitors capability differenc
 
 ```yaml
 # dynamic-plugins.override.yaml
-- package: @boost/plugin-boost-backend-module-llamastack
+- package: @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack
   integrity: sha512-...
   disabled: false
-- package: @boost/plugin-boost-backend-module-kagenti
+- package: @red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti
   integrity: sha512-...
   disabled: false
 ```

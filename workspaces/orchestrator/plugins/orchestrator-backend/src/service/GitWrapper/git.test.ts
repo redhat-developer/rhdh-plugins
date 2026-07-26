@@ -1,0 +1,102 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { Git } from './git';
+
+jest.mock('isomorphic-git');
+jest.mock('fs-extra');
+
+describe('Git', () => {
+  describe('fromAuth with StaticAuthOptions', () => {
+    it('should create Git instance with username and password', () => {
+      const git = Git.fromAuth({
+        username: 'test-user',
+        password: 'test-password',
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+
+    it('should create Git instance with token', () => {
+      const git = Git.fromAuth({
+        token: 'test-token',
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+
+    it('should create Git instance with username, password and token', () => {
+      const git = Git.fromAuth({
+        username: 'test-user',
+        password: 'test-password',
+        token: 'test-token',
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+
+    it('should create Git instance with no credentials', () => {
+      const git = Git.fromAuth({});
+
+      expect(git).toBeInstanceOf(Git);
+    });
+
+    it('should create Git instance with logger', () => {
+      const mockLogger = {
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+      };
+
+      const git = Git.fromAuth({
+        username: 'test-user',
+        password: 'test-password',
+        logger: mockLogger as any,
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+  });
+
+  describe('fromAuth with AuthCallbackOptions', () => {
+    it('should create Git instance with auth callback', () => {
+      const mockCallback = jest.fn();
+      const git = Git.fromAuth({
+        onAuth: mockCallback,
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+
+    it('should create Git instance with auth callback and logger', () => {
+      const mockCallback = jest.fn();
+      const mockLogger = {
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+      };
+
+      const git = Git.fromAuth({
+        onAuth: mockCallback,
+        logger: mockLogger as any,
+      });
+
+      expect(git).toBeInstanceOf(Git);
+    });
+  });
+});

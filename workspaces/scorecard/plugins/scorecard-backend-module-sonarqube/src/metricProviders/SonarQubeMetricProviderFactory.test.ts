@@ -24,44 +24,44 @@ const mockConfig = new ConfigReader({});
 const mockLogger = mockServices.logger.mock();
 
 describe('createMetricProvider', () => {
-  it('returns a boolean provider for quality_gate', () => {
+  it('returns a boolean provider for qualityGate', () => {
     const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
-      'quality_gate',
+      'qualityGate',
     );
-    expect(provider.getProviderId()).toBe('sonarqube.quality_gate');
+    expect(provider.getProviderId()).toBe('sonarqube.qualityGate');
     expect(provider.getProviderDatasourceId()).toBe('sonarqube');
     expect(provider.getMetricType()).toBe('boolean');
   });
 
-  it('returns a number provider for open_issues', () => {
+  it('returns a number provider for openIssues', () => {
     const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
-      'open_issues',
+      'openIssues',
     );
-    expect(provider.getProviderId()).toBe('sonarqube.open_issues');
+    expect(provider.getProviderId()).toBe('sonarqube.openIssues');
     expect(provider.getMetricType()).toBe('number');
   });
 
-  it('returns a number provider for security_rating', () => {
+  it('returns a number provider for securityRating', () => {
     const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
-      'security_rating',
+      'securityRating',
     );
-    expect(provider.getProviderId()).toBe('sonarqube.security_rating');
+    expect(provider.getProviderId()).toBe('sonarqube.securityRating');
     expect(provider.getMetricType()).toBe('number');
   });
 
-  it('returns a number provider for security_issues', () => {
+  it('returns a number provider for securityIssues', () => {
     const provider = SonarQubeMetricProviderFactory.createMetricProvider(
       mockConfig,
       mockLogger,
-      'security_issues',
+      'securityIssues',
     );
-    expect(provider.getProviderId()).toBe('sonarqube.security_issues');
+    expect(provider.getProviderId()).toBe('sonarqube.securityIssues');
     expect(provider.getMetricType()).toBe('number');
   });
 });
@@ -74,18 +74,18 @@ describe('fromConfig', () => {
     );
     expect(providers).toHaveLength(12);
     expect(providers.map(p => p.getProviderId())).toEqual([
-      'sonarqube.quality_gate',
-      'sonarqube.open_issues',
-      'sonarqube.security_rating',
-      'sonarqube.security_issues',
-      'sonarqube.security_review_rating',
-      'sonarqube.security_hotspots',
-      'sonarqube.reliability_rating',
-      'sonarqube.reliability_issues',
-      'sonarqube.maintainability_rating',
-      'sonarqube.maintainability_issues',
-      'sonarqube.code_coverage',
-      'sonarqube.code_duplications',
+      'sonarqube.qualityGate',
+      'sonarqube.openIssues',
+      'sonarqube.securityRating',
+      'sonarqube.securityIssues',
+      'sonarqube.securityReviewRating',
+      'sonarqube.securityHotspots',
+      'sonarqube.reliabilityRating',
+      'sonarqube.reliabilityIssues',
+      'sonarqube.maintainabilityRating',
+      'sonarqube.maintainabilityIssues',
+      'sonarqube.codeCoverage',
+      'sonarqube.codeDuplications',
     ]);
   });
 

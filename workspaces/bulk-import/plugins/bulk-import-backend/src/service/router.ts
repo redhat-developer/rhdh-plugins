@@ -25,11 +25,10 @@ import type {
   HttpAuthService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
@@ -39,8 +38,6 @@ import {
   type Context,
   type Request as OpenAPIRequest,
 } from 'openapi-backend';
-
-import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
@@ -93,7 +90,7 @@ export interface RouterOptions {
   discovery: DiscoveryService;
   httpAuth: HttpAuthService;
   auth: AuthService;
-  catalogApi: CatalogApi;
+  catalog: CatalogService;
   auditor: AuditorService;
   database: DatabaseService;
 }
@@ -179,8 +176,8 @@ export async function createRouter(
     config,
     cache,
     discovery,
-    catalogApi,
-    auditor: auditor,
+    catalog,
+    auditor,
     database,
   } = options;
 
@@ -201,9 +198,8 @@ export async function createRouter(
   const catalogHttpClient = new CatalogHttpClient({
     logger,
     config,
-    discovery,
     auth,
-    catalogApi,
+    catalog,
   });
   const catalogInfoGenerator = new CatalogInfoGenerator(
     logger,
@@ -524,7 +520,6 @@ export async function createRouter(
           logger,
           config,
           auth,
-          catalogApi,
           gitlabApiService,
           githubApiService,
           catalogInfoGenerator,
@@ -744,11 +739,6 @@ export async function createRouter(
 
   const router = Router();
   router.use(express.json());
-
-  const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: [bulkImportPermission],
-  });
-  router.use(permissionIntegrationRouter);
 
   // Strip x-scm-tokens from req.headers before the permission check and audit
   // middleware run so that OAuth tokens are never captured in audit logs.

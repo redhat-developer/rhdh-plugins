@@ -43,6 +43,7 @@ const adoptionInsightsTranslationFr = createTranslationMessages({
     'common.exportCSV': 'Exporter au format CSV',
     'common.filteredBy': 'filtré par',
     'common.invalidDateFormat': 'Format de date invalide',
+    'common.loading': 'Chargement',
     'common.noResults': 'Aucun résultat pour cette période.',
     'common.numberOfSearches': 'Nombre de recherches',
     'common.readMore': 'En savoir plus',

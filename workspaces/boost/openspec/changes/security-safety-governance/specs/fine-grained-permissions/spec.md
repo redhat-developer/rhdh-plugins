@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules, using `permissions.authorize()` as the sole authorization mechanism. All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
+Implement 16 fine-grained Backstage permissions across 2 resource types with conditional rules. List endpoints use `permissions.authorizeConditional()` (returns ALLOW/DENY/CONDITIONAL); single-resource endpoints use `permissions.authorize()` with a resourceRef (returns ALLOW/DENY). All authorization decisions go through Backstage RBAC from day one — no custom route-level governance layer.
 
 ## ADDED Requirements
 
@@ -16,7 +16,7 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
 - **THEN** the following agent permissions are registered:
   | Permission | Resource Type | Conditional Rules | Gates |
   |---|---|---|---|
-  | `boost.agent.list` | — | — | View agent list (visibility filtering) |
+  | `boost.agent.list` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | View agent list (visibility filtering) |
   | `boost.agent.register` | — | — | Register an agent for governance |
   | `boost.agent.promote` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Submit draft for review (draft→pending) |
   | `boost.agent.approve` | `boost-agent` | `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE` | Approve pending (pending→published) |
@@ -26,6 +26,15 @@ RBAC policies MUST govern agent lifecycle transitions with ownership and separat
   | `boost.agent.withdraw` | `boost-agent` | `IS_OWNER` | Withdraw pending submission |
   | `boost.agent.delete` | `boost-agent` | `IS_OWNER`, `HAS_LIFECYCLE_STAGE` | Delete agent |
   | `boost.agent.configure` | — | — | Edit agent configuration |
+
+#### Scenario: Conditional list filtering (3-tier evaluation)
+
+- **WHEN** `boost.agent.list` is evaluated via `permissions.authorizeConditional()` (list endpoint, no resourceRef)
+- **THEN** the middleware receives one of three results:
+  - **ALLOW** — proceed; handler returns all agents
+  - **DENY** — fall back to `boost.admin`; if also denied, return 403 Unauthorized
+  - **CONDITIONAL** — attach conditions to `req.boostPermissionConditions` for the handler to apply as filters
+- **AND** deployers can configure visibility rules via RBAC policies (e.g., `IS_OWNER` to show only the user's own agents, `HAS_LIFECYCLE_STAGE` to show only published agents)
 
 #### Scenario: Self-approval prevention via IS_NOT_CREATOR rule
 
@@ -106,12 +115,11 @@ A shared middleware MUST replace scattered route-level guards.
 
 #### Scenario: authorizeLifecycleAction middleware
 
-- **WHEN** a lifecycle route is invoked (promote, approve, demote, delete, etc.)
-- **THEN** `authorizeLifecycleAction(permission, resourceLoader)` middleware:
-  1. Loads the resource (agent or tool)
-  2. Calls `permissions.authorize()` with the fine-grained permission and resource
-  3. On DENY, falls back to `boost.admin`
-  4. On both DENY, returns 403
+- **WHEN** a route protected by `authorizeLifecycleAction(permission, resourceLoader)` is invoked
+- **THEN** the middleware determines the authorization path:
+  - **List endpoints** (resource-scoped permission, no resourceRef): calls `permissions.authorizeConditional()` — ALLOW proceeds, CONDITIONAL attaches conditions to `req.boostPermissionConditions` and proceeds, DENY falls back to `boost.admin`
+  - **Single-resource endpoints** (resourceRef present): calls `permissions.authorize()` with the resourceRef — ALLOW proceeds, DENY falls back to `boost.admin`
+  - If `boost.admin` also returns DENY, returns 403 Unauthorized
 - **AND** this replaces the per-route `checkIsAdmin` + `getUserRef` + ownership patterns
 
 ### Requirement: Permission Registration Best Practices
@@ -121,7 +129,7 @@ Permission constants MUST follow Backstage registration best practices.
 #### Scenario: Permissions exported from common package
 
 - **WHEN** permission constants are needed by frontend or backend
-- **THEN** they are exported from `@boost/plugin-boost-common`
+- **THEN** they are exported from `@red-hat-developer-hub/backstage-plugin-boost-common`
 - **AND** basic permissions use `createPermission` from `@backstage/plugin-permission-common`
 - **AND** resource permissions use `createResourcePermission` with resource types `boost-agent` and `boost-tool`
 
@@ -141,3 +149,16 @@ Non-lifecycle functional areas MUST have dedicated permissions for access contro
   | `boost.mcp.manage` | update | Configure MCP servers |
   | `boost.config.manage` | update | Modify admin configuration |
 - **AND** these supplement the lifecycle permissions for comprehensive coverage
+
+### Requirement: 3-Tier Evaluation Model Consistency
+
+Boost implements the 3-tier permission evaluation model (ALLOW/DENY/CONDITIONAL) for agent list endpoints. The augment workspace is expected to converge on the same pattern when it adds agent list permissions — today augment defines only `augment.access` and `augment.admin`. This is architectural alignment on the pattern, not shared implementation — each workspace maintains its own clean-room code.
+
+#### Scenario: Boost 3-tier evaluation model
+
+- **WHEN** `boost.agent.list` is evaluated
+- **THEN** it uses the resource-based permission pattern with 3-tier evaluation (ALLOW/DENY/CONDITIONAL)
+- **AND** the list permission is defined with resource type `boost-agent`
+- **AND** `IS_OWNER` and `HAS_LIFECYCLE_STAGE` conditional rules enable visibility filtering
+- **AND** the `authorizeLifecycleAction` middleware handles CONDITIONAL results by attaching conditions to the request for the route handler to apply as filters
+- **AND** the augment workspace is expected to adopt the same pattern (resource type `augment-agent`) when it implements its agent list permission

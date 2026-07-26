@@ -77,6 +77,14 @@ export function createRunWorkflowAction(
           },
           reqConfigOption,
         );
+        // Link to the orchestrator workflows page
+        ctx.output('orchestratorWorkflowsUrl', `/orchestrator/workflows`);
+        // Direct link to the catalog entity
+        ctx.output(
+          'catalogEntityUrl',
+          `/catalog/${targetEntityNamespace}/${targetEntityKind}/${targetEntityName}/workflows`,
+        );
+        // Keeping this for backwards compatibility
         ctx.output(
           'instanceUrl',
           `/orchestrator/entity/${targetEntityNamespace}/${targetEntityKind}/${targetEntityName}/${ctx.input.workflow_id}/${data.id}`,
