@@ -31,7 +31,7 @@ import {
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
-import { NOTEBOOK_MAX_FILES } from '../../const';
+import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
@@ -94,6 +94,10 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(1),
     padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
     borderRadius: 4,
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
   fileIcon: {
     flexShrink: 0,
@@ -108,6 +112,13 @@ const useStyles = makeStyles(theme => ({
     whiteSpace: 'nowrap',
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
+    cursor: 'pointer',
+    borderRadius: 4,
+    padding: '2px 6px',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
   renameContainer: {
     display: 'flex',
@@ -120,14 +131,19 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minWidth: 0,
     alignItems: 'center',
-    // Optional: PF6 default is 1px which is barely visible; can be removed if subtle error border is acceptable
     '--pf-v6-c-form-control--m-error--after--BorderWidth': '2px',
     '--pf-v6-c-form-control--FontSize': '0.875rem',
     '--pf-v6-c-form-control--LineHeight': '1.25rem',
-    '--pf-v6-c-form-control--before--BorderStyle': 'none',
     '& input': {
       padding: '2px 4px',
       outline: 'none',
+    },
+    // Override PF6 asymmetric padding to center the error icon vertically
+    '& .pf-v6-c-form-control__utilities': {
+      alignSelf: 'center',
+      alignItems: 'center',
+      paddingTop: 0,
+      paddingBottom: 0,
     },
   },
   renameExtension: {
@@ -223,13 +239,16 @@ export const DocumentSidebar = ({
     savingRef.current = false;
   }, []);
 
-  const getConflictError = useCallback(
+  const getValidationError = useCallback(
     (docId: string, originalTitle: string): string | null => {
       const trimmedBase = editName.trim();
       if (!trimmedBase) return null;
       const { baseName, extension } = splitFileName(originalTitle);
       if (trimmedBase === baseName) return null;
       const newFullName = trimmedBase + extension;
+      if (newFullName.length > NOTEBOOK_MAX_TITLE_LENGTH) {
+        return t('notebook.document.rename.tooLong');
+      }
       const conflict = documents.some(
         d => d.document_id !== docId && d.title === newFullName,
       );
@@ -248,9 +267,14 @@ export const DocumentSidebar = ({
         return;
       }
       const newFullName = trimmedBase + extension;
+      if (newFullName.length > NOTEBOOK_MAX_TITLE_LENGTH) {
+        cancelEditing();
+        return;
+      }
       if (
         documents.some(d => d.document_id !== docId && d.title === newFullName)
       ) {
+        cancelEditing();
         return;
       }
       savingRef.current = true;
@@ -345,7 +369,7 @@ export const DocumentSidebar = ({
               <FileTypeIcon fileName={doc.title} />
               {editingDocId === doc.document_id ? (
                 (() => {
-                  const conflictError = getConflictError(
+                  const validationError = getValidationError(
                     doc.document_id,
                     doc.title,
                   );
@@ -356,21 +380,21 @@ export const DocumentSidebar = ({
                         className={classes.renameInput}
                         value={editName}
                         onChange={(_event, value) => setEditName(value)}
-                        onBlur={cancelEditing}
+                        onBlur={() => saveRename(doc.document_id, doc.title)}
                         onKeyDown={event =>
                           handleKeyDown(event, doc.document_id, doc.title)
                         }
-                        validated={conflictError ? 'error' : 'default'}
+                        validated={validationError ? 'error' : 'default'}
                         aria-label={t('notebook.document.rename')}
                       />
                       <Typography className={classes.renameExtension}>
                         {splitFileName(doc.title).extension}
                       </Typography>
-                      {conflictError && (
+                      {validationError && (
                         <div className={classes.renameHelperText}>
                           <HelperText>
                             <HelperTextItem variant="error">
-                              {conflictError}
+                              {validationError}
                             </HelperTextItem>
                           </HelperText>
                         </div>

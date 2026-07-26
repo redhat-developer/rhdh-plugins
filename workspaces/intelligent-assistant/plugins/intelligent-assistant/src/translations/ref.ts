@@ -107,11 +107,9 @@ export const intelligentAssistantMessages = {
   'notebook.overwrite.modal.action': 'Overwrite',
   'notebook.document.rename': 'Rename',
   'notebook.document.rename.tooltip': 'Double-click to rename',
-  'notebook.document.rename.success':
-    '"{{documentName}}" renamed successfully.',
   'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',
-  'notebook.document.rename.conflict':
-    'A document with this name already exists.',
+  'notebook.document.rename.conflict': 'Name already exists.',
+  'notebook.document.rename.tooLong': 'Name too long (max 255)',
   'notebook.document.delete': 'Delete',
   'notebook.document.delete.title': 'Remove resource?',
   'notebook.document.delete.description':

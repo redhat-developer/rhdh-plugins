@@ -413,16 +413,6 @@ export const NotebookView = ({
     async (documentId: string, newTitle: string) => {
       try {
         await renameDocument({ sessionId, documentId, newTitle });
-        setToastAlerts(prev => [
-          {
-            key: Date.now() + documentId,
-            title: (t as Function)('notebook.document.rename.success', {
-              documentName: newTitle,
-            }) as string,
-            variant: 'success',
-          },
-          ...prev,
-        ]);
       } catch {
         setToastAlerts(prev => [
           {

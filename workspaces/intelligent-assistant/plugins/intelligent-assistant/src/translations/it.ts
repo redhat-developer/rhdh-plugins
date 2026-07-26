@@ -179,12 +179,10 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'modal.title.preview': 'Anteprima allegato',
     'notebook.document.rename': 'Rinomina',
     'notebook.document.rename.tooltip': 'Doppio clic per rinominare',
-    'notebook.document.rename.success':
-      '"{{documentName}}" rinominato con successo.',
     'notebook.document.rename.error':
       'Impossibile rinominare "{{documentName}}".',
-    'notebook.document.rename.conflict':
-      'Esiste già un documento con questo nome.',
+    'notebook.document.rename.conflict': 'Il nome esiste già.',
+    'notebook.document.rename.tooLong': 'Nome troppo lungo (max 255).',
     'notebook.document.delete': 'Elimina',
     'notebook.document.delete.action': 'Rimuovi',
     'notebook.document.delete.description':
