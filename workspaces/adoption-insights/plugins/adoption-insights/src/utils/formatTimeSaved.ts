@@ -33,7 +33,7 @@ export function parseTimeSavedMinutes(
   const days = Math.floor(parsed / 1440);
   const remainingAfterDays = parsed % 1440;
   const hours = Math.floor(remainingAfterDays / 60);
-  const minutes = Math.round(remainingAfterDays % 60);
+  const minutes = Math.floor(remainingAfterDays % 60);
   return { days, hours, minutes };
 }
 
@@ -52,6 +52,6 @@ export function computeTotalTimeSaved(
   const days = Math.floor(totalMinutes / 1440);
   const remainingAfterDays = totalMinutes % 1440;
   const hours = Math.floor(remainingAfterDays / 60);
-  const minutes = Math.round(remainingAfterDays % 60);
+  const minutes = Math.floor(remainingAfterDays % 60);
   return { days, hours, minutes };
 }
