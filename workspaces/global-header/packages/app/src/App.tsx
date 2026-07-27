@@ -27,7 +27,6 @@ import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
   GlobalHeaderMenuItemBlueprint,
-  GlobalHeaderMenuItem,
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { navModule } from './modules/nav';
 
@@ -57,15 +56,6 @@ const signInModule = createFrontendModule({
   ],
 });
 
-const CustomHelpMenuItem = ({ handleClose }: { handleClose?: () => void }) => (
-  <GlobalHeaderMenuItem
-    to="https://backstage.io/docs"
-    title="Backstage Docs"
-    icon="menu_book"
-    onClick={handleClose}
-  />
-);
-
 const headerExamplesPlugin = createFrontendPlugin({
   pluginId: 'header-examples',
   extensions: [
@@ -73,8 +63,28 @@ const headerExamplesPlugin = createFrontendPlugin({
       name: 'custom-help-docs',
       params: {
         target: 'help',
-        component: CustomHelpMenuItem,
         priority: 50,
+        // Import building blocks from `/components` inside the loader so they
+        // stay off the main `/alpha` NFS sync chunk.
+        loader: async () => {
+          const { GlobalHeaderMenuItem } = await import(
+            '@red-hat-developer-hub/backstage-plugin-global-header/components'
+          );
+          return function CustomHelpMenuItem({
+            handleClose,
+          }: {
+            handleClose?: () => void;
+          }) {
+            return (
+              <GlobalHeaderMenuItem
+                to="https://backstage.io/docs"
+                title="Backstage Docs"
+                icon="menu_book"
+                onClick={handleClose}
+              />
+            );
+          };
+        },
       },
     }),
   ],
