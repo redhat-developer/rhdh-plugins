@@ -19,6 +19,7 @@ import {
   createCodeCoverageMetricProvider,
   createCodeCoverageMetricProviders,
 } from './CodeCoverageMetricProviderFactory';
+import { CODE_COVERAGE_THRESHOLDS } from './CodeCoverageConfig';
 
 jest.mock('../clients/CodeCoverageClient');
 
@@ -34,7 +35,12 @@ describe('createCodeCoverageMetricProvider', () => {
     );
     expect(provider.getProviderId()).toBe('code-coverage.line_percentage');
     expect(provider.getProviderDatasourceId()).toBe('code-coverage');
-    expect(provider.getMetricType()).toBe('number');
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(1);
+    expect(metrics[0].type).toBe('number');
+    expect(metrics[0].thresholds).toBe(
+      CODE_COVERAGE_THRESHOLDS.line_percentage,
+    );
   });
 
   it('returns a provider for branch_percentage', () => {
@@ -44,7 +50,12 @@ describe('createCodeCoverageMetricProvider', () => {
       'branch_percentage',
     );
     expect(provider.getProviderId()).toBe('code-coverage.branch_percentage');
-    expect(provider.getMetricType()).toBe('number');
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(1);
+    expect(metrics[0].type).toBe('number');
+    expect(metrics[0].thresholds).toBe(
+      CODE_COVERAGE_THRESHOLDS.branch_percentage,
+    );
   });
 });
 
@@ -72,7 +83,10 @@ describe('createCodeCoverageMetricProviders', () => {
       mockDiscovery,
       mockLogger,
     );
-    const types = providers.map(p => p.getMetricType());
-    expect(types.every(t => t === 'number')).toBe(true);
+    const allNumber = providers.every(p => {
+      const metrics = p.getMetrics();
+      return metrics.length === 1 && metrics[0].type === 'number';
+    });
+    expect(allNumber).toBe(true);
   });
 });

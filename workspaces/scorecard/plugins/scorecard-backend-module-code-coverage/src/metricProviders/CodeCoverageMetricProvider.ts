@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { Entity } from '@backstage/catalog-model';
 import { stringifyEntityRef } from '@backstage/catalog-model';
@@ -53,23 +50,18 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
     return CODE_COVERAGE_METRIC_CONFIG[this.metricId].id;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
+  getMetrics(): Metric<'number'>[] {
     const meta = CODE_COVERAGE_METRIC_CONFIG[this.metricId];
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return CODE_COVERAGE_THRESHOLDS[this.metricId];
+    return [
+      {
+        id: meta.id,
+        title: meta.title,
+        description: meta.description,
+        type: 'number',
+        thresholds: CODE_COVERAGE_THRESHOLDS[this.metricId],
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -79,10 +71,15 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const entityRef = stringifyEntityRef(entity);
     const report = await this.client.getReport(entityRef);
     const mapping = CODE_COVERAGE_AGGREGATE_KEYS[this.metricId];
-    return report.aggregate[mapping.section][mapping.field];
+    const results = new Map<string, number>();
+    results.set(
+      this.getProviderId(),
+      report.aggregate[mapping.section][mapping.field],
+    );
+    return results;
   }
 }
