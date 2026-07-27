@@ -1,9 +1,7 @@
----
-# Component with no Scorecards
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: no-scorecards-service
+  name: no-scorecards
 spec:
   type: service
   owner: group:development/guests
