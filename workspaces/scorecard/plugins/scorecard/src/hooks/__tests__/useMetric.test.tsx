@@ -119,11 +119,11 @@ describe('useMetric', () => {
       data: undefined,
     } as any);
 
-    renderHook(() => useMetric({ metricId: 'jira.blocking_tickets' }));
+    renderHook(() => useMetric({ metricId: 'jira.blockingTickets' }));
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['metric', 'jira.blocking_tickets'],
+        queryKey: ['metric', 'jira.blockingTickets'],
         enabled: true,
       }),
     );

@@ -202,7 +202,7 @@ describe('EntityScorecardContent Component', () => {
     const mockDataWithDifferentStatuses = [
       {
         ...mockScorecardSuccessData[0],
-        id: 'test_ideal',
+        id: 'testIdeal',
         result: {
           ...mockScorecardSuccessData[0].result,
           thresholdResult: {
@@ -217,7 +217,7 @@ describe('EntityScorecardContent Component', () => {
       },
       {
         ...mockScorecardSuccessData[1],
-        id: 'test_warning',
+        id: 'testWarning',
         result: {
           ...mockScorecardSuccessData[1].result,
           thresholdResult: {
@@ -232,7 +232,7 @@ describe('EntityScorecardContent Component', () => {
       },
       {
         ...mockScorecardSuccessData[0],
-        id: 'test_critical',
+        id: 'testCritical',
         metadata: {
           ...mockScorecardSuccessData[0].metadata,
           title: 'Critical Test',

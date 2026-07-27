@@ -178,6 +178,28 @@ export const scorecardMessages = {
     entities_other: '{{count}} entities',
   },
 
+  // Data sources dialog
+  dataSourcesDialog: {
+    title: '{{title}} sources',
+    close: 'Close',
+    unknownPlugin: 'Unknown',
+    statusTooltip:
+      'Value {{value}} matches threshold {{status}} {{expression}}',
+    columns: {
+      plugin: 'PLUGIN',
+      check: 'CHECK',
+      value: 'VALUE',
+      status: 'STATUS',
+      lastSynced: 'LAST SYNCED',
+    },
+  },
+
+  // Metric group card menu
+  metricGroupCard: {
+    menuAriaLabel: 'More options',
+    viewDataSources: 'View data sources',
+  },
+
   // Entities page translations
   entitiesPage: {
     unknownMetric: 'Unknown metric',
