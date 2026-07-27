@@ -97,6 +97,8 @@ export const EXTENSIONS_API_VERSION = 'extensions.backstage.io/v1alpha1';
 // @public (undocumented)
 export enum ExtensionsAnnotation {
   // (undocumented)
+  CATALOG_SOURCE = 'extensions.backstage.io/catalog-source',
+  // (undocumented)
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }
 
