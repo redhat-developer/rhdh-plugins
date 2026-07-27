@@ -26,13 +26,18 @@ export const scorecardModuleCodeCoverage = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
+        auth: coreServices.auth,
         metrics: scorecardMetricsExtensionPoint,
         discovery: coreServices.discovery,
         logger: coreServices.logger,
       },
 
-      async init({ metrics, discovery, logger }) {
-        const providers = createCodeCoverageMetricProviders(discovery, logger);
+      async init({ auth, metrics, discovery, logger }) {
+        const providers = createCodeCoverageMetricProviders(
+          auth,
+          discovery,
+          logger,
+        );
         for (const provider of providers) {
           metrics.addMetricProvider(provider);
         }

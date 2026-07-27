@@ -15,16 +15,23 @@
  */
 
 import type {
+  AuthService,
   DiscoveryService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import type { CodeCoverageReport } from './types';
 
 export class CodeCoverageClient {
+  private readonly auth: AuthService;
   private readonly discovery: DiscoveryService;
   private readonly logger: LoggerService;
 
-  constructor(discovery: DiscoveryService, logger: LoggerService) {
+  constructor(
+    auth: AuthService,
+    discovery: DiscoveryService,
+    logger: LoggerService,
+  ) {
+    this.auth = auth;
     this.discovery = discovery;
     this.logger = logger.child({ component: 'CodeCoverageClient' });
   }
@@ -35,7 +42,17 @@ export class CodeCoverageClient {
 
     this.logger.debug(`Fetching code coverage report for entity ${entityRef}`);
 
-    const response = await fetch(url);
+    const ownCredentials = await this.auth.getOwnServiceCredentials();
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: ownCredentials,
+      targetPluginId: 'code-coverage',
+    });
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     if (!response.ok) {
       throw new Error(
         `Code coverage API error: ${response.status} ${response.statusText} for ${url}`,
