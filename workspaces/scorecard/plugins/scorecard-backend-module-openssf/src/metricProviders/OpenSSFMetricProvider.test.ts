@@ -220,7 +220,7 @@ describe('OpenSSFMetricProvider', () => {
       const providers = createOpenSSFMetricProvider();
 
       const providerIds = providers.map(provider => provider.getProviderId());
-      const metricIds = providers.map(provider => provider.getMetric().id);
+      const metricIds = providers.map(provider => provider.getMetrics()[0].id);
       const expectedProviderAndMetricIds = [
         'openssf.binaryArtifacts',
         'openssf.branchProtection',
