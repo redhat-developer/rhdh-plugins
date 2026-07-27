@@ -15,7 +15,6 @@
  */
 
 import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
-import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { CodecovTotals } from '../clients/types';
 
 export const CODECOV_REPO_ANNOTATION = 'codecov.io/repo';
@@ -101,47 +100,6 @@ export const CODECOV_METRICS = [
 
 export type CodecovMetricId = (typeof CODECOV_METRICS)[number];
 
-export const CODECOV_METRIC_CONFIG: Record<
-  CodecovMetricId,
-  { id: string; title: string; description: string }
-> = {
-  coverage: {
-    id: 'codecov.coverage',
-    title: 'Codecov Code Coverage',
-    description: 'Current code coverage percentage for the default branch.',
-  },
-  coverage_trend: {
-    id: 'codecov.coverageTrend',
-    title: 'Codecov Coverage Trend (7d)',
-    description: 'Code coverage trend for the last 7 days.',
-  },
-  tracked_files: {
-    id: 'codecov.trackedFiles',
-    title: 'Codecov Tracked Files',
-    description: 'Number of files tracked by Codecov.',
-  },
-  tracked_lines: {
-    id: 'codecov.trackedLines',
-    title: 'Codecov Tracked Lines',
-    description: 'Total lines of code tracked by Codecov.',
-  },
-  covered_lines: {
-    id: 'codecov.coveredLines',
-    title: 'Codecov Covered Lines',
-    description: 'Number of lines covered by tests.',
-  },
-  partial_lines: {
-    id: 'codecov.partialLines',
-    title: 'Codecov Partial Lines',
-    description: 'Number of partially covered lines.',
-  },
-  missed_lines: {
-    id: 'codecov.missedLines',
-    title: 'Codecov Missed Lines',
-    description: 'Number of lines not covered by tests.',
-  },
-};
-
 /**
  * Maps scorecard metric IDs to the field in the Codecov API totals response.
  */
@@ -156,56 +114,4 @@ export const CODECOV_TOTALS_FIELD_MAP: Record<
   covered_lines: 'hits',
   partial_lines: 'partials',
   missed_lines: 'misses',
-};
-
-export const CODECOV_NUMBER_THRESHOLDS: Record<
-  CodecovMetricId,
-  ThresholdConfig
-> = {
-  coverage: {
-    rules: [
-      { key: 'success', expression: '>80' },
-      { key: 'warning', expression: '50-80' },
-      { key: 'error', expression: '<50' },
-    ],
-  },
-  coverage_trend: {
-    rules: [
-      { key: 'success', expression: '>0' },
-      { key: 'warning', expression: '==0' },
-      { key: 'error', expression: '<0' },
-    ],
-  },
-  tracked_files: {
-    rules: [
-      { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
-    ],
-  },
-  tracked_lines: {
-    rules: [
-      { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
-    ],
-  },
-  covered_lines: {
-    rules: [
-      { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
-    ],
-  },
-  partial_lines: {
-    rules: [
-      { key: 'success', expression: '<10' },
-      { key: 'warning', expression: '10-50' },
-      { key: 'error', expression: '>50' },
-    ],
-  },
-  missed_lines: {
-    rules: [
-      { key: 'success', expression: '<10' },
-      { key: 'warning', expression: '10-50' },
-      { key: 'error', expression: '>50' },
-    ],
-  },
 };

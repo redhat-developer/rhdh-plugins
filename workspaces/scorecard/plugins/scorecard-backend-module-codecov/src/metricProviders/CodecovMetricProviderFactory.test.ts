@@ -22,14 +22,35 @@ describe('CodecovMetricProviderFactory', () => {
   const config = new ConfigReader({});
   const logger = mockServices.logger.mock();
 
-  it('creates 7 metric providers', () => {
+  it('creates 1 metric provider', () => {
     const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
-    expect(providers).toHaveLength(7);
+    expect(providers).toHaveLength(1);
   });
 
-  it('creates providers with correct lowerCamelCase IDs', () => {
+  it('creates provider with codecov as provider ID', () => {
     const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
-    const ids = providers.map(p => p.getProviderId());
+    expect(providers[0].getProviderId()).toBe('codecov');
+  });
+
+  it('provider has codecov datasource ID', () => {
+    const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
+    expect(providers[0].getProviderDatasourceId()).toBe('codecov');
+  });
+
+  it('provider returns all 7 metrics from getMetrics()', () => {
+    const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
+    const metrics = providers[0].getMetrics();
+    expect(metrics).toHaveLength(7);
+    for (const metric of metrics) {
+      expect(metric.type).toBe('number');
+      expect(metric.thresholds).toBeDefined();
+    }
+  });
+
+  it('provider returns metrics with correct IDs', () => {
+    const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
+    const metrics = providers[0].getMetrics();
+    const ids = metrics.map(m => m.id);
     expect(ids).toEqual([
       'codecov.coverage',
       'codecov.coverageTrend',
@@ -39,22 +60,5 @@ describe('CodecovMetricProviderFactory', () => {
       'codecov.partialLines',
       'codecov.missedLines',
     ]);
-  });
-
-  it('all providers have codecov datasource ID', () => {
-    const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
-    for (const provider of providers) {
-      expect(provider.getProviderDatasourceId()).toBe('codecov');
-    }
-  });
-
-  it('each provider returns one metric from getMetrics()', () => {
-    const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
-    for (const provider of providers) {
-      const metrics = provider.getMetrics();
-      expect(metrics).toHaveLength(1);
-      expect(metrics[0].type).toBe('number');
-      expect(metrics[0].thresholds).toBeDefined();
-    }
   });
 });

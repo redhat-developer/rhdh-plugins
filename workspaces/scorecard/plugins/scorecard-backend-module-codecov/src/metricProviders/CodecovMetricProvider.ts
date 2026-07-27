@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
@@ -24,39 +27,128 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { CodecovClient } from '../clients/CodecovClient';
 import {
   type CodecovMetricId,
-  CODECOV_METRIC_CONFIG,
-  CODECOV_NUMBER_THRESHOLDS,
+  CODECOV_METRICS,
   CODECOV_TOTALS_FIELD_MAP,
   CODECOV_REPO_ANNOTATION,
   resolveCodecovEntityInfo,
 } from './CodecovConfig';
 
+export const CODECOV_METRIC_CONFIG: Record<
+  CodecovMetricId,
+  { id: string; title: string; description: string }
+> = {
+  coverage: {
+    id: 'codecov.coverage',
+    title: 'Codecov Code Coverage',
+    description: 'Current code coverage percentage for the default branch.',
+  },
+  coverage_trend: {
+    id: 'codecov.coverageTrend',
+    title: 'Codecov Coverage Trend (7d)',
+    description: 'Code coverage trend for the last 7 days.',
+  },
+  tracked_files: {
+    id: 'codecov.trackedFiles',
+    title: 'Codecov Tracked Files',
+    description: 'Number of files tracked by Codecov.',
+  },
+  tracked_lines: {
+    id: 'codecov.trackedLines',
+    title: 'Codecov Tracked Lines',
+    description: 'Total lines of code tracked by Codecov.',
+  },
+  covered_lines: {
+    id: 'codecov.coveredLines',
+    title: 'Codecov Covered Lines',
+    description: 'Number of lines covered by tests.',
+  },
+  partial_lines: {
+    id: 'codecov.partialLines',
+    title: 'Codecov Partial Lines',
+    description: 'Number of partially covered lines.',
+  },
+  missed_lines: {
+    id: 'codecov.missedLines',
+    title: 'Codecov Missed Lines',
+    description: 'Number of lines not covered by tests.',
+  },
+};
+
+export const CODECOV_NUMBER_THRESHOLDS: Record<
+  CodecovMetricId,
+  ThresholdConfig
+> = {
+  coverage: {
+    rules: [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+  },
+  coverage_trend: {
+    rules: [
+      { key: 'success', expression: '>0' },
+      { key: 'warning', expression: '==0' },
+      { key: 'error', expression: '<0' },
+    ],
+  },
+  tracked_files: {
+    rules: [
+      { key: 'success', expression: '>0' },
+      { key: 'error', expression: '==0' },
+    ],
+  },
+  tracked_lines: {
+    rules: [
+      { key: 'success', expression: '>0' },
+      { key: 'error', expression: '==0' },
+    ],
+  },
+  covered_lines: {
+    rules: [
+      { key: 'success', expression: '>0' },
+      { key: 'error', expression: '==0' },
+    ],
+  },
+  partial_lines: {
+    rules: [
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ],
+  },
+  missed_lines: {
+    rules: [
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ],
+  },
+};
+
 export class CodecovMetricProvider implements MetricProvider<'number'> {
-  private constructor(
-    private readonly client: CodecovClient,
-    private readonly metricId: CodecovMetricId,
-  ) {}
+  private constructor(private readonly client: CodecovClient) {}
 
   getProviderDatasourceId(): string {
     return 'codecov';
   }
 
   getProviderId(): string {
-    return CODECOV_METRIC_CONFIG[this.metricId].id;
+    return 'codecov';
   }
 
   getMetrics(): Metric<'number'>[] {
-    const meta = CODECOV_METRIC_CONFIG[this.metricId];
-    return [
-      {
+    return CODECOV_METRICS.map(metricId => {
+      const meta = CODECOV_METRIC_CONFIG[metricId];
+      return {
         id: meta.id,
         title: meta.title,
         description: meta.description,
-        type: 'number',
-        thresholds: CODECOV_NUMBER_THRESHOLDS[this.metricId],
+        type: 'number' as const,
+        thresholds: CODECOV_NUMBER_THRESHOLDS[metricId],
         history: true,
-      },
-    ];
+      };
+    });
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -76,18 +168,20 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
       accountName,
     );
 
-    const field = CODECOV_TOTALS_FIELD_MAP[this.metricId];
     const results = new Map<string, number>();
-    results.set(this.getProviderId(), repoInfo.totals[field]);
+    for (const metricId of CODECOV_METRICS) {
+      const field = CODECOV_TOTALS_FIELD_MAP[metricId];
+      const meta = CODECOV_METRIC_CONFIG[metricId];
+      results.set(meta.id, repoInfo.totals[field]);
+    }
     return results;
   }
 
   static fromConfig(
     config: Config,
     logger: LoggerService,
-    metricId: CodecovMetricId,
   ): CodecovMetricProvider {
     const client = new CodecovClient(config, logger);
-    return new CodecovMetricProvider(client, metricId);
+    return new CodecovMetricProvider(client);
   }
 }
