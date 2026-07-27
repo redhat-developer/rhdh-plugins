@@ -34,6 +34,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageHeaderTabs?: Component;
   BackstageSidebar?: Component;
   BackstageSidebarItem?: Component;
+  BackstageSidebarSubmenuItem?: Component;
   BackstagePage?: Component;
   BackstageContent?: Component;
   BackstageContentHeader?: Component;
@@ -629,9 +630,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
+          alignItems: 'stretch',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -644,16 +645,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
                 color: 'inherit !important',
               },
             },
-          '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
-            {
-              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-              color: `${navigationSelectedColor} !important`,
-            },
-
-          '& [class*="BackstageSidebarSubmenuItem-selected-"]': {
-            background: `${sidebarItemInteractionBackgroundColor} !important`,
-            color: `${navigationSelectedColor} !important`,
-          },
         },
       },
     };
@@ -661,7 +652,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           borderRadius: '6px',
-          width: 'calc(100% - 0.5rem) !important',
+          width: 'calc(100% - 1rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
@@ -674,8 +665,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: sidebarItemInteractionBackgroundColor,
-          color: navigationSelectedColor,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
+        },
+      },
+    };
+    components.BackstageSidebarSubmenuItem = {
+      styleOverrides: {
+        selected: {
+          background: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };

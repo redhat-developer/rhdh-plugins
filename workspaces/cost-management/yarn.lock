@@ -2211,9 +2211,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:1.55.1":
-  version: 1.55.1
-  resolution: "@backstage-community/plugin-rbac@npm:1.55.1"
+"@backstage-community/plugin-rbac@npm:1.55.2":
+  version: 1.55.2
+  resolution: "@backstage-community/plugin-rbac@npm:1.55.2"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^1.29.0"
     "@backstage/catalog-model": "npm:^1.9.0"
@@ -2240,7 +2240,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/4a5ebc977dd428590d1a5a6d38a9c4cd13c293faa7bd5cd5e246df9df2d13c781e8b071aedf4d54b8ffefdc328064e5eef0106d837f9b8fd54c0a2009e3107f8
+  checksum: 10c0/c5ce5b594620b14ccc368314b900a484cd741cf25913bb5da63e837c0d0c9445372ca136814b6fec4f4b2bcce29b5ebbad23b22efcf9638176cdad2ea7f04509
   languageName: node
   linkType: hard
 
@@ -15749,7 +15749,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
-    "@backstage-community/plugin-rbac": "npm:1.55.1"
+    "@backstage-community/plugin-rbac": "npm:1.55.2"
     "@backstage-community/plugin-tech-radar": "npm:^0.7.4"
     "@backstage/app-defaults": "npm:^1.7.6"
     "@backstage/catalog-model": "npm:^1.7.7"
@@ -19708,14 +19708,14 @@ __metadata:
   linkType: hard
 
 "dompurify@npm:^3.2.6, dompurify@npm:^3.3.2, dompurify@npm:^3.4.0":
-  version: 3.4.1
-  resolution: "dompurify@npm:3.4.1"
+  version: 3.4.12
+  resolution: "dompurify@npm:3.4.12"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10c0/440a4246020cb54b82ef2cb66381e4d310a0c470f9994655e61b6122811f0eaa00a2f9665d2bed30ca3f58932ba7bb0d5e26fdfce61c8daf35d21a3f5a799e48
+  checksum: 10c0/127a13817353d4e20e75a991a9022a04c3af12af7479f68e2b8bee6dbc7330a96edfb8f4ebff96f4f0f24cd43e8dbba46214131f510c3aa87a843bd8b610d0ab
   languageName: node
   linkType: hard
 

@@ -1,6 +1,6 @@
 # Air-Gapped Deployment Support
 
-> **Status: Moved to RHIDP-15316 (Cross-Connector Shared Infrastructure, RHDHPLAN-1510)** — Air-gapped patterns are cross-connector concerns. CA bundle scope → RHIDP-15329, credentials/endpoints → RHIDP-15265, reference configs → RHIDP-15266. Story RHIDP-15264 has been closed (scope split into RHIDP-15329 and RHIDP-15265).
+> **Status: Moved to RHIDP-15316 (Cross-Connector Shared Infrastructure, RHDHPLAN-1510)** — Air-gapped patterns are cross-connector concerns. CA bundle scope → RHIDP-15329, credentials/endpoints → RHIDP-15265, reference configs → RHIDP-15266. Story RHIDP-15264 has been closed (scope split into RHIDP-15329 and RHIDP-15265). See `openspec/changes/connector-shared-infrastructure/` for the authoritative CA bundle (`loadCaBundle`), fault isolation (`createProviderWrapper`), and reference app-config specifications.
 
 Enterprise air-gapped deployment readiness: custom CA bundles for TLS, K8s Secret-only credentials with startup validation rejecting plaintext, and configurable endpoint URLs with no hardcoded SaaS defaults.
 

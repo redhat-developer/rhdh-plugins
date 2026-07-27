@@ -25,6 +25,16 @@ const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Ladevorgang',
+    'dataSourcesDialog.title': '{{title}} Quellen',
+    'dataSourcesDialog.close': 'Schließen',
+    'dataSourcesDialog.unknownPlugin': 'Unbekannt',
+    'dataSourcesDialog.statusTooltip':
+      'Wert {{value}} entspricht Schwellenwert {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'PRÜFUNG',
+    'dataSourcesDialog.columns.value': 'WERT',
+    'dataSourcesDialog.columns.status': 'STATUS',
+    'dataSourcesDialog.columns.lastSynced': 'LETZTE SYNC',
     'emptyState.altText': 'Keine Scorecards',
     'emptyState.button': 'Dokumentation anzeigen',
     'emptyState.description':
@@ -143,6 +153,8 @@ const scorecardTranslationDe = createTranslationMessages({
       'SonarQube-Sicherheitsbewertung.',
     'metric.sonarqube.securityReviewRating.title':
       'SonarQube Sicherheitsbewertung',
+    'metricGroupCard.menuAriaLabel': 'Weitere Optionen',
+    'metricGroupCard.viewDataSources': 'Quellen anzeigen',
     'notFound.altText': 'Seite nicht gefunden',
     'notFound.contactSupport': 'Kontaktieren Sie den Support.',
     'notFound.description':
