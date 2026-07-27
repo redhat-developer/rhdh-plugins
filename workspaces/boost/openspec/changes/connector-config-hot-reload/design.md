@@ -16,16 +16,16 @@ Connector config becomes a new scope under this existing infrastructure.
 
 ## Goals
 
-- Extend `RuntimeConfigResolver` to connector settings (runtime sync-skip via `boost.connectors.*.enabled`), not create a new config system. Note: startup registration is governed by `catalog.providers.<connectorId>.enabled` at module init time (shared-infra Decision 4) — a provider never registered at startup cannot be hot-enabled at runtime. Hot-reload controls sync behavior of already-registered providers.
+- Extend `RuntimeConfigResolver` to connector settings (runtime sync-skip via `boost.connectors.*.enabled`), not create a new config system. Note: startup registration is governed by `ai-catalog.providers.<connectorId>.enabled` at module init time (shared-infra Decision 4) — a provider never registered at startup cannot be hot-enabled at runtime. Hot-reload controls sync behavior of already-registered providers.
 
 **Config namespace ownership:**
 
-| Namespace                  | Scope                                             | Fields                                                                                                         | Layer            |
-| -------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `catalog.providers.<id>.*` | Shared infrastructure (startup, TLS, credentials) | `enabled` (startup registration), `tls.caFile`, `credentials.secretRef`, `credentials.secretKey`, `namespace`  | YAML-only        |
-| `boost.connectors.<id>.*`  | Runtime behavior (hot-reloadable)                 | `enabled` (sync-skip), `endpoint`, `schedule.intervalMs`, `schedule.cron`, `batchSize`, `timeout.connectionMs` | `db-overridable` |
+| Namespace                     | Scope                                             | Fields                                                                                                         | Layer            |
+| ----------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `ai-catalog.providers.<id>.*` | Shared infrastructure (startup, TLS, credentials) | `enabled` (startup registration), `tls.caFile`, `credentials.secretRef`, `credentials.secretKey`, `namespace`  | YAML-only        |
+| `boost.connectors.<id>.*`     | Runtime behavior (hot-reloadable)                 | `enabled` (sync-skip), `endpoint`, `schedule.intervalMs`, `schedule.cron`, `batchSize`, `timeout.connectionMs` | `db-overridable` |
 
-- Hot-reload enable/disable, endpoint URL, and schedule changes within 30s
+- Hot-reload enable/disable, endpoint URL, and schedule changes — cache refresh ≤30s; takes effect on next reconciliation cycle (worst case ~TTL + schedule interval)
 - Preserve deployment-time config (TLS mount paths, K8s Secret references) as YAML-only
 - Admin UI for connector config with RBAC gating
 - Handle K8s Secret mount propagation delays (up to 60s for projected volumes)
@@ -64,7 +64,7 @@ if (!enabled) {
 
 const endpoint =
   (await runtimeConfigResolver.resolve('boost.connectors.jira.endpoint')) ||
-  this.config.getString('catalog.providers.jira.endpoint');
+  this.config.getString('ai-catalog.providers.jira.endpoint');
 await this.syncClient.connect(endpoint);
 ```
 
@@ -72,7 +72,7 @@ await this.syncClient.connect(endpoint);
 
 ### Decision 2: configScope annotation strategy
 
-Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these are the runtime-tunable fields. Deployment-time fields (`tls.caFile`, `credentials.*`, `namespace`) live under `catalog.providers.<id>.*` and are not part of this schema (see Goals namespace table above).
+Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these are the runtime-tunable fields. Deployment-time fields (`tls.caFile`, `credentials.*`, `namespace`) live under `ai-catalog.providers.<id>.*` and are not part of this schema (see Goals namespace table above).
 
 | Field                  | configScope      | Rationale                                          |
 | ---------------------- | ---------------- | -------------------------------------------------- |
@@ -85,7 +85,7 @@ Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these 
 
 **Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
-**Why all fields are db-overridable:** The `boost.connectors` schema only contains runtime-tunable fields by design. Deployment-time fields (mount paths, Secret references, namespace) belong to `catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
+**Why all fields are db-overridable:** The `boost.connectors` schema only contains runtime-tunable fields by design. Deployment-time fields (mount paths, Secret references, namespace) belong to `ai-catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
 
 ### Decision 3: Propagation mechanism — polling-based via reconciliation cycles
 
@@ -133,7 +133,9 @@ Admin UI writes connector config changes via `AdminConfigService` — same patte
 3. Admin toggles `enabled` or changes `endpoint`
 4. Frontend calls `POST /api/boost/admin/config` with flat `BoostConfigKey` — e.g., `{ key: "boost.connectors.jira.enabled", value: false }`. Each write targets a single leaf key; no nested objects, no ambiguity about deep-merge vs replace.
 5. Backend validates via Zod schema, writes DB override, calls `RuntimeConfigResolver.invalidate()` (whole-cache invalidation)
-6. Frontend shows immediate visual feedback ("Saved — will take effect within 30s + next reconciliation cycle")
+6. Frontend shows immediate visual feedback ("Saved — cache refresh ≤30s; will take effect on next reconciliation cycle")
+
+**Override removal:** To clear a DB override and revert to the YAML baseline value, the admin UI calls `DELETE /api/boost/admin/config?key=<BoostConfigKey>`. `AdminConfigService.removeOverride(key)` deletes the DB row and calls `RuntimeConfigResolver.invalidate()`. Use case: switching from `schedule.intervalMs` to `schedule.cron` — the old `intervalMs` override must be removed, not left dangling. If both `schedule.intervalMs` and `schedule.cron` overrides exist simultaneously, `cron` takes precedence.
 
 **YAML-only fields (read-only in UI):** TLS mount paths, Secret references shown as read-only info. Tooltip: "Deployment-time config. Edit YAML to change."
 

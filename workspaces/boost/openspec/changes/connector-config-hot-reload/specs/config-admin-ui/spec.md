@@ -22,7 +22,7 @@ Admin UI provides toggle controls for enabling/disabling connectors.
 - **WHEN** admin clicks toggle to disable Jira connector
 - **THEN** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.enabled", value: false }` (flat `BoostConfigKey` — each write targets a single leaf key, no nested objects)
 - **AND** backend validates via Zod schema, writes DB override, calls `RuntimeConfigResolver.invalidate()`
-- **AND** frontend shows immediate visual feedback: "Saved — will take effect within 30 seconds + next reconciliation cycle"
+- **AND** frontend shows immediate visual feedback: "Saved — cache refresh ≤30s; will take effect on next reconciliation cycle"
 - **AND** toggle UI updates to show "Disabled" state
 
 #### Scenario: Toggle connector on
@@ -71,6 +71,14 @@ Admin UI provides form fields for endpoint URL and sync schedule configuration.
 - **THEN** UI displays cron expression input field with validation
 - **AND** UI provides cron builder helper (dropdowns for hour, day of week, etc.)
 - **AND** field shows example: "0 _/2 _ \* \* = every 2 hours"
+
+#### Scenario: Switch from interval to cron removes old override
+
+- **WHEN** admin switches schedule type from interval to cron and saves
+- **THEN** frontend calls `DELETE /api/boost/admin/config?key=boost.connectors.jira.schedule.intervalMs` to remove the old override
+- **AND** frontend calls `POST /api/boost/admin/config` with `{ key: "boost.connectors.jira.schedule.cron", value: "0 */2 * * *" }`
+- **AND** backend removes intervalMs DB override, writes cron DB override, calls `RuntimeConfigResolver.invalidate()`
+- **AND** UI shows: "Saved — schedule switched to cron"
 
 ### Requirement: K8s Secret Reference Field
 
@@ -139,7 +147,7 @@ Admin UI provides immediate validation feedback before and after save.
 
 - **WHEN** admin saves valid config change
 - **THEN** UI displays success notification: "Connector config saved successfully"
-- **AND** notification includes propagation info: "Changes will take effect within 30 seconds + next reconciliation cycle"
+- **AND** notification includes propagation info: "Changes will take effect after cache refresh (≤30s) + next reconciliation cycle"
 - **AND** notification auto-dismisses after 5 seconds
 
 ### Requirement: RBAC Gating
@@ -182,7 +190,7 @@ Admin UI provides immediate visual feedback on save without waiting for propagat
 #### Scenario: Propagation delay communication
 
 - **WHEN** admin saves connector config change
-- **THEN** success notification includes: "Saved — will take effect within 30 seconds (cache TTL) + next reconciliation cycle"
+- **THEN** success notification includes: "Saved — cache refresh ≤30s; will take effect on next reconciliation cycle"
 - **AND** UI provides link to connector health dashboard to monitor effect
 
 #### Scenario: Config change history

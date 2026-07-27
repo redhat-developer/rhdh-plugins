@@ -2,8 +2,8 @@
 
 ## 1. Zod Schema Definitions (P0) — RHIDP-15340
 
-- [ ] 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `catalog.providers` fields — not part of the `boost.connectors` schema.
-- [ ] 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*`)
+- [ ] 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `ai-catalog.providers` fields — not part of the `boost.connectors` schema.
+- [ ] 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
 - [ ] 1.3 Define GitHub connector config Zod schema with connector-appropriate field subset (`enabled`, `endpoint`, `schedule.intervalMs`, `batchSize`)
 - [ ] 1.4 Define GitLab connector config Zod schema with connector-appropriate field subset (`enabled`, `endpoint`, `schedule.intervalMs`, `batchSize`)
 - [ ] 1.5 Add URL validation for `endpoint` field (must be valid https:// URL)
@@ -49,7 +49,7 @@
 - [ ] 4.4 Display K8s Secret references as read-only fields with tooltip: "Deployment-time config. Edit YAML to change."
 - [ ] 4.5 Implement client-side validation: URL format for `endpoint`, positive numbers for `schedule.intervalMs`, cron syntax for `schedule.cron`
 - [ ] 4.6 Implement save handler: call `POST /api/boost/admin/config` with connector key and updated fields
-- [ ] 4.7 Implement success notification: "Saved — will take effect within 30 seconds + next reconciliation cycle"
+- [ ] 4.7 Implement success notification: "Saved — cache refresh ≤30s; will take effect on next reconciliation cycle"
 - [ ] 4.8 Implement validation error feedback: display server-side Zod validation errors inline
 - [ ] 4.9 Implement RBAC gating: require `ai-catalog.admin` permission to access connector config section (via `permissions.authorize()`)
 - [ ] 4.10 Implement read-only view for non-admin users (if configured)
@@ -69,8 +69,9 @@
 - [ ] 6.2 Implement Zod schema validation in `setOverride()` method before DB write
 - [ ] 6.3 Implement `configScope` enforcement: reject writes for `yaml-only` fields
 - [ ] 6.4 Implement cache invalidation call to `RuntimeConfigResolver.invalidate()` after DB write
-- [ ] 6.5 Add audit logging for connector config changes (timestamp, user, changed fields, old/new values)
-- [ ] 6.6 Add unit tests for `AdminConfigService` connector config methods
+- [ ] 6.5 Implement `removeOverride(key: BoostConfigKey)` method and `DELETE /api/boost/admin/config?key=<BoostConfigKey>` endpoint — deletes the DB override row, calls `RuntimeConfigResolver.invalidate()`, and returns the reverted YAML baseline value. Used when switching schedule types (e.g., removing `intervalMs` override when switching to `cron`).
+- [ ] 6.6 Add audit logging for connector config changes (timestamp, user, changed fields, old/new values)
+- [ ] 6.7 Add unit tests for `AdminConfigService` connector config methods (including `removeOverride`)
 
 ## 7. Testing (P1)
 

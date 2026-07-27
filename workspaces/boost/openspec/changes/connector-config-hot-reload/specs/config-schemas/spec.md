@@ -14,7 +14,7 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 
 - **WHEN** Jira connector config schema is defined
 - **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number)
-- **AND** all fields are `configScope: db-overridable` (deployment-time fields like `tls.caFile`, `credentials.*`, and `namespace` live under `catalog.providers.<id>.*` and are not part of this schema)
+- **AND** all fields are `configScope: db-overridable` (deployment-time fields like `tls.caFile`, `credentials.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are not part of this schema)
 
 #### Scenario: GitHub connector config schema
 
@@ -49,7 +49,7 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 #### Scenario: Deployment-time field rejects DB override
 
 - **WHEN** admin attempts to write DB override for a deployment-time field (e.g., `boost.connectors.jira.credentials.secretRef`)
-- **THEN** the write is rejected because `credentials.*`, `tls.*`, and `namespace` are `catalog.providers` fields not present in the `boost.connectors` Zod schema
+- **THEN** the write is rejected because `credentials.*`, `tls.*`, and `namespace` are `ai-catalog.providers` fields not present in the `boost.connectors` Zod schema
 - **AND** admin receives error: "Unknown config key: credentials.secretRef is not a valid boost.connectors field"
 
 ### Requirement: Validation Rejection
@@ -105,6 +105,23 @@ Connector config schemas define default values for optional fields.
 
 - **WHEN** connector config omits `batchSize`
 - **THEN** schema provides default value (e.g., `100`)
+
+### Requirement: Override Removal
+
+DB overrides can be removed to revert to the YAML baseline value.
+
+#### Scenario: Remove override via DELETE endpoint
+
+- **WHEN** admin calls `DELETE /api/boost/admin/config?key=boost.connectors.jira.schedule.intervalMs`
+- **THEN** `AdminConfigService.removeOverride('boost.connectors.jira.schedule.intervalMs')` deletes the DB row
+- **AND** `RuntimeConfigResolver.invalidate()` is called
+- **AND** next `resolve('boost.connectors.jira.schedule.intervalMs')` returns the YAML baseline value (or schema default if no YAML value)
+
+#### Scenario: Schedule type precedence when both overrides exist
+
+- **WHEN** DB overrides exist for both `boost.connectors.jira.schedule.intervalMs` and `boost.connectors.jira.schedule.cron`
+- **THEN** `schedule.cron` takes precedence — provider uses cron-based scheduling
+- **AND** provider logs warning: "Both schedule.intervalMs and schedule.cron are set; using cron"
 
 ## ADDED Requirements
 

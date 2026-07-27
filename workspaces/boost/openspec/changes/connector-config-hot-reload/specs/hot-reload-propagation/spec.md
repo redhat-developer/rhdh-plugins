@@ -2,13 +2,13 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Runtime overrides propagate to active connector instances within 30s TTL. Connector responds to config changes on next reconciliation cycle. Endpoint URL changes, schedule changes, and enable/disable toggles take effect without pod restart.
+Runtime overrides propagate to active connector instances — cache refresh ≤30s; takes effect on next reconciliation cycle (worst case ~TTL + schedule interval). Connector responds to config changes on next reconciliation cycle. Endpoint URL changes, schedule changes, and enable/disable toggles take effect without pod restart.
 
 ## EXISTING Requirements
 
 ### Requirement: Enable/Disable Propagation
 
-Enable/disable changes propagate to active entity provider within 30s + reconciliation interval.
+Enable/disable changes propagate to active entity provider — cache refresh ≤30s; takes effect on next reconciliation cycle.
 
 #### Scenario: Disable connector via DB override
 
@@ -53,10 +53,17 @@ Schedule changes take effect on next reconciliation cycle.
 
 #### Scenario: Switch from interval to cron schedule
 
-- **WHEN** admin writes DB override `boost.connectors.jira.schedule.cron: "0 */2 * * *"` (every 2 hours) and removes `schedule.intervalMs`
-- **THEN** next reconciliation cycle reads new config
+- **WHEN** admin writes DB override `boost.connectors.jira.schedule.cron: "0 */2 * * *"` (every 2 hours) and removes the `schedule.intervalMs` override via `DELETE /api/boost/admin/config?key=boost.connectors.jira.schedule.intervalMs`
+- **THEN** `AdminConfigService.removeOverride('boost.connectors.jira.schedule.intervalMs')` deletes the DB row, then calls `RuntimeConfigResolver.invalidate()`
+- **AND** next reconciliation cycle reads new config
 - **AND** provider switches from interval-based to cron-based scheduling
 - **AND** subsequent cycles run at cron-specified times
+
+#### Scenario: Precedence when both intervalMs and cron overrides exist
+
+- **WHEN** DB overrides exist for both `schedule.intervalMs` and `schedule.cron`
+- **THEN** `schedule.cron` takes precedence — cron-based scheduling is used
+- **AND** provider logs warning: "Both schedule.intervalMs and schedule.cron are set; using cron"
 
 ### Requirement: Endpoint URL Change Propagation
 

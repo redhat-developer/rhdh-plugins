@@ -89,7 +89,7 @@ Disabled connectors visually distinct from failing ones.
 - **THEN** the health card renders with grey/muted status badge (`variant="outline"` PatternFly Label) showing "Disabled"
 - **AND** no red/error indicators are shown
 - **AND** the card body shows "Connector is disabled. Enable in connector config to resume sync." message
-- **AND** note: connectors with `catalog.providers.*.enabled: false` (startup registration gate) are never registered and absent from the UI entirely
+- **AND** note: connectors with `ai-catalog.providers.*.enabled: false` (startup registration gate) are never registered and absent from the UI entirely
 
 #### Scenario: Failing connector uses alert treatment
 

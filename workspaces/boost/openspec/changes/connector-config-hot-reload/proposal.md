@@ -14,14 +14,14 @@ The key distinction: Backstage's built-in `ConfigApi` loads config at startup wi
 
 ### Config Schemas
 
-- Zod schema definitions for per-connector `boost.connectors.*` fields: `enabled`, `endpoint`, `schedule`, `batchSize`, `timeout` — all `configScope: db-overridable`. Deployment-time fields (`tls`, `credentials`, `namespace`) live under `catalog.providers.*` and are not part of these schemas.
+- Zod schema definitions for per-connector `boost.connectors.*` fields: `enabled`, `endpoint`, `schedule`, `batchSize`, `timeout` — all `configScope: db-overridable`. Deployment-time fields (`tls`, `credentials`, `namespace`) live under `ai-catalog.providers.*` and are not part of these schemas.
 - Runtime operational state (last sync timestamp, run status) lives in the health store (`boost_sync_attempts` table), not the config resolver.
 - Schema validation rejects invalid connector config values before write
 - Integration with `RuntimeConfigResolver`'s two-layer resolution
 
 ### Hot-Reload Propagation
 
-- Runtime overrides propagate to active entity provider instances within 30s TTL
+- Runtime overrides propagate to active entity provider instances — cache refresh ≤30s; takes effect on next reconciliation cycle (worst case ~TTL + schedule interval)
 - Connector responds to enable/disable changes on next reconciliation cycle
 - Schedule changes take effect on next reconciliation cycle
 - Endpoint URL changes take effect on next sync cycle
