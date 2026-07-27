@@ -93,6 +93,6 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - `plugins/boost-backend/src/catalog/processors/` — Annotation validator processor
 - `plugins/boost-backend-module-kagenti/src/provider/` — Kagenti provider implements SDK
 - `plugins/boost-backend-module-llamastack/src/provider/` — LlamaStack provider implements SDK
-- `plugins/boost-backend-module-oci-skill-registry/src/provider/` — OCI skill registry provider implements SDK
+- `plugins/boost-backend-module-oci-skill/src/provider/` — OCI skill connector provider implements SDK
 - Reference app-config examples for air-gapped deployment
 - Load testing harness for catalog performance validation
