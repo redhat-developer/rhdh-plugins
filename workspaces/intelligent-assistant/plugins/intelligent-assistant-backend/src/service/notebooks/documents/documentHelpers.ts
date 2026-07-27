@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
-
-import { Parser } from 'htmlparser2';
 
 import dns from 'dns/promises';
 import { isIP } from 'net';
@@ -24,14 +21,11 @@ import { isIP } from 'net';
 import {
   DEFAULT_MAX_FILE_SIZE_MB,
   FILTERED_CONTENT_MARKER,
-  HTML_BLOCK_TAGS,
-  HTML_IGNORED_TAGS,
   MAX_CONSECUTIVE_NEWLINES,
   PROMPT_INJECTION_PATTERNS,
   SSRF_BLOCKED_HOSTNAMES,
   SupportedFileType,
 } from '../../constant';
-import { parseFile } from './fileParser';
 
 // ==============================================================================
 // URL Support Functions (Reserved for Future URL File Type Support)
@@ -76,30 +70,6 @@ export const isValidFileType = (fileType: string): boolean => {
   return Object.values(SupportedFileType).includes(
     normalizedType as SupportedFileType,
   );
-};
-
-/**
- * Parse file from upload
- * @param logger - Logger service
- * @param fileType - File type
- * @param file - File to parse
- * @returns Parsed file
- */
-export const parseFileContent = async (
-  logger: LoggerService,
-  fileType: string,
-  file?: Express.Multer.File,
-) => {
-  if (!file) {
-    throw new InputError('No file uploaded');
-  }
-  if (!isValidFileSize(file.size)) {
-    throw new InputError(
-      `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB / 1024 / 1024}MB limit`,
-    );
-  }
-  logger.info(`Parsing file ${file.originalname} for fileType ${fileType}`);
-  return await parseFile(file.buffer, file.originalname, fileType);
 };
 
 /**
@@ -241,39 +211,6 @@ export const validateURLForSSRF = async (urlString: string): Promise<void> => {
     // DNS resolution failure is a user input issue (invalid hostname)
     throw new InputError(`Failed to resolve hostname: ${error.message}`);
   }
-};
-
-/**
- * Strip HTML tags and extract readable text from HTML content
- * @reserved Reserved for future URL file type support
- */
-export const stripHtmlTags = (html: string): string => {
-  let text = '';
-  let ignoring = false;
-
-  const parser = new Parser(
-    {
-      onopentag(name) {
-        if (HTML_IGNORED_TAGS.has(name)) ignoring = true;
-      },
-      onclosetag(name) {
-        if (HTML_IGNORED_TAGS.has(name)) ignoring = false;
-        if (HTML_BLOCK_TAGS.has(name)) text += '\n';
-      },
-      ontext(data) {
-        if (!ignoring) text += data;
-      },
-    },
-    { decodeEntities: true },
-  );
-
-  parser.write(html);
-  parser.end();
-
-  return text
-    .replace(/\n\s*\n/g, '\n\n')
-    .replace(/[ \t]+/g, ' ')
-    .trim();
 };
 
 /**
