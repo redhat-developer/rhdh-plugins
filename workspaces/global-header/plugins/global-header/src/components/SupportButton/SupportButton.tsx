@@ -61,7 +61,15 @@ export const SupportButton = ({
     <MenuItem
       to={supportUrl}
       component={Link}
-      sx={{ width: '100%', color: 'inherit', ...style }}
+      sx={{
+        py: 0.5,
+        px: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        color: 'inherit',
+        ...style,
+      }}
       onClick={onClick}
       data-testid="support-button"
     >

@@ -20,3 +20,73 @@
  */
 
 export * from '../translations';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { globalHeaderTranslations } from '../translations';
+
+// ── Core: plugin + module ──────────────────────────────────────────────
+
+export { default } from './plugin';
+export { globalHeaderModule } from './extensions/globalHeaderModule';
+
+// ── Blueprints: for other plugins to contribute header items ───────────
+
+export {
+  GlobalHeaderComponentBlueprint,
+  GlobalHeaderMenuItemBlueprint,
+} from './extensions/blueprints';
+export type {
+  ToolbarComponentParams,
+  MenuItemParams,
+} from './extensions/blueprints';
+
+// ── Data refs ──────────────────────────────────────────────────────────
+
+export {
+  globalHeaderComponentDataRef,
+  globalHeaderMenuItemDataRef,
+} from './extensions/dataRefs';
+
+// ── Context hooks for custom dropdown components ───────────────────────
+
+export {
+  useGlobalHeaderComponents,
+  useGlobalHeaderMenuItems,
+} from './extensions/GlobalHeaderContext';
+
+// ── Types ──────────────────────────────────────────────────────────────
+
+export type {
+  GlobalHeaderComponentData,
+  GlobalHeaderMenuItemData,
+} from './types';
+
+// Building-block components (GlobalHeaderIconButton, GlobalHeaderMenuItem,
+// GlobalHeaderDropdown) live at
+// `@red-hat-developer-hub/backstage-plugin-global-header/components`
+// so they do not inflate the main federation sync chunk. That path stays
+// `/components` after this plugin graduates from `/alpha` to stable.
+
+// ── Default extensions (collections + individual for cherry-picking) ───
+
+export * from './defaults';
+
+// ── Translations ───────────────────────────────────────────────────────
+
+export { globalHeaderTranslationRef } from '../translations/ref';
+export { globalHeaderTranslations } from '../translations';
+
+const globalHeaderTranslation = TranslationBlueprint.make({
+  params: {
+    resource: globalHeaderTranslations,
+  },
+});
+
+/**
+ * App module that registers global header translations.
+ * @alpha
+ */
+export const globalHeaderTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [globalHeaderTranslation],
+});

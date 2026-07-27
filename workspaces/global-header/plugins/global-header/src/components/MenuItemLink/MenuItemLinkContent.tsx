@@ -40,7 +40,11 @@ export const MenuItemLinkContent: FC<MenuItemLinkContentProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        margin: '8px 0',
+        my: 1,
+        // Pad content (not MenuItem) — RHDH/PatternFly zeros padding on
+        // menu anchors and list items across help, profile, etc.
+        px: 2,
+        boxSizing: 'border-box',
         color: 'inherit',
         width: '100%',
       }}

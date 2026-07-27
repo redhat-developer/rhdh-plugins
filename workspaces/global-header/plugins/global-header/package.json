@@ -9,6 +9,7 @@
     "./legacy": "./src/legacy.ts",
     "./global-header-module": "./src/globalHeaderModuleExport.ts",
     "./global-header-translations-module": "./src/globalHeaderTranslationsModuleExport.ts",
+    "./components": "./src/alpha/components.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -24,6 +25,10 @@
       ],
       "global-header-translations-module": [
         "src/globalHeaderTranslationsModuleExport.ts"
+      
+      ],
+      "components": [
+        "src/alpha/components.ts"
       ],
       "package.json": [
         "package.json"
