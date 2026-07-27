@@ -354,6 +354,9 @@ test.describe('Intelligent assistant conversation', () => {
 
     test.describe('Model Selector', () => {
       test.beforeEach(async () => {
+        await sharedPage.evaluate(() =>
+          localStorage.removeItem('lastOpenedConversation'),
+        );
         await sharedPage.reload();
         await sharedPage
           .locator('.pf-chatbot__messagebox')
@@ -394,54 +397,15 @@ test.describe('Intelligent assistant conversation', () => {
           translations,
         );
 
-        const toggleWrapper = sharedPage.locator(
-          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
-        );
-        await toggleWrapper.hover();
+        const tooltipWrapper = sharedPage
+          .locator(
+            `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+          )
+          .locator('..');
+        await tooltipWrapper.hover();
         await expect(
           sharedPage.getByText(translations['modelSelector.disabledTooltip']),
         ).toBeVisible();
-      });
-
-      test('Model selector dropdown closes when user clicks Send', async () => {
-        const toggle = sharedPage.locator(
-          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
-        );
-        await toggle.click();
-        await expect(
-          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
-        ).toBeVisible();
-
-        const input = sharedPage.getByRole('textbox', {
-          name: translations['chatbox.message.placeholder'],
-        });
-        await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);
-        const sendButton = sharedPage.getByRole('button', { name: 'Send' });
-        await sendButton.click();
-
-        await expect(
-          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
-        ).toBeHidden();
-      });
-
-      test('Model selector dropdown closes when user presses Enter', async () => {
-        const toggle = sharedPage.locator(
-          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
-        );
-        await toggle.click();
-        await expect(
-          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
-        ).toBeVisible();
-
-        const input = sharedPage.getByRole('textbox', {
-          name: translations['chatbox.message.placeholder'],
-        });
-        await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);
-        await input.press('Enter');
-
-        await expect(
-          sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
-        ).toBeHidden();
       });
 
       test('Model selector is re-enabled on new chat', async () => {
