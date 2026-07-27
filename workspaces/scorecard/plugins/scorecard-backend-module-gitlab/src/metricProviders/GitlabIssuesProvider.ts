@@ -20,7 +20,6 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
@@ -28,9 +27,9 @@ import { getProjectSlugFromEntity } from '../gitlab/utils';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 
 const METRIC_IDS = {
-  OPEN_ISSUES: 'gitlab.open_issues',
-  OPENED_ISSUES_7D: 'gitlab.opened_issues_7d',
-  CLOSED_ISSUES_7D: 'gitlab.closed_issues_7d',
+  OPEN_ISSUES: 'gitlab.openIssues',
+  OPENED_ISSUES_7D: 'gitlab.openedIssues7d',
+  CLOSED_ISSUES_7D: 'gitlab.closedIssues7d',
 } as const;
 
 export class GitlabIssuesProvider implements MetricProvider<'number'> {
@@ -52,35 +51,6 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
     return METRIC_IDS.OPEN_ISSUES;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.OPEN_ISSUES,
-      title: 'GitLab open issues',
-      description: 'Current count of open issues for a given GitLab project.',
-      type: 'number',
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
-  }
-
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
-        CATALOG_FILTER_EXISTS,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
       {
@@ -88,6 +58,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         title: 'GitLab open issues',
         description: 'Current count of open issues for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -96,6 +67,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         description:
           'Number of issues opened in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -104,14 +76,17 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         description:
           'Number of issues closed in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
     ];
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    const projectSlug = getProjectSlugFromEntity(entity);
-    return this.gitlabClient.getOpenIssuesCount(projectSlug);
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
+        CATALOG_FILTER_EXISTS,
+    };
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
