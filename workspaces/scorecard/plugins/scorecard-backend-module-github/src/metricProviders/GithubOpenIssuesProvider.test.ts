@@ -31,16 +31,17 @@ jest.mock('../github/GithubClient');
 
 describe('GithubOpenIssuesProvider', () => {
   describe('fromConfig', () => {
-    it('should create provider with default thresholds', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = GithubOpenIssuesProvider.fromConfig(
         new ConfigReader({}),
       );
-
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     let provider: GithubOpenIssuesProvider;
     const mockedGithubClient = GithubClient as jest.MockedClass<
       typeof GithubClient
@@ -68,9 +69,9 @@ describe('GithubOpenIssuesProvider', () => {
         },
       };
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(15);
+      expect(results.get('github.open_issues')).toBe(15);
       expect(
         mockedGithubClientInstance.getOpenIssuesCount,
       ).toHaveBeenCalledWith('https://github.com/org/orgRepo/tree/main/', {

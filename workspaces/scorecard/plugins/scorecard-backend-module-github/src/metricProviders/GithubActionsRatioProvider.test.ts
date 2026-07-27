@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubActionsRatioProvider } from './GithubActionsRatioProvider';
 import { GithubClient } from '../github/GithubClient';
+import { RATIO_THRESHOLDS } from './GithubActionsRatioProvider';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -55,25 +56,16 @@ describe('GithubActionsRatioProvider', () => {
     provider = GithubActionsRatioProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return ratio metric IDs only', () => {
-    expect(provider.getMetricIds()).toEqual([
+  it('should return ratio metrics with thresholds', () => {
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(2);
+    expect(metrics.map(m => m.id)).toEqual([
       'github.actions_success_ratio_7d',
       'github.actions_success_ratio_24h',
     ]);
-  });
-
-  it('should return ratio metrics only', () => {
-    const metrics = provider.getMetrics!();
-    expect(metrics).toHaveLength(2);
-  });
-
-  it('should use RATIO_THRESHOLDS', () => {
-    const thresholds = provider.getMetricThresholds();
-    expect(thresholds.rules).toEqual([
-      { key: 'success', expression: '>=80' },
-      { key: 'warning', expression: '50-79' },
-      { key: 'error', expression: '<50' },
-    ]);
+    for (const metric of metrics) {
+      expect(metric.thresholds).toEqual(RATIO_THRESHOLDS);
+    }
   });
 
   it('should calculate ratio metrics', async () => {
@@ -114,7 +106,7 @@ describe('GithubActionsRatioProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     // 7d ratio: 3 success / (3 success + 2 failure) = 60%
     expect(results.get('github.actions_success_ratio_7d')).toBe(60);
@@ -131,7 +123,7 @@ describe('GithubActionsRatioProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.actions_success_ratio_7d')).toBe(100);
     expect(results.get('github.actions_success_ratio_24h')).toBe(100);
@@ -140,7 +132,7 @@ describe('GithubActionsRatioProvider', () => {
   it('should handle empty workflow runs', async () => {
     mockedGithubClientInstance.getWorkflowRuns.mockResolvedValue([]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.actions_success_ratio_7d')).toBe(100);
     expect(results.get('github.actions_success_ratio_24h')).toBe(100);
@@ -160,7 +152,7 @@ describe('GithubActionsRatioProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     // Ratio: 1/(1+0) = 100% (cancelled excluded from ratio)
     expect(results.get('github.actions_success_ratio_7d')).toBe(100);

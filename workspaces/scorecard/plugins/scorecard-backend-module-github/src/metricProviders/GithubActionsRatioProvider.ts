@@ -74,41 +74,27 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
     return METRIC_IDS.SUCCESS_RATIO_7D;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.SUCCESS_RATIO_7D,
-      title: 'GitHub Actions success ratio (7d)',
-      description:
-        'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 7 days (percentage). Cancelled and skipped runs are excluded.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
-      this.getMetric(),
+      {
+        id: METRIC_IDS.SUCCESS_RATIO_7D,
+        title: 'GitHub Actions success ratio (7d)',
+        description:
+          'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 7 days (percentage). Cancelled and skipped runs are excluded.',
+        type: 'number',
+        thresholds: RATIO_THRESHOLDS,
+        history: true,
+      },
       {
         id: METRIC_IDS.SUCCESS_RATIO_24H,
         title: 'GitHub Actions success ratio (24h)',
         description:
           'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 24 hours (percentage). Cancelled and skipped runs are excluded.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: RATIO_THRESHOLDS,
         history: true,
       },
     ];
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return RATIO_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -119,11 +105,6 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): GithubActionsRatioProvider {
     return new GithubActionsRatioProvider(config);
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
-    const metrics = await this.calculateMetrics(entity);
-    return metrics.get(METRIC_IDS.SUCCESS_RATIO_7D) ?? 100;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

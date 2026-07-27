@@ -62,7 +62,9 @@ describe('Search count providers', () => {
       );
       expect(provider.getProviderId()).toBe('github.opened_issues_7d');
       expect(provider.getProviderDatasourceId()).toBe('github');
-      expect(provider.getMetricType()).toBe('number');
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].type).toBe('number');
     });
 
     it('should calculate metric using search count', async () => {
@@ -71,9 +73,9 @@ describe('Search count providers', () => {
         new ConfigReader({}),
       );
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(5);
+      expect(results.get('github.opened_issues_7d')).toBe(5);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -92,9 +94,9 @@ describe('Search count providers', () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(10);
       const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}));
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(10);
+      expect(results.get('github.opened_prs_7d')).toBe(10);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -117,9 +119,9 @@ describe('Search count providers', () => {
         new ConfigReader({}),
       );
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(3);
+      expect(results.get('github.closed_issues_7d')).toBe(3);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -138,9 +140,9 @@ describe('Search count providers', () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(7);
       const provider = GithubClosedPRsProvider.fromConfig(new ConfigReader({}));
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(7);
+      expect(results.get('github.closed_prs_7d')).toBe(7);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },

@@ -20,7 +20,6 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
@@ -41,23 +40,18 @@ export class GithubOpenedPRsProvider implements MetricProvider<'number'> {
     return 'github.opened_prs_7d';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'GitHub opened PRs (7d)',
-      description:
-        'Number of pull requests opened in the last 7 days for a given GitHub repository.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'GitHub opened PRs (7d)',
+        description:
+          'Number of pull requests opened in the last 7 days for a given GitHub repository.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -70,7 +64,7 @@ export class GithubOpenedPRsProvider implements MetricProvider<'number'> {
     return new GithubOpenedPRsProvider(config);
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const repository = getRepositoryInformationFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
 
@@ -78,10 +72,14 @@ export class GithubOpenedPRsProvider implements MetricProvider<'number'> {
     since.setDate(since.getDate() - 7);
     const sinceStr = since.toISOString().split('T')[0];
 
-    return this.githubClient.getSearchCount(
+    const result = await this.githubClient.getSearchCount(
       target,
       repository,
       `is:pr created:>${sinceStr}`,
     );
+
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), result);
+    return results;
   }
 }

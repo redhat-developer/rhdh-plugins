@@ -66,41 +66,27 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
     return METRIC_IDS.PASS_RATE_7D;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.PASS_RATE_7D,
-      title: 'GitHub PR CI first time pass rate (7d)',
-      description:
-        'First time pass rate (FTPR): percentage of PRs opened in the last 7 days where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
-      this.getMetric(),
+      {
+        id: METRIC_IDS.PASS_RATE_7D,
+        title: 'GitHub PR CI first time pass rate (7d)',
+        description:
+          'First time pass rate (FTPR): percentage of PRs opened in the last 7 days where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
+        type: 'number',
+        thresholds: RATIO_THRESHOLDS,
+        history: true,
+      },
       {
         id: METRIC_IDS.PASS_RATE_24H,
         title: 'GitHub PR CI first time pass rate (24h)',
         description:
           'First time pass rate (FTPR): percentage of PRs opened in the last 24 hours where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: RATIO_THRESHOLDS,
         history: true,
       },
     ];
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return RATIO_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -111,11 +97,6 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): GithubPRPassRateProvider {
     return new GithubPRPassRateProvider(config);
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
-    const metrics = await this.calculateMetrics(entity);
-    return metrics.get(METRIC_IDS.PASS_RATE_7D) ?? 100;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

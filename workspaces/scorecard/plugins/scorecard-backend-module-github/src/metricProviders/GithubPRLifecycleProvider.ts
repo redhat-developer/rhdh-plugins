@@ -107,34 +107,24 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
     return METRIC_IDS.TIME_TO_REVIEW;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.TIME_TO_REVIEW,
-      title: 'GitHub time to review (7d)',
-      description:
-        'Average hours from PR creation to first review for PRs updated in the last 7 days.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
-      this.getMetric(),
+      {
+        id: METRIC_IDS.TIME_TO_REVIEW,
+        title: 'GitHub time to review (7d)',
+        description:
+          'Average hours from PR creation to first review for PRs updated in the last 7 days.',
+        type: 'number',
+        thresholds: DURATION_THRESHOLDS,
+        history: true,
+      },
       {
         id: METRIC_IDS.TIME_TO_APPROVE,
         title: 'GitHub time to approve (7d)',
         description:
           'Average hours from PR creation to first approval for PRs updated in the last 7 days.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: DURATION_THRESHOLDS,
         history: true,
       },
       {
@@ -142,14 +132,11 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
         title: 'GitHub time to merge (7d)',
         description:
           'Average hours from PR creation to merge for merged PRs updated in the last 7 days.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: DURATION_THRESHOLDS,
         history: true,
       },
     ];
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DURATION_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -160,11 +147,6 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): GithubPRLifecycleProvider {
     return new GithubPRLifecycleProvider(config);
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
-    const metrics = await this.calculateMetrics(entity);
-    return metrics.get(METRIC_IDS.TIME_TO_REVIEW) ?? 0;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

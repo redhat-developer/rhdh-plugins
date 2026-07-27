@@ -31,14 +31,15 @@ jest.mock('../github/GithubClient');
 
 describe('GithubOpenedPRsProvider', () => {
   describe('fromConfig', () => {
-    it('should create provider with default thresholds', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}));
-
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     let provider: GithubOpenedPRsProvider;
     const mockedGithubClient = GithubClient as jest.MockedClass<
       typeof GithubClient
@@ -66,9 +67,9 @@ describe('GithubOpenedPRsProvider', () => {
         },
       };
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(10);
+      expect(results.get('github.opened_prs_7d')).toBe(10);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },

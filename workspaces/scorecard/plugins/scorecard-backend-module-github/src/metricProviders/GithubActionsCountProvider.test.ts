@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubActionsCountProvider } from './GithubActionsCountProvider';
 import { GithubClient } from '../github/GithubClient';
+import { COUNT_THRESHOLDS } from './GithubActionsCountProvider';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -55,26 +56,17 @@ describe('GithubActionsCountProvider', () => {
     provider = GithubActionsCountProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return count metric IDs only', () => {
-    expect(provider.getMetricIds()).toEqual([
+  it('should return count metrics with thresholds', () => {
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(3);
+    expect(metrics.map(m => m.id)).toEqual([
       'github.actions_started_7d',
       'github.actions_successful_7d',
       'github.actions_failed_7d',
     ]);
-  });
-
-  it('should return count metrics only', () => {
-    const metrics = provider.getMetrics!();
-    expect(metrics).toHaveLength(3);
-  });
-
-  it('should use COUNT_THRESHOLDS', () => {
-    const thresholds = provider.getMetricThresholds();
-    expect(thresholds.rules).toEqual([
-      { key: 'success', expression: '<10' },
-      { key: 'warning', expression: '10-50' },
-      { key: 'error', expression: '>50' },
-    ]);
+    for (const metric of metrics) {
+      expect(metric.thresholds).toEqual(COUNT_THRESHOLDS);
+    }
   });
 
   it('should calculate count metrics', async () => {
@@ -105,7 +97,7 @@ describe('GithubActionsCountProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.actions_started_7d')).toBe(4);
     expect(results.get('github.actions_successful_7d')).toBe(2);
@@ -115,7 +107,7 @@ describe('GithubActionsCountProvider', () => {
   it('should handle empty workflow runs', async () => {
     mockedGithubClientInstance.getWorkflowRuns.mockResolvedValue([]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.actions_started_7d')).toBe(0);
     expect(results.get('github.actions_successful_7d')).toBe(0);
@@ -146,7 +138,7 @@ describe('GithubActionsCountProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.actions_started_7d')).toBe(4);
     expect(results.get('github.actions_successful_7d')).toBe(1);

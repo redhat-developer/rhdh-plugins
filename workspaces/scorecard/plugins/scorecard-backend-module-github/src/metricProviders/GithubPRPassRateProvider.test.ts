@@ -55,11 +55,16 @@ describe('GithubPRPassRateProvider', () => {
     provider = GithubPRPassRateProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return all metric IDs', () => {
-    expect(provider.getMetricIds()).toEqual([
+  it('should return all metrics with thresholds', () => {
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(2);
+    expect(metrics.map(m => m.id)).toEqual([
       'github.pr_ci_first_time_pass_rate_7d',
       'github.pr_ci_first_time_pass_rate_24h',
     ]);
+    for (const metric of metrics) {
+      expect(metric.thresholds).toBeDefined();
+    }
   });
 
   it('should calculate PR CI first time pass rates', async () => {
@@ -92,7 +97,7 @@ describe('GithubPRPassRateProvider', () => {
       ],
     );
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     // 7d: 3 success out of 4 with CI = 75%
     expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(75);
@@ -110,7 +115,7 @@ describe('GithubPRPassRateProvider', () => {
       ],
     );
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
   });
@@ -120,7 +125,7 @@ describe('GithubPRPassRateProvider', () => {
       [],
     );
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
     expect(results.get('github.pr_ci_first_time_pass_rate_24h')).toBe(100);
@@ -151,7 +156,7 @@ describe('GithubPRPassRateProvider', () => {
       ],
     );
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     // 1 success out of 3 with CI (null excluded) = 33.3%
     expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(33.3);

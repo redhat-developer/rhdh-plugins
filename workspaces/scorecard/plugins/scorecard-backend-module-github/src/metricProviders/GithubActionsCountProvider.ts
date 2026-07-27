@@ -61,34 +61,24 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
     return METRIC_IDS.STARTED;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.STARTED,
-      title: 'GitHub Actions started (7d)',
-      description:
-        'Number of GitHub Actions workflow runs started in the last 7 days.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
-      this.getMetric(),
+      {
+        id: METRIC_IDS.STARTED,
+        title: 'GitHub Actions started (7d)',
+        description:
+          'Number of GitHub Actions workflow runs started in the last 7 days.',
+        type: 'number',
+        thresholds: COUNT_THRESHOLDS,
+        history: true,
+      },
       {
         id: METRIC_IDS.SUCCESSFUL,
         title: 'GitHub Actions successful (7d)',
         description:
           'Number of successfully completed GitHub Actions workflow runs in the last 7 days.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: COUNT_THRESHOLDS,
         history: true,
       },
       {
@@ -96,14 +86,11 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
         title: 'GitHub Actions failed (7d)',
         description:
           'Number of failed GitHub Actions workflow runs in the last 7 days.',
-        type: this.getMetricType(),
+        type: 'number',
+        thresholds: COUNT_THRESHOLDS,
         history: true,
       },
     ];
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return COUNT_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -114,11 +101,6 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): GithubActionsCountProvider {
     return new GithubActionsCountProvider(config);
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
-    const metrics = await this.calculateMetrics(entity);
-    return metrics.get(METRIC_IDS.STARTED) ?? 0;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

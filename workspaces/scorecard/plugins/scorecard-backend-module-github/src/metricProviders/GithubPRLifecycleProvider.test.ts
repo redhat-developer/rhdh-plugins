@@ -55,22 +55,17 @@ describe('GithubPRLifecycleProvider', () => {
     provider = GithubPRLifecycleProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return all metric IDs', () => {
-    expect(provider.getMetricIds()).toEqual([
-      'github.time_to_review',
-      'github.time_to_approve',
-      'github.time_to_merge',
-    ]);
-  });
-
-  it('should return all metrics', () => {
-    const metrics = provider.getMetrics!();
+  it('should return all metrics with thresholds', () => {
+    const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(3);
     expect(metrics.map(m => m.id)).toEqual([
       'github.time_to_review',
       'github.time_to_approve',
       'github.time_to_merge',
     ]);
+    for (const metric of metrics) {
+      expect(metric.thresholds).toBeDefined();
+    }
   });
 
   it('should calculate all lifecycle metrics', async () => {
@@ -106,7 +101,7 @@ describe('GithubPRLifecycleProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     // Time to review: avg of 12h and 24h = 18h
     expect(results.get('github.time_to_review')).toBe(18);
@@ -125,7 +120,7 @@ describe('GithubPRLifecycleProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.time_to_review')).toBe(0);
     expect(results.get('github.time_to_approve')).toBe(0);
@@ -142,7 +137,7 @@ describe('GithubPRLifecycleProvider', () => {
       },
     ]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.time_to_merge')).toBe(0);
   });
@@ -150,7 +145,7 @@ describe('GithubPRLifecycleProvider', () => {
   it('should return 0 for empty results', async () => {
     mockedGithubClientInstance.getPullRequestsWithReviews.mockResolvedValue([]);
 
-    const results = await provider.calculateMetrics!(mockEntity);
+    const results = await provider.calculateMetrics(mockEntity);
 
     expect(results.get('github.time_to_review')).toBe(0);
     expect(results.get('github.time_to_approve')).toBe(0);
