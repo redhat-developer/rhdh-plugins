@@ -26,19 +26,20 @@ import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 import { WorkflowRun } from '../github/types';
 
-const COUNT_THRESHOLDS: ThresholdConfig = {
+const ACTIVITY_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'success', expression: '>=0' },
+    { key: 'warning', expression: '==0' },
+  ],
+};
+
+const FAILED_COUNT_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '<10' },
     { key: 'warning', expression: '10-50' },
     { key: 'error', expression: '>50' },
   ],
 };
-
-const METRIC_IDS = {
-  STARTED: 'github.actionsStarted7d',
-  SUCCESSFUL: 'github.actionsSuccessful7d',
-  FAILED: 'github.actionsFailed7d',
-} as const;
 
 function countByConclusion(runs: WorkflowRun[], conclusion: string): number {
   return runs.filter(
@@ -64,30 +65,30 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.STARTED,
+        id: 'github.actionsStarted7d',
         title: 'GitHub Actions started (7d)',
         description:
           'Number of GitHub Actions workflow runs started in the last 7 days.',
         type: 'number',
-        thresholds: COUNT_THRESHOLDS,
+        thresholds: ACTIVITY_THRESHOLDS,
         history: true,
       },
       {
-        id: METRIC_IDS.SUCCESSFUL,
+        id: 'github.actionsSuccessful7d',
         title: 'GitHub Actions successful (7d)',
         description:
           'Number of successfully completed GitHub Actions workflow runs in the last 7 days.',
         type: 'number',
-        thresholds: COUNT_THRESHOLDS,
+        thresholds: ACTIVITY_THRESHOLDS,
         history: true,
       },
       {
-        id: METRIC_IDS.FAILED,
+        id: 'github.actionsFailed7d',
         title: 'GitHub Actions failed (7d)',
         description:
           'Number of failed GitHub Actions workflow runs in the last 7 days.',
         type: 'number',
-        thresholds: COUNT_THRESHOLDS,
+        thresholds: FAILED_COUNT_THRESHOLDS,
         history: true,
       },
     ];
@@ -118,12 +119,15 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(METRIC_IDS.STARTED, runs.length);
-    results.set(METRIC_IDS.SUCCESSFUL, countByConclusion(runs, 'success'));
-    results.set(METRIC_IDS.FAILED, countByConclusion(runs, 'failure'));
+    results.set('github.actionsStarted7d', runs.length);
+    results.set(
+      'github.actionsSuccessful7d',
+      countByConclusion(runs, 'success'),
+    );
+    results.set('github.actionsFailed7d', countByConclusion(runs, 'failure'));
 
     return results;
   }
 }
 
-export { COUNT_THRESHOLDS };
+export { ACTIVITY_THRESHOLDS, FAILED_COUNT_THRESHOLDS };

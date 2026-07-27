@@ -34,11 +34,6 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
   ],
 };
 
-const METRIC_IDS = {
-  PASS_RATE_7D: 'github.prCiFirstTimePassRate7d',
-  PASS_RATE_24H: 'github.prCiFirstTimePassRate24h',
-} as const;
-
 function computePassRate(statuses: PullRequestCommitStatus[]): number {
   // Only consider PRs that have CI checks
   const withCI = statuses.filter(s => s.firstPushLastCommitState !== null);
@@ -69,7 +64,7 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.PASS_RATE_7D,
+        id: 'github.prCiFirstTimePassRate7d',
         title: 'GitHub PR CI first time pass rate (7d)',
         description:
           'First time pass rate (FTPR): percentage of PRs opened in the last 7 days where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
@@ -78,7 +73,7 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.PASS_RATE_24H,
+        id: 'github.prCiFirstTimePassRate24h',
         title: 'GitHub PR CI first time pass rate (24h)',
         description:
           'First time pass rate (FTPR): percentage of PRs opened in the last 24 hours where all CI statuses passed on the first push (percentage). PRs without CI checks are excluded.',
@@ -121,8 +116,11 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(METRIC_IDS.PASS_RATE_7D, computePassRate(statuses7d));
-    results.set(METRIC_IDS.PASS_RATE_24H, computePassRate(statuses24h));
+    results.set('github.prCiFirstTimePassRate7d', computePassRate(statuses7d));
+    results.set(
+      'github.prCiFirstTimePassRate24h',
+      computePassRate(statuses24h),
+    );
 
     return results;
   }

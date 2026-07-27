@@ -68,7 +68,7 @@ describe('GithubPRLifecycleProvider', () => {
     }
   });
 
-  it('should calculate all lifecycle metrics', async () => {
+  it('should calculate all lifecycle metrics in days', async () => {
     const baseTime = new Date('2024-01-15T10:00:00Z').getTime();
     mockedGithubClientInstance.getPullRequestsWithReviews.mockResolvedValue([
       {
@@ -103,12 +103,12 @@ describe('GithubPRLifecycleProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    // Time to review: avg of 12h and 24h = 18h
-    expect(results.get('github.timeToReview')).toBe(18);
-    // Time to approve: avg of 24h and 24h = 24h
-    expect(results.get('github.timeToApprove')).toBe(24);
-    // Time to merge: avg of 48h and 72h = 60h
-    expect(results.get('github.timeToMerge')).toBe(60);
+    // Time to review: avg of 12h and 24h = 18h = 0.8 days
+    expect(results.get('github.timeToReview')).toBe(0.8);
+    // Time to approve: avg of 24h and 24h = 24h = 1 day
+    expect(results.get('github.timeToApprove')).toBe(1);
+    // Time to merge: avg of 48h and 72h = 60h = 2.5 days
+    expect(results.get('github.timeToMerge')).toBe(2.5);
   });
 
   it('should return 0 when no PRs have reviews', async () => {

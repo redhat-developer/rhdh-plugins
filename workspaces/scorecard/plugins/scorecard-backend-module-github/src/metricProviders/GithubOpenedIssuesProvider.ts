@@ -18,14 +18,12 @@ import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
-  DEFAULT_NUMBER_THRESHOLDS,
+  INFORMATIONAL_NUMBER_THRESHOLD,
   Metric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
-
-const METRIC_ID = 'github.openedIssues7d';
 
 export class GithubOpenedIssuesProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
@@ -45,12 +43,12 @@ export class GithubOpenedIssuesProvider implements MetricProvider<'number'> {
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_ID,
+        id: 'github.openedIssues7d',
         title: 'GitHub opened issues (7d)',
         description:
           'Number of issues opened in the last 7 days for a given GitHub repository.',
         type: 'number',
-        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: INFORMATIONAL_NUMBER_THRESHOLD,
         history: true,
       },
     ];
@@ -81,7 +79,7 @@ export class GithubOpenedIssuesProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(METRIC_ID, result);
+    results.set('github.openedIssues7d', result);
     return results;
   }
 }

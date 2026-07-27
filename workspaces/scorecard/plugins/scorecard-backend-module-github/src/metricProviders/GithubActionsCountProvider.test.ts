@@ -18,7 +18,10 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubActionsCountProvider } from './GithubActionsCountProvider';
 import { GithubClient } from '../github/GithubClient';
-import { COUNT_THRESHOLDS } from './GithubActionsCountProvider';
+import {
+  ACTIVITY_THRESHOLDS,
+  FAILED_COUNT_THRESHOLDS,
+} from './GithubActionsCountProvider';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -56,7 +59,7 @@ describe('GithubActionsCountProvider', () => {
     provider = GithubActionsCountProvider.fromConfig(new ConfigReader({}));
   });
 
-  it('should return count metrics with thresholds', () => {
+  it('should return count metrics with split thresholds', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(3);
     expect(metrics.map(m => m.id)).toEqual([
@@ -64,9 +67,9 @@ describe('GithubActionsCountProvider', () => {
       'github.actionsSuccessful7d',
       'github.actionsFailed7d',
     ]);
-    for (const metric of metrics) {
-      expect(metric.thresholds).toEqual(COUNT_THRESHOLDS);
-    }
+    expect(metrics[0].thresholds).toEqual(ACTIVITY_THRESHOLDS);
+    expect(metrics[1].thresholds).toEqual(ACTIVITY_THRESHOLDS);
+    expect(metrics[2].thresholds).toEqual(FAILED_COUNT_THRESHOLDS);
   });
 
   it('should calculate count metrics', async () => {

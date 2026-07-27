@@ -34,11 +34,6 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
   ],
 };
 
-const METRIC_IDS = {
-  SUCCESS_RATIO_7D: 'github.actionsSuccessRatio7d',
-  SUCCESS_RATIO_24H: 'github.actionsSuccessRatio24h',
-} as const;
-
 function filterRunsByWindow(
   runs: WorkflowRun[],
   hoursAgo: number,
@@ -77,7 +72,7 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.SUCCESS_RATIO_7D,
+        id: 'github.actionsSuccessRatio7d',
         title: 'GitHub Actions success ratio (7d)',
         description:
           'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 7 days (percentage). Cancelled and skipped runs are excluded.',
@@ -86,7 +81,7 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.SUCCESS_RATIO_24H,
+        id: 'github.actionsSuccessRatio24h',
         title: 'GitHub Actions success ratio (24h)',
         description:
           'Ratio of successful to successful+failed GitHub Actions workflow runs in the last 24 hours (percentage). Cancelled and skipped runs are excluded.',
@@ -124,8 +119,8 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
     const runs24h = filterRunsByWindow(runs, 24);
 
     const results = new Map<string, number>();
-    results.set(METRIC_IDS.SUCCESS_RATIO_7D, computeSuccessRatio(runs));
-    results.set(METRIC_IDS.SUCCESS_RATIO_24H, computeSuccessRatio(runs24h));
+    results.set('github.actionsSuccessRatio7d', computeSuccessRatio(runs));
+    results.set('github.actionsSuccessRatio24h', computeSuccessRatio(runs24h));
 
     return results;
   }

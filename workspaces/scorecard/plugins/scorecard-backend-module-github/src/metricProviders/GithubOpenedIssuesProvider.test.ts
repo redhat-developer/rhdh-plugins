@@ -18,7 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubOpenedIssuesProvider } from './GithubOpenedIssuesProvider';
 import { GithubClient } from '../github/GithubClient';
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { INFORMATIONAL_NUMBER_THRESHOLD } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -37,7 +37,7 @@ describe('GithubOpenedIssuesProvider', () => {
       );
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
-      expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(metrics[0].thresholds).toEqual(INFORMATIONAL_NUMBER_THRESHOLD);
     });
   });
 

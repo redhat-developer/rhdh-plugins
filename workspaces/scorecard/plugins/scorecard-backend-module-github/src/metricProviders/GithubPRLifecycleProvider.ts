@@ -28,24 +28,20 @@ import { PullRequestWithReviews } from '../github/types';
 
 const DURATION_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'success', expression: '<24' },
-    { key: 'warning', expression: '24-168' },
-    { key: 'error', expression: '>168' },
+    { key: 'success', expression: '<7' },
+    { key: 'warning', expression: '7-14' },
+    { key: 'error', expression: '>14' },
   ],
 };
 
-const METRIC_IDS = {
-  TIME_TO_REVIEW: 'github.timeToReview',
-  TIME_TO_APPROVE: 'github.timeToApprove',
-  TIME_TO_MERGE: 'github.timeToMerge',
-} as const;
-
-function computeAverageHours(durations: number[]): number {
+function computeAverageDays(durations: number[]): number {
   if (durations.length === 0) {
     return 0;
   }
   const totalMs = durations.reduce((sum, d) => sum + d, 0);
-  return Math.round((totalMs / durations.length / (1000 * 60 * 60)) * 10) / 10;
+  return (
+    Math.round((totalMs / durations.length / (1000 * 60 * 60 * 24)) * 10) / 10
+  );
 }
 
 function getTimeToFirstReview(prs: PullRequestWithReviews[]): number {
@@ -60,7 +56,7 @@ function getTimeToFirstReview(prs: PullRequestWithReviews[]): number {
     );
     durations.push(firstReview - prCreated);
   }
-  return computeAverageHours(durations);
+  return computeAverageDays(durations);
 }
 
 function getTimeToFirstApproval(prs: PullRequestWithReviews[]): number {
@@ -76,7 +72,7 @@ function getTimeToFirstApproval(prs: PullRequestWithReviews[]): number {
     );
     durations.push(firstApproval - prCreated);
   }
-  return computeAverageHours(durations);
+  return computeAverageDays(durations);
 }
 
 function getTimeToMerge(prs: PullRequestWithReviews[]): number {
@@ -89,7 +85,7 @@ function getTimeToMerge(prs: PullRequestWithReviews[]): number {
     const merged = new Date(pr.mergedAt).getTime();
     durations.push(merged - prCreated);
   }
-  return computeAverageHours(durations);
+  return computeAverageDays(durations);
 }
 
 export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
@@ -110,28 +106,28 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.TIME_TO_REVIEW,
-        title: 'GitHub time to review (7d)',
+        id: 'github.timeToReview',
+        title: 'GitHub PR time to review (7d)',
         description:
-          'Average hours from PR creation to first review for PRs updated in the last 7 days.',
+          'Average days from PR creation to first review for PRs updated in the last 7 days.',
         type: 'number',
         thresholds: DURATION_THRESHOLDS,
         history: true,
       },
       {
-        id: METRIC_IDS.TIME_TO_APPROVE,
-        title: 'GitHub time to approve (7d)',
+        id: 'github.timeToApprove',
+        title: 'GitHub PR time to approve (7d)',
         description:
-          'Average hours from PR creation to first approval for PRs updated in the last 7 days.',
+          'Average days from PR creation to first approval for PRs updated in the last 7 days.',
         type: 'number',
         thresholds: DURATION_THRESHOLDS,
         history: true,
       },
       {
-        id: METRIC_IDS.TIME_TO_MERGE,
-        title: 'GitHub time to merge (7d)',
+        id: 'github.timeToMerge',
+        title: 'GitHub PR time to merge (7d)',
         description:
-          'Average hours from PR creation to merge for merged PRs updated in the last 7 days.',
+          'Average days from PR creation to merge for merged PRs updated in the last 7 days.',
         type: 'number',
         thresholds: DURATION_THRESHOLDS,
         history: true,
@@ -164,9 +160,9 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(METRIC_IDS.TIME_TO_REVIEW, getTimeToFirstReview(prs));
-    results.set(METRIC_IDS.TIME_TO_APPROVE, getTimeToFirstApproval(prs));
-    results.set(METRIC_IDS.TIME_TO_MERGE, getTimeToMerge(prs));
+    results.set('github.timeToReview', getTimeToFirstReview(prs));
+    results.set('github.timeToApprove', getTimeToFirstApproval(prs));
+    results.set('github.timeToMerge', getTimeToMerge(prs));
 
     return results;
   }
