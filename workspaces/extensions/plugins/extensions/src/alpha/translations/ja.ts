@@ -160,8 +160,12 @@ const extensionsTranslationJa = createTranslationMessages({
       'パッケージは実稼働環境では管理できません。',
     'installedPackages.table.tooltips.installationDisabled':
       'プラグインのインストールが無効になっているため、パッケージを管理できません。これを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      'カタログエンティティーがありません',
     'installedPackages.table.tooltips.enableActions':
-      'アクションを有効にするには、このパッケージのカタログエンティティーを追加してください',
+      'アクションを有効にするには、このパッケージのカタログエンティティーを追加してください。',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'ドキュメントを表示',
     'installedPackages.table.tooltips.noDownloadPermissions':
       '設定をダウンロードする権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noEditPermissions':
