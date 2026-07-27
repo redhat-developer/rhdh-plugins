@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
@@ -27,7 +24,6 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { CodecovClient } from '../clients/CodecovClient';
 import {
   type CodecovMetricId,
-  CODECOV_METRICS,
   CODECOV_METRIC_CONFIG,
   CODECOV_NUMBER_THRESHOLDS,
   CODECOV_TOTALS_FIELD_MAP,
@@ -39,7 +35,6 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
   private constructor(
     private readonly client: CodecovClient,
     private readonly metricId: CodecovMetricId,
-    private readonly thresholds: ThresholdConfig,
   ) {}
 
   getProviderDatasourceId(): string {
@@ -50,37 +45,18 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
     return CODECOV_METRIC_CONFIG[this.metricId].id;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    const meta = CODECOV_METRIC_CONFIG[this.metricId];
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return CODECOV_METRICS.map(id => CODECOV_METRIC_CONFIG[id].id);
-  }
-
   getMetrics(): Metric<'number'>[] {
-    return CODECOV_METRICS.map(id => ({
-      id: CODECOV_METRIC_CONFIG[id].id,
-      title: CODECOV_METRIC_CONFIG[id].title,
-      description: CODECOV_METRIC_CONFIG[id].description,
-      type: 'number' as const,
-      history: true,
-    }));
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    const meta = CODECOV_METRIC_CONFIG[this.metricId];
+    return [
+      {
+        id: meta.id,
+        title: meta.title,
+        description: meta.description,
+        type: 'number',
+        thresholds: CODECOV_NUMBER_THRESHOLDS[this.metricId],
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -88,20 +64,6 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
       [`metadata.annotations.${CODECOV_REPO_ANNOTATION}`]:
         CATALOG_FILTER_EXISTS,
     };
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
-    const { service, owner, repo, accountName } =
-      resolveCodecovEntityInfo(entity);
-    const repoInfo = await this.client.getRepoInfo(
-      service,
-      owner,
-      repo,
-      accountName,
-    );
-
-    const field = CODECOV_TOTALS_FIELD_MAP[this.metricId];
-    return repoInfo.totals[field];
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
@@ -114,11 +76,9 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
       accountName,
     );
 
+    const field = CODECOV_TOTALS_FIELD_MAP[this.metricId];
     const results = new Map<string, number>();
-    for (const id of CODECOV_METRICS) {
-      const field = CODECOV_TOTALS_FIELD_MAP[id];
-      results.set(CODECOV_METRIC_CONFIG[id].id, repoInfo.totals[field]);
-    }
+    results.set(this.getProviderId(), repoInfo.totals[field]);
     return results;
   }
 
@@ -128,10 +88,6 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
     metricId: CodecovMetricId,
   ): CodecovMetricProvider {
     const client = new CodecovClient(config, logger);
-    return new CodecovMetricProvider(
-      client,
-      metricId,
-      CODECOV_NUMBER_THRESHOLDS[metricId],
-    );
+    return new CodecovMetricProvider(client, metricId);
   }
 }
