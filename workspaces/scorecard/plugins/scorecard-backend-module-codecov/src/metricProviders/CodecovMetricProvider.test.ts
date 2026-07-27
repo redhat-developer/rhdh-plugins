@@ -110,24 +110,6 @@ describe('CodecovMetricProvider', () => {
       }
     });
 
-    it('returns number as metric type', () => {
-      const provider = CodecovMetricProvider.fromConfig(
-        config,
-        logger,
-        'coverage',
-      );
-      expect(provider.getMetricType()).toBe('number');
-    });
-
-    it('returns metric with history enabled', () => {
-      const provider = CodecovMetricProvider.fromConfig(
-        config,
-        logger,
-        'coverage',
-      );
-      expect(provider.getMetric().history).toBe(true);
-    });
-
     it('returns catalog filter for codecov.io/repo annotation', () => {
       const provider = CodecovMetricProvider.fromConfig(
         config,
@@ -139,41 +121,56 @@ describe('CodecovMetricProvider', () => {
     });
   });
 
-  describe('batch methods', () => {
-    it('returns all metric IDs', () => {
-      const provider = CodecovMetricProvider.fromConfig(
-        config,
-        logger,
-        'coverage',
-      );
-      const ids = provider.getMetricIds();
-      expect(ids).toHaveLength(7);
-      expect(ids).toContain('codecov.coverage');
-      expect(ids).toContain('codecov.coverage_trend');
-      expect(ids).toContain('codecov.tracked_files');
-    });
-
-    it('returns all metrics', () => {
+  describe('getMetrics', () => {
+    it('returns a single metric with thresholds and history', () => {
       const provider = CodecovMetricProvider.fromConfig(
         config,
         logger,
         'coverage',
       );
       const metrics = provider.getMetrics();
-      expect(metrics).toHaveLength(7);
-      expect(metrics.every(m => m.type === 'number')).toBe(true);
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].id).toBe('codecov.coverage');
+      expect(metrics[0].type).toBe('number');
+      expect(metrics[0].thresholds).toBeDefined();
+      expect(metrics[0].thresholds.rules.length).toBeGreaterThan(0);
+      expect(metrics[0].history).toBe(true);
+    });
+
+    it('returns correct metric for each metric ID', () => {
+      for (const metricId of CODECOV_METRICS) {
+        const provider = CodecovMetricProvider.fromConfig(
+          config,
+          logger,
+          metricId,
+        );
+        const metrics = provider.getMetrics();
+        expect(metrics).toHaveLength(1);
+        expect(metrics[0].id).toBe(CODECOV_METRIC_CONFIG[metricId].id);
+      }
+    });
+
+    it('uses lowerCamelCase metric IDs', () => {
+      const provider = CodecovMetricProvider.fromConfig(
+        config,
+        logger,
+        'coverage_trend',
+      );
+      const metrics = provider.getMetrics();
+      expect(metrics[0].id).toBe('codecov.coverageTrend');
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('returns coverage value', async () => {
       const provider = CodecovMetricProvider.fromConfig(
         config,
         logger,
         'coverage',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(53.59);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.coverage')).toBe(53.59);
     });
 
     it('returns tracked files count', async () => {
@@ -182,8 +179,9 @@ describe('CodecovMetricProvider', () => {
         logger,
         'tracked_files',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(2252);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.trackedFiles')).toBe(2252);
     });
 
     it('returns tracked lines count', async () => {
@@ -192,8 +190,9 @@ describe('CodecovMetricProvider', () => {
         logger,
         'tracked_lines',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(85789);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.trackedLines')).toBe(85789);
     });
 
     it('returns covered lines count', async () => {
@@ -202,8 +201,9 @@ describe('CodecovMetricProvider', () => {
         logger,
         'covered_lines',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(45982);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.coveredLines')).toBe(45982);
     });
 
     it('returns partial lines count', async () => {
@@ -212,8 +212,9 @@ describe('CodecovMetricProvider', () => {
         logger,
         'partial_lines',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(1561);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.partialLines')).toBe(1561);
     });
 
     it('returns missed lines count', async () => {
@@ -222,8 +223,9 @@ describe('CodecovMetricProvider', () => {
         logger,
         'missed_lines',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(38246);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.missedLines')).toBe(38246);
     });
 
     it('returns coverage trend value', async () => {
@@ -232,30 +234,18 @@ describe('CodecovMetricProvider', () => {
         logger,
         'coverage_trend',
       );
-      const result = await provider.calculateMetric(entity);
-      expect(result).toBe(0);
+      const results = await provider.calculateMetrics(entity);
+      expect(results.size).toBe(1);
+      expect(results.get('codecov.coverageTrend')).toBe(0);
     });
-  });
 
-  describe('calculateMetrics (batch)', () => {
-    it('returns all 7 metrics from a single API call', async () => {
+    it('makes only one fetch call per calculateMetrics', async () => {
       const provider = CodecovMetricProvider.fromConfig(
         config,
         logger,
         'coverage',
       );
-      const results = await provider.calculateMetrics(entity);
-
-      expect(results.size).toBe(7);
-      expect(results.get('codecov.coverage')).toBe(53.59);
-      expect(results.get('codecov.coverage_trend')).toBe(0);
-      expect(results.get('codecov.tracked_files')).toBe(2252);
-      expect(results.get('codecov.tracked_lines')).toBe(85789);
-      expect(results.get('codecov.covered_lines')).toBe(45982);
-      expect(results.get('codecov.partial_lines')).toBe(1561);
-      expect(results.get('codecov.missed_lines')).toBe(38246);
-
-      // Should only have made one fetch call
+      await provider.calculateMetrics(entity);
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });

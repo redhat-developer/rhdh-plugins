@@ -27,17 +27,17 @@ describe('CodecovMetricProviderFactory', () => {
     expect(providers).toHaveLength(7);
   });
 
-  it('creates providers with correct IDs', () => {
+  it('creates providers with correct lowerCamelCase IDs', () => {
     const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
     const ids = providers.map(p => p.getProviderId());
     expect(ids).toEqual([
       'codecov.coverage',
-      'codecov.coverage_trend',
-      'codecov.tracked_files',
-      'codecov.tracked_lines',
-      'codecov.covered_lines',
-      'codecov.partial_lines',
-      'codecov.missed_lines',
+      'codecov.coverageTrend',
+      'codecov.trackedFiles',
+      'codecov.trackedLines',
+      'codecov.coveredLines',
+      'codecov.partialLines',
+      'codecov.missedLines',
     ]);
   });
 
@@ -48,10 +48,13 @@ describe('CodecovMetricProviderFactory', () => {
     }
   });
 
-  it('all providers have number metric type', () => {
+  it('each provider returns one metric from getMetrics()', () => {
     const providers = CodecovMetricProviderFactory.fromConfig(config, logger);
     for (const provider of providers) {
-      expect(provider.getMetricType()).toBe('number');
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].type).toBe('number');
+      expect(metrics[0].thresholds).toBeDefined();
     }
   });
 });

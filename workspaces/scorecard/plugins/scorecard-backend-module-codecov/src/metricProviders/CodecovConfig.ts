@@ -111,32 +111,32 @@ export const CODECOV_METRIC_CONFIG: Record<
     description: 'Current code coverage percentage for the default branch.',
   },
   coverage_trend: {
-    id: 'codecov.coverage_trend',
+    id: 'codecov.coverageTrend',
     title: 'Codecov Coverage Trend (7d)',
     description: 'Code coverage trend for the last 7 days.',
   },
   tracked_files: {
-    id: 'codecov.tracked_files',
+    id: 'codecov.trackedFiles',
     title: 'Codecov Tracked Files',
     description: 'Number of files tracked by Codecov.',
   },
   tracked_lines: {
-    id: 'codecov.tracked_lines',
+    id: 'codecov.trackedLines',
     title: 'Codecov Tracked Lines',
     description: 'Total lines of code tracked by Codecov.',
   },
   covered_lines: {
-    id: 'codecov.covered_lines',
+    id: 'codecov.coveredLines',
     title: 'Codecov Covered Lines',
     description: 'Number of lines covered by tests.',
   },
   partial_lines: {
-    id: 'codecov.partial_lines',
+    id: 'codecov.partialLines',
     title: 'Codecov Partial Lines',
     description: 'Number of partially covered lines.',
   },
   missed_lines: {
-    id: 'codecov.missed_lines',
+    id: 'codecov.missedLines',
     title: 'Codecov Missed Lines',
     description: 'Number of lines not covered by tests.',
   },

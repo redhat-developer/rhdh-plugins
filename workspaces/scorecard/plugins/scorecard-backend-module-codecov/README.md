@@ -1,18 +1,18 @@
 # Scorecard Backend Module: Codecov
 
-Adds [Codecov](https://about.codecov.io/) code coverage metrics to the scorecard plugin. All 7 metrics are fetched from a single Codecov API call per entity.
+Adds [Codecov](https://about.codecov.io/) code coverage metrics to the scorecard plugin. Registers one metric provider per metric, each backed by a single Codecov API call per entity.
 
 ## Metrics
 
-| Metric ID                | Type   | Description                             |
-| ------------------------ | ------ | --------------------------------------- |
-| `codecov.coverage`       | number | Current code coverage percentage        |
-| `codecov.coverage_trend` | number | Code coverage trend for the last 7 days |
-| `codecov.tracked_files`  | number | Number of files tracked by Codecov      |
-| `codecov.tracked_lines`  | number | Total lines of code tracked by Codecov  |
-| `codecov.covered_lines`  | number | Number of lines covered by tests        |
-| `codecov.partial_lines`  | number | Number of partially covered lines       |
-| `codecov.missed_lines`   | number | Number of lines not covered by tests    |
+| Metric ID               | Type   | Description                             |
+| ----------------------- | ------ | --------------------------------------- |
+| `codecov.coverage`      | number | Current code coverage percentage        |
+| `codecov.coverageTrend` | number | Code coverage trend for the last 7 days |
+| `codecov.trackedFiles`  | number | Number of files tracked by Codecov      |
+| `codecov.trackedLines`  | number | Total lines of code tracked by Codecov  |
+| `codecov.coveredLines`  | number | Number of lines covered by tests        |
+| `codecov.partialLines`  | number | Number of partially covered lines       |
+| `codecov.missedLines`   | number | Number of lines not covered by tests    |
 
 ## Installation
 
@@ -25,7 +25,9 @@ Then register the module in your backend:
 ```ts
 // packages/backend/src/index.ts
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-codecov'
+  ),
 );
 ```
 
