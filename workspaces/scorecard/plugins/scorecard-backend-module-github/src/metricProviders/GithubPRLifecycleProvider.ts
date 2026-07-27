@@ -104,7 +104,7 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return METRIC_IDS.TIME_TO_REVIEW;
+    return 'PRLifecycleProvider';
   }
 
   getMetrics(): Metric<'number'>[] {

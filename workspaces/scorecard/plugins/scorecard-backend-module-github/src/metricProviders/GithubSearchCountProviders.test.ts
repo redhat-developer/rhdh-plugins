@@ -60,7 +60,7 @@ describe('Search count providers', () => {
       const provider = GithubOpenedIssuesProvider.fromConfig(
         new ConfigReader({}),
       );
-      expect(provider.getProviderId()).toBe('github.openedIssues7d');
+      expect(provider.getProviderId()).toBe('OpenedIssuesProvider');
       expect(provider.getProviderDatasourceId()).toBe('github');
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
@@ -87,7 +87,7 @@ describe('Search count providers', () => {
   describe('GithubOpenedPRsProvider', () => {
     it('should return provider metadata', () => {
       const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}));
-      expect(provider.getProviderId()).toBe('github.openedPRs7d');
+      expect(provider.getProviderId()).toBe('OpenedPRsProvider');
     });
 
     it('should calculate metric using search count', async () => {
@@ -110,7 +110,7 @@ describe('Search count providers', () => {
       const provider = GithubClosedIssuesProvider.fromConfig(
         new ConfigReader({}),
       );
-      expect(provider.getProviderId()).toBe('github.closedIssues7d');
+      expect(provider.getProviderId()).toBe('ClosedIssuesProvider');
     });
 
     it('should calculate metric using search count', async () => {
@@ -133,7 +133,7 @@ describe('Search count providers', () => {
   describe('GithubClosedPRsProvider', () => {
     it('should return provider metadata', () => {
       const provider = GithubClosedPRsProvider.fromConfig(new ConfigReader({}));
-      expect(provider.getProviderId()).toBe('github.closedPRs7d');
+      expect(provider.getProviderId()).toBe('ClosedPRsProvider');
     });
 
     it('should calculate metric using search count', async () => {

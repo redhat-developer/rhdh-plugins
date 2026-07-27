@@ -176,8 +176,8 @@ export class GithubClient {
     const searchQuery = `repo:${repository.owner}/${repository.repo} is:pr updated:>${since}`;
 
     const query = `
-      query getPRsWithReviews($q: String!) {
-        search(query: $q, type: ISSUE, first: 100) {
+      query getPRsWithReviews($q: String!, $cursor: String) {
+        search(query: $q, type: ISSUE, first: 100, after: $cursor) {
           nodes {
             ... on PullRequest {
               createdAt
@@ -190,19 +190,41 @@ export class GithubClient {
               }
             }
           }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
         }
       }
     `;
 
-    const response = await octokit<{
-      search: {
-        nodes: PullRequestWithReviews[];
-      };
-    }>(query, {
-      q: searchQuery,
-    });
+    const allPRs: PullRequestWithReviews[] = [];
+    let cursor: string | null = null;
+    const maxPages = 10;
 
-    return response.search.nodes;
+    for (let page = 0; page < maxPages; page++) {
+      const response = await octokit<{
+        search: {
+          nodes: PullRequestWithReviews[];
+          pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string | null;
+          };
+        };
+      }>(query, {
+        q: searchQuery,
+        cursor,
+      });
+
+      allPRs.push(...response.search.nodes);
+
+      if (!response.search.pageInfo.hasNextPage) {
+        break;
+      }
+      cursor = response.search.pageInfo.endCursor;
+    }
+
+    return allPRs;
   }
 
   async getWorkflowRuns(
@@ -216,8 +238,9 @@ export class GithubClient {
     let page = 1;
     const perPage = 100;
     let hasMore = true;
+    const maxPages = 10;
 
-    while (hasMore) {
+    while (hasMore && page <= maxPages) {
       const restUrl = `${apiBaseUrl}/repos/${encodeURIComponent(
         repository.owner,
       )}/${encodeURIComponent(
@@ -256,9 +279,23 @@ export class GithubClient {
 
     const searchQuery = `repo:${repository.owner}/${repository.repo} is:pr created:>${since}`;
 
+    type PRWithCommits = {
+      createdAt: string;
+      commits: {
+        nodes: Array<{
+          commit: {
+            committedDate: string;
+            statusCheckRollup: {
+              state: string;
+            } | null;
+          };
+        }>;
+      };
+    };
+
     const query = `
-      query getPRsWithStatuses($q: String!) {
-        search(query: $q, type: ISSUE, first: 100) {
+      query getPRsWithStatuses($q: String!, $cursor: String) {
+        search(query: $q, type: ISSUE, first: 100, after: $cursor) {
           nodes {
             ... on PullRequest {
               createdAt
@@ -274,31 +311,41 @@ export class GithubClient {
               }
             }
           }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
         }
       }
     `;
 
-    const response = await octokit<{
-      search: {
-        nodes: Array<{
-          createdAt: string;
-          commits: {
-            nodes: Array<{
-              commit: {
-                committedDate: string;
-                statusCheckRollup: {
-                  state: string;
-                } | null;
-              };
-            }>;
-          };
-        }>;
-      };
-    }>(query, {
-      q: searchQuery,
-    });
+    const allPRs: PRWithCommits[] = [];
+    let cursor: string | null = null;
+    const maxPages = 10;
 
-    return response.search.nodes.map(pr => {
+    for (let page = 0; page < maxPages; page++) {
+      const response = await octokit<{
+        search: {
+          nodes: PRWithCommits[];
+          pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string | null;
+          };
+        };
+      }>(query, {
+        q: searchQuery,
+        cursor,
+      });
+
+      allPRs.push(...response.search.nodes);
+
+      if (!response.search.pageInfo.hasNextPage) {
+        break;
+      }
+      cursor = response.search.pageInfo.endCursor;
+    }
+
+    return allPRs.map(pr => {
       // Find the last commit from the first push (committed on or before PR creation)
       const prCreatedAt = new Date(pr.createdAt).getTime();
       const firstPushCommits = pr.commits.nodes.filter(

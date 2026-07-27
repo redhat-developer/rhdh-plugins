@@ -29,7 +29,7 @@ import { PullRequestCommitStatus } from '../github/types';
 const RATIO_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '>=80' },
-    { key: 'warning', expression: '50-79' },
+    { key: 'warning', expression: '>=50' },
     { key: 'error', expression: '<50' },
   ],
 };
@@ -63,7 +63,7 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return METRIC_IDS.PASS_RATE_7D;
+    return 'PRPassRateProvider';
   }
 
   getMetrics(): Metric<'number'>[] {

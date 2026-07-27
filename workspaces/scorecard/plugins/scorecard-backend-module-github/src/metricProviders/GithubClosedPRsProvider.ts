@@ -25,6 +25,8 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 
+const METRIC_ID = 'github.closedPRs7d';
+
 export class GithubClosedPRsProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
 
@@ -37,13 +39,13 @@ export class GithubClosedPRsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.closedPRs7d';
+    return 'ClosedPRsProvider';
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: this.getProviderId(),
+        id: METRIC_ID,
         title: 'GitHub closed PRs (7d)',
         description:
           'Number of pull requests closed in the last 7 days for a given GitHub repository.',
@@ -79,7 +81,7 @@ export class GithubClosedPRsProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(this.getProviderId(), result);
+    results.set(METRIC_ID, result);
     return results;
   }
 }

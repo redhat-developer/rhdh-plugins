@@ -29,7 +29,7 @@ import { WorkflowRun } from '../github/types';
 const RATIO_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '>=80' },
-    { key: 'warning', expression: '50-79' },
+    { key: 'warning', expression: '>=50' },
     { key: 'error', expression: '<50' },
   ],
 };
@@ -71,7 +71,7 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return METRIC_IDS.SUCCESS_RATIO_7D;
+    return 'ActionsRatioProvider';
   }
 
   getMetrics(): Metric<'number'>[] {

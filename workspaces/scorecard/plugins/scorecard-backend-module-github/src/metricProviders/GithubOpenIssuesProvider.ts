@@ -25,6 +25,8 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 
+const METRIC_ID = 'github.openIssues';
+
 export class GithubOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
 
@@ -37,13 +39,13 @@ export class GithubOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.openIssues';
+    return 'OpenIssuesProvider';
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: this.getProviderId(),
+        id: METRIC_ID,
         title: 'GitHub open issues',
         description:
           'Current count of open issues (not PRs) for a given GitHub repository.',
@@ -74,7 +76,7 @@ export class GithubOpenIssuesProvider implements MetricProvider<'number'> {
     );
 
     const results = new Map<string, number>();
-    results.set(this.getProviderId(), result);
+    results.set(METRIC_ID, result);
     return results;
   }
 }

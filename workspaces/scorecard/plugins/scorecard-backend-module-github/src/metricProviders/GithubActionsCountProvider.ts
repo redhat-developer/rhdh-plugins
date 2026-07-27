@@ -58,7 +58,7 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return METRIC_IDS.STARTED;
+    return 'ActionsCountProvider';
   }
 
   getMetrics(): Metric<'number'>[] {
