@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.12.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- d2a0ba0: Updated dependency `jsonata` to `^2.2.0`.
+- Updated dependencies [5e0934d]
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.0
+
 ## 1.11.3
 
 ### Patch Changes

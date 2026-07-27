@@ -19,7 +19,7 @@
     "lint": "backstage-cli package lint"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac": "1.55.1",
+    "@backstage-community/plugin-rbac": "1.55.2",
     "@backstage-community/plugin-tech-radar": "^0.7.4",
     "@backstage/app-defaults": "^1.7.6",
     "@backstage/catalog-model": "^1.7.7",

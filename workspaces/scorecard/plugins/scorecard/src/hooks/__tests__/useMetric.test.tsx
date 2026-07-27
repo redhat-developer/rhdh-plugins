@@ -46,6 +46,7 @@ describe('useMetric', () => {
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
+    thresholds: { rules: [] },
   };
 
   beforeEach(() => {
@@ -118,11 +119,11 @@ describe('useMetric', () => {
       data: undefined,
     } as any);
 
-    renderHook(() => useMetric({ metricId: 'jira.blocking_tickets' }));
+    renderHook(() => useMetric({ metricId: 'jira.blockingTickets' }));
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['metric', 'jira.blocking_tickets'],
+        queryKey: ['metric', 'jira.blockingTickets'],
         enabled: true,
       }),
     );

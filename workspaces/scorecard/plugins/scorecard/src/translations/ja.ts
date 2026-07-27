@@ -25,6 +25,16 @@ const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': '読み込み中',
+    'dataSourcesDialog.title': '{{title}} ソース',
+    'dataSourcesDialog.close': '閉じる',
+    'dataSourcesDialog.unknownPlugin': '不明',
+    'dataSourcesDialog.statusTooltip':
+      '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'チェック',
+    'dataSourcesDialog.columns.value': '値',
+    'dataSourcesDialog.columns.status': 'ステータス',
+    'dataSourcesDialog.columns.lastSynced': '最終同期',
     'emptyState.altText': 'スコアカードなし',
     'emptyState.button': 'ドキュメントの表示',
     'emptyState.description':
@@ -143,6 +153,8 @@ const scorecardTranslationJa = createTranslationMessages({
       'SonarQube のセキュリティーレビュー評価。',
     'metric.sonarqube.securityReviewRating.title':
       'SonarQube のセキュリティーレビュー評価',
+    'metricGroupCard.menuAriaLabel': 'その他のオプション',
+    'metricGroupCard.viewDataSources': 'ソースを表示',
     'notFound.altText': 'ページが見つかりません',
     'notFound.contactSupport': 'サポートにお問い合わせください',
     'notFound.description':

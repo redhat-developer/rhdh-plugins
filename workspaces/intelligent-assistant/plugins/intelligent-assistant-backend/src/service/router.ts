@@ -31,6 +31,7 @@ import {
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
   lightspeedChatReadPermission,
+  lightspeedChatUpdatePermission,
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
@@ -809,7 +810,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(lightspeedChatUpdatePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);

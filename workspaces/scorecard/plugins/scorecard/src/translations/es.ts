@@ -25,6 +25,16 @@ const scorecardTranslationEs = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Cargando',
+    'dataSourcesDialog.title': '{{title}} fuentes',
+    'dataSourcesDialog.close': 'Cerrar',
+    'dataSourcesDialog.unknownPlugin': 'Desconocido',
+    'dataSourcesDialog.statusTooltip':
+      'Valor {{value}} coincide con umbral {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'VERIFICACIÓN',
+    'dataSourcesDialog.columns.value': 'VALOR',
+    'dataSourcesDialog.columns.status': 'ESTADO',
+    'dataSourcesDialog.columns.lastSynced': 'ÚLTIMA SINCRONIZACIÓN',
     'emptyState.altText': 'No hay tarjetas de puntuación',
     'emptyState.button': 'Ver documentación',
     'emptyState.description':
@@ -149,6 +159,8 @@ const scorecardTranslationEs = createTranslationMessages({
       'Calificación de la revisión de seguridad de SonarQube.',
     'metric.sonarqube.securityReviewRating.title':
       'Calificación de la revisión de seguridad de SonarQube',
+    'metricGroupCard.menuAriaLabel': 'Más opciones',
+    'metricGroupCard.viewDataSources': 'Ver fuentes',
     'notFound.altText': 'Pagina no encontrada',
     'notFound.contactSupport': 'Comuníquese con Soporte',
     'notFound.description':

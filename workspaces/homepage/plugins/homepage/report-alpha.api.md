@@ -20,6 +20,7 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'header.welcome': string;
     readonly 'header.welcomePersonalized': string;
     readonly 'search.placeholder': string;
+    readonly 'search.clearButton': string;
     readonly 'homePage.empty': string;
     readonly 'quickAccess.title': string;
     readonly 'quickAccess.error': string;
@@ -28,7 +29,9 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'featuredDocs.learnMore': string;
     readonly 'starredEntities.title': string;
     readonly 'recentlyVisited.title': string;
+    readonly 'recentlyVisited.description': string;
     readonly 'topVisited.title': string;
+    readonly 'topVisited.description': string;
     readonly 'templates.title': string;
     readonly 'templates.error': string;
     readonly 'templates.empty': string;
@@ -57,9 +60,9 @@ export const homepageTranslationRef: TranslationRef<
     readonly 'entities.close': string;
     readonly 'entities.empty': string;
     readonly 'entities.fetchError': string;
+    readonly 'entities.description': string;
     readonly 'entities.emptyDescription': string;
     readonly 'entities.register': string;
-    readonly 'entities.description': string;
     readonly 'entities.browseTheCatalog': string;
   }
 >;

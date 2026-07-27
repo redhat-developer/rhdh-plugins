@@ -114,6 +114,7 @@ auth:
 #   enabled: true
 #   rbac:
 #     policies-csv-file: ../../docs/rbac-policy.csv
+#     conditionalPoliciesFile: ../../docs/conditional-policies.yaml
 #     policyFileReload: true
 #     pluginsWithPermission:
 #       - orchestrator
@@ -190,7 +191,7 @@ orchestrator:
     # If you're using a MacBook with M-series chips, uncomment the line below to use ARM images.
     # To pull the image, you'll first need to authenticate with the registry.
     # For more information, visit: https://red.ht/410mMNU.
-    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.35.0
+    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.36.0
     # notsecret
     notificationsBearerToken: bXljdXJscGFzc3dkCg== # NOSONAR
     notificationsUrl: http://host.docker.internal:7007

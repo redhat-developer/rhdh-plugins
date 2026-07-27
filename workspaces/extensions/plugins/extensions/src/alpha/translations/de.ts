@@ -158,8 +158,12 @@ const extensionsTranslationDe = createTranslationMessages({
       'Das Paket kann in der Produktionsumgebung nicht verwaltet werden.',
     'installedPackages.table.tooltips.installationDisabled':
       'Das Paket kann nicht verwaltet werden, da die Plugin-Installation deaktiviert ist. Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      'Die Katalogentität fehlt',
     'installedPackages.table.tooltips.enableActions':
-      'Um Aktionen zu aktivieren, fügen Sie ein Katalogelement für dieses Paket hinzu',
+      'Um Aktionen zu aktivieren, fügen Sie ein Katalogelement für dieses Paket hinzu.',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Dokumentation anzeigen',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Sie haben keine Berechtigung, die Konfiguration herunterzuladen. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.noEditPermissions':

@@ -37,9 +37,13 @@ export default defineConfig({
     : [
         {
           command: startCommand,
-          port: 3000,
           reuseExistingServer: false,
           cwd: __dirname,
+          wait: {
+            // wait for this message and expect 10+ loaded plugins.
+            stdout:
+              /extensions-plugin-provider applied [1-9]\d+ entities to the catalog/,
+          },
         },
       ],
 

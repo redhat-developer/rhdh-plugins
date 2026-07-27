@@ -34,8 +34,10 @@ export abstract class BaseEntityProvider<T extends Entity>
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;
+  static readonly DEFAULT_CATALOG_SOURCE = 'primary';
+  static deriveCatalogSource(filePath: string, extensionsRoot: string): string;
   // (undocumented)
-  getEntities(allEntities: JsonFileData<T>[]): T[];
+  getEntities(allEntities: JsonFileData<T>[], extensionsRoot?: string): T[];
   // (undocumented)
   abstract getKind(): string;
   // (undocumented)
