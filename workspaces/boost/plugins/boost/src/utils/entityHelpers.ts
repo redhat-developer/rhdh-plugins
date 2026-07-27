@@ -165,7 +165,7 @@ function buildGitArchiveUrl(target: string, hostname: string): string {
  */
 export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
   const spec = entity.spec as Record<string, unknown> | undefined;
-  const specType = getSpecField(entity, 'type');
+  const specType = getSpecField(entity, 'type')?.toLowerCase();
 
   // 1. Skills
   if (specType === 'skill') {
@@ -195,7 +195,7 @@ export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
   const location = spec?.location as
     | { type?: string; target?: string }
     | undefined;
-  if (location?.target) {
+  if (location?.type === 'git' && location.target) {
     const target = location.target;
     const hostname = parseHostname(target);
     if (isHost(hostname, 'github.com') || isHost(hostname, 'gitlab.com')) {

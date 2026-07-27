@@ -186,6 +186,41 @@ describe('getAdoptionAction', () => {
     });
   });
 
+  it('matches specType case-insensitively (e.g. Skill)', () => {
+    const action = getAdoptionAction(
+      entity({ name: 'my-skill', specType: 'Skill' }),
+    );
+    expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
+  });
+
+  it('matches mcp-server specType case-insensitively', () => {
+    const action = getAdoptionAction(
+      entity({
+        specType: 'MCP-Server',
+        remotes: [
+          { url: 'https://mcp.example.com/server', type: 'streamable-http' },
+        ],
+      }),
+    );
+    expect(action).toEqual({
+      type: 'copy',
+      value: 'https://mcp.example.com/server',
+    });
+  });
+
+  it('does not resolve git-sourced action when location.type is not git', () => {
+    const action = getAdoptionAction(
+      entity({
+        specType: 'rule',
+        location: {
+          type: 'url',
+          target: 'https://github.com/example/some-rule',
+        },
+      }),
+    );
+    expect(action).toBeUndefined();
+  });
+
   it('returns undefined when no actionable metadata is present', () => {
     const action = getAdoptionAction(entity({ specType: 'ai-tool' }));
     expect(action).toBeUndefined();

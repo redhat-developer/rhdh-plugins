@@ -17,9 +17,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Button, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
-import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
-import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
+import { RiCheckLine, RiDownload2Line, RiFileCopyLine } from '@remixicon/react';
 
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getAdoptionAction } from '../../../utils/entityHelpers';
@@ -64,9 +62,9 @@ export const AdoptionCard = () => {
               aria-label={t('catalog.card.copyAriaLabel')}
               iconStart={
                 copied ? (
-                  <CheckOutlined fontSize="small" />
+                  <RiCheckLine size={16} />
                 ) : (
-                  <ContentCopyOutlined fontSize="small" />
+                  <RiFileCopyLine size={16} />
                 )
               }
             >
@@ -81,7 +79,7 @@ export const AdoptionCard = () => {
             onPress={() =>
               window.open(action.value, '_blank', 'noopener,noreferrer')
             }
-            iconStart={<DownloadOutlined fontSize="small" />}
+            iconStart={<RiDownload2Line size={16} />}
           >
             {t('catalog.card.adoptionDownloadZip')}
           </Button>
