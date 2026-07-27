@@ -88,7 +88,7 @@
     "@backstage/test-utils": "^1.7.19",
     "@backstage/ui": "^0.16.0",
     "@playwright/test": "1.61.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.15.0",
     "@spotify/prettier-config": "^15.0.0",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
