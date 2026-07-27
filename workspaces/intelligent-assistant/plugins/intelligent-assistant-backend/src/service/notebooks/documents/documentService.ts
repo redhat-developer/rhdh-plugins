@@ -18,8 +18,6 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { ConflictError, NotFoundError } from '@backstage/errors';
 
-import { promises as fs } from 'fs';
-
 import {
   DEFAULT_CHUNK_OVERLAP_TOKENS,
   DEFAULT_CHUNKING_STRATEGY_TYPE,
@@ -93,21 +91,20 @@ export class DocumentService {
   }
 
   /**
-   * Upload a docling-converted markdown file to the Files API
-   * @param filePath - Path to the markdown file on disk
+   * Upload markdown content to the Files API
+   * @param content - Markdown content string
    * @param title - File title/name
    * @returns File ID from the Files API
    * @throws Error if upload fails
    */
-  async uploadFile(filePath: string, title: string): Promise<string> {
+  async uploadFile(content: string, title: string): Promise<string> {
     try {
-      const buffer = await fs.readFile(filePath);
       const mdFilename = `${title.replace(/\.[^.]+$/, '')}.md`;
 
       const file = await this.client.files.create({
         file: {
           name: mdFilename,
-          buffer,
+          buffer: Buffer.from(content, 'utf-8'),
           type: 'text/markdown',
         },
         purpose: 'assistants',

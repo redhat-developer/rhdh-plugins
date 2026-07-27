@@ -45,12 +45,9 @@ import {
   getIdentity,
 } from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
-import {
-  cleanupDoclingOutput,
-  convertWithDocling,
-} from './documents/doclingClient';
 import { isValidFileType } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
+import { convertToMarkdown } from './documents/markitdownClient';
 import { SessionService } from './sessions/sessionService';
 import {
   createDocumentListResponse,
@@ -405,16 +402,11 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const mdPath = await convertWithDocling(
+      const markdown = await convertToMarkdown(
         req.file.buffer,
         req.file.originalname,
       );
-      let fileId: string;
-      try {
-        fileId = await documentService.uploadFile(mdPath, title);
-      } finally {
-        await cleanupDoclingOutput(mdPath);
-      }
+      const fileId = await documentService.uploadFile(markdown, title);
 
       res.status(HTTP_STATUS_ACCEPTED).json({
         status: 'processing',
