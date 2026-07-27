@@ -78,6 +78,24 @@ jest.mock('@backstage/core-plugin-api', () => ({
     `/create/${params.kind}/${params.namespace}/${params.name}`,
 }));
 
+jest.mock('../../../hooks/useTimeSavedTotals', () => ({
+  useTimeSavedTotals: () => ({
+    timeSavedTotals: {
+      data: {
+        total_time_saved_minutes: 1800,
+        templates: [
+          {
+            entityref: 'template:default/example-go-template-1',
+            execution_count: 10,
+            time_saved_per_execution: 180,
+            total_time_saved_minutes: 1800,
+          },
+        ],
+      },
+    },
+  }),
+}));
+
 jest.mock('../../../utils/constants', () => ({
   TEMPLATE_TABLE_HEADERS: [
     { id: 'name', titleKey: 'table.headers.name' },
@@ -151,7 +169,7 @@ describe('Templates', () => {
   it('should display correct data in table rows', () => {
     renderComponent();
     verifyTableData([
-      ['Example Go Template 1', '10', '1d 6h'],
+      ['Example Go Template 1', '10', '1 d 6 h'],
       ['Example Go Template 2', '20', '—'],
     ]);
   });
