@@ -82,7 +82,7 @@ Connector config schemas support versioning for backward compatibility.
 
 - **WHEN** admin writes DB override for a leaf key under `boost.connectors.jira` (e.g., `boost.connectors.jira.enabled`)
 - **THEN** the DB entry stores the leaf key and value (each write targets a single `BoostConfigKey`); concurrent writes to different leaves under the same connector do not conflict
-- **AND** the connector-level schema version is stored as an explicit leaf key `boost.connectors.jira.__schemaVersion` (e.g., value `1`), bumped only during schema migrations — not on individual config writes
+- **AND** the connector-level schema version is stored as an explicit leaf key `boost.connectors.jira.__schemaVersion` (e.g., value `1`), bumped only during schema migrations — not on individual config writes. `__schemaVersion` is a metadata key excluded from per-leaf Zod validation; it must be registered in `boostConfigFields` with `configScope: 'db-only'` to survive the `validateStoredValues()` startup sweep
 - **AND** `GET /api/boost/admin/config?key=boost.connectors.jira` returns all leaf overrides matching that prefix, merged into a single object for the response
 - **AND** Zod schema validation is applied at the connector level (aggregating all leaf values) on GET-prefix queries to ensure cross-field consistency
 

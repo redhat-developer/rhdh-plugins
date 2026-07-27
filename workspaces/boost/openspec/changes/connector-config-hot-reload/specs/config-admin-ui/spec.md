@@ -70,7 +70,7 @@ Admin UI provides form fields for endpoint URL and sync schedule configuration.
 - **WHEN** admin switches from interval to cron schedule
 - **THEN** UI displays cron expression input field with validation
 - **AND** UI provides cron builder helper (dropdowns for hour, day of week, etc.)
-- **AND** field shows example: "0 _/2 _ \* \* = every 2 hours"
+- **AND** field shows example: "`0 */2 * * *` = every 2 hours"
 
 #### Scenario: Switch from interval to cron removes old override
 

@@ -21,7 +21,7 @@
 - [ ] 2.4 Emit `ingestion.sync.success` event in `onSyncSuccess` hook with asset counts
 - [ ] 2.5 Add `onSyncFailure` lifecycle hook with error parameter
 - [ ] 2.6 Emit `ingestion.sync.failure` event in `onSyncFailure` hook with error details
-- [ ] 2.7 Integrate audit event emission into existing connectors (GitHub, Jira, Confluence)
+- [ ] 2.7 Integrate audit event emission into existing connectors (GitHub, GitLab, Jira)
 - [ ] 2.8 Add asset count tracking logic (added/updated/removed entities)
 - [ ] 2.9 Add error serialization for sync failure events
 - [ ] 2.10 Add integration tests for sync audit events end-to-end

@@ -83,7 +83,7 @@ Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these 
 | `batchSize`            | `db-overridable` | Admin can tune performance at runtime              |
 | `timeout.connectionMs` | `db-overridable` | Admin can adjust for network conditions at runtime |
 
-**Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp`, `lastSyncOutcome`, and `runStatus` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
+**Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp` and `lastSyncOutcome` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Run status (running/idle) is derived from these fields, not stored as a separate column. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
 **Why all fields are db-overridable:** The `boost.connectors` schema only contains runtime-tunable fields by design. Deployment-time fields (mount paths, Secret references, namespace) belong to `ai-catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
 
