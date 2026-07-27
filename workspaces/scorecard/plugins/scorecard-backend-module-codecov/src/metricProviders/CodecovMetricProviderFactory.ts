@@ -19,14 +19,11 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 import { CodecovMetricProvider } from './CodecovMetricProvider';
-import { CODECOV_METRICS } from './CodecovConfig';
 
 export class CodecovMetricProviderFactory {
   private constructor() {}
 
   static fromConfig(config: Config, logger: LoggerService): MetricProvider[] {
-    return CODECOV_METRICS.map(metricId =>
-      CodecovMetricProvider.fromConfig(config, logger, metricId),
-    );
+    return [CodecovMetricProvider.fromConfig(config, logger)];
   }
 }
