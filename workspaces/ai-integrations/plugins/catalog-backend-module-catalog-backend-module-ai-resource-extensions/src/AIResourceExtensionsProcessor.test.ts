@@ -309,7 +309,7 @@ describe('AIResourceExtensionsProcessor', () => {
       ).rejects.toThrow('not a valid OCI reference');
     });
 
-    it('should reject url:oci:// target with leading whitespace', async () => {
+    it('should validate url:oci:// target with whitespace after colon', async () => {
       const entity = makeAIResource(
         {},
         {
@@ -317,8 +317,35 @@ describe('AIResourceExtensionsProcessor', () => {
         },
       );
 
-      // target after 'url:' is ' oci://...' which doesn't start with 'oci://'
-      // so it is treated as non-OCI — no error
+      // parseLocationRef trims the target, so ' oci://...' becomes 'oci://...'
+      // and OCI validation applies — the URI is valid after trimming
+      const result = await processor.preProcessEntity(entity, location, emit);
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept url:oci:// with trailing whitespace (trimmed by parseLocationRef)', async () => {
+      const entity = makeAIResource(
+        {},
+        {
+          'backstage.io/source-location': 'url:oci://quay.io/org/model:latest ',
+        },
+      );
+
+      // parseLocationRef trims the target, so trailing space is normalized
+      const result = await processor.preProcessEntity(entity, location, emit);
+      expect(result).toEqual(entity);
+    });
+
+    it('should validate url:oci:// with leading whitespace on annotation', async () => {
+      const entity = makeAIResource(
+        {},
+        {
+          'backstage.io/source-location': ' url:oci://quay.io/org/model:latest',
+        },
+      );
+
+      // parseLocationRef trims the type, so ' url' becomes 'url'
+      // and OCI validation applies — the URI is valid after trimming
       const result = await processor.preProcessEntity(entity, location, emit);
       expect(result).toEqual(entity);
     });
