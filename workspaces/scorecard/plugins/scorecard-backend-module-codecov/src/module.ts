@@ -18,7 +18,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { CodecovMetricProviderFactory } from './metricProviders/CodecovMetricProviderFactory';
+import { CodecovMetricProvider } from './metricProviders/CodecovMetricProvider';
 
 export const scorecardModuleCodecov = createBackendModule({
   pluginId: 'scorecard',
@@ -32,13 +32,9 @@ export const scorecardModuleCodecov = createBackendModule({
       },
 
       async init({ metrics, config, logger }) {
-        const providers = CodecovMetricProviderFactory.fromConfig(
-          config,
-          logger,
+        metrics.addMetricProvider(
+          CodecovMetricProvider.fromConfig(config, logger),
         );
-        for (const provider of providers) {
-          metrics.addMetricProvider(provider);
-        }
       },
     });
   },
