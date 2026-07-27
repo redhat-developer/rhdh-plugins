@@ -22,6 +22,7 @@
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { ThemeBlueprint } from '@backstage/plugin-app-react';
 
+import './assets/fonts/font.min.css';
 import { getAllThemes } from './themes';
 
 /**
@@ -48,5 +49,3 @@ export const rhdhThemeModule = createFrontendModule({
     }),
   ),
 });
-
-export * from './legacyExports';
