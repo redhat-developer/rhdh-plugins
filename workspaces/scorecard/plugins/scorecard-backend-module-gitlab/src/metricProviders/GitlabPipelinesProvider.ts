@@ -28,11 +28,11 @@ import { getProjectSlugFromEntity } from '../gitlab/utils';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 
 const METRIC_IDS = {
-  STARTED_7D: 'gitlab.started_pipelines_7d',
-  SUCCESSFUL_7D: 'gitlab.successful_pipelines_7d',
-  FAILED_7D: 'gitlab.failed_pipelines_7d',
-  SUCCESS_RATIO_7D: 'gitlab.pipeline_success_ratio_7d',
-  SUCCESS_RATIO_24H: 'gitlab.pipeline_success_ratio_24h',
+  STARTED_7D: 'gitlab.startedPipelines7d',
+  SUCCESSFUL_7D: 'gitlab.successfulPipelines7d',
+  FAILED_7D: 'gitlab.failedPipelines7d',
+  SUCCESS_RATIO_7D: 'gitlab.pipelineSuccessRatio7d',
+  SUCCESS_RATIO_24H: 'gitlab.pipelineSuccessRatio24h',
 } as const;
 
 const PERCENTAGE_THRESHOLDS: ThresholdConfig = {
@@ -70,36 +70,6 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
     return METRIC_IDS.STARTED_7D;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.STARTED_7D,
-      title: 'GitLab pipelines started (7d)',
-      description:
-        'Number of pipelines started in the last 7 days for a given GitLab project.',
-      type: 'number',
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
-  }
-
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
-        CATALOG_FILTER_EXISTS,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
       {
@@ -108,6 +78,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Number of pipelines started in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -116,6 +87,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Number of successfully finished pipelines in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -124,6 +96,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Number of failed pipelines in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -132,6 +105,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Ratio of successful vs successful+failed pipelines in the last 7 days (percentage). Ignores pending, running, and canceled pipelines.',
         type: 'number',
+        thresholds: PERCENTAGE_THRESHOLDS,
         history: true,
       },
       {
@@ -140,15 +114,17 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Ratio of successful vs successful+failed pipelines in the last 24 hours (percentage). Ignores pending, running, and canceled pipelines.',
         type: 'number',
+        thresholds: PERCENTAGE_THRESHOLDS,
         history: true,
       },
     ];
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    const projectSlug = getProjectSlugFromEntity(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    return this.gitlabClient.getPipelinesCount(projectSlug, sevenDaysAgo);
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
+        CATALOG_FILTER_EXISTS,
+    };
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
