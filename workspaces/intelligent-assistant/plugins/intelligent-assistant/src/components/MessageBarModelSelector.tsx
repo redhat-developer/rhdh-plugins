@@ -104,8 +104,9 @@ export const MessageBarModelSelector = ({
   const dropdown = (
     <Dropdown
       className={classes.dropdown}
-      isOpen={isOpen}
+      isOpen={isOpen && !disabled}
       onSelect={(_e, value) => {
+        if (disabled) return;
         onSelect(value as string);
         setIsOpen(false);
       }}
