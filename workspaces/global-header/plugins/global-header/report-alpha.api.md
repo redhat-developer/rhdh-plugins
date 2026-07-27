@@ -53,26 +53,6 @@ export const globalHeaderTranslations: TranslationResource<'plugin.global-header
 // @alpha
 export const globalHeaderTranslationsModule: FrontendModule;
 
-// @public (undocumented)
-export interface HeaderIconButtonProps {
-  // (undocumented)
-  ariaLabel?: string;
-  // (undocumented)
-  color?: 'inherit' | 'primary' | 'secondary' | 'default';
-  // (undocumented)
-  icon: string;
-  // (undocumented)
-  size?: 'small' | 'medium' | 'large';
-  // (undocumented)
-  title: string;
-  // (undocumented)
-  titleKey?: string;
-  // (undocumented)
-  to: string;
-  // (undocumented)
-  tooltip?: string;
-}
-
 // @alpha (undocumented)
 export const helpDropdownExtension: OverridableExtensionDefinition<{
   kind: 'gh-component';
