@@ -19,7 +19,7 @@
     "lint": "backstage-cli package lint"
   },
   "dependencies": {
-    "@backstage-community/plugin-github-issues": "^0.13.0",
+    "@backstage-community/plugin-github-issues": "^1.2.1",
     "@backstage-community/plugin-rbac": "^1.54.0",
     "@backstage/app-defaults": "^1.7.9",
     "@backstage/catalog-model": "^1.9.0",
@@ -52,7 +52,7 @@
     "@openshift/dynamic-plugin-sdk": "^5.0.1",
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "^1.10.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.15.0",
     "@roadiehq/backstage-plugin-github-pull-requests": "^3.5.1",
     "@roadiehq/backstage-plugin-jira": "^2.13.1",
     "@scalprum/react-core": "0.11.1",
