@@ -20,7 +20,7 @@ import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/a
 import {
   homePageModule,
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 import scorecardPlugin, {
   scorecardHomeModule,
   scorecardTranslationsModule,
