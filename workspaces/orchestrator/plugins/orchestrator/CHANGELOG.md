@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.10.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 5e0934d: Extract colocated helper modules for unit-test coverage of pure UI logic.
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin Router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+- Updated dependencies [5e0934d]
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.0
+
 ## 5.9.4
 
 ### Patch Changes
