@@ -88,26 +88,26 @@ export const CODECOV_NUMBER_THRESHOLDS: Record<
   coverage_trend: {
     rules: [
       { key: 'success', expression: '>0' },
-      { key: 'warning', expression: '==0' },
+      { key: 'warning', expression: '<=0' },
       { key: 'error', expression: '<0' },
     ],
   },
   tracked_files: {
     rules: [
       { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
+      { key: 'error', expression: '<=0' },
     ],
   },
   tracked_lines: {
     rules: [
       { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
+      { key: 'error', expression: '<=0' },
     ],
   },
   covered_lines: {
     rules: [
       { key: 'success', expression: '>0' },
-      { key: 'error', expression: '==0' },
+      { key: 'error', expression: '<=0' },
     ],
   },
   partial_lines: {
