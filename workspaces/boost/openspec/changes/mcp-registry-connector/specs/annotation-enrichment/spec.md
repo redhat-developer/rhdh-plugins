@@ -122,11 +122,11 @@ metadata:
 
 **WHEN** the wrapper enriches an entity emitted by the MCP Registry connector:
 
-**THEN** the wrapper always populates `rhdh.io/ai-asset-category: "mcp-server"`.
+**THEN** the wrapper always populates `rhdh.io/ai-asset-category: "mcp-server"` unless the entity already carries this annotation.
 
 **AND** the wrapper does NOT infer or vary the category based on MCP server metadata.
 
-**AND** all entities from the MCP Registry connector share the same category value.
+**AND** all entities enriched by the wrapper share the same category value.
 
 ---
 
