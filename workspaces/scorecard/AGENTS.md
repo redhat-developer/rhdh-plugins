@@ -120,3 +120,91 @@ The OpenSSF check name list is sourced from the
 [OpenSSF Scorecard project](https://github.com/ossf/scorecard). If new
 checks are added upstream, add them to `OPENSSF_METRICS` in
 `OpenSSFConfig.ts` and extend the table above.
+
+## MetricProvider Architecture
+
+### MetricProvider interface
+
+Every data source implements `MetricProvider<T extends MetricType>` from
+`scorecard-node`. The interface requires:
+
+- `getProviderId()` — unique string identifying the provider (e.g.,
+  `"sonarqube"`, `"dependabot"`). Used as the config key in
+  `app-config.yaml` under `scorecard.plugins.<providerId>`.
+- `getProviderDatasourceId()` — identifies the external data source.
+- `getMetrics()` — returns `Metric<T>[]`. Each `Metric` has an `id`,
+  `title`, `description`, `type` (`"number"` or `"boolean"`), and a
+  `thresholds` field providing the default `ThresholdConfig`.
+- `calculateMetrics(entity)` — computes metric values for a catalog
+  entity. Returns `Map<string, MetricValue<T>>` keyed by metric ID.
+- `getCatalogFilter()` — returns the catalog entity filter that
+  determines which entities this provider applies to.
+
+The generic constraint `<T extends MetricType>` enforces that all
+metrics within a single provider share the same type (all `"number"`
+or all `"boolean"`).
+
+### Threshold resolution priority
+
+`ThresholdResolver` (in `scorecard-backend`) resolves thresholds for
+each metric using a three-tier override chain. Higher tiers override
+lower tiers:
+
+1. **Entity annotations** (highest priority) — per-entity overrides set
+   via catalog annotations with the prefix
+   `scorecard.io/<providerId>.thresholds.rules.<key>`. Merged on top of
+   the provider-level thresholds by `mergeEntityAndProviderThresholds()`.
+2. **`app-config.yaml` overrides** (middle priority) — cluster-wide
+   overrides configured at `scorecard.plugins.<providerId>.thresholds`
+   in `app-config.yaml`. Read by `getThresholdsFromConfig()` and stored
+   per provider ID in `ThresholdResolver.configuredThresholds`.
+3. **Metric defaults** (lowest priority) — the `thresholds` field on
+   each `Metric` object returned by `getMetrics()`. Used when no config
+   or entity override exists.
+
+**Current limitation:** config overrides (tier 2) are keyed by
+`providerId`, not by individual `metricId`. This means all metrics
+within a multi-metric provider (e.g., SonarQube with 12 metrics, or
+Dependabot with 4 metrics) share a single `app-config.yaml` threshold
+override. Cluster administrators cannot customize thresholds for
+individual metrics within the same provider via config alone — they
+must use entity-level annotations (tier 1) for per-metric granularity.
+
+In `ThresholdResolver.setConfiguredThresholds()`, the config is
+validated against `metrics[0].type`, which is safe only because the
+generic constraint guarantees type homogeneity within a provider.
+However, this still applies one threshold config to all metrics in
+that provider.
+
+### Review guidance for threshold changes
+
+When reviewing changes to `ThresholdResolver`, the `Metric` type,
+`mergeEntityAndProviderThresholds`, or `getThresholdsFromConfig`:
+
+- **Flag changes that affect threshold granularity as high severity.**
+  Any change to how thresholds are keyed (per-provider vs per-metric)
+  or how overrides are resolved directly impacts how cluster
+  administrators configure the scorecard in `app-config.yaml`. This is
+  not a theoretical concern — it determines whether operators can tune
+  thresholds for individual metrics.
+- **Verify all three resolution tiers.** A change that fixes one tier
+  (e.g., improving config overrides) can break another (e.g.,
+  entity annotation merging) if the data structures change.
+- **Check config path strings.** The config path
+  `scorecard.plugins.${providerId}.thresholds` is constructed as a
+  string. Changes to provider IDs or config schema must update both the
+  path construction and `config.d.ts`.
+
+### Key files
+
+| File | Package | Role |
+|---|---|---|
+| `ThresholdResolver.ts` | `scorecard-backend` | Resolves thresholds using the three-tier chain |
+| `Metric.ts` | `scorecard-common` | Defines `Metric`, `MetricType`, and `MetricValue` types |
+| `MetricProvider.ts` | `scorecard-node` | Defines the `MetricProvider<T>` interface |
+| `mergeEntityAndProviderThresholds.ts` | `scorecard-backend` | Merges entity annotation overrides with provider thresholds |
+| `getThresholdsFromConfig.ts` | `scorecard-node` | Reads and validates threshold config from `app-config.yaml` |
+| `DependabotConfig.ts` | `scorecard-backend-module-dependabot` | Dependabot provider metric and threshold definitions |
+| `SonarQubeConfig.ts` | `scorecard-backend-module-sonarqube` | SonarQube provider metric and threshold definitions |
+| `OpenSSFConfig.ts` | `scorecard-backend-module-openssf` | OpenSSF provider metric and threshold definitions |
+| `FilecheckConfig.ts` | `scorecard-backend-module-filecheck` | Filecheck provider metric and threshold definitions |
