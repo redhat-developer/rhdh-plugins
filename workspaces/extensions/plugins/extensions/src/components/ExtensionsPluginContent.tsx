@@ -346,7 +346,7 @@ export const ExtensionsPluginContent = ({
       const res = await enablePlugin({
         namespace: plugin.metadata.namespace ?? 'default',
         name: plugin.metadata.name,
-        disabled: !newValue,
+        enabled: newValue,
       });
 
       if (res?.status !== 'OK') {

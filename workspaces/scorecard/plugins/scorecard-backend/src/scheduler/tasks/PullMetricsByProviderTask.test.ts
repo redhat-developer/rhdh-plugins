@@ -68,7 +68,7 @@ describe('PullMetricsByProviderTask', () => {
     });
     mockCatalog = catalogServiceMock.mock();
     mockAuth = mockServices.auth.mock();
-    mockProvider = new MockNumberProvider('github.test_metric', 'github');
+    mockProvider = new MockNumberProvider('github.testMetric', 'github');
 
     mockThresholdEvaluator = {
       getFirstMatchingThreshold: jest.fn(),
@@ -87,7 +87,7 @@ describe('PullMetricsByProviderTask', () => {
       resolveEntityThresholds: jest.fn().mockReturnValue({
         rules: mockThresholdRules,
       }),
-      resolveProviderThresholds: jest.fn(),
+      resolveMetricThresholds: jest.fn(),
     } as unknown as jest.Mocked<ThresholdResolver>;
 
     task = new PullMetricsByProviderTask(
@@ -137,7 +137,7 @@ describe('PullMetricsByProviderTask', () => {
 
     it('should get scheduled from config', () => {
       expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-        'scorecard.plugins.github.test_metric.schedule',
+        'scorecard.plugins.github.testMetric.schedule',
       );
     });
 
@@ -151,7 +151,7 @@ describe('PullMetricsByProviderTask', () => {
     it('should run the task runner', () => {
       expect(mockTaskRunner.run).toHaveBeenCalledTimes(1);
       expect(mockTaskRunner.run).toHaveBeenCalledWith({
-        id: 'github.test_metric',
+        id: 'github.testMetric',
         fn: expect.any(Function),
       });
     });
@@ -190,15 +190,8 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         1,
-        `Pulling metrics for github.test_metric`,
+        `Pulling metrics for github.testMetric`,
       );
-    });
-
-    it('should get metric type', async () => {
-      const getMetricTypeSpy = jest.spyOn(mockProvider, 'getMetricType');
-      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
-
-      expect(getMetricTypeSpy).toHaveBeenCalledWith();
     });
 
     it('should query catalog entities', async () => {
@@ -230,23 +223,34 @@ describe('PullMetricsByProviderTask', () => {
       expect(getOwnServiceCredentialsSpy).toHaveBeenCalledWith();
     });
 
-    it('should resolve thresholds for entity/provider', async () => {
+    it('should resolve thresholds for entity/metric/provider', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
+      const metric = mockProvider.getMetrics()[0];
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(1, mockEntities[0], mockProvider);
+      ).toHaveBeenNthCalledWith(
+        1,
+        mockEntities[0],
+        metric,
+        mockProvider.getProviderId(),
+      );
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(2, mockEntities[1], mockProvider);
+      ).toHaveBeenNthCalledWith(
+        2,
+        mockEntities[1],
+        metric,
+        mockProvider.getProviderId(),
+      );
     });
 
-    it('should calculate metric', async () => {
-      const calculateMetricSpy = jest.spyOn(mockProvider, 'calculateMetric');
+    it('should calculate metrics', async () => {
+      const calculateMetricsSpy = jest.spyOn(mockProvider, 'calculateMetrics');
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
-      expect(calculateMetricSpy).toHaveBeenNthCalledWith(1, mockEntities[0]);
-      expect(calculateMetricSpy).toHaveBeenNthCalledWith(2, mockEntities[1]);
+      expect(calculateMetricsSpy).toHaveBeenNthCalledWith(1, mockEntities[0]);
+      expect(calculateMetricsSpy).toHaveBeenNthCalledWith(2, mockEntities[1]);
     });
 
     it('should get threshold evaluator', async () => {
@@ -267,14 +271,14 @@ describe('PullMetricsByProviderTask', () => {
           entity_kind: 'component',
           entity_namespace: undefined,
           entity_owner: undefined,
-          metric_id: 'github.test_metric',
+          metric_id: 'github.testMetric',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
           status: 'success',
         },
         {
           catalog_entity_ref: 'component:default/test2',
-          metric_id: 'github.test_metric',
+          metric_id: 'github.testMetric',
           entity_kind: 'component',
           entity_namespace: undefined,
           entity_owner: undefined,
@@ -384,7 +388,7 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Completed metric pull for github.test_metric: processed 2 entities`,
+        `Completed metric pull for github.testMetric: processed 2 entities`,
       );
     });
 
@@ -395,7 +399,7 @@ describe('PullMetricsByProviderTask', () => {
         metadata: {
           name: 'excluded-entity',
           annotations: {
-            'scorecard.io/disabled-metrics': 'github.test_metric',
+            'scorecard.io/disabled-metrics': 'github.testMetric',
           },
         },
       };
@@ -406,14 +410,14 @@ describe('PullMetricsByProviderTask', () => {
         totalItems: 2,
       });
 
-      const calculateMetricSpy = jest.spyOn(mockProvider, 'calculateMetric');
+      const calculateMetricsSpy = jest.spyOn(mockProvider, 'calculateMetrics');
       const createMetricValuesSpy = jest.spyOn(
         mockDatabaseMetricValues,
         'createMetricValues',
       );
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
-      expect(calculateMetricSpy).not.toHaveBeenCalled();
+      expect(calculateMetricsSpy).not.toHaveBeenCalled();
       expect(createMetricValuesSpy).toHaveBeenCalledTimes(1);
       expect(createMetricValuesSpy).toHaveBeenCalledWith([]);
     });
@@ -469,16 +473,6 @@ describe('PullMetricsByProviderTask', () => {
         expect(calculateMetricsSpy).toHaveBeenCalledTimes(2); // Once per entity
         expect(calculateMetricsSpy).toHaveBeenNthCalledWith(1, mockEntities[0]);
         expect(calculateMetricsSpy).toHaveBeenNthCalledWith(2, mockEntities[1]);
-      });
-
-      it('should not call calculateMetric for batch providers', async () => {
-        const calculateMetricSpy = jest.spyOn(
-          mockBatchProvider,
-          'calculateMetric',
-        );
-        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
-
-        expect(calculateMetricSpy).not.toHaveBeenCalled();
       });
 
       it('should create metric values for all metric IDs from batch provider', async () => {

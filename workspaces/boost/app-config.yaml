@@ -8,6 +8,8 @@ app:
           redirects:
             - from: /
               to: /ai-catalog
+    # Example: disable a built-in filter
+    # - ai-catalog-filter:boost/owner: false
 
 organization:
   name: Red Hat

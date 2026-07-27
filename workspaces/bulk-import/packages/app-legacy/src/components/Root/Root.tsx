@@ -32,6 +32,7 @@ import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
+import { Administration } from '@backstage-community/plugin-rbac';
 import CreateComponentIcon from '@mui/icons-material/AddCircleOutline';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HomeIcon from '@mui/icons-material/Home';
@@ -40,7 +41,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
-import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
 import {
   LogoFull,
   LogoIcon,
@@ -106,6 +107,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             text="Orchestrator"
           />
           <BulkImportSidebarItem />
+          <Administration />
 
           {/* End global nav */}
           <SidebarDivider />

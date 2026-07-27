@@ -115,6 +115,7 @@ export type Metric<T extends MetricType = MetricType> = {
   title: string;
   description: string;
   type: T;
+  thresholds: ThresholdConfig;
   history?: boolean;
 };
 

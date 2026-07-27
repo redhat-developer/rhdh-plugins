@@ -93,6 +93,61 @@ describe('getSortedStepEntries', () => {
     );
   });
 
+  it('returns steps in ui:order order, appending keys not in ui:order at the end', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      'ui:order': ['step3', 'step1', 'step2'],
+      properties: {
+        step1: { type: 'object', properties: { a: { type: 'string' } } },
+        step2: { type: 'object', properties: { b: { type: 'string' } } },
+        step3: { type: 'object', properties: { c: { type: 'string' } } },
+        step4: { type: 'object', properties: { d: { type: 'string' } } },
+      },
+    } as JSONSchema7;
+
+    const keys = getSortedStepEntries(schema)?.map(([key]) => key);
+    // step3, step1, step2 from ui:order, then step4 (not in ui:order)
+    expect(keys).toEqual(['step3', 'step1', 'step2', 'step4']);
+  });
+
+  it('returns steps in natural object key order when ui:order is absent', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        alpha: { type: 'object', properties: { x: { type: 'string' } } },
+        beta: { type: 'object', properties: { y: { type: 'string' } } },
+        gamma: { type: 'object', properties: { z: { type: 'string' } } },
+      },
+    };
+
+    const keys = getSortedStepEntries(schema)?.map(([key]) => key);
+    expect(keys).toEqual(['alpha', 'beta', 'gamma']);
+  });
+
+  it('excludes a step with static ui:hidden: true', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        visibleStep: {
+          type: 'object',
+          properties: { name: { type: 'string' } },
+        },
+        hiddenStep: {
+          type: 'object',
+          'ui:hidden': true,
+          properties: { secret: { type: 'string' } },
+        } as JSONSchema7,
+        anotherVisible: {
+          type: 'object',
+          properties: { value: { type: 'string' } },
+        },
+      },
+    };
+
+    const keys = getSortedStepEntries(schema)?.map(([key]) => key);
+    expect(keys).toEqual(['visibleStep', 'anotherVisible']);
+  });
+
   it('resolves active step key using filtered step list', () => {
     const schema: JSONSchema7 = {
       type: 'object',
@@ -127,5 +182,18 @@ describe('getSortedStepEntries', () => {
 
     expect(getActiveStepKey(schema, 0, formData)).toBe('step1');
     expect(getActiveStepKey(schema, 1, formData)).toBe('step3');
+  });
+
+  it('getActiveStepKey throws when activeStep index is out of range', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        step1: { type: 'object', properties: { a: { type: 'string' } } },
+      },
+    };
+
+    expect(() => getActiveStepKey(schema, 5)).toThrow(
+      'Active step key not found for activeStep: 5',
+    );
   });
 });

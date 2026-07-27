@@ -60,10 +60,10 @@ catalog:
 #       title: GitHub open PRs
 #       description: Open PRs across owned entities, grouped by status.
 #       type: statusGrouped
-#       metricId: github.open_prs
+#       metricId: github.openPRs
 #   plugins:
 #     github:
-#       open_prs:
+#       openPRs:
 #         schedule:
 #           frequency: { hours: 1 }
 #           timeout: { minutes: 15 }

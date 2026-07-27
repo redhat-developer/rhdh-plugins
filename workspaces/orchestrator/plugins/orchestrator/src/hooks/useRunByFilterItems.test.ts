@@ -119,4 +119,30 @@ describe('useRunByFilterItems', () => {
     expect(listInstances).not.toHaveBeenCalled();
     expect(result.current.items).toEqual([]);
   });
+
+  it('returns empty items when there are no initiator refs', async () => {
+    listInstances.mockResolvedValue({ data: { items: [] } });
+
+    const { result } = renderHook(
+      () => useRunByFilterItems({ enabled: true }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(getEntitiesByRefs).not.toHaveBeenCalled();
+    expect(result.current.items).toEqual([]);
+  });
+
+  it('returns empty items when listing instances fails', async () => {
+    listInstances.mockRejectedValue(new Error('backend down'));
+
+    const { result } = renderHook(
+      () => useRunByFilterItems({ enabled: true }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.items).toEqual([]);
+  });
 });

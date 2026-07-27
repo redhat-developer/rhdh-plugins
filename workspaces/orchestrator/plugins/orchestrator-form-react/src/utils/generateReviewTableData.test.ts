@@ -398,6 +398,34 @@ describe('mapSchemaToData', () => {
     expect(result).toEqual(expectedResult);
   });
 
+  it('should mask values for fields with ui:widget: password', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+          title: 'Username',
+        },
+        password: {
+          type: 'string',
+          title: 'Password',
+          'ui:widget': 'password',
+        } as JSONSchema7,
+      },
+    };
+
+    const data = {
+      username: 'alice',
+      password: 'super-secret-123',
+    };
+
+    const result = generateReviewTableData(schema, data);
+    expect(result).toEqual({
+      Username: 'alice',
+      Password: '******',
+    });
+  });
+
   it('returns an empty object when form data is empty (e.g. display-only ActiveText)', () => {
     const schema: JSONSchema7 = {
       type: 'object',

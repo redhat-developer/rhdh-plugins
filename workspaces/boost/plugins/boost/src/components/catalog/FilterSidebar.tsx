@@ -14,115 +14,75 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Entity } from '@backstage/catalog-model';
 import { Select } from '@backstage/ui';
-import type { Key } from 'react-aria-components';
 
+import type { FilterDefinition } from '../../blueprints/AiCatalogFilterBlueprint';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getAllCategories } from '../../utils/categoryMeta';
-import { getSpecField } from '../../utils/entityHelpers';
-import type {
-  UrlFilterActions,
-  UrlFilterState,
-} from '../../hooks/useUrlFilters';
 import styles from './FilterSidebar.module.css';
 
+type TranslationKey = Parameters<ReturnType<typeof useTranslation>['t']>[0];
+
 interface FilterSidebarProps {
+  filters: FilterDefinition[];
   entities: Entity[];
-  state: Pick<UrlFilterState, 'filters'>;
-  actions: Pick<
-    UrlFilterActions,
-    'setCategory' | 'setProvider' | 'setOwner' | 'setTag'
-  >;
+  values: Map<string, string[]>;
+  onFilterChange: (urlParam: string, values: string[]) => void;
 }
 
-function uniqueOptions(
-  items: (string | undefined)[],
-): { id: string; label: string }[] {
-  const set = new Set<string>();
-  for (const item of items) {
-    if (item) set.add(item);
-  }
-  return Array.from(set)
-    .sort((a, b) => a.localeCompare(b))
-    .map(v => ({ id: v, label: v }));
-}
-
-export const FilterSidebar = ({
+function FilterSelect({
+  filter,
   entities,
-  state,
-  actions: { setCategory, setProvider, setOwner, setTag },
-}: FilterSidebarProps) => {
+  selected,
+  onChange,
+}: {
+  filter: FilterDefinition;
+  entities: Entity[];
+  selected: string[];
+  onChange: (values: string[]) => void;
+}) {
   const { t } = useTranslation();
-
-  const categoryOptions = useMemo(() => getAllCategories(), []);
-
-  const providerOptions = useMemo(
-    () =>
-      uniqueOptions(
-        entities.map(e => e.metadata.annotations?.['rhdh.io/ai-asset-source']),
-      ),
-    [entities],
-  );
-
-  const ownerOptions = useMemo(
-    () => uniqueOptions(entities.map(e => getSpecField(e, 'owner'))),
-    [entities],
-  );
-
-  const tagOptions = useMemo(
-    () => uniqueOptions(entities.flatMap(e => e.metadata.tags ?? [])),
-    [entities],
-  );
-
-  const onCategoryChange = useCallback(
-    (value: Key[]) => setCategory(value as string[]),
-    [setCategory],
-  );
-  const onProviderChange = useCallback(
-    (value: Key[]) => setProvider(value as string[]),
-    [setProvider],
-  );
-  const onOwnerChange = useCallback(
-    (value: Key[]) => setOwner(value as string[]),
-    [setOwner],
-  );
-  const onTagChange = useCallback(
-    (value: Key[]) => setTag(value as string[]),
-    [setTag],
+  const label = filter.labelKey
+    ? t(filter.labelKey as TranslationKey)
+    : filter.label;
+  const options = useMemo(
+    () => filter.getOptions(entities),
+    [filter, entities],
   );
 
   return (
+    <Select
+      label={label}
+      selectionMode="multiple"
+      options={options}
+      value={selected}
+      onChange={keys => onChange(keys as string[])}
+    />
+  );
+}
+
+export const FilterSidebar = ({
+  filters,
+  entities,
+  values,
+  onFilterChange,
+}: FilterSidebarProps) => {
+  const { t } = useTranslation();
+
+  if (filters.length === 0) return null;
+
+  return (
     <nav className={styles.sidebar} aria-label={t('catalog.page.title')}>
-      <Select
-        label={t('catalog.filter.type')}
-        selectionMode="multiple"
-        options={categoryOptions}
-        value={state.filters.category ?? []}
-        onChange={onCategoryChange}
-      />
-      <Select
-        label={t('catalog.filter.provider')}
-        selectionMode="multiple"
-        options={providerOptions}
-        value={state.filters.provider ?? []}
-        onChange={onProviderChange}
-      />
-      <Select
-        label={t('catalog.filter.owner')}
-        selectionMode="multiple"
-        options={ownerOptions}
-        value={state.filters.owner ?? []}
-        onChange={onOwnerChange}
-      />
-      <Select
-        label={t('catalog.filter.tag')}
-        selectionMode="multiple"
-        options={tagOptions}
-        value={state.filters.tags ?? []}
-        onChange={onTagChange}
-      />
+      {filters.map(filter => (
+        <FilterSelect
+          key={filter.urlParam}
+          filter={filter}
+          entities={entities}
+          selected={values.get(filter.urlParam) ?? []}
+          onChange={vals => onFilterChange(filter.urlParam, vals)}
+        />
+      ))}
     </nav>
   );
 };

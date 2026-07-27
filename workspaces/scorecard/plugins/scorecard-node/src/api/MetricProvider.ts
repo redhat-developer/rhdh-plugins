@@ -19,7 +19,6 @@ import {
   Metric,
   MetricType,
   MetricValue,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 /**
@@ -38,52 +37,20 @@ export interface MetricProvider<T extends MetricType = MetricType> {
    */
   getProviderId(): string;
   /**
-   * Get the metric type for the metric provider
+   * Get all metrics this provider exposes.
+   * Each metric includes its own type and threshold configuration.
    * @public
    */
-  getMetricType(): T;
+  getMetrics(): Metric<T>[];
   /**
-   * Get the metric for the metric provider
+   * Calculate multiple metrics in a single call.
+   * Returns a map of metric ID to metric value.
    * @public
    */
-  getMetric(): Metric<T>;
-  /**
-   * Get the default metric thresholds for the metric provider
-   * @public
-   */
-  getMetricThresholds(): ThresholdConfig;
-  /**
-   * Calculate the metric for the metric provider
-   * @public
-   */
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+  calculateMetrics(entity: Entity): Promise<Map<string, MetricValue<T>>>;
   /**
    * Get the catalog filter for the metric provider
    * @public
    */
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
-
-  /**
-   * Get all metric IDs this provider handles.
-   * For batch providers that handle multiple metrics.
-   * Defaults to [getProviderId()] if not implemented.
-   * @public
-   */
-  getMetricIds?(): string[];
-
-  /**
-   * Get all metrics this provider exposes.
-   * For batch providers that handle multiple metrics.
-   * Defaults to [getMetric()] if not implemented.
-   * @public
-   */
-  getMetrics?(): Metric<T>[];
-
-  /**
-   * Calculate multiple metrics in a single call.
-   * For batch providers that can efficiently compute multiple metrics together.
-   * Defaults to [calculateMetric()] ff not implemented.
-   * @public
-   */
-  calculateMetrics?(entity: Entity): Promise<Map<string, MetricValue<T>>>;
 }

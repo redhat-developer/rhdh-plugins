@@ -146,6 +146,31 @@ describe('createGetWorkflowParamsAction', () => {
     expect(ctx.output).toHaveBeenCalledWith('parameters', '{}');
   });
 
+  it('outputs empty parameters string when inputSchema is undefined', async () => {
+    mockApi.getWorkflowOverviewById.mockResolvedValue({
+      data: {
+        name: 'My Workflow',
+      },
+    });
+    mockApi.getWorkflowInputSchemaById.mockResolvedValue({
+      data: {
+        inputSchema: undefined,
+      },
+    });
+
+    const action = createGetWorkflowParamsAction(discoveryService, authService);
+    const ctx = createMockActionContext({
+      input: {
+        workflow_id: 'my-workflow',
+      },
+    });
+
+    await action.handler(ctx);
+
+    expect(ctx.output).toHaveBeenCalledWith('title', 'My Workflow');
+    expect(ctx.output).toHaveBeenCalledWith('parameters', '{}');
+  });
+
   it('throws when the workflow is not found', async () => {
     mockApi.getWorkflowOverviewById.mockResolvedValue({
       data: undefined,

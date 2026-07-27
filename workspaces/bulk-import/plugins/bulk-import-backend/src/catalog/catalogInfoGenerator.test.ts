@@ -14,53 +14,33 @@
  * limitations under the License.
  */
 
-import type { DiscoveryService } from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
-import type { CatalogClient } from '@backstage/catalog-client';
-
-import fetch from 'node-fetch';
+import type { AnalyzeLocationResponse } from '@backstage/plugin-catalog-common';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
 import { CatalogHttpClient } from './catalogHttpClient';
 import { CatalogInfoGenerator } from './catalogInfoGenerator';
 
-jest.mock('node-fetch');
-
-const mockBaseUrl = 'http://127.0.0.1:65535';
-
 describe('catalogInfoGenerator', () => {
   let catalogInfoGenerator: CatalogInfoGenerator;
-  let mockDiscovery: DiscoveryService;
+  let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
 
   beforeEach(() => {
-    (fetch as unknown as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        json: () => Promise.resolve({}),
-      }),
-    );
-    mockDiscovery = mockServices.discovery.mock({
-      getBaseUrl: async (pluginId: string) => {
-        return `${mockBaseUrl}/my-${pluginId}`;
-      },
-    });
-    // TODO(rm3l): Move to 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
-    //  once '@backstage/plugin-catalog-node' is upgraded
-    const mockCatalogClient = {
-      getEntities: jest.fn(),
-    } as unknown as CatalogClient;
-    const mockAuth = mockServices.auth.mock({
-      getPluginRequestToken: jest.fn().mockResolvedValue({
-        token: 'ey123.abc.xyzzz', // notsecret
+    mockCatalog = catalogServiceMock.mock({
+      analyzeLocation: jest.fn().mockResolvedValue({
+        existingEntityFiles: [],
+        generateEntities: [],
       }),
     });
+    const mockAuth = mockServices.auth();
     const logger = mockServices.logger.mock();
     catalogInfoGenerator = new CatalogInfoGenerator(
       logger,
       new CatalogHttpClient({
         logger,
         config: mockServices.rootConfig({ data: {} }),
-        discovery: mockDiscovery,
         auth: mockAuth,
-        catalogApi: mockCatalogClient,
+        catalog: mockCatalog,
       }),
     );
   });
@@ -83,6 +63,7 @@ describe('catalogInfoGenerator', () => {
   });
 
   it('should return a default catalog-info yaml string if analyze-location endpoint is not available', async () => {
+    mockCatalog.analyzeLocation.mockRejectedValue(new Error('unavailable'));
     const repoUrl = 'https://github.com/my-org-2/my-repo-2';
     await expect(
       catalogInfoGenerator.generateDefaultCatalogInfoContent(repoUrl),
@@ -94,36 +75,25 @@ describe('catalogInfoGenerator', () => {
     await expect(
       catalogInfoGenerator.generateDefaultCatalogInfoContent(repoUrl),
     ).resolves.toBe(getDefaultCatalogInfo('my-org-3', 'my-repo-3'));
-    expect(mockDiscovery.getBaseUrl).toHaveBeenCalledWith('catalog');
-    expect(fetch).toHaveBeenCalledWith(
-      `${mockBaseUrl}/my-catalog/analyze-location`,
+    expect(mockCatalog.analyzeLocation).toHaveBeenCalledWith(
       {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ey123.abc.xyzzz',
+        location: {
+          type: 'github',
+          target: repoUrl,
         },
-        method: 'POST',
-        body: JSON.stringify({
-          location: {
-            type: 'github',
-            target: repoUrl,
-          },
-        }),
+      },
+      {
+        credentials: expect.any(Object),
       },
     );
   });
 
   it('should return catalog-info yaml string if analyze-location endpoint returns some data', async () => {
-    (fetch as unknown as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        json: () =>
-          Promise.resolve(
-            mockAnalyzeLocationResponse('my-org-4', [
-              'my-repo-comp-41',
-              'my-repo-comp-42',
-            ]),
-          ),
-      }),
+    mockCatalog.analyzeLocation.mockResolvedValue(
+      mockAnalyzeLocationResponse('my-org-4', [
+        'my-repo-comp-41',
+        'my-repo-comp-42',
+      ]),
     );
 
     const repoUrl = 'https://github.com/my-org-4/my-repo-4';
@@ -135,20 +105,15 @@ ${getDefaultCatalogInfoWithoutSeparators('my-org-4', 'my-repo-comp-41')}
 ---
 ${getDefaultCatalogInfoWithoutSeparators('my-org-4', 'my-repo-comp-42')}
 `);
-    expect(fetch).toHaveBeenCalledWith(
-      `${mockBaseUrl}/my-catalog/analyze-location`,
+    expect(mockCatalog.analyzeLocation).toHaveBeenCalledWith(
       {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ey123.abc.xyzzz',
+        location: {
+          type: 'github',
+          target: repoUrl,
         },
-        method: 'POST',
-        body: JSON.stringify({
-          location: {
-            type: 'github',
-            target: repoUrl,
-          },
-        }),
+      },
+      {
+        credentials: expect.any(Object),
       },
     );
   });
@@ -179,10 +144,10 @@ spec:
 function mockAnalyzeLocationResponse(
   org: string,
   componentsToReturn: string[],
-) {
-  const generatedEntities: any[] = [];
-  for (const comp of componentsToReturn) {
-    generatedEntities.push({
+): AnalyzeLocationResponse {
+  return {
+    existingEntityFiles: [],
+    generateEntities: componentsToReturn.map(comp => ({
       entity: {
         apiVersion: 'backstage.io/v1alpha1',
         kind: 'Component',
@@ -198,9 +163,7 @@ function mockAnalyzeLocationResponse(
           owner: org,
         },
       },
-    });
-  }
-  return {
-    generateEntities: generatedEntities,
+      fields: [],
+    })),
   };
 }

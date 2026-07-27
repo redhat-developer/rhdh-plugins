@@ -1,3 +1,7 @@
 schema: spec-driven
 created: 2026-07-06
+updated: 2026-07-22
 status: draft
+notes: >-
+  Retooled OCI support onto upstream backstage.io/source-location
+  (url:oci://…) per RHIDP-15739; removed spec.location model.

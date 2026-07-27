@@ -28,7 +28,6 @@ import { CustomizableGrid } from './CustomizableGrid';
 import { DefaultWidgetsCustomizableGrid } from './DefaultWidgetsCustomizableGrid';
 import { DefaultWidgetsReadOnlyGrid } from './DefaultWidgetsReadOnlyGrid';
 import { Header, HeaderProps } from './Header';
-import { HomePageStylesProvider } from './HomePageStylesProvider';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
 
 export interface HomePageProps extends HeaderProps {
@@ -74,11 +73,9 @@ export const HomePage = ({
   }
 
   return (
-    <HomePageStylesProvider>
-      <Page themeId="home">
-        <Header title={t('header.welcome')} {...otherProps} />
-        <Content>{content}</Content>
-      </Page>
-    </HomePageStylesProvider>
+    <Page themeId="home">
+      <Header title={t('header.welcome')} {...otherProps} />
+      <Content>{content}</Content>
+    </Page>
   );
 };

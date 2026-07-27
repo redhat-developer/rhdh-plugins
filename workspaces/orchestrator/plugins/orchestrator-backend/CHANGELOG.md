@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.11.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.4.0
+
+## 8.10.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+- Updated dependencies [eade824]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.3
+
 ## 8.10.2
 
 ### Patch Changes

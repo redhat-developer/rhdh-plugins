@@ -20,10 +20,23 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { screen, waitFor } from '@testing-library/react';
 
+import {
+  categoryFilterDefinition,
+  providerFilterDefinition,
+  ownerFilterDefinition,
+  tagsFilterDefinition,
+} from '../../filters/builtInFilterDefinitions';
 import { boostMessages } from '../../translations/ref';
 import { AiCatalogPage } from './AiCatalogPage';
 
 const { catalog: msg } = boostMessages;
+
+const defaultFilters = [
+  categoryFilterDefinition,
+  providerFilterDefinition,
+  ownerFilterDefinition,
+  tagsFilterDefinition,
+];
 
 const mockEntities: Entity[] = [
   {
@@ -65,7 +78,7 @@ function renderPage() {
     <TestApiProvider
       apis={[[catalogApiRef, mockCatalogApi as unknown as CatalogApi]]}
     >
-      <AiCatalogPage />
+      <AiCatalogPage filters={defaultFilters} />
     </TestApiProvider>,
   );
 }

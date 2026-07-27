@@ -16,11 +16,11 @@
 
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type {
+  Metric,
   ThresholdConfig,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
-  type MetricProvider,
   validateThresholdsForMetric,
   ThresholdConfigFormatError,
   validateThresholdNumberIntervals,
@@ -53,14 +53,14 @@ function parseEntityAnnotationThresholds(
 
 export function mergeEntityAndProviderThresholds(
   entity: Entity,
-  provider: MetricProvider,
+  metric: Metric,
+  providerId: string,
   baseThresholds?: ThresholdConfig,
 ): ThresholdConfig {
   let isRulesMerged = false;
 
-  const providerId = provider.getProviderId();
-  const providerThresholds = baseThresholds ?? provider.getMetricThresholds();
-  const providerMetricType = provider.getMetricType();
+  const providerThresholds = baseThresholds ?? metric.thresholds;
+  const metricType = metric.type;
   const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,
     providerId,
@@ -81,7 +81,7 @@ export function mergeEntityAndProviderThresholds(
 
     const mergedRule: ThresholdRule = { ...mergedRules[foundKey], ...override };
     try {
-      validateThresholdsForMetric({ rules: [mergedRule] }, providerMetricType);
+      validateThresholdsForMetric({ rules: [mergedRule] }, metricType);
 
       if (!isRulesMerged) isRulesMerged = true;
     } catch (e) {
@@ -101,7 +101,7 @@ export function mergeEntityAndProviderThresholds(
   }
 
   if (isRulesMerged) {
-    validateThresholdNumberIntervals(mergedRules, providerMetricType);
+    validateThresholdNumberIntervals(mergedRules, metricType);
   }
 
   return {

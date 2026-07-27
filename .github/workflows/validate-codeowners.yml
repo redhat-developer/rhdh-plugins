@@ -21,17 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Get CODEOWNERS from PR
         if: github.event_name == 'pull_request_target'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-head
+          git fetch origin "pull/$PR_NUMBER/head:pr-head"
           git checkout pr-head -- .github/CODEOWNERS
 
       - name: Generate GitHub App Token
@@ -57,15 +59,17 @@ jobs:
       - name: Comment on PR if validation failed
         if: steps.validate.outcome == 'failure' && github.event_name == 'pull_request_target' && steps.validate.outputs.missing_users != ''
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "## ⚠️ CODEOWNERS Validation Failed
+          gh pr comment "$PR_NUMBER" --body "## ⚠️ CODEOWNERS Validation Failed
 
           The following users are listed in CODEOWNERS but are not members of the [\`rhdh-plugins-codeowners\`](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners) team:
 
-          \`${{ steps.validate.outputs.missing_users }}\`
+          \`$MISSING_USERS\`
 
           An org admin needs to [add the missing members to the team](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners/members) before this PR can be merged."
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MISSING_USERS: ${{ steps.validate.outputs.missing_users }}
 
       - name: Fail workflow if validation failed
         if: steps.validate.outcome == 'failure'

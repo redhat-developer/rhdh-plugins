@@ -10,14 +10,14 @@ Adds Dependabot alerts as a scorecard metric (`dependabot.alerts`, 0–9 from se
 
 ## Default thresholds
 
-All four severity metrics share the same default thresholds. Default thresholds for `dependabot.alerts_critical`:
+All four severity metrics share the same default thresholds. Default thresholds for `dependabot.alertsCritical`:
 
 ```yaml
 # app-config.yaml
 scorecard:
   plugins:
     dependabot:
-      alerts_critical:
+      alertsCritical:
         thresholds:
           rules:
             - key: success
@@ -28,4 +28,4 @@ scorecard:
               expression: '>7'
 ```
 
-Replace `alerts_critical` with `alerts_high`, `alerts_medium`, or `alerts_low` for the other severity metrics. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+Replace `alertsCritical` with `alertsHigh`, `alertsMedium`, or `alertsLow` for the other severity metrics. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.

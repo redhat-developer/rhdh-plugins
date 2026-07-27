@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.12.2
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from QuickstartDrawerProvider. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+
+## 1.12.1
+
+### Patch Changes
+
+- 23c83cc: Fix accessibility violations (aria-progressbar-name, list, nested-interactive) and remove suppression flag from e2e accessibility tests.
+
+## 1.12.0
+
+### Minor Changes
+
+- 60460f4: Backstage version bump to v1.52.1
+
+## 1.11.1
+
+### Patch Changes
+
+- cf89b92: Fix scalprum `QuickstartPlugin` exposed module path from `./src/index.ts` to `./src/index.tsx`.
+
+## 1.11.0
+
+### Minor Changes
+
+- 033a0b5: Graduate the New Frontend System (NFS) plugin from the `./alpha` export to the primary `./` entry point. OFS (legacy) exports are now available at `./legacy`. Translations remain at `./alpha`.
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+
 ## 1.10.0
 
 ### Minor Changes

@@ -160,8 +160,12 @@ const extensionsTranslationIt = createTranslationMessages({
       "Impossibile gestire il pacchetto nell'ambiente di produzione.",
     'installedPackages.table.tooltips.installationDisabled':
       "Impossibile gestire il pacchetto perché l'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
+    'installedPackages.table.tooltips.enableActionsTitle':
+      "L'entità del catalogo è mancante",
     'installedPackages.table.tooltips.enableActions':
-      "Per abilitare le azioni, aggiungere un'entità catalogo per questo pacchetto",
+      "Per abilitare le azioni, aggiungere un'entità catalogo per questo pacchetto.",
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Visualizza documentazione',
     'installedPackages.table.tooltips.noDownloadPermissions':
       "L'utente non dispone dell'autorizzazione per scaricare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noEditPermissions':

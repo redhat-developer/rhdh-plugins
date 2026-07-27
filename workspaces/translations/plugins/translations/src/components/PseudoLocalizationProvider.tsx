@@ -20,14 +20,15 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 
 import { attachPseudolocalizationIfEnabled } from '../apis/pseudolocalization';
-import type { I18nextTranslationApi } from '../apis/I18nextTranslationApi';
 
 /**
  * Provider component that enables pseudo-localization when activated via
  * URL query parameter (`?pseudolocalization=true`) or app-config
  * (`i18n.pseudolocalization.enabled: true`).
  *
- * Register as a dynamic plugin at the `application/provider` mount point.
+ * Requires the TranslationApi implementation to expose `getI18nInstance()`.
+ * When the built-in NFS API is used (which does not have this method),
+ * pseudo-localization is silently skipped.
  *
  * @public
  */
@@ -43,10 +44,14 @@ export const PseudoLocalizationProvider = ({
       return;
     }
     attached.current = true;
-    attachPseudolocalizationIfEnabled(
-      translationApi as unknown as I18nextTranslationApi,
-      configApi,
-    );
+
+    const api = translationApi as unknown as {
+      getI18nInstance?: () => unknown;
+    };
+    if (typeof api.getI18nInstance !== 'function') {
+      return;
+    }
+    attachPseudolocalizationIfEnabled(api as any, configApi);
   }, [translationApi, configApi]);
 
   return <>{children}</>;

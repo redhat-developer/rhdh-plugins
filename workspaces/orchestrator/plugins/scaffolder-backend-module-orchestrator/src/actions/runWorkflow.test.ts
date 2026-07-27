@@ -228,4 +228,24 @@ describe('createRunWorkflowAction', () => {
       name: 'WorkflowExecutionError',
     });
   });
+
+  it('re-throws generic non-Axios errors as-is', async () => {
+    const genericError = new Error('Unexpected internal failure');
+    mockApi.executeWorkflow.mockRejectedValue(genericError);
+
+    const action = createRunWorkflowAction(discoveryService, authService);
+    const ctx = createMockActionContext({
+      input: {
+        workflow_id: 'greeting',
+        parameters: {},
+      },
+      templateInfo: {
+        entityRef: 'component:default/sample-service',
+      },
+    });
+
+    await expect(action.handler(ctx)).rejects.toThrow(
+      'Unexpected internal failure',
+    );
+  });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-theme",
-  "version": "0.14.8",
+  "version": "0.15.0",
   "description": "Red Hat Developer Hub Theme",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -49,25 +49,25 @@
     "postpack": "backstage-cli package postpack"
   },
   "peerDependencies": {
-    "@backstage/core-plugin-api": "^1.12.4",
-    "@backstage/theme": "^0.7.2",
+    "@backstage/core-plugin-api": "^1.12.7",
+    "@backstage/theme": "^0.7.3",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.0",
-    "@backstage/core-app-api": "^1.19.6",
-    "@backstage/core-components": "^0.18.8",
-    "@backstage/core-plugin-api": "^1.12.4",
-    "@backstage/dev-utils": "^1.1.21",
-    "@backstage/frontend-defaults": "^0.5.0",
-    "@backstage/plugin-user-settings": "^0.9.1",
-    "@backstage/test-utils": "^1.7.16",
-    "@backstage/theme": "^0.7.2",
+    "@backstage/cli": "^0.36.3",
+    "@backstage/core-app-api": "^1.20.2",
+    "@backstage/core-components": "^0.18.11",
+    "@backstage/core-plugin-api": "^1.12.7",
+    "@backstage/dev-utils": "^1.1.24",
+    "@backstage/frontend-defaults": "^0.5.3",
+    "@backstage/plugin-user-settings": "^0.9.4",
+    "@backstage/test-utils": "^1.7.19",
+    "@backstage/theme": "^0.7.3",
     "@backstage/types": "^1.2.2",
-    "@backstage/ui": "^0.13.1",
+    "@backstage/ui": "^0.16.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -96,8 +96,8 @@
     "@divyanshiGupta"
   ],
   "dependencies": {
-    "@backstage/frontend-plugin-api": "^0.15.1",
-    "@backstage/plugin-app-react": "^0.2.1",
+    "@backstage/frontend-plugin-api": "^0.17.2",
+    "@backstage/plugin-app-react": "^0.2.4",
     "@mui/icons-material": "^5.17.1"
   }
 }

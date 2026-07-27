@@ -103,8 +103,8 @@ describe('ScorecardPage', () => {
 
   it('should render page structure with header, content, table and scorecard card', () => {
     mockUseParams.mockReturnValue({
-      aggregationId: 'github.open_prs',
-      metricId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
+      metricId: 'github.openPRs',
     });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
@@ -118,14 +118,14 @@ describe('ScorecardPage', () => {
 
   it('should pass metricId to header when metricTitle is empty', () => {
     mockUseParams.mockReturnValue({
-      aggregationId: 'github.open_prs',
-      metricId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
+      metricId: 'github.openPRs',
     });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardPageHeader).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'github.open_prs' }),
+      expect.objectContaining({ title: 'github.openPRs' }),
     );
   });
 
@@ -173,15 +173,15 @@ describe('ScorecardPage', () => {
 
   it('should pass aggregationId and metricId to ScorecardHomepageCard', () => {
     mockUseParams.mockReturnValue({
-      aggregationId: 'github.open_prs',
-      metricId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
+      metricId: 'github.openPRs',
     });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
-      aggregationId: 'github.open_prs',
-      metricId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
+      metricId: 'github.openPRs',
       showSubheader: false,
       showInfo: false,
     });
@@ -190,32 +190,32 @@ describe('ScorecardPage', () => {
   it('should pass KPI aggregation id and backing metric id separately', () => {
     mockUseParams.mockReturnValue({
       aggregationId: 'openPrsKpi',
-      metricId: 'github.open_prs',
+      metricId: 'github.openPRs',
     });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardHomepageCard).toHaveBeenCalledWith({
       aggregationId: 'openPrsKpi',
-      metricId: 'github.open_prs',
+      metricId: 'github.openPRs',
       showSubheader: false,
       showInfo: false,
     });
     expect(mockEntitiesTable).toHaveBeenCalledWith(
-      expect.objectContaining({ metricId: 'github.open_prs' }),
+      expect.objectContaining({ metricId: 'github.openPRs' }),
     );
   });
 
   it('should update header title when setMetricTitle is called from EntitiesTable', () => {
     mockUseParams.mockReturnValue({
-      aggregationId: 'github.open_prs',
-      metricId: 'github.open_prs',
+      aggregationId: 'github.openPRs',
+      metricId: 'github.openPRs',
     });
 
     render(<ScorecardPage />, { wrapper: TestWrapper });
 
     expect(mockScorecardPageHeader).toHaveBeenLastCalledWith(
-      expect.objectContaining({ title: 'github.open_prs' }),
+      expect.objectContaining({ title: 'github.openPRs' }),
     );
 
     act(() => {

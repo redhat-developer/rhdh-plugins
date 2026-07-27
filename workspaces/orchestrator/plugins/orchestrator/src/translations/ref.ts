@@ -116,6 +116,7 @@ export const orchestratorMessages = {
       started: 'Started',
       runBy: 'Run by',
       workflowId: 'Run ID',
+      workflowIdCopy: 'Copy Run ID',
       workflowIdCopied: 'Run ID copied to clipboard',
       version: 'Version',
     },
@@ -167,16 +168,16 @@ export const orchestratorMessages = {
     },
     status: {
       completed: 'Run completed',
-      failed: 'Run has failed {{time}}',
+      failed: 'Run has failed at {{time}}',
       aborted: 'Run was aborted {{time}} ago.',
       abortedWithoutTime: 'Run was aborted.',
-      completedWithMessage: 'Run completed {{time}} with message',
-      failedAt: 'Run has failed {{time}}',
-      completedAt: 'Run completed {{time}}',
-      running: 'Workflow is running. Started {{time}}',
+      completedWithMessage: 'Run completed at {{time}} with message',
+      failedAt: 'Run has failed at {{time}}',
+      completedAt: 'Run completed at {{time}}',
+      running: 'Workflow is running. Started at {{time}}',
       runningWaitingAtNode:
         'Workflow is running - waiting at node {{node}} since {{formattedTime}}',
-      workflowIsRunning: 'Workflow is running. Started {{time}}',
+      workflowIsRunning: 'Workflow is running. Started at {{time}}',
       noAdditionalInfo:
         'The workflow provided no additional info about the status.',
       resultsWillBeDisplayedHereOnceTheRunIsComplete:

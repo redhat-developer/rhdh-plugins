@@ -15,7 +15,6 @@
  */
 
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
-import { HomePageLayout } from '../components/HomePageLayout';
 import { HomePageCardConfig } from '../../types';
 
 /**
@@ -23,6 +22,9 @@ import { HomePageCardConfig } from '../../types';
  *
  * Config-driven layout with `widgetLayout` (priority, breakpoints per widget),
  * supports both customizable (drag/drop) and read-only modes.
+ *
+ * The layout component is loaded via dynamic `import()` inside the async
+ * loader so it stays out of the Module Federation sync chunk graph.
  *
  * @alpha
  */
@@ -57,8 +59,12 @@ export const homePageLayoutExtension =
       const layoutConfig = config.widgetLayout ?? {};
 
       return originalFactory({
-        loader: async () =>
-          function CustomHomePageLayout({ widgets }) {
+        loader: async () => {
+          const { HomePageLayout } = await import(
+            '../components/HomePageLayout'
+          );
+
+          return function CustomHomePageLayout({ widgets }) {
             const processedWidgets: HomePageCardConfig[] = widgets
               .map(widget => {
                 const widgetConfig = layoutConfig[widget.name ?? ''];
@@ -85,7 +91,8 @@ export const homePageLayoutExtension =
                 customizable={customizable}
               />
             );
-          },
+          };
+        },
       });
     },
   });

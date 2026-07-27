@@ -97,24 +97,26 @@ export const EXTENSIONS_API_VERSION = 'extensions.backstage.io/v1alpha1';
 // @public (undocumented)
 export enum ExtensionsAnnotation {
   // (undocumented)
+  CATALOG_SOURCE = 'extensions.backstage.io/catalog-source',
+  // (undocumented)
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }
 
 // @public (undocumented)
 export interface ExtensionsApi {
   // (undocumented)
-  disablePackage?(
+  enablePackage?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
   // (undocumented)
-  disablePlugin?(
+  enablePlugin?(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
@@ -220,18 +222,18 @@ export type ExtensionsAuthor = {
 export class ExtensionsBackendClient implements ExtensionsApi {
   constructor(options: ExtensionsBackendClientOptions);
   // (undocumented)
-  disablePackage(
+  enablePackage(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;
   // (undocumented)
-  disablePlugin(
+  enablePlugin(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{
     status: string;
   }>;

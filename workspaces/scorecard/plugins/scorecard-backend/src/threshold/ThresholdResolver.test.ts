@@ -27,7 +27,7 @@ describe('ThresholdResolver', () => {
     scorecard: {
       plugins: {
         github: {
-          number_metric: {
+          numberMetric: {
             thresholds: {
               rules: [
                 { key: 'error', expression: '>100' },
@@ -42,13 +42,13 @@ describe('ThresholdResolver', () => {
   };
 
   it('uses default provider thresholds when no custom thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(
       new ConfigReader({
         scorecard: {
           plugins: {
             github: {
-              other_metric: {
+              otherMetric: {
                 thresholds: {
                   rules: [
                     { key: 'error', expression: '>100' },
@@ -61,10 +61,15 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [provider, new MockNumberProvider('github.other_metric', 'github')],
+      [provider, new MockNumberProvider('github.otherMetric', 'github')],
     );
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>20' },
@@ -74,13 +79,18 @@ describe('ThresholdResolver', () => {
   });
 
   it('uses configured thresholds before provider default thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      new MockNumberProvider('github.other_metric', 'github'),
+      new MockNumberProvider('github.otherMetric', 'github'),
       provider,
     ]);
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>50' },
@@ -116,10 +126,15 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [new MockNumberProvider('github.other_metric', 'github'), provider],
+      [new MockNumberProvider('github.otherMetric', 'github'), provider],
     );
 
-    expect(resolver.resolveProviderThresholds(provider)).toEqual({
+    expect(
+      resolver.resolveMetricThresholds(
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         {
           key: 'present',
@@ -138,16 +153,22 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of default provider thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader({}), [provider]);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>10' },
@@ -157,16 +178,22 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of default provider thresholds when provider is unexpectedly not loaded on startup', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader({}), []);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>10' },
@@ -176,18 +203,24 @@ describe('ThresholdResolver', () => {
   });
 
   it('merges entity annotation overrides on top of custom provider thresholds', () => {
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
       provider,
     ]);
     const entity = new MockEntityBuilder()
       .withAnnotations({
-        'scorecard.io/github.number_metric.thresholds.rules.warning': '>10',
-        'scorecard.io/github.number_metric.thresholds.rules.success': '<=10',
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>10' },
@@ -208,7 +241,13 @@ describe('ThresholdResolver', () => {
       })
       .build();
 
-    expect(resolver.resolveEntityThresholds(entity, provider)).toEqual({
+    expect(
+      resolver.resolveEntityThresholds(
+        entity,
+        provider.getMetrics()[0],
+        provider.getProviderId(),
+      ),
+    ).toEqual({
       rules: [
         { key: 'success', expression: '==false' },
         { key: 'error', expression: '==true' },
@@ -226,11 +265,17 @@ describe('ThresholdResolver', () => {
         ],
       }),
     } as any;
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(mockConfig, [provider]);
 
-    resolver.resolveProviderThresholds(provider);
-    resolver.resolveProviderThresholds(provider);
+    resolver.resolveMetricThresholds(
+      provider.getMetrics()[0],
+      provider.getProviderId(),
+    );
+    resolver.resolveMetricThresholds(
+      provider.getMetrics()[0],
+      provider.getProviderId(),
+    );
 
     expect(mockConfig.getOptional).toHaveBeenCalledTimes(1);
   });
@@ -241,10 +286,10 @@ describe('ThresholdResolver', () => {
         rules: [{ key: 'error', expression: 'INVALID' }],
       }),
     } as any;
-    const provider = new MockNumberProvider('github.number_metric', 'github');
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
 
     expect(() => new ThresholdResolver(mockConfig, [provider])).toThrow(
-      'Invalid thresholds configuration at scorecard.plugins.github.number_metric.thresholds',
+      'Invalid thresholds configuration at scorecard.plugins.github.numberMetric.thresholds',
     );
   });
 });

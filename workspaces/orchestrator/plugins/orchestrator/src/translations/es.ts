@@ -117,21 +117,21 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.status.aborted': 'La ejecución se canceló hace {{time}}.',
     'run.status.abortedWithoutTime': 'La ejecución se canceló.',
     'run.status.completed': 'Ejecución completada',
-    'run.status.completedAt': 'Ejecución completada {{time}}',
+    'run.status.completedAt': 'Ejecución completada el {{time}}',
     'run.status.completedWithMessage':
-      'Ejecución completada {{time}} con mensaje',
-    'run.status.failed': 'La ejecución falló {{time}}',
-    'run.status.failedAt': 'La ejecución falló {{time}}',
+      'Ejecución completada el {{time}} con mensaje',
+    'run.status.failed': 'La ejecución falló el {{time}}',
+    'run.status.failedAt': 'La ejecución falló el {{time}}',
     'run.status.noAdditionalInfo':
       'El flujo de trabajo no proporcionó información adicional sobre el estado.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       'Los resultados se mostrarán aquí una vez que se complete la ejecución.',
     'run.status.running':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.status.runningWaitingAtNode':
       'El flujo de trabajo está en ejecución; esperando en el nodo {{node}} desde {{formattedTime}}',
     'run.status.workflowIsRunning':
-      'El flujo de trabajo está en ejecución. Comenzó {{time}}',
+      'El flujo de trabajo está en ejecución. Comenzó el {{time}}',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
     'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',
     'run.title': 'Ejecutar flujo de trabajo',
@@ -226,6 +226,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.fields.version': 'Versión',
     'workflow.fields.workflow': 'Flujo de trabajo',
     'workflow.fields.workflowId': 'ID de ejecución',
+    'workflow.fields.workflowIdCopy': 'Copiar ID de ejecución',
     'workflow.fields.workflowIdCopied':
       'ID de ejecución copiado en el portapapeles',
     'workflow.fields.workflowStatus': 'Estado del flujo de trabajo',

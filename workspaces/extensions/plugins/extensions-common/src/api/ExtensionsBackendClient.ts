@@ -201,16 +201,16 @@ export class ExtensionsBackendClient implements ExtensionsApi {
     );
   }
 
-  async disablePackage(
+  async enablePackage(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{ status: string }> {
     return this.request(
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/disable`,
       'PATCH',
       undefined,
-      { disabled },
+      { enabled },
     );
   }
 
@@ -281,16 +281,16 @@ export class ExtensionsBackendClient implements ExtensionsApi {
     );
   }
 
-  async disablePlugin(
+  async enablePlugin(
     namespace: string,
     name: string,
-    disabled: boolean,
+    enabled: boolean,
   ): Promise<{ status: string }> {
     return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/disable`,
       'PATCH',
       undefined,
-      { disabled },
+      { enabled },
     );
   }
 

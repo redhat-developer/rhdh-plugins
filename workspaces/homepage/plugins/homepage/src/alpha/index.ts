@@ -18,6 +18,7 @@ import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
   catalogStarredWidget,
+  disableRandomJoke,
   disableToolkit,
   entitySectionWidget,
   featuredDocsCardWidget,
@@ -58,6 +59,7 @@ export const homePageModule = createFrontendModule({
     RecentlyVisitedWidget,
     catalogStarredWidget,
     disableToolkit,
+    disableRandomJoke,
   ],
 });
 
@@ -83,3 +85,10 @@ export const homepageTranslationsModule = createFrontendModule({
  * @alpha
  */
 export { homepageTranslationRef, homepageTranslations } from '../translations';
+
+/**
+ * Default export required for Module Federation to emit the `alpha` NFS expose.
+ *
+ * @alpha
+ */
+export default homePageModule;
