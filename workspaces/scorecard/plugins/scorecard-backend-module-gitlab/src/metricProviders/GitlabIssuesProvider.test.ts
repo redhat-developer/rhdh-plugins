@@ -56,15 +56,7 @@ describe('GitlabIssuesProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.open_issues');
-    });
-
-    it('should return number metric type', () => {
-      expect(provider.getMetricType()).toBe('number');
-    });
-
-    it('should return default number thresholds', () => {
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(provider.getProviderId()).toBe('gitlab.openIssues');
     });
 
     it('should return catalog filter for gitlab annotation', () => {
@@ -74,33 +66,17 @@ describe('GitlabIssuesProvider', () => {
       ).toBeDefined();
     });
 
-    it('should return three metric IDs', () => {
-      expect(provider.getMetricIds()).toEqual([
-        'gitlab.open_issues',
-        'gitlab.opened_issues_7d',
-        'gitlab.closed_issues_7d',
-      ]);
-    });
-
-    it('should return three metrics', () => {
-      const metrics = provider.getMetrics!();
+    it('should return three metrics with thresholds', () => {
+      const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(3);
       expect(metrics.map(m => m.id)).toEqual([
-        'gitlab.open_issues',
-        'gitlab.opened_issues_7d',
-        'gitlab.closed_issues_7d',
+        'gitlab.openIssues',
+        'gitlab.openedIssues7d',
+        'gitlab.closedIssues7d',
       ]);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should return open issues count', async () => {
-      mockedClientInstance.getOpenIssuesCount.mockResolvedValue(42);
-      const result = await provider.calculateMetric(mockEntity);
-      expect(result).toBe(42);
-      expect(mockedClientInstance.getOpenIssuesCount).toHaveBeenCalledWith(
-        'my-group/my-project',
-      );
+      for (const metric of metrics) {
+        expect(metric.thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      }
     });
   });
 
@@ -110,11 +86,11 @@ describe('GitlabIssuesProvider', () => {
       mockedClientInstance.getOpenedIssuesCount.mockResolvedValue(5);
       mockedClientInstance.getClosedIssuesCount.mockResolvedValue(3);
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.open_issues')).toBe(10);
-      expect(result.get('gitlab.opened_issues_7d')).toBe(5);
-      expect(result.get('gitlab.closed_issues_7d')).toBe(3);
+      expect(result.get('gitlab.openIssues')).toBe(10);
+      expect(result.get('gitlab.openedIssues7d')).toBe(5);
+      expect(result.get('gitlab.closedIssues7d')).toBe(3);
     });
   });
 });
