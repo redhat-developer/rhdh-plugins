@@ -85,8 +85,8 @@ function createRow(overrides: Partial<SourceRow> = {}): SourceRow {
   return {
     id: '0',
     plugin: 'Sonarqube',
-    checkTitle: 'sonarqube.codeCoverage',
-    checkDescription: 'Overall code coverage percentage in SonarQube.',
+    metricId: 'sonarqube.codeCoverage',
+    metricDescription: 'Overall code coverage percentage in SonarQube.',
     value: '10',
     evaluationKey: 'success',
     statusLabel: 'Success',
@@ -130,18 +130,18 @@ describe('formatMetricValue', () => {
 
 describe('sortSourceRows', () => {
   const rows = [
-    createRow({ id: '1', plugin: 'Jira', value: '5', checkTitle: 'b.check' }),
+    createRow({ id: '1', plugin: 'Jira', value: '5', metricId: 'b.check' }),
     createRow({
       id: '2',
       plugin: 'Github',
       value: '20',
-      checkTitle: 'a.check',
+      metricId: 'a.check',
     }),
     createRow({
       id: '3',
       plugin: 'Sonarqube',
       value: '—',
-      checkTitle: 'c.check',
+      metricId: 'c.check',
     }),
   ];
 
@@ -183,7 +183,7 @@ describe('sortSourceRows', () => {
       column: 'check',
       direction: 'ascending',
     });
-    expect(result.map(r => r.checkTitle)).toEqual([
+    expect(result.map(r => r.metricId)).toEqual([
       'a.check',
       'b.check',
       'c.check',
@@ -233,14 +233,14 @@ describe('buildColumnConfig', () => {
     expect(screen.getByText('PLUGIN')).toBeInTheDocument();
   });
 
-  it('should render check cell with title and description', () => {
+  it('should render metric cell with id and description', () => {
     const columns = buildColumnConfig(mockT as any);
     const checkCell = columns.find(c => c.id === 'check')?.cell;
     const row = createRow();
 
     render(<>{checkCell!(row)}</>, { wrapper: TestWrapper });
-    expect(screen.getByText(row.checkTitle)).toBeInTheDocument();
-    expect(screen.getByText(row.checkDescription)).toBeInTheDocument();
+    expect(screen.getByText(row.metricId)).toBeInTheDocument();
+    expect(screen.getByText(row.metricDescription)).toBeInTheDocument();
   });
 
   it('should render plugin/value/lastSynced cells via CellText', () => {

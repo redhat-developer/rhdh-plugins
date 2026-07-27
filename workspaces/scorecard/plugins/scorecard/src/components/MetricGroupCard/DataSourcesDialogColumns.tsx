@@ -33,8 +33,8 @@ import { StatusIcon } from './StatusIcon';
 
 export interface SourceRow extends TableItem {
   plugin: string;
-  checkTitle: string;
-  checkDescription: string;
+  metricId: string;
+  metricDescription: string;
   value: string;
   evaluationKey: string;
   statusLabel: string;
@@ -50,7 +50,7 @@ const HEADER_STYLE = {
   cursor: 'pointer',
 } as const;
 
-const CHECK_DESCRIPTION_STYLE = {
+const METRIC_DESCRIPTION_STYLE = {
   display: '-webkit-box',
   WebkitLineClamp: 3,
   WebkitBoxOrient: 'vertical',
@@ -59,7 +59,7 @@ const CHECK_DESCRIPTION_STYLE = {
 
 const COL_TO_FIELD: Record<string, keyof SourceRow> = {
   plugin: 'plugin',
-  check: 'checkTitle',
+  check: 'metricId',
   value: 'value',
   status: 'statusLabel',
   lastSynced: 'lastSynced',
@@ -103,14 +103,14 @@ const CheckCell = ({ item }: { item: SourceRow }) => (
   <Cell style={{ padding: '1.5rem 0.75rem' }}>
     <Flex direction="column" gap="0.5">
       <Text variant="body-medium" style={{ fontWeight: 400 }}>
-        {item.checkTitle}
+        {item.metricId}
       </Text>
       <Text
         variant="body-small"
         color="secondary"
-        style={CHECK_DESCRIPTION_STYLE}
+        style={METRIC_DESCRIPTION_STYLE}
       >
-        {item.checkDescription}
+        {item.metricDescription}
       </Text>
     </Flex>
   </Cell>

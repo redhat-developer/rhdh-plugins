@@ -103,8 +103,8 @@ export const DataSourcesDialog = ({
             metric.id,
             t('dataSourcesDialog.unknownPlugin'),
           ),
-          checkTitle: metric.id,
-          checkDescription: resolveMetricTranslation(
+          metricId: metric.id,
+          metricDescription: resolveMetricTranslation(
             t,
             metric.id,
             'description',
@@ -166,23 +166,6 @@ export const DataSourcesDialog = ({
 
   return (
     <>
-      {open && (
-        <style>{`
-          [${DATA_SOURCES_DIALOG_ATTR}] {
-            background: rgba(0, 0, 0, 0.5);
-          }
-
-          [${DATA_SOURCES_DIALOG_ATTR}] [slot="title"] {
-            font-size: 1.25rem;
-            font-weight: 700;
-          }
-
-          [${DATA_SOURCES_DIALOG_ATTR}] [slot="close"] svg {
-            width: 1.5rem;
-            height: 1.5rem;
-          }
-        `}</style>
-      )}
       <Dialog
         isOpen={open}
         onOpenChange={isOpen => !isOpen && onClose()}
@@ -193,19 +176,7 @@ export const DataSourcesDialog = ({
           {t('dataSourcesDialog.title', { title } as any)}
         </DialogHeader>
         <DialogBody style={{ paddingTop: '0' }}>
-          <Box
-            sx={{
-              '& tbody tr': {
-                borderBottom: 'none !important',
-              },
-              '& tbody tr:nth-of-type(even)': {
-                backgroundColor: 'action.hover',
-              },
-              '& tbody tr:nth-of-type(odd)': {
-                backgroundColor: 'background.paper',
-              },
-            }}
-          >
+          <Box>
             <Table columnConfig={columnConfig} {...tableProps} />
           </Box>
         </DialogBody>

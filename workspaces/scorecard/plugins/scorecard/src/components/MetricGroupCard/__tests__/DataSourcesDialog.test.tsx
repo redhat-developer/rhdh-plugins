@@ -249,7 +249,7 @@ describe('DataSourcesDialog', () => {
 
     expect(capturedData).toHaveLength(2);
     expect(capturedData[0].plugin).toBe('Sonarqube');
-    expect(capturedData[0].checkTitle).toBe('sonarqube.reliabilityIssues');
+    expect(capturedData[0].metricId).toBe('sonarqube.reliabilityIssues');
     expect(capturedData[0].value).toBe('8');
     expect(capturedData[0].statusLabel).toBe('error');
     expect(capturedData[1].plugin).toBe('Sonarqube');
