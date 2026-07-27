@@ -80,6 +80,14 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'searches.title': 'Häufigste-Suchanfragen',
     'searches.totalCount': '{{count}} Suchanfragen',
     'searches.week': 'Woche',
+    'notifications.title': 'Benachrichtigungen über Zeitersparnis',
+    'notifications.description':
+      'Wählen Sie aus, wie oft Sie eine Zusammenfassung der durch Softwarevorlagen eingesparten Zeit erhalten.',
+    'notifications.frequencyLabel': 'Benachrichtigungshäufigkeit',
+    'notifications.daily': 'Täglich',
+    'notifications.weekly': 'Wöchentlich',
+    'notifications.monthly': 'Monatlich',
+    'notifications.none': 'Keine Benachrichtigungen',
     'table.headers.entity': 'Entity',
     'table.headers.executions': 'Ausführungen',
     'table.headers.estTimeSaved': 'Gesch. Zeitersparnis',
@@ -101,8 +109,11 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'users.loggedInUsers': 'Angemeldete Benutzer',
     'users.ofTotal': 'von {{total}}',
     'users.title': 'Gesamtzahl der Benutzer',
+    'units.days': '{{value}} T',
+    'units.hours': '{{value}} Std',
+    'units.minutes': '{{value}} Min',
     'users.tooltip':
-      'Legen Sie die Anzahl der lizenzierten Benutzer in der Datei „app-config.yaml“ fest.',
+      'Legen Sie die Anzahl der lizenzierten Benutzer in der Datei „app-config.yaml” fest.',
   },
 });
 
