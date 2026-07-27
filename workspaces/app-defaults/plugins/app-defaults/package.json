@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "license": "Apache-2.0",
   "description": "Empty RHDH app module for the new frontend system",
   "main": "src/alpha.ts",
@@ -32,7 +32,8 @@
     "role": "frontend-plugin",
     "pluginId": "app",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-app-defaults"
+      "@red-hat-developer-hub/backstage-plugin-app-defaults",
+      "@red-hat-developer-hub/backstage-plugin-app-react"
     ]
   },
   "sideEffects": false,
