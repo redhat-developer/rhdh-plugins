@@ -166,7 +166,9 @@ export const QuickAccessCard: ComponentType<QuickAccessCardProps> =
       name: 'QuickAccessCard',
       component: {
         lazy: () =>
-          import('./components/QuickAccessCard').then(m => m.QuickAccessCard),
+          import('./components/legacy/QuickAccessCardLegacy').then(
+            m => m.QuickAccessCard,
+          ),
       },
     }),
   );

@@ -29,6 +29,7 @@ const homepageTranslationJa = createTranslationMessages({
     'header.local': 'ローカル',
     'homePage.empty': 'ホームページカード が設定されていないか見つかりません。',
     'search.placeholder': '検索',
+    'search.clearButton': 'クリア',
     'quickAccess.title': 'クイックアクセス',
     'quickAccess.fetchError': 'データを取得できませんでした。',
     'quickAccess.error': '不明なエラー',
@@ -36,7 +37,10 @@ const homepageTranslationJa = createTranslationMessages({
     'featuredDocs.learnMore': ' 詳細',
     'starredEntities.title': 'スター付きカタログエンティティ',
     'recentlyVisited.title': '最近の訪問',
+    'recentlyVisited.description':
+      '最近表示したエンティティやページへのクイックアクセス',
     'topVisited.title': 'よく訪問される項目',
+    'topVisited.description': '最も頻繁にアクセスするエンティティとサービス',
     'templates.title': 'テンプレートの探索',
     'templates.fetchError': 'データを取得できませんでした。',
     'templates.error': '不明なエラー',
