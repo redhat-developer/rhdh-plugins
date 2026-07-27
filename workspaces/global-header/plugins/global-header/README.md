@@ -38,7 +38,7 @@ export default createApp({
 });
 ```
 
-Other plugins can contribute toolbar items and dropdown menu items using `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. See the [New Frontend System documentation](../../docs/new-frontend-system.md) for detailed examples and API reference.
+Other plugins can contribute toolbar items and dropdown menu items using `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. Building-block UI (`GlobalHeaderMenuItem`, `GlobalHeaderDropdown`, …) is imported from `/components` so it stays off the main `/alpha` sync chunk. See the [New Frontend System documentation](../../docs/new-frontend-system.md) for detailed examples and API reference.
 
 ### Legacy (Mount Points)
 
