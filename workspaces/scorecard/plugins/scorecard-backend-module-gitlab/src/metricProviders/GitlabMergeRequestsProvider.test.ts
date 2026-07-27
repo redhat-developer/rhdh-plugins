@@ -56,15 +56,7 @@ describe('GitlabMergeRequestsProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.open_merge_requests');
-    });
-
-    it('should return number metric type', () => {
-      expect(provider.getMetricType()).toBe('number');
-    });
-
-    it('should return default number thresholds', () => {
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(provider.getProviderId()).toBe('gitlab.openMergeRequests');
     });
 
     it('should return catalog filter for gitlab annotation', () => {
@@ -74,33 +66,17 @@ describe('GitlabMergeRequestsProvider', () => {
       ).toBeDefined();
     });
 
-    it('should return three metric IDs', () => {
-      expect(provider.getMetricIds()).toEqual([
-        'gitlab.open_merge_requests',
-        'gitlab.opened_merge_requests_7d',
-        'gitlab.closed_merge_requests_7d',
-      ]);
-    });
-
-    it('should return three metrics', () => {
-      const metrics = provider.getMetrics!();
+    it('should return three metrics with thresholds', () => {
+      const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(3);
       expect(metrics.map(m => m.id)).toEqual([
-        'gitlab.open_merge_requests',
-        'gitlab.opened_merge_requests_7d',
-        'gitlab.closed_merge_requests_7d',
+        'gitlab.openMergeRequests',
+        'gitlab.openedMergeRequests7d',
+        'gitlab.closedMergeRequests7d',
       ]);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should return open merge requests count', async () => {
-      mockedClientInstance.getOpenMergeRequestsCount.mockResolvedValue(7);
-      const result = await provider.calculateMetric(mockEntity);
-      expect(result).toBe(7);
-      expect(
-        mockedClientInstance.getOpenMergeRequestsCount,
-      ).toHaveBeenCalledWith('my-group/my-project');
+      for (const metric of metrics) {
+        expect(metric.thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      }
     });
   });
 
@@ -110,11 +86,11 @@ describe('GitlabMergeRequestsProvider', () => {
       mockedClientInstance.getOpenedMergeRequestsCount.mockResolvedValue(4);
       mockedClientInstance.getClosedMergeRequestsCount.mockResolvedValue(6);
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.open_merge_requests')).toBe(10);
-      expect(result.get('gitlab.opened_merge_requests_7d')).toBe(4);
-      expect(result.get('gitlab.closed_merge_requests_7d')).toBe(6);
+      expect(result.get('gitlab.openMergeRequests')).toBe(10);
+      expect(result.get('gitlab.openedMergeRequests7d')).toBe(4);
+      expect(result.get('gitlab.closedMergeRequests7d')).toBe(6);
     });
   });
 });

@@ -20,7 +20,6 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
@@ -28,9 +27,9 @@ import { getProjectSlugFromEntity } from '../gitlab/utils';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 
 const METRIC_IDS = {
-  OPEN_MRS: 'gitlab.open_merge_requests',
-  OPENED_MRS_7D: 'gitlab.opened_merge_requests_7d',
-  CLOSED_MRS_7D: 'gitlab.closed_merge_requests_7d',
+  OPEN_MRS: 'gitlab.openMergeRequests',
+  OPENED_MRS_7D: 'gitlab.openedMergeRequests7d',
+  CLOSED_MRS_7D: 'gitlab.closedMergeRequests7d',
 } as const;
 
 export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
@@ -52,36 +51,6 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
     return METRIC_IDS.OPEN_MRS;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.OPEN_MRS,
-      title: 'GitLab open merge requests',
-      description:
-        'Current count of open merge requests for a given GitLab project.',
-      type: 'number',
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
-  }
-
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
-        CATALOG_FILTER_EXISTS,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
       {
@@ -90,6 +59,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         description:
           'Current count of open merge requests for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -98,6 +68,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         description:
           'Number of merge requests opened in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -106,14 +77,17 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         description:
           'Number of merge requests closed or merged in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
     ];
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    const projectSlug = getProjectSlugFromEntity(entity);
-    return this.gitlabClient.getOpenMergeRequestsCount(projectSlug);
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
+        CATALOG_FILTER_EXISTS,
+    };
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

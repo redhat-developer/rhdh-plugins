@@ -52,27 +52,16 @@ describe('GitlabJobsProvider', () => {
       expect(provider.getProviderDatasourceId()).toBe('gitlab');
     });
 
-    it('should return five metric IDs', () => {
-      expect(provider.getMetricIds()).toEqual([
-        'gitlab.started_jobs_7d',
-        'gitlab.successful_jobs_7d',
-        'gitlab.failed_jobs_7d',
-        'gitlab.job_success_ratio_7d',
-        'gitlab.job_success_ratio_24h',
-      ]);
-    });
-
     it('should return five metrics', () => {
-      const metrics = provider.getMetrics!();
+      const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(5);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should return started jobs count', async () => {
-      mockedClientInstance.getJobsCount.mockResolvedValue(200);
-      const result = await provider.calculateMetric(mockEntity);
-      expect(result).toBe(200);
+      expect(metrics.map(m => m.id)).toEqual([
+        'gitlab.startedJobs7d',
+        'gitlab.successfulJobs7d',
+        'gitlab.failedJobs7d',
+        'gitlab.jobSuccessRatio7d',
+        'gitlab.jobSuccessRatio24h',
+      ]);
     });
   });
 
@@ -85,22 +74,22 @@ describe('GitlabJobsProvider', () => {
         .mockResolvedValueOnce(50) // successful 24h
         .mockResolvedValueOnce(10); // failed 24h
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.started_jobs_7d')).toBe(300);
-      expect(result.get('gitlab.successful_jobs_7d')).toBe(250);
-      expect(result.get('gitlab.failed_jobs_7d')).toBe(30);
-      expect(result.get('gitlab.job_success_ratio_7d')).toBe(89);
-      expect(result.get('gitlab.job_success_ratio_24h')).toBe(83);
+      expect(result.get('gitlab.startedJobs7d')).toBe(300);
+      expect(result.get('gitlab.successfulJobs7d')).toBe(250);
+      expect(result.get('gitlab.failedJobs7d')).toBe(30);
+      expect(result.get('gitlab.jobSuccessRatio7d')).toBe(89);
+      expect(result.get('gitlab.jobSuccessRatio24h')).toBe(83);
     });
 
     it('should return 100% ratio when no jobs exist', async () => {
       mockedClientInstance.getJobsCount.mockResolvedValue(0);
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.job_success_ratio_7d')).toBe(100);
-      expect(result.get('gitlab.job_success_ratio_24h')).toBe(100);
+      expect(result.get('gitlab.jobSuccessRatio7d')).toBe(100);
+      expect(result.get('gitlab.jobSuccessRatio24h')).toBe(100);
     });
   });
 });

@@ -55,27 +55,16 @@ describe('GitlabPipelinesProvider', () => {
       expect(provider.getProviderDatasourceId()).toBe('gitlab');
     });
 
-    it('should return five metric IDs', () => {
-      expect(provider.getMetricIds()).toEqual([
-        'gitlab.started_pipelines_7d',
-        'gitlab.successful_pipelines_7d',
-        'gitlab.failed_pipelines_7d',
-        'gitlab.pipeline_success_ratio_7d',
-        'gitlab.pipeline_success_ratio_24h',
-      ]);
-    });
-
     it('should return five metrics', () => {
-      const metrics = provider.getMetrics!();
+      const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(5);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should return started pipelines count', async () => {
-      mockedClientInstance.getPipelinesCount.mockResolvedValue(50);
-      const result = await provider.calculateMetric(mockEntity);
-      expect(result).toBe(50);
+      expect(metrics.map(m => m.id)).toEqual([
+        'gitlab.startedPipelines7d',
+        'gitlab.successfulPipelines7d',
+        'gitlab.failedPipelines7d',
+        'gitlab.pipelineSuccessRatio7d',
+        'gitlab.pipelineSuccessRatio24h',
+      ]);
     });
   });
 
@@ -88,22 +77,22 @@ describe('GitlabPipelinesProvider', () => {
         .mockResolvedValueOnce(20) // successful 24h
         .mockResolvedValueOnce(5); // failed 24h
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.started_pipelines_7d')).toBe(100);
-      expect(result.get('gitlab.successful_pipelines_7d')).toBe(80);
-      expect(result.get('gitlab.failed_pipelines_7d')).toBe(15);
-      expect(result.get('gitlab.pipeline_success_ratio_7d')).toBe(84);
-      expect(result.get('gitlab.pipeline_success_ratio_24h')).toBe(80);
+      expect(result.get('gitlab.startedPipelines7d')).toBe(100);
+      expect(result.get('gitlab.successfulPipelines7d')).toBe(80);
+      expect(result.get('gitlab.failedPipelines7d')).toBe(15);
+      expect(result.get('gitlab.pipelineSuccessRatio7d')).toBe(84);
+      expect(result.get('gitlab.pipelineSuccessRatio24h')).toBe(80);
     });
 
     it('should return 100% ratio when no pipelines exist', async () => {
       mockedClientInstance.getPipelinesCount.mockResolvedValue(0);
 
-      const result = await provider.calculateMetrics!(mockEntity);
+      const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.pipeline_success_ratio_7d')).toBe(100);
-      expect(result.get('gitlab.pipeline_success_ratio_24h')).toBe(100);
+      expect(result.get('gitlab.pipelineSuccessRatio7d')).toBe(100);
+      expect(result.get('gitlab.pipelineSuccessRatio24h')).toBe(100);
     });
   });
 });

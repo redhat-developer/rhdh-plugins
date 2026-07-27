@@ -20,20 +20,22 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
 import { getProjectSlugFromEntity } from '../gitlab/utils';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
-import { calculateRatio } from './GitlabPipelinesProvider';
+import {
+  calculateRatio,
+  PERCENTAGE_THRESHOLDS,
+} from './GitlabPipelinesProvider';
 
 const METRIC_IDS = {
-  STARTED_7D: 'gitlab.started_jobs_7d',
-  SUCCESSFUL_7D: 'gitlab.successful_jobs_7d',
-  FAILED_7D: 'gitlab.failed_jobs_7d',
-  SUCCESS_RATIO_7D: 'gitlab.job_success_ratio_7d',
-  SUCCESS_RATIO_24H: 'gitlab.job_success_ratio_24h',
+  STARTED_7D: 'gitlab.startedJobs7d',
+  SUCCESSFUL_7D: 'gitlab.successfulJobs7d',
+  FAILED_7D: 'gitlab.failedJobs7d',
+  SUCCESS_RATIO_7D: 'gitlab.jobSuccessRatio7d',
+  SUCCESS_RATIO_24H: 'gitlab.jobSuccessRatio24h',
 } as const;
 
 export class GitlabJobsProvider implements MetricProvider<'number'> {
@@ -55,36 +57,6 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
     return METRIC_IDS.STARTED_7D;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: METRIC_IDS.STARTED_7D,
-      title: 'GitLab jobs started (7d)',
-      description:
-        'Number of jobs started in the last 7 days for a given GitLab project.',
-      type: 'number',
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
-  }
-
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    return {
-      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
-        CATALOG_FILTER_EXISTS,
-    };
-  }
-
-  getMetricIds(): string[] {
-    return Object.values(METRIC_IDS);
-  }
-
   getMetrics(): Metric<'number'>[] {
     return [
       {
@@ -93,6 +65,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Number of jobs started in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -101,6 +74,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Number of successfully finished jobs in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -109,6 +83,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Number of failed jobs in the last 7 days for a given GitLab project.',
         type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
       },
       {
@@ -117,6 +92,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Ratio of successful vs successful+failed jobs in the last 7 days (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
+        thresholds: PERCENTAGE_THRESHOLDS,
         history: true,
       },
       {
@@ -125,15 +101,17 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Ratio of successful vs successful+failed jobs in the last 24 hours (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
+        thresholds: PERCENTAGE_THRESHOLDS,
         history: true,
       },
     ];
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    const projectSlug = getProjectSlugFromEntity(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    return this.gitlabClient.getJobsCount(projectSlug, sevenDaysAgo);
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      [`metadata.annotations.${GITLAB_PROJECT_ANNOTATION}`]:
+        CATALOG_FILTER_EXISTS,
+    };
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
