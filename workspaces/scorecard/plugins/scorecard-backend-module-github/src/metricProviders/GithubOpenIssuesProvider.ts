@@ -37,7 +37,7 @@ export class GithubOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.open_issues';
+    return 'github.openIssues';
   }
 
   getMetrics(): Metric<'number'>[] {

@@ -71,7 +71,7 @@ describe('GithubOpenedIssuesProvider', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.opened_issues_7d')).toBe(5);
+      expect(results.get('github.openedIssues7d')).toBe(5);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },

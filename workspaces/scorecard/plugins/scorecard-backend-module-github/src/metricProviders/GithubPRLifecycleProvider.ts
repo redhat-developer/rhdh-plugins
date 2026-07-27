@@ -35,9 +35,9 @@ const DURATION_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  TIME_TO_REVIEW: 'github.time_to_review',
-  TIME_TO_APPROVE: 'github.time_to_approve',
-  TIME_TO_MERGE: 'github.time_to_merge',
+  TIME_TO_REVIEW: 'github.timeToReview',
+  TIME_TO_APPROVE: 'github.timeToApprove',
+  TIME_TO_MERGE: 'github.timeToMerge',
 } as const;
 
 function computeAverageHours(durations: number[]): number {

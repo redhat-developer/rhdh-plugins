@@ -35,8 +35,8 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  SUCCESS_RATIO_7D: 'github.actions_success_ratio_7d',
-  SUCCESS_RATIO_24H: 'github.actions_success_ratio_24h',
+  SUCCESS_RATIO_7D: 'github.actionsSuccessRatio7d',
+  SUCCESS_RATIO_24H: 'github.actionsSuccessRatio24h',
 } as const;
 
 function filterRunsByWindow(

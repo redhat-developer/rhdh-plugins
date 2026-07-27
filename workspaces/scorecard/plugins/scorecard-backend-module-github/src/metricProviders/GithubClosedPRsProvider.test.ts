@@ -69,7 +69,7 @@ describe('GithubClosedPRsProvider', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.closed_prs_7d')).toBe(7);
+      expect(results.get('github.closedPRs7d')).toBe(7);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },

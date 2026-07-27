@@ -59,8 +59,8 @@ describe('GithubPRPassRateProvider', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(2);
     expect(metrics.map(m => m.id)).toEqual([
-      'github.pr_ci_first_time_pass_rate_7d',
-      'github.pr_ci_first_time_pass_rate_24h',
+      'github.prCiFirstTimePassRate7d',
+      'github.prCiFirstTimePassRate24h',
     ]);
     for (const metric of metrics) {
       expect(metric.thresholds).toBeDefined();
@@ -100,9 +100,9 @@ describe('GithubPRPassRateProvider', () => {
     const results = await provider.calculateMetrics(mockEntity);
 
     // 7d: 3 success out of 4 with CI = 75%
-    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(75);
+    expect(results.get('github.prCiFirstTimePassRate7d')).toBe(75);
     // 24h: 2 success out of 2 with CI = 100%
-    expect(results.get('github.pr_ci_first_time_pass_rate_24h')).toBe(100);
+    expect(results.get('github.prCiFirstTimePassRate24h')).toBe(100);
   });
 
   it('should skip PRs without CI checks', async () => {
@@ -117,7 +117,7 @@ describe('GithubPRPassRateProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
+    expect(results.get('github.prCiFirstTimePassRate7d')).toBe(100);
   });
 
   it('should return 100% when no PRs exist', async () => {
@@ -127,8 +127,8 @@ describe('GithubPRPassRateProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(100);
-    expect(results.get('github.pr_ci_first_time_pass_rate_24h')).toBe(100);
+    expect(results.get('github.prCiFirstTimePassRate7d')).toBe(100);
+    expect(results.get('github.prCiFirstTimePassRate24h')).toBe(100);
   });
 
   it('should handle mixed CI states', async () => {
@@ -159,6 +159,6 @@ describe('GithubPRPassRateProvider', () => {
     const results = await provider.calculateMetrics(mockEntity);
 
     // 1 success out of 3 with CI (null excluded) = 33.3%
-    expect(results.get('github.pr_ci_first_time_pass_rate_7d')).toBe(33.3);
+    expect(results.get('github.prCiFirstTimePassRate7d')).toBe(33.3);
   });
 });

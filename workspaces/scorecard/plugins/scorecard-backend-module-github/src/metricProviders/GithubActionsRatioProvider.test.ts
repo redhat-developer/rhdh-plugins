@@ -60,8 +60,8 @@ describe('GithubActionsRatioProvider', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(2);
     expect(metrics.map(m => m.id)).toEqual([
-      'github.actions_success_ratio_7d',
-      'github.actions_success_ratio_24h',
+      'github.actionsSuccessRatio7d',
+      'github.actionsSuccessRatio24h',
     ]);
     for (const metric of metrics) {
       expect(metric.thresholds).toEqual(RATIO_THRESHOLDS);
@@ -109,9 +109,9 @@ describe('GithubActionsRatioProvider', () => {
     const results = await provider.calculateMetrics(mockEntity);
 
     // 7d ratio: 3 success / (3 success + 2 failure) = 60%
-    expect(results.get('github.actions_success_ratio_7d')).toBe(60);
+    expect(results.get('github.actionsSuccessRatio7d')).toBe(60);
     // 24h ratio: 1 success / (1 success + 1 failure) = 50%
-    expect(results.get('github.actions_success_ratio_24h')).toBe(50);
+    expect(results.get('github.actionsSuccessRatio24h')).toBe(50);
   });
 
   it('should return 100% ratio when no completed runs', async () => {
@@ -125,8 +125,8 @@ describe('GithubActionsRatioProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
-    expect(results.get('github.actions_success_ratio_24h')).toBe(100);
+    expect(results.get('github.actionsSuccessRatio7d')).toBe(100);
+    expect(results.get('github.actionsSuccessRatio24h')).toBe(100);
   });
 
   it('should handle empty workflow runs', async () => {
@@ -134,8 +134,8 @@ describe('GithubActionsRatioProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
-    expect(results.get('github.actions_success_ratio_24h')).toBe(100);
+    expect(results.get('github.actionsSuccessRatio7d')).toBe(100);
+    expect(results.get('github.actionsSuccessRatio24h')).toBe(100);
   });
 
   it('should exclude cancelled runs from ratio calculation', async () => {
@@ -155,6 +155,6 @@ describe('GithubActionsRatioProvider', () => {
     const results = await provider.calculateMetrics(mockEntity);
 
     // Ratio: 1/(1+0) = 100% (cancelled excluded from ratio)
-    expect(results.get('github.actions_success_ratio_7d')).toBe(100);
+    expect(results.get('github.actionsSuccessRatio7d')).toBe(100);
   });
 });

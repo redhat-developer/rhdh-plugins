@@ -37,7 +37,7 @@ export class GithubClosedPRsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.closed_prs_7d';
+    return 'github.closedPRs7d';
   }
 
   getMetrics(): Metric<'number'>[] {

@@ -71,7 +71,7 @@ describe('GithubOpenIssuesProvider', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.open_issues')).toBe(15);
+      expect(results.get('github.openIssues')).toBe(15);
       expect(
         mockedGithubClientInstance.getOpenIssuesCount,
       ).toHaveBeenCalledWith('https://github.com/org/orgRepo/tree/main/', {

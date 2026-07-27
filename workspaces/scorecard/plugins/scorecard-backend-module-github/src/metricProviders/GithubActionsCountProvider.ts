@@ -35,9 +35,9 @@ const COUNT_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  STARTED: 'github.actions_started_7d',
-  SUCCESSFUL: 'github.actions_successful_7d',
-  FAILED: 'github.actions_failed_7d',
+  STARTED: 'github.actionsStarted7d',
+  SUCCESSFUL: 'github.actionsSuccessful7d',
+  FAILED: 'github.actionsFailed7d',
 } as const;
 
 function countByConclusion(runs: WorkflowRun[], conclusion: string): number {

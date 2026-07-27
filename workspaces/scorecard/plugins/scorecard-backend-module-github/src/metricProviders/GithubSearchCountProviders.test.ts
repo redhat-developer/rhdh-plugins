@@ -60,7 +60,7 @@ describe('Search count providers', () => {
       const provider = GithubOpenedIssuesProvider.fromConfig(
         new ConfigReader({}),
       );
-      expect(provider.getProviderId()).toBe('github.opened_issues_7d');
+      expect(provider.getProviderId()).toBe('github.openedIssues7d');
       expect(provider.getProviderDatasourceId()).toBe('github');
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
@@ -75,7 +75,7 @@ describe('Search count providers', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.opened_issues_7d')).toBe(5);
+      expect(results.get('github.openedIssues7d')).toBe(5);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -87,7 +87,7 @@ describe('Search count providers', () => {
   describe('GithubOpenedPRsProvider', () => {
     it('should return provider metadata', () => {
       const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}));
-      expect(provider.getProviderId()).toBe('github.opened_prs_7d');
+      expect(provider.getProviderId()).toBe('github.openedPRs7d');
     });
 
     it('should calculate metric using search count', async () => {
@@ -96,7 +96,7 @@ describe('Search count providers', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.opened_prs_7d')).toBe(10);
+      expect(results.get('github.openedPRs7d')).toBe(10);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -110,7 +110,7 @@ describe('Search count providers', () => {
       const provider = GithubClosedIssuesProvider.fromConfig(
         new ConfigReader({}),
       );
-      expect(provider.getProviderId()).toBe('github.closed_issues_7d');
+      expect(provider.getProviderId()).toBe('github.closedIssues7d');
     });
 
     it('should calculate metric using search count', async () => {
@@ -121,7 +121,7 @@ describe('Search count providers', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.closed_issues_7d')).toBe(3);
+      expect(results.get('github.closedIssues7d')).toBe(3);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },
@@ -133,7 +133,7 @@ describe('Search count providers', () => {
   describe('GithubClosedPRsProvider', () => {
     it('should return provider metadata', () => {
       const provider = GithubClosedPRsProvider.fromConfig(new ConfigReader({}));
-      expect(provider.getProviderId()).toBe('github.closed_prs_7d');
+      expect(provider.getProviderId()).toBe('github.closedPRs7d');
     });
 
     it('should calculate metric using search count', async () => {
@@ -142,7 +142,7 @@ describe('Search count providers', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('github.closed_prs_7d')).toBe(7);
+      expect(results.get('github.closedPRs7d')).toBe(7);
       expect(mockedGithubClientInstance.getSearchCount).toHaveBeenCalledWith(
         'https://github.com/org/orgRepo/tree/main/',
         { owner: 'org', repo: 'orgRepo' },

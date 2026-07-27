@@ -35,8 +35,8 @@ const RATIO_THRESHOLDS: ThresholdConfig = {
 };
 
 const METRIC_IDS = {
-  PASS_RATE_7D: 'github.pr_ci_first_time_pass_rate_7d',
-  PASS_RATE_24H: 'github.pr_ci_first_time_pass_rate_24h',
+  PASS_RATE_7D: 'github.prCiFirstTimePassRate7d',
+  PASS_RATE_24H: 'github.prCiFirstTimePassRate24h',
 } as const;
 
 function computePassRate(statuses: PullRequestCommitStatus[]): number {

@@ -59,9 +59,9 @@ describe('GithubPRLifecycleProvider', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(3);
     expect(metrics.map(m => m.id)).toEqual([
-      'github.time_to_review',
-      'github.time_to_approve',
-      'github.time_to_merge',
+      'github.timeToReview',
+      'github.timeToApprove',
+      'github.timeToMerge',
     ]);
     for (const metric of metrics) {
       expect(metric.thresholds).toBeDefined();
@@ -104,11 +104,11 @@ describe('GithubPRLifecycleProvider', () => {
     const results = await provider.calculateMetrics(mockEntity);
 
     // Time to review: avg of 12h and 24h = 18h
-    expect(results.get('github.time_to_review')).toBe(18);
+    expect(results.get('github.timeToReview')).toBe(18);
     // Time to approve: avg of 24h and 24h = 24h
-    expect(results.get('github.time_to_approve')).toBe(24);
+    expect(results.get('github.timeToApprove')).toBe(24);
     // Time to merge: avg of 48h and 72h = 60h
-    expect(results.get('github.time_to_merge')).toBe(60);
+    expect(results.get('github.timeToMerge')).toBe(60);
   });
 
   it('should return 0 when no PRs have reviews', async () => {
@@ -122,8 +122,8 @@ describe('GithubPRLifecycleProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.time_to_review')).toBe(0);
-    expect(results.get('github.time_to_approve')).toBe(0);
+    expect(results.get('github.timeToReview')).toBe(0);
+    expect(results.get('github.timeToApprove')).toBe(0);
   });
 
   it('should skip unmerged PRs for time to merge', async () => {
@@ -139,7 +139,7 @@ describe('GithubPRLifecycleProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.time_to_merge')).toBe(0);
+    expect(results.get('github.timeToMerge')).toBe(0);
   });
 
   it('should return 0 for empty results', async () => {
@@ -147,8 +147,8 @@ describe('GithubPRLifecycleProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.time_to_review')).toBe(0);
-    expect(results.get('github.time_to_approve')).toBe(0);
-    expect(results.get('github.time_to_merge')).toBe(0);
+    expect(results.get('github.timeToReview')).toBe(0);
+    expect(results.get('github.timeToApprove')).toBe(0);
+    expect(results.get('github.timeToMerge')).toBe(0);
   });
 });

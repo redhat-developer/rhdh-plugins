@@ -60,9 +60,9 @@ describe('GithubActionsCountProvider', () => {
     const metrics = provider.getMetrics();
     expect(metrics).toHaveLength(3);
     expect(metrics.map(m => m.id)).toEqual([
-      'github.actions_started_7d',
-      'github.actions_successful_7d',
-      'github.actions_failed_7d',
+      'github.actionsStarted7d',
+      'github.actionsSuccessful7d',
+      'github.actionsFailed7d',
     ]);
     for (const metric of metrics) {
       expect(metric.thresholds).toEqual(COUNT_THRESHOLDS);
@@ -99,9 +99,9 @@ describe('GithubActionsCountProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.actions_started_7d')).toBe(4);
-    expect(results.get('github.actions_successful_7d')).toBe(2);
-    expect(results.get('github.actions_failed_7d')).toBe(1);
+    expect(results.get('github.actionsStarted7d')).toBe(4);
+    expect(results.get('github.actionsSuccessful7d')).toBe(2);
+    expect(results.get('github.actionsFailed7d')).toBe(1);
   });
 
   it('should handle empty workflow runs', async () => {
@@ -109,9 +109,9 @@ describe('GithubActionsCountProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.actions_started_7d')).toBe(0);
-    expect(results.get('github.actions_successful_7d')).toBe(0);
-    expect(results.get('github.actions_failed_7d')).toBe(0);
+    expect(results.get('github.actionsStarted7d')).toBe(0);
+    expect(results.get('github.actionsSuccessful7d')).toBe(0);
+    expect(results.get('github.actionsFailed7d')).toBe(0);
   });
 
   it('should exclude non-terminal runs from success/failure counts', async () => {
@@ -140,8 +140,8 @@ describe('GithubActionsCountProvider', () => {
 
     const results = await provider.calculateMetrics(mockEntity);
 
-    expect(results.get('github.actions_started_7d')).toBe(4);
-    expect(results.get('github.actions_successful_7d')).toBe(1);
-    expect(results.get('github.actions_failed_7d')).toBe(0);
+    expect(results.get('github.actionsStarted7d')).toBe(4);
+    expect(results.get('github.actionsSuccessful7d')).toBe(1);
+    expect(results.get('github.actionsFailed7d')).toBe(0);
   });
 });
