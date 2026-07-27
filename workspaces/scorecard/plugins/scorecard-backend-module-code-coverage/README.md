@@ -8,16 +8,16 @@ This module integrates with the [Backstage Community code-coverage plugin](https
 
 This module provides the following metrics:
 
-| Metric ID                         | Title                                 | Source                        |
-| --------------------------------- | ------------------------------------- | ----------------------------- |
-| `code-coverage.line_percentage`   | Code coverage (Lines)                 | `aggregate.line.percentage`   |
-| `code-coverage.line_available`    | Code coverage - Tracked lines of code | `aggregate.line.available`    |
-| `code-coverage.line_covered`      | Code coverage - Covered lines of code | `aggregate.line.covered`      |
-| `code-coverage.line_missed`       | Code coverage - Missed lines of code  | `aggregate.line.missed`       |
-| `code-coverage.branch_percentage` | Code coverage (Branches)              | `aggregate.branch.percentage` |
-| `code-coverage.branch_available`  | Code coverage - Tracked branches      | `aggregate.branch.available`  |
-| `code-coverage.branch_covered`    | Code coverage - Covered branches      | `aggregate.branch.covered`    |
-| `code-coverage.branch_missed`     | Code coverage - Missed branches       | `aggregate.branch.missed`     |
+| Metric ID                       | Title                                 | Source                        |
+| ------------------------------- | ------------------------------------- | ----------------------------- |
+| `codeCoverage.linePercentage`   | Code coverage (Lines)                 | `aggregate.line.percentage`   |
+| `codeCoverage.lineAvailable`    | Code coverage - Tracked lines of code | `aggregate.line.available`    |
+| `codeCoverage.lineCovered`      | Code coverage - Covered lines of code | `aggregate.line.covered`      |
+| `codeCoverage.lineMissed`       | Code coverage - Missed lines of code  | `aggregate.line.missed`       |
+| `codeCoverage.branchPercentage` | Code coverage (Branches)              | `aggregate.branch.percentage` |
+| `codeCoverage.branchAvailable`  | Code coverage - Tracked branches      | `aggregate.branch.available`  |
+| `codeCoverage.branchCovered`    | Code coverage - Covered branches      | `aggregate.branch.covered`    |
+| `codeCoverage.branchMissed`     | Code coverage - Missed branches       | `aggregate.branch.missed`     |
 
 ## Prerequisites
 
