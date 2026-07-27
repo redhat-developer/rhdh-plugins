@@ -203,7 +203,7 @@ export class GithubClient {
     const maxPages = 10;
 
     for (let page = 0; page < maxPages; page++) {
-      const response = await octokit<{
+      const response: {
         search: {
           nodes: PullRequestWithReviews[];
           pageInfo: {
@@ -211,7 +211,7 @@ export class GithubClient {
             endCursor: string | null;
           };
         };
-      }>(query, {
+      } = await octokit(query, {
         q: searchQuery,
         cursor,
       });
@@ -324,7 +324,7 @@ export class GithubClient {
     const maxPages = 10;
 
     for (let page = 0; page < maxPages; page++) {
-      const response = await octokit<{
+      const response: {
         search: {
           nodes: PRWithCommits[];
           pageInfo: {
@@ -332,7 +332,7 @@ export class GithubClient {
             endCursor: string | null;
           };
         };
-      }>(query, {
+      } = await octokit(query, {
         q: searchQuery,
         cursor,
       });
