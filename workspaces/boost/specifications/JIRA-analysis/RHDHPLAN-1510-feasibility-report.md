@@ -27,7 +27,7 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 | Custom CA bundle handling                                               | **Not built-in at catalog level** — standard Node.js/K8s TLS patterns                  |
 | K8s Secret credential injection                                         | **Not built-in at catalog level** — standard `$env:`/`$secret:` app-config patterns    |
 | OCI registry client                                                     | **Not built-in** — requires custom implementation or library                           |
-| RHOAI/Kubeflow Model Registry client                                    | **Not built-in** — requires custom implementation                                      |
+| ~~RHOAI/Kubeflow Model Registry client~~                                | ~~**Not built-in** — requires custom implementation~~ _(RHDHPLAN-404 scope)_           |
 | MCP Registry mirror support                                             | **Not built-in** — requires custom endpoint configuration                              |
 | Cross-connector fault isolation                                         | **Not built-in** — each provider runs in its own bucket but shares the Node.js process |
 
@@ -68,24 +68,24 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ---
 
-### RHIDP-15314: RHOAI Entity-Provider Connector (Model Registry + MCP Catalog)
+### RHIDP-15314: RHOAI Entity-Provider Connector (MCP Catalog)
 
-**Summary:** Entity provider with two toggleable sources: (1) RHOAI Model Registry API (`RegisteredModel`/`ModelVersion` → `ai-model`/`model-server`), (2) RHOAI 3.4 MCP catalog → `mcp-server`. Cross-cluster, K8s Secrets, custom CA.
+**Summary:** Entity provider for the RHOAI 3.4 MCP catalog API → `mcp-server` entities. Cross-cluster, K8s Secrets, custom CA. _(Model Registry integration — Kubeflow API — is handled under RHDHPLAN-404, not this connector.)_
 
 #### Acceptance Criteria Assessment
 
-| Criterion                                                                                                                 | Feasible without upstream changes? | Assessment                                                                                                                                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Model Registry source connects to Kubeflow `RegisteredModel`/`ModelVersion` API, emits `ai-model`/`model-server` entities | **YES**                            | Standard entity provider implementation. The connector calls the Kubeflow Model Registry REST API, maps responses to Backstage entities (Resource with `spec.type: ai-model`, Component with `spec.type: model-server`), and emits via `applyMutation`. Prior art: `redhat-ai-dev/model-catalog-bridge` |
-| RHOAI version normalization maps `ModelVersion` to `rhdh.io/ai-asset-version`                                             | **YES**                            | Application-level mapping logic — extract version identifier from Kubeflow API response, set as annotation value                                                                                                                                                                                        |
-| MCP catalog source connects to RHOAI 3.4 MCP catalog API, emits `mcp-server` entities                                     | **YES**                            | Same pattern — REST API call, entity mapping, `applyMutation`. The RHOAI 3.4 MCP catalog API is a new RHOAI endpoint                                                                                                                                                                                    |
-| MCP catalog source gracefully handles absence on earlier RHOAI versions                                                   | **YES**                            | Application-level — attempt API call, catch 404/connection error, log warning, disable MCP source for this cycle. Standard resilience pattern                                                                                                                                                           |
-| Model Registry and MCP catalog sources independently toggleable                                                           | **YES**                            | App-config-driven: `catalog.providers.rhoai.modelRegistry.enabled: true/false` and `catalog.providers.rhoai.mcpCatalog.enabled: true/false`. Provider reads config at startup                                                                                                                           |
-| Cross-cluster endpoint with K8s Secret credentials and custom CA bundles                                                  | **YES**                            | Standard patterns — configurable endpoint URL, `$env:` Secret references, CA bundle from mounted path. Shared utilities from RHIDP-15316                                                                                                                                                                |
+| Criterion                                                                             | Feasible without upstream changes? | Assessment                                                                                                                                    |
+| ------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~Model Registry source connects to Kubeflow `RegisteredModel`/`ModelVersion` API~~   | ~~YES~~                            | ~~Kubeflow Model Registry~~ _(RHDHPLAN-404 scope — removed from RHIDP-15314)_                                                                 |
+| RHOAI version normalization maps MCP server version to `rhdh.io/ai-asset-version`     | **YES**                            | Application-level mapping logic — extract version identifier from MCP server manifest metadata, normalize via `normalizeAIAssetVersion()`     |
+| MCP catalog source connects to RHOAI 3.4 MCP catalog API, emits `mcp-server` entities | **YES**                            | Same pattern — REST API call, entity mapping, `applyMutation`. The RHOAI 3.4 MCP catalog API is a new RHOAI endpoint                          |
+| MCP catalog source gracefully handles absence on earlier RHOAI versions               | **YES**                            | Application-level — attempt API call, catch 404/connection error, log warning, disable MCP source for this cycle. Standard resilience pattern |
+| MCP catalog source enable/disable toggle                                              | **YES**                            | App-config-driven: `catalog.providers.rhoai.mcpCatalog.enabled: true/false`. Provider reads config at startup                                 |
+| Cross-cluster endpoint with K8s Secret credentials and custom CA bundles              | **YES**                            | Standard patterns — configurable endpoint URL, `$env:` Secret references, CA bundle from mounted path. Shared utilities from RHIDP-15316      |
 
-**Verdict: FULLY FEASIBLE** — This is a standard entity provider implementation against the Kubeflow Model Registry and RHOAI MCP catalog APIs. The Backstage `EntityProvider` interface handles everything needed. The `redhat-ai-dev/model-catalog-bridge` provides architectural prior art. No upstream Backstage changes needed.
+**Verdict: FULLY FEASIBLE** — This is a standard entity provider implementation against the RHOAI MCP catalog API. The Backstage `EntityProvider` interface handles everything needed. No upstream Backstage changes needed. _(Model Registry integration is RHDHPLAN-404 scope.)_
 
-**Key implementation note:** Two independently toggleable sources can be implemented as either (a) two separate `EntityProvider` instances (simpler, each with its own bucket), or (b) a single provider that conditionally fetches from both sources and emits all entities in one `applyMutation`. Option (a) is cleaner — each source has its own isolated bucket and independent failure domains.
+**Key implementation note:** Single-source MCP catalog provider implemented as one `EntityProvider` instance with its own isolated bucket. Graceful 404 handling enables compatibility with RHOAI versions that predate the MCP catalog API.
 
 **Dependency note (2026-07-13):** RHDHPLAN-404 will provide the new extended API entity schema that this connector leverages. RHIDP-15314 can proceed independently using Resource entities or a pre-merge version of the schema via the Catalog Model Layer. Additionally, RHDHPLAN-1510 / Boost will add a llamastack/OGX connector as an additional model information source.
 
@@ -143,12 +143,12 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ## Summary Matrix
 
-| Epic                                  | Key         | Status                            | Feasible without upstream changes? | Implementation complexity | Notes                                                                  |
-| ------------------------------------- | ----------- | --------------------------------- | ---------------------------------- | ------------------------- | ---------------------------------------------------------------------- |
-| MCP Registry — Productization         | RHIDP-15313 | **Active**                        | **YES**                            | Low-Medium                | Productization wrapper on upstream connector; depends on RHDHPLAN-393  |
-| RHOAI Connector                       | RHIDP-15314 | **Active**                        | **YES**                            | Medium                    | Two-source provider against Kubeflow + RHOAI APIs; prior art exists    |
-| ~~OCI Skill Registry Connector~~      | RHIDP-15315 | **CLOSED** → absorbed by 15294    | YES                                | High                      | Overlap resolved — scope consolidated into RHIDP-15294 (RHDHPLAN-1507) |
-| Cross-Connector Shared Infrastructure | RHIDP-15316 | **Active** (absorbed 15263 scope) | **YES**                            | Low-Medium                | Now includes air-gapped patterns from RHIDP-15263 (RHDHPLAN-1507)      |
+| Epic                                  | Key         | Status                            | Feasible without upstream changes? | Implementation complexity | Notes                                                                      |
+| ------------------------------------- | ----------- | --------------------------------- | ---------------------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| MCP Registry — Productization         | RHIDP-15313 | **Active**                        | **YES**                            | Low-Medium                | Productization wrapper on upstream connector; depends on RHDHPLAN-393      |
+| RHOAI Connector                       | RHIDP-15314 | **Active**                        | **YES**                            | Medium                    | MCP catalog provider against RHOAI 3.4 API; Model Registry is RHDHPLAN-404 |
+| ~~OCI Skill Registry Connector~~      | RHIDP-15315 | **CLOSED** → absorbed by 15294    | YES                                | High                      | Overlap resolved — scope consolidated into RHIDP-15294 (RHDHPLAN-1507)     |
+| Cross-Connector Shared Infrastructure | RHIDP-15316 | **Active** (absorbed 15263 scope) | **YES**                            | Low-Medium                | Now includes air-gapped patterns from RHIDP-15263 (RHDHPLAN-1507)          |
 
 ## Key Findings
 
