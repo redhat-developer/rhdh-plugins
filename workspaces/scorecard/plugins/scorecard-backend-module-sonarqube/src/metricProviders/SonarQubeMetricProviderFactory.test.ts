@@ -32,7 +32,7 @@ describe('createMetricProvider', () => {
     );
     expect(provider.getProviderId()).toBe('sonarqube.qualityGate');
     expect(provider.getProviderDatasourceId()).toBe('sonarqube');
-    expect(provider.getMetricType()).toBe('boolean');
+    expect(provider.getMetrics()[0].type).toBe('boolean');
   });
 
   it('returns a number provider for openIssues', () => {
@@ -42,7 +42,7 @@ describe('createMetricProvider', () => {
       'openIssues',
     );
     expect(provider.getProviderId()).toBe('sonarqube.openIssues');
-    expect(provider.getMetricType()).toBe('number');
+    expect(provider.getMetrics()[0].type).toBe('number');
   });
 
   it('returns a number provider for securityRating', () => {
@@ -52,7 +52,7 @@ describe('createMetricProvider', () => {
       'securityRating',
     );
     expect(provider.getProviderId()).toBe('sonarqube.securityRating');
-    expect(provider.getMetricType()).toBe('number');
+    expect(provider.getMetrics()[0].type).toBe('number');
   });
 
   it('returns a number provider for securityIssues', () => {
@@ -62,7 +62,7 @@ describe('createMetricProvider', () => {
       'securityIssues',
     );
     expect(provider.getProviderId()).toBe('sonarqube.securityIssues');
-    expect(provider.getMetricType()).toBe('number');
+    expect(provider.getMetrics()[0].type).toBe('number');
   });
 });
 
@@ -94,7 +94,7 @@ describe('fromConfig', () => {
       mockConfig,
       mockLogger,
     );
-    const types = providers.map(p => p.getMetricType());
+    const types = providers.map(p => p.getMetrics()[0].type);
     expect(types.filter(t => t === 'boolean')).toHaveLength(1);
     expect(types.filter(t => t === 'number')).toHaveLength(11);
   });

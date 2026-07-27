@@ -49,7 +49,7 @@ abstract class MockMetricProvider<T extends MetricType>
     protected value: MetricValue<T>,
   ) {}
 
-  abstract getMetricThresholds(): ThresholdConfig;
+  abstract getDefaultThresholds(): ThresholdConfig;
 
   getCatalogFilter(): Record<string, CatalogFilterValue> {
     return MOCK_CATALOG_FILTER;
@@ -63,26 +63,28 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
-  getMetricType(): T {
-    return this.metricType;
-  }
-
   supportsEntity(_: Entity): boolean {
     return true;
   }
 
-  getMetric(): Metric<T> {
-    const metric: Metric<T> = {
-      id: this.providerId,
-      title: this.title,
-      description: this.description,
-      type: this.metricType,
-    };
-    return metric;
+  getMetrics(): Metric<T>[] {
+    return [
+      {
+        id: this.providerId,
+        title: this.title,
+        description: this.description,
+        type: this.metricType,
+        thresholds: this.getDefaultThresholds(),
+      },
+    ];
   }
 
-  async calculateMetric(_entity: Entity): Promise<MetricValue<T>> {
-    return this.value;
+  async calculateMetrics(
+    _entity: Entity,
+  ): Promise<Map<string, MetricValue<T>>> {
+    const results = new Map<string, MetricValue<T>>();
+    results.set(this.providerId, this.value);
+    return results;
   }
 }
 
@@ -96,7 +98,7 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
   ) {
     super('number', providerId, datasourceId, title, description, value);
   }
-  getMetricThresholds(): ThresholdConfig {
+  getDefaultThresholds(): ThresholdConfig {
     return {
       rules: [
         { key: 'error', expression: '>40' },
@@ -117,7 +119,7 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
   ) {
     super('boolean', providerId, datasourceId, title, description, value);
   }
-  getMetricThresholds(): ThresholdConfig {
+  getDefaultThresholds(): ThresholdConfig {
     return BOOLEAN_THRESHOLDS;
   }
 }
@@ -132,6 +134,13 @@ export const githubNumberMetricMetadata = {
   title: 'Github Number Metric',
   description: 'Mock number description.',
   type: 'number' as const,
+  thresholds: {
+    rules: [
+      { key: 'error', expression: '>40' },
+      { key: 'warning', expression: '>20' },
+      { key: 'success', expression: '<=20' },
+    ],
+  },
 };
 
 export const jiraBooleanProvider = new MockBooleanProvider(
@@ -144,6 +153,12 @@ export const jiraBooleanMetricMetadata = {
   title: 'Mock Boolean Metric',
   description: 'Mock boolean description.',
   type: 'boolean' as const,
+  thresholds: {
+    rules: [
+      { key: 'success', expression: '==true' },
+      { key: 'error', expression: '==false' },
+    ],
+  },
 };
 
 /**
@@ -168,38 +183,18 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
     return this.providerIdPrefix;
   }
 
-  getMetricType(): 'boolean' {
-    return 'boolean';
-  }
-
-  getMetricIds(): string[] {
-    return this.metricConfigs.map(c => `${this.providerIdPrefix}.${c.id}`);
-  }
-
   getMetrics(): Metric<'boolean'>[] {
     return this.metricConfigs.map(c => ({
       id: `${this.providerIdPrefix}.${c.id}`,
       title: `File: ${c.path}`,
       description: `Checks if ${c.path} exists.`,
       type: 'boolean' as const,
+      thresholds: BOOLEAN_THRESHOLDS,
     }));
-  }
-
-  getMetric(): Metric<'boolean'> {
-    return this.getMetrics()[0];
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return BOOLEAN_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, CatalogFilterValue> {
     return MOCK_CATALOG_FILTER;
-  }
-
-  async calculateMetric(_entity: Entity): Promise<boolean> {
-    const results = await this.calculateMetrics(_entity);
-    return results.get(this.getMetricIds()[0]) ?? false;
   }
 
   async calculateMetrics(_entity: Entity): Promise<Map<string, boolean>> {
@@ -227,17 +222,20 @@ export const filecheckBatchMetrics = [
     title: 'File: README.md',
     description: 'Checks if README.md exists.',
     type: 'boolean' as const,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
   {
     id: 'filecheck.license',
     title: 'File: LICENSE',
     description: 'Checks if LICENSE exists.',
     type: 'boolean' as const,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
   {
     id: 'filecheck.codeowners',
     title: 'File: CODEOWNERS',
     description: 'Checks if CODEOWNERS exists.',
     type: 'boolean' as const,
+    thresholds: BOOLEAN_THRESHOLDS,
   },
 ];
