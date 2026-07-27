@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Ref, useState } from 'react';
+import { Ref, useEffect, useState } from 'react';
 
 import { makeStyles } from '@material-ui/core';
 import {
@@ -76,6 +76,12 @@ export const MessageBarModelSelector = ({
   const [isOpen, setIsOpen] = useState(false);
   const classes = useStyles();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (disabled) {
+      setIsOpen(false);
+    }
+  }, [disabled]);
 
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
