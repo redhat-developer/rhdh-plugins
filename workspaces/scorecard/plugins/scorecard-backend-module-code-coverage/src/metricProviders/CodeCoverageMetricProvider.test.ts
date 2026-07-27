@@ -18,13 +18,13 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import { mockServices } from '@backstage/backend-test-utils';
 
-import { CodeCoverageMetricProvider } from './CodeCoverageMetricProvider';
 import {
-  CODE_COVERAGE_ANNOTATION,
+  CodeCoverageMetricProvider,
   CODE_COVERAGE_METRIC_CONFIG,
   CODE_COVERAGE_THRESHOLDS,
   type CodeCoverageMetricId,
-} from './CodeCoverageConfig';
+} from './CodeCoverageMetricProvider';
+import { CODE_COVERAGE_ANNOTATION } from './CodeCoverageConfig';
 import type { CodeCoverageReport } from '../clients/types';
 
 jest.mock('../clients/CodeCoverageClient');
@@ -43,6 +43,7 @@ beforeEach(() => {
 
 const mockDiscovery = mockServices.discovery.mock();
 const mockLogger = mockServices.logger.mock();
+const mockAuth = mockServices.auth.mock();
 
 function entity(): Entity {
   return {
@@ -71,58 +72,58 @@ function createProvider(
   const { CodeCoverageClient } = jest.requireMock(
     '../clients/CodeCoverageClient',
   );
-  const client = new CodeCoverageClient(mockDiscovery, mockLogger);
+  const client = new CodeCoverageClient(mockAuth, mockDiscovery, mockLogger);
   return new CodeCoverageMetricProvider(client, metricId);
 }
 
 describe('CodeCoverageMetricProvider', () => {
   describe('getProviderDatasourceId', () => {
-    it('returns code-coverage', () => {
-      const provider = createProvider('line_percentage');
-      expect(provider.getProviderDatasourceId()).toBe('code-coverage');
+    it('returns codeCoverage', () => {
+      const provider = createProvider('linePercentage');
+      expect(provider.getProviderDatasourceId()).toBe('codeCoverage');
     });
   });
 
   describe('getProviderId / getMetrics', () => {
     it.each([
       [
-        'line_percentage',
-        'code-coverage.line_percentage',
+        'linePercentage',
+        'codeCoverage.linePercentage',
         'Code coverage (Lines)',
       ],
       [
-        'line_available',
-        'code-coverage.line_available',
+        'lineAvailable',
+        'codeCoverage.lineAvailable',
         'Code coverage - Tracked lines of code',
       ],
       [
-        'line_covered',
-        'code-coverage.line_covered',
+        'lineCovered',
+        'codeCoverage.lineCovered',
         'Code coverage - Covered lines of code',
       ],
       [
-        'line_missed',
-        'code-coverage.line_missed',
+        'lineMissed',
+        'codeCoverage.lineMissed',
         'Code coverage - Missed lines of code',
       ],
       [
-        'branch_percentage',
-        'code-coverage.branch_percentage',
+        'branchPercentage',
+        'codeCoverage.branchPercentage',
         'Code coverage (Branches)',
       ],
       [
-        'branch_available',
-        'code-coverage.branch_available',
+        'branchAvailable',
+        'codeCoverage.branchAvailable',
         'Code coverage - Tracked branches',
       ],
       [
-        'branch_covered',
-        'code-coverage.branch_covered',
+        'branchCovered',
+        'codeCoverage.branchCovered',
         'Code coverage - Covered branches',
       ],
       [
-        'branch_missed',
-        'code-coverage.branch_missed',
+        'branchMissed',
+        'codeCoverage.branchMissed',
         'Code coverage - Missed branches',
       ],
     ] as const)(
@@ -147,7 +148,7 @@ describe('CodeCoverageMetricProvider', () => {
 
   describe('getCatalogFilter', () => {
     it('requires backstage.io/code-coverage annotation', () => {
-      const provider = createProvider('line_percentage');
+      const provider = createProvider('linePercentage');
       expect(provider.getCatalogFilter()).toEqual({
         [`metadata.annotations.${CODE_COVERAGE_ANNOTATION}`]:
           CATALOG_FILTER_EXISTS,
@@ -157,14 +158,14 @@ describe('CodeCoverageMetricProvider', () => {
 
   describe('calculateMetrics', () => {
     it.each([
-      ['line_percentage', 'code-coverage.line_percentage', 80],
-      ['line_available', 'code-coverage.line_available', 5],
-      ['line_covered', 'code-coverage.line_covered', 4],
-      ['line_missed', 'code-coverage.line_missed', 1],
-      ['branch_percentage', 'code-coverage.branch_percentage', 70],
-      ['branch_available', 'code-coverage.branch_available', 10],
-      ['branch_covered', 'code-coverage.branch_covered', 7],
-      ['branch_missed', 'code-coverage.branch_missed', 3],
+      ['linePercentage', 'codeCoverage.linePercentage', 80],
+      ['lineAvailable', 'codeCoverage.lineAvailable', 5],
+      ['lineCovered', 'codeCoverage.lineCovered', 4],
+      ['lineMissed', 'codeCoverage.lineMissed', 1],
+      ['branchPercentage', 'codeCoverage.branchPercentage', 70],
+      ['branchAvailable', 'codeCoverage.branchAvailable', 10],
+      ['branchCovered', 'codeCoverage.branchCovered', 7],
+      ['branchMissed', 'codeCoverage.branchMissed', 3],
     ] as const)(
       'extracts %s from the report and returns %d',
       async (metricId, expectedKey, expectedValue) => {
@@ -180,11 +181,31 @@ describe('CodeCoverageMetricProvider', () => {
       },
     );
 
+    it('throws when aggregate section is missing', async () => {
+      const reportMissingBranch: CodeCoverageReport = {
+        aggregate: {
+          line: { available: 5, covered: 4, missed: 1, percentage: 80 },
+        } as CodeCoverageReport['aggregate'],
+        entity: {
+          kind: 'Component',
+          name: 'my-service',
+          namespace: 'default',
+        },
+        files: [],
+      };
+      mockGetReport.mockResolvedValue(reportMissingBranch);
+      const provider = createProvider('branchPercentage');
+
+      await expect(provider.calculateMetrics(entity())).rejects.toThrow(
+        'missing aggregate branch data',
+      );
+    });
+
     it('propagates errors when getReport fails', async () => {
       mockGetReport.mockRejectedValueOnce(
         new Error('code-coverage unavailable'),
       );
-      const provider = createProvider('line_percentage');
+      const provider = createProvider('linePercentage');
 
       await expect(provider.calculateMetrics(entity())).rejects.toThrow(
         'code-coverage unavailable',

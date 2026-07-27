@@ -14,38 +14,40 @@
  * limitations under the License.
  */
 import type {
+  AuthService,
   DiscoveryService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 import { CodeCoverageClient } from '../clients/CodeCoverageClient';
-import { CodeCoverageMetricProvider } from './CodeCoverageMetricProvider';
 import {
+  CodeCoverageMetricProvider,
   CODE_COVERAGE_METRICS,
   type CodeCoverageMetricId,
-} from './CodeCoverageConfig';
+} from './CodeCoverageMetricProvider';
 
 /**
  * Creates a single code-coverage metric provider for the given metric ID.
  */
 export function createCodeCoverageMetricProvider(
-  discovery: DiscoveryService,
-  logger: LoggerService,
+  client: CodeCoverageClient,
   metricId: CodeCoverageMetricId,
 ): MetricProvider<'number'> {
-  const client = new CodeCoverageClient(discovery, logger);
   return new CodeCoverageMetricProvider(client, metricId);
 }
 
 /**
  * Creates one metric provider per code-coverage metric (8 total).
+ * A single shared CodeCoverageClient is used across all providers.
  */
 export function createCodeCoverageMetricProviders(
+  auth: AuthService,
   discovery: DiscoveryService,
   logger: LoggerService,
 ): MetricProvider<'number'>[] {
+  const client = new CodeCoverageClient(auth, discovery, logger);
   return CODE_COVERAGE_METRICS.map(metricId =>
-    createCodeCoverageMetricProvider(discovery, logger, metricId),
+    createCodeCoverageMetricProvider(client, metricId),
   );
 }

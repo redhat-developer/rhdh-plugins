@@ -14,20 +14,122 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { Entity } from '@backstage/catalog-model';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { CodeCoverageClient } from '../clients/CodeCoverageClient';
-import {
-  type CodeCoverageMetricId,
-  CODE_COVERAGE_ANNOTATION,
-  CODE_COVERAGE_METRIC_CONFIG,
-  CODE_COVERAGE_AGGREGATE_KEYS,
-  CODE_COVERAGE_THRESHOLDS,
-} from './CodeCoverageConfig';
+import { CODE_COVERAGE_ANNOTATION } from './CodeCoverageConfig';
+
+export const CODE_COVERAGE_METRICS = [
+  'linePercentage',
+  'lineAvailable',
+  'lineCovered',
+  'lineMissed',
+  'branchPercentage',
+  'branchAvailable',
+  'branchCovered',
+  'branchMissed',
+] as const;
+
+export type CodeCoverageMetricId = (typeof CODE_COVERAGE_METRICS)[number];
+
+export const CODE_COVERAGE_METRIC_CONFIG: Record<
+  CodeCoverageMetricId,
+  { id: string; title: string; description: string }
+> = {
+  linePercentage: {
+    id: 'codeCoverage.linePercentage',
+    title: 'Code coverage (Lines)',
+    description: 'Percentage of lines covered by tests.',
+  },
+  lineAvailable: {
+    id: 'codeCoverage.lineAvailable',
+    title: 'Code coverage - Tracked lines of code',
+    description: 'Total number of lines tracked for code coverage.',
+  },
+  lineCovered: {
+    id: 'codeCoverage.lineCovered',
+    title: 'Code coverage - Covered lines of code',
+    description: 'Number of lines covered by tests.',
+  },
+  lineMissed: {
+    id: 'codeCoverage.lineMissed',
+    title: 'Code coverage - Missed lines of code',
+    description: 'Number of lines not covered by tests.',
+  },
+  branchPercentage: {
+    id: 'codeCoverage.branchPercentage',
+    title: 'Code coverage (Branches)',
+    description: 'Percentage of branches covered by tests.',
+  },
+  branchAvailable: {
+    id: 'codeCoverage.branchAvailable',
+    title: 'Code coverage - Tracked branches',
+    description: 'Total number of branches tracked for code coverage.',
+  },
+  branchCovered: {
+    id: 'codeCoverage.branchCovered',
+    title: 'Code coverage - Covered branches',
+    description: 'Number of branches covered by tests.',
+  },
+  branchMissed: {
+    id: 'codeCoverage.branchMissed',
+    title: 'Code coverage - Missed branches',
+    description: 'Number of branches not covered by tests.',
+  },
+};
+
+/**
+ * Maps metric IDs to the path within the code-coverage report aggregate.
+ */
+export const CODE_COVERAGE_AGGREGATE_KEYS: Record<
+  CodeCoverageMetricId,
+  {
+    section: 'line' | 'branch';
+    field: 'percentage' | 'available' | 'covered' | 'missed';
+  }
+> = {
+  linePercentage: { section: 'line', field: 'percentage' },
+  lineAvailable: { section: 'line', field: 'available' },
+  lineCovered: { section: 'line', field: 'covered' },
+  lineMissed: { section: 'line', field: 'missed' },
+  branchPercentage: { section: 'branch', field: 'percentage' },
+  branchAvailable: { section: 'branch', field: 'available' },
+  branchCovered: { section: 'branch', field: 'covered' },
+  branchMissed: { section: 'branch', field: 'missed' },
+};
+
+const PERCENTAGE_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'success', expression: '>80' },
+    { key: 'warning', expression: '50-80' },
+    { key: 'error', expression: '<50' },
+  ],
+};
+
+const COUNT_THRESHOLDS: ThresholdConfig = {
+  rules: [],
+};
+
+export const CODE_COVERAGE_THRESHOLDS: Record<
+  CodeCoverageMetricId,
+  ThresholdConfig
+> = {
+  linePercentage: PERCENTAGE_THRESHOLDS,
+  lineAvailable: COUNT_THRESHOLDS,
+  lineCovered: COUNT_THRESHOLDS,
+  lineMissed: COUNT_THRESHOLDS,
+  branchPercentage: PERCENTAGE_THRESHOLDS,
+  branchAvailable: COUNT_THRESHOLDS,
+  branchCovered: COUNT_THRESHOLDS,
+  branchMissed: COUNT_THRESHOLDS,
+};
 
 /**
  * Metric provider for a single code-coverage metric.
@@ -43,7 +145,7 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
   }
 
   getProviderDatasourceId(): string {
-    return 'code-coverage';
+    return 'codeCoverage';
   }
 
   getProviderId(): string {
@@ -75,11 +177,20 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
     const entityRef = stringifyEntityRef(entity);
     const report = await this.client.getReport(entityRef);
     const mapping = CODE_COVERAGE_AGGREGATE_KEYS[this.metricId];
+    const section = report.aggregate?.[mapping.section];
+    if (!section) {
+      throw new Error(
+        `Code coverage report for ${entityRef} is missing aggregate ${mapping.section} data`,
+      );
+    }
+    const value = section[mapping.field];
+    if (value === undefined || value === null) {
+      throw new Error(
+        `Code coverage report for ${entityRef} is missing ${mapping.section}.${mapping.field} data`,
+      );
+    }
     const results = new Map<string, number>();
-    results.set(
-      this.getProviderId(),
-      report.aggregate[mapping.section][mapping.field],
-    );
+    results.set(this.getProviderId(), value);
     return results;
   }
 }

@@ -23,6 +23,10 @@ const mockDiscovery = mockServices.discovery.mock({
     `http://localhost:7007/api/${pluginId}`,
 });
 const mockLogger = mockServices.logger.mock();
+const mockAuth = mockServices.auth.mock({
+  getOwnServiceCredentials: async () => ({ type: 'service' } as any),
+  getPluginRequestToken: async () => ({ token: 'mock-service-token' }),
+});
 
 const sampleReport: CodeCoverageReport = {
   aggregate: {
@@ -38,10 +42,10 @@ describe('CodeCoverageClient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    client = new CodeCoverageClient(mockDiscovery, mockLogger);
+    client = new CodeCoverageClient(mockAuth, mockDiscovery, mockLogger);
   });
 
-  it('should call the correct URL and return the report', async () => {
+  it('should call the correct URL with auth header and return the report', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: async () => sampleReport,
@@ -52,7 +56,26 @@ describe('CodeCoverageClient', () => {
     expect(report).toEqual(sampleReport);
     expect(global.fetch).toHaveBeenCalledWith(
       'http://localhost:7007/api/code-coverage/report?entity=component%3Adefault%2Fentity-name',
+      {
+        headers: {
+          Authorization: 'Bearer mock-service-token',
+        },
+      },
     );
+  });
+
+  it('should request token for the code-coverage plugin', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => sampleReport,
+    } as Response);
+
+    await client.getReport('component:default/entity-name');
+
+    expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
+      onBehalfOf: { type: 'service' },
+      targetPluginId: 'code-coverage',
+    });
   });
 
   it('should throw on non-ok response', async () => {
