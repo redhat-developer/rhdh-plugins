@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Scorecard plugin for Backstage – entity scorecards, metrics, and entities page.
- * @packageDocumentation
- */
-
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 ClassNameGenerator.configure(componentName => {
