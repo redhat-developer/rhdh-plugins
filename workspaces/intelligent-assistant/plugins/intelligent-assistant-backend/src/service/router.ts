@@ -860,26 +860,33 @@ export async function createRouter(
 
   router.post(
     '/v1/validate-model-vision',
+    generalRateLimiter,
     requirePermission(lightspeedChatReadPermission),
     async (request, response) => {
       const { model, provider } = request.body;
+
+      if (
+        typeof model !== 'string' ||
+        !model.trim() ||
+        typeof provider !== 'string' ||
+        !provider.trim()
+      ) {
+        response.status(400).json({ error: 'model and provider are required' });
+        return;
+      }
+
       const cacheKey = `${provider}/${model}`;
+
       try {
         logger.info(`Vision validation requested for model: ${cacheKey}`);
 
-        // Check cache
         if (ModelCapabilitiesCache.has(cacheKey)) {
-          const supportsVision = ModelCapabilitiesCache.get(cacheKey)!;
-          logger.info(`Cache hit for ${cacheKey}: ${supportsVision}`);
-          response.json({
-            model,
-            provider,
-            supportsVision,
-          });
+          const cached = ModelCapabilitiesCache.get(cacheKey)!;
+          logger.info(`Cache hit for ${cacheKey}: ${cached}`);
+          response.json({ model, provider, supportsVision: cached });
           return;
         }
 
-        // Test model with minimal JPEG
         const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
         const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
           method: 'POST',
@@ -909,17 +916,31 @@ export async function createRouter(
             stream: false,
           }),
         });
-        const supportsVision = testResponse.ok;
-        ModelCapabilitiesCache.set(cacheKey, supportsVision);
 
-        logger.info(
-          `Vision test for ${cacheKey}: ${supportsVision ? 'PASS' : 'FAIL'}`,
-        );
-
-        response.json({ model, provider, supportsVision });
+        if (testResponse.ok) {
+          ModelCapabilitiesCache.set(cacheKey, true);
+          response.json({ model, provider, supportsVision: true });
+        } else if (testResponse.status >= 500) {
+          logger.warn(
+            `Vision test for ${cacheKey}: ${testResponse.status} ${testResponse.statusText}, not caching`,
+          );
+          response.status(502).json({
+            error: `Unable to verify vision support for model — upstream returned ${testResponse.status}`,
+            model,
+            provider,
+          });
+        } else {
+          ModelCapabilitiesCache.set(cacheKey, false);
+          response.json({ model, provider, supportsVision: false });
+        }
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);
-        response.json({ model, provider, supportsVision: false });
+        response.status(502).json({
+          error:
+            'Unable to verify vision support for model — upstream unreachable',
+          model,
+          provider,
+        });
       }
     },
   );

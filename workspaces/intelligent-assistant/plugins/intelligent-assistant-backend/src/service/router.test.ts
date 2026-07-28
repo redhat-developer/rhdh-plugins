@@ -1428,6 +1428,38 @@ describe('intelligent-assistant router tests', () => {
         supportsVision: false,
       });
     });
+
+    it('returns 502 without caching when upstream returns 5xx', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return new HttpResponse(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500 },
+          );
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(502);
+      expect(response.body.error).toContain('Unable to verify vision support');
+      expect(ModelCapabilitiesCache.has('test-server/gpt-4o')).toBe(false);
+    });
+
+    it('returns 400 when model or provider is missing', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o' });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body).toEqual({
+        error: 'model and provider are required',
+      });
+    });
   });
 
   describe('POST /v1/query attachment validation', () => {
