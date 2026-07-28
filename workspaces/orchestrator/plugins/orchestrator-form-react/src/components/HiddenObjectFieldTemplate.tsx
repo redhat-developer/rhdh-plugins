@@ -38,8 +38,7 @@ const getHiddenCondition = (
     return undefined;
   }
   return (uiSchema as Record<string, any>)[name]?.['ui:hidden'] as
-    | HiddenCondition
-    | undefined;
+    HiddenCondition | undefined;
 };
 
 const HiddenObjectFieldTemplate = (

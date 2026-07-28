@@ -15,12 +15,7 @@
  */
 
 export type ExecutionSummaryKeyword =
-  | 'started'
-  | 'failed'
-  | 'retriggered'
-  | 'waiting'
-  | 'completed'
-  | 'aborted';
+  'started' | 'failed' | 'retriggered' | 'waiting' | 'completed' | 'aborted';
 
 export const extractIsoTimestamp = (
   executionSummary: string[],
