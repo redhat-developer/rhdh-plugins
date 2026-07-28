@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import { navModule } from './modules';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme';
+export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
+export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
-export default createApp({
-  features: [navModule, rhdhThemeModule],
-});
+import './assets/fonts/font.min.css';
+
+export * from './hooks';
+export * from './themes';
+export { LogoFull, LogoIcon } from './components';
+export type {
+  BackstageThemePalette,
+  RHDHThemePalette,
+  ThemeConfigPalette,
+  ThemeConfigPageTheme,
+  ThemeConfigOptions,
+  ThemeConfig,
+  Branding,
+  Config,
+} from './types';

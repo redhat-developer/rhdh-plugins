@@ -46,7 +46,7 @@ import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import {
   LogoFull,
   LogoIcon,
-} from '@red-hat-developer-hub/backstage-plugin-theme';
+} from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();

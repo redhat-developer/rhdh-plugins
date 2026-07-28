@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import { navModule } from './modules';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { rhdhThemeModule } from './index';
 
-export default createApp({
-  features: [navModule, rhdhThemeModule],
+describe('theme NFS exports', () => {
+  it('should export rhdhThemeModule', () => {
+    expect(rhdhThemeModule).toBeDefined();
+  });
 });
