@@ -29,12 +29,14 @@ import Typography from '@mui/material/Typography';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import {
+  ExtensionsAnnotation,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';
+import { CatalogSourceBadge } from './CatalogSourceBadge';
 import { CategoryLinkButton } from './CategoryLinkButton';
 import { PluginIcon } from './PluginIcon';
 import { useTranslation } from '../hooks/useTranslation';
@@ -194,6 +196,13 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                   />
                 </Typography>
               ) : null}
+              <CatalogSourceBadge
+                sourceKey={
+                  plugin.metadata?.annotations?.[
+                    ExtensionsAnnotation.CATALOG_SOURCE
+                  ]
+                }
+              />
             </Stack>
           </Stack>
 

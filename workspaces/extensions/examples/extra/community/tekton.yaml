@@ -8,6 +8,7 @@ metadata:
   description: Easily view Tekton PipelineRun status for your services in Backstage.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/catalog-source: 'community'
   links:
     - url: https://tekton.dev
       title: Tekton

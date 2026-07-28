@@ -48,6 +48,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isExtensionsPackage,
+  ExtensionsAnnotation,
   ExtensionsPackage,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
@@ -77,6 +78,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 
+import { CatalogSourceLabel } from './CatalogSourceLabel';
 import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
 import { useEnablePlugin } from '../hooks/useEnablePlugin';
@@ -658,6 +660,14 @@ export const ExtensionsPluginContent = ({
             <PluginMetadataSection
               title={t('metadata.supportProvider')}
               value={plugin.spec?.support?.provider}
+            />
+
+            <CatalogSourceLabel
+              sourceKey={
+                plugin.metadata?.annotations?.[
+                  ExtensionsAnnotation.CATALOG_SOURCE
+                ]
+              }
             />
 
             {pluginActionButton()}

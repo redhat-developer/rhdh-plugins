@@ -28,6 +28,10 @@ import {
 } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  useCatalogSourceConfig,
+  getCatalogSourceLabel,
+} from '../hooks/useCatalogSourceConfig';
 
 const CategoryFilter = () => {
   const { t } = useTranslation();
@@ -175,11 +179,52 @@ const SupportTypeFilter = () => {
   );
 };
 
+const CatalogSourceFilter = () => {
+  const { t } = useTranslation();
+  const sourcesConfig = useCatalogSourceConfig();
+  const catalogSourceFacet = useFilteredPluginFacet(
+    'metadata.annotations.catalog-source',
+    'catalog-source',
+  );
+  const filter = useQueryArrayFilter('catalog-source');
+  const sources = catalogSourceFacet.data;
+
+  const items = useMemo(() => {
+    if (!sources) return [];
+    return sources.map(source => ({
+      label: getCatalogSourceLabel(source.value, sourcesConfig),
+      value: source.value,
+      count: source.count,
+      helperText: sourcesConfig[source.value]?.description,
+    }));
+  }, [sources, sourcesConfig]);
+
+  const handleChange = useCallback(
+    (_e: SyntheticEvent, value: CustomSelectItem[]) => {
+      const newSelection = value.map(v => v.value);
+      filter.set(newSelection);
+    },
+    [filter],
+  );
+
+  if (items.length === 0) return null;
+
+  return (
+    <CustomSelectFilter
+      label={t('search.catalogSource')}
+      items={items}
+      onChange={handleChange}
+      selectedItems={filter.current}
+    />
+  );
+};
+
 export const ExtensionsPluginFilter = () => {
   return (
     <Box sx={{ minWidth: { xs: 200, lg: 'auto' } }}>
       <CategoryFilter />
       <AuthorFilter />
+      <CatalogSourceFilter />
       <SupportTypeFilter />
     </Box>
   );

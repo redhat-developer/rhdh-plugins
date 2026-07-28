@@ -16,21 +16,6 @@
 
 export interface Config {
   extensions?: {
-    installation?: {
-      /**
-       * Whether the installation is enabled, defaults to false.
-       * @visibility frontend
-       */
-      enabled?: boolean;
-      saveToSingleFile: {
-        /**
-         * The path to the yaml file containing the plugins installation configuration
-         * @visibility frontend
-         */
-        file: string;
-      };
-    };
-
     /**
      * Metadata for catalog sources used to label and filter plugins by origin.
      * Keys correspond to the `extensions.backstage.io/catalog-source` annotation value.

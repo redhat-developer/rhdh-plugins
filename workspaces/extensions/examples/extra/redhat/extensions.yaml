@@ -11,6 +11,7 @@ metadata:
     - catalog
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/catalog-source: 'community'
 spec:
   author: Backstage Community
   categories:
