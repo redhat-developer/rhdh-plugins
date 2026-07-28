@@ -15,10 +15,22 @@
  */
 
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
+import { Badge, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../../hooks/useTranslation';
+import { getCategoryMeta } from '../../../utils/categoryMeta';
 import { getSpecField } from '../../../utils/entityHelpers';
+
+function getLifecycleColor(lifecycle: string): string {
+  switch (lifecycle.toLowerCase()) {
+    case 'production':
+      return '#4ade80';
+    case 'experimental':
+      return '#fbbf24';
+    default:
+      return '#9ca3af';
+  }
+}
 
 export const SummaryCard = () => {
   const { entity } = useEntity();
@@ -26,8 +38,18 @@ export const SummaryCard = () => {
 
   const description = entity.metadata.description ?? '';
   const rationale = getSpecField(entity, 'rationale');
+  const specType = getSpecField(entity, 'type');
+  const lifecycle = getSpecField(entity, 'lifecycle');
+  const version =
+    entity.metadata.annotations?.['rhdh.io/ai-asset-version'] ?? '';
+  const source = entity.metadata.annotations?.['rhdh.io/ai-asset-source'] ?? '';
 
-  if (!description && !rationale) return null;
+  const categoryMeta = getCategoryMeta(specType);
+  const hasMetadata = !!(specType || version || source || lifecycle);
+
+  if (!description && !rationale && !hasMetadata) return null;
+
+  const CategoryIcon = categoryMeta.icon;
 
   return (
     <Card>
@@ -36,6 +58,36 @@ export const SummaryCard = () => {
       </CardHeader>
       <CardBody>
         <Flex direction="column" gap="3">
+          {hasMetadata && (
+            <Flex align="center" gap="2" wrap="wrap">
+              {specType && (
+                <Badge
+                  style={{ backgroundColor: categoryMeta.color }}
+                  aria-label={`${t('catalog.card.summaryCategory')}: ${categoryMeta.label}`}
+                >
+                  <Flex align="center" gap="1">
+                    <CategoryIcon size={14} />
+                    {categoryMeta.label}
+                  </Flex>
+                </Badge>
+              )}
+              {version && <Badge size="small">{version}</Badge>}
+              {lifecycle && (
+                <Badge
+                  size="small"
+                  style={{ backgroundColor: getLifecycleColor(lifecycle) }}
+                  aria-label={`${t('catalog.card.summaryLifecycle')}: ${lifecycle}`}
+                >
+                  {lifecycle}
+                </Badge>
+              )}
+            </Flex>
+          )}
+          {source && (
+            <Text variant="body-x-small" color="secondary">
+              {t('catalog.card.summarySource')}: {source}
+            </Text>
+          )}
           {description && <Text variant="body-medium">{description}</Text>}
           {rationale && (
             <Text variant="body-medium" color="secondary">
