@@ -1110,8 +1110,7 @@ export const orchestratorInstanceAdminViewPermission: BasicPermission;
 //
 // @public (undocumented)
 export const orchestratorPermissions: (
-  | ResourcePermission<'orchestrator-workflow'>
-  | BasicPermission
+  ResourcePermission<'orchestrator-workflow'> | BasicPermission
 )[];
 
 // Warning: (ae-missing-release-tag) "orchestratorWorkflowPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
