@@ -13,6 +13,7 @@ If you're using Backstage's new frontend system, add the plugin to your app:
 import { createApp } from '@backstage/frontend-defaults';
 import {
   homePageModule,
+  homePagePlugin,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-homepage';
 
@@ -20,10 +21,14 @@ export default createApp({
   features: [
     // ... other plugins (nav, signIn, etc.)
     homePageModule,
+    // Embeds @backstage/plugin-home (page:home) + homepage widgets/layout
+    homePagePlugin,
     homepageTranslationsModule,
   ],
 });
 ```
+
+Do **not** also register `@backstage/plugin-home` (or discover it via `app.packages`) when using `homePagePlugin` — that would load the `home` plugin twice. If your app already loads upstream `homePlugin`, use `homePageModule` instead of `homePagePlugin`.
 
 The plugin will automatically provide:
 
@@ -68,14 +73,15 @@ app:
                 # ...
 ```
 
-### Modules
+### Modules / plugins
 
-The following modules are available from the primary package entry point:
+The following features are available from the alpha export:
 
-| Module                       | Description                                                                                                             |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `homePageModule` (default)   | Home page layout and widgets (Onboarding, Entity, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.) |
-| `homepageTranslationsModule` | i18n translations (en, de, es, fr, it, ja)                                                                              |
+| Export                       | Type             | Description                                                                                                        |
+| ---------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `homePagePlugin` (default)   | `FrontendPlugin` | Upstream `@backstage/plugin-home` with custom layout and widgets (`withOverrides`). Use this for dynamic installs. |
+| `homePageModule`             | `FrontendModule` | Same extensions as a module — only if the host already registers `homePlugin`.                                     |
+| `homepageTranslationsModule` | `FrontendModule` | i18n translations (en, de, es, fr, it, ja)                                                                         |
 
 `homepageTranslationsModule` (`pluginId: 'app'`) is also available as a dedicated Module Federation entry:
 
@@ -83,7 +89,7 @@ The following modules are available from the primary package entry point:
 
 ### Extensions
 
-The `homePageModule` extends the `home` plugin (`@backstage/plugin-home`) with:
+`homePagePlugin` / `homePageModule` extend the `home` plugin (`@backstage/plugin-home`) with:
 
 - `home-page-layout:home/dynamic-homepage-layout` – Custom layout with config-driven widget arrangement and priority
 - `home-page-widget:home/rhdh-onboarding-section` – Onboarding section

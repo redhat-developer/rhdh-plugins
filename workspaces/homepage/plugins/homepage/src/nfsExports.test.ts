@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { homepageTranslationsModule, homePageModule } from '.';
 import translationsModuleDefault from './homepageTranslationsModuleExport';
-import { homepageTranslationRef, homepageTranslations } from './translations';
+import  {
+  homepageTranslationsModule,
+  homePageModule,
+  homePagePlugin,
+} from '.';
+import { homepageTranslationRef, homepageTranslations } from '../translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import {
   onboardingSectionWidget,
@@ -35,6 +39,12 @@ import { quickAccessApi, defaultWidgetsApi } from './extensions/apis';
 
 describe('Dynamic Home Page plugin (NFS)', () => {
   describe('Modules', () => {
+    it('should export homePagePlugin with correct structure', () => {
+      expect(homePagePlugin).toBeDefined();
+      expect(homePagePlugin.$$type).toBe('@backstage/FrontendPlugin');
+      expect(homePagePlugin.id).toBe('home');
+    });
+
     it('should export homePageModule with correct structure', () => {
       expect(homePageModule).toBeDefined();
       expect(homePageModule.$$type).toBe('@backstage/FrontendModule');
