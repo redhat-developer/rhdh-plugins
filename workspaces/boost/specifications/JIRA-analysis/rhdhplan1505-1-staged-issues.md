@@ -45,7 +45,7 @@ But as we progress, if further break up of a story is more seamless, we'll pursu
 
 ## Cross-Connector Shared Infrastructure Package (issue 1 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4039
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -137,7 +137,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 6 (RHIDP-15265 �
 
 ## Entity-Provider SDK — Types, Interfaces, Annotation Validation (issue 2 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4040
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -189,7 +189,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 4 (RHIDP-15303):
 
 ## AI Catalog Permissions, Backend Enforcement, Conditional Rules (issue 3 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4041
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -236,7 +236,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 4 (RHIDP-1531
 
 ## Upstream Schema Alignment — Annotation Spec, Migration Design & Tooling (issue 4 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4042
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -302,7 +302,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 8 (RHIDP-15302):
 
 ## Ingestion Health — API, Data Model, Error Classification (issue 5 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4043
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -355,7 +355,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 3 (RHIDP-15337
 
 ## Connector Config — Zod Schemas and RuntimeConfigResolver Extension (issue 6 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4044
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -400,7 +400,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 2 (RHIDP-1534
 
 ## MCP Mirror Endpoint + RHOAI Version Normalization (issue 7 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4045
 
 **Labels:** `ready-to-code`
 **Dependencies:** None
@@ -451,7 +451,7 @@ From `openspec/changes/rhoai-connector/tasks.md` group 7 (RHIDP-15321):
 
 ## SDK — Delta Sync Framework and Package Publish (issue 8 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4046
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra exports), Issue 2 (types/interfaces)
@@ -495,7 +495,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 9 (RHIDP-15260):
 
 ## OCI Skill Registry — Core Connector (issue 9 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4047
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra), Issue 8 (SDK)
@@ -552,7 +552,7 @@ From `openspec/changes/oci-skill-connector/tasks.md` group 2 (RHIDP-15325):
 
 ## OCI — Multi-Registry and Air-Gapped Support (issue 10 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4048
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra), Issue 9 (core connector)
@@ -584,7 +584,7 @@ From `openspec/changes/oci-skill-connector/tasks.md` group 4 (RHIDP-15327):
 
 ## OCI — Digest-Based Incremental Sync (issue 11 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4049
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra), Issue 9 (core connector)
@@ -625,7 +625,7 @@ From `openspec/changes/oci-skill-connector/tasks.md` group 3 (RHIDP-15326):
 
 ## OCI — Load Testing and Scale Validation (issue 12 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4050
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra), Issue 9 (core connector)
@@ -667,7 +667,7 @@ From `openspec/changes/oci-skill-connector/tasks.md` group 5 (RHIDP-15328):
 
 ## MCP Registry — TLS and Credential Hardening (issue 13 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4051
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra), Issue 7 (mirror endpoint)
@@ -709,7 +709,7 @@ From `openspec/changes/mcp-registry-connector/tasks.md` group 2 (RHIDP-15318):
 
 ## MCP Registry — AI Asset Annotation Enrichment (issue 14 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4052
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 8 (SDK validation layer), Issue 13 (TLS hardening)
@@ -746,7 +746,7 @@ From `openspec/changes/mcp-registry-connector/tasks.md` group 3 (RHIDP-15319):
 
 ## RHOAI — MCP Catalog Source and Module Scaffold (issue 15 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4053
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 8 (SDK annotation scheme)
@@ -790,7 +790,7 @@ From `openspec/changes/rhoai-connector/tasks.md` group 3:
 
 ## RHOAI — Deployment Config and Cross-Cluster Endpoint (issue 16 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4054
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 1 (shared infra CA/credential utils), Issue 15 (MCP catalog provider)
@@ -821,7 +821,7 @@ From `openspec/changes/rhoai-connector/tasks.md` group 2 (RHIDP-15323):
 
 ## Neo4j Knowledge Graph — Core Sync Adapter (issue 17 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4055
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 2 (SDK interfaces — `Neo4jSyncAdapter`)
@@ -881,7 +881,7 @@ From `openspec/changes/neo4j-knowledge-graph/tasks.md` group 5 (RHIDP-15299):
 
 ## Neo4j — SkillBundle Support (issue 18 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4056
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 17 (core sync adapter)
@@ -909,7 +909,7 @@ From `openspec/changes/neo4j-knowledge-graph/tasks.md` group 4 (RHIDP-15300):
 
 ## Neo4j — Setup Documentation and Observability (issue 19 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4057
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 17 (core sync adapter), Issue 18 (SkillBundle support)
@@ -952,7 +952,7 @@ From `openspec/changes/neo4j-knowledge-graph/tasks.md` groups 8–9:
 
 ## Version-Level Policy Cascade and Default-Deny Configuration (issue 20 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4058
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 3 (permission definitions)
@@ -994,7 +994,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 6 (RHIDP-1530
 
 ## RBAC Audit Logging (issue 21 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4059
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 3 (permission definitions)
@@ -1041,7 +1041,7 @@ Group 4 (Disconnected Cluster Support):
 
 ## Hot-Reload Propagation to Active Connectors (issue 22 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4060
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 6 (Zod schemas, RuntimeConfigResolver)
@@ -1083,7 +1083,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 5 (RHIDP-1534
 
 ## SkillBundle RBAC Filtering (issue 23 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4061
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 3 (permission definitions)
@@ -1112,7 +1112,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 9 (RHIDP-1531
 
 ## Graduated Visibility — Frontend (issue 24 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4062
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 3 (permission definitions)
@@ -1139,7 +1139,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 3 (RHIDP-1527
 
 ## RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4063
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 3 (permission definitions), Issue 20 (policy cascade + default-deny backend)
@@ -1169,7 +1169,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-1530
 
 ## Ingestion Health Admin UI and Disconnected-Cluster View (issue 26 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4064
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 5 (health API, error classification)
@@ -1224,7 +1224,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 
 ## Neo4j Graph Sync Status Panel (issue 27 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4065
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 5 (health API), Issue 17 (Neo4j core sync adapter)
@@ -1255,7 +1255,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 5 (RHIDP-15338
 
 ## Connector Config Admin UI (issue 28 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4066
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 6 (Zod schemas), Issue 22 (hot-reload propagation)
@@ -1299,7 +1299,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 6:
 
 ## Ingestion Analytics API and Eval Hub Integration (issue 29 of 29)
 
-_GitHub issue not yet created_
+https://github.com/redhat-developer/rhdh-plugins/issues/4067
 
 **Labels:** `ready-to-code`
 **Depends on:** Issue 5 (health data model), Issue 21 (audit logging)
