@@ -6,7 +6,6 @@
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
-import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 
 // @public
@@ -66,9 +65,6 @@ export const appDrawerContentDataRef: ConfigurableExtensionDataRef<
   'app.drawer.content',
   {}
 >;
-
-// @alpha
-export const appDrawerModule: FrontendModule;
 
 // @public
 export const ApplicationDrawer: (

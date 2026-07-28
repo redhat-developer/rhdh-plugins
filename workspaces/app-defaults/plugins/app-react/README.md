@@ -14,11 +14,12 @@ yarn add @red-hat-developer-hub/backstage-plugin-app-react
 
 ## App Integration
 
-Register the drawer module in your app's `createApp` call:
+Register the drawer module from `@red-hat-developer-hub/backstage-plugin-app-defaults`
+in your app's `createApp` call:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults/alpha';
 
 export default createApp({
   features: [
@@ -147,4 +148,3 @@ function MyDrawerContent() {
 
 - `appDrawerContentDataRef` -- extension data ref
 - `AppDrawerContentBlueprint` -- blueprint for contributing drawers
-- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)

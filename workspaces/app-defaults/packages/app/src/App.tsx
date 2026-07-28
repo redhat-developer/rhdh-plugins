@@ -18,7 +18,7 @@ import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults/alpha';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
