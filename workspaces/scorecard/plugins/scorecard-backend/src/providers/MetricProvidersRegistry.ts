@@ -25,17 +25,33 @@ import {
   ThresholdConfigFormatError,
   validateThresholdsForMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  validateMetricId,
+  validateProviderId,
+} from '../validation/validateMetricProviderIds';
 
 /**
  * Registry of all registered metric providers.
  */
 export class MetricProvidersRegistry {
+  /** metricId → provider (a multi-metric provider is stored under each of its metric IDs) */
   private readonly metricProviders = new Map<string, MetricProvider>();
+  /** datasourceId → set of metricIds for that datasource */
   private readonly datasourceIndex = new Map<string, Set<string>>();
+  /** Registered provider IDs (unique; used for scheduler task / config keys) */
+  private readonly registeredProviderIds = new Set<string>();
 
   register(metricProvider: MetricProvider): void {
     const providerDatasource = metricProvider.getProviderDatasourceId();
     const providerId = metricProvider.getProviderId();
+
+    validateProviderId(providerId, providerDatasource);
+
+    if (this.registeredProviderIds.has(providerId)) {
+      throw new ConflictError(
+        `Metric provider with ID '${providerId}' has already been registered`,
+      );
+    }
 
     const metrics = metricProvider.getMetrics();
     const metricIds = metrics.map(m => m.id);
@@ -43,18 +59,11 @@ export class MetricProvidersRegistry {
     for (const metric of metrics) {
       const metricId = metric.id;
 
-      // Validate: Provider ID format (datasource.metricName)
-      const expectedPrefix = `${providerDatasource}.`;
-      if (!metricId.startsWith(expectedPrefix) || metricId === expectedPrefix) {
-        throw new Error(
-          `Invalid metric provider with ID ${metricId}, must have format ` +
-            `'${providerDatasource}.<metricName>' where metric name is not empty`,
-        );
-      }
+      validateMetricId(metricId, providerDatasource);
 
       if (this.metricProviders.has(metricId)) {
         throw new ConflictError(
-          `Metric provider with ID '${metricId}' has already been registered`,
+          `Metric with ID '${metricId}' has already been registered`,
         );
       }
 
@@ -68,16 +77,18 @@ export class MetricProvidersRegistry {
       }
     }
 
+    this.registeredProviderIds.add(providerId);
+
     for (const metricId of metricIds) {
       this.metricProviders.set(metricId, metricProvider);
 
       // Index by datasource
-      let datasourceProviders = this.datasourceIndex.get(providerDatasource);
-      if (!datasourceProviders) {
-        datasourceProviders = new Set();
-        this.datasourceIndex.set(providerDatasource, datasourceProviders);
+      let datasourceMetricIds = this.datasourceIndex.get(providerDatasource);
+      if (!datasourceMetricIds) {
+        datasourceMetricIds = new Set();
+        this.datasourceIndex.set(providerDatasource, datasourceMetricIds);
       }
-      datasourceProviders.add(metricId);
+      datasourceMetricIds.add(metricId);
     }
   }
 

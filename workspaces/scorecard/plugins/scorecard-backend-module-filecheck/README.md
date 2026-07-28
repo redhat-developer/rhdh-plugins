@@ -59,12 +59,12 @@ scorecard:
 
 This produces the following metrics:
 
-| Metric ID                | Checked file path |
-| ------------------------ | ----------------- |
-| `filecheck.readme`       | `README.md`       |
-| `filecheck.license`      | `LICENSE`         |
-| `filecheck.codeowners`   | `CODEOWNERS`      |
-| `filecheck.contributing` | `CONTRIBUTING.md` |
+| Metric ID                | Provider ID | Checked file path |
+| ------------------------ | ----------- | ----------------- |
+| `filecheck.readme`       | `filecheck` | `README.md`       |
+| `filecheck.license`      | `filecheck` | `LICENSE`         |
+| `filecheck.codeowners`   | `filecheck` | `CODEOWNERS`      |
+| `filecheck.contributing` | `filecheck` | `CONTRIBUTING.md` |
 
 If no files are configured, no metrics are registered and the module has no effect.
 
@@ -136,6 +136,6 @@ scorecard:
           seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
 
 Note: all configured file checks share a single schedule — the module fetches each entity's repository tree once per run and checks all configured paths in that single request.

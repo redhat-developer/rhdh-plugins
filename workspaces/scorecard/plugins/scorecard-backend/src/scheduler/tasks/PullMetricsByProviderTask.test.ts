@@ -62,7 +62,11 @@ describe('PullMetricsByProviderTask', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         scorecard: {
-          schedule: scheduleConfig,
+          plugins: {
+            github: {
+              schedule: scheduleConfig,
+            },
+          },
         },
       },
     });
@@ -126,25 +130,44 @@ describe('PullMetricsByProviderTask', () => {
 
   describe('start', () => {
     beforeEach(async () => {
-      (task as any).getScheduleFromConfig = jest
-        .fn()
-        .mockReturnValue({ frequency: { hours: 1 } });
       (task as any).pullProviderMetrics = jest
         .fn()
         .mockResolvedValue(undefined);
       await (task as any).start();
     });
 
-    it('should get scheduled from config', () => {
-      expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-        'scorecard.plugins.github.testMetric.schedule',
+    it('should create a scheduled task runner with schedule from config', () => {
+      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledTimes(1);
+      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith(
+        scheduleConfig,
       );
     });
 
-    it('should create a scheduled task runner with correct schedule', () => {
-      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledTimes(1);
+    it('should use the default schedule when none is configured', async () => {
+      mockScheduler.createScheduledTaskRunner.mockClear();
+      const taskWithoutSchedule = new PullMetricsByProviderTask(
+        {
+          scheduler: mockScheduler,
+          logger: mockLogger,
+          database: mockDatabaseMetricValues,
+          config: mockServices.rootConfig({ data: {} }),
+          catalog: mockCatalog,
+          auth: mockAuth,
+          thresholdEvaluator: mockThresholdEvaluator,
+          thresholdResolver: mockThresholdResolver,
+        },
+        mockProvider,
+      );
+      (taskWithoutSchedule as any).pullProviderMetrics = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      await (taskWithoutSchedule as any).start();
+
       expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith({
         frequency: { hours: 1 },
+        timeout: { minutes: 15 },
+        initialDelay: { minutes: 1 },
       });
     });
 
@@ -154,24 +177,6 @@ describe('PullMetricsByProviderTask', () => {
         id: 'github.testMetric',
         fn: expect.any(Function),
       });
-    });
-  });
-
-  describe('getScheduleFromConfig', () => {
-    it('should return the default schedule if not configured', () => {
-      const config = (task as any).getScheduleFromConfig(
-        'scorecard.schedule.notExists',
-      );
-      expect(config).toEqual({
-        frequency: { hours: 1 },
-        timeout: { minutes: 15 },
-        initialDelay: { minutes: 1 },
-      });
-    });
-
-    it('should return the schedule from config if configured', () => {
-      const config = (task as any).getScheduleFromConfig('scorecard.schedule');
-      expect(config).toEqual(scheduleConfig);
     });
   });
 
@@ -223,26 +228,16 @@ describe('PullMetricsByProviderTask', () => {
       expect(getOwnServiceCredentialsSpy).toHaveBeenCalledWith();
     });
 
-    it('should resolve thresholds for entity/metric/provider', async () => {
+    it('should resolve thresholds for entity/metric', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       const metric = mockProvider.getMetrics()[0];
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(
-        1,
-        mockEntities[0],
-        metric,
-        mockProvider.getProviderId(),
-      );
+      ).toHaveBeenNthCalledWith(1, mockEntities[0], metric);
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(
-        2,
-        mockEntities[1],
-        metric,
-        mockProvider.getProviderId(),
-      );
+      ).toHaveBeenNthCalledWith(2, mockEntities[1], metric);
     });
 
     it('should calculate metrics', async () => {
@@ -732,18 +727,39 @@ describe('PullMetricsByProviderTask', () => {
         expect(savedRecords).toHaveLength(1);
       });
 
-      it('should get schedule from correct config path for batch provider', async () => {
-        (task as any).getScheduleFromConfig = jest
-          .fn()
-          .mockReturnValue({ frequency: { hours: 1 } });
-        (task as any).pullProviderMetrics = jest
+      it('should use datasource schedule when no provider schedule set', async () => {
+        mockScheduler.createScheduledTaskRunner.mockClear();
+        const batchTask = new PullMetricsByProviderTask(
+          {
+            scheduler: mockScheduler,
+            logger: mockLogger,
+            database: mockDatabaseMetricValues,
+            config: mockServices.rootConfig({
+              data: {
+                scorecard: {
+                  plugins: {
+                    filecheck: {
+                      schedule: scheduleConfig,
+                    },
+                  },
+                },
+              },
+            }),
+            catalog: mockCatalog,
+            auth: mockAuth,
+            thresholdEvaluator: mockThresholdEvaluator,
+            thresholdResolver: mockThresholdResolver,
+          },
+          mockBatchProvider,
+        );
+        (batchTask as any).pullProviderMetrics = jest
           .fn()
           .mockResolvedValue(undefined);
 
-        await (task as any).start();
+        await (batchTask as any).start();
 
-        expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-          'scorecard.plugins.filecheck.schedule',
+        expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith(
+          scheduleConfig,
         );
       });
     });

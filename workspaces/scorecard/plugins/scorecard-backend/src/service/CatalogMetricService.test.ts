@@ -297,16 +297,6 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should get provider by metric ID', async () => {
-      await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.importantMetric',
-      ]);
-
-      expect(mockedRegistry.getProvider).toHaveBeenCalledWith(
-        'github.importantMetric',
-      );
-    });
-
     it('should get metric from registry', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.importantMetric',
@@ -317,7 +307,7 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should merge entity and provider thresholds', async () => {
+    it('should merge entity and metric thresholds', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.importantMetric',
       ]);
@@ -327,7 +317,6 @@ describe('CatalogMetricService', () => {
       ).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({ id: 'github.importantMetric' }),
-        provider.getProviderId(),
       );
     });
 

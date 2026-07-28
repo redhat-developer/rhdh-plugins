@@ -66,29 +66,45 @@ export interface Config {
         except?: string[];
       };
     };
-    /** Configuration for scorecard metric providers */
+    /** Configuration for scorecard datasources plugins */
     plugins?: {
-      /** Configuration for datasource */
+      /** Configuration for datasource (e.g. jira, github, filecheck) */
       [datasource: string]: {
-        /** Configuration for metric providers within the datasource.
-         * Each key corresponds to the metric name part of the provider ID (datasource.metricName).
+        /**
+         * How often metrics will be calculated for all metric providers in this
+         * datasource. Overridden by `metricProviders.<providerName>.schedule` when set.
          */
-        [metricName: string]: {
-          /** Threshold configuration for the metric */
-          thresholds?: ThresholdConfig;
-          /**
-           * Schedule for collecting this metric. If not set, the default hourly schedule is used.
-           *
-           * Default schedule:
-           * ```ts
-           * {
-           *   frequency: { hours: 1 },
-           *   timeout: { minutes: 15 },
-           *   initialDelay: { minutes: 1 },
-           * }
-           * ```
-           */
-          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        /**
+         * How metric values are categorized for all metrics in this datasource.
+         * Overridden by provider- or metric-level thresholds when set.
+         */
+        thresholds?: ThresholdConfig;
+        /** Configuration for metric providers within the datasource. Keys are local provider names (no datasource prefix). */
+        metricProviders?: {
+          [providerName: string]: {
+            /**
+             * How often metrics will be calculated for this provider.
+             * Overrides the datasource-level schedule when set.
+             */
+            schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+            /**
+             * How metric values are categorized for all metrics of this provider.
+             * Overridden by metric-level thresholds when set.
+             * Overrides datasource-level thresholds.
+             */
+            thresholds?: ThresholdConfig;
+            /** Per-metric configuration. Keys are local metric names (no datasource prefix). */
+            metrics?: {
+              [metricName: string]: {
+                /**
+                 * How metric values are categorized for this metric.
+                 * Overrides datasource- and provider-level thresholds.
+                 */
+                thresholds?: ThresholdConfig;
+              };
+            };
+          };
         };
       };
     };

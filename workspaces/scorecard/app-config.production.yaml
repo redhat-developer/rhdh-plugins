@@ -63,8 +63,9 @@ catalog:
 #       metricId: github.openPRs
 #   plugins:
 #     github:
-#       openPRs:
-#         schedule:
-#           frequency: { hours: 1 }
-#           timeout: { minutes: 15 }
-#           initialDelay: { minutes: 1 }
+#       metricProviders:
+#         openPRs:
+#           schedule:
+#             frequency: { hours: 1 }
+#             timeout: { minutes: 15 }
+#             initialDelay: { minutes: 1 }

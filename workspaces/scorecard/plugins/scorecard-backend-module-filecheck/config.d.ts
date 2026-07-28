@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
   /** Configuration for scorecard plugin */
@@ -24,9 +26,12 @@ export interface Config {
       filecheck?: {
         /** File existence checks configuration. Keys are metric identifier suffixes, values are relative file paths. */
         files?: {
-          [metricId: string]: string;
+          [metricName: string]: string;
         };
+        /** How often filecheck metrics will be calculated. */
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        /** How filecheck metric values are categorized. */
+        thresholds?: ThresholdConfig;
       };
     };
   };

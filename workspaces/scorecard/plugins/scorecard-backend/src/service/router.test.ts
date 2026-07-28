@@ -737,12 +737,8 @@ describe('createRouter', () => {
       const emptyAggregatedMetric = AggregatedMetricMapper.toAggregatedMetric();
       const { AggregatedMetricMapper: ActualAggregatedMetricMapper } =
         jest.requireActual<typeof import('./mappers')>('./mappers');
-      const provider = metricProvidersRegistry.getProvider('github.openPRs');
       const metric = metricProvidersRegistry.getMetric('github.openPRs');
-      const thresholds = thresholdResolver.resolveMetricThresholds(
-        metric,
-        provider.getProviderId(),
-      );
+      const thresholds = thresholdResolver.resolveMetricThresholds(metric);
       const emptyAggregatedMetricResult =
         ActualAggregatedMetricMapper.toAggregatedMetricResult(
           metric,

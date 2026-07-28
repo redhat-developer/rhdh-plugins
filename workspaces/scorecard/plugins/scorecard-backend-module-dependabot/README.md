@@ -17,15 +17,16 @@ All four severity metrics share the same default thresholds. Default thresholds 
 scorecard:
   plugins:
     dependabot:
-      alertsCritical:
-        thresholds:
-          rules:
-            - key: success
-              expression: '<1'
-            - key: warning
-              expression: '1-7'
-            - key: error
-              expression: '>7'
+      metricProviders:
+        alertsCritical:
+          thresholds:
+            rules:
+              - key: success
+                expression: '<1'
+              - key: warning
+                expression: '1-7'
+              - key: error
+                expression: '>7'
 ```
 
 Replace `alertsCritical` with `alertsHigh`, `alertsMedium`, or `alertsLow` for the other severity metrics. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.

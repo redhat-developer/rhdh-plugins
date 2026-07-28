@@ -15,7 +15,7 @@
  */
 
 export const OPEN_ISSUES_CONFIG_PATH =
-  'scorecard.plugins.jira.openIssues' as const;
+  'scorecard.plugins.jira.metricProviders.openIssues' as const;
 
 /**
  * Jira integration configuration path

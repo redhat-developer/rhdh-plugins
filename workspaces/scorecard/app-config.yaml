@@ -276,17 +276,19 @@ scorecard:
       metricId: filecheck.license
   plugins:
     jira:
-      openIssues:
-        schedule:
-          frequency: { minutes: 5 }
-          timeout: { minutes: 10 }
-          initialDelay: { seconds: 10 }
+      metricProviders:
+        openIssues:
+          schedule:
+            frequency: { minutes: 5 }
+            timeout: { minutes: 10 }
+            initialDelay: { seconds: 10 }
     github:
-      openPRs:
-        schedule:
-          frequency: { minutes: 5 }
-          timeout: { minutes: 10 }
-          initialDelay: { seconds: 10 }
+      metricProviders:
+        openPRs:
+          schedule:
+            frequency: { minutes: 5 }
+            timeout: { minutes: 10 }
+            initialDelay: { seconds: 10 }
     filecheck:
       files:
         license: 'LICENSE'

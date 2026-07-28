@@ -128,14 +128,12 @@ export class CatalogMetricService {
         let thresholds: ThresholdConfig | undefined;
         let thresholdError: string | undefined;
 
-        const provider = this.registry.getProvider(metric_id);
         const metric = this.registry.getMetric(metric_id);
 
         try {
           thresholds = this.thresholdResolver.resolveEntityThresholds(
             entity,
             metric,
-            provider.getProviderId(),
           );
 
           if (value === null) {

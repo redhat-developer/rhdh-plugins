@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
   /** Configuration for scorecard plugin */
@@ -22,15 +24,13 @@ export interface Config {
     plugins?: {
       /** Github datasource configuration */
       github?: {
-        openPRs?: {
-          thresholds?: {
-            rules?: Array<{
-              key: 'error' | 'warning' | 'success';
-              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
-              expression: string;
-            }>;
+        metricProviders?: {
+          openPRs?: {
+            /** How often github.openPRs metrics will be calculated */
+            schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+            /** How github.openPRs metric values are categorized */
+            thresholds?: ThresholdConfig;
           };
-          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
       };
     };

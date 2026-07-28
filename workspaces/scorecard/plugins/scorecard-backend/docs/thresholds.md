@@ -49,10 +49,10 @@ Validation **does not** require full coverage when:
 
 ## Threshold Configuration Options
 
-### 1. Provider Default Thresholds
+### 1. Metric Default Thresholds
 
-Metric providers must define default thresholds that apply to all entities using that metric in `getMetricThresholds`.
-Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use in your metric provider.
+Each metric returned by `getMetrics()` must include default `thresholds` that apply to all entities using that metric.
+Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use on your metrics.
 
 **Example Provider Implementation:**
 
@@ -60,45 +60,81 @@ Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-d
 export class MyMetricProvider implements MetricProvider<'number'> {
   ...
 
-  getMetricThresholds(): ThresholdConfig {
-    return {
-      rules: [
-        { key: 'success', expression: '<10' },
-        { key: 'warning', expression: '10-50' },
-        { key: 'error', expression: '>50' },
-      ],
-    };
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: 'myDatasource.myMetric',
+        title: 'My Metric',
+        description: 'Example metric.',
+        type: 'number',
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '<10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '>50' },
+          ],
+        },
+      },
+    ];
   }
 }
 ```
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults with your custom thresholds through app configuration (`app-config.yaml`) under `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
-follow the format `<myDatasource>.<myMetric>`. Batch providers that specify `<myDatasource>` as the `providerId` currently only allow to override global provider thresholds that apply to all metrics the provider defines.
+You can override metric defaults through app configuration (`app-config.yaml`). Thresholds may be set at three levels; the **most specific** level winds and completely replaces metric defaults:
+
+1. **Metric** (highest app-config priority): `scorecard.plugins.<datasource>.metricProviders.<providerName>.metrics.<metricName>.thresholds`
+2. **Provider**: `scorecard.plugins.<datasource>.metricProviders.<providerName>.thresholds`
+3. **Datasource** (lowest app-config priority): `scorecard.plugins.<datasource>.thresholds`
+
+Keys under `plugins.<datasource>` are **local names only** (no datasource prefix for both metric provider IDs and metric IDs). The full runtime provider ID is `<datasource>.<providerName>` or `<datasource>` and metric ID is `<datasource>.<metricName>`.
+
+Datasource- or provider-level thresholds must be valid for every metric they apply to (same metric type). You can use provider-level or datasource-level for single-metric plugins.
 
 Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
 
+**_Metric level:_**
+
 ```yaml
 scorecard:
   plugins:
     myDatasource:
-      myMetric:
-        thresholds:
-          rules:
-            - key: success
-              expression: '<10'
-            - key: warning
-              expression: '<=20'
-            - key: error
-              expression: '>20'
-    myOtherDatasource:
-      myOtherMetric: ...
+      metricProviders:
+        myProvider:
+          metrics:
+            myMetric:
+              thresholds:
+                rules:
+                  - key: success
+                    expression: '<10'
+                  - key: warning
+                    expression: '<=20'
+                  - key: error
+                    expression: '>20'
 ```
 
-**Example App Configuration for batch provider:**
+**_Provider level:_**
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      metricProviders:
+        myProvider:
+          thresholds:
+            rules:
+              - key: success
+                expression: '<10'
+              - key: warning
+                expression: '<=20'
+              - key: error
+                expression: '>20'
+```
+
+**_Datasource level:_**
 
 ```yaml
 scorecard:
@@ -107,16 +143,14 @@ scorecard:
       thresholds:
         rules:
           - key: success
-            expression: '<10'
-          - key: warning
-            expression: '<=20'
+            expression: '==true'
           - key: error
-            expression: '>20'
+            expression: '==false'
 ```
 
 ### 3. Entity Annotation Overrides
 
-Override thresholds for specific entities using annotations in the entity's metadata:
+Override thresholds for specific entities using annotations in the entity's metadata. Annotations use the **full metric ID**:
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
@@ -125,32 +159,32 @@ metadata:
   name: my-service
   annotations:
     # Override specific threshold rules for this entity
-    scorecard.io/myDatasource.myMetric.thresholds.rules.warning: '10-15'
-    scorecard.io/myDatasource.myMetric.thresholds.rules.error: '>15'
+    scorecard.io/myMetricId.thresholds.rules.warning: '10-15'
+    scorecard.io/myMetricId.thresholds.rules.error: '>15'
     # success threshold will use the default config value
 spec:
   type: service
 ```
 
-You can only override existing threshold severity keys for provider. This means you can not specify new custom severity keys in entity annotations, they must be first configured for provider in app configuration.
+You can only override existing threshold severity keys for the metric. This means you can not specify new custom severity keys in entity annotations, they must be first configured for the metric in app configuration or defined in the metric code.
 
 #### Annotation Format Reference
 
 Entity annotations use this format:
 
 ```yaml
-scorecard.io/{providerId}.thresholds.rules.{thresholdKey}: '{expression}'
+scorecard.io/{metricId}.thresholds.rules.{thresholdKey}: '{expression}'
 ```
 
 Where:
 
-- `{providerId}`: The metric provider ID (e.g., `github.openPRs`)
+- `{metricId}`: The full metric ID (e.g., `github.openPRs`, `filecheck.readme`)
 - `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
 
-For **number** metrics, each overridden expression is validated in isolation first. If **any** rule was replaced from an annotation, the backend then validates the **merged** rule list for the same **joint full-line coverage** as app-config and provider defaults (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). If the union of all merged expressions leaves a gap, startup or merge-time evaluation throws **`ThresholdConfigFormatError`** with the usual message starting with `Number threshold rules do not cover the entire real line…` (this is **not** wrapped in the `Invalid threshold annotation '…'` prefix used for single-rule parse errors).
+For **number** metrics, each overridden expression is validated in isolation first. If **any** rule was replaced from an annotation, the backend then validates the **merged** rule list for the same **joint full-line coverage** as app-config and metric defaults (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). If the union of all merged expressions leaves a gap, startup or merge-time evaluation throws **`ThresholdConfigFormatError`** with the usual message starting with `Number threshold rules do not cover the entire real line…` (this is **not** wrapped in the `Invalid threshold annotation '…'` prefix used for single-rule parse errors).
 
-**Counterexample:** Provider rules partition the line (`'<10'`, `'10-20'`, `'>20'`). Overriding only warning to `'11-20'` leaves **`10`** and **`(10, 11)`** uncovered on the merged set—fix the override or adjacent rules so the union again covers **(-∞, +∞)**.
+**Counterexample:** Metric default rules partition the line (`'<10'`, `'10-20'`, `'>20'`). Overriding only warning to `'11-20'` leaves **`10`** and **`(10, 11)`** uncovered on the merged set—fix the override or adjacent rules so the union again covers **(-∞, +∞)**.
 
 ### 4. Aggregation KPI result thresholds (`weightedStatusScore` type)
 
@@ -171,22 +205,24 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 Thresholds are applied with the following priority (highest to lowest):
 
 1. **Entity Annotations** (highest priority) - _merged_ with existing rules
-2. **App Configuration** - _completely replaces_ provider defaults
-3. **Provider Defaults** (lowest priority)
+2. **App Configuration (metric)** - _completely replaces_ metric code defaults
+3. **App Configuration (provider)** - _completely replaces_ metric code defaults
+4. **App Configuration (datasource)** - _completely replaces_ metric code defaults
+5. **Metric code defaults** (lowest priority)
 
 **Merging Behavior:**
 
-- **App Configuration**: Completely replaces provider defaults (no merging), missing rules are not applied
+- **App Configuration**: The most specific of metric / provider / datasource completely replaces lower levels (no rule merging between those levels)
 - **Entity Annotations**: Merged with existing rules from `app-config` or defaults:
   - Rules with the same `key` are **replaced** by annotation values
-  - Missing rules fall back to app-config or provider defaults
+  - Missing rules fall back to app-config or metric defaults
   - For **number** metrics, if at least one rule came from an annotation, the **merged** rules must still satisfy joint full-line coverage together (see [§3 Entity Annotation Overrides](#3-entity-annotation-overrides))
 
 **Example Priority Application:**
 
 ```typescript
-// 1. Provider defaults
-providerDefaults: [
+// 1. Metric defaults
+metricDefaults: [
   { key: 'success', expression: '<10' },
   { key: 'warning', expression: '10-50' },
   { key: 'error', expression: '>50' }
@@ -201,8 +237,8 @@ appConfig: [
 
 // 3. Entity annotation overrides (merged with app-config)
 annotations: {
-  'scorecard.io/myProviderId.thresholds.rules.warning': '10-25',
-  'scorecard.io/myProviderId.thresholds.rules.error': '>25',
+  'scorecard.io/myDatasource.myMetric.thresholds.rules.warning': '10-25',
+  'scorecard.io/myDatasource.myMetric.thresholds.rules.error': '>25',
 }
 
 // Final result (annotations merged with app-config)
