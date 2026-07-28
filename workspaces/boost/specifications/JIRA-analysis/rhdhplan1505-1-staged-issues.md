@@ -13,10 +13,11 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 | RHDHPLAN-1510 | RHIDP-15313 (MCP Registry), RHIDP-15314 (RHOAI Connector), RHIDP-15316 (Cross-Connector Shared Infra)                              |
 | RHDHPLAN-1513 | RHIDP-15331 (Health Dashboard), RHIDP-15332 (Hot-Reload), RHIDP-15334 (Schema Alignment)                                           |
 
-**Cross-feature dependencies (RHDHPLAN-1509):**
+**Cross-feature dependencies (RHDHPLAN-1509, RHDHPLAN-393):**
 
 - Issue 24 (RHIDP-15273 Graduated Visibility Frontend) depends on RHIDP-15167 (Entity page extensions, RHDHPLAN-1509)
 - RHIDP-15167 (RHDHPLAN-1509) depends on RHIDP-15335 (Issue 5 — Health API), creating a cross-feature cycle that must be resolved by building the API (Issue 5) first
+- Issues 7, 13, 14 (RHIDP-15317, RHIDP-15318, RHIDP-15319 — MCP Registry Connector productization under RHDHPLAN-1510) depend on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community entity provider must exist before the productization wrapper can configure its endpoint (Issue 7), integrate TLS/credentials (Issue 13), or intercept entity emission for annotation enrichment (Issue 14). RHIDP-15321 (RHOAI version normalization, also in Issue 7) and Issues 15–16 (RHOAI connector) have no RHDHPLAN-393 dependency — they query RHOAI's own MCP catalog API independently.
 
 **Maximum parallelism:** All 7 Tier 0 issues can start simultaneously. Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI). Within Tier 2, issues [23–25] (RBAC UI) are independent of [26–29] (Ingestion UI).
 
@@ -405,8 +406,9 @@ _GitHub issue not yet created_
 **Dependencies:** None
 **RHIDP Stories:** RHIDP-15317, RHIDP-15321
 **Feature:** RHDHPLAN-1510 — Epics RHIDP-15313, RHIDP-15314
+**Cross-feature dependency:** RHIDP-15317 depends on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community provider must exist before the productization layer can override its endpoint configuration. RHIDP-15321 (RHOAI version normalization) has no RHDHPLAN-393 dependency and can start immediately.
 
-Implement the MCP Registry mirror endpoint configuration with zero-internet validation (no outbound traffic to public endpoint when mirror is configured), startup health check, and non-HTTPS security warnings. Also implement RHOAI version normalization utility for MCP server entity `rhdh.io/ai-asset-version` annotation population. These two stories have no cross-connector dependencies and can start immediately.
+Implement the MCP Registry mirror endpoint configuration with zero-internet validation (no outbound traffic to public endpoint when mirror is configured), startup health check, and non-HTTPS security warnings. Also implement RHOAI version normalization utility for MCP server entity `rhdh.io/ai-asset-version` annotation population. RHIDP-15321 has no cross-connector dependencies and can start immediately; RHIDP-15317 is blocked on the upstream MCP Registry entity provider (RHDHPLAN-393 RHIDP-15655).
 
 ### Tasks
 
@@ -671,6 +673,7 @@ _GitHub issue not yet created_
 **Depends on:** Issue 1 (shared infra), Issue 7 (mirror endpoint)
 **RHIDP Stories:** RHIDP-15318
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15313
+**Cross-feature dependency:** RHIDP-15318 depends on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community provider must exist as the integration target for TLS/credential wrapping.
 
 Integrate shared CA bundle utility (`loadCaBundle()`) from `@boost/connector-utils`, implement K8s Secret-based authentication (Basic Auth and Bearer token), Secret data caching with 5-minute TTL and invalidation on 401, and per-connector TLS configuration isolation.
 
@@ -712,6 +715,7 @@ _GitHub issue not yet created_
 **Depends on:** Issue 8 (SDK validation layer), Issue 13 (TLS hardening)
 **RHIDP Stories:** RHIDP-15319
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15313
+**Cross-feature dependency:** RHIDP-15319 depends on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393) and RHIDP-15658 (Implement MCP Registry to entity mapping, RHDHPLAN-393). The upstream provider and its entity mapping must exist before the productization wrapper can intercept entity emission for annotation enrichment.
 
 Implement `RhdhMcpRegistryProviderWrapper` class intercepting entity emission to enrich with AI Asset annotations (`rhdh.io/ai-asset-category: "mcp-server"`, `rhdh.io/ai-asset-source: "mcp-registry"`, extracted version), integrate with SDK validation layer, and preserve existing annotations.
 
