@@ -1,20 +1,5 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
-## 0.2.0
-
-### Minor Changes
-
-- 0ed09e3: **BREAKING:** Removed `appDrawerModule` from this package. The module has been moved to `@red-hat-developer-hub/backstage-plugin-app-defaults` where default module registrations belong.
-
-  **Migration:** Update your imports:
-
-  ```diff
-  -import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-  +import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
-  ```
-
-  The reusable building blocks (`ApplicationDrawer`, `appDrawerContentDataRef`, `AppDrawerContentBlueprint`, `useAppDrawer`, `DrawerPanel`) remain in this package.
-
 ## 0.1.0
 
 ### Minor Changes
