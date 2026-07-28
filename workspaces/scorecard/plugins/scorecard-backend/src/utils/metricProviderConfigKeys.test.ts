@@ -16,8 +16,6 @@
 
 import { ConfigReader } from '@backstage/config';
 import {
-  getDatasourceScheduleConfigPath,
-  getDatasourceThresholdsConfigPath,
   getMetricLocalConfigKey,
   getMetricThresholdsConfigPath,
   getProviderLocalConfigKey,
@@ -29,16 +27,13 @@ import {
 
 describe('metricProviderConfigKeys', () => {
   describe('getProviderLocalConfigKey', () => {
-    it('returns datasource when provider ID equals datasource', () => {
-      expect(getProviderLocalConfigKey('filecheck', 'filecheck')).toBe(
-        'filecheck',
-      );
-    });
-
     it('returns local name for prefixed provider ID', () => {
       expect(getProviderLocalConfigKey('jira.openIssues', 'jira')).toBe(
         'openIssues',
       );
+      expect(
+        getProviderLocalConfigKey('filecheck.fileExistence', 'filecheck'),
+      ).toBe('fileExistence');
     });
   });
 
@@ -51,19 +46,13 @@ describe('metricProviderConfigKeys', () => {
   });
 
   describe('threshold config paths', () => {
-    it('builds datasource-level path', () => {
-      expect(getDatasourceThresholdsConfigPath('github')).toBe(
-        'scorecard.plugins.github.thresholds',
-      );
-    });
-
     it('builds provider-level path', () => {
       expect(getProviderThresholdsConfigPath('github', 'github.openPRs')).toBe(
-        'scorecard.plugins.github.metricProviders.openPRs.thresholds',
+        'scorecard.metricProviders.github.openPRs.thresholds',
       );
-      expect(getProviderThresholdsConfigPath('filecheck', 'filecheck')).toBe(
-        'scorecard.plugins.filecheck.metricProviders.filecheck.thresholds',
-      );
+      expect(
+        getProviderThresholdsConfigPath('filecheck', 'filecheck.fileExistence'),
+      ).toBe('scorecard.metricProviders.filecheck.fileExistence.thresholds');
     });
 
     it('builds metric-level path for single-metric provider', () => {
@@ -74,48 +63,27 @@ describe('metricProviderConfigKeys', () => {
           'github.openPRs',
         ),
       ).toBe(
-        'scorecard.plugins.github.metricProviders.openPRs.metrics.openPRs.thresholds',
-      );
-    });
-
-    it('builds metric-level path for batch provider', () => {
-      expect(
-        getMetricThresholdsConfigPath(
-          'filecheck',
-          'filecheck',
-          'filecheck.readme',
-        ),
-      ).toBe(
-        'scorecard.plugins.filecheck.metricProviders.filecheck.metrics.readme.thresholds',
+        'scorecard.metricProviders.github.openPRs.metrics.openPRs.thresholds',
       );
     });
   });
 
   describe('schedule config paths', () => {
-    it('builds datasource- and provider-level schedule paths', () => {
-      expect(getDatasourceScheduleConfigPath('github')).toBe(
-        'scorecard.plugins.github.schedule',
-      );
+    it('builds provider-level schedule path', () => {
       expect(getProviderScheduleConfigPath('github', 'github.openPRs')).toBe(
-        'scorecard.plugins.github.metricProviders.openPRs.schedule',
+        'scorecard.metricProviders.github.openPRs.schedule',
       );
     });
 
-    it('prefers provider schedule when present', () => {
+    it('resolves provider schedule when present', () => {
       const config = new ConfigReader({
         scorecard: {
-          plugins: {
+          metricProviders: {
             github: {
-              schedule: {
-                frequency: { hours: 1 },
-                timeout: { minutes: 15 },
-              },
-              metricProviders: {
-                openPRs: {
-                  schedule: {
-                    frequency: { hours: 2 },
-                    timeout: { minutes: 20 },
-                  },
+              openPRs: {
+                schedule: {
+                  frequency: { hours: 2 },
+                  timeout: { minutes: 20 },
                 },
               },
             },
@@ -131,28 +99,6 @@ describe('metricProviderConfigKeys', () => {
       });
     });
 
-    it('falls back to datasource schedule when provider schedule is absent', () => {
-      const config = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              schedule: {
-                frequency: { hours: 1 },
-                timeout: { minutes: 15 },
-              },
-            },
-          },
-        },
-      });
-
-      expect(
-        resolveScheduleFromConfig(config, 'github', 'github.openPRs'),
-      ).toEqual({
-        frequency: { hours: 1 },
-        timeout: { minutes: 15 },
-      });
-    });
-
     it('returns undefined when no schedule is configured', () => {
       expect(
         resolveScheduleFromConfig(
@@ -165,19 +111,16 @@ describe('metricProviderConfigKeys', () => {
   });
 
   describe('resolveThresholdsConfigPath', () => {
-    it('prefers metric over provider and datasource', () => {
+    it('prefers metric over provider', () => {
       const config = new ConfigReader({
         scorecard: {
-          plugins: {
+          metricProviders: {
             github: {
-              thresholds: { rules: [] },
-              metricProviders: {
-                openPRs: {
-                  thresholds: { rules: [] },
-                  metrics: {
-                    openPRs: {
-                      thresholds: { rules: [] },
-                    },
+              openPRs: {
+                thresholds: { rules: [] },
+                metrics: {
+                  openPRs: {
+                    thresholds: { rules: [] },
                   },
                 },
               },
@@ -194,20 +137,17 @@ describe('metricProviderConfigKeys', () => {
           'github.openPRs',
         ),
       ).toBe(
-        'scorecard.plugins.github.metricProviders.openPRs.metrics.openPRs.thresholds',
+        'scorecard.metricProviders.github.openPRs.metrics.openPRs.thresholds',
       );
     });
 
-    it('prefers provider over datasource when metric is absent', () => {
+    it('falls back to provider when metric is absent', () => {
       const config = new ConfigReader({
         scorecard: {
-          plugins: {
+          metricProviders: {
             github: {
-              thresholds: { rules: [] },
-              metricProviders: {
-                openPRs: {
-                  thresholds: { rules: [] },
-                },
+              openPRs: {
+                thresholds: { rules: [] },
               },
             },
           },
@@ -221,28 +161,7 @@ describe('metricProviderConfigKeys', () => {
           'github.openPRs',
           'github.openPRs',
         ),
-      ).toBe('scorecard.plugins.github.metricProviders.openPRs.thresholds');
-    });
-
-    it('falls back to datasource when provider and metric are absent', () => {
-      const config = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              thresholds: { rules: [] },
-            },
-          },
-        },
-      });
-
-      expect(
-        resolveThresholdsConfigPath(
-          config,
-          'github',
-          'github.openPRs',
-          'github.openPRs',
-        ),
-      ).toBe('scorecard.plugins.github.thresholds');
+      ).toBe('scorecard.metricProviders.github.openPRs.thresholds');
     });
 
     it('returns undefined when no thresholds are configured', () => {

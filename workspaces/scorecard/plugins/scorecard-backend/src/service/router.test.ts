@@ -833,7 +833,7 @@ describe('createRouter', () => {
     it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1076,7 +1076,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1334,7 +1334,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric metadata for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },

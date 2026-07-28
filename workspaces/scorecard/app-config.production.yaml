@@ -61,11 +61,10 @@ catalog:
 #       description: Open PRs across owned entities, grouped by status.
 #       type: statusGrouped
 #       metricId: github.openPRs
-#   plugins:
+#   metricProviders:
 #     github:
-#       metricProviders:
-#         openPRs:
-#           schedule:
-#             frequency: { hours: 1 }
-#             timeout: { minutes: 15 }
-#             initialDelay: { minutes: 1 }
+#       openPRs:
+#         schedule:
+#           frequency: { hours: 1 }
+#           timeout: { minutes: 15 }
+#           initialDelay: { minutes: 1 }

@@ -77,30 +77,27 @@ scorecard:
             - key: error
               expression: '<51'
               color: '#be1ec7' # purple
-  plugins:
+  metricProviders:
     jira:
-      metricProviders:
-        openIssues:
-          schedule:
-            frequency: { days: 1 }
-            timeout: { minutes: 2 }
-            initialDelay: { minutes: 1 }
-          # Optional — uncomment to narrow which Jira issues are counted (otherwise all open issues match the provider rules).
-          # options:
-          #   mandatoryFilter: type = Story
-          #   customFilter: priority = High
+      openIssues:
+        schedule:
+          frequency: { days: 1 }
+          timeout: { minutes: 2 }
+          initialDelay: { minutes: 1 }
+        # Optional — uncomment to narrow which Jira issues are counted (otherwise all open issues match the provider rules).
+        # options:
+        #   mandatoryFilter: type = Story
+        #   customFilter: priority = High
     github:
-      # Provider-level thresholds, could be also set under `metricProviders.openPRs.metrics.openPRs.thresholds`.
-      metricProviders:
-        openPRs:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<=20'
-                color: 'success.main'
-              - key: warning
-                expression: '20-50'
-                color: '#FFFF00'
-              - key: error
-                expression: '>50'
-                color: 'rgb(255, 0, 0)'
+      openPRs:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<=20'
+              color: 'success.main'
+            - key: warning
+              expression: '20-50'
+              color: '#FFFF00'
+            - key: error
+              expression: '>50'
+              color: 'rgb(255, 0, 0)'

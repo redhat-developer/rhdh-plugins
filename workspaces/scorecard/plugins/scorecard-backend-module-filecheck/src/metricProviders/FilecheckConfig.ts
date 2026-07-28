@@ -69,7 +69,7 @@ export function parseFilecheckConfig(
   config: Config,
 ): FilecheckConfig | undefined {
   const filesConfig = config.getOptionalConfig(
-    'scorecard.plugins.filecheck.files',
+    'scorecard.metricProviders.filecheck.fileExistence.options.files',
   );
 
   if (!filesConfig) {

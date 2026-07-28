@@ -21,17 +21,17 @@ import {
 
 describe('validateMetricProviderIds', () => {
   describe('validateProviderId', () => {
-    it('allows provider ID equal to datasource', () => {
-      expect(() => validateProviderId('filecheck', 'filecheck')).not.toThrow();
-    });
-
     it('allows provider ID with datasource prefix', () => {
       expect(() =>
         validateProviderId('github.openPRs', 'github'),
       ).not.toThrow();
+      expect(() =>
+        validateProviderId('filecheck.fileExistence', 'filecheck'),
+      ).not.toThrow();
     });
 
     it.each([
+      ['equal to datasource', 'filecheck', 'filecheck'],
       ['wrong datasource prefix', 'other.openPRs', 'github'],
       ['missing dot separator', 'githubopenPrs', 'github'],
       ['empty ID', '', 'github'],

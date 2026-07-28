@@ -62,9 +62,11 @@ describe('PullMetricsByProviderTask', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         scorecard: {
-          plugins: {
+          metricProviders: {
             github: {
-              schedule: scheduleConfig,
+              testMetric: {
+                schedule: scheduleConfig,
+              },
             },
           },
         },
@@ -430,13 +432,13 @@ describe('PullMetricsByProviderTask', () => {
       ).rejects.toThrow('test error');
     });
 
-    describe('batch providers', () => {
+    describe('batch providers (return multiple metrics)', () => {
       let mockBatchProvider: MockBatchBooleanProvider;
 
       beforeEach(() => {
         mockBatchProvider = new MockBatchBooleanProvider(
           'filecheck',
-          'filecheck',
+          'filecheck.fileExistence',
           [
             { id: 'readme', path: 'README.md' },
             { id: 'license', path: 'LICENSE' },
@@ -727,7 +729,7 @@ describe('PullMetricsByProviderTask', () => {
         expect(savedRecords).toHaveLength(1);
       });
 
-      it('should use datasource schedule when no provider schedule set', async () => {
+      it('should use provider schedule from config', async () => {
         mockScheduler.createScheduledTaskRunner.mockClear();
         const batchTask = new PullMetricsByProviderTask(
           {
@@ -737,9 +739,11 @@ describe('PullMetricsByProviderTask', () => {
             config: mockServices.rootConfig({
               data: {
                 scorecard: {
-                  plugins: {
+                  metricProviders: {
                     filecheck: {
-                      schedule: scheduleConfig,
+                      fileExistence: {
+                        schedule: scheduleConfig,
+                      },
                     },
                   },
                 },

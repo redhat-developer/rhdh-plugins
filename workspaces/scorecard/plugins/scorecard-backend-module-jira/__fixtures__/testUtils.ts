@@ -76,13 +76,11 @@ export function newMockRootConfig({
     data: {
       jira,
       scorecard: {
-        plugins: {
+        metricProviders: {
           jira: {
-            metricProviders: {
-              openIssues: {
-                options,
-                thresholds,
-              },
+            openIssues: {
+              options,
+              thresholds,
             },
           },
         },

@@ -66,45 +66,36 @@ export interface Config {
         except?: string[];
       };
     };
-    /** Configuration for scorecard datasources plugins */
-    plugins?: {
-      /** Configuration for datasource (e.g. jira, github, filecheck) */
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
+      /** Datasource ID, matches `getProviderDatasourceId()` of a provider (e.g., `jira`, `github`, `filecheck`). */
       [datasource: string]: {
-        /**
-         * How often metrics will be calculated for all metric providers in this
-         * datasource. Overridden by `metricProviders.<providerName>.schedule` when set.
+        /** Configuration for a specific metric provider.
+         * Use the local name without datasource prefix (e.g., `openPRs` instead of `github.openPRs`).
          */
-        schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-        /**
-         * How metric values are categorized for all metrics in this datasource.
-         * Overridden by provider- or metric-level thresholds when set.
-         */
-        thresholds?: ThresholdConfig;
-        /** Configuration for metric providers within the datasource. Keys are local provider names (no datasource prefix). */
-        metricProviders?: {
-          [providerName: string]: {
-            /**
-             * How often metrics will be calculated for this provider.
-             * Overrides the datasource-level schedule when set.
+        [providerName: string]: {
+          /** How often metrics will be calculated for this provider. */
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /**
+           * How metric values are categorized for all metrics of this provider.
+           * Overridden by metric-level thresholds when set.
+           */
+          thresholds?: ThresholdConfig;
+          /** Per-metric configuration. */
+          metrics?: {
+            /** Configuration for a specific metric.
+             * Use the local name without datasource prefix (e.g., 'openPRs' instead of 'github.openPRs').
              */
-            schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-            /**
-             * How metric values are categorized for all metrics of this provider.
-             * Overridden by metric-level thresholds when set.
-             * Overrides datasource-level thresholds.
-             */
-            thresholds?: ThresholdConfig;
-            /** Per-metric configuration. Keys are local metric names (no datasource prefix). */
-            metrics?: {
-              [metricName: string]: {
-                /**
-                 * How metric values are categorized for this metric.
-                 * Overrides datasource- and provider-level thresholds.
-                 */
-                thresholds?: ThresholdConfig;
-              };
+            [metricName: string]: {
+              /**
+               * How metric values are categorized for this metric.
+               * Overrides provider-level thresholds.
+               */
+              thresholds?: ThresholdConfig;
             };
           };
+          /** Provider-specific options (shape defined by each module). */
+          options?: unknown;
         };
       };
     };

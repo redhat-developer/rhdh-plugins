@@ -9,37 +9,46 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-common': major
 ---
 
-**BREAKING**: Thresholds moved from provider level to metric level. Configuration is restructured to enable thresholds to be defined directly for each metric with fallback options at the datasource and provider levels. The new top-level key `metricProviders` now houses all metric-specific configurations. Schedule options are added to datasource level. Threshold annotation overrides now require full metric ID instead of provider ID.
+**BREAKING**: Scorecard provider configuration now lives under top-level `scorecard.metricProviders` instead of `scorecard.plugins`. Provider IDs must be `<datasource>.<providerName>` (no longer equal to the datasource alone). Entity annotations for thresholds use now the full metric ID instead of provider ID.
 
-Thresholds from configuration are determined by the most specific setting. Priority order is: Metric > MetricProvider > Datasource:
+Thresholds from configuration are determined by the most specific setting (**metric > provider**):
 
-1. `plugins.<datasource>.metricProviders.<providerName>.metrics.<metricName>.thresholds`
-2. `plugins.<datasource>.metricProviders.<providerName>.thresholds`
-3. `plugins.<datasource>.thresholds`
+1. `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+2. `metricProviders.<datasource>.<providerName>.thresholds`
 
-Config keys are local names (no datasource prefix). Single-metric plugins can set thresholds directly under the datasource. Schedules use `plugins.<datasource>.schedule` with optional override at `metricProviders.<provider>.schedule`.
+Config keys are local names (no datasource prefix). Entity annotations use the full metric ID:
+`scorecard.io/<metricId>.thresholds.rules.<key>`.
 
-Entity annotations must use the full metric ID:
-`scorecard.io/<metricId>.thresholds.rules.<key>` (for example
-`scorecard.io/filecheck.readme.thresholds.rules.success`).
-
-If you customized thresholds or schedule under a metric provider, nest that provider under `metricProviders`:
+Filecheck provider ID is now `filecheck.fileExistence`; files move under `options`:
 
 ```diff
  scorecard:
-   plugins:
-     github:
--      openPRs:
-+      metricProviders:
-+        openPRs:
-           thresholds:
-             rules:
-               - key: success
-                 expression: '<10'
-               - key: warning
-                 expression: '10-50'
-               - key: error
-                 expression: '>50'
+-  plugins:
+-    filecheck:
+-      files:
+-        license: LICENSE
+-        codeowners: CODEOWNERS
+-      thresholds: ...
+-      schedule: ...
++  metricProviders:
++    filecheck:
++      fileExistence:
++        options:
++          files:
++            license: LICENSE
++            codeowners: CODEOWNERS
++        thresholds: ...
++        schedule: ...
 ```
 
-Apply the same nesting for other datasources (`jira`, `sonarqube`, `dependabot`, `openssf`, etc.): move `plugins.<datasource>.<providerName>` to `plugins.<datasource>.metricProviders.<providerName>`.
+Migration from the previous `scorecard.plugins` layout:
+
+```diff
+ scorecard:
+-  plugins:
++  metricProviders:
+     github:
+       openPRs:
+         schedule: ...
+         thresholds: ...
+```

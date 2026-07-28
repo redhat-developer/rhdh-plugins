@@ -15,21 +15,17 @@
  */
 
 /**
- * Validates provider ID format: `<datasource>` or `<datasource>.<providerName>`.
+ * Validates provider ID format: `<datasource>.<providerName>`.
  */
 export function validateProviderId(
   providerId: string,
   datasourceId: string,
 ): void {
-  if (providerId === datasourceId) {
-    return;
-  }
-
   const [datasource, providerName, ...rest] = providerId.split('.');
   if (datasource !== datasourceId || !providerName || rest.length > 0) {
     throw new Error(
-      `Invalid provider ID '${providerId}', must be equal to datasource '${datasourceId}' ` +
-        `or have format '${datasourceId}.<providerName>' where provider name is not empty`,
+      `Invalid provider ID '${providerId}', must have format ` +
+        `'${datasourceId}.<providerName>' where provider name is not empty`,
     );
   }
 }

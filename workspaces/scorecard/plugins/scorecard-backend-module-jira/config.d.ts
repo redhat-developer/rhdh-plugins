@@ -35,21 +35,19 @@ export interface Config {
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /** Configuration for scorecard plugins/datasources */
-    plugins?: {
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
       /** JIRA datasource configuration */
       jira?: {
-        metricProviders?: {
-          openIssues?: {
-            options?: {
-              mandatoryFilter?: string;
-              customFilter?: string;
-            };
-            /** How often jira.openIssues metrics will be calculated */
-            schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-            /** How jira.openIssues metric values are categorized */
-            thresholds?: ThresholdConfig;
+        openIssues?: {
+          options?: {
+            mandatoryFilter?: string;
+            customFilter?: string;
           };
+          /** How often jira.openIssues metrics will be calculated */
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /** How jira.openIssues metric values are categorized */
+          thresholds?: ThresholdConfig;
         };
       };
     };

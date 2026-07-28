@@ -82,15 +82,14 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
 ### 2. App Configuration Thresholds
 
-You can override metric defaults through app configuration (`app-config.yaml`). Thresholds may be set at three levels; the **most specific** level winds and completely replaces metric defaults:
+You can override metric defaults through app configuration (`app-config.yaml`). Thresholds may be set at two levels; the **most specific** level wins and completely replaces metric defaults:
 
-1. **Metric** (highest app-config priority): `scorecard.plugins.<datasource>.metricProviders.<providerName>.metrics.<metricName>.thresholds`
-2. **Provider**: `scorecard.plugins.<datasource>.metricProviders.<providerName>.thresholds`
-3. **Datasource** (lowest app-config priority): `scorecard.plugins.<datasource>.thresholds`
+1. **Metric** (highest app-config priority): `scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+2. **Provider**: `scorecard.metricProviders.<datasource>.<providerName>.thresholds`
 
-Keys under `plugins.<datasource>` are **local names only** (no datasource prefix for both metric provider IDs and metric IDs). The full runtime provider ID is `<datasource>.<providerName>` or `<datasource>` and metric ID is `<datasource>.<metricName>`.
+Keys under `metricProviders.<datasource>` are **local provider names** (no datasource prefix). Keys under `metrics` are **local metric names** (no datasource prefix). The full provider ID is `<datasource>.<providerName>` and metric ID is `<datasource>.<metricName>`.
 
-Datasource- or provider-level thresholds must be valid for every metric they apply to (same metric type). You can use provider-level or datasource-level for single-metric plugins.
+Provider-level thresholds must be valid for every metric they apply to. Prefer provider-level thresholds for multi-metric providers (for example OpenSSF or Filecheck) when all metrics share the same rules.
 
 Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
@@ -100,52 +99,36 @@ Threshold configuration is validated in [validateThresholdsForMetric()](../../sc
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
-      metricProviders:
-        myProvider:
-          metrics:
-            myMetric:
-              thresholds:
-                rules:
-                  - key: success
-                    expression: '<10'
-                  - key: warning
-                    expression: '<=20'
-                  - key: error
-                    expression: '>20'
+      myProvider:
+        metrics:
+          myMetric:
+            thresholds:
+              rules:
+                - key: success
+                  expression: '<10'
+                - key: warning
+                  expression: '<=20'
+                - key: error
+                  expression: '>20'
 ```
 
 **_Provider level:_**
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
-      metricProviders:
-        myProvider:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<10'
-              - key: warning
-                expression: '<=20'
-              - key: error
-                expression: '>20'
-```
-
-**_Datasource level:_**
-
-```yaml
-scorecard:
-  plugins:
-    myDatasource:
-      thresholds:
-        rules:
-          - key: success
-            expression: '==true'
-          - key: error
-            expression: '==false'
+      myProvider:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '<=20'
+            - key: error
+              expression: '>20'
 ```
 
 ### 3. Entity Annotation Overrides

@@ -20,17 +20,15 @@ import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scoreca
 export interface Config {
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /** Configuration for scorecard plugins/datasources */
-    plugins?: {
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
       /** Github datasource configuration */
       github?: {
-        metricProviders?: {
-          openPRs?: {
-            /** How often github.openPRs metrics will be calculated */
-            schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
-            /** How github.openPRs metric values are categorized */
-            thresholds?: ThresholdConfig;
-          };
+        openPRs?: {
+          /** How often github.openPRs metrics will be calculated */
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /** How github.openPRs metric values are categorized */
+          thresholds?: ThresholdConfig;
         };
       };
     };

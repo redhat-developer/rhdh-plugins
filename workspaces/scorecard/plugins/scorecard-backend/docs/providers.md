@@ -163,13 +163,13 @@ curl -X GET "{{url}}/api/scorecard/metrics?datasource=my_datasource" -H "Content
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers. Each metric provider runs on its own schedule to collect and store metric values in the database.
 
-You can customize the schedule for any metric provider by adding a `schedule` configuration in your `app-config.yaml`, under path `scorecard.plugins.{datasourceId}.{metricName}`:
+You can customize the schedule for any metric provider by adding a `schedule` configuration in your `app-config.yaml`, under path `scorecard.metricProviders.<datasource>.<providerName>`:
 
 ```yaml
 scorecard:
-  plugins:
-    my_datasource:
-      example_metric:
+  metricProviders:
+    myDatasource:
+      exampleProvider:
         schedule:
           frequency:
             cron: '0 6 * * *'
