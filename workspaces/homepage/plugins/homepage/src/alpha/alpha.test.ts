@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { homepageTranslationsModule, homePageModule } from '.';
+import homepageAlpha, {
+  homepageTranslationsModule,
+  homePageModule,
+  homePagePlugin,
+} from '.';
 import { homepageTranslationRef, homepageTranslations } from '../translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import {
@@ -34,7 +38,14 @@ import { quickAccessApi } from './extensions/apis';
 
 describe('Dynamic Home Page plugin Alpha (NFS)', () => {
   describe('Modules', () => {
-    it('should export homePageDevModule with correct structure', () => {
+    it('should export homePagePlugin with correct structure', () => {
+      expect(homePagePlugin).toBeDefined();
+      expect(homePagePlugin.$$type).toBe('@backstage/FrontendPlugin');
+      expect(homePagePlugin.id).toBe('home');
+      expect(homepageAlpha).toBe(homePagePlugin);
+    });
+
+    it('should export homePageModule with correct structure', () => {
       expect(homePageModule).toBeDefined();
       expect(homePageModule.$$type).toBe('@backstage/FrontendModule');
       expect(homePageModule.pluginId).toBe('home');
