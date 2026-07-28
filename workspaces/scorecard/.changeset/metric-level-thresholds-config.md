@@ -6,6 +6,7 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube': major
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot': major
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf': major
+'@red-hat-developer-hub/backstage-plugin-scorecard-common': major
 ---
 
 **BREAKING**: Thresholds moved from provider level to metric level. Configuration is restructured to enable thresholds to be defined directly for each metric with fallback options at the datasource and provider levels. The new top-level key `metricProviders` now houses all metric-specific configurations. Schedule options are added to datasource level. Threshold annotation overrides now require full metric ID instead of provider ID.
