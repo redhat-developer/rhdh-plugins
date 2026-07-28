@@ -133,7 +133,7 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 **Key design decisions:**
 
-1. **CA bundle utility** — A shared function like `loadCaBundle(config: Config, connectorId: string): Buffer | undefined` that reads `catalog.providers.<connectorId>.tls.caFile` or `catalog.providers.<connectorId>.tls.caSecret` and returns the CA certificate for use in `https.Agent`.
+1. **CA bundle utility** — A shared function like `loadCaBundle(connectorConfig: Config): Buffer | undefined` — caller passes the connector's Config subtree (e.g., `config.getConfig('catalog.providers.mcpRegistry')`), and the function reads `tls.caFile` or `tls.caSecret` within that subtree, returning the CA certificate for use in `https.Agent`.
 
 2. **Fault isolation** — Backstage's per-provider entity buckets already provide data isolation. The shared infrastructure adds process-level isolation: `try/catch` + structured error logging in the scheduled task runner wrapper, ensuring one connector's unhandled error doesn't crash the Node.js process.
 

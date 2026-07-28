@@ -25,16 +25,16 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 For now, we will be employing the RHDH process convention used for our Jira tracking for upstream work, where we'll remove RHDIP stories from sprints as needed, and put into Waiting, if there are sprint wide gaps for implementing various stages of a story.
 But as we progress, if further break up of a story is more seamless, we'll pursue that. But in other words, we will be honoring the Story granularity conventions in the RHDH skills used to craft our stories.
 
-| RHIDP Story                                   | Started (definition/foundation)                    | Completed (adoption/extension)                       | Referenced after completion                   |
-| --------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------- |
-| RHIDP-15255 (Annotation Scheme)               | Issue 2 — define annotations + validator           | Issue 8 — update providers to emit annotations       | —                                             |
-| RHIDP-15260 (SDK Package)                     | Issue 2 — create package + interfaces              | Issue 8 — delta sync framework + publish             | —                                             |
-| RHIDP-15273 (Graduated Visibility)            | Issue 23 — SkillBundle filtered-skill UX           | Issue 24 — RequirePermission gating on entity detail | —                                             |
-| RHIDP-15280 (Audit Logging)                   | Issue 21 — define + emit audit events              | Issue 29 — analytics REST API consuming audit data   | —                                             |
-| RHIDP-15306 (Admin Permission + Default-Deny) | Issue 3 — define `ai-catalog.admin` permission     | Issue 20 — implement default-deny config             | —                                             |
-| RHIDP-15316 (Shared Infra)                    | Issue 1 — build `@boost/connector-utils`           | Issue 1                                              | Issues 13, 16 (integrate CA bundle utility)   |
-| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                  | Issue 26 — force sync routes using health data       | —                                             |
-| RHIDP-15259 (SDK Interface)                   | Issue 2 — define `AIAssetEntityProvider` interface | Issue 2                                              | Issue 8 (providers compile against interface) |
+| RHIDP Story                                   | Started (definition/foundation)                                                 | Completed (adoption/extension)                       | Referenced after completion                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------- |
+| RHIDP-15255 (Annotation Scheme)               | Issue 2 — define annotations + validator                                        | Issue 8 — update providers to emit annotations       | —                                             |
+| RHIDP-15260 (SDK Package)                     | Issue 2 — create package + interfaces                                           | Issue 8 — delta sync framework + publish             | —                                             |
+| RHIDP-15273 (Graduated Visibility)            | Issue 23 — SkillBundle filtered-skill UX                                        | Issue 24 — RequirePermission gating on entity detail | —                                             |
+| RHIDP-15280 (Audit Logging)                   | Issue 21 — define + emit audit events                                           | Issue 29 — analytics REST API consuming audit data   | —                                             |
+| RHIDP-15306 (Admin Permission + Default-Deny) | Issue 3 — define `ai-catalog.admin` permission                                  | Issue 20 — implement default-deny config             | —                                             |
+| RHIDP-15316 (Shared Infra)                    | Issue 1 — build `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` | Issue 1                                              | Issues 13, 16 (integrate CA bundle utility)   |
+| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                                               | Issue 26 — force sync routes using health data       | —                                             |
+| RHIDP-15259 (SDK Interface)                   | Issue 2 — define `AIAssetEntityProvider` interface                              | Issue 2                                              | Issue 8 (providers compile against interface) |
 
 ---
 
@@ -51,19 +51,19 @@ _GitHub issue not yet created_
 **RHIDP Stories:** RHIDP-15265, RHIDP-15266, RHIDP-15329, RHIDP-15330
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15316
 
-Create the `@boost/connector-utils` shared package providing CA bundle resolution, fault isolation wrappers, enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples.
+Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples, plus connector integration tasks to wire each connector to the shared package.
 
 ### Tasks
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 1 (RHIDP-15329):
 
-- 1.1 Create `@boost/connector-utils` package with `package.json`, TypeScript config, and README
-- 1.2 Define `loadCaBundle(config: Config, connectorId: string): Buffer | undefined` function signature
-- 1.3 Implement caFile resolution — read CA from `catalog.providers.<id>.tls.caFile` mount path
-- 1.4 Implement caSecret resolution — read CA from `catalog.providers.<id>.tls.caSecret.$env` environment variable
-- 1.5 Add per-connector config isolation — `loadCaBundle()` reads only the specified connector's CA config
+- 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
+- 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
+- 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
+- 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
+- 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
 - 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
-- 1.7 Handle missing CA file: log INFO-level warning with expected file path, return `undefined`
+- 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
 - 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details
 - 1.9 Support CA certificate chains (concatenated PEM blocks)
 - 1.10–1.15 Unit tests for CA bundle utility (file path, env var, missing, invalid, chain, isolation)
@@ -71,18 +71,19 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 1 (RHIDP-
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 2 (RHIDP-15330):
 
 - 2.1 Define `ConnectorErrorContext` interface
-- 2.2 Create `createProviderWrapper(provider, logger): EntityProvider` function
-- 2.3 Implement try/catch wrapper around `provider.run()` to catch unhandled rejections
-- 2.4 Implement structured error logging with connector context fields
-- 2.5 Log errors via Backstage `LoggerService` for structured JSON output
-- 2.6 Ensure wrapper does NOT rethrow errors — allow catalog backend to continue
-- 2.7 Verify Backstage entity bucket isolation per provider
-- 2.8–2.10 Unit tests for fault isolation wrapper
+- 2.2 Create `createProviderWrapper(provider: EntityProvider, logger: LoggerService): EntityProvider` function
+- 2.3 Implement try/catch wrapper around provider `connect()` via `createProviderWrapper()` to catch unhandled rejections
+- 2.4 Implement `createSafeRefresh()` — try/catch wrapper around scheduled refresh callback to catch unhandled rejections
+- 2.5 Implement structured error logging with connector context fields
+- 2.6 Log errors via Backstage `LoggerService` for structured JSON output
+- 2.7 Ensure wrappers do NOT rethrow errors — allow catalog backend to continue
+- 2.8 Verify Backstage entity bucket isolation per provider (documentation + integration test)
+- 2.9–2.11 Unit tests for fault isolation wrapper
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 3 (RHIDP-15330):
 
 - 3.1 Define enable/disable config schema: `catalog.providers.<id>.enabled: boolean`
-- 3.2 Create `isConnectorEnabled(config, connectorId): boolean` utility
+- 3.2 Create `isConnectorEnabled(connectorConfig: Config): boolean` utility — caller passes the Config subtree (same pattern as `loadCaBundle`)
 - 3.3 Implement config reader: return `true` if `enabled` is omitted (default enabled)
 - 3.4 Create registration guard pattern for backend module `init()` example in README
 - 3.5 Log INFO-level message when connector is disabled
@@ -91,7 +92,7 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 3 (RHIDP-
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 4:
 
-- 4.1 Export shared utilities from `src/index.ts`
+- 4.1 Export shared utilities from `src/index.ts`: `loadCaBundle`, `createHttpsAgent`, `createProviderWrapper`, `createSafeRefresh`, `isConnectorEnabled`, `ConnectorErrorContext`
 - 4.2–4.7 Documentation: app-config schema, enable/disable, error logging, examples for each connector
 - 4.8 Add JSDoc comments for all exported functions
 
@@ -108,6 +109,15 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 6 (RHIDP-
 - 6.5 Document each config field with inline comments
 - 6.6 Add air-gapped deployment variant
 - 6.7 Place reference YAML in `workspaces/boost/examples/`
+
+From `openspec/changes/connector-shared-infrastructure/tasks.md` group 7 (Connector Integration):
+
+- 7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
+- 7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
+- 7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
+- 7.4 Verify all three connectors use consistent CA bundle loading pattern
+- 7.5 Verify all three connectors use consistent enable/disable config
+- 7.6 Verify all three connectors use consistent structured error logging
 
 From `openspec/changes/ai-catalog-entity-model/tasks.md` group 6 (RHIDP-15265 — moved to RHIDP-15316):
 
@@ -298,14 +308,14 @@ _GitHub issue not yet created_
 **RHIDP Stories:** RHIDP-15335, RHIDP-15337
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15331
 
-Implement the ingestion health backend: `sync_attempts` table with database migration, `SyncAttemptsRepository`, `HealthStatusService` with status derivation (healthy/degraded/failing based on last 3 attempts), `GET /api/boost/ingestion-health` REST endpoint, and `ErrorClassifier` utility with actionable diagnostic guidance for auth failures, network errors, schema mismatches, and rate limits. The admin UI consuming this API is in Issue 26.
+Implement the ingestion health backend: `boost_sync_attempts` table with database migration, `SyncAttemptsRepository`, `HealthStatusService` with status derivation (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded), `GET /api/boost/ingestion-health` REST endpoint with `ai-catalog.admin` RBAC gating, and `ErrorClassifier` utility with actionable diagnostic guidance for auth failures, network errors, schema mismatches, and rate limits. The admin UI consuming this API is in Issue 26.
 
 ### Tasks
 
 From `openspec/changes/ingestion-health-dashboard/tasks.md` group 1 (RHIDP-15335):
 
-- 1.1 Define `sync_attempts` table schema in database migration
-- 1.2 Create database migration file with indexes on (connector_id, timestamp DESC)
+- 1.1 Define `boost_sync_attempts` table schema in database migration (connector_id, timestamp, outcome, error_type, error_message, assets_added/updated/removed, duration_ms)
+- 1.2 Create database migration file for `boost_sync_attempts` table with indexes on (connector_id, timestamp DESC)
 - 1.3 Implement `SyncAttemptsRepository` class with methods: `insertSyncAttempt()`, `getLatestAttempts()`, `cleanupOldAttempts()`
 - 1.4 Add retention policy config schema (`boost.ingestion.healthRetention.maxAttemptsPerConnector`, default 100)
 - 1.5 Implement scheduled cleanup job for sync attempts (daily, enforces retention)
@@ -315,10 +325,10 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 2 (RHIDP-15335
 
 - 2.1 Define `ConnectorHealthStatus` type in `plugins/boost-common/src/types/ingestion-health.ts`
 - 2.2 Implement `GET /api/boost/ingestion-health` route returning array of connector health objects
-- 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)`
+- 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - 2.4 Add `?includeDisabled=true` query parameter support
-- 2.5 Implement RBAC gating via boost admin permissions check
-- 2.6 Add audit logging for health API requests
+- 2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)
+- 2.6 Add audit logging for health API requests (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
 - 2.7 Implement empty state handling
 - 2.8 Add health API integration tests
 
@@ -351,14 +361,14 @@ _GitHub issue not yet created_
 **RHIDP Stories:** RHIDP-15340
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Define Zod connector config schemas (Jira, GitHub, GitLab) with field-level `configScope` annotations (`db-overridable` vs `yaml-only`), and extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+Define Zod connector config schemas (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
 
 ### Tasks
 
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 1 (RHIDP-15340):
 
-- 1.1 Define Jira connector config Zod schema with fields: `enabled`, `endpoint`, `schedule.*`, `credentials.*`, `namespace`, `batchSize`, `timeout.*`
-- 1.2 Annotate each field with `configScope`: `enabled`, `endpoint`, `schedule.*`, `batchSize`, `timeout.*` → `db-overridable`; `credentials.*`, `namespace` → `yaml-only`
+- 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `ai-catalog.providers` fields — not part of the `boost.connectors` schema.
+- 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
 - 1.3 Define GitHub connector config Zod schema
 - 1.4 Define GitLab connector config Zod schema
 - 1.5 Add URL validation for `endpoint` field
@@ -371,7 +381,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 1 (RHIDP-1534
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 2 (RHIDP-15340):
 
 - 2.1 Extend `RuntimeConfigResolver` to support connector config scope
-- 2.2 Implement `getConfig(key)` method for connector config keys
+- 2.2 Extend `resolve(key: BoostConfigKey)` method to support connector leaf config keys (e.g., `boost.connectors.jira.enabled`)
 - 2.3 Implement two-layer merge: YAML baseline from `ConfigApi` + DB overrides from `AdminConfigService`
 - 2.4 Implement cache with 30s TTL for merged connector config
 - 2.5 Implement immediate cache invalidation on DB override write
@@ -1034,16 +1044,16 @@ _GitHub issue not yet created_
 **RHIDP Stories:** RHIDP-15341
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Update Jira, GitHub, and GitLab entity providers to read config via `RuntimeConfigResolver.getConfig()` at each reconciliation cycle start, implementing enable/disable check, endpoint URL propagation, schedule change propagation (reschedule task), credential re-read from mounted Secret per cycle, and config change logging.
+Update Jira, GitHub, and GitLab entity providers to read config via `RuntimeConfigResolver.resolve()` (leaf keys like `boost.connectors.jira.enabled`) at each reconciliation cycle start, implementing enable/disable check, endpoint URL propagation, schedule change propagation (reschedule task with new `schedule.intervalMs` or `schedule.cron`), credential re-read from mounted Secret per cycle, and config change logging.
 
 ### Tasks
 
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 3 (RHIDP-15341):
 
-- 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.getConfig('connectors.jira')` at reconciliation cycle start
+- 3.1 Update Jira entity provider to read config via `RuntimeConfigResolver.resolve('boost.connectors.jira.enabled')` (and other leaf keys) at reconciliation cycle start
 - 3.2 Implement enable/disable check: skip sync if `enabled: false`
 - 3.3 Implement endpoint URL propagation
-- 3.4 Implement schedule change propagation: reschedule task
+- 3.4 Implement schedule change propagation: reschedule task with new `schedule.intervalMs` or `schedule.cron` from merged config
 - 3.5 Update GitHub entity provider with same hot-reload pattern
 - 3.6 Update GitLab entity provider with same hot-reload pattern
 - 3.7 Add config change logging: log old → new values
@@ -1269,12 +1279,13 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 4 (RHIDP-1534
 
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 6:
 
-- 6.1 Add connector config endpoints to `AdminConfigService` backend API
-- 6.2 Implement Zod schema validation in `setConfig()` before DB write
-- 6.3 Implement `configScope` enforcement
-- 6.4 Implement cache invalidation call
-- 6.5 Add audit logging for connector config changes
-- 6.6 Add unit tests for `AdminConfigService` connector config methods
+- 6.1 Extend existing `POST /api/boost/admin/config` endpoint to accept connector config keys (e.g., `{ key: "boost.connectors.jira.enabled", value: false }`). Add `GET /api/boost/admin/config?key=boost.connectors.<connectorId>` for reading merged connector config.
+- 6.2 Implement Zod schema validation in `setOverride()` method before DB write
+- 6.3 Implement `configScope` enforcement: reject writes for `yaml-only` fields
+- 6.4 Implement cache invalidation call to `RuntimeConfigResolver.invalidate()` after DB write
+- 6.5 Implement `removeOverride(key: BoostConfigKey)` method and `DELETE /api/boost/admin/config?key=<BoostConfigKey>` endpoint — deletes the DB override row, calls `RuntimeConfigResolver.invalidate()`, and returns the reverted YAML baseline value. Used when switching schedule types (e.g., removing `intervalMs` override when switching to `cron`).
+- 6.6 Add audit logging for connector config changes (timestamp, user, changed fields, old/new values)
+- 6.7 Add unit tests for `AdminConfigService` connector config methods (including `removeOverride`)
 
 ### Specifications
 
