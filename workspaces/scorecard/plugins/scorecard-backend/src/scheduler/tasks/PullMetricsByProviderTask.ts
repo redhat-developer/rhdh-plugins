@@ -235,11 +235,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              const result = curr.value;
-              if (Array.isArray(result)) {
-                return [...acc, ...result];
-              }
-              return [...acc, result];
+              return [...acc, ...curr.value];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),

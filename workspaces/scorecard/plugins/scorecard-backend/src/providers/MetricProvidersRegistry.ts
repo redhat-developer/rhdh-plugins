@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
 import { ConflictError, NotFoundError } from '@backstage/errors';
-import {
-  Metric,
-  MetricValue,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   MetricProvider,
   ThresholdConfigFormatError,
@@ -117,38 +113,6 @@ export class MetricProvidersRegistry {
     throw new NotFoundError(
       `Metric '${metricId}' not found in provider '${provider.getProviderId()}'`,
     );
-  }
-
-  async calculateMetric(
-    metricId: string,
-    entity: Entity,
-  ): Promise<MetricValue> {
-    const provider = this.getProvider(metricId);
-    const results = await provider.calculateMetrics(entity);
-    const value = results.get(metricId);
-    if (value === undefined) {
-      throw new Error(
-        `Provider '${provider.getProviderId()}' did not return a value for metric '${metricId}'`,
-      );
-    }
-    return value;
-  }
-
-  async calculateMetrics(
-    metricIds: string[],
-    entity: Entity,
-  ): Promise<{ metricId: string; value?: MetricValue; error?: Error }[]> {
-    const results = await Promise.allSettled(
-      metricIds.map(metricId => this.calculateMetric(metricId, entity)),
-    );
-
-    return results.map((result, index) => {
-      const metricId = metricIds[index];
-      if (result.status === 'fulfilled') {
-        return { metricId, value: result.value };
-      }
-      return { metricId, error: result.reason as Error };
-    });
   }
 
   listProviders(): MetricProvider[] {

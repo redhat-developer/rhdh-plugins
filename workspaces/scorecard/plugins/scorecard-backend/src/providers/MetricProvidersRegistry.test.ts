@@ -26,7 +26,6 @@ import {
   filecheckBatchProvider,
   filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
-import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import {
   validateMetricId,
   validateProviderId,
@@ -43,8 +42,6 @@ jest.mock('../validation/validateMetricProviderIds', () => {
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;
-
-  const mockEntity = new MockEntityBuilder().build();
 
   beforeEach(() => {
     registry = new MetricProvidersRegistry();
@@ -269,108 +266,6 @@ describe('MetricProvidersRegistry', () => {
       expect(readmeMetric).toEqual(filecheckBatchMetrics[0]);
       expect(licenseMetric).toEqual(filecheckBatchMetrics[1]);
       expect(codeownersMetric).toEqual(filecheckBatchMetrics[2]);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should calculate metric for registered provider', async () => {
-      registry.register(githubNumberProvider);
-
-      const result = await registry.calculateMetric(
-        'github.numberMetric',
-        mockEntity,
-      );
-
-      expect(result).toBe(42);
-    });
-
-    it('should throw NotFoundError for unregistered provider', async () => {
-      await expect(
-        registry.calculateMetric('nonExistent', mockEntity),
-      ).rejects.toThrow(
-        new NotFoundError(
-          "No metric provider registered for metric ID 'nonExistent'.",
-        ),
-      );
-    });
-  });
-
-  describe('calculateMetrics', () => {
-    it('should handle empty provider IDs array', async () => {
-      const results = await registry.calculateMetrics([], mockEntity);
-
-      expect(results).toEqual([]);
-    });
-
-    it('should calculate metrics for multiple registered providers', async () => {
-      registry.register(githubNumberProvider);
-      registry.register(jiraBooleanProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.numberMetric', 'jira.booleanMetric'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.numberMetric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'jira.booleanMetric',
-        value: false,
-      });
-    });
-
-    it('should calculate metrics for only specified providers', async () => {
-      registry.register(githubNumberProvider);
-      registry.register(
-        new MockNumberProvider(
-          'github.openIssues',
-          'github',
-          'GitHub Open Issues',
-          'Github Open Issues description',
-          10,
-        ),
-      );
-      registry.register(jiraBooleanProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.numberMetric', 'github.openIssues'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.numberMetric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'github.openIssues',
-        value: 10,
-      });
-    });
-
-    it('should handle mix of successful and failed metric calculations', async () => {
-      registry.register(githubNumberProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.numberMetric', 'nonExistent'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.numberMetric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'nonExistent',
-        error: expect.any(NotFoundError),
-      });
-      expect(results[1].error?.message).toBe(
-        "No metric provider registered for metric ID 'nonExistent'.",
-      );
     });
   });
 
