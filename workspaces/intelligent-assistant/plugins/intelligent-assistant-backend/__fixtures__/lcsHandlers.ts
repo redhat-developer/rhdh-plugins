@@ -287,6 +287,51 @@ export const lcsHandlers: HttpHandler[] = [
     });
   }),
 
+  http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts/config`, () =>
+    HttpResponse.json({
+      max_prompts_per_user: 50,
+      max_display_name_length: 255,
+      max_content_length: 10000,
+    }),
+  ),
+
+  http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () =>
+    HttpResponse.json({
+      prompts: [
+        {
+          id: 'sp-1',
+          name: 'Explain error',
+          content: 'Explain this stack trace',
+          created_at: '2026-07-22T16:00:00+00:00',
+          updated_at: '2026-07-22T16:00:00+00:00',
+        },
+      ],
+    }),
+  ),
+
+  http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, async ({ request }) => {
+    const body = (await request.json()) as { name: string; content: string };
+    return HttpResponse.json(
+      {
+        id: 'sp-new',
+        name: body.name,
+        content: body.content,
+        created_at: '2026-07-22T16:00:00+00:00',
+        updated_at: '2026-07-22T16:00:00+00:00',
+      },
+      { status: 201 },
+    );
+  }),
+
+  // Conversations/MCP-style delete: HTTP 200 + JSON (not 204)
+  http.delete(`${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`, ({ params }) =>
+    HttpResponse.json({
+      prompt_id: params.prompt_id,
+      deleted: true,
+      response: 'Saved prompt deleted successfully',
+    }),
+  ),
+
   // Catch-all handler for unknown paths
   http.all(`${LOCAL_LCS_ADDR}/*`, ({ request }) => {
     console.log(`Caught request to unknown path: ${request.url}`);
