@@ -69,7 +69,9 @@ metadata:
   annotations:
     rhdh.io/ai-asset-category: skill
     rhdh.io/ai-asset-version: '1.2.0'
+    rhdh.io/ai-asset-name: code-review-skill
     rhdh.io/ai-asset-source: github
+    rhdh.io/ai-asset-recommended: 'true'
     backstage.io/techdocs-ref: dir:.
   links:
     - url: https://github.com/example/code-review-skill
@@ -84,6 +86,33 @@ spec:
     - code-quality
   agents:
     - component:default/developer-assistant
+  location:
+    type: git
+    target: https://github.com/example/code-review-skill
+
+---
+# ---------------------------------------------------------------------------
+# AiResource / skill (second version of code-review-skill)
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: code-review-skill-v1
+  title: Code Review Skill (Legacy)
+  description: Automated code review skill (legacy version).
+  tags:
+    - code-review
+    - security
+    - quality
+  annotations:
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '1.0.0'
+    rhdh.io/ai-asset-name: code-review-skill
+    rhdh.io/ai-asset-source: github
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ai-platform
   location:
     type: git
     target: https://github.com/example/code-review-skill

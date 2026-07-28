@@ -40,6 +40,8 @@ export const boostMessages = {
       adoptionTitle: 'Get Started',
       versionTitle: 'Versions',
       versionCurrent: 'current',
+      versionRecommended: 'recommended',
+      versionNavigate: 'Navigate to version {{version}}',
       copyCommand: 'Copy',
       copied: 'Copied',
       copyAriaLabel: 'Copy command to clipboard',
