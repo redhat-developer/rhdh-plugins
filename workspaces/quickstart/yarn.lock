@@ -2840,7 +2840,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-components@npm:^0.18.11, @backstage/core-components@npm:^0.18.3, @backstage/core-components@npm:^0.18.8":
+"@backstage/core-components@npm:^0.18.11, @backstage/core-components@npm:^0.18.3":
   version: 0.18.11
   resolution: "@backstage/core-components@npm:0.18.11"
   dependencies:
@@ -2898,7 +2898,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-plugin-api@npm:^1.10.9, @backstage/core-plugin-api@npm:^1.12.0, @backstage/core-plugin-api@npm:^1.12.4, @backstage/core-plugin-api@npm:^1.12.7":
+"@backstage/core-plugin-api@npm:^1.10.9, @backstage/core-plugin-api@npm:^1.12.0, @backstage/core-plugin-api@npm:^1.12.7":
   version: 1.12.7
   resolution: "@backstage/core-plugin-api@npm:1.12.7"
   dependencies:
@@ -3951,7 +3951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-notifications-common@npm:^0.2.1, @backstage/plugin-notifications-common@npm:^0.2.3":
+"@backstage/plugin-notifications-common@npm:^0.2.3":
   version: 0.2.3
   resolution: "@backstage/plugin-notifications-common@npm:0.2.3"
   dependencies:
@@ -3961,7 +3961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-notifications@npm:^0.5.15, @backstage/plugin-notifications@npm:^0.5.18":
+"@backstage/plugin-notifications@npm:^0.5.18":
   version: 0.5.18
   resolution: "@backstage/plugin-notifications@npm:0.5.18"
   dependencies:
@@ -4406,7 +4406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend-module-catalog@npm:^0.3.13, @backstage/plugin-search-backend-module-catalog@npm:^0.3.16":
+"@backstage/plugin-search-backend-module-catalog@npm:^0.3.16":
   version: 0.3.16
   resolution: "@backstage/plugin-search-backend-module-catalog@npm:0.3.16"
   dependencies:
@@ -4424,7 +4424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend-module-pg@npm:^0.5.53, @backstage/plugin-search-backend-module-pg@npm:^0.5.56":
+"@backstage/plugin-search-backend-module-pg@npm:^0.5.56":
   version: 0.5.56
   resolution: "@backstage/plugin-search-backend-module-pg@npm:0.5.56"
   dependencies:
@@ -4438,7 +4438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend-module-techdocs@npm:^0.4.12, @backstage/plugin-search-backend-module-techdocs@npm:^0.4.15":
+"@backstage/plugin-search-backend-module-techdocs@npm:^0.4.15":
   version: 0.4.15
   resolution: "@backstage/plugin-search-backend-module-techdocs@npm:0.4.15"
   dependencies:
@@ -4475,7 +4475,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-backend@npm:^2.1.0, @backstage/plugin-search-backend@npm:^2.1.3":
+"@backstage/plugin-search-backend@npm:^2.1.3":
   version: 2.1.3
   resolution: "@backstage/plugin-search-backend@npm:2.1.3"
   dependencies:
@@ -4497,7 +4497,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-common@npm:^1.2.21, @backstage/plugin-search-common@npm:^1.2.22, @backstage/plugin-search-common@npm:^1.2.24":
+"@backstage/plugin-search-common@npm:^1.2.21, @backstage/plugin-search-common@npm:^1.2.24":
   version: 1.2.24
   resolution: "@backstage/plugin-search-common@npm:1.2.24"
   dependencies:
@@ -4507,7 +4507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-react@npm:^1.10.0, @backstage/plugin-search-react@npm:^1.11.0, @backstage/plugin-search-react@npm:^1.11.5":
+"@backstage/plugin-search-react@npm:^1.10.0, @backstage/plugin-search-react@npm:^1.11.5":
   version: 1.11.5
   resolution: "@backstage/plugin-search-react@npm:1.11.5"
   dependencies:
@@ -4537,7 +4537,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search@npm:^1.7.0, @backstage/plugin-search@npm:^1.7.5":
+"@backstage/plugin-search@npm:^1.7.5":
   version: 1.7.5
   resolution: "@backstage/plugin-search@npm:1.7.5"
   dependencies:
@@ -4787,7 +4787,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-user-settings@npm:^0.9.1, @backstage/plugin-user-settings@npm:^0.9.4":
+"@backstage/plugin-user-settings@npm:^0.9.4":
   version: 0.9.4
   resolution: "@backstage/plugin-user-settings@npm:0.9.4"
   dependencies:
@@ -4947,7 +4947,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/theme@npm:^0.7.2, @backstage/theme@npm:^0.7.3":
+"@backstage/theme@npm:^0.7.3":
   version: 0.7.3
   resolution: "@backstage/theme@npm:0.7.3"
   dependencies:
@@ -9879,37 +9879,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.17.1, @red-hat-developer-hub/backstage-plugin-global-header@npm:^1.21.0":
-  version: 1.21.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.21.0"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.17.1, @red-hat-developer-hub/backstage-plugin-global-header@npm:^1.21.2":
+  version: 1.22.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.22.1"
   dependencies:
-    "@backstage/catalog-model": "npm:^1.7.7"
-    "@backstage/core-components": "npm:^0.18.8"
-    "@backstage/core-plugin-api": "npm:^1.12.4"
-    "@backstage/frontend-plugin-api": "npm:^0.15.1"
-    "@backstage/plugin-app-react": "npm:^0.2.1"
-    "@backstage/plugin-catalog-react": "npm:^2.1.0"
-    "@backstage/plugin-notifications": "npm:^0.5.15"
-    "@backstage/plugin-notifications-common": "npm:^0.2.1"
-    "@backstage/plugin-search": "npm:^1.7.0"
-    "@backstage/plugin-search-backend": "npm:^2.1.0"
-    "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.13"
-    "@backstage/plugin-search-backend-module-pg": "npm:^0.5.53"
-    "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.12"
-    "@backstage/plugin-search-common": "npm:^1.2.22"
-    "@backstage/plugin-search-react": "npm:^1.11.0"
-    "@backstage/plugin-signals-react": "npm:^0.0.20"
-    "@backstage/plugin-user-settings": "npm:^0.9.1"
-    "@backstage/theme": "npm:^0.7.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/core-components": "npm:^0.18.11"
+    "@backstage/core-plugin-api": "npm:^1.12.7"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/plugin-app-react": "npm:^0.2.4"
+    "@backstage/plugin-catalog-react": "npm:^3.1.0"
+    "@backstage/plugin-notifications": "npm:^0.5.18"
+    "@backstage/plugin-notifications-common": "npm:^0.2.3"
+    "@backstage/plugin-search": "npm:^1.7.5"
+    "@backstage/plugin-search-backend": "npm:^2.1.3"
+    "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.16"
+    "@backstage/plugin-search-backend-module-pg": "npm:^0.5.56"
+    "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.15"
+    "@backstage/plugin-search-common": "npm:^1.2.24"
+    "@backstage/plugin-search-react": "npm:^1.11.5"
+    "@backstage/plugin-signals-react": "npm:^0.0.23"
+    "@backstage/plugin-user-settings": "npm:^0.9.4"
+    "@backstage/theme": "npm:^0.7.3"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styled-engine": "npm:5.18.0"
-    "@scalprum/react-core": "npm:0.11.1"
+    "@scalprum/react-core": "npm:0.11.3"
     react-use: "npm:^17.5.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/9240736fb33969037b414c0281db6cd3f759643ca1c3f2803516b2d0701fd9b7acf78686277785a05afd395ad909bfc04b9c39baa131ca816f71093837b0aa3d
+  checksum: 10c0/5b795fa34feb5e9b345278a161f75bd006e4c2e187a5ceb4311875759ff9ad7455a65cd62113c35710b94e9789c587e6129df493c6508610878d93dbcfd11104
   languageName: node
   linkType: hard
 
@@ -9933,7 +9933,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.2"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -10585,27 +10585,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@scalprum/core@npm:0.9.0"
+"@scalprum/core@npm:^0.9.1":
+  version: 0.9.3
+  resolution: "@scalprum/core@npm:0.9.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/7eb93a9f32883f737203d12663d17248c57d68c90f23addb58b400eaa78aa015396f2655d16423190c195c6e75b3828b2dd84a7cd19706ebbd3e507fedc85b88
+  checksum: 10c0/760c3f8d162163cad453d6f4d8494bf61f6b9ae28a624706887176673fe87147a0ed65d3a2e7fd8654b0e75eaf87914bd1357ce041d7c3c28372b24856027304
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.11.1":
-  version: 0.11.1
-  resolution: "@scalprum/react-core@npm:0.11.1"
+"@scalprum/react-core@npm:0.11.3":
+  version: 0.11.3
+  resolution: "@scalprum/react-core@npm:0.11.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
-    "@scalprum/core": "npm:^0.9.0"
+    "@scalprum/core": "npm:^0.9.1"
     lodash: "npm:^4.17.0"
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 10c0/61094ddfcef1547bb4f43ef794f555ee625e0aa1b5479ad1fa056fa00301fe96c7b96c53ef7c1ece8f8bc0be0859404507887f3109163c8a2025558ec30f364a
+  checksum: 10c0/6de3f4b624fb3e0cf1a7785154dfd6cd589809b0d44dbf0e065531729320ea918b17b673744fe60f4bdf3ef0602af87e857bf98109e03f6cc7634b4893269ff6
   languageName: node
   linkType: hard
 
@@ -14607,7 +14607,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
     "@playwright/test": "npm:1.61.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.1.0"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.2"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@testing-library/dom": "npm:^9.0.0"

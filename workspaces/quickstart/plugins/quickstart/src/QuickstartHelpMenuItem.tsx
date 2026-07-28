@@ -14,28 +14,50 @@
  * limitations under the License.
  */
 
+import { forwardRef } from 'react';
+import type { Ref } from 'react';
+
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { MenuItemLink } from '@red-hat-developer-hub/backstage-plugin-global-header';
+
+import MenuItem from '@mui/material/MenuItem';
 
 import { QUICKSTART_DRAWER_ID } from './const';
 
-export const QuickstartHelpMenuItem = ({
-  handleClose,
-}: {
-  handleClose?: () => void;
-}) => {
-  const { toggleDrawer } = useAppDrawer();
+/**
+ * Help-dropdown menu item that toggles the Quick start drawer.
+ *
+ * Uses `forwardRef` so MUI Menu focus management can attach a ref to the
+ * underlying `MenuItem`. Avoids `GlobalHeaderMenuItem` without a `to` prop,
+ * which (in global-header 1.21.0) rendered `MenuItem component={Fragment}` and
+ * dropped click handlers / menuitem role.
+ */
+export const QuickstartHelpMenuItem = forwardRef(
+  function QuickstartHelpMenuItem(
+    {
+      handleClose,
+    }: {
+      handleClose?: () => void;
+    },
+    ref: Ref<HTMLLIElement>,
+  ) {
+    const { toggleDrawer } = useAppDrawer();
 
-  const handleClick = () => {
-    toggleDrawer(QUICKSTART_DRAWER_ID);
-    handleClose?.();
-  };
+    const handleClick = () => {
+      toggleDrawer(QUICKSTART_DRAWER_ID);
+      handleClose?.();
+    };
 
-  return (
-    <GlobalHeaderMenuItem
-      title="Quick start"
-      icon="waving_hand"
-      onClick={handleClick}
-    />
-  );
-};
+    return (
+      <MenuItem
+        ref={ref}
+        disableRipple
+        disableTouchRipple
+        onClick={handleClick}
+        sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
+      >
+        <MenuItemLink to="" title="Quick start" icon="waving_hand" />
+      </MenuItem>
+    );
+  },
+);
