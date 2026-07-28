@@ -15,12 +15,11 @@
  */
 
 /**
- * New Frontend System: default app modules for the app plugin.
+ * New Frontend System: empty app module for the app plugin.
  *
  * @packageDocumentation
  */
 
 export { appDefaultsModule } from './appDefaultsModule';
-export { appDrawerModule } from './appDrawerModule';
 
-export { appDrawerModule as default } from './appDrawerModule';
+export { appDefaultsModule as default } from './appDefaultsModule';

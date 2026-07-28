@@ -52,7 +52,7 @@ const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
  * Registers a wrapper extension that renders the drawer and accepts
  * drawer content contributions via inputs.
  *
- * @alpha
+ * @public
  */
 export const appDrawerModule = createFrontendModule({
   pluginId: 'app',

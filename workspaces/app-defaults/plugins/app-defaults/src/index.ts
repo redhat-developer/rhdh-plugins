@@ -15,9 +15,12 @@
  */
 
 /**
- * Stub package root export for API reporting and bundlers. This plugin targets
- * the new frontend system only; use `./alpha` for public APIs.
+ * New Frontend System: default app modules for the app plugin.
  *
  * @packageDocumentation
  */
-export default {};
+
+export { appDefaultsModule } from './appDefaultsModule';
+export { appDrawerModule } from './appDrawerModule';
+
+export { appDrawerModule as default } from './appDrawerModule';

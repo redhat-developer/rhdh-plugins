@@ -20,7 +20,7 @@ import { createFrontendModule } from '@backstage/frontend-plugin-api';
  * Empty RHDH app module for `pluginId: 'app'`.
  * Default-export this module for dynamic frontend loading.
  *
- * @alpha
+ * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',

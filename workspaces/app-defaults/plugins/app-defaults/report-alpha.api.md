@@ -5,11 +5,8 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @alpha
-export const appDefaultsModule: FrontendModule;
-
-// @alpha
-const appDrawerModule: FrontendModule;
-export { appDrawerModule };
-export default appDrawerModule;
+// @public
+const appDefaultsModule: FrontendModule;
+export { appDefaultsModule };
+export default appDefaultsModule;
 ```

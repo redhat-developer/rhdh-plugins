@@ -19,7 +19,7 @@ in your app's `createApp` call:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 export default createApp({
   features: [
