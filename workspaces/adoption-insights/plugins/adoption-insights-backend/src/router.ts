@@ -96,7 +96,7 @@ export async function createRouter({
 
   router.put('/notification-preferences', async (req, res) => {
     const userRef = await getUserEntityRef(req);
-    const { frequency } = req.body;
+    const frequency = req.body?.frequency;
 
     if (!VALID_FREQUENCIES.includes(frequency)) {
       res.status(400).json({

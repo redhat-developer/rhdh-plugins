@@ -50,7 +50,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         permissionsRegistry: coreServices.permissionsRegistry,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
-        notification: notificationService,
+        notification: notificationService.optional(),
       },
       async init({
         auditor,
@@ -93,14 +93,20 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           schedulePartition(client, { logger, scheduler });
         }
 
-        // Schedule weekly time-saved notification summary
-        await scheduleTimeSavedNotifications({
-          scheduler,
-          db,
-          notification,
-          logger,
-          config,
-        });
+        // Schedule time-saved notification summary (requires notifications backend)
+        if (notification) {
+          await scheduleTimeSavedNotifications({
+            scheduler,
+            db,
+            notification,
+            logger,
+            config,
+          });
+        } else {
+          logger.info(
+            'Notifications service not available; time-saved notifications disabled',
+          );
+        }
 
         httpRouter.use(
           await createRouter({

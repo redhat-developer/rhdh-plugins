@@ -117,8 +117,13 @@ class EventApiController {
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
       auditEvent.success({ meta: { eventId: event.id } });
-      const enriched = await this.enrichScaffolderEvent(event);
-      this.processor.addEvent(enriched);
+    }
+
+    const enriched = await Promise.all(
+      processedEvents.map(event => this.enrichScaffolderEvent(event)),
+    );
+    for (const event of enriched) {
+      this.processor.addEvent(event);
     }
   }
 
@@ -201,16 +206,20 @@ class EventApiController {
         await this.getTechdocsMetadata(req, result);
       }
 
+      const csvData = Array.isArray(result.data)
+        ? result.data
+        : result.data?.templates;
+
       auditEvent.success({
         meta: {
           queryType: type,
           format: format,
-          resultsCount: result.data?.length || 0,
+          resultsCount: csvData?.length || 0,
         },
       });
 
-      if (format === 'csv' && result.data) {
-        const csv = Parser(result.data);
+      if (format === 'csv' && csvData) {
+        const csv = Parser(csvData);
         res.header('Content-Type', 'text/csv');
         res.attachment(`adoption_insights_${type}.csv`);
         res.send(csv);

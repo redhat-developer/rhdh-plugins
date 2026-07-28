@@ -104,22 +104,28 @@ export async function scheduleTimeSavedNotifications(options: {
         const period = getPeriodLabel(frequency);
 
         for (const user of users) {
-          if (user.total_time_saved_minutes <= 0) continue;
+          try {
+            if (user.total_time_saved_minutes <= 0) continue;
 
-          const pref = await db.getNotificationPreference(user.user_ref);
-          if (pref !== frequency) continue;
+            const pref = await db.getNotificationPreference(user.user_ref);
+            if (pref !== frequency) continue;
 
-          const timeSaved = formatTimeSaved(user.total_time_saved_minutes);
+            const timeSaved = formatTimeSaved(user.total_time_saved_minutes);
 
-          await notification.send({
-            recipients: { type: 'entity', entityRef: user.user_ref },
-            payload: {
-              title: `You completed ${user.execution_count} self-service actions ${period}, saving an estimated ${timeSaved} of time.`,
-              link: `${baseUrl}/adoption-insights`,
-              topic: 'time-saved-summary',
-            },
-          });
-          sentCount++;
+            await notification.send({
+              recipients: { type: 'entity', entityRef: user.user_ref },
+              payload: {
+                title: `You completed ${user.execution_count} self-service actions ${period}, saving an estimated ${timeSaved} of time.`,
+                link: `${baseUrl}/adoption-insights`,
+                topic: 'time-saved-summary',
+              },
+            });
+            sentCount++;
+          } catch (err) {
+            logger.warn(
+              `[TIME-SAVED-NOTIFICATIONS] Failed to notify ${user.user_ref}: ${err}`,
+            );
+          }
         }
       }
 
