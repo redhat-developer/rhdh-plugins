@@ -158,12 +158,10 @@ export const WorkflowRunsTabContent = ({
     t('table.filters.startedOptions.yesterday'),
     t('table.filters.startedOptions.last7days'),
     t('table.filters.startedOptions.thisMonth'),
-  ].map(
-    (time): SelectItem => ({
-      label: time,
-      value: time,
-    }),
-  );
+  ].map((time): SelectItem => ({
+    label: time,
+    value: time,
+  }));
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
   const {
     workflowId: entityWorkflowId,
