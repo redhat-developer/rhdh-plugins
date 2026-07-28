@@ -20,51 +20,41 @@ import {
   OrchestratorFormApi,
   OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { FormValidation } from '@rjsf/utils';
-import { JsonObject } from '@backstage/types';
-
-import {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-} from './widgets';
-import { useGetExtraErrors } from './utils';
-
-const customValidate = (
-  _formData: JsonObject | undefined,
-  errors: FormValidation<JsonObject>,
-): FormValidation<JsonObject> => {
-  // Trigger synchronous field validation
-  return errors;
-};
-
-const widgets = {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-};
 
 export class FormWidgetsApi implements OrchestratorFormApi {
+  private contentPromise: Promise<
+    typeof import('./FormDecoratorContent')
+  > | null = null;
+
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
     console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
 
+    if (!this.contentPromise) {
+      this.contentPromise = import('./FormDecoratorContent');
+    }
+    const contentPromise = this.contentPromise;
+
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
       return (props: OrchestratorFormContextProps) => {
-        const getExtraErrors = useGetExtraErrors();
+        const [DecoratorContent, setDecoratorContent] =
+          React.useState<React.ComponentType<any> | null>(null);
 
-        return (
-          <FormComponent
-            widgets={widgets}
-            formContext={props}
-            customValidate={customValidate}
-            getExtraErrors={getExtraErrors}
-          />
-        );
+        React.useEffect(() => {
+          let mounted = true;
+          contentPromise.then(m => {
+            if (mounted) setDecoratorContent(() => m.default);
+          });
+          return () => {
+            mounted = false;
+          };
+        }, []);
+
+        if (!DecoratorContent) {
+          return null;
+        }
+
+        return <DecoratorContent FormComponent={FormComponent} {...props} />;
       };
     };
   };
