@@ -29,6 +29,6 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 });
 
-export * from './plugin';
+export * from './legacy/plugin';
 
 export * from './translations';

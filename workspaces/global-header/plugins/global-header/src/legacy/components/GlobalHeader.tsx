@@ -13,4 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { globalHeaderModule as default } from './extensions/globalHeaderModule';
+
+import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
+import { GlobalHeaderComponent } from './GlobalHeaderComponent';
+
+export const GlobalHeader = () => {
+  const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
+
+  return (
+    <GlobalHeaderComponent
+      globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
+    />
+  );
+};

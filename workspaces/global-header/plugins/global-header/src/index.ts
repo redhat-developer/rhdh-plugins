@@ -35,53 +35,53 @@ import { globalHeaderTranslations } from './translations';
 
 // ── Core: plugin + module ──────────────────────────────────────────────
 
-export { default } from './alpha/plugin';
-export { globalHeaderModule } from './alpha/extensions/globalHeaderModule';
+export { default } from './plugin';
+export { globalHeaderModule } from './extensions/globalHeaderModule';
 
 // ── Blueprints: for other plugins to contribute header items ───────────
 
 export {
   GlobalHeaderComponentBlueprint,
   GlobalHeaderMenuItemBlueprint,
-} from './alpha/extensions/blueprints';
+} from './extensions/blueprints';
 export type {
   ToolbarComponentParams,
   MenuItemParams,
-} from './alpha/extensions/blueprints';
+} from './extensions/blueprints';
 
 // ── Data refs ──────────────────────────────────────────────────────────
 
 export {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
-} from './alpha/extensions/dataRefs';
+} from './extensions/dataRefs';
 
 // ── Context hooks for custom dropdown components ───────────────────────
 
 export {
   useGlobalHeaderComponents,
   useGlobalHeaderMenuItems,
-} from './alpha/extensions/GlobalHeaderContext';
+} from './extensions/GlobalHeaderContext';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
 export type {
   GlobalHeaderComponentData,
   GlobalHeaderMenuItemData,
-} from './alpha/types';
+} from './types';
 
 // ── Building block components for plugin authors ───────────────────────
 
 export { HeaderIconButton as GlobalHeaderIconButton } from './components/HeaderIconButton/HeaderIconButton';
 export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
-export { GlobalHeaderMenuItem } from './alpha/components/GlobalHeaderMenuItem';
-export type { GlobalHeaderMenuItemProps } from './alpha/components/GlobalHeaderMenuItem';
-export { GlobalHeaderDropdown } from './alpha/components/GlobalHeaderDropdown';
-export type { GlobalHeaderDropdownProps } from './alpha/components/GlobalHeaderDropdown';
+export { GlobalHeaderMenuItem } from './components/GlobalHeaderMenuItem';
+export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuItem';
+export { GlobalHeaderDropdown } from './components/GlobalHeaderDropdown';
+export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdown';
 
 // ── Default extensions (collections + individual for cherry-picking) ───
 
-export * from './alpha/defaults';
+export * from './defaults';
 
 // ── Translations ───────────────────────────────────────────────────────
 

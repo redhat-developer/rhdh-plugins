@@ -47,7 +47,7 @@ import {
   globalHeaderPlugin,
   NotificationBanner,
   Spacer,
-} from '../src/plugin';
+} from '../src/legacy/plugin';
 
 import { globalHeaderTranslations } from '../src/translations';
 
@@ -57,7 +57,7 @@ import {
   defaultGlobalHeaderComponentsMountPoints,
   defaultHelpDropdownMountPoints,
   defaultProfileDropdownMountPoints,
-} from '../src/defaultMountPoints/defaultMountPoints';
+} from '../src/legacy/defaultMountPoints/defaultMountPoints';
 
 import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
 
