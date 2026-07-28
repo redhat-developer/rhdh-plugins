@@ -60,3 +60,14 @@ Every approval decision is persisted for auditability.
 - **WHEN** a user approves or rejects a tool call
 - **THEN** the decision (approve/reject), timestamp, parameters, and user identity are stored in the session history
 - **AND** they are visible in the execution trace panel (dev mode)
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

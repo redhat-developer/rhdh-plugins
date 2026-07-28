@@ -47,7 +47,7 @@ const InfoComponent = () => {
           },
         }}
       >
-        <IconButton>
+        <IconButton aria-label={t('users.tooltip')}>
           <InfoOutlinedIcon
             sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />

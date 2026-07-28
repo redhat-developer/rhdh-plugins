@@ -23,7 +23,7 @@ import { DcmBaseClient } from './DcmBaseClient';
  *
  * All requests are sent to `/api/dcm/proxy/<path>` where the backend
  * strips the `/proxy` prefix and forwards to:
- *   `{dcm.apiGatewayUrl}/api/v1alpha1/<path>`
+ *   `{dcm.apiUrl}/api/v1alpha1/<path>`
  *
  * @public
  */

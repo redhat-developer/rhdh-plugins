@@ -36,3 +36,14 @@ Non-blocking feedback for operational events.
 - **WHEN** a transient event occurs (config saved, connection tested, etc.)
 - **THEN** a snackbar toast is shown via `useToast`
 - **AND** it auto-dismisses after a timeout
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

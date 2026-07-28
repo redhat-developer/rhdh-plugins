@@ -34,3 +34,14 @@ The agent searches the knowledge base and provides cited answers.
 - **WHEN** multiple vector stores are configured and scoped to the active agent
 - **THEN** the search spans all configured vector stores
 - **AND** results show which store each source came from
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

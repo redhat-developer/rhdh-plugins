@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras
 
+## 0.2.4
+
+### Patch Changes
+
+- dcf930d: Add missing MCP tool attribute annotations (`readOnly`, `destructive`, `idempotent`) to `fetch-template-metadata`, `query-catalog-entities`, and `analyze-techdocs-coverage` tools.
+
 ## 0.2.3
 
 ### Patch Changes

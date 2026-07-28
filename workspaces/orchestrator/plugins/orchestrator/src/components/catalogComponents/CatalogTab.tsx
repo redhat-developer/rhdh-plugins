@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Entity } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
 
 import { WorkflowsTabContent } from '../OrchestratorPage/WorkflowsTabContent';
 
 /**
  * @public
- * @returns True if the entity has the orchestrator.io/workflows annotation
+ * Predicate that returns true when the entity carries the
+ * `orchestrator.io/workflows` annotation.
+ *
+ * Compatible with both the legacy `EntityLayout.Route` `if` prop
+ * and the RHDH dynamic-plugin `if.anyOf` condition system, which
+ * call it as a plain function with the entity as the first argument.
  */
-export const IsOrchestratorCatalogTabAvailable = () => {
-  const { entity } = useEntity();
-  return Boolean(entity.metadata.annotations?.['orchestrator.io/workflows']);
-};
+export const IsOrchestratorCatalogTabAvailable = (entity: Entity): boolean =>
+  Boolean(entity.metadata.annotations?.['orchestrator.io/workflows']);
 
 export const OrchestratorCatalogTab = () => {
   const { entity } = useEntity();

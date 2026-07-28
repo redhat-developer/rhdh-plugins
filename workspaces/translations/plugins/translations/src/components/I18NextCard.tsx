@@ -21,7 +21,22 @@ import type { i18n as I18n } from 'i18next';
 
 export const I18NextCard = () => {
   const translationApi = useApi(translationApiRef);
-  const i18n: I18n = (translationApi as any).getI18nInstance();
+  const api = translationApi as unknown as { getI18nInstance?: () => I18n };
+  const i18n =
+    typeof api.getI18nInstance === 'function'
+      ? api.getI18nInstance()
+      : undefined;
+
+  if (!i18n) {
+    return (
+      <InfoCard title="TranslationApi / i18Next">
+        <em>
+          i18next instance details are not available with the built-in
+          TranslationApi.
+        </em>
+      </InfoCard>
+    );
+  }
 
   return (
     <InfoCard title="TranslationApi / i18Next">

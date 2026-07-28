@@ -26,6 +26,7 @@ import {
 } from './oci-key';
 import {
   type DynamicPluginsConfig,
+  isPluginDisabled,
   OCI_PROTO,
   type Plugin,
   type PluginMap,
@@ -297,6 +298,15 @@ function copyPluginFields(
     if (skipSet.has(k) || isForbiddenKey(k)) continue;
     safeSet(dst, k, v);
   }
+  // When the override introduces a valid boolean activation field, clear the
+  // opposite so the merged record never carries both (which would trigger a
+  // spurious "specifies both" warning in isPluginDisabled).  Only act on
+  // actual booleans — a non-boolean value is treated as "unset" by
+  // isPluginDisabled and should not displace a valid value on dst.
+  if (typeof src.enabled === 'boolean' && 'disabled' in dst)
+    delete (dst as Record<string, unknown>).disabled;
+  if (typeof src.disabled === 'boolean' && 'enabled' in dst)
+    delete (dst as Record<string, unknown>).enabled;
 }
 
 function isEqual(a: unknown, b: unknown): boolean {
@@ -422,7 +432,7 @@ function processOciEntry(
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
-  const disabled = plugin.disabled === true;
+  const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
     logInvalidOciFormat(pkg, sourceFile, disabled);
@@ -551,7 +561,7 @@ export function filterDisabledOciPlugins(
         log(`\n======= Disabling OCI plugin ${pkg}`);
         continue;
       }
-      if (!parsed && plugin.disabled === true) {
+      if (!parsed && isPluginDisabled(plugin)) {
         log(`\n======= Disabling OCI plugin ${pkg}`);
         continue;
       }

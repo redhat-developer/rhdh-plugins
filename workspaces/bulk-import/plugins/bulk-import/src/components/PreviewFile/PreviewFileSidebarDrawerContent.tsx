@@ -201,7 +201,14 @@ export const PreviewFileSidebarDrawerContent = ({
         >
           {t('common.save')}
         </Button>
-        <Link to="" variant="button" onClick={onCancel}>
+        <Link
+          to=""
+          variant="button"
+          onClick={e => {
+            e.preventDefault();
+            onCancel();
+          }}
+        >
           <Button variant="outlined">{t('common.cancel')}</Button>
         </Link>
       </Box>

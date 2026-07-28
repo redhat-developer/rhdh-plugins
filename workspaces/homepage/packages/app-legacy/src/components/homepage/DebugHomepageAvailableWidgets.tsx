@@ -19,7 +19,7 @@ import { CodeSnippet, Content, Header, Page } from '@backstage/core-components';
 import { stringify } from 'yaml';
 
 // eslint-disable-next-line @backstage/no-relative-monorepo-imports
-import { useDynamicHomePageCards } from '../../../../../plugins/dynamic-home-page/src/hooks/useDynamicHomePageCards';
+import { useDynamicHomePageCards } from '../../../../../plugins/homepage/src/hooks/useDynamicHomePageCards';
 
 export const DebugHomepageAvailableWidgets = () => {
   const mountPoints = useDynamicHomePageCards();

@@ -45,10 +45,12 @@ import { catalogApiRef, providersApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
+import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
+import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CopyButton } from './components/CopyButton';
 import { ProviderFormFields } from './components/ProviderFormFields';
@@ -66,6 +68,7 @@ export function ProvidersTabContent() {
   const classes = useStyles();
   const providersApi = useApi(providersApiRef);
   const catalogApi = useApi(catalogApiRef);
+  const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
@@ -88,12 +91,15 @@ export function ProvidersTabContent() {
     isValid: isProviderFormValid,
     itemToForm: providerToForm,
     storageKey: 'providers',
+    createSuccessMessage: t('providers.createSuccess'),
+    editSuccessMessage: t('providers.updateSuccess'),
+    deleteSuccessMessage: t('providers.deleteSuccess'),
   });
 
   const columns = useMemo<TableColumn<Provider>[]>(
     () => [
       {
-        title: 'Display name',
+        title: t('providers.columns.displayName'),
         field: 'display_name',
         render: p => (
           <Box className={classes.nameCellBox}>
@@ -118,7 +124,7 @@ export function ProvidersTabContent() {
         ),
       },
       {
-        title: 'Name',
+        title: t('providers.columns.name'),
         field: 'name',
         render: p => (
           <TruncatedText
@@ -132,7 +138,7 @@ export function ProvidersTabContent() {
         ),
       },
       {
-        title: 'Endpoint',
+        title: t('providers.columns.endpoint'),
         field: 'endpoint',
         render: p => (
           <Box
@@ -153,7 +159,7 @@ export function ProvidersTabContent() {
         ),
       },
       {
-        title: 'Service type',
+        title: t('providers.columns.serviceType'),
         field: 'service_type',
         render: p => (
           <Chip
@@ -164,7 +170,7 @@ export function ProvidersTabContent() {
         ),
       },
       {
-        title: 'Operations',
+        title: t('providers.columns.operations'),
         field: 'operations',
         sorting: false,
         render: p => {
@@ -184,7 +190,7 @@ export function ProvidersTabContent() {
           if (ops.length === 0) {
             return (
               <Typography variant="caption" color="textSecondary">
-                —
+                -
               </Typography>
             );
           }
@@ -216,16 +222,17 @@ export function ProvidersTabContent() {
         },
       },
       {
-        title: 'Status',
+        title: t('providers.columns.status'),
         field: 'health_status',
         render: p => <ProviderStatus value={p.health_status} />,
       },
       createEditDeleteColumn<Provider>({
         onEdit: crud.handleOpenEdit,
         onDelete: crud.handleOpenDelete,
+        title: t('common.actions'),
       }),
     ],
-    [classes, crud.handleOpenEdit, crud.handleOpenDelete],
+    [classes, crud.handleOpenEdit, crud.handleOpenDelete, t],
   );
 
   type ProviderDialogProps = {
@@ -304,18 +311,18 @@ export function ProvidersTabContent() {
         pageSize={crud.pageSize}
         onPageChange={crud.onPageChange}
         onRowsPerPageChange={crud.onRowsPerPageChange}
-        emptyTitle="No providers registered"
-        emptyDescription="Register a service provider to allow DCM to provision resources on external infrastructure (e.g. OpenShift, AWS)."
-        primaryActionLabel="Register"
+        emptyTitle={t('providers.emptyTitle')}
+        emptyDescription={t('providers.emptyDescription')}
+        primaryActionLabel={t('providers.registerButton')}
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
-        entityLabel="Providers"
+        entityLabel={t('providers.entityLabel')}
         onRefresh={crud.reload}
         refreshing={crud.refreshing}
       />
 
       {formDialog({
-        title: 'Register provider',
+        title: t('providers.registerDialogTitle'),
         open: crud.createOpen,
         onClose: crud.handleCloseCreate,
         form: crud.createForm,
@@ -323,13 +330,13 @@ export function ProvidersTabContent() {
         touched: crud.createTouched,
         setTouched: crud.setCreateTouched,
         onSubmit: crud.handleCreateSubmit,
-        submitLabel: 'Register',
+        submitLabel: t('providers.registerButton'),
         submitting: crud.createSubmitting,
         error: crud.createError,
       })}
 
       {formDialog({
-        title: 'Edit provider',
+        title: t('providers.editDialogTitle'),
         open: crud.editOpen,
         onClose: crud.handleCloseEdit,
         form: crud.editForm,
@@ -337,7 +344,7 @@ export function ProvidersTabContent() {
         touched: crud.editTouched,
         setTouched: crud.setEditTouched,
         onSubmit: crud.handleEditSubmit,
-        submitLabel: 'Save',
+        submitLabel: t('providers.saveButton'),
         submitting: crud.editSubmitting,
         error: crud.editError,
         isEditMode: true,
@@ -350,9 +357,14 @@ export function ProvidersTabContent() {
         resourceName={
           crud.deletingItem?.display_name ?? crud.deletingItem?.name ?? ''
         }
-        resourceLabel="provider"
+        resourceLabel={t('providers.deleteLabel')}
         error={crud.deleteError}
         isSubmitting={crud.deleteSubmitting}
+      />
+
+      <DcmSuccessSnackbar
+        message={crud.successMessage}
+        onClose={crud.clearSuccessMessage}
       />
     </>
   );

@@ -56,3 +56,14 @@ Test retrieval quality before deploying to production.
 - **AND** `RagResultsTable` shows retrieved chunks with `ChunkCard`, `ScoreBar`, and relevance scores
 - **AND** thresholds are adjustable to tune precision vs. recall
 - **AND** `GeneratedAnswerCard` shows the answer that would be generated from the retrieved context
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

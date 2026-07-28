@@ -21,30 +21,53 @@ import * as uuid from 'uuid';
 
 import { LONG_REFRESH_INTERVAL } from '../constants';
 
+export type UsePollingOptions<T> = {
+  delayMs?: number;
+  continueRefresh?: (value: T | undefined) => boolean;
+  maxErrorRetryCount?: number;
+  cacheKey?: string;
+  persistCache?: boolean;
+};
+
 const usePolling = <T>(
   fn: () => Promise<T>,
-  delayMs: number = LONG_REFRESH_INTERVAL,
+  delayMsOrOptions: number | UsePollingOptions<T> = LONG_REFRESH_INTERVAL,
   continueRefresh?: (value: T | undefined) => boolean,
   maxErrorRetryCount: number = 3,
 ) => {
+  const {
+    delayMs = LONG_REFRESH_INTERVAL,
+    continueRefresh: shouldContinueRefresh = continueRefresh,
+    maxErrorRetryCount: maxRetries = maxErrorRetryCount,
+    cacheKey,
+    persistCache = Boolean(cacheKey),
+  } = typeof delayMsOrOptions === 'number'
+    ? {
+        delayMs: delayMsOrOptions,
+        continueRefresh,
+        maxErrorRetryCount,
+      }
+    : delayMsOrOptions;
+
   const config = useSWRConfig();
 
   const prevFn = useRef(fn);
-  const uniqueKey = useMemo<string>(() => {
-    return uuid.v4();
-  }, []);
+  const generatedKey = useMemo<string>(() => uuid.v4(), []);
+  const uniqueKey = cacheKey ?? generatedKey;
 
   const [error, setError] = useState();
   const isInitalLoad = useRef(true);
 
   const { data, isLoading } = useSwr<T>(uniqueKey, fn, {
     refreshInterval: (value_: T | undefined) => {
-      return !continueRefresh || continueRefresh(value_) ? delayMs : 0;
+      return !shouldContinueRefresh || shouldContinueRefresh(value_)
+        ? delayMs
+        : 0;
     },
     shouldRetryOnError: true,
     onErrorRetry: (curError, _key, _config, revalidate, { retryCount }) => {
       // requires custom behavior, retryErrorCount option doesn't support hiding the error before reaching the maximum
-      if (isInitalLoad.current || retryCount >= maxErrorRetryCount) {
+      if (isInitalLoad.current || retryCount >= maxRetries) {
         setError(curError);
       } else {
         setTimeout(() => revalidate({ retryCount }), delayMs);
@@ -69,6 +92,9 @@ const usePolling = <T>(
   }, [fn, restart]);
 
   useEffect(() => {
+    if (persistCache) {
+      return undefined;
+    }
     // clean cache after unmount, no need to store the data globally
     return () => config.cache.delete(uniqueKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps

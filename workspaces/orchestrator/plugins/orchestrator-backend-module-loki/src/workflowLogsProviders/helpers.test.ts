@@ -79,6 +79,47 @@ describe('parseAndValidateLogPipelineFilters', () => {
       /orchestrator\.workflowLogProvider\.loki\.logPipelineFilters\[0\]: entry must not contain line breaks/,
     );
   });
+
+  it('accepts line_format with Go template braces inside double quotes', () => {
+    const mockConfig = {
+      getOptionalStringArray: () => ['| line_format "{{.message}}"'],
+    } as unknown as Config;
+    expect(
+      parseAndValidateLogPipelineFilters(
+        mockConfig,
+        'orchestrator.workflowLogProvider.loki.logPipelineFilters',
+      ),
+    ).toEqual(['| line_format "{{.message}}"']);
+  });
+
+  it('accepts braces inside backtick-quoted pattern literals', () => {
+    const mockConfig = {
+      getOptionalStringArray: () => ['| pattern `{stream}`'],
+    } as unknown as Config;
+    expect(
+      parseAndValidateLogPipelineFilters(
+        mockConfig,
+        'orchestrator.workflowLogProvider.loki.logPipelineFilters',
+      ),
+    ).toEqual(['| pattern `{stream}`']);
+  });
+
+  it.each([['| json }'], ['| foo {bar="baz"}']])(
+    'rejects unquoted braces: %s',
+    raw => {
+      const mockConfig = {
+        getOptionalStringArray: () => [raw],
+      } as unknown as Config;
+      expect(() =>
+        parseAndValidateLogPipelineFilters(
+          mockConfig,
+          'orchestrator.workflowLogProvider.loki.logPipelineFilters',
+        ),
+      ).toThrow(
+        /orchestrator\.workflowLogProvider\.loki\.logPipelineFilters\[0\]: entry must not contain unquoted "\{" or "\}"/,
+      );
+    },
+  );
 });
 
 describe('hostnameMatchesAllowedHosts', () => {

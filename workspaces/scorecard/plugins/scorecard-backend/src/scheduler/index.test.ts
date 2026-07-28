@@ -33,8 +33,8 @@ import { ThresholdResolver } from '../threshold/ThresholdResolver';
 jest.mock('./tasks/CleanupExpiredMetricsTask');
 jest.mock('./tasks/PullMetricsByProviderTask');
 
-const numberProvider = new MockNumberProvider('github.test_metric', 'github');
-const booleanProvider = new MockBooleanProvider('jira.test_metric', 'jira');
+const numberProvider = new MockNumberProvider('github.testMetric', 'github');
+const booleanProvider = new MockBooleanProvider('jira.testMetric', 'jira');
 
 describe('Scheduler', () => {
   let mockCleanupTask: jest.Mocked<CleanupExpiredMetricsTask>;
@@ -210,11 +210,11 @@ describe('Scheduler', () => {
 
       expect(initializedTasks).toEqual([
         {
-          name: 'github.test_metric',
+          name: 'github.testMetric',
           task: mockPullTask,
         },
         {
-          name: 'jira.test_metric',
+          name: 'jira.testMetric',
           task: mockPullTask,
         },
       ]);

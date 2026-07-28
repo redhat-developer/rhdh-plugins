@@ -20,3 +20,7 @@ export const colors = {
   generallyAvailable: '#6EC664',
   custom: '#EC7A08',
 } as const;
+
+/** Catalog entity example docs for packages and plugins */
+export const CATALOG_ENTITY_DOCS_URL =
+  'https://github.com/redhat-developer/rhdh-plugin-export-overlays/tree/main/catalog-entities/extensions';

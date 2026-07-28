@@ -16,13 +16,13 @@ Enterprise AI platforms must treat security, safety, and governance as foundatio
 - 16 Backstage permissions across 2 resource types (`boost-agent`, `boost-tool`) plus functional permissions
 - Conditional rules: `IS_OWNER`, `IS_NOT_CREATOR`, `HAS_LIFECYCLE_STAGE`
 - `authorizeLifecycleAction` middleware as the sole authorization path — no scattered per-route guards
-- All authorization decisions use `permissions.authorize()` from day one
+- All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) from day one
 
 ### Identity & Authentication
 
 - RBAC via Keycloak OIDC + Backstage permissions (`boost.access`, `boost.admin` as top-level gates)
-- RFC 8693 token exchange for per-user Kagenti identity delegation
-- Graceful fallback to service-account token on any exchange failure
+- OAuth2 Client Credentials Grant for Kagenti service-account authentication via `KeycloakAuthClient`
+- Token caching with configurable expiry buffer and max-1-retry on 401
 - MCP 4-level auth chain
 - Kagenti SPIRE integration for infrastructure mTLS
 
@@ -44,5 +44,5 @@ Enterprise AI platforms must treat security, safety, and governance as foundatio
 
 - `plugins/boost-common/src/permissions.ts` — 16 permission definitions with resource types
 - `plugins/boost-backend/src/middleware/security.ts` — `authorizeLifecycleAction` middleware
-- `plugins/boost-frontend/src/components/SecurityGate.tsx` — granular permission checks
-- `plugins/boost-backend/src/services/TokenExchangeManager.ts` — RFC 8693 implementation
+- `plugins/boost/src/components/SecurityGate.tsx` — granular permission checks
+- `plugins/boost-node/src/KeycloakAuthClient.ts` — `KeycloakAuthClient` (OAuth2 Client Credentials Grant)

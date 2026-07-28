@@ -23,6 +23,7 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { createYupValidator } from '../../utils/createYupValidator';
 import { pickNumericBound } from '../../utils/schemaUtils';
+import { type TFunction, makeTranslator } from '../../utils/formUtils';
 
 /** One user-supplied field value, with string value for form binding. */
 export type UserValueRow = {
@@ -53,30 +54,77 @@ export type InstanceForm = {
   user_values: UserValueRow[];
 };
 
-const instanceSchema = yup.object({
-  display_name: yup
-    .string()
-    .required('Display name is required')
-    .min(1, 'Display name cannot be empty')
-    .max(63, 'Display name must be at most 63 characters'),
-  catalog_item_id: yup.string().required('Catalog item is required'),
-  api_version: yup
-    .string()
-    .required('API version is required')
-    .matches(
-      /^v\d+(?:(?:alpha|beta)\d*)?$/,
-      'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1',
-    ),
-});
+function buildInstanceSchema(t?: TFunction) {
+  const m = makeTranslator(t);
+  return yup.object({
+    display_name: yup
+      .string()
+      .required(
+        m(
+          'validation.instance.displayNameRequired',
+          'Display name is required',
+        ),
+      )
+      .min(
+        1,
+        m(
+          'validation.instance.displayNameEmpty',
+          'Display name cannot be empty',
+        ),
+      )
+      .max(
+        63,
+        m(
+          'validation.instance.displayNameMax',
+          'Display name must be at most 63 characters',
+        ),
+      ),
+    catalog_item_id: yup
+      .string()
+      .required(
+        m(
+          'validation.instance.catalogItemRequired',
+          'Catalog item is required',
+        ),
+      ),
+    api_version: yup
+      .string()
+      .required(
+        m('validation.instance.apiVersionRequired', 'API version is required'),
+      )
+      .matches(
+        /^v\d+(?:(?:alpha|beta)\d*)?$/,
+        m(
+          'validation.instance.apiVersionPattern',
+          'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
+        ),
+      ),
+  });
+}
 
-export const {
-  validate: validateInstanceForm,
-  isValid: isInstanceScalarValid,
-} = createYupValidator<InstanceForm>(instanceSchema, f => ({
-  display_name: f.display_name,
-  catalog_item_id: f.catalog_item_id,
-  api_version: f.api_version,
-}));
+export function validateInstanceForm(
+  form: InstanceForm,
+  t?: TFunction,
+): Partial<Record<keyof InstanceForm, string>> {
+  const { validate } = createYupValidator<InstanceForm>(
+    buildInstanceSchema(t),
+    f => ({
+      display_name: f.display_name,
+      catalog_item_id: f.catalog_item_id,
+      api_version: f.api_version,
+    }),
+  );
+  return validate(form);
+}
+
+const { isValid: isInstanceScalarValid } = createYupValidator<InstanceForm>(
+  buildInstanceSchema(),
+  f => ({
+    display_name: f.display_name,
+    catalog_item_id: f.catalog_item_id,
+    api_version: f.api_version,
+  }),
+);
 
 export function emptyInstanceForm(): InstanceForm {
   return {
@@ -126,14 +174,20 @@ function extractSchemaInfo(
  */
 export function validateUserValues(
   rows: UserValueRow[],
+  t?: TFunction,
 ): Record<number, string> {
+  const m = makeTranslator(t);
+
   const errors: Record<number, string> = {};
 
   rows.forEach((row, i) => {
     const v = row.value.trim();
 
     if (row.required && v === '') {
-      errors[i] = 'This field is required';
+      errors[i] = m(
+        'validation.instance.fieldRequired',
+        'This field is required',
+      );
       return;
     }
 
@@ -143,15 +197,26 @@ export function validateUserValues(
     ) {
       const n = Number(v);
       if (Number.isNaN(n)) {
-        errors[i] = 'Must be a valid number';
+        errors[i] = m(
+          'validation.instance.fieldMustBeNumber',
+          'Must be a valid number',
+        );
         return;
       }
       if (row.schemaMin !== undefined && n < row.schemaMin) {
-        errors[i] = `Must be at least ${row.schemaMin}`;
+        errors[i] = m(
+          'validation.instance.fieldMin',
+          `Must be at least ${row.schemaMin}`,
+          { min: row.schemaMin },
+        );
         return;
       }
       if (row.schemaMax !== undefined && n > row.schemaMax) {
-        errors[i] = `Must be at most ${row.schemaMax}`;
+        errors[i] = m(
+          'validation.instance.fieldMax',
+          `Must be at most ${row.schemaMax}`,
+          { max: row.schemaMax },
+        );
         return;
       }
     }

@@ -1,5 +1,7 @@
 .eslintrc.js
 .vscode
+AGENTS.md
+CLAUDE.md
 coverage
 dist
 dist-types

@@ -23,7 +23,7 @@ const PLUGIN_ID = 'dcm';
  * Base class shared by all DCM API clients.
  *
  * Routes every call through the dcm-backend secure proxy:
- *   `GET /api/dcm/proxy/<path>` → `{dcm.apiGatewayUrl}/api/v1alpha1/<path>`
+ *   `GET /api/dcm/proxy/<path>` → `{dcm.apiUrl}/api/v1alpha1/<path>`
  *
  * @public
  */

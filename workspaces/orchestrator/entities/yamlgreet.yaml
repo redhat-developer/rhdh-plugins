@@ -55,3 +55,7 @@ spec:
     links:
       - title: Open workflow run
         url: ${{ steps.runWorkflow.output.instanceUrl }}
+      - title: Open Workflows Tab
+        url: ${{ steps.runWorkflow.output.catalogEntityUrl }}
+      - title: View in Orchestrator
+        url: ${{ steps.runWorkflow.output.orchestratorWorkflowsUrl }}

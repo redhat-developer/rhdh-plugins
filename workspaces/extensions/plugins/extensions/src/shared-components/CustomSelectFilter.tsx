@@ -44,6 +44,8 @@ export interface CustomSelectFilterProps {
 }
 
 export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
+  const inputId = `extensions-filter-${props.label.toLowerCase().replace(/\s+/g, '-')}`;
+
   return (
     <Box
       sx={{
@@ -52,6 +54,7 @@ export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
       }}
     >
       <InputLabel
+        htmlFor={inputId}
         sx={{
           margin: theme => theme.spacing(1, 0),
           transform: 'initial',
@@ -67,6 +70,7 @@ export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
         {props.label}
       </InputLabel>
       <Autocomplete
+        id={inputId}
         multiple
         disableCloseOnSelect
         aria-label={props.label}

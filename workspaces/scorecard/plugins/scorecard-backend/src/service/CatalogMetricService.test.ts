@@ -55,13 +55,13 @@ import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 jest.mock('../permissions/permissionUtils');
 
-const provider = new MockNumberProvider('github.important_metric', 'github');
+const provider = new MockNumberProvider('github.importantMetric', 'github');
 
 const latestEntityMetric = [
   {
     id: 1,
     catalog_entity_ref: 'component:default/test-component',
-    metric_id: 'github.important_metric',
+    metric_id: 'github.importantMetric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
     error_message: null,
@@ -70,7 +70,7 @@ const latestEntityMetric = [
 ] as DbMetricValue[];
 
 const aggregatedMetric: DbAggregatedMetric = {
-  metric_id: 'github.important_metric',
+  metric_id: 'github.importantMetric',
   total: 2,
   max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
   statusCounts: {
@@ -82,8 +82,8 @@ const aggregatedMetric: DbAggregatedMetric = {
 };
 
 const metricsList = [
-  { id: 'github.important_metric' },
-  { id: 'github.number_metric' },
+  { id: 'github.importantMetric' },
+  { id: 'github.numberMetric' },
 ] as Metric[];
 
 const permissionsFilter = {
@@ -91,7 +91,7 @@ const permissionsFilter = {
     {
       rule: 'HAS_METRIC_ID',
       resourceType: 'scorecard-metric',
-      params: { metricIds: ['github.important_metric'] },
+      params: { metricIds: ['github.importantMetric'] },
     },
   ],
 } as PermissionCriteria<PermissionCondition<string, PermissionRuleParams>>;
@@ -135,11 +135,11 @@ describe('CatalogMetricService', () => {
     mockedLogger = mockServices.logger.mock();
 
     (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
-      { id: 'github.important_metric' },
+      { id: 'github.importantMetric' },
     ]);
 
     mockedThresholdResolver = {
-      resolveProviderThresholds: jest.fn(),
+      resolveMetricThresholds: jest.fn(),
       resolveEntityThresholds: jest.fn().mockReturnValue({
         rules: mockThresholdRules,
       }),
@@ -182,23 +182,23 @@ describe('CatalogMetricService', () => {
   describe('getLatestEntityMetrics', () => {
     it('should handle multiple metrics correctly', async () => {
       const secondProvider = new MockNumberProvider(
-        'github.number_metric',
+        'github.numberMetric',
         'github',
       );
       mockedRegistry.getProvider.mockImplementation(id =>
-        id === 'github.important_metric' ? provider : secondProvider,
+        id === 'github.importantMetric' ? provider : secondProvider,
       );
       mockedRegistry.getMetric.mockImplementation(id =>
-        id === 'github.important_metric'
-          ? provider.getMetric()
-          : secondProvider.getMetric(),
+        id === 'github.importantMetric'
+          ? provider.getMetrics()[0]
+          : secondProvider.getMetrics()[0],
       );
 
       const multipleMetrics = [
-        { ...latestEntityMetric[0], metric_id: 'github.important_metric' },
+        { ...latestEntityMetric[0], metric_id: 'github.importantMetric' },
         {
           ...latestEntityMetric[0],
-          metric_id: 'github.number_metric',
+          metric_id: 'github.numberMetric',
           value: 10,
         },
       ];
@@ -207,8 +207,8 @@ describe('CatalogMetricService', () => {
       );
 
       (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
-        { id: 'github.important_metric' },
-        { id: 'github.number_metric' },
+        { id: 'github.importantMetric' },
+        { id: 'github.numberMetric' },
       ] as Metric[]);
 
       const result = await service.getLatestEntityMetrics(
@@ -216,13 +216,13 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('github.important_metric');
-      expect(result[1].id).toBe('github.number_metric');
+      expect(result[0].id).toBe('github.importantMetric');
+      expect(result[1].id).toBe('github.numberMetric');
     });
 
     it('should get own service credentials', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.important_metric',
+        'github.importantMetric',
       ]);
 
       expect(mockedAuth.getOwnServiceCredentials).toHaveBeenCalledWith();
@@ -252,12 +252,12 @@ describe('CatalogMetricService', () => {
     it('should filter authorized metrics for specific provider IDs', async () => {
       await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
         permissionsFilter,
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
-        [{ id: 'github.important_metric' }],
+        [{ id: 'github.importantMetric' }],
         permissionsFilter,
       );
     });
@@ -270,19 +270,19 @@ describe('CatalogMetricService', () => {
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
-        [{ id: 'github.important_metric' }, { id: 'github.number_metric' }],
+        [{ id: 'github.importantMetric' }, { id: 'github.numberMetric' }],
         permissionsFilter,
       );
     });
 
     it('should read latest entity metric values', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.important_metric',
+        'github.importantMetric',
       ]);
 
       expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
     });
 
@@ -291,7 +291,7 @@ describe('CatalogMetricService', () => {
 
       const result = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       expect(result).toEqual([]);
@@ -299,32 +299,36 @@ describe('CatalogMetricService', () => {
 
     it('should get provider by metric ID', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.important_metric',
+        'github.importantMetric',
       ]);
 
       expect(mockedRegistry.getProvider).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
       );
     });
 
     it('should get metric from registry', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.important_metric',
+        'github.importantMetric',
       ]);
 
       expect(mockedRegistry.getMetric).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
       );
     });
 
     it('should merge entity and provider thresholds', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.important_metric',
+        'github.importantMetric',
       ]);
 
       expect(
         mockedThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenCalledWith(mockEntity, provider);
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({ id: 'github.importantMetric' }),
+        provider.getProviderId(),
+      );
     });
 
     it('should set threshold error when merge thresholds fails', async () => {
@@ -334,7 +338,7 @@ describe('CatalogMetricService', () => {
 
       const newResult = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       expect(newResult).toHaveLength(1);
@@ -355,7 +359,7 @@ describe('CatalogMetricService', () => {
 
       const newResult = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       expect(newResult[0].status).toBe('error');
@@ -378,7 +382,7 @@ describe('CatalogMetricService', () => {
 
       const newResult = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       expect(newResult[0].status).toBe('success');
@@ -392,7 +396,7 @@ describe('CatalogMetricService', () => {
     it('should return metric result', async () => {
       const result = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       expect(result.length).toBe(1);
@@ -401,16 +405,16 @@ describe('CatalogMetricService', () => {
 
       expect(resultMetric).toEqual(
         expect.objectContaining({
-          id: 'github.important_metric',
+          id: 'github.importantMetric',
           status: 'success',
         }),
       );
       expect(resultMetric.metadata).toEqual(
         expect.objectContaining({
-          title: provider.getMetric().title,
-          description: provider.getMetric().description,
-          type: provider.getMetric().type,
-          history: provider.getMetric().history,
+          title: provider.getMetrics()[0].title,
+          description: provider.getMetrics()[0].description,
+          type: provider.getMetrics()[0].type,
+          history: provider.getMetrics()[0].history,
         }),
       );
       expect(resultMetric.result).toEqual(
@@ -438,7 +442,7 @@ describe('CatalogMetricService', () => {
 
       const newResult = await service.getLatestEntityMetrics(
         'component:default/test-component',
-        ['github.important_metric'],
+        ['github.importantMetric'],
       );
 
       const thresholdResult = newResult[0].result.thresholdResult;
@@ -543,7 +547,7 @@ describe('CatalogMetricService', () => {
             'component:default/test-component',
             'component:default/test-component-2',
           ],
-          'github.important_metric',
+          'github.importantMetric',
         );
       });
 
@@ -568,7 +572,7 @@ describe('CatalogMetricService', () => {
             'component:default/test-component',
             'component:default/test-component-2',
           ],
-          'github.important_metric',
+          'github.importantMetric',
         );
       });
 
@@ -581,7 +585,7 @@ describe('CatalogMetricService', () => {
         await expect(
           service.getAggregatedMetricByEntityRefs(
             ['component:default/test-component'],
-            'github.important_metric',
+            'github.importantMetric',
             'unknownAggregation',
           ),
         ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
@@ -603,7 +607,7 @@ describe('CatalogMetricService', () => {
             'component:default/f',
             'component:default/g',
           ],
-          'github.important_metric',
+          'github.importantMetric',
           aggregationTypes.statusGrouped,
         );
 
@@ -617,7 +621,7 @@ describe('CatalogMetricService', () => {
       beforeEach(async () => {
         result = await loader.loadStatusGroupedMetricByEntityRefs(
           [],
-          'github.important_metric',
+          'github.importantMetric',
         );
       });
 
@@ -649,7 +653,7 @@ describe('CatalogMetricService', () => {
       {
         id: 1,
         catalog_entity_ref: 'component:default/service-a',
-        metric_id: 'github.important_metric',
+        metric_id: 'github.importantMetric',
         value: 15,
         timestamp: new Date('2024-01-15T12:00:00.000Z'),
         error_message: null,
@@ -661,7 +665,7 @@ describe('CatalogMetricService', () => {
       {
         id: 2,
         catalog_entity_ref: 'component:default/service-b',
-        metric_id: 'github.important_metric',
+        metric_id: 'github.importantMetric',
         value: 8,
         timestamp: new Date('2024-01-15T11:00:00.000Z'),
         error_message: null,
@@ -673,7 +677,7 @@ describe('CatalogMetricService', () => {
       {
         id: 3,
         catalog_entity_ref: 'component:staging/service-c',
-        metric_id: 'github.important_metric',
+        metric_id: 'github.importantMetric',
         value: 3,
         timestamp: new Date('2024-01-15T10:00:00.000Z'),
         error_message: null,
@@ -718,7 +722,7 @@ describe('CatalogMetricService', () => {
 
     it('should fetch entity metrics with default options', async () => {
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -726,7 +730,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(result.metricId).toBe('github.important_metric');
+      expect(result.metricId).toBe('github.importantMetric');
       expect(result.entities).toHaveLength(3);
       expect(result.pagination).toEqual({
         page: 1,
@@ -744,7 +748,7 @@ describe('CatalogMetricService', () => {
 
     it('should enrich entities with catalog metadata', async () => {
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -766,7 +770,7 @@ describe('CatalogMetricService', () => {
 
     it('should always query the full fetchable window from the database and paginate in-memory', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 2,
@@ -775,14 +779,14 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should filter by status at database level', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           status: 'error',
@@ -792,14 +796,14 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { status: 'error', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should filter by kind at database level', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           kind: 'Component',
@@ -809,14 +813,14 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { entityKind: 'Component', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should filter by owner at database level', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           owner: ['team:default/platform'],
@@ -826,7 +830,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           entityOwner: ['team:default/platform'],
           pagination: { limit: 10_000, offset: 0 },
@@ -840,7 +844,7 @@ describe('CatalogMetricService', () => {
       ]);
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           entityName: 'service-a',
@@ -850,7 +854,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { entityName: 'service-a', pagination: { limit: 10_000, offset: 0 } },
       );
 
@@ -861,7 +865,7 @@ describe('CatalogMetricService', () => {
 
     it('should pass entityName to database for filtering', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           entityName: 'SERVICE',
@@ -871,14 +875,14 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { entityName: 'SERVICE', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should sort by entityName ascending', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           sortBy: 'entityName',
@@ -889,7 +893,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           sortBy: 'entityName',
           sortOrder: 'asc',
@@ -900,7 +904,7 @@ describe('CatalogMetricService', () => {
 
     it('should sort by metricValue descending', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           sortBy: 'metricValue',
@@ -911,7 +915,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           sortBy: 'metricValue',
           sortOrder: 'desc',
@@ -922,7 +926,7 @@ describe('CatalogMetricService', () => {
 
     it('should sort by timestamp descending by default', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -932,14 +936,14 @@ describe('CatalogMetricService', () => {
 
       // When no sortBy/sortOrder are supplied the DB defaults to timestamp desc
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should sort by namespace ascending', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           sortBy: 'namespace',
@@ -950,7 +954,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           sortBy: 'namespace',
           sortOrder: 'asc',
@@ -961,7 +965,7 @@ describe('CatalogMetricService', () => {
 
     it('should sort by namespace descending', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           sortBy: 'namespace',
@@ -972,7 +976,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           sortBy: 'namespace',
           sortOrder: 'desc',
@@ -990,7 +994,7 @@ describe('CatalogMetricService', () => {
       });
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           namespace: 'staging',
@@ -1000,7 +1004,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           entityNamespace: 'staging',
           pagination: { limit: 10_000, offset: 0 },
@@ -1014,7 +1018,7 @@ describe('CatalogMetricService', () => {
 
     it('should include entityNamespace in enriched entity response', async () => {
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1039,7 +1043,7 @@ describe('CatalogMetricService', () => {
       });
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           status: 'success',
@@ -1053,7 +1057,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           status: 'success',
           entityKind: 'API',
@@ -1076,7 +1080,7 @@ describe('CatalogMetricService', () => {
       ]);
 
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           sortBy: 'metricValue',
@@ -1088,7 +1092,7 @@ describe('CatalogMetricService', () => {
 
       // Null handling (nulls-last) is delegated to the DB via orderByRaw
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           sortBy: 'metricValue',
           sortOrder: 'desc',
@@ -1099,7 +1103,7 @@ describe('CatalogMetricService', () => {
 
     it('should batch-fetch entities using getEntitiesByRefs', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1127,7 +1131,7 @@ describe('CatalogMetricService', () => {
       });
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1155,7 +1159,7 @@ describe('CatalogMetricService', () => {
       );
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1179,13 +1183,13 @@ describe('CatalogMetricService', () => {
 
     it('should pass null to database for unscoped query (avoids catalog enumeration)', async () => {
       await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         { page: 1, limit: 10 },
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
     });
@@ -1197,7 +1201,7 @@ describe('CatalogMetricService', () => {
       });
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         { page: 1, limit: 10 },
       );
@@ -1220,7 +1224,7 @@ describe('CatalogMetricService', () => {
       ]);
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           status: 'error',
@@ -1234,7 +1238,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
-        'github.important_metric',
+        'github.importantMetric',
         {
           status: 'error',
           entityKind: 'Component',
@@ -1253,7 +1257,7 @@ describe('CatalogMetricService', () => {
       mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([]);
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1288,7 +1292,7 @@ describe('CatalogMetricService', () => {
       ]);
 
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1305,7 +1309,7 @@ describe('CatalogMetricService', () => {
 
     it('should include metric metadata in response', async () => {
       const result = await service.getEntityMetricDetails(
-        'github.important_metric',
+        'github.importantMetric',
         mockCredentials,
         {
           page: 1,
@@ -1314,9 +1318,9 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.metricMetadata).toEqual({
-        title: provider.getMetric().title,
-        description: provider.getMetric().description,
-        type: provider.getMetric().type,
+        title: provider.getMetrics()[0].title,
+        description: provider.getMetrics()[0].description,
+        type: provider.getMetrics()[0].type,
       });
     });
   });

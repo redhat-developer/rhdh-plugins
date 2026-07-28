@@ -145,7 +145,7 @@ export const ExtensionsPluginInstallContent = ({
         plugins: (packages ?? []).map(pkg => {
           const pkgEntry: ExtensionsPackageSpec = {
             package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-            disabled: false,
+            enabled: true,
           };
           if (pkg.spec?.integrity) {
             pkgEntry.integrity = pkg.spec.integrity;

@@ -37,10 +37,14 @@ interface HomepageDefaultWidgetNodeConfig {
   props?: Record<string, unknown>;
   /** Responsive layout per breakpoint (xl, lg, md, sm, xs, xxs). */
   layouts?: Record<string, HomepageDefaultWidgetLayout>;
+  /** Tags for RBAC conditional policy filtering (e.g. ['admin', 'developer']). */
+  tags?: string[];
   /** Child nodes. Presence makes this a group; must be omitted when `id` is set. */
   children?: HomepageDefaultWidgetNodeConfig[];
   /** Optional visibility constraints; omitted or empty means visible to all. */
   if?: HomepageDefaultWidgetVisibilityConfig;
+  /** Optional exclusion constraints; if any condition matches, the widget is hidden (deny wins over if). */
+  unless?: HomepageDefaultWidgetVisibilityConfig;
 }
 
 export interface Config {

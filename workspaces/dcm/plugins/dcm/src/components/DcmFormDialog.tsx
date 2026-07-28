@@ -27,6 +27,7 @@ import {
 import MuiAlert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import { useDcmStyles } from './dcmStyles';
+import { useTranslation } from '../hooks/useTranslation';
 
 export type DcmFormDialogProps = Readonly<{
   open: boolean;
@@ -57,6 +58,7 @@ export function DcmFormDialog({
   submitting = false,
 }: DcmFormDialogProps) {
   const classes = useDcmStyles();
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} maxWidth={maxWidth} fullWidth>
       <DialogTitle className={classes.dialogTitle}>
@@ -74,7 +76,7 @@ export function DcmFormDialog({
             {title}
           </Typography>
           <IconButton
-            aria-label="Close"
+            aria-label={t('common.close')}
             onClick={onClose}
             size="small"
             disabled={submitting}

@@ -25,7 +25,12 @@ export type WorkflowRunDetail = {
   workflowId: string;
   state?: string;
   start: string;
+  startIso?: string;
   duration: string;
   description?: string;
+  version?: string;
   businessKey?: string;
+  initiatorEntity?: string;
+  targetEntity?: string;
+  hasVariables?: boolean;
 };

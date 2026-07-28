@@ -134,7 +134,8 @@ export class CatalogMetricService {
         try {
           thresholds = this.thresholdResolver.resolveEntityThresholds(
             entity,
-            provider,
+            metric,
+            provider.getProviderId(),
           );
 
           if (value === null) {
@@ -232,7 +233,7 @@ export class CatalogMetricService {
    * database-level sorting, and in-memory pagination over the permission-filtered result set.
    * Returns empty entities if the catalog is unavailable (fail-secure).
    *
-   * @param metricId - Metric ID to fetch (e.g., "github.open_prs")
+   * @param metricId - Metric ID to fetch (e.g., "github.openPRs")
    * @param options - Query options for filtering, sorting, and pagination
    * @param options.status - Filter by threshold status (database-level)
    * @param options.owner - Filter by owner entity reference (database-level)

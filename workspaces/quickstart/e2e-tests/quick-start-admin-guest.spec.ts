@@ -52,7 +52,7 @@ test.describe('Test Quick Start plugin', () => {
       testInfo,
       'quick-start-accessibility.json',
       {
-        skipViolationsAssert: true,
+        exclude: ['table', '.v5-MuiButton-textInherit'],
       },
     );
 

@@ -1,5 +1,40 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.8.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+## 3.7.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+
+## 3.7.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+
+## 3.7.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+
+## 3.7.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- bbcdc56: update the workflow overview api to include the success ratio for a worfklow. Also add the total runs(for the last 30 days) for each workflow
+
 ## 3.6.4
 
 ### Patch Changes

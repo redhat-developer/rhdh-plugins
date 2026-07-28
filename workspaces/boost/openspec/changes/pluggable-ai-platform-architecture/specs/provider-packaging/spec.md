@@ -8,15 +8,15 @@ Each AI platform provider must be packaged as an independent Backstage backend m
 
 ### Requirement: ResponsesApiProvider as Backstage Backend Module
 
-The Llama Stack provider is packaged as an independent Backstage backend module that registers via the extension point.
+The Llama Stack provider MUST be packaged as an independent Backstage backend module that registers via the extension point.
 
 #### Scenario: Module registration
 
 - **WHEN** the `plugin-boost-backend-module-llamastack` package is installed
 - **THEN** it creates a `createBackendModule` with `pluginId: 'boost'` and `moduleId: 'llamastack'`
 - **AND** it registers `ResponsesApiProviderFactory` via `boostProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
-- **AND** it composes `llamastack-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint`
-- **AND** `llamastack-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost)
+- **AND** it composes `llamastack-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint` _(deferred to `agent-creation-discovery` change, issue #3308)_
+- **AND** `llamastack-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost) _(deferred to `agent-creation-discovery` change, issue #3308)_
 - **AND** it depends on `coreServices.config` for Llama Stack connection settings
 - **AND** it depends on `coreServices.logger` and `coreServices.cache` for operational services
 
@@ -40,15 +40,15 @@ The Llama Stack provider is packaged as an independent Backstage backend module 
 
 ### Requirement: KagentiProvider as Backstage Backend Module
 
-The Kagenti provider is packaged as an independent Backstage backend module.
+The Kagenti provider MUST be packaged as an independent Backstage backend module.
 
 #### Scenario: Module registration
 
 - **WHEN** the `plugin-boost-backend-module-kagenti` package is installed
 - **THEN** it creates a `createBackendModule` with `pluginId: 'boost'` and `moduleId: 'kagenti'`
 - **AND** it registers `KagentiProviderFactory` via `boostProviderExtensionPoint` (AI capabilities — composable, accessed by the core backend)
-- **AND** it composes `kagenti-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint`
-- **AND** `kagenti-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost)
+- **AND** it composes `kagenti-entity-provider` internally, registering its entity providers via `catalogProcessingExtensionPoint` _(deferred to `agent-creation-discovery` change, issue #3308)_
+- **AND** `kagenti-entity-provider` is also independently deployable as its own RHDH dynamic plugin (without boost) _(deferred to `agent-creation-discovery` change, issue #3308)_
 - **AND** it depends on `coreServices.config` for Kagenti/Keycloak connection settings
 - **AND** it depends on `coreServices.cache` for agent card caching and token management
 
@@ -61,13 +61,13 @@ The Kagenti provider is packaged as an independent Backstage backend module.
 
 #### Scenario: Keycloak token cache uses Backstage cacheService
 
-- **WHEN** the Kagenti module caches Keycloak access tokens (currently `KeycloakTokenManager`)
+- **WHEN** the Kagenti module caches Keycloak access tokens (currently `KeycloakAuthClient`)
 - **THEN** it uses `coreServices.cache` with TTL derived from token expiry
 - **AND** the token cache is Redis-backed in production for multi-instance safety
 
 ### Requirement: Standalone Toolkit Packages
 
-Provider-internal subsystems with zero Backstage coupling are extracted as standalone packages.
+Provider-internal subsystems with zero Backstage coupling MUST be extracted as standalone packages.
 
 #### Scenario: toolscope extracted as standalone package
 

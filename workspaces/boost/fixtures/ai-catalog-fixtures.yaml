@@ -1,0 +1,243 @@
+---
+# AI Catalog sample fixtures — one entity per AI asset category.
+# Used by the dev app for local development and testing.
+
+# ---------------------------------------------------------------------------
+# Owner groups — referenced by AI asset entities below
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-ai-platform
+  description: AI Platform team responsible for core AI infrastructure and skills.
+spec:
+  type: team
+  profile:
+    displayName: AI Platform
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-security
+  description: Security team responsible for governance rules and compliance.
+spec:
+  type: team
+  profile:
+    displayName: Security
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-integrations
+  description: Integrations team responsible for MCP servers and external tools.
+spec:
+  type: team
+  profile:
+    displayName: Integrations
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-ml-ops
+  description: ML Ops team responsible for model deployment and management.
+spec:
+  type: team
+  profile:
+    displayName: ML Ops
+  children: []
+
+---
+# ---------------------------------------------------------------------------
+# AiResource / skill
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: code-review-skill
+  title: Code Review Skill
+  description: Automated code review that checks for common issues, security vulnerabilities, and style violations.
+  tags:
+    - code-review
+    - security
+    - quality
+  annotations:
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '1.2.0'
+    rhdh.io/ai-asset-source: github
+    backstage.io/techdocs-ref: dir:.
+  links:
+    - url: https://github.com/example/code-review-skill
+      title: Source Repository
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ai-platform
+  disciplines:
+    - software-engineering
+  categories:
+    - code-quality
+  agents:
+    - component:default/developer-assistant
+  location:
+    type: git
+    target: https://github.com/example/code-review-skill
+
+---
+# ---------------------------------------------------------------------------
+# AiResource / rule
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: no-hardcoded-secrets-rule
+  title: No Hardcoded Secrets
+  description: Ensures that secrets, API keys, and credentials are never committed to source code repositories.
+  tags:
+    - security
+    - compliance
+    - secrets
+  annotations:
+    rhdh.io/ai-asset-category: rule
+    rhdh.io/ai-asset-version: '2.0.1'
+    rhdh.io/ai-asset-source: internal
+spec:
+  type: rule
+  lifecycle: production
+  owner: team-security
+  category: security
+  rationale: Hardcoded secrets in source code can be extracted by attackers, leading to credential compromise and unauthorized access to systems.
+  location:
+    type: git
+    target: https://github.com/example/no-hardcoded-secrets-rule
+
+---
+# ---------------------------------------------------------------------------
+# API / mcp-server
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: github-mcp-server
+  title: GitHub MCP Server
+  description: Model Context Protocol server providing GitHub repository context, pull request data, and issue tracking integration.
+  tags:
+    - github
+    - mcp
+    - context
+  annotations:
+    rhdh.io/ai-asset-category: mcp-server
+    rhdh.io/ai-asset-version: '0.9.0'
+    rhdh.io/ai-asset-source: registry
+spec:
+  type: mcp-server
+  lifecycle: experimental
+  owner: team-integrations
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: GitHub MCP Server
+      version: 0.9.0
+  remotes:
+    - url: https://mcp.example.com/github
+      type: streamable-http
+
+---
+# ---------------------------------------------------------------------------
+# Component / ai-agent
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: developer-assistant
+  title: Developer Assistant Agent
+  description: An AI agent that helps developers with code generation, debugging, architecture decisions, and documentation.
+  tags:
+    - agent
+    - developer
+    - assistant
+  annotations:
+    rhdh.io/ai-asset-category: agent
+    rhdh.io/ai-asset-version: '3.1.0'
+    rhdh.io/ai-asset-source: internal
+spec:
+  type: ai-agent
+  lifecycle: production
+  owner: team-ai-platform
+  location:
+    type: git
+    target: https://github.com/example/developer-assistant-agent
+
+---
+# ---------------------------------------------------------------------------
+# Resource / ai-model
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: granite-3-code
+  title: Granite 3 Code
+  description: IBM Granite 3 code model optimized for code generation, completion, and explanation tasks.
+  tags:
+    - model
+    - code-generation
+    - ibm
+  annotations:
+    rhdh.io/ai-asset-category: model
+    rhdh.io/ai-asset-version: '3.0.0'
+    rhdh.io/ai-asset-source: model-registry
+spec:
+  type: ai-model
+  lifecycle: production
+  owner: team-ml-ops
+
+---
+# ---------------------------------------------------------------------------
+# Resource / ai-tool
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: web-search-tool
+  title: Web Search Tool
+  description: A tool that performs web searches and returns structured results for AI agent consumption.
+  tags:
+    - tool
+    - search
+    - web
+  annotations:
+    rhdh.io/ai-asset-category: tool
+    rhdh.io/ai-asset-version: '1.0.0'
+    rhdh.io/ai-asset-source: kagenti
+spec:
+  type: ai-tool
+  lifecycle: experimental
+  owner: team-integrations
+
+---
+# ---------------------------------------------------------------------------
+# Resource / vector-store
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: docs-vector-store
+  title: Documentation Vector Store
+  description: Vector store containing embeddings of internal documentation, runbooks, and knowledge base articles.
+  tags:
+    - vector-store
+    - documentation
+    - rag
+  annotations:
+    rhdh.io/ai-asset-category: vector-store
+    rhdh.io/ai-asset-version: '1.1.0'
+    rhdh.io/ai-asset-source: internal
+spec:
+  type: vector-store
+  lifecycle: production
+  owner: team-ai-platform

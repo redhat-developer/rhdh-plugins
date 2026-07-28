@@ -24,7 +24,7 @@ NOTE: Provider-specific caches are covered in the platform-architecture change. 
 
 ### Requirement: RuntimeConfigResolver Caching
 
-The highest-traffic cache uses Backstage cacheService.
+The highest-traffic cache MUST use Backstage cacheService.
 
 #### Scenario: Config cache uses cacheService
 
@@ -35,7 +35,7 @@ The highest-traffic cache uses Backstage cacheService.
 
 ### Requirement: Conversation and Session Caching
 
-Session correlation and conversation maps use cacheService.
+Session correlation and conversation maps MUST use cacheService.
 
 #### Scenario: ConversationRegistry uses cacheService
 
@@ -51,7 +51,7 @@ Session correlation and conversation maps use cacheService.
 
 ### Requirement: Document Sync Hash Caching
 
-Content hashes for change detection use cacheService.
+Content hashes for change detection MUST use cacheService.
 
 #### Scenario: DocumentSyncService uses cacheService
 
@@ -61,7 +61,7 @@ Content hashes for change detection use cacheService.
 
 ### Requirement: Client and Config Service Caching
 
-Singleton client instances and config services use cacheService.
+Singleton client instances and config services MUST use cacheService.
 
 #### Scenario: ClientManager uses cacheService
 

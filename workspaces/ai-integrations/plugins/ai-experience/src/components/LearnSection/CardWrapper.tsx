@@ -18,10 +18,9 @@ import { FC } from 'react';
 import Box from '@mui/material/Box';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link } from '@backstage/core-components';
-import { makeStyles, useTheme } from '@material-ui/core';
-import { Theme } from '@mui/material/styles';
 
 interface CardWrapperProps {
   title: string;
@@ -31,19 +30,6 @@ interface CardWrapperProps {
   target?: string;
 }
 
-const getStyles = makeStyles((theme: Theme) => ({
-  link: {
-    textTransform: 'none',
-    minWidth: '200px',
-    padding: theme.spacing(1),
-    display: 'flex',
-    fontSize: '16px',
-    border: `1px solid ${
-      theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'
-    }`,
-  },
-}));
-
 const CardWrapper: FC<CardWrapperProps> = ({
   title,
   description,
@@ -52,7 +38,6 @@ const CardWrapper: FC<CardWrapperProps> = ({
   target,
 }) => {
   const theme = useTheme();
-  const classes = getStyles(theme);
   return (
     <Box>
       <CardContent sx={{ width: '220px', backgroundColor: 'transparent' }}>
@@ -78,20 +63,22 @@ const CardWrapper: FC<CardWrapperProps> = ({
           </Typography>
         </Box>
         <Box>
-          <Link
-            to={buttonLink}
-            target={target}
-            underline="none"
-            className={classes.link}
-          >
-            <div
-              style={{
+          <Link to={buttonLink} target={target} underline="none">
+            <Box
+              sx={{
+                textTransform: 'none',
+                minWidth: '200px',
+                p: 1,
                 display: 'flex',
+                fontSize: '16px',
+                border: `1px solid ${
+                  theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'
+                }`,
                 justifyContent: 'center',
               }}
             >
               {buttonText} <ArrowForwardIcon sx={{ pl: 0.5 }} />
-            </div>
+            </Box>
           </Link>
         </Box>
       </CardContent>

@@ -14,10 +14,18 @@ export default catalogModuleModelCatalogResourceEntityProvider;
 export function fetchModelCatalogFromKey(
   baseUrl: string,
   modelCatalogKey: string,
+  token?: {
+    token: string;
+  },
 ): Promise<ModelCatalog>;
 
 // @public
-export function fetchModelCatalogKeys(baseUrl: string): Promise<string[]>;
+export function fetchModelCatalogKeys(
+  baseUrl: string,
+  token: {
+    token: string;
+  },
+): Promise<string[]>;
 
 // @public
 export interface ModelCatalogKeys {

@@ -21,9 +21,6 @@ export const LOCAL_ADDR = `http://${localHostAndPort}`;
 
 export const LOCAL_GITLAB_ADDR = `https://gitlab.com/api/v4`;
 
-export const CATALOG_API_LOCATIONS_LOCAL_ADDR =
-  /^https?:\/\/localhost:\d+\/api\/catalog\/locations$/;
-
 export function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
 }
@@ -501,9 +498,5 @@ export const DEFAULT_TEST_HANDLERS: RestHandler<
     (_, res, ctx) => {
       return res(ctx.status(404));
     },
-  ),
-
-  rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-    res(ctx.status(200), ctx.json([])),
   ),
 ];

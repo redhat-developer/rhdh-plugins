@@ -82,7 +82,11 @@ describe('homepagePlugin', () => {
         }),
         mockServices.permissions.mock({
           authorizeConditional: async requests =>
-            requests.map(() => ({ result: AuthorizeResult.DENY })),
+            requests.map((_, i) =>
+              i === 0
+                ? { result: AuthorizeResult.ALLOW }
+                : { result: AuthorizeResult.DENY },
+            ),
         }).factory,
       ],
     });

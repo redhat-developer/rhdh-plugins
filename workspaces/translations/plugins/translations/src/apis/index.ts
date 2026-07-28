@@ -15,3 +15,8 @@
  */
 export { I18nextTranslationApi } from './I18nextTranslationApi';
 export type { I18nextTranslationApiOptions } from './I18nextTranslationApi';
+export {
+  attachPseudolocalization,
+  attachPseudolocalizationIfEnabled,
+} from './pseudolocalization';
+export type { PseudolocalizationOptions } from './pseudolocalization';

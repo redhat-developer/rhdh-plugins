@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
@@ -33,7 +33,12 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  clearExtraErrorAtPath,
+  rjsfIdToFieldPath,
+} from '../utils/clearExtraErrorAtPath';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
+import { normalizeErrorSchema } from '../utils/resolveStepErrorSchema';
 import { useStepperContext } from '../utils/StepperContext';
 import { toRootExtraErrors } from '../utils/toRootExtraErrors';
 import useValidator from '../utils/useValidator';
@@ -54,11 +59,26 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
   >();
   const numStepsInMultiStepSchema = formContext?.numStepsInMultiStepSchema;
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
-  const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
-    useStepperContext();
+  const {
+    handleNext,
+    activeStep,
+    handleValidateStarted,
+    handleValidateEnded,
+    clearFormErrorsRef,
+  } = useStepperContext();
   const [validationError, setValidationError] = useState<Error | undefined>();
   const validator = useValidator(isMultiStep);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    clearFormErrorsRef.current = () => {
+      setExtraErrors(undefined);
+      setValidationError(undefined);
+    };
+    return () => {
+      clearFormErrorsRef.current = undefined;
+    };
+  }, [clearFormErrorsRef]);
 
   if (!formContext) {
     return <div>{t('formDecorator.error')}</div>;
@@ -103,7 +123,9 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           extraErrorsUiSchema,
         );
 
-        setExtraErrors(toRootExtraErrors(activeKey, _extraErrors));
+        setExtraErrors(
+          normalizeErrorSchema(toRootExtraErrors(activeKey, _extraErrors)),
+        );
       } catch (err) {
         _validationError = err as Error;
       } finally {
@@ -130,10 +152,14 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 
   const onChange = (
     e: IChangeEvent<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
+    id?: string,
   ) => {
+    const fieldPath = rjsfIdToFieldPath(id);
+    setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    setValidationError(undefined);
     setFormData(e.formData || {});
     if (decoratorProps.onChange) {
-      decoratorProps.onChange(e);
+      decoratorProps.onChange(e, id);
     }
   };
 
@@ -158,7 +184,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           formData={formData}
           formContext={formContext}
           noHtml5Validate
-          extraErrors={extraErrors}
+          extraErrors={normalizeErrorSchema(extraErrors)}
           onSubmit={e => onSubmit(e.formData || {})}
           onChange={onChange}
         >

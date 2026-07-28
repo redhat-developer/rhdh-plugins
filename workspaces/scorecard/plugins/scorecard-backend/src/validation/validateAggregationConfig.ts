@@ -38,7 +38,7 @@ function parseAggregationConfig(config: unknown): AggregationConfig {
   }
 
   if (
-    parsed.data?.type === aggregationTypes.average &&
+    parsed.data?.type === aggregationTypes.weightedStatusScore &&
     parsed.data.options?.thresholds
   ) {
     validateThresholdsForAggregation(parsed.data.options.thresholds, 'number');

@@ -167,15 +167,12 @@ export class InstallationDataService {
     this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
   }
 
-  setPackageDisabled(packageDynamicArtifact: string, disabled: boolean) {
-    this.installationStorage.setPackageDisabled(
-      packageDynamicArtifact,
-      disabled,
-    );
+  setPackageEnabled(packageDynamicArtifact: string, enabled: boolean) {
+    this.installationStorage.setPackageEnabled(packageDynamicArtifact, enabled);
   }
 
-  async setPluginDisabled(plugin: ExtensionsPlugin, disabled: boolean) {
+  async setPluginEnabled(plugin: ExtensionsPlugin, enabled: boolean) {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-    this.installationStorage.setPackagesDisabled(dynamicArtifacts, disabled);
+    this.installationStorage.setPackagesEnabled(dynamicArtifacts, enabled);
   }
 }

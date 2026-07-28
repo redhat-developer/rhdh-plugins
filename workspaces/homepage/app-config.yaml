@@ -168,6 +168,7 @@ homepage:
 
     - id: onboarding
       ref: 'rhdh-onboarding-section'
+      tags: [public]
       layout:
         xl: { w: 12, h: 6 }
         lg: { w: 12, h: 6 }
@@ -177,6 +178,7 @@ homepage:
         xxs: { w: 12, h: 14 }
     - id: entity-list
       ref: 'rhdh-entity-section'
+      tags: [general]
       layout:
         xl: { w: 12, h: 7 }
         lg: { w: 12, h: 7 }
@@ -186,6 +188,7 @@ homepage:
         xxs: { w: 12, h: 15 }
     - id: template-list
       ref: 'rhdh-template-section'
+      tags: [developer]
       layout:
         xl: { w: 12, h: 5 }
         lg: { w: 12, h: 5 }
@@ -195,6 +198,7 @@ homepage:
         xxs: { w: 12, h: 13.5 }
     - id: quickaccess-card
       ref: quickaccess-card
+      tags: [general]
       layout:
         xl: { w: 6, h: 8, x: 6 }
         lg: { w: 6, h: 8, x: 6 }
@@ -207,6 +211,7 @@ homepage:
       children:
         - id: featured-docs-card
           ref: featured-docs-card
+          tags: [general]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -216,6 +221,7 @@ homepage:
             xxs: { w: 12, h: 4 }
         - id: catalog-starred-entities-card
           ref: catalog-starred-entities-card
+          tags: [general]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -228,6 +234,7 @@ homepage:
       children:
         - id: recently-visited-card
           ref: recently-visited-card
+          tags: [developer]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -237,6 +244,7 @@ homepage:
             xxs: { w: 12, h: 4 }
         - id: top-visited-card
           ref: top-visited-card
+          tags: [developer]
           layout:
             xl: { w: 6, h: 4 }
             lg: { w: 6, h: 4 }
@@ -244,6 +252,39 @@ homepage:
             sm: { w: 12, h: 4 }
             xs: { w: 12, h: 4 }
             xxs: { w: 12, h: 4 }
+
+    # --- tags + unless examples ---
+
+    # Visible to developers group but hidden from developer-user specifically
+    - id: test-unless-user
+      ref: headline
+      if:
+        groups: [group:default/developers]
+      unless:
+        users: [user:default/developer-user]
+      props:
+        title: 'Visible to developers group, but hidden from developer-user via "unless"'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    # Visible to everyone except the admins group
+    - id: test-unless-group
+      ref: headline
+      unless:
+        groups: [group:default/admins]
+      props:
+        title: 'Hidden from the admins group via "unless"'
+      layout:
+        xl: { w: 12, h: 1 }
+
+    # Tagged 'admin' — not in the conditional policy tags, so RBAC will filter it out
+    - id: test-tagged-admin
+      ref: headline
+      tags: [admin]
+      props:
+        title: 'Tagged admin — filtered by RBAC since the policy only allows public/general/developer'
+      layout:
+        xl: { w: 12, h: 1 }
 
 organization:
   name: My Company

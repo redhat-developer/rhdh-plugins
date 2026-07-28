@@ -29,6 +29,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import SearchIcon from '@material-ui/icons/Search';
+import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles({
   filterInput: { minWidth: 200 },
@@ -46,10 +47,11 @@ export function DcmSearchCardAction(
 ) {
   const { value, setValue, classes } = props;
   const localClasses = useStyles();
+  const { t } = useTranslation();
   return (
     <Box className={classes.cardHeaderAction}>
       <TextField
-        placeholder="Search"
+        placeholder={t('common.search')}
         variant="standard"
         value={value}
         onChange={e => setValue(e.target.value)}
@@ -64,7 +66,7 @@ export function DcmSearchCardAction(
             <InputAdornment position="end">
               <IconButton
                 size="small"
-                aria-label="Clear search"
+                aria-label={t('common.clearSearch')}
                 onClick={() => setValue('')}
               >
                 <CloseIcon fontSize="small" />
@@ -84,15 +86,20 @@ type ActionsCellProps = Readonly<{
 
 function ActionsCell({ onEdit, onDelete }: ActionsCellProps) {
   const classes = useStyles();
+  const { t } = useTranslation();
   return (
     <Box className={classes.flexRowTight}>
-      <Tooltip title="Edit" placement="top">
-        <IconButton size="small" aria-label="Edit" onClick={onEdit}>
+      <Tooltip title={t('common.edit')} placement="top">
+        <IconButton size="small" aria-label={t('common.edit')} onClick={onEdit}>
           <EditIcon fontSize="small" />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Delete" placement="top">
-        <IconButton size="small" aria-label="Delete" onClick={onDelete}>
+      <Tooltip title={t('common.delete')} placement="top">
+        <IconButton
+          size="small"
+          aria-label={t('common.delete')}
+          onClick={onDelete}
+        >
           <DeleteIcon fontSize="small" />
         </IconButton>
       </Tooltip>
@@ -135,6 +142,7 @@ export function DcmSearchTableCard<T extends object>({
   pageSizeOptions = [5, 10, 25],
 }: DcmSearchTableCardProps<T>) {
   const classes = useDcmStyles();
+  const { t } = useTranslation();
   return (
     <InfoCard
       title={title}
@@ -172,7 +180,7 @@ export function DcmSearchTableCard<T extends object>({
             setPageSize(ps);
             setPage(0);
           }}
-          localization={{ pagination: { labelRowsPerPage: 'rows' } }}
+          localization={{ pagination: { labelRowsPerPage: t('common.rows') } }}
         />
       </Box>
     </InfoCard>
@@ -182,10 +190,11 @@ export function DcmSearchTableCard<T extends object>({
 export function createEditDeleteColumn<T extends object>(props: {
   onEdit: (row: T) => void;
   onDelete: (row: T) => void;
+  title?: string;
 }): TableColumn<T> {
-  const { onEdit, onDelete } = props;
+  const { onEdit, onDelete, title = 'Actions' } = props;
   return {
-    title: 'Actions',
+    title,
     field: 'actions',
     sorting: false,
     width: '120px',

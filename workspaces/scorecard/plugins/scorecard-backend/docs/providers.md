@@ -2,6 +2,15 @@
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. In this documentation, we will discuss how to create a simple metric provider backend module that will be used to collect and calculate metrics.
 
+For provider data-fetching reuse across datasources, Scorecard provides collector contracts:
+
+- `scorecardCollectorsExtensionPoint` extension point to register collectors
+- `scorecardCollectorsServiceRef` service to call `collect(...)` and read collector output with dual validation:
+  - provider expected input/output schemas
+  - collector declared input/output schemas
+
+For details and examples, see [collectors.md](./collectors.md).
+
 ## Getting started
 
 First step is to create a metric provider backend module using the following command:
@@ -40,12 +49,12 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 export class MyMetricProvider implements MetricProvider<'number'> {
   // The datasource identifier for this provider
   getProviderDatasourceId(): string {
-    return 'my_datasource';
+    return 'myDatasource';
   }
 
   // The unique provider ID that combines datasource and metric name
   getProviderId(): string {
-    return 'my_datasource.example_metric';
+    return 'myDatasource.exampleMetric';
   }
 
   // Returns the metric type
@@ -77,7 +86,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   // Use CATALOG_FILTER_EXISTS to check for the presence of specific annotations or fields.
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.my_datasource/project': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.myDatasource/project': CATALOG_FILTER_EXISTS,
     };
   }
 
@@ -96,6 +105,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 - Both IDs must follow the format `<datasourceId>.<metricName>` where:
   - `datasourceId` matches the value returned by `getProviderDatasourceId()`
   - `metricName` is a non-empty identifier for the specific metric
+- Use `lowerCamelCase` for both `datasourceId` and `metricName` (e.g., `jira.openIssues`, `openssf.ciiBestPractices`)
 - The metric type returned by `getMetricType()` must match the `type` property in the metric returned by `getMetric()`
 - In `getMetric()`, always use `type: this.getMetricType()` instead of hardcoding the type value
 - Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).

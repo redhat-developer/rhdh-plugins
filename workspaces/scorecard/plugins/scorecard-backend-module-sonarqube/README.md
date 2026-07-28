@@ -4,20 +4,20 @@ Adds SonarQube / SonarCloud metrics to the scorecard plugin.
 
 ## Metrics
 
-| Metric ID                          | Type    | Description                                      |
-| ---------------------------------- | ------- | ------------------------------------------------ |
-| `sonarqube.quality_gate`           | boolean | Whether the project passes its quality gate      |
-| `sonarqube.open_issues`            | number  | Count of open issues (OPEN, CONFIRMED, REOPENED) |
-| `sonarqube.security_rating`        | number  | Security rating                                  |
-| `sonarqube.security_issues`        | number  | Count of open security vulnerabilities           |
-| `sonarqube.security_review_rating` | number  | Security review rating                           |
-| `sonarqube.security_hotspots`      | number  | Count of security hotspots to review             |
-| `sonarqube.reliability_rating`     | number  | Reliability rating                               |
-| `sonarqube.reliability_issues`     | number  | Count of open bugs                               |
-| `sonarqube.maintainability_rating` | number  | Maintainability rating                           |
-| `sonarqube.maintainability_issues` | number  | Count of open code smells                        |
-| `sonarqube.code_coverage`          | number  | Overall code coverage percentage                 |
-| `sonarqube.code_duplications`      | number  | Percentage of duplicated lines                   |
+| Metric ID                         | Type    | Description                                      |
+| --------------------------------- | ------- | ------------------------------------------------ |
+| `sonarqube.qualityGate`           | boolean | Whether the project passes its quality gate      |
+| `sonarqube.openIssues`            | number  | Count of open issues (OPEN, CONFIRMED, REOPENED) |
+| `sonarqube.securityRating`        | number  | Security rating                                  |
+| `sonarqube.securityIssues`        | number  | Count of open security vulnerabilities           |
+| `sonarqube.securityReviewRating`  | number  | Security review rating                           |
+| `sonarqube.securityHotspots`      | number  | Count of security hotspots to review             |
+| `sonarqube.reliabilityRating`     | number  | Reliability rating                               |
+| `sonarqube.reliabilityIssues`     | number  | Count of open bugs                               |
+| `sonarqube.maintainabilityRating` | number  | Maintainability rating                           |
+| `sonarqube.maintainabilityIssues` | number  | Count of open code smells                        |
+| `sonarqube.codeCoverage`          | number  | Overall code coverage percentage                 |
+| `sonarqube.codeDuplications`      | number  | Percentage of duplicated lines                   |
 
 ## Installation
 
@@ -56,6 +56,132 @@ metadata:
 ```
 
 When no instance prefix is provided, the default instance configuration is used.
+
+## Default thresholds
+
+Default thresholds vary by metric. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+
+### `sonarqube.qualityGate` (boolean)
+
+Default thresholds for `sonarqube.qualityGate`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      qualityGate:
+        thresholds:
+          rules:
+            - key: success
+              expression: '==true'
+            - key: error
+              expression: '==false'
+```
+
+### Count metrics (lower is better)
+
+Default thresholds for `sonarqube.openIssues`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      openIssues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<1'
+            - key: warning
+              expression: '1-10'
+            - key: error
+              expression: '>10'
+```
+
+| Metric                            | Success | Warning | Error |
+| --------------------------------- | ------- | ------- | ----- |
+| `sonarqube.openIssues`            | `<1`    | `1-10`  | `>10` |
+| `sonarqube.securityIssues`        | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.securityHotspots`      | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.reliabilityIssues`     | `<1`    | `1-5`   | `>5`  |
+| `sonarqube.maintainabilityIssues` | `<10`   | `10-50` | `>50` |
+
+Replace the metric name in the path above for the metrics in this table (e.g. `securityIssues`, `securityHotspots`). Use the same `scorecard.plugins.sonarqube.<metric>.thresholds` structure as `openIssues`.
+
+### Rating metrics (`securityRating`, `securityReviewRating`, `reliabilityRating`, `maintainabilityRating`)
+
+All four rating metrics share the same default thresholds. Default thresholds for `sonarqube.securityRating` (custom keys `A`–`E` require `color` and `icon` in app-config):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      securityRating:
+        thresholds:
+          rules:
+            - key: A
+              expression: '==1'
+              color: 'success.main'
+              icon: scorecardSuccessStatusIcon
+            - key: B
+              expression: '==2'
+              color: '#bdcb28'
+              icon: scorecardSuccessStatusIcon
+            - key: C
+              expression: '==3'
+              color: 'warning.main'
+              icon: scorecardWarningStatusIcon
+            - key: D
+              expression: '==4'
+              color: '#cf5813'
+              icon: scorecardErrorStatusIcon
+            - key: E
+              expression: '==5'
+              color: 'error.main'
+              icon: scorecardErrorStatusIcon
+```
+
+Replace `securityRating` with `securityReviewRating`, `reliabilityRating`, or `maintainabilityRating` for the other rating metrics.
+
+### Percentage metrics
+
+Default thresholds for `sonarqube.codeCoverage` (higher is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      codeCoverage:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>80'
+            - key: warning
+              expression: '50-80'
+            - key: error
+              expression: '<50'
+```
+
+Default thresholds for `sonarqube.codeDuplications` (lower is better):
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    sonarqube:
+      codeDuplications:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<3'
+            - key: warning
+              expression: '3-10'
+            - key: error
+              expression: '>10'
+```
 
 ## Configuration
 

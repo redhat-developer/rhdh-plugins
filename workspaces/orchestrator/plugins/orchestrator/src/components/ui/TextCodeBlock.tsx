@@ -23,60 +23,66 @@ import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles<{ isDarkMode: boolean; maxHeight?: number }>()(
-  (theme, { isDarkMode, maxHeight }) => ({
-    root: {
-      position: 'relative',
-      paddingTop: theme.spacing(2),
-      paddingBottom: theme.spacing(2),
-      maxWidth: 600,
-      marginTop: '0.6rem',
-      overflow: 'hidden',
-      '&&': {
-        outline: 'unset',
-        backgroundColor: isDarkMode ? '#151515' : '#F0F0F0',
-      },
-      // RHDH theme rounds Paper's last child (MuiPaper.rounded); avoid clipping <pre> content.
-      '& > :last-child': {
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-      },
+const useStyles = makeStyles<{
+  isDarkMode: boolean;
+  maxHeight?: number;
+  fullWidth?: boolean;
+}>()((theme, { isDarkMode, maxHeight, fullWidth }) => ({
+  root: {
+    position: 'relative',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    width: fullWidth ? '100%' : undefined,
+    minWidth: fullWidth ? 0 : undefined,
+    maxWidth: fullWidth ? '100%' : 600,
+    marginTop: fullWidth ? 0 : '0.6rem',
+    overflow: 'hidden',
+    '&&': {
+      outline: 'unset',
+      backgroundColor: isDarkMode ? '#151515' : '#F0F0F0',
     },
-    iconButton: {
-      position: 'absolute',
-      top: 8,
-      right: maxHeight ? 24 : 8,
+    // RHDH theme rounds Paper's last child (MuiPaper.rounded); avoid clipping <pre> content.
+    '& > :last-child': {
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
     },
-    copyIcon: {
-      color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
-    },
-    pre: {
-      margin: theme.spacing(1),
-      paddingRight: theme.spacing(5),
-      fontFamily: 'Monospace',
-      fontSize: '0.875rem',
-      whiteSpace: 'pre-wrap',
-      wordBreak: 'break-word',
-      overflowWrap: 'anywhere',
-      color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
-      maxHeight: maxHeight || 'none',
-      overflowY: maxHeight ? 'auto' : 'visible',
-      overflowX: 'auto',
-    },
-  }),
-);
+  },
+  iconButton: {
+    position: 'absolute',
+    top: 8,
+    right: maxHeight ? 24 : 8,
+  },
+  copyIcon: {
+    color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
+  },
+  pre: {
+    margin: theme.spacing(1),
+    paddingRight: theme.spacing(5),
+    fontFamily: 'Monospace',
+    fontSize: '0.875rem',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
+    color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
+    maxHeight: maxHeight || 'none',
+    overflowY: maxHeight ? 'auto' : 'visible',
+    overflowX: 'auto',
+  },
+}));
 
 export const TextCodeBlock = ({
   value,
   isDarkMode,
   maxHeight,
+  fullWidth,
 }: {
   value: string;
   isDarkMode: boolean;
   maxHeight?: number;
+  fullWidth?: boolean;
 }) => {
   const [copied, setCopied] = useState(false);
-  const { classes } = useStyles({ isDarkMode, maxHeight });
+  const { classes } = useStyles({ isDarkMode, maxHeight, fullWidth });
 
   const handleCopy = async () => {
     await window.navigator.clipboard.writeText(value);

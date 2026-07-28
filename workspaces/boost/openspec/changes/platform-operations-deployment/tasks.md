@@ -19,7 +19,7 @@
 - [ ] 2.2 Generate `config.d.ts` types from Zod schemas
 - [ ] 2.3 Validate all config writes (YAML and DB) via Zod `.parse()` — no hand-written validators
 - [ ] 2.4 Annotate each field with `configScope`: `yaml-only`, `db-overridable`, or `db-only`
-- [ ] 2.5 Add Zod schemas for new config fields: agentApproval, skillsMarketplace, tokenExchange, DevSpaces credentials
+- [ ] 2.5 Add Zod schemas for new config fields: agentApproval, skillsMarketplace, Keycloak service-account auth, DevSpaces credentials
 - [ ] 2.6 Admin UI shows only DB-overridable and DB-only fields
 - [ ] 2.7 Implement credential encryption for sensitive DB-stored values (DevSpaces tokens)
 - [ ] 2.8 Implement schema version tracking: store schema version alongside DB values, re-validate on startup

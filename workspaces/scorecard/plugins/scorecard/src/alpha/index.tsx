@@ -33,6 +33,7 @@ import {
   aggregatedCardWithGithubOpenPrsWeightedWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
+import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
 
 /**
  * Extension for Scorecard translations.
@@ -57,12 +58,16 @@ export default createFrontendPlugin({
 });
 
 /**
- * Catalog module that automatically injects the Scorecard tab into the Catalog.
+ * Catalog module that injects the Scorecard tab into Catalog entity pages.
+ *
+ * Also ships a grid layout extension (disabled by default).
+ * Enable it in app-config.yaml to get a layout toggle in the entity tab.
+ *
  * @alpha
  */
 export const scorecardCatalogModule = createFrontendModule({
   pluginId: 'catalog',
-  extensions: [scorecardEntityContent],
+  extensions: [scorecardEntityContent, scorecardEntityLayoutGrid],
 });
 
 /**

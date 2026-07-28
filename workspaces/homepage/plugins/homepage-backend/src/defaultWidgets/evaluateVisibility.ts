@@ -15,33 +15,25 @@
  */
 
 import {
-  PermissionCondition,
-  PermissionCriteria,
-  PermissionRuleParams,
-} from '@backstage/plugin-permission-common';
-import { DefaultWidgetNode, UserContext, VisibleDefaultWidget } from './types';
-import { rules } from '../permissions/rules';
+  DefaultWidgetNode,
+  DefaultWidgetVisibility,
+  UserContext,
+  VisibleDefaultWidget,
+} from './types';
+import { matches } from '../permissions/permissionUtils';
 
-export function isVisible(
+function matchesVisibility(
   defaultWidget: DefaultWidgetNode,
+  visibility: DefaultWidgetVisibility,
   ctx: UserContext,
 ): boolean {
-  const visibility = defaultWidget?.if;
-  if (!visibility) return true;
-
-  const hasAnyCondition =
-    (visibility.users?.length ?? 0) > 0 ||
-    (visibility.groups?.length ?? 0) > 0 ||
-    (visibility.permissions?.length ?? 0) > 0;
-  if (!hasAnyCondition) return true;
-
-  const matchUser =
+  const matchesAnyUser =
     visibility.users?.some(ref => ref === ctx.userEntityRef) ?? false;
-  const matchGroup =
+  const matchesAnyGroup =
     visibility.groups?.some(ref => ctx.groupEntityRefs.has(ref)) ?? false;
-  const matchPolicy =
+  const matchesAnyOtherPolicy =
     visibility.permissions?.some(p => {
-      const decision = ctx.policyDecisions.get(p);
+      const decision = ctx.otherPolicyDecisions.get(p);
       if (!decision) return false;
       return (
         decision.result === 'ALLOW' ||
@@ -50,23 +42,52 @@ export function isVisible(
       );
     }) ?? false;
 
-  const matchAny = matchUser || matchGroup || matchPolicy;
-
-  return matchAny;
+  return matchesAnyUser || matchesAnyGroup || matchesAnyOtherPolicy;
 }
 
-export function filterToVisibleLeafIds(
-  nodes: DefaultWidgetNode[],
+export function isVisible(
+  defaultWidget: DefaultWidgetNode,
   ctx: UserContext,
-): string[] {
-  const out: string[] = [];
-  const walk = (node: DefaultWidgetNode) => {
-    if (!isVisible(node, ctx)) return;
-    if (node.id !== undefined) out.push(node.id);
-    node.children?.forEach(walk);
-  };
-  nodes.forEach(walk);
-  return out;
+): boolean {
+  const hasTags = (defaultWidget?.tags?.length ?? 0) > 0;
+
+  if (ctx.defaultWidgetsReadDecision.result === 'DENY' && hasTags) {
+    return false;
+  }
+
+  if (
+    ctx.defaultWidgetsReadDecision.result === 'CONDITIONAL' &&
+    !matches(defaultWidget, ctx.defaultWidgetsReadDecision.conditions)
+  ) {
+    return false;
+  }
+
+  const visibility = defaultWidget.if;
+  if (!visibility) return true;
+
+  const hasAny =
+    (visibility.users?.length ?? 0) > 0 ||
+    (visibility.groups?.length ?? 0) > 0 ||
+    (visibility.permissions?.length ?? 0) > 0;
+  if (!hasAny) return true;
+
+  return matchesVisibility(defaultWidget, visibility, ctx);
+}
+
+export function isExcluded(
+  defaultWidget: DefaultWidgetNode,
+  ctx: UserContext,
+): boolean {
+  const visibility = defaultWidget.unless;
+  if (!visibility) return false;
+
+  const hasAny =
+    (visibility.users?.length ?? 0) > 0 ||
+    (visibility.groups?.length ?? 0) > 0 ||
+    (visibility.permissions?.length ?? 0) > 0;
+  if (!hasAny) return false;
+
+  return matchesVisibility(defaultWidget, visibility, ctx);
 }
 
 export function filterToVisibleLeaves(
@@ -76,6 +97,7 @@ export function filterToVisibleLeaves(
   const out: VisibleDefaultWidget[] = [];
   const walk = (node: DefaultWidgetNode) => {
     if (!isVisible(node, ctx)) return;
+    if (isExcluded(node, ctx)) return;
     if (node.id !== undefined) {
       const card: VisibleDefaultWidget = {
         id: node.id,
@@ -90,32 +112,3 @@ export function filterToVisibleLeaves(
   nodes.forEach(walk);
   return out;
 }
-
-const matches = (
-  defaultWidget: DefaultWidgetNode,
-  filters?: PermissionCriteria<
-    PermissionCondition<string, PermissionRuleParams>
-  >,
-): boolean => {
-  if (!filters) {
-    return true;
-  }
-
-  if ('allOf' in filters) {
-    return filters.allOf.every(filter => matches(defaultWidget, filter));
-  }
-
-  if ('anyOf' in filters) {
-    return filters.anyOf.some(filter => matches(defaultWidget, filter));
-  }
-
-  if ('not' in filters) {
-    return !matches(defaultWidget, filters.not);
-  }
-
-  return (
-    Object.values(rules)
-      .find(r => r.name === filters.rule)
-      ?.apply(defaultWidget, filters.params ?? {}) ?? false
-  );
-};

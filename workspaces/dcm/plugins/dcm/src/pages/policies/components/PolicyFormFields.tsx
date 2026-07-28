@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import {
   Box,
   FormControl,
@@ -32,6 +33,7 @@ import {
   validatePolicyForm,
   validateRegoCode,
 } from '../policyFormTypes';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const useStyles = makeStyles(() => ({
   regoInput: {
@@ -56,7 +58,8 @@ export function PolicyFormFields({
   setTouched,
 }: PolicyFormFieldsProps) {
   const classes = useStyles();
-  const errors = validatePolicyForm(form);
+  const { t } = useTranslation();
+  const errors = useMemo(() => validatePolicyForm(form, t), [form, t]);
 
   const touch = (field: keyof PolicyForm) =>
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -67,15 +70,16 @@ export function PolicyFormFields({
   // Rego structural errors are computed directly — not through Yup — to
   // avoid a Yup v1 quirk where custom .test() results are dropped from
   // err.inner when the total number of schema errors is exactly one.
-  const regoErr = validateRegoCode(form.rego_code);
+  const regoErr = useMemo(
+    () => validateRegoCode(form.rego_code, t),
+    [form.rego_code, t],
+  );
 
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
       <TextField
-        label="Display name *"
-        helperText={
-          err('display_name') ?? 'Human-readable name for this policy'
-        }
+        label={t('policies.form.displayNameLabel')}
+        helperText={err('display_name') ?? t('policies.form.displayNameHelper')}
         error={Boolean(err('display_name'))}
         value={form.display_name}
         onChange={e =>
@@ -88,10 +92,8 @@ export function PolicyFormFields({
       />
 
       <TextField
-        label="Description"
-        helperText={
-          err('description') ?? 'Optional — describe the purpose of this policy'
-        }
+        label={t('policies.form.descriptionLabel')}
+        helperText={err('description') ?? t('policies.form.descriptionHelper')}
         error={Boolean(err('description'))}
         value={form.description}
         onChange={e =>
@@ -111,10 +113,10 @@ export function PolicyFormFields({
         fullWidth
         error={Boolean(err('policy_type'))}
       >
-        <InputLabel>Policy type *</InputLabel>
+        <InputLabel>{t('policies.form.policyTypeLabel')}</InputLabel>
         <Select
           value={form.policy_type}
-          label="Policy type *"
+          label={t('policies.form.policyTypeLabel')}
           onChange={e => {
             setForm(prev => ({
               ...prev,
@@ -124,8 +126,10 @@ export function PolicyFormFields({
           }}
           onBlur={() => touch('policy_type')}
         >
-          <MenuItem value="GLOBAL">GLOBAL — applies to all requests</MenuItem>
-          <MenuItem value="USER">USER — applies per user</MenuItem>
+          <MenuItem value="GLOBAL">
+            {t('policies.form.policyTypeGlobal')}
+          </MenuItem>
+          <MenuItem value="USER">{t('policies.form.policyTypeUser')}</MenuItem>
         </Select>
         {err('policy_type') && (
           <FormHelperText>{err('policy_type')}</FormHelperText>
@@ -133,11 +137,8 @@ export function PolicyFormFields({
       </FormControl>
 
       <TextField
-        label="Priority *"
-        helperText={
-          err('priority') ??
-          '1 (highest) – 1000 (lowest), default 500 — must be unique per policy type'
-        }
+        label={t('policies.form.priorityLabel')}
+        helperText={err('priority') ?? t('policies.form.priorityHelper')}
         error={Boolean(err('priority'))}
         value={form.priority}
         onChange={e => {
@@ -159,11 +160,8 @@ export function PolicyFormFields({
       />
 
       <TextField
-        label="Rego code *"
-        helperText={
-          regoErr ??
-          'OPA Rego evaluated by the Placement Manager. Must assign selected_provider to the name of a registered provider.'
-        }
+        label={t('policies.form.regoCodeLabel')}
+        helperText={regoErr ?? t('policies.form.regoCodeHelper')}
         error={Boolean(regoErr)}
         value={form.rego_code}
         onChange={e =>
@@ -174,9 +172,7 @@ export function PolicyFormFields({
         variant="outlined"
         multiline
         rows={8}
-        placeholder={
-          'package dcm.placement\n\n# Replace "my-provider-name" with the name of a registered provider.\n# The Placement Manager requires selected_provider to be set.\nselected_provider := "my-provider-name"'
-        }
+        placeholder={t('policies.form.regoCodePlaceholder')}
         inputProps={{ className: classes.regoInput }}
       />
 
@@ -190,7 +186,7 @@ export function PolicyFormFields({
             color="primary"
           />
         }
-        label="Enabled"
+        label={t('policies.form.enabledLabel')}
       />
     </Box>
   );

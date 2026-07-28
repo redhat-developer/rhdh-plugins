@@ -28,12 +28,14 @@ import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // ── Tab content ─────────────────────────────────────────────────────────────
 
 export function ServiceTypesTabContent() {
   const classes = useDcmStyles();
   const catalogApi = useApi(catalogApiRef);
+  const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ export function ServiceTypesTabContent() {
   const columns = useMemo<TableColumn<ServiceType>[]>(
     () => [
       {
-        title: 'Service type',
+        title: t('serviceTypes.columns.serviceType'),
         field: 'service_type',
         render: st => (
           <Box className={classes.nameCellBox}>
@@ -107,7 +109,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'API version',
+        title: t('serviceTypes.columns.apiVersion'),
         field: 'api_version',
         render: st => (
           <Chip
@@ -118,7 +120,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'Path',
+        title: t('serviceTypes.columns.path'),
         field: 'path',
         render: st => (
           <TruncatedText
@@ -132,7 +134,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'Created',
+        title: t('serviceTypes.columns.created'),
         field: 'create_time',
         render: st =>
           st.create_time ? (
@@ -141,12 +143,12 @@ export function ServiceTypesTabContent() {
             </Typography>
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
     ],
-    [classes],
+    [classes, t],
   );
 
   if (loading) return <Progress />;
@@ -159,7 +161,7 @@ export function ServiceTypesTabContent() {
           variant="outlined"
           action={
             <Button color="inherit" size="small" onClick={load}>
-              Retry
+              {t('common.retry')}
             </Button>
           }
         >
@@ -173,13 +175,15 @@ export function ServiceTypesTabContent() {
     <Box className={classes.root}>
       {serviceTypes.length === 0 ? (
         <DcmDataCenterTabEmptyState
-          title="No service types defined"
-          description="Service types define the template schema for catalog items."
+          title={t('serviceTypes.emptyTitle')}
+          description={t('serviceTypes.emptyDescription')}
           illustrationSrc={emptyIllustration}
         />
       ) : (
         <DcmSearchTableCard<ServiceType>
-          title={`Service types (${filtered.length})`}
+          title={(t as any)('serviceTypes.cardTitle', {
+            count: filtered.length,
+          })}
           data={paginated}
           columns={columns}
           totalCount={filtered.length}

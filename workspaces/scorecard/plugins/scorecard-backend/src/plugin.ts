@@ -17,10 +17,15 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { createScorecardActions } from './actions';
 import {
-  MetricProvider,
+  type Collector,
+  type MetricProvider,
+  scorecardCollectorsExtensionPoint,
+  scorecardCollectorsServiceRef,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
@@ -46,7 +51,14 @@ import { ThresholdResolver } from './threshold/ThresholdResolver';
 export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
+    const collectors: Collector[] = [];
     const metricProvidersRegistry = new MetricProvidersRegistry();
+
+    env.registerExtensionPoint(scorecardCollectorsExtensionPoint, {
+      addCollector(...newCollectors: Collector[]) {
+        collectors.push(...newCollectors);
+      },
+    });
 
     env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
       addMetricProvider(...newMetricProviders: MetricProvider[]) {
@@ -58,8 +70,10 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
+        actionsRegistry: actionsRegistryServiceRef,
         auth: coreServices.auth,
         catalog: catalogServiceRef,
+        collectorsService: scorecardCollectorsServiceRef,
         config: coreServices.rootConfig,
         database: coreServices.database,
         httpRouter: coreServices.httpRouter,
@@ -70,8 +84,10 @@ export const scorecardPlugin = createBackendPlugin({
         scheduler: coreServices.scheduler,
       },
       async init({
+        actionsRegistry,
         auth,
         catalog,
+        collectorsService,
         config,
         database,
         httpRouter,
@@ -81,6 +97,8 @@ export const scorecardPlugin = createBackendPlugin({
         permissionsRegistry,
         scheduler,
       }) {
+        collectorsService.init({ collectors });
+
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
           getResources: async (resourceRefs: string[]) => {
@@ -136,6 +154,15 @@ export const scorecardPlugin = createBackendPlugin({
           aggregationsService: aggregationsService,
           catalogMetricService: catalogMetricService,
         };
+
+        createScorecardActions({
+          actionsRegistry,
+          auth,
+          permissions,
+          catalog,
+          metricProvidersRegistry,
+          catalogMetricService,
+        });
 
         httpRouter.use(
           await createRouter({

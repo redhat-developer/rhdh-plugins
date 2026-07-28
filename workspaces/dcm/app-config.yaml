@@ -65,10 +65,10 @@ dcm:
     - security-baseline
     - compliance-pci
     - audit-logging
-  # Base URL of the DCM API Gateway. All three API services (catalog,
+  # Base URL of the DCM control plane. All three API services (catalog,
   # policy-manager, providers) are routed through this single endpoint.
   # Override in app-config.local.yaml for local development.
-  # apiGatewayUrl: https://your-api-gateway.example.com
+  # apiUrl: https://your-control-plane.example.com
   #
   # SSO credentials for the backend to obtain a bearer token:
   # ssoBaseUrl: https://sso.redhat.com

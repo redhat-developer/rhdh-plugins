@@ -47,8 +47,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     await runAccessibilityTests(sharedPage, testInfo);
   });
 
-  // Skipping as of now; re-enable after https://github.com/backstage/backstage/issues/33317 is fixed
-  test.skip('Verify All Cards Can Be Resized in Edit Mode', async ({
+  test('Verify All Cards Can Be Resized in Edit Mode', async ({
     browser: _browser,
   }, testInfo) => {
     await homePageCustomization.enterEditMode();
@@ -81,12 +80,12 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test('Verify Add Widget Button Adds Cards', async () => {
-    await homePageCustomization.addWidget('Onboarding');
+    await homePageCustomization.addWidget('Red Hat Developer Hub - Onboarding');
     await expect(
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget('Quick Access Card');
+    await homePageCustomization.addWidget('Quick Access');
     await expect(sharedPage.getByText('Quick Access')).toBeVisible();
   });
 

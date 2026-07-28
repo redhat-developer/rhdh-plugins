@@ -63,7 +63,9 @@ export class TestUtils {
   }
 
   async clickButton(buttonText: string): Promise<void> {
-    await this.page.getByRole('button', { name: buttonText }).click();
+    await this.page
+      .getByRole('button', { name: buttonText, exact: true })
+      .click();
   }
 
   async verifyHeading(headingText: string): Promise<void> {

@@ -179,6 +179,87 @@ describe('loadDefaultWidgets', () => {
     });
     expect(loadDefaultWidgets(config)).toHaveLength(1);
   });
+
+  it('parses a node with an unless block', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
+              id: 'x',
+              ref: 'x',
+              unless: { groups: ['group:default/contractors'] },
+            },
+          ],
+        },
+      },
+    });
+    const result = loadDefaultWidgets(config);
+    expect(result).toEqual([
+      {
+        id: 'x',
+        ref: 'x',
+        unless: { groups: ['group:default/contractors'] },
+      },
+    ]);
+  });
+
+  it('parses a node with tags', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
+              id: 'x',
+              ref: 'x',
+              tags: ['admin', 'management'],
+            },
+          ],
+        },
+      },
+    });
+    const result = loadDefaultWidgets(config);
+    expect(result).toEqual([
+      { id: 'x', ref: 'x', tags: ['admin', 'management'] },
+    ]);
+  });
+
+  it('throws when unless has an invalid group ref', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
+              id: 'x',
+              ref: 'x',
+              unless: { groups: ['not-a-ref'] },
+            },
+          ],
+        },
+      },
+    });
+    expect(() => loadDefaultWidgets(config)).toThrow(
+      /Invalid homepage\.defaultWidgets/,
+    );
+  });
+
+  it('accepts a node with both if and unless', () => {
+    const config = mockServices.rootConfig({
+      data: {
+        homepage: {
+          defaultWidgets: [
+            {
+              id: 'x',
+              ref: 'x',
+              if: { groups: ['group:default/engineering'] },
+              unless: { users: ['user:default/intern'] },
+            },
+          ],
+        },
+      },
+    });
+    expect(loadDefaultWidgets(config)).toHaveLength(1);
+  });
 });
 
 describe('collectReferencedPermissions', () => {
@@ -216,6 +297,25 @@ describe('collectReferencedPermissions', () => {
     ];
     expect(collectReferencedPermissions(tree)).toEqual(
       new Set(['perm.read', 'perm.write', 'perm.admin']),
+    );
+  });
+
+  it('collects permissions from unless blocks', () => {
+    const tree: DefaultWidgetNode[] = [
+      {
+        id: 'a',
+        ref: 'a',
+        if: { permissions: ['perm.read'] },
+        unless: { permissions: ['perm.exclude'] },
+      },
+      {
+        id: 'b',
+        ref: 'b',
+        unless: { permissions: ['perm.deny'] },
+      },
+    ];
+    expect(collectReferencedPermissions(tree)).toEqual(
+      new Set(['perm.read', 'perm.exclude', 'perm.deny']),
     );
   });
 });

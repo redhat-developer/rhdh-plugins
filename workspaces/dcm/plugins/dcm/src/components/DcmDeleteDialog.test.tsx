@@ -17,6 +17,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DcmDeleteDialog } from './DcmDeleteDialog';
 
+jest.mock('../hooks/useTranslation', () => {
+  const mod = require('../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 describe('DcmDeleteDialog', () => {
   const defaultProps = {
     open: true,

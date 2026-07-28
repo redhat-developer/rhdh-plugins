@@ -1,5 +1,117 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.10.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 5e0934d: Extract colocated helper modules for unit-test coverage of pure UI logic.
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin Router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+- Updated dependencies [5e0934d]
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.0
+
+## 5.9.4
+
+### Patch Changes
+
+- f3e7e45: Fix accessibility violations (aria-progressbar-name, aria-prohibited-attr) in WorkflowSuccessRatioCell component.
+
+## 5.9.3
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+
+## 5.9.2
+
+### Patch Changes
+
+- c0f62ab: Fix hardcoded English "at" in workflow status time translations - now each language uses its own grammatically correct preposition
+- 2d00ba5: Replace workflow execution progress list with a React Flow graph visualization.
+- Updated dependencies [eade824]
+- Updated dependencies [ea8563b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.3
+
+## 5.9.1
+
+### Patch Changes
+
+- cb02f14: Fix intermittent page load failures in dynamic plugin mode by removing the explicit Alpha module from translationResources, letting RHDH default to PluginRoot and avoiding a module initialization race on the Alpha default export.
+- 00f80fc: Fix workflow instance page layout overlap when `cardHeightMode` is set to `content`.
+- 41fe374: Fix unintended Workflows tab on User profile pages by converting the entity tab condition from a React hook-based component to a plain predicate function and using the built-in hasAnnotation checker in dynamic plugin config
+- 992efa0: Fix incorrect aria-label on Run again and Abort buttons when the user is authorized to execute the workflow.
+
+## 5.9.0
+
+### Minor Changes
+
+- 2fd75ad: Improve Orchestrator UI for workflows, runs, and workflow details, and place the sidebar item under Administration.
+
+### Patch Changes
+
+- 1dde4e4: Remove the retrigger dropdown menu for aborted workflow runs.
+- 1e4f9ed: Fix the workflows list when RBAC restricts read access to specific workflows.
+- 06755cb: Use instance `totalCount` from the API for the All runs tab title and pagination instead of the current page size.
+- e2df0a3: Show unavailable workflow error details in tooltips and disable run actions when a workflow is not available.
+- de71949: Add frontend unit test coverage for orchestrator hooks and status components, and harden the status indicator fallback for unknown states.
+- Updated dependencies [19f7643]
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.2
+
+## 5.8.1
+
+### Patch Changes
+
+- 870f011: Fix boolean workflow inputs and outputs displaying as emoji checkmarks on the workflow instance page; show `true` and `false` instead.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.1
+
+## 5.8.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- 3f96765: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+- 611bd81: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [03ef10a]
+- Updated dependencies [a195695]
+- Updated dependencies [3f96765]
+- Updated dependencies [611bd81]
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+
+## 5.7.13
+
+### Patch Changes
+
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+- Updated dependencies [06ac2d0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.8.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.4
+
 ## 5.7.12
 
 ### Patch Changes

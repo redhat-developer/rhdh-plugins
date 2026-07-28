@@ -49,25 +49,25 @@ export const DEPENDABOT_SEVERITY_METRIC: Record<
   { id: string; title: string; description: string }
 > = {
   critical: {
-    id: 'dependabot.alerts_critical',
+    id: 'dependabot.alertsCritical',
     title: 'Dependabot Critical Alerts',
     description:
       'Current count of open critical Dependabot alerts for a given repository.',
   },
   high: {
-    id: 'dependabot.alerts_high',
+    id: 'dependabot.alertsHigh',
     title: 'Dependabot High Alerts',
     description:
       'Current count of open high-severity Dependabot alerts for a given repository.',
   },
   medium: {
-    id: 'dependabot.alerts_medium',
+    id: 'dependabot.alertsMedium',
     title: 'Dependabot Medium Alerts',
     description:
       'Current count of open medium-severity Dependabot alerts for a given repository.',
   },
   low: {
-    id: 'dependabot.alerts_low',
+    id: 'dependabot.alertsLow',
     title: 'Dependabot Low Alerts',
     description:
       'Current count of open low-severity Dependabot alerts for a given repository.',

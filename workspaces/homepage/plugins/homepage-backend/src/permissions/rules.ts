@@ -49,4 +49,26 @@ const hasWidgetId = createPermissionRule({
   },
 });
 
-export const rules = { hasWidgetId };
+const hasTag = createPermissionRule({
+  name: 'HAS_TAG',
+  description:
+    'Should allow users to access homepage widgets with specified tags',
+  resourceRef: homepageDefaultWidgetPermissionResourceRef,
+  paramsSchema: z.object({
+    tags: z.string().array().optional().describe('List of tags to match on'),
+  }),
+  apply: (defaultWidget: DefaultWidgetNode, { tags }) => {
+    // When the POLICY has NO TAG is configured, this rule isn't complete,
+    // so we return false to avoid granting access to all widgets.
+    if (!tags || tags.length === 0) return false;
+    // When the configured DEFAULT WIDGET has NO TAGS, it is considered visible for anyone.
+    if (!defaultWidget.tags || defaultWidget.tags.length === 0) return true;
+    return tags.some(tag => defaultWidget.tags!.includes(tag));
+  },
+  toQuery: ({ tags }) => ({
+    key: 'tag',
+    values: tags,
+  }),
+});
+
+export const rules = { hasWidgetId, hasTag };

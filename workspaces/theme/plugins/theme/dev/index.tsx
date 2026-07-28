@@ -18,6 +18,7 @@
  * New Frontend System dev mode for the RHDH Theme plugin
  */
 
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
 import '@backstage/ui/css/styles.css';
 import { createApp } from '@backstage/frontend-defaults';
 import ReactDOM from 'react-dom/client';
@@ -35,7 +36,7 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import ExtensionIcon from '@material-ui/icons/Extension';
+import ExtensionIcon from '@mui/icons-material/Extension';
 import { createRouteRef } from '@backstage/core-plugin-api';
 import {
   SidebarLanguageSwitcher,

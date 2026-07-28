@@ -17,6 +17,7 @@
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { PieData } from '../../types';
+import type { TooltipPosition } from '../types';
 import {
   getThresholdRuleColor,
   SCORECARD_ERROR_STATE_COLOR,
@@ -44,10 +45,8 @@ export const StatusGroupedCardComponent = ({
   const theme = useTheme();
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
+  const [tooltipPosition, setTooltipPosition] =
+    useState<TooltipPosition | null>(null);
 
   const { id: scorecardId, result } = scorecard;
 

@@ -15,7 +15,7 @@
  */
 
 const STATUS_GROUPED = 'statusGrouped' as const;
-const AVERAGE = 'average' as const;
+const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
 
 /**
  * Supported aggregation types
@@ -23,5 +23,5 @@ const AVERAGE = 'average' as const;
  */
 export const aggregationTypes = Object.freeze({
   statusGrouped: STATUS_GROUPED,
-  average: AVERAGE,
+  weightedStatusScore: WEIGHTED_STATUS_SCORE,
 });

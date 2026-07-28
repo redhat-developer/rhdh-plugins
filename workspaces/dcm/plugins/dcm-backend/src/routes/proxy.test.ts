@@ -59,7 +59,7 @@ describe('createDcmProxy', () => {
     fetchSpy?.mockRestore();
   });
 
-  it('returns 503 when dcm.apiGatewayUrl is not configured', async () => {
+  it('returns 503 when dcm.apiUrl is not configured', async () => {
     const app = makeApp({ dcm: { clientId: 'id', clientSecret: 'secret' } });
 
     const res = await request(app).get('/proxy/providers');
@@ -77,7 +77,7 @@ describe('createDcmProxy', () => {
 
     const app = makeApp({
       dcm: {
-        apiGatewayUrl: 'https://gateway.example.com',
+        apiUrl: 'https://control-plane.example.com',
         clientId: 'id',
         clientSecret: 'secret',
       },
@@ -101,7 +101,7 @@ describe('createDcmProxy', () => {
 
     const app = makeApp({
       dcm: {
-        apiGatewayUrl: 'https://gateway.example.com',
+        apiUrl: 'https://control-plane.example.com',
         clientId: 'id',
         clientSecret: 'secret',
       },
@@ -111,7 +111,7 @@ describe('createDcmProxy', () => {
 
     expect(res.status).toBe(502);
     expect(res.body).toMatchObject({
-      error: expect.stringContaining('DCM API gateway'),
+      error: expect.stringContaining('DCM API'),
     });
   });
 
@@ -134,7 +134,7 @@ describe('createDcmProxy', () => {
 
     const app = makeApp({
       dcm: {
-        apiGatewayUrl: 'https://gateway.example.com',
+        apiUrl: 'https://control-plane.example.com',
         clientId: 'id',
         clientSecret: 'secret',
       },
@@ -171,7 +171,7 @@ describe('createDcmProxy', () => {
 
     const app = makeApp({
       dcm: {
-        apiGatewayUrl: 'https://gateway.example.com',
+        apiUrl: 'https://control-plane.example.com',
         clientId: 'id',
         clientSecret: 'secret',
       },
@@ -206,7 +206,7 @@ describe('createDcmProxy', () => {
 
     const app = makeApp({
       dcm: {
-        apiGatewayUrl: 'https://gateway.example.com',
+        apiUrl: 'https://control-plane.example.com',
         clientId: 'id',
         clientSecret: 'secret',
       },
@@ -227,7 +227,7 @@ describe('createDcmProxy', () => {
     expect(JSON.parse(upstreamCall[1].body)).toEqual(patch);
   });
 
-  it('handles 204 No Content upstream responses without a body', async () => {
+  it('falls back to legacy dcm.apiGatewayUrl and handles 204 No Content', async () => {
     fetchSpy = jest
       .spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(TOKEN_RESPONSE)

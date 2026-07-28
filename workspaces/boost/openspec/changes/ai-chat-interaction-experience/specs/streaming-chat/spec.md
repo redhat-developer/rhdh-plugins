@@ -56,3 +56,14 @@ Conversations are persisted automatically.
 - **WHEN** a streaming response completes successfully
 - **THEN** the conversation (session and messages) is auto-saved via `ChatSessionService`
 - **AND** the session appears in the conversation history panel
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

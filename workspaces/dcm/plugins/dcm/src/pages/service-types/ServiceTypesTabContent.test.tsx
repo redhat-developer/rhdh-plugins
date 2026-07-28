@@ -19,6 +19,11 @@ import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
 import { catalogApiRef } from '../../apis';
 import { ServiceTypesTabContent } from './ServiceTypesTabContent';
 
+jest.mock('../../hooks/useTranslation', () => {
+  const mod = require('../../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 const MOCK_SERVICE_TYPES = [
   {
     uid: 'st-1',

@@ -3,6 +3,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
+| **totalCount** | **Integer** | Total number of process instances matching the filter | [optional] [default to null] |
 | **items** | [**List**](ProcessInstanceDTO.md) |  | [optional] [default to null] |
 | **paginationInfo** | [**PaginationInfoDTO**](PaginationInfoDTO.md) |  | [optional] [default to null] |
 

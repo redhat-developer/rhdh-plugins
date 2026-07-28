@@ -17,21 +17,7 @@ import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 
-import { isAxiosError } from 'axios';
-
-import { getOrchestratorApi, getRequestConfigOption } from './utils';
-
-const getError = (err: unknown): Error => {
-  if (
-    isAxiosError<{ error: { message: string; name: string } }>(err) &&
-    err.response?.data?.error?.message
-  ) {
-    const error = new Error(err.response?.data?.error?.message);
-    error.name = err.response?.data?.error?.name || 'Error';
-    return error;
-  }
-  return err as Error;
-};
+import { getError, getOrchestratorApi, getRequestConfigOption } from './utils';
 
 export function createRunWorkflowAction(
   discoveryService: DiscoveryApi,
@@ -73,14 +59,14 @@ export function createRunWorkflowAction(
         );
       }
 
-      const api = await getOrchestratorApi(discoveryService);
-      const reqConfigOption = await getRequestConfigOption(authService, ctx);
-
       // If this is a dry run, log and return
       if (ctx.isDryRun) {
         ctx.logger.info(`Dry run complete`);
         return;
       }
+
+      const api = await getOrchestratorApi(discoveryService);
+      const reqConfigOption = await getRequestConfigOption(authService, ctx);
 
       try {
         const { data } = await api.executeWorkflow(
@@ -91,6 +77,14 @@ export function createRunWorkflowAction(
           },
           reqConfigOption,
         );
+        // Link to the orchestrator workflows page
+        ctx.output('orchestratorWorkflowsUrl', `/orchestrator/workflows`);
+        // Direct link to the catalog entity
+        ctx.output(
+          'catalogEntityUrl',
+          `/catalog/${targetEntityNamespace}/${targetEntityKind}/${targetEntityName}/workflows`,
+        );
+        // Keeping this for backwards compatibility
         ctx.output(
           'instanceUrl',
           `/orchestrator/entity/${targetEntityNamespace}/${targetEntityKind}/${targetEntityName}/${ctx.input.workflow_id}/${data.id}`,

@@ -19,4 +19,5 @@
  */
 export enum ExtensionsAnnotation {
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
+  CATALOG_SOURCE = 'extensions.backstage.io/catalog-source',
 }

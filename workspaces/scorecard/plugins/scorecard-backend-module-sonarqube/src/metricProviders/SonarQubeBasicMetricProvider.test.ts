@@ -38,7 +38,7 @@ const emptyThresholds: ThresholdConfig = { rules: [] };
 class TestBooleanBasic extends SonarQubeBasicMetricProvider<'boolean'> {
   constructor(
     client: SonarQubeClient,
-    metricId: 'quality_gate',
+    metricId: 'qualityGate',
     thresholds: ThresholdConfig,
   ) {
     super(client, metricId, thresholds, 'boolean');
@@ -59,15 +59,15 @@ const providers = [
   {
     provider: new TestBooleanBasic(
       makeClient(),
-      'quality_gate',
+      'qualityGate',
       emptyThresholds,
     ),
-    metricId: 'quality_gate',
+    metricId: 'qualityGate',
     type: 'boolean',
   },
   {
-    provider: new TestNumberBasic(makeClient(), 'open_issues', emptyThresholds),
-    metricId: 'open_issues',
+    provider: new TestNumberBasic(makeClient(), 'openIssues', emptyThresholds),
+    metricId: 'openIssues',
     type: 'number',
   },
 ];
@@ -104,20 +104,14 @@ describe('SonarQubeBasicMetricProvider', () => {
     );
   });
 
-  describe('getMetricType', () => {
+  describe('getMetrics', () => {
     it.each(providers)(
-      'should return the metric type given at construction for $type metric type',
+      'should return metrics with correct type and thresholds for $type metric type',
       ({ provider, type }) => {
-        expect(provider.getMetricType()).toBe(type);
-      },
-    );
-  });
-
-  describe('getMetricThresholds', () => {
-    it.each(providers)(
-      'should return the thresholds from the constructor for $type metric type',
-      ({ provider }) => {
-        expect(provider.getMetricThresholds()).toBe(emptyThresholds);
+        const metrics = provider.getMetrics();
+        expect(metrics).toHaveLength(1);
+        expect(metrics[0].type).toBe(type);
+        expect(metrics[0].thresholds).toBe(emptyThresholds);
       },
     );
   });

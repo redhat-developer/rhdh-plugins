@@ -231,7 +231,7 @@ Boost builds composable from the start, avoiding augment's monolithic frontend p
 
 ## Customer Context
 
-Derived from the Citi engagement ("Cloud Concierge" vision). Citi's success outcomes addressed by this PRD:
+Derived from early enterprise engagement experience (white-labeled portal vision). Success outcomes addressed by this PRD:
 
 - Developers get answers from internal knowledge without leaving the portal (UC-1, UC-2)
 - Sensitive operations stay under human control (UC-3)

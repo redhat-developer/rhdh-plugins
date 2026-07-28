@@ -28,6 +28,7 @@ const quickstartTranslationDe = createTranslationMessages({
     'button.gotIt': 'Habe es!',
     'button.openQuickstartGuide': 'Schnellstartanleitung öffnen',
     'button.quickstart': 'Schnellstart',
+    'content.loading': 'Wird geladen',
     'content.emptyState.title':
       'Schnellstartinhalte sind für Ihre Rolle nicht verfügbar.',
     'dev.currentState': 'Aktueller Schubladenstatus: {{state}}',
@@ -77,7 +78,8 @@ const quickstartTranslationDe = createTranslationMessages({
     'steps.getStartedWithLightspeed.ctaTitle': 'Weitere Informationen',
     'steps.getStartedWithLightspeed.description':
       'Beheben Sie Probleme, generieren Sie Code und lernen Sie die Ressourcen der Plattform mithilfe eines KI-gestützten Chats kennen.',
-    'steps.getStartedWithLightspeed.title': 'Legen Sie los mit Lightspeed',
+    'steps.getStartedWithLightspeed.title':
+      'Legen Sie los mit Intelligent Assistant',
     'steps.importApplication.ctaTitle': 'Importieren',
     'steps.importApplication.description':
       'Importieren Sie Ihren bestehenden Code und Ihre Services in den Katalog, um sie zu organisieren und über Ihr Entwicklerportal darauf zuzugreifen.',
@@ -96,8 +98,8 @@ const quickstartTranslationDe = createTranslationMessages({
     'steps.setupAuthentication.title': 'Authentifizierung einrichten',
     'steps.setupLightspeed.ctaTitle': 'Weitere Informationen',
     'steps.setupLightspeed.description':
-      'Verbinden Sie Lightspeed mit einem unterstützten großen Sprachmodell (LLM) und konfigurieren Sie Berechtigungen, um Ihren Entwicklern Ihre KI-gestützte Unterstützung bereitzustellen.',
-    'steps.setupLightspeed.title': 'Lightspeed einrichten',
+      'Verbinden Sie Intelligent Assistant mit einem unterstützten großen Sprachmodell (LLM) und konfigurieren Sie Berechtigungen, um Ihren Entwicklern Ihre KI-gestützte Unterstützung bereitzustellen.',
+    'steps.setupLightspeed.title': 'Intelligent Assistant einrichten',
   },
 });
 

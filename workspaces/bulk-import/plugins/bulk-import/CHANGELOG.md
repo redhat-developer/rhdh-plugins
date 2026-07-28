@@ -1,5 +1,73 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 8.0.0
+
+### Major Changes
+
+- 6e61d04: **BREAKING**: Graduated the New Frontend System (NFS) bulk-import plugin to stable API.
+  The NFS plugin (`createFrontendPlugin`) has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath now only exports translations. Legacy (OFS) exports (`bulkImportPlugin`, `BulkImportPage`, `BulkImportSidebarItem`, `BulkImportIcon`) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+  + import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  ```
+
+  **Migration for OFS consumers:**
+
+  ```diff
+  - import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  + import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
+  ```
+
+  **Migration for dynamic plugin configurations:**
+
+  Legacy exports require `module: Legacy` — they are not available on the default module.
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-bulk-import:
+        # Legacy exports require `module: Legacy`
+        dynamicRoutes:
+          - path: /bulk-import
+            importName: BulkImportPage
+            module: Legacy
+  ```
+
+### Minor Changes
+
+- 02db099: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin Router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+- 8eb345e: Updated dependency `js-yaml` to `^4.3.0`.
+- 4e7416a: optimize bulk-import
+- Updated dependencies [02db099]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.0
+
+## 7.3.7
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- 172d39f: Fixed approval tool selection resetting to GitHub when clicking Preview file by preventing unintended router navigation that stripped the approvalTool query parameter from the URL.
+- a85170e: Replace Material UI v4 imports with MUI v5 and migrate makeStyles to sx prop to prevent style collisions.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- 259b76f: Updated dependency `@openapitools/openapi-generator-cli` to `2.39.0`.
+  Updated dependency `@playwright/test` to `1.61.0`.
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.7
+
+## 7.3.6
+
+### Patch Changes
+
+- 0c4bc08: Fixed French localization bug in the Preview PR side drawer where the title label displayed an unresolved `{{outil}}` placeholder instead of the translated tool name. Also improved French word order for the title, body, and details labels to use natural "Noun de {{tool}}" phrasing.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.6
+
 ## 7.3.5
 
 ### Patch Changes

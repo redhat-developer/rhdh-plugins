@@ -42,3 +42,14 @@ Administrators configure shields and review violations.
 
 - **WHEN** any shield detects a violation
 - **THEN** the violation details are logged for review regardless of fail-open/fail-closed setting
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

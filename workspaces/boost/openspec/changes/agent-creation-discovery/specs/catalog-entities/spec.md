@@ -37,7 +37,7 @@ Cross-cutting entities (MCP servers, vector stores) that aren't provider-specifi
 
 ### Requirement: AI Agent Catalog Entities
 
-Agents are represented as Backstage catalog entities with lifecycle, ownership, and relations.
+Agents MUST be represented as Backstage catalog entities with lifecycle, ownership, and relations.
 
 #### Scenario: Kagenti module emits agent entities
 
@@ -65,7 +65,7 @@ Agents are represented as Backstage catalog entities with lifecycle, ownership, 
 
 ### Requirement: AI Model Catalog Entities
 
-AI models are represented as catalog entities, eliminating duplicate caches.
+AI models MUST be represented as catalog entities, eliminating duplicate caches.
 
 #### Scenario: Provider modules emit model entities
 
@@ -76,7 +76,7 @@ AI models are represented as catalog entities, eliminating duplicate caches.
 
 ### Requirement: MCP Server Catalog Entities
 
-MCP servers are represented as catalog entities.
+MCP servers MUST be represented as catalog entities.
 
 #### Scenario: Core plugin emits MCP server entities
 
@@ -88,7 +88,7 @@ MCP servers are represented as catalog entities.
 
 ### Requirement: Vector Store Catalog Entities
 
-RAG vector stores are represented as catalog entities.
+RAG vector stores MUST be represented as catalog entities.
 
 #### Scenario: Core plugin emits vector store entities
 
@@ -99,7 +99,7 @@ RAG vector stores are represented as catalog entities.
 
 ### Requirement: Entity Providers as Independent Backend Services
 
-Entity providers are independently deployable Backstage backend services.
+Entity providers MUST be independently deployable Backstage backend services.
 
 #### Scenario: Standalone entity provider deployment (without boost)
 

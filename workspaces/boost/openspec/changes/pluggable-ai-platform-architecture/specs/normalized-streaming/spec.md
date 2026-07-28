@@ -38,3 +38,14 @@ The frontend processes normalized events identically regardless of provider.
 - **THEN** `StreamingMessage.reducer` processes it based on the `NormalizedStreamEvent` discriminator
 - **AND** `useStreamingStateBatching` batches rapid events for performant rendering
 - **AND** `VirtualizedMessageList` renders the accumulated state
+
+## ADDED Requirements
+
+### Requirement: Specification Coverage
+
+This capability area MUST have its existing behavior documented as baseline acceptance criteria.
+
+#### Scenario: Baseline validation
+
+- **WHEN** the existing implementation is validated against this specification
+- **THEN** all scenarios described in the EXISTING Requirements section MUST pass

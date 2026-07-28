@@ -34,6 +34,7 @@ import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
 import { DcmSearchCardAction } from './dcmTabListHelpers';
 import { useDcmStyles } from './dcmStyles';
+import { useTranslation } from '../hooks/useTranslation';
 
 export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   /** Full (unfiltered, unpaginated) list used to decide empty-state vs. table. */
@@ -144,6 +145,7 @@ export function DcmCrudTabLayout<T extends object>({
   refreshing,
 }: DcmCrudTabLayoutProps<T>) {
   const classes = useDcmStyles();
+  const { t } = useTranslation();
 
   if (loading) return <Progress />;
 
@@ -156,7 +158,7 @@ export function DcmCrudTabLayout<T extends object>({
           action={
             onRetry ? (
               <Button color="inherit" size="small" onClick={onRetry}>
-                Retry
+                {t('common.retry')}
               </Button>
             ) : undefined
           }
@@ -205,11 +207,11 @@ export function DcmCrudTabLayout<T extends object>({
               classes={classes}
             />
             {onRefresh && (
-              <Tooltip title="Refresh">
-                <span>
+              <Tooltip title={t('common.refresh')}>
+                <Box component="span">
                   <IconButton
                     size="small"
-                    aria-label="Refresh"
+                    aria-label={t('common.refresh')}
                     onClick={onRefresh}
                     disabled={refreshing}
                   >
@@ -219,7 +221,7 @@ export function DcmCrudTabLayout<T extends object>({
                       <SyncIcon fontSize="small" />
                     )}
                   </IconButton>
-                </span>
+                </Box>
               </Tooltip>
             )}
           </Box>
@@ -253,7 +255,9 @@ export function DcmCrudTabLayout<T extends object>({
             page={page}
             onPageChange={onPageChange}
             onRowsPerPageChange={onRowsPerPageChange}
-            localization={{ pagination: { labelRowsPerPage: 'rows' } }}
+            localization={{
+              pagination: { labelRowsPerPage: t('common.rows') },
+            }}
           />
         </Box>
       </InfoCard>

@@ -38,8 +38,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { FormikErrors, useFormik, useFormikContext } from 'formik';
+import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -55,11 +55,7 @@ import {
 } from '../../utils/repository-utils';
 import KeyValueTextField from './KeyValueTextField';
 
-// THEME_NOT_RESOLVED
-const useDrawerContentStyles = makeStyles({
-  previewCard: {
-    // marginTop: theme?.spacing(1),
-  },
+const useStyles = makeStyles()({
   previewCardContent: {
     paddingTop: 0,
   },
@@ -81,7 +77,7 @@ export const PreviewPullRequestForm = ({
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
   const { t } = useTranslation();
-  const contentClasses = useDrawerContentStyles();
+  const { classes } = useStyles();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const catalogApi = useApi(catalogApiRef);
 
@@ -424,8 +420,7 @@ export const PreviewPullRequestForm = ({
         title={formik.values?.prTitle ?? ''}
         description={formik.values?.prDescription ?? ''}
         classes={{
-          card: contentClasses.previewCard,
-          cardContent: contentClasses.previewCardContent,
+          cardContent: classes.previewCardContent,
         }}
       />
       <Box marginTop={2} marginBottom={1}>
@@ -437,8 +432,7 @@ export const PreviewPullRequestForm = ({
         entities={[formik.values?.yaml]}
         repositoryUrl={repoUrl}
         classes={{
-          card: contentClasses.previewCard,
-          cardContent: contentClasses.previewCardContent,
+          cardContent: classes.previewCardContent,
         }}
       />
     </>

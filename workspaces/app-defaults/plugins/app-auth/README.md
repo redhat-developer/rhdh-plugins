@@ -10,3 +10,5 @@ RHDH sign-in page (multi-provider) and OIDC / Keycloak / PingFederate / Auth0 / 
 ## Config
 
 Root `signInPage` (string or string[]) selects which providers appear; see `config.d.ts`. Provider ids include `oidc`, `keycloak`, and `pingfederate` (OIDC-backed; backend `auth.providers` keys must match).
+
+By default, sign-in page follows the top-level keys under `auth.providers`. Set root `signInPage` (string or string[]) to override the list or order; see `config.d.ts`.

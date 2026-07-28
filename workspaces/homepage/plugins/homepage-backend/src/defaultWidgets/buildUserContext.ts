@@ -27,6 +27,7 @@ import {
   PolicyDecision,
   QueryPermissionRequest,
 } from '@backstage/plugin-permission-common';
+import { homepageDefaultWidgetsReadPermission } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 import { UserContext } from './types';
 
 export async function buildUserContext(opts: {
@@ -39,6 +40,7 @@ export async function buildUserContext(opts: {
   const { credentials, catalog, permissions, referencedPermissions, logger } =
     opts;
 
+  // user ref
   const userEntityRef = credentials.principal.userEntityRef;
   const userEntity = await catalog.getEntityByRef(userEntityRef, {
     credentials,
@@ -49,34 +51,45 @@ export async function buildUserContext(opts: {
       `User entity '${userEntityRef}' not found in catalog; group-based visibility will fail closed`,
     );
   }
+
+  // group refs
   const groupEntityRefs = new Set<string>(
     (userEntity?.relations ?? [])
       .filter(relation => relation.type === RELATION_MEMBER_OF)
       .map(relation => relation.targetRef),
   );
 
-  const policyDecisions = new Map<string, PolicyDecision>();
-  if (referencedPermissions.size > 0) {
-    const names = [...referencedPermissions];
-
-    const conditionalPermissionRequests = names.map<QueryPermissionRequest>(
-      name => ({
-        permission: createPermission({
-          name,
-          attributes: { action: 'read' },
-          resourceType: 'homepage-default-widget',
-        }),
+  // permissions
+  const names = [...referencedPermissions];
+  const conditionalPermissionRequests = [
+    // This default permission will be "removed" below and added as a dedicated
+    // `defaultWidgetsReadDecision` to the user context.
+    {
+      permission: homepageDefaultWidgetsReadPermission,
+    },
+    ...names.map<QueryPermissionRequest>(name => ({
+      permission: createPermission({
+        name,
+        attributes: { action: 'read' },
+        resourceType: 'homepage-default-widget',
       }),
-    );
+    })),
+  ];
 
-    const conditionalDecisions = await permissions.authorizeConditional(
-      conditionalPermissionRequests,
-      { credentials },
-    );
-    conditionalDecisions.forEach((decision, index) => {
-      policyDecisions.set(names[index], decision);
+  const [defaultWidgetsReadDecision, ...otherConditionalDecisions] =
+    await permissions.authorizeConditional(conditionalPermissionRequests, {
+      credentials,
     });
-  }
 
-  return { userEntityRef, groupEntityRefs, policyDecisions };
+  const otherPolicyDecisions = new Map<string, PolicyDecision>();
+  otherConditionalDecisions.forEach((decision, index) => {
+    otherPolicyDecisions.set(names[index], decision);
+  });
+
+  return {
+    userEntityRef,
+    groupEntityRefs,
+    defaultWidgetsReadDecision,
+    otherPolicyDecisions,
+  };
 }

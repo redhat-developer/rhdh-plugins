@@ -1,5 +1,7 @@
 dcm:
-  # Base URL of the DCM API Gateway (required).
+  # Base URL of the DCM control plane (required).
+  apiUrl: ${DCM_API_URL}
+  # Legacy env var; kept until deploy configs switch to DCM_API_URL.
   apiGatewayUrl: ${DCM_API_GATEWAY_URL}
 
   # SSO configuration for the backend to obtain bearer tokens via

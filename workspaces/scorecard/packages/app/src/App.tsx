@@ -21,7 +21,7 @@ import {
   homePageModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
-import {
+import scorecardPlugin, {
   scorecardHomeModule,
   scorecardTranslationsModule,
   scorecardCatalogModule,
@@ -38,6 +38,7 @@ const app = createApp({
     rhdhThemeModule,
     homePageModule,
     homepageTranslationsModule,
+    scorecardPlugin,
     scorecardHomeModule,
     scorecardCatalogModule,
     scorecardTranslationsModule,
