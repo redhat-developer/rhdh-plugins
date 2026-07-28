@@ -38,9 +38,7 @@ describe('ping', () => {
         const backendServer = await startBackendServer(
           mockCatalogClient,
           authorizeResult as
-            | AuthorizeResult.DENY
-            | AuthorizeResult.ALLOW
-            | undefined,
+            AuthorizeResult.DENY | AuthorizeResult.ALLOW | undefined,
         );
 
         const response = await request(backendServer).get(

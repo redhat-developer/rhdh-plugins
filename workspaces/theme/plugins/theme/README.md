@@ -8,6 +8,8 @@ a [Storybook test-runner](https://github.com/storybookjs/test-runner) for automa
 
 ## API
 
+### Legacy (OFS) — `@red-hat-developer-hub/backstage-plugin-theme/legacy`
+
 Returns all testable themes (incl. the backstage default color scheme and older RHDH versions):
 
 - `getAllThemes: () => AppTheme[]`
@@ -18,6 +20,21 @@ Returns the latest, not released RHDH light and dark theme for your backstage/RH
 - `getThemes: () => AppTheme[]`
 - `useThemes: () => AppTheme[]`
 - `useLoaderTheme: () => MUIv5.Theme`
+
+### New Frontend System (NFS)
+
+NFS is the primary package entry point. OFS (legacy) theme helpers are available at `./legacy`.
+
+Register the theme module in an NFS app:
+
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme';
+
+export default createApp({
+  features: [rhdhThemeModule /* ...other features */],
+});
+```
 
 ## Install dependencies
 
@@ -46,7 +63,7 @@ On older RHDH instances you can install it:
 2. In `packages/app/src/components/DynamicRoot/DynamicRoot.tsx`
 
    ```tsx
-   import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+   import { useThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
    // ...
 
@@ -73,7 +90,7 @@ On older RHDH instances you can install it:
 2. Update `packages/app/src/App.tsx` and apply the themes to `createApp`:
 
    ```tsx
-   import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+   import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
    // ...
 
@@ -94,7 +111,7 @@ On older RHDH instances you can install it:
 2. Add to your `*/dev/index.tsx`:
 
    ```tsx
-   import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+   import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
    // ...
 

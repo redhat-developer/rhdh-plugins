@@ -5,8 +5,9 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @public (undocumented)
-export const rhdhThemeModule: FrontendModule;
+// @public
+const rhdhThemeModule: FrontendModule;
+export default rhdhThemeModule;
 
 // (No @packageDocumentation comment for this package)
 ```

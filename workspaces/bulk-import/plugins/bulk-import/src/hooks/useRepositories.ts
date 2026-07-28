@@ -50,8 +50,7 @@ function isLoginRejectedError(error: unknown): boolean {
 }
 
 type ScmTokenFetchResult =
-  | { kind: 'tokens'; tokens: Record<string, string> }
-  | { kind: 'userRejected' };
+  { kind: 'tokens'; tokens: Record<string, string> } | { kind: 'userRejected' };
 
 export const useRepositories = (
   options: DataFetcherQueryParams,

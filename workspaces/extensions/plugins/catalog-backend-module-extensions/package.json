@@ -45,7 +45,7 @@
     "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^",
     "find-root": "^1.1.0",
     "glob": "^8.1.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "semver": "^7.6.3"
   },
   "devDependencies": {

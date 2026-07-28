@@ -577,8 +577,7 @@ export async function createRouter(
         for (const store of vectorStores) {
           const sessionUserId = store.metadata?.user_id as string;
           const conversationId = store.metadata?.conversation_id as
-            | string
-            | null;
+            string | null;
 
           // Only include this user's sessions with a conversation_id
           if (sessionUserId === userEntityRef && conversationId) {

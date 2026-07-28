@@ -369,10 +369,7 @@ export const verifyChatUnpinned = async (
 };
 
 export type SortOption =
-  | 'newest'
-  | 'oldest'
-  | 'alphabeticalAsc'
-  | 'alphabeticalDesc';
+  'newest' | 'oldest' | 'alphabeticalAsc' | 'alphabeticalDesc';
 
 export const openSortDropdown = async (
   page: Page,
