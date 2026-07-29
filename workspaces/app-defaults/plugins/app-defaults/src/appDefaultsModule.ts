@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { appDrawerExtension } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-
 /**
- * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer system for dockable panel extensions.
- * Default-export this module for dynamic frontend loading.
+ * Re-export the drawer module under the `appDefaultsModule` name for
+ * backward compatibility.  Both identifiers reference the same
+ * {@link @backstage/frontend-plugin-api#FrontendModule} instance.
  *
  * @alpha
  */
-export const appDefaultsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [appDrawerExtension],
-});
+export { appDrawerModule as appDefaultsModule } from './appDrawerModule';
