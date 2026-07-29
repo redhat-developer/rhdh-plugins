@@ -11,6 +11,7 @@ import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { HomePageLayoutBlueprintParams } from '@backstage/plugin-home-react/alpha';
 import { HomePageLayoutProps } from '@backstage/plugin-home-react/alpha';
 import { HomePageWidgetBlueprintParams } from '@backstage/plugin-home-react/alpha';
 import { HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
@@ -23,18 +24,20 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
-export const homePageModule: FrontendModule;
+const homepageHomeModule: FrontendModule;
+export { homepageHomeModule as homePageModule };
+export { homepageHomeModule };
 
 // @alpha
-const homePagePlugin: OverridableFrontendPlugin<
+const homepagePlugin: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
   },
   {},
   {
-    'api:home/visits': OverridableExtensionDefinition<{
+    'api:homepage/default-widgets': OverridableExtensionDefinition<{
       kind: 'api';
-      name: 'visits';
+      name: 'default-widgets';
       config: {};
       configInput: {};
       output: ExtensionDataRef<AnyApiFactory, 'core.api.factory', {}>;
@@ -47,52 +50,165 @@ const homePagePlugin: OverridableFrontendPlugin<
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
     }>;
-    'app-root-element:home/visit-listener': OverridableExtensionDefinition<{
-      kind: 'app-root-element';
-      name: 'visit-listener';
+    'api:homepage/quickaccess': OverridableExtensionDefinition<{
+      kind: 'api';
+      name: 'quickaccess';
       config: {};
       configInput: {};
-      output: ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>;
+      output: ExtensionDataRef<AnyApiFactory, 'core.api.factory', {}>;
       inputs: {};
-      params: {
-        element: JSX.Element;
+      params: <
+        TApi,
+        TImpl extends TApi,
+        TDeps extends { [name in string]: unknown },
+      >(
+        params: ApiFactory<TApi, TImpl, TDeps>,
+      ) => ExtensionBlueprintParams<AnyApiFactory>;
+    }>;
+    'home-page-layout:homepage/dynamic-homepage-layout': OverridableExtensionDefinition<{
+      config: {
+        customizable: boolean | undefined;
+        widgetLayout:
+          | Record<
+              string,
+              {
+                priority?: number | undefined;
+                breakpoints?:
+                  | Record<
+                      string,
+                      {
+                        w?: number | undefined;
+                        h?: number | undefined;
+                        x?: number | undefined;
+                        y?: number | undefined;
+                      }
+                    >
+                  | undefined;
+              }
+            >
+          | undefined;
       };
+      configInput: {
+        customizable?: boolean | undefined;
+        widgetLayout?:
+          | Record<
+              string,
+              {
+                priority?: number | undefined;
+                breakpoints?:
+                  | Record<
+                      string,
+                      {
+                        w?: number | undefined;
+                        h?: number | undefined;
+                        x?: number | undefined;
+                        y?: number | undefined;
+                      }
+                    >
+                  | undefined;
+              }
+            >
+          | undefined;
+      };
+      output: ExtensionDataRef<
+        (props: HomePageLayoutProps) => JSX_2.Element,
+        'home.layout.component',
+        {}
+      >;
+      inputs: {};
+      kind: 'home-page-layout';
+      name: 'dynamic-homepage-layout';
+      params: HomePageLayoutBlueprintParams;
     }>;
-    'home-page-widget:home/random-joke': OverridableExtensionDefinition<{
+    'home-page-widget:homepage/catalog-starred-entities-card': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
-      name: 'random-joke';
+      name: 'catalog-starred-entities-card';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
-    'home-page-widget:home/starred-entities': OverridableExtensionDefinition<{
+    'home-page-widget:homepage/featured-docs-card': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
-      name: 'starred-entities';
+      name: 'featured-docs-card';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
-    'home-page-widget:home/toolkit': OverridableExtensionDefinition<{
+    'home-page-widget:homepage/quickaccess-card': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
-      name: 'toolkit';
+      name: 'quickaccess-card';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
-    'page:home': OverridableExtensionDefinition<{
+    'home-page-widget:homepage/recently-visited-card': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'recently-visited-card';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:homepage/rhdh-entity-section': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'rhdh-entity-section';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:homepage/rhdh-onboarding-section': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'rhdh-onboarding-section';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:homepage/rhdh-template-section': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'rhdh-template-section';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:homepage/search-bar': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'search-bar';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:homepage/top-visited-card': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'top-visited-card';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'page:homepage': OverridableExtensionDefinition<{
       config: {
         path: string | undefined;
         title: string | undefined;
       };
       configInput: {
-        path?: string | undefined;
-        title?: string | undefined;
+        path?: string | undefined | undefined;
+        title?: string | undefined | undefined;
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
@@ -187,8 +303,12 @@ const homePagePlugin: OverridableFrontendPlugin<
     }>;
   }
 >;
-export default homePagePlugin;
-export { homePagePlugin };
+export default homepagePlugin;
+export { homepagePlugin as homePagePlugin };
+export { homepagePlugin };
+
+// @alpha
+export const homepageRouteRef: RouteRef<undefined>;
 
 // @public
 export const homepageTranslationRef: TranslationRef<

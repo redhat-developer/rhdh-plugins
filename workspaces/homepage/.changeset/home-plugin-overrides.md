@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-homepage': minor
 ---
 
-Export `homePagePlugin` (upstream `@backstage/plugin-home` with homepage layout and widgets via `withOverrides`) as the alpha default so Module Federation / dynamic NFS installs register `page:home` without a separate `@backstage/plugin-home` dependency. Keep `homePageModule` for hosts that already register `homePlugin`.
+Give the homepage NFS plugin its own configurable page (`page:homepage`) so it works without community `@backstage/plugin-home`, and apply persona-based `homepage.defaultWidgets` filtering only on that page via homepage-backend. When `homepageHomeModule` is installed, the same widgets are also registered on community `page:home` (without the RH layout / homepage-backend filtering). Community `page:home` and `page:homepage` can be enabled or disabled independently via app-config.
