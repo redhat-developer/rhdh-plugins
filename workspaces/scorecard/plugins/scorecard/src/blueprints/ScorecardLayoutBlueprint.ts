@@ -22,8 +22,15 @@ import {
   ExtensionBoundary,
 } from '@backstage/frontend-plugin-api';
 
-/** @public */
+/**
+ * Props for custom Scorecard entity-tab layout components.
+ *
+ * @public
+ */
 export interface ScorecardLayoutProps {
+  /**
+   * Metric groups to render, keyed by group id.
+   */
   groups: Record<
     string,
     { title: string; description?: string; metrics: string[] }
