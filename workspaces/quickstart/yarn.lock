@@ -9923,6 +9923,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.11"
     "@backstage/core-plugin-api": "npm:^1.12.7"
     "@backstage/dev-utils": "npm:^1.1.24"
+    "@backstage/frontend-defaults": "npm:^0.5.3"
     "@backstage/frontend-plugin-api": "npm:^0.17.2"
     "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/plugin-permission-common": "npm:^0.9.9"
