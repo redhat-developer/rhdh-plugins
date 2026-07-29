@@ -3,9 +3,9 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend': major
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github': major
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf': major
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf': minor
 ---
 
 **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
