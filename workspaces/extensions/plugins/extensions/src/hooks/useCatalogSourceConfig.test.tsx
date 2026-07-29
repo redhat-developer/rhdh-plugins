@@ -106,12 +106,23 @@ describe('getCatalogSourceLabel', () => {
     community: { label: 'Community' },
   };
 
+  const makePlugin = (source?: string) =>
+    ({
+      metadata: {
+        annotations: source
+          ? { 'extensions.backstage.io/catalog-source': source }
+          : {},
+      },
+    }) as any;
+
   it('returns configured label for known source', () => {
-    expect(getCatalogSourceLabel('primary', sources)).toBe('Red Hat');
+    expect(getCatalogSourceLabel(makePlugin('primary'), sources)).toBe(
+      'Red Hat',
+    );
   });
 
   it('returns raw key for unconfigured source', () => {
-    expect(getCatalogSourceLabel('unknown-source', sources)).toBe(
+    expect(getCatalogSourceLabel(makePlugin('unknown-source'), sources)).toBe(
       'unknown-source',
     );
   });

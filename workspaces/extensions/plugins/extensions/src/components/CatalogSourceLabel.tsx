@@ -18,19 +18,28 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import type { ExtensionsPlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+
 import {
   useCatalogSourceConfig,
   getCatalogSourceLabel,
 } from '../hooks/useCatalogSourceConfig';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const CatalogSourceLabel = ({ sourceKey }: { sourceKey?: string }) => {
+export const CatalogSourceLabel = ({
+  plugin,
+}: {
+  plugin: ExtensionsPlugin;
+}) => {
   const { t } = useTranslation();
   const sourcesConfig = useCatalogSourceConfig();
+  const sourceKey =
+    plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
 
   if (!sourceKey) return null;
 
-  const label = getCatalogSourceLabel(sourceKey, sourcesConfig);
+  const label = getCatalogSourceLabel(plugin, sourcesConfig);
   const meta = sourcesConfig[sourceKey];
 
   const content = (

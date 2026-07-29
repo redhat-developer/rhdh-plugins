@@ -9,7 +9,6 @@ metadata:
   annotations:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/support-type: Core plugin
-    extensions.backstage.io/catalog-source: 'community'
 spec:
   authors:
     - Spotify

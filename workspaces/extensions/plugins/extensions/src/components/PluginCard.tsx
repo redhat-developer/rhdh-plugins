@@ -29,7 +29,6 @@ import Typography from '@mui/material/Typography';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import {
-  ExtensionsAnnotation,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
@@ -196,13 +195,7 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                   />
                 </Typography>
               ) : null}
-              <CatalogSourceBadge
-                sourceKey={
-                  plugin.metadata?.annotations?.[
-                    ExtensionsAnnotation.CATALOG_SOURCE
-                  ]
-                }
-              />
+              <CatalogSourceBadge plugin={plugin} />
             </Stack>
           </Stack>
 

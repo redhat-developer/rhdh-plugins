@@ -17,19 +17,28 @@
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 
+import type { ExtensionsPlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+
 import {
   useCatalogSourceConfig,
   getCatalogSourceLabel,
 } from '../hooks/useCatalogSourceConfig';
 
-export const CatalogSourceBadge = ({ sourceKey }: { sourceKey?: string }) => {
+export const CatalogSourceBadge = ({
+  plugin,
+}: {
+  plugin: ExtensionsPlugin;
+}) => {
   const sourcesConfig = useCatalogSourceConfig();
+  const sourceKey =
+    plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
 
   if (!sourceKey) return null;
 
   const meta = sourcesConfig[sourceKey];
   const badgeLabel =
-    meta?.badge ?? getCatalogSourceLabel(sourceKey, sourcesConfig);
+    meta?.badge ?? getCatalogSourceLabel(plugin, sourcesConfig);
 
   const chip = <Chip label={badgeLabel} variant="outlined" size="small" />;
 

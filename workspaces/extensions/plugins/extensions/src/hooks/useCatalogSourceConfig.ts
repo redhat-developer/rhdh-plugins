@@ -18,6 +18,9 @@ import { useMemo } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
+import type { ExtensionsPlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { ExtensionsAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+
 export interface CatalogSourceMeta {
   label: string;
   description?: string;
@@ -47,8 +50,11 @@ export const useCatalogSourceConfig = (): Record<string, CatalogSourceMeta> => {
 };
 
 export const getCatalogSourceLabel = (
-  sourceKey: string,
+  plugin: ExtensionsPlugin,
   sourcesConfig: Record<string, CatalogSourceMeta>,
 ): string => {
+  const sourceKey =
+    plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+  if (!sourceKey) return '';
   return sourcesConfig[sourceKey]?.label ?? sourceKey;
 };

@@ -48,7 +48,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isExtensionsPackage,
-  ExtensionsAnnotation,
   ExtensionsPackage,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
@@ -662,13 +661,7 @@ export const ExtensionsPluginContent = ({
               value={plugin.spec?.support?.provider}
             />
 
-            <CatalogSourceLabel
-              sourceKey={
-                plugin.metadata?.annotations?.[
-                  ExtensionsAnnotation.CATALOG_SOURCE
-                ]
-              }
-            />
+            <CatalogSourceLabel plugin={plugin} />
 
             {pluginActionButton()}
           </Grid>

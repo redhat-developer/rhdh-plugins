@@ -11,7 +11,6 @@ metadata:
     you want to import.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
-    extensions.backstage.io/catalog-source: 'primary'
   tags:
     - software-catalog
 

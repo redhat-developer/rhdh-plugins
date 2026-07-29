@@ -30,32 +30,5 @@ export interface Config {
         file: string;
       };
     };
-
-    /**
-     * Metadata for catalog sources used to label and filter plugins by origin.
-     * Keys correspond to the `extensions.backstage.io/catalog-source` annotation value.
-     * @visibility frontend
-     */
-    catalogSources?: {
-      [sourceKey: string]: {
-        /**
-         * Display label for this catalog source.
-         * @visibility frontend
-         */
-        label: string;
-
-        /**
-         * Optional description shown as a tooltip.
-         * @visibility frontend
-         */
-        description?: string;
-
-        /**
-         * Optional badge text shown on the plugin card in list view.
-         * @visibility frontend
-         */
-        badge?: string;
-      };
-    };
   };
 }
