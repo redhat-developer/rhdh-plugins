@@ -7,7 +7,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import type { SVGProps } from 'react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -20,7 +20,9 @@ export const IsOrchestratorCatalogTabAvailable: (entity: Entity) => boolean;
 export const OrchestratorCatalogTab: () => JSX_2.Element;
 
 // @public
-export const OrchestratorIcon: (props: SvgIconProps) => JSX_2.Element;
+export const OrchestratorIcon: (
+  props: SVGProps<SVGSVGElement>,
+) => JSX_2.Element;
 
 // @public
 export const OrchestratorPage: () => JSX_2.Element;

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
@@ -35,12 +36,12 @@ export class FormWidgetsApi implements OrchestratorFormApi {
     }
     const contentPromise = this.contentPromise;
 
-    return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
+    return (FormComponent: ComponentType<FormDecoratorProps>) => {
       return (props: OrchestratorFormContextProps) => {
         const [DecoratorContent, setDecoratorContent] =
-          React.useState<React.ComponentType<any> | null>(null);
+          useState<ComponentType<any> | null>(null);
 
-        React.useEffect(() => {
+        useEffect(() => {
           let mounted = true;
           contentPromise.then(m => {
             if (mounted) setDecoratorContent(() => m.default);

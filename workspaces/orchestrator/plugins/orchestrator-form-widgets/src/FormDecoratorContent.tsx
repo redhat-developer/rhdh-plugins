@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormContextProps,
@@ -50,7 +50,7 @@ const FormDecoratorContent = ({
   FormComponent,
   ...props
 }: {
-  FormComponent: React.ComponentType<FormDecoratorProps>;
+  FormComponent: ComponentType<FormDecoratorProps>;
 } & OrchestratorFormContextProps) => {
   const getExtraErrors = useGetExtraErrors();
 
