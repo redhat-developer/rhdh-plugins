@@ -764,6 +764,24 @@ describe('intelligent-assistant router tests', () => {
         );
         expect(response.body.error).not.toContain('duplicate name');
       });
+
+      it('returns 500 when upstream fetch throws', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return HttpResponse.error();
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(500);
+        expect(response.body.error).toContain(
+          'Error while creating saved prompt',
+        );
+      });
     });
 
     describe('DELETE /v1/saved-prompts/:prompt_id', () => {
