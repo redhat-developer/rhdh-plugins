@@ -21,7 +21,7 @@ kind: Group
 metadata:
   name: team-ml-platform
   title: ML Platform
-  description: Owns AIResource skill and model catalog examples.
+  description: Owns AiResource skill and model catalog examples.
 spec:
   type: team
   children: []

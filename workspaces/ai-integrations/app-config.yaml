@@ -23,8 +23,7 @@ backend:
     externalAccess:
       - type: static
         options:
-          # Default is for local verification only; override via RHDH_TOKEN.
-          token: ${RHDH_TOKEN:-dev-token}
+          token: '${RHDH_TOKEN}'
           subject: admin-curl-access
   baseUrl: http://localhost:7007
   listen:

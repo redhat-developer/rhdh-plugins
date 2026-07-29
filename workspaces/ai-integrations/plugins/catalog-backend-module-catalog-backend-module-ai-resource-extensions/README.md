@@ -1,19 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions
 
 A Backstage catalog backend module that validates RHDH-specific extension
-fields on AIResource entities.
+fields on AiResource entities.
 
 ## Validation
 
 The module registers a single catalog processor —
-`AIResourceExtensionsProcessor` — for `AIResource` entities.
-Non-AIResource entities pass through unchanged.
+`AIResourceExtensionsProcessor` — for upstream `AiResource` entities
+(and the legacy `AIResource` spelling). Other kinds pass through
+unchanged.
 
 ### `AIResourceExtensionsProcessor`
 
-Validates RHDH extension fields on `AIResource` entities. All constraint
-violations are collected and reported in a single error rather than
-stopping at the first failure.
+Validates RHDH extension fields on `AiResource` / `AIResource` entities.
+All constraint violations are collected and reported in a single error
+rather than stopping at the first failure.
 
 #### `spec.scope`
 
@@ -34,8 +35,11 @@ is format-only — the processor makes no outbound registry or HTTP calls.
 
 ## Schema Fields
 
-An `AIResource` entity uses `apiVersion: backstage.io/v1beta1` and
-`kind: AIResource`. The following `spec` fields are relevant:
+An upstream `AiResource` entity uses `apiVersion: backstage.io/v1alpha1`
+and `kind: AiResource` (see
+`@backstage/plugin-catalog-backend-module-ai-model`). The legacy spelling
+`kind: AIResource` / `apiVersion: backstage.io/v1beta1` is still accepted
+by this processor. The following `spec` fields are relevant:
 
 | Field                  | Enforced by this module | Description                                                                                      |
 | ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
@@ -58,14 +62,14 @@ pass through without error.
 | `product`      | The AI asset is scoped to a specific product          |
 | `team`         | The AI asset is scoped to a specific team             |
 
-## Registering an AIResource Entity
+## Registering an AiResource Entity
 
-AIResource entities are registered through the standard RHDH catalog
-interfaces — no AIResource-specific registration flow is required.
+AiResource entities are registered through the standard RHDH catalog
+interfaces — no AiResource-specific registration flow is required.
 
 ### Git-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource` and
+1. Create a `catalog-info.yaml` with `kind: AiResource` and
    `spec.location.type: git`.
 2. Set `backstage.io/source-location` and `spec.location.target` to the
    repository URL so consumers can locate the source repository.
@@ -77,7 +81,7 @@ for a complete example.
 
 ### OCI-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource` and
+1. Create a `catalog-info.yaml` with `kind: AiResource` and
    `spec.location.type: oci`.
 2. Set `spec.location.target` to an `oci://` URI pointing to the OCI
    artifact (e.g. `oci://quay.io/my-org/my-model:latest`).

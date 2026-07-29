@@ -41,8 +41,15 @@ export const VALID_AI_RESOURCE_SCOPES = [
 export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 /**
+ * Canonical upstream kind spelling plus legacy RHDH spelling.
+ * Upstream `@backstage/plugin-catalog-backend-module-ai-model` uses
+ * `AiResource`; older docs/examples used `AIResource`.
+ */
+const AI_RESOURCE_KINDS = new Set(['AiResource', 'AIResource']);
+
+/**
  * A CatalogProcessor that validates RHDH-specific extension
- * fields on AIResource entities.
+ * fields on AiResource / AIResource entities.
  *
  * Validates:
  * - `spec.scope`: optional field restricted to 'organization',
@@ -65,7 +72,7 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
     _location: LocationSpec,
     _emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (entity.kind !== 'AIResource') {
+    if (!AI_RESOURCE_KINDS.has(entity.kind)) {
       return entity;
     }
 

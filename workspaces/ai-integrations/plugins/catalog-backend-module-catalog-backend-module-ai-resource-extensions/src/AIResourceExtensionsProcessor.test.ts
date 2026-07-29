@@ -22,6 +22,15 @@ import {
 
 function makeAIResource(spec: Entity['spec'] = {}): Entity {
   return {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'AiResource',
+    metadata: { name: 'test-resource' },
+    spec,
+  };
+}
+
+function makeLegacyAIResource(spec: Entity['spec'] = {}): Entity {
+  return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'AIResource',
     metadata: { name: 'test-resource' },
@@ -75,14 +84,40 @@ describe('AIResourceExtensionsProcessor', () => {
 
     it('should accept entity with no spec property', async () => {
       const entity: Entity = {
-        apiVersion: 'backstage.io/v1beta1',
-        kind: 'AIResource',
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'AiResource',
         metadata: { name: 'test-resource' },
       };
 
       const result = await processor.preProcessEntity(entity, location, emit);
 
       expect(result).toEqual(entity);
+    });
+  });
+
+  describe('kind spelling', () => {
+    it('should validate upstream kind AiResource', async () => {
+      const entity = makeAIResource({ scope: 'team' });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should validate legacy kind AIResource', async () => {
+      const entity = makeLegacyAIResource({ scope: 'team' });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should reject invalid scope on legacy kind AIResource', async () => {
+      const entity = makeLegacyAIResource({ scope: 'enterprise' });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('Validation failed for AIResource entity');
     });
   });
 
