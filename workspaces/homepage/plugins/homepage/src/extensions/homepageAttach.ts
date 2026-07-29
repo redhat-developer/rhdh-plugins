@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import { navModule } from './modules/nav';
-import { signInModule } from './modules/signIn';
-import {
-  homepagePlugin,
-  homepageHomeModule,
-  homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+/** NFS page extension id owned by the homepage plugin (`pluginId: homepage`). */
+export const HOMEPAGE_PAGE_ID = 'page:homepage';
 
-export default createApp({
-  features: [
-    rhdhThemeModule,
-    navModule,
-    signInModule,
-    homepagePlugin,
-    homepageHomeModule,
-    homepageTranslationsModule,
-  ],
-});
+/** Attach widgets contributed by this plugin to {@link HOMEPAGE_PAGE_ID}. */
+export const homepageWidgetAttachTo = {
+  id: HOMEPAGE_PAGE_ID,
+  input: 'widgets' as const,
+};
+
+/** Attach layout contributed by this plugin to {@link HOMEPAGE_PAGE_ID}. */
+export const homepageLayoutAttachTo = {
+  id: HOMEPAGE_PAGE_ID,
+  input: 'layout' as const,
+};
