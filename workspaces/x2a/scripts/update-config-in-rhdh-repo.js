@@ -45,7 +45,7 @@ const x2aBEConfig = {
       url: '${AAP_URL:-https://aap.example.com}',
       orgName: '${AAP_ORG_NAME:-MyOrganization}',
       username: '${AAP_USERNAME}',
-      password: '${AAP_PASSWORD}',
+      password: '${AAP_PASSWORD}', // NOSONAR - env placeholder for local app-config, not a real credential
     },
   },
 };

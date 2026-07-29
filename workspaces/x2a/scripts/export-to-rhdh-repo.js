@@ -103,9 +103,9 @@ function exportPlugin(plugin, dynamicPluginsRoot) {
     pkg,
   ]);
 
-  // security: this is not a security issue, the compiled code is not used in production
+  // Local-only helper (yarn enable-in-rhdh-repo); not used in production runtime.
   const result = spawnSync(
-    'npx',
+    'npx', // NOSONAR - PATH lookup is fine for this interactive local script
     [
       `@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}`,
       'plugin',
@@ -115,7 +115,6 @@ function exportPlugin(plugin, dynamicPluginsRoot) {
     {
       cwd: pluginPath,
       stdio: 'inherit',
-      shell: true,
     },
   );
   if (result.status !== 0) {
@@ -152,11 +151,11 @@ async function main() {
   }
 
   console.log('🛠️ Compiling TypeScript in workspaces/x2a');
-  // security: this is not a security issue, the compiled code is not used in production
+  // Local-only helper (yarn enable-in-rhdh-repo); not used in production runtime.
   const tscResult = spawnSync('yarn', ['tsc'], {
+    // NOSONAR - PATH lookup is fine for this interactive local script
     cwd: path.resolve(__dirname, '../'),
     stdio: 'inherit',
-    shell: true,
   });
 
   if (tscResult.status !== 0) {
