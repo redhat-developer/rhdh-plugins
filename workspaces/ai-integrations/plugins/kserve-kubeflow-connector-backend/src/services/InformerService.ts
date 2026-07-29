@@ -388,7 +388,9 @@ async function processModelCatalog(
 }
 
 // Main polling/sync function (converted from Go innerStart method starting at line 651)
-// This is called on delete events and during background polling to sync the current state
+// This is called on delete events and during background polling to sync the current state.
+// Unlike the GoLang client-go informer, there is no re-list / re-sync functionality with
+// the javascript/typescript informer.
 async function innerStart(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
@@ -619,14 +621,13 @@ export const setupInformer = async () => {
   await config.informer.start();
   console.log('Informer started.');
 
-  // Optional: Start background polling to supplement the informer
-  // This matches the Go Start method (lines 639-649)
-  // The controller relist does not duplicate delete events, so background polling
-  // provides more fine-grained control over what we attempt to relist
+  // Start background polling to supplement the informer
+  // since there is no re-list / re-sync in the typescript informer, unlike
+  // what you see with the GoLang client from k8s.
   const pollingInterval = parseInt(
-    process.env.POLLING_INTERVAL || '120000',
+    process.env.POLLING_INTERVAL || '600000',
     10,
-  ); // Default 2 minutes
+  ); // Default 10 minutes
 
   if (pollingInterval > 0) {
     console.log(
