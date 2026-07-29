@@ -661,7 +661,9 @@ export const ExtensionsPluginContent = ({
               value={plugin.spec?.support?.provider}
             />
 
-            <CatalogSourceLabel plugin={plugin} />
+            {!isExtensionsPackage(plugin) && (
+              <CatalogSourceLabel plugin={plugin} />
+            )}
 
             {pluginActionButton()}
           </Grid>

@@ -28,10 +28,7 @@ import {
 } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 import { useTranslation } from '../hooks/useTranslation';
-import {
-  useCatalogSourceConfig,
-  getCatalogSourceLabel,
-} from '../hooks/useCatalogSourceConfig';
+import { useCatalogSourceConfig } from '../hooks/useCatalogSourceConfig';
 
 const CategoryFilter = () => {
   const { t } = useTranslation();
@@ -192,7 +189,7 @@ const CatalogSourceFilter = () => {
   const items = useMemo(() => {
     if (!sources) return [];
     return sources.map(source => ({
-      label: getCatalogSourceLabel(source.value, sourcesConfig),
+      label: sourcesConfig[source.value]?.label ?? source.value,
       value: source.value,
       count: source.count,
       helperText: sourcesConfig[source.value]?.description,
