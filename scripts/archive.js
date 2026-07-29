@@ -142,7 +142,7 @@ async function removeWorkspaceFromCodecovYml(workspace) {
   const content = await fs.readFile(CODECOV_YML, 'utf8');
   const lines = content.split('\n');
   const pathLine = `        - workspaces/${workspace}/`;
-  const index = lines.findIndex(line => line === pathLine);
+  const index = lines.indexOf(line => line === pathLine);
   if (index === -1) {
     console.log(
       `No codecov.yml flag entry found for workspace "${workspace}" (skipping).`,
