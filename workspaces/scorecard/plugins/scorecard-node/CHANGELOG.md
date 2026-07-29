@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 3.0.0
+
+### Minor Changes
+
+- c7f89e7: Introduce `scorecardCollectorsExtensionPoint` for registering collectors to fetch data from different datasources, and `scorecardCollectorsServiceRef` for consuming collected data in metric providers `calculateMetrics` through `collect(...)`.
+- 50447ac: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 2.8.1
 
 ### Patch Changes
