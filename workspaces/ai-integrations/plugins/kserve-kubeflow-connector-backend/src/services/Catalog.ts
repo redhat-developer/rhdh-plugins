@@ -31,6 +31,9 @@ import {
 export const CATALOG_BASE_URI = '/api/model_catalog/v1alpha1';
 export const GET_CATALOG_MODEL_URI = '/sources/%s/models/%s';
 
+export const CATALOG_SOURCE_ANNOTATION = 'rhdh.io/catalog-source';
+export const CATALOG_MODEL_ANNOTATION = 'rhdh.io/catalog-model';
+
 /**
  * Minimal client interface for the KubeFlow Model Catalog API.
  * Retains only catalog-related operations from the former KFMRClient.

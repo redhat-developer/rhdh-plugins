@@ -22,7 +22,12 @@ import {
 } from './types';
 import { ModelCatalog } from './types';
 import { callBackstagePrinters as callKServeBackstagePrinters } from './KServe';
-import { setupCatalogRoute } from './Catalog';
+import {
+  setupCatalogRoute,
+  createCatalogClient,
+  CATALOG_MODEL_ANNOTATION,
+  CATALOG_SOURCE_ANNOTATION,
+} from './Catalog';
 
 const inference_service_group = 'serving.kserve.io';
 const inference_service_version = 'v1beta1';
@@ -47,7 +52,6 @@ const modelCards = new Map<string, ModelCardMetadata>();
 interface ModelCatalogMetadata {
   catalogData: ModelCatalog;
   lastUpdateTimeSinceEpoch: string;
-  normalizerType: NormalizerType;
   updateCount: number;
   needToUpdate: boolean;
 }
@@ -60,11 +64,6 @@ const modelCatalog = new Map<string, ModelCatalogMetadata>();
 const INF_SVC_IngressReady_CONDITION = 'IngressReady';
 const INF_SVC_PredictorReady_CONDITION = 'PredictorReady';
 const INF_SVC_Ready_CONDITION = 'Ready';
-
-// Normalizer types
-enum NormalizerType {
-  KServeNormalizer = 'kserve',
-}
 
 // Types are imported from ./types to avoid circular dependencies
 // Re-export for backwards compatibility
@@ -243,8 +242,6 @@ async function reconcileInferenceService(
 
   console.log(`Reconciling InferenceService: ${namespace}/${name}`);
 
-  const normalizerType = NormalizerType.KServeNormalizer;
-
   // Wait for status to reach a functional, ready state
   if (!isInferenceServiceReady(is)) {
     console.log(
@@ -282,29 +279,57 @@ async function reconcileInferenceService(
   console.log(
     `Processing buffer for ${namespace}/${name} with importKey: ${importKey}`,
   );
+
+  const [modelCardKey, modelCard] = await fetchModelCardViaAnnotations(
+    is,
+    config,
+  );
+
   await processModelCatalog(
     importKey,
-    normalizerType,
     '',
-    '',
-    undefined,
+    modelCardKey,
+    modelCard,
     catalogData,
   );
 
   console.log(`Successfully reconciled InferenceService: ${namespace}/${name}`);
 }
 
+// Helper function to fetch model card based on look up key annotations on the inference service
+async function fetchModelCardViaAnnotations(
+  is: InferenceService,
+  config: ReconcilerConfig,
+): Promise<[string, string | undefined]> {
+  let modelCardKey = '';
+  let modelCard: string | undefined;
+  if (
+    is.metadata.annotations !== undefined &&
+    config.catalogRoute !== undefined
+  ) {
+    const catalogSource = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+    const catalogModel = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+    modelCardKey = `${catalogSource}/${catalogModel}`;
+    let token = '';
+    if (config.k8sToken !== undefined) {
+      token = config.k8sToken;
+    }
+    const catalogClient = createCatalogClient(config.catalogRoute, token);
+    modelCard = await catalogClient?.getModelCard(catalogSource, catalogModel);
+  }
+  return [modelCardKey, modelCard];
+}
+
 // Helper function to process buffer and send to storage (matching Go processBWriter)
 async function processModelCatalog(
   importKey: string,
-  normalizerType: NormalizerType,
   lastUpdateTimeSinceEpoch: string,
   modelCardKey: string,
   modelCard: string | undefined,
   catalogData: ModelCatalog,
 ): Promise<void> {
   console.log(
-    `processModelCatalog - key: ${importKey}, type: ${normalizerType}, epoch: ${lastUpdateTimeSinceEpoch}, modelCardKey: ${modelCardKey}`,
+    `processModelCatalog - key: ${importKey}, epoch: ${lastUpdateTimeSinceEpoch}, modelCardKey: ${modelCardKey}`,
   );
   console.log(
     `processModelCatalog - catalogData has ${
@@ -321,7 +346,6 @@ async function processModelCatalog(
       const mcm: ModelCatalogMetadata = {
         catalogData: catalogData,
         lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
-        normalizerType: normalizerType,
         needToUpdate: true,
         updateCount: 0,
       };
@@ -336,7 +360,6 @@ async function processModelCatalog(
       ) {
         existingCatalog.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
         existingCatalog.catalogData = catalogData;
-        existingCatalog.normalizerType = normalizerType;
         existingCatalog.needToUpdate = true;
         existingCatalog.updateCount = 0;
         modelCatalog.set(importKey, existingCatalog);
