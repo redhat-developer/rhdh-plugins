@@ -19,8 +19,7 @@ import { adoptionInsightsApiRef } from '../api';
 import { NotificationFrequency } from '../types';
 
 export const useNotificationPreference = () => {
-  const [frequency, setFrequencyState] =
-    useState<NotificationFrequency>('weekly');
+  const [frequency, setFrequency] = useState<NotificationFrequency>('weekly');
   const [loading, setLoading] = useState(true);
   const api = useApi(adoptionInsightsApiRef);
 
@@ -29,7 +28,7 @@ export const useNotificationPreference = () => {
     api
       .getNotificationPreference()
       .then(response => {
-        if (mounted) setFrequencyState(response.frequency);
+        if (mounted) setFrequency(response.frequency);
       })
       .catch(() => {})
       .finally(() => {
@@ -40,13 +39,13 @@ export const useNotificationPreference = () => {
     };
   }, [api]);
 
-  const setFrequency = useCallback(
+  const updateFrequency = useCallback(
     async (newFrequency: NotificationFrequency) => {
-      setFrequencyState(newFrequency);
+      setFrequency(newFrequency);
       await api.setNotificationPreference(newFrequency);
     },
     [api],
   );
 
-  return { frequency, setFrequency, loading };
+  return { frequency, setFrequency: updateFrequency, loading };
 };

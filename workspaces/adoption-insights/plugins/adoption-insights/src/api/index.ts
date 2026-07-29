@@ -220,9 +220,9 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     options: APIsViewOptions,
   ): Promise<TimeSavedTotalsResponse> {
     if (!options.start_date || !options.end_date) {
-      return Promise.resolve({
+      return {
         data: { total_time_saved_minutes: 0, templates: [] },
-      });
+      };
     }
 
     const baseUrl = await this.getBaseUrl();
