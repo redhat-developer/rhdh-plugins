@@ -577,7 +577,8 @@ export async function createRouter(
         for (const store of vectorStores) {
           const sessionUserId = store.metadata?.user_id as string;
           const conversationId = store.metadata?.conversation_id as
-            string | null;
+            | string
+            | null;
 
           // Only include this user's sessions with a conversation_id
           if (sessionUserId === userEntityRef && conversationId) {
@@ -925,7 +926,7 @@ export async function createRouter(
   router.post(
     '/v1/validate-model-vision',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       const { model, provider } = request.body;
 
