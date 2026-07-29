@@ -97,16 +97,7 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow:
-        [
-          Component,
-          System,
-          API,
-          Resource,
-          Location,
-          User,
-          Group,
-          AiResource,
-        ]
+        [Component, System, API, Resource, Location, User, Group, AiResource]
   locations:
     # Local org + AiResource examples for entity-page verification (RHIDP-14558).
     # Paths are relative to the backend process cwd (typically packages/backend).
