@@ -31,15 +31,16 @@ import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
-import { computeTotalTimeSaved } from '../../utils/formatTimeSaved';
+import {
+  computeTotalTimeSaved,
+  formatTimeSavedCompact,
+} from '../../utils/formatTimeSaved';
 
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
 import { useEntityMetadataMap } from '../../hooks/useEntityMetadataMap';
-import { useTimeSavedTotals } from '../../hooks/useTimeSavedTotals';
 import EmptyChartState from '../Common/EmptyChartState';
 import { useTranslation } from '../../hooks/useTranslation';
-import type { TimeSavedTemplate } from '../../types';
 
 const Templates = () => {
   const [page, setPage] = useState(0);
@@ -54,15 +55,6 @@ const Templates = () => {
     [templates],
   );
   const { entityMetadataMap } = useEntityMetadataMap(entityRefs);
-  const { timeSavedTotals } = useTimeSavedTotals();
-
-  const timeSavedMap = useMemo(() => {
-    const map: Record<string, TimeSavedTemplate> = {};
-    for (const tpl of timeSavedTotals.data?.templates ?? []) {
-      map[tpl.entityref] = tpl;
-    }
-    return map;
-  }, [timeSavedTotals]);
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -221,32 +213,12 @@ const Templates = () => {
                       {Number(template.count).toLocaleString('en-US') ?? '--'}
                     </TableCell>
                     <TableCell sx={{ width: '20%' }}>
-                      {(() => {
-                        const saved = timeSavedMap[template.entityref];
-                        if (!saved || saved.total_time_saved_minutes <= 0)
-                          return '—';
-                        const result = computeTotalTimeSaved(
-                          String(saved.time_saved_per_execution),
-                          saved.execution_count,
-                        );
-                        if (!result) return '—';
-                        const tp = t as (
-                          key: string,
-                          opts?: Record<string, unknown>,
-                        ) => string;
-                        const parts: string[] = [];
-                        if (result.days > 0)
-                          parts.push(tp('units.days', { value: result.days }));
-                        if (result.hours > 0)
-                          parts.push(
-                            tp('units.hours', { value: result.hours }),
-                          );
-                        if (result.minutes > 0 && result.days === 0)
-                          parts.push(
-                            tp('units.minutes', { value: result.minutes }),
-                          );
-                        return parts.join(' ') || '—';
-                      })()}
+                      {formatTimeSavedCompact(
+                        computeTotalTimeSaved(
+                          entityMetadataMap[template.entityref]?.timeSaved,
+                          template.count,
+                        ),
+                      )}
                     </TableCell>
                   </TableRow>
                 );

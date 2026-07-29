@@ -38,3 +38,12 @@ export function computeTotalTimeSaved(
   const minutes = Math.round(remainingAfterDays % 60);
   return { days, hours, minutes };
 }
+
+export function formatTimeSavedCompact(result: TimeSavedResult): string {
+  if (!result) return '—';
+  const parts: string[] = [];
+  if (result.days > 0) parts.push(`${result.days}d`);
+  if (result.hours > 0) parts.push(`${result.hours}h`);
+  if (result.minutes > 0 && result.days === 0) parts.push(`${result.minutes}m`);
+  return parts.join(' ') || '—';
+}
