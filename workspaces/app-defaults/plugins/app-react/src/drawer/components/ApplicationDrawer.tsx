@@ -81,6 +81,7 @@ export const ApplicationDrawer = ({
     <>
       <div
         style={{
+          minHeight: '100vh',
           transition: `margin-right 225ms cubic-bezier(${
             isOpen ? '0, 0, 0.2, 1' : '0.4, 0, 0.6, 1'
           })`,

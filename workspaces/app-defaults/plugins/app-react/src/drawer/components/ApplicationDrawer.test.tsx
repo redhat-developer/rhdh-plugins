@@ -90,6 +90,16 @@ describe('ApplicationDrawer', () => {
     );
   });
 
+  it('applies minHeight 100vh to wrapper div for full viewport height', () => {
+    const contents: AppDrawerContent[] = [
+      { id: 'test-drawer', element: <div>Content</div> },
+    ];
+    const { container } = renderWithProvider(contents);
+
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.style.minHeight).toBe('100vh');
+  });
+
   it('removes CSS class and variable when drawer is closed', () => {
     const contents: AppDrawerContent[] = [
       { id: 'test-drawer', element: <div>Content</div> },
