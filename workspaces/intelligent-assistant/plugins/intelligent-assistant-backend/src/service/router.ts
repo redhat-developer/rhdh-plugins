@@ -39,10 +39,12 @@ import {
 
 import { Readable } from 'node:stream';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   DEFAULT_LIGHTSPEED_SERVICE_HOST,
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   EXPRESS_JSON_BODY_LIMIT,
+  TEST_VISION_JPEG,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -63,7 +65,10 @@ import { userPermissionAuthorization } from './permission';
 import { createTokenEncryptor } from './token-encryption';
 import { QueryRequestBody, RouterOptions } from './types';
 import { handleLCSFetchError, rewriteProxyPath } from './utils';
-import { validateCompletionsRequest } from './validation';
+import {
+  validateAttachmentsForModel,
+  validateCompletionsRequest,
+} from './validation';
 
 /**
  * MCP Server authentication modes for lightspeed.mcpServers entries.
@@ -720,13 +725,19 @@ export async function createRouter(
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     expensiveRateLimiter,
     validateCompletionsRequest,
+    validateAttachmentsForModel,
     requirePermission(lightspeedChatCreatePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
         const { userEntityRef, credentials } = getIdentity(request);
-
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
+
+        if (request.body.attachments?.length) {
+          logger.info(
+            `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
+          );
+        }
 
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
@@ -843,6 +854,93 @@ export async function createRouter(
         const errormsg = `Error while updating topic summary: ${error}`;
         logger.error(errormsg);
         response.status(500).json({ error: errormsg });
+      }
+    },
+  );
+
+  router.post(
+    '/v1/validate-model-vision',
+    generalRateLimiter,
+    requirePermission(lightspeedChatReadPermission),
+    async (request, response) => {
+      const { model, provider } = request.body;
+
+      if (
+        typeof model !== 'string' ||
+        !model.trim() ||
+        typeof provider !== 'string' ||
+        !provider.trim()
+      ) {
+        response.status(400).json({ error: 'model and provider are required' });
+        return;
+      }
+
+      const cacheKey = `${provider}/${model}`;
+
+      try {
+        logger.info(`Vision validation requested for model: ${cacheKey}`);
+
+        if (ModelCapabilitiesCache.has(cacheKey)) {
+          const cached = ModelCapabilitiesCache.get(cacheKey)!;
+          logger.info(`Cache hit for ${cacheKey}: ${cached}`);
+          response.json({ model, provider, supportsVision: cached });
+          return;
+        }
+
+        const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
+        const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: cacheKey,
+            input: [
+              {
+                type: 'message',
+                role: 'user',
+                content: [
+                  {
+                    type: 'input_image',
+                    image_url: testJpeg,
+                    detail: 'low',
+                  },
+                  {
+                    type: 'input_text',
+                    text: 'hi, respond with hi.',
+                  },
+                ],
+              },
+            ],
+            tool_choice: 'none',
+            temperature: 0,
+            store: false,
+            stream: false,
+          }),
+        });
+
+        if (testResponse.ok) {
+          ModelCapabilitiesCache.set(cacheKey, true);
+          response.json({ model, provider, supportsVision: true });
+        } else if (testResponse.status >= 500) {
+          logger.warn(
+            `Vision test for ${cacheKey}: ${testResponse.status} ${testResponse.statusText}, not caching`,
+          );
+          response.status(502).json({
+            error: `Unable to verify vision support for model — upstream returned ${testResponse.status}`,
+            model,
+            provider,
+          });
+        } else {
+          ModelCapabilitiesCache.set(cacheKey, false);
+          response.json({ model, provider, supportsVision: false });
+        }
+      } catch (error) {
+        logger.error(`Vision test error for ${cacheKey}:`, error);
+        response.status(502).json({
+          error:
+            'Unable to verify vision support for model — upstream unreachable',
+          model,
+          provider,
+        });
       }
     },
   );

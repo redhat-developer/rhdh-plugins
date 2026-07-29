@@ -16,16 +16,42 @@
 
 import type { NextFunction, Request, Response } from 'express';
 
+import { ModelCapabilitiesCache } from './attachment-validation';
 import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_QUERY_LENGTH,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from './constant';
-import { QueryRequestBody } from './types';
+import { Attachments, QueryRequestBody } from './types';
 
-function validateAttachments(
-  attachments: Array<{ name: string; content?: string }>,
-): string | null {
+const JPEG_MAGIC = [0xff, 0xd8, 0xff];
+
+function extractBase64(content: string): string {
+  const commaIndex = content.indexOf(',');
+  if (commaIndex !== -1 && content.startsWith('data:')) {
+    return content.slice(commaIndex + 1);
+  }
+  return content;
+}
+
+function hasValidJpegMagicBytes(content: string): boolean {
+  const bytes = Buffer.from(extractBase64(content), 'base64');
+  return (
+    bytes.length >= JPEG_MAGIC.length &&
+    JPEG_MAGIC.every((b, i) => bytes[i] === b)
+  );
+}
+
+function isValidJson(content: string): boolean {
+  try {
+    JSON.parse(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function validateAttachments(attachments: Array<Attachments>): string | null {
   let totalSize = 0;
 
   for (const attachment of attachments) {
@@ -34,10 +60,26 @@ function validateAttachments(
       : 0;
 
     if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
-      return `Attachment "${attachment.name}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
+      return `Attachment with type "${attachment.attachment_type}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)}MB`;
     }
 
     totalSize += attachmentSize;
+
+    if (
+      attachment.attachment_type === 'image' &&
+      attachment.content &&
+      !hasValidJpegMagicBytes(attachment.content)
+    ) {
+      return 'Image attachment does not contain a valid JPEG file';
+    }
+
+    if (
+      attachment.content_type === 'application/json' &&
+      attachment.content &&
+      !isValidJson(attachment.content)
+    ) {
+      return 'Attachment with content_type "application/json" contains invalid JSON';
+    }
   }
 
   if (totalSize > MAX_TOTAL_ATTACHMENTS_SIZE_BYTES) {
@@ -78,13 +120,6 @@ export const validateCompletionsRequest = (
     });
   }
 
-  if (reqData.attachments && Array.isArray(reqData.attachments)) {
-    const attachmentError = validateAttachments(reqData.attachments);
-    if (attachmentError) {
-      return res.status(400).json({ error: attachmentError });
-    }
-  }
-
   return next();
 };
 
@@ -100,6 +135,54 @@ export const validateLoadHistoryRequest = (
   }
 
   // TODO: Need to extract out the user_id from conversation_id, and verify with the login user entity
+
+  return next();
+};
+
+export const validateAttachmentsForModel = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { model, provider, attachments } = req.body;
+
+  if (!attachments || attachments.length === 0) {
+    return next();
+  }
+
+  const attachmentError = validateAttachments(attachments);
+  if (attachmentError) {
+    return res.status(400).json({ error: attachmentError });
+  }
+
+  const hasImages = attachments.some(
+    (att: { attachment_type: string }) => att.attachment_type === 'image',
+  );
+
+  if (!hasImages) {
+    return next();
+  }
+
+  const cacheKey = `${provider}/${model}`;
+
+  // Check if model has been validated
+  if (!ModelCapabilitiesCache.has(cacheKey)) {
+    return res.status(400).json({
+      error:
+        'Model vision capability not validated. Please call /v1/validate-model-vision first.',
+      model,
+    });
+  }
+
+  // Check if model supports vision
+  const supportsVision = ModelCapabilitiesCache.get(cacheKey);
+  if (!supportsVision) {
+    return res.status(400).json({
+      error:
+        'This model does not support JPEG images. Please select a vision-capable model.',
+      model,
+    });
+  }
 
   return next();
 };
