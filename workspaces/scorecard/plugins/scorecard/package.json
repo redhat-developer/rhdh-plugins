@@ -6,13 +6,17 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha/index.tsx",
+    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacyExports.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha/index.tsx"
+        "src/alpha.ts"
+      ],
+      "legacy": [
+        "src/legacyExports.ts"
       ],
       "package.json": [
         "package.json"

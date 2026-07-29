@@ -19,7 +19,7 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import Masonry from '@mui/lab/Masonry';
 
-import { ScorecardLayoutProps } from '../../alpha/blueprints/ScorecardLayoutBlueprint';
+import { ScorecardLayoutProps } from '../../blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
 import { useTranslation } from '../../hooks/useTranslation';
 import NoScorecardsState from '../Common/NoScorecardsState';

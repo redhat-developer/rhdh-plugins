@@ -14,7 +14,7 @@ app:
           path: /
 
     # Scorecard tab: entity shows tab if it matches any filter below.
-    - entity-content:catalog/entity-content-scorecard:
+    - entity-content:scorecard/entity-content-scorecard:
         config:
           allowedFilters:
             - kind: component # e.g. Component with spec.type: website

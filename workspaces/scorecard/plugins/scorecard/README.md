@@ -2,7 +2,10 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. For NFS, the plugin currently provides three modules: a catalog module for the Scorecard entity tab, a home module for homepage widgets, and a translations module.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations remain available at `./alpha`.
+
+For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModule`. The plugin itself contributes the Scorecard page, entity tab, layout, and homepage widgets (no separate catalog/home modules).
+
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
@@ -44,21 +47,18 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
    ```
 
-2. Register the plugin in `packages/app/src/App.tsx` using the **alpha** export:
+2. Register the plugin in `packages/app/src/App.tsx`:
 
    ```tsx
    // In packages/app/src/App.tsx
    import { createApp } from '@backstage/frontend-defaults';
-   import {
-     scorecardHomeModule,
+   import scorecardPlugin, {
      scorecardTranslationsModule,
-     scorecardCatalogModule,
-   } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
+   } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    const app = createApp({
      features: [
-       scorecardHomeModule,
-       scorecardCatalogModule,
+       scorecardPlugin,
        scorecardTranslationsModule,
        // ... other plugins
      ],
@@ -72,7 +72,7 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    ```yaml
    app:
      extensions:
-       - entity-content:catalog/entity-content-scorecard:
+       - entity-content:scorecard/entity-content-scorecard:
            config:
              allowedFilters:
                - kind: component
@@ -128,7 +128,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    ```yaml
    app:
      extensions:
-       - scorecard-layout:catalog/scorecard-entity-layout-grid:
+       - scorecard-layout:scorecard/scorecard-entity-layout-grid:
            config:
              groups:
                codeQuality:
@@ -162,7 +162,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
    - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
 
-7. (Optional) Enable homepage Scorecard widgets by adding `scorecardHomeModule` to app features (see step 2) and configuring home page extensions in `app-config.yaml`:
+7. (Optional) Enable homepage Scorecard widgets by configuring home page extensions in `app-config.yaml` (widgets are registered by `scorecardPlugin`):
 
    ```yaml
    app:
@@ -255,28 +255,96 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
 ##### Modules and extensions (NFS)
 
-The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
+The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard` for NFS apps:
 
 **Modules**
 
-| Module                        | Description                                                                                                                                                                                                                                                                                                                                                |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scorecardHomeModule`         | Registers Scorecard homepage widgets for the home plugin (`AggregatedCardWithDeprecatedMetricId`, `AggregatedCardWithDefaultAggregation`, `AggregatedCardWithJiraOpenIssues`, `AggregatedCardWithGithubOpenPrs`, `AggregatedCardWithGithubFilecheckLicense`, `AggregatedCardWithGithubFilecheckCodeowners` and `AggregatedCardWithGithubOpenPrsWeighted`). |
-| `scorecardCatalogModule`      | Registers the Scorecard entity tab and the grid layout extension with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). The grid layout is disabled by default; enable and configure it with `groups` (see step 6).                                                           |
-| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                                                                                                                                                                                               |
+| Module                        | Description                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`. |
 
-**Extensions**
+The default `scorecardPlugin` registers the Scorecard page, API, entity tab, layout, and homepage widgets.
 
-- `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
-- `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
-- `scorecard-layout:catalog/scorecard-entity-layout-grid` — Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` to organize metrics into themed cards (see step 6).
-- `home-page-widget:home/scorecard-deprecated-metric-id` — Homepage widget using deprecated metricId property (Jira open issues).
-- `home-page-widget:home/scorecard-default-aggregation` — Homepage widget using default aggregation config (GitHub open PRs).
-- `home-page-widget:home/scorecard-jira-open-issues` — Homepage widget showing Jira open blocking tickets.
-- `home-page-widget:home/scorecard-github-open-prs` — Homepage widget showing GitHub open PRs.
-- `home-page-widget:home/scorecard-github-filecheck-license` - Homepage widget showing file check "License".
-- `home-page-widget:home/scorecard-github-filecheck-codeowners` - Homepage widget showing file check "Codeowners".
-- `home-page-widget:home/scorecard-github-open-prs-weighted` - Homepage widget showing weighted status score for GitHub open PRs.
+**Extension IDs**
+
+| Extension ID                                                       | Description                                                                                                                      |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `api:scorecard`                                                    | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
+| `page:scorecard`                                                   | Scorecard entities / drill-down page.                                                                                            |
+| `entity-content:scorecard/entity-content-scorecard`                | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
+| `scorecard-layout:scorecard/scorecard-entity-layout-grid`          | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
+| `home-page-widget:scorecard/scorecard-deprecated-metric-id`        | Homepage widget using deprecated `metricId` (Jira open issues).                                                                  |
+| `home-page-widget:scorecard/scorecard-default-aggregation`         | Homepage widget using default aggregation (GitHub open PRs).                                                                     |
+| `home-page-widget:scorecard/scorecard-jira-open-issues`            | Homepage widget for Jira open blocking tickets.                                                                                  |
+| `home-page-widget:scorecard/scorecard-github-open-prs`             | Homepage widget for GitHub open PRs.                                                                                             |
+| `home-page-widget:scorecard/scorecard-github-filecheck-license`    | Homepage widget for file check "License".                                                                                        |
+| `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` | Homepage widget for file check "Codeowners".                                                                                     |
+| `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    | Homepage widget for weighted GitHub open PRs health.                                                                             |
+
+##### Migration notes (NFS graduation)
+
+If you previously imported Scorecard NFS APIs from `/alpha` and registered separate catalog/home modules, update as follows.
+
+**1. Features registration**
+
+```diff
+- import scorecardPlugin, {
+-   scorecardCatalogModule,
+-   scorecardHomeModule,
+-   scorecardTranslationsModule,
+- } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
++ import scorecardPlugin, {
++   scorecardTranslationsModule,
++ } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+
+  features: [
+    scorecardPlugin,
+-   scorecardCatalogModule,
+-   scorecardHomeModule,
+    scorecardTranslationsModule,
+  ]
+```
+
+`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly.
+
+**2. `app.extensions` IDs**
+
+Extension IDs now use the `scorecard` plugin namespace (not `catalog` / `home`):
+
+| Old ID                                                        | New ID                                                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `entity-content:catalog/entity-content-scorecard`             | `entity-content:scorecard/entity-content-scorecard`                |
+| `scorecard-layout:catalog/scorecard-entity-layout-grid`       | `scorecard-layout:scorecard/scorecard-entity-layout-grid`          |
+| `home-page-widget:home/scorecard-deprecated-metric-id`        | `home-page-widget:scorecard/scorecard-deprecated-metric-id`        |
+| `home-page-widget:home/scorecard-default-aggregation`         | `home-page-widget:scorecard/scorecard-default-aggregation`         |
+| `home-page-widget:home/scorecard-jira-open-issues`            | `home-page-widget:scorecard/scorecard-jira-open-issues`            |
+| `home-page-widget:home/scorecard-github-open-prs`             | `home-page-widget:scorecard/scorecard-github-open-prs`             |
+| `home-page-widget:home/scorecard-github-filecheck-license`    | `home-page-widget:scorecard/scorecard-github-filecheck-license`    |
+| `home-page-widget:home/scorecard-github-filecheck-codeowners` | `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` |
+| `home-page-widget:home/scorecard-github-open-prs-weighted`    | `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    |
+
+Example:
+
+```diff
+  app:
+    extensions:
+-     - entity-content:catalog/entity-content-scorecard:
++     - entity-content:scorecard/entity-content-scorecard:
+          config:
+            allowedFilters:
+              - kind: component
+```
+
+Homepage widget **layout** config under `home-page-layout:home/dynamic-homepage-layout` (widget names like `AggregatedCardWithGithubOpenPrs`) is unchanged; only the extension IDs above move namespaces.
+
+**3. Legacy (OFS) imports**
+
+OFS components, the OFS plugin, and status icons are available only from `./legacy` (not re-exported from the main entry):
+
+```diff
+- import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
++ import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
+```
 
 #### Legacy app
 
@@ -289,7 +357,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
 
    ```tsx
-   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
    const scorecardRoute = (
      <EntityLayout.Route path="/scorecard" title="Scorecard">
@@ -334,7 +402,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 3. (Optional) Add Scorecard homepage cards to your home page:
 
    ```tsx
-   import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+   import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
    // GitHub open PRs
    <ScorecardHomepageCard metricId="github.openPRs" />
@@ -378,7 +446,7 @@ permission:
 
 ### Homepage scorecard cards
 
-The plugin exports **`ScorecardHomepageCard`** (see [`plugin.ts`](./src/plugin.ts)) for use on customizable home pages (for example **Dynamic Home Page** mount points such as `home.page/cards`).
+The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/backstage-plugin-scorecard/legacy` (see [`plugin.ts`](./src/plugin.ts)) for use on customizable home pages (for example **Dynamic Home Page** mount points such as `home.page/cards`).
 
 #### Backend configuration
 
@@ -409,7 +477,7 @@ The supported model is **a single `aggregationId` string** whose value is either
 Example (Dynamic Home Page–style mount point): register **`ScorecardHomepageCard`** and pass **`props.aggregationId`** (and **`metricId`** only if you still run an older card API):
 
 ```tsx
-import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 import { ComponentType } from 'react';
 
 // Inside your home page cards config:

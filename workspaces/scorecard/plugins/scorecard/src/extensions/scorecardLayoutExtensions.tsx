@@ -19,8 +19,7 @@ import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
 /**
  * Grid view layout extension for the Scorecard entity tab.
  *
- * Extension ID: scorecard-layout:catalog/scorecard-entity-layout-grid
- * @alpha
+ * Extension ID: scorecard-layout:scorecard/scorecard-entity-layout-grid
  */
 export const scorecardEntityLayoutGrid =
   ScorecardEntityContentLayoutBlueprint.make({
@@ -29,8 +28,8 @@ export const scorecardEntityLayoutGrid =
     params: {
       title: 'Grid',
       loader: () =>
-        import(
-          '../../components/Scorecard/ScorecardEntityContentGridView'
-        ).then(m => m.ScorecardEntityContentGridView),
+        import('../components/Scorecard/ScorecardEntityContentGridView').then(
+          m => m.ScorecardEntityContentGridView,
+        ),
     },
   });

@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-import { PageBlueprint } from '@backstage/frontend-plugin-api';
-import { scorecardDrillDownRouteRef } from '../../routes';
+import {
+  ApiBlueprint,
+  createApiFactory,
+  discoveryApiRef,
+  fetchApiRef,
+} from '@backstage/frontend-plugin-api';
+import { ScorecardApiClient, scorecardApiRef } from '../api';
 
-/**
- * NFS page extension for the Scorecard drill-down page.
- * @alpha
- */
-export const scorecardPage = PageBlueprint.make({
-  params: {
-    path: '/scorecard/aggregations/:aggregationId/metrics/:metricId',
-    routeRef: scorecardDrillDownRouteRef,
-    loader: () =>
-      import('../../pages/ScorecardPage').then(m => (
-        <m.ScorecardPageWithProvider />
-      )),
-  },
+/** Scorecard API extension. */
+export const scorecardApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams(
+      createApiFactory({
+        api: scorecardApiRef,
+        deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
+        factory: ({ fetchApi, discoveryApi }) =>
+          new ScorecardApiClient({ fetchApi, discoveryApi }),
+      }),
+    ),
 });

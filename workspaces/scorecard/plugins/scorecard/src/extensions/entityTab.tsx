@@ -21,7 +21,7 @@ import {
   coreExtensionData,
 } from '@backstage/frontend-plugin-api';
 
-import { rootRouteRef } from '../../routes';
+import { rootRouteRef } from '../routes';
 import { scorecardLayoutTitleDataRef } from '../blueprints/ScorecardLayoutBlueprint';
 
 /**
@@ -30,8 +30,6 @@ import { scorecardLayoutTitleDataRef } from '../blueprints/ScorecardLayoutBluepr
  * When one or more layout blueprint extensions are attached, renders
  * a {@link ScorecardLayoutSwitcher} with a toggle (when 2+).
  * Otherwise falls back to the legacy flat {@link EntityScorecardContent}.
- *
- * @alpha
  */
 export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
   name: 'entity-content-scorecard',
@@ -86,12 +84,12 @@ export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
           }));
 
           const { ScorecardLayoutSwitcher } = await import(
-            '../../components/Scorecard/ScorecardLayoutSwitcher'
+            '../components/Scorecard/ScorecardLayoutSwitcher'
           );
           return <ScorecardLayoutSwitcher layouts={layoutItems} />;
         }
         const { EntityScorecardContent } = await import(
-          '../../components/Scorecard'
+          '../components/Scorecard'
         );
         return <EntityScorecardContent />;
       },
