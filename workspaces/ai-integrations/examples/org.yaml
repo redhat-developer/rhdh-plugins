@@ -5,7 +5,7 @@ kind: User
 metadata:
   name: guest
 spec:
-  memberOf: [guests]
+  memberOf: [guests, team-ml-platform]
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
 apiVersion: backstage.io/v1alpha1
@@ -15,3 +15,14 @@ metadata:
 spec:
   type: team
   children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-ml-platform
+  title: ML Platform
+  description: Owns AiResource skill and model catalog examples.
+spec:
+  type: team
+  children: []
+  members: [guest]
