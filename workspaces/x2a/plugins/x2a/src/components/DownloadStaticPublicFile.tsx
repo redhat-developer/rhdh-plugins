@@ -22,7 +22,7 @@ type DownloadStaticPublicFileProps = {
 };
 
 const defaultNavigate = (url: string) => {
-  globalThis.location.href = url;
+  window.location.href = url;
 };
 
 /**

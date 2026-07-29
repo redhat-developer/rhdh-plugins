@@ -373,6 +373,14 @@ Override the RHDH path if needed:
 RHDH_DIR=~/path/to/rhdh yarn enable-in-rhdh-repo
 ```
 
+Override the RHDH CLI version used for `plugin export` if your checkout needs a different release line (default `1.10.7` for RHDH 1.10):
+
+```sh
+RHDH_CLI_VERSION=1.11.0 yarn enable-in-rhdh-repo
+```
+
+The same `RHDH_CLI_VERSION` env var is honored by `scripts/build-dynamic-plugins.sh`.
+
 Seed config comes from `scripts/config-for-rhdh-repo.yaml`. Existing leaf values in `app-config.local.yaml` are preserved (defaults are applied only where missing).
 
 ## Additional Commands

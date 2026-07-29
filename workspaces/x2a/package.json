@@ -23,7 +23,7 @@
     "test:all": "yarn openapi-generate && yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
     "test:all:pg": "yarn openapi-generate && yarn prettier:check && yarn lint:all && CI=true backstage-cli repo test --coverage",
     "test:e2e": "yarn test:e2e:all",
-    "test:e2e:nfs": "playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
     "test:e2e:all": "yarn test:e2e:nfs",
     "playwright": "bash -c 'if [[ $1 == test ]]; then echo \"Skipping test:e2e:all e2e tests (no real tests yet)\"; else npx playwright \"$@\"; fi' _",
     "fix": "backstage-cli repo fix --publish",
@@ -31,7 +31,7 @@
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all:pg",
+    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
     "enable-in-rhdh-repo": "node scripts/export-to-rhdh-repo.js && node scripts/update-config-in-rhdh-repo.js"

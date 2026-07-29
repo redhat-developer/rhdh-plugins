@@ -16,6 +16,8 @@
 
 import { defineConfig } from '@playwright/test';
 
+// APP_MODE: x2a is NFS-only (no app-legacy); default 'nfs'
+const appMode = process.env.APP_MODE || 'nfs';
 const startCommand = 'yarn start';
 
 const baseConfig = `${__dirname}/app-config.yaml`;
@@ -46,7 +48,9 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -54,7 +58,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
   testDir: 'e2e-tests',
 
