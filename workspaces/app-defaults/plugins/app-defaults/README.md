@@ -4,8 +4,8 @@ RHDH app modules for the **new frontend system**, registered against `pluginId: 
 
 ## Usage
 
-- **Dynamic loading**: default export is the `appDrawerModule` `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
-- **Static**: import from `@red-hat-developer-hub/backstage-plugin-app-defaults` for `appDrawerModule` and `appDefaultsModule`.
+- **Dynamic loading**: default export is the `appDefaultsModule` `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
+- **Static**: import from `@red-hat-developer-hub/backstage-plugin-app-defaults` for `appDefaultsModule` and `appDrawerModule`.
 
 ### App Integration
 

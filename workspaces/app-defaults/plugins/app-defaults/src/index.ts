@@ -23,4 +23,4 @@
 export { appDefaultsModule } from './appDefaultsModule';
 export { appDrawerModule } from './appDrawerModule';
 
-export { appDrawerModule as default } from './appDrawerModule';
+export { appDefaultsModule as default } from './appDefaultsModule';

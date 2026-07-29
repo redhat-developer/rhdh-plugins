@@ -6,10 +6,10 @@
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
 // @public
-export const appDefaultsModule: FrontendModule;
+const appDefaultsModule: FrontendModule;
+export { appDefaultsModule };
+export default appDefaultsModule;
 
 // @public
-const appDrawerModule: FrontendModule;
-export { appDrawerModule };
-export default appDrawerModule;
+export const appDrawerModule: FrontendModule;
 ```

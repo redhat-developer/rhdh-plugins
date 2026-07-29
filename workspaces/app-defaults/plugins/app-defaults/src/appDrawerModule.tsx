@@ -32,7 +32,7 @@ import {
  * Drawer state is managed by a global singleton store (see drawerStore.ts)
  * rather than a React context provider.
  */
-const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
+export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
   name: 'drawer',
   inputs: {
     drawers: createExtensionInput([appDrawerContentDataRef]),

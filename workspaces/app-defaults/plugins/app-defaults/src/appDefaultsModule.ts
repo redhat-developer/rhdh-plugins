@@ -16,13 +16,15 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
+import { appDrawerExtension } from './appDrawerModule';
+
 /**
- * Empty RHDH app module for `pluginId: 'app'`.
+ * RHDH app module for `pluginId: 'app'` that bundles all default extensions.
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [],
+  extensions: [appDrawerExtension],
 });
