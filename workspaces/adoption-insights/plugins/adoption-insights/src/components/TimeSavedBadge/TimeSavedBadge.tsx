@@ -25,9 +25,11 @@ import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
 import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { parseTimeSavedMinutes } from '../../utils/formatTimeSaved';
-
-const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';
+import {
+  parseTimeSavedMinutes,
+  formatTimeSavedDuration,
+} from '../../utils/formatTimeSaved';
+import { TIME_SAVED_ANNOTATION } from '../../utils/constants';
 
 type TimeSavedBadgeProps = {
   annotations?: Record<string, string>;
@@ -50,13 +52,7 @@ export const TimeSavedBadge = ({ annotations }: TimeSavedBadgeProps) => {
 
   if (parsed) {
     const tp = t as (key: string, opts?: Record<string, unknown>) => string;
-    const parts: string[] = [];
-    if (parsed.days > 0) parts.push(tp('units.days', { value: parsed.days }));
-    if (parsed.hours > 0)
-      parts.push(tp('units.hours', { value: parsed.hours }));
-    if (parsed.minutes > 0 && parsed.days === 0)
-      parts.push(tp('units.minutes', { value: parsed.minutes }));
-    const duration = parts.join(' ');
+    const duration = formatTimeSavedDuration(parsed, tp);
 
     return (
       <Tooltip

@@ -47,3 +47,5 @@ export const TEMPLATE_TABLE_HEADERS = [
   { id: 'executions', titleKey: 'table.headers.executions' },
   { id: 'estTimeSaved', titleKey: 'table.headers.estTimeSaved' },
 ];
+
+export const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';

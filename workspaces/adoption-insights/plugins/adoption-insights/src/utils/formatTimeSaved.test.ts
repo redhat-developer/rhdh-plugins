@@ -145,6 +145,10 @@ describe('parseTimeSavedMinutes', () => {
     });
   });
 
+  it('returns null for sub-minute values', () => {
+    expect(parseTimeSavedMinutes('0.5')).toBeNull();
+  });
+
   it('returns 1 minute for input of 1', () => {
     expect(parseTimeSavedMinutes('1')).toEqual({
       days: 0,

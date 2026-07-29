@@ -20,7 +20,7 @@ import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
-const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';
+import { TIME_SAVED_ANNOTATION } from '../utils/constants';
 
 type EntityMetadata = {
   title?: string;

@@ -27,7 +27,7 @@ export function parseTimeSavedMinutes(
     return null;
   }
   const parsed = Number(minutesStr);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
+  if (!Number.isFinite(parsed) || parsed < 1) {
     return null;
   }
   const days = Math.floor(parsed / 1440);
@@ -35,6 +35,18 @@ export function parseTimeSavedMinutes(
   const hours = Math.floor(remainingAfterDays / 60);
   const minutes = Math.floor(remainingAfterDays % 60);
   return { days, hours, minutes };
+}
+
+export function formatTimeSavedDuration(
+  result: { days: number; hours: number; minutes: number },
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const parts: string[] = [];
+  if (result.days > 0) parts.push(t('units.days', { value: result.days }));
+  if (result.hours > 0) parts.push(t('units.hours', { value: result.hours }));
+  if (result.minutes > 0 && result.days === 0)
+    parts.push(t('units.minutes', { value: result.minutes }));
+  return parts.join(' ');
 }
 
 export function computeTotalTimeSaved(
