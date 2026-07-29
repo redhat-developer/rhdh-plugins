@@ -42,7 +42,7 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-global-header', () => ({
 
 describe('QuickstartHelpMenuItem', () => {
   beforeEach(() => {
-    mockToggleDrawer.mockClear();
+    jest.clearAllMocks();
   });
 
   it('renders as a menuitem with Quick start label', async () => {
