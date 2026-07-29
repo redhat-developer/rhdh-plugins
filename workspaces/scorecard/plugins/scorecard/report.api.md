@@ -57,8 +57,8 @@ const _default: OverridableFrontendPlugin<
       config: {
         allowedFilters:
           | {
-              kind?: string | undefined;
               type?: string | undefined;
+              kind?: string | undefined;
             }[]
           | undefined;
         path: string | undefined;
@@ -70,8 +70,8 @@ const _default: OverridableFrontendPlugin<
       configInput: {
         allowedFilters?:
           | {
-              kind?: string | undefined;
               type?: string | undefined;
+              kind?: string | undefined;
             }[]
           | undefined;
         path?: string | undefined | undefined;
@@ -121,12 +121,8 @@ const _default: OverridableFrontendPlugin<
           >;
       inputs: {
         layouts: ExtensionInput<
-          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>
-          | ConfigurableExtensionDataRef<
-              JSX_2.Element,
-              'core.reactElement',
-              {}
-            >,
+          | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>,
           {
             singleton: false;
             optional: true;
@@ -334,6 +330,19 @@ const _default: OverridableFrontendPlugin<
   }
 >;
 export default _default;
+
+// @public (undocumented)
+export interface ScorecardLayoutProps {
+  // (undocumented)
+  groups: Record<
+    string,
+    {
+      title: string;
+      description?: string;
+      metrics: string[];
+    }
+  >;
+}
 
 // @public
 export const scorecardTranslationRef: TranslationRef<

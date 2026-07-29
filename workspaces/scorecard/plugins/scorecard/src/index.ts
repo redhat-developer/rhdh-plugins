@@ -88,3 +88,9 @@ export const scorecardTranslationsModule = createFrontendModule({
 });
 
 export { scorecardTranslationRef, scorecardTranslations } from './translations';
+
+/**
+ * Props for Scorecard entity-tab layout components.
+ * @public
+ */
+export type { ScorecardLayoutProps } from './blueprints/ScorecardLayoutBlueprint';
