@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import { createDevApp } from '@backstage/dev-utils';
@@ -36,34 +37,29 @@ import '@backstage/ui/css/styles.css';
 
 import Button from '@mui/material/Button';
 
+import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
+import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { GlobalHeader } from '../src/components/GlobalHeader';
-import { GlobalHeaderProvider } from '../src/extensions/GlobalHeaderContext';
-import { NotificationBanner } from '../src/components/NotificationBanner';
-
-import { SearchComponent } from '../src/components/SearchComponent/SearchComponent';
-import { Spacer } from '../src/components/Spacer/Spacer';
-import { StarredDropdown } from '../src/components/HeaderDropdownComponent/StarredDropdown';
-import { NotificationButton } from '../src/components/NotificationButton/NotificationButton';
-import { Divider } from '../src/components/Divider/Divider';
-import { CompanyLogo } from '../src/components/CompanyLogo/CompanyLogo';
-import { HeaderIconButton } from '../src/components/HeaderIconButton/HeaderIconButton';
-import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
-import { ProfileDropdown } from '../src/components/ProfileDropdown';
-import { HelpDropdown } from '../src/components/HelpDropdown';
-import { ApplicationLauncherDropdown } from '../src/components/ApplicationLauncherDropdown';
-import { LogoutButton } from '../src/components/LogoutButton/LogoutButton';
-import { SupportButton } from '../src/components/SupportButton/SupportButton';
-import { MyProfileMenuItem } from '../src/components/MyProfileMenuItem';
-import { rhdhLogo } from '../src/defaults/rhdhLogo';
+import {
+  GlobalHeader,
+  globalHeaderPlugin,
+  NotificationBanner,
+  Spacer,
+} from '../src/legacy/plugin';
 
 import { globalHeaderTranslations } from '../src/translations';
 
-import type {
-  GlobalHeaderComponentData,
-  GlobalHeaderMenuItemData,
-} from '../src/types';
+import {
+  defaultApplicationLauncherDropdownMountPoints,
+  defaultCreateDropdownMountPoints,
+  defaultGlobalHeaderComponentsMountPoints,
+  defaultHelpDropdownMountPoints,
+  defaultProfileDropdownMountPoints,
+} from '../src/legacy/defaultMountPoints/defaultMountPoints';
+
+import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -139,84 +135,22 @@ const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
 const fetchApi = new MockFetchApi();
 const client = new NotificationsClient({ discoveryApi, fetchApi });
 
-const CompanyLogoWrapper = () => <CompanyLogo to="/" logo={rhdhLogo} />;
-
-const SelfServiceButton = () => (
-  <HeaderIconButton
-    title="Self-service"
-    titleKey="create.title"
-    icon="addCircleOutline"
-    to="/create"
-  />
-);
-
-const defaultComponents: GlobalHeaderComponentData[] = [
-  { component: CompanyLogoWrapper, priority: 200 },
-  { component: SearchComponent, priority: 100, layout: { flexGrow: 1 } },
-  { component: Spacer, priority: 99, layout: { flexGrow: 0 } },
-  { component: SelfServiceButton, priority: 90 },
-  { component: StarredDropdown, priority: 85 },
-  { component: ApplicationLauncherDropdown, priority: 82 },
-  { component: HelpDropdown, priority: 80 },
-  { component: NotificationButton, priority: 70 },
-  { component: Divider, priority: 50 },
-  { component: ProfileDropdown, priority: 10 },
-];
-
-const defaultMenuItems: GlobalHeaderMenuItemData[] = [
-  {
-    target: 'profile',
-    title: 'Settings',
-    titleKey: 'profile.settings',
-    link: '/settings',
-    icon: 'manage_accounts',
-    priority: 100,
-  },
-  {
-    target: 'profile',
-    component: MyProfileMenuItem,
-    type: 'component',
-    priority: 90,
-  },
-  {
-    target: 'profile',
-    component: LogoutButton,
-    type: 'component',
-    priority: 10,
-  },
-  {
-    target: 'help',
-    component: SupportButton,
-    type: 'component',
-    priority: 10,
-  },
-  {
-    target: 'app-launcher',
-    title: 'Developer Hub',
-    titleKey: 'applicationLauncher.developerHub',
-    link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub',
-    icon: 'hub',
-    sectionLabel: 'applicationLauncher.sections.documentation',
-    priority: 150,
-  },
-  {
-    target: 'app-launcher',
-    title: 'RHDH Local',
-    titleKey: 'applicationLauncher.rhdhLocal',
-    link: 'https://github.com/redhat-developer/rhdh-local',
-    icon: 'hub',
-    sectionLabel: 'applicationLauncher.sections.developerTools',
-    priority: 100,
-  },
-];
-
 const Providers = ({
-  components,
-  menuItems = defaultMenuItems,
-}: PropsWithChildren<{
-  components: GlobalHeaderComponentData[];
-  menuItems?: GlobalHeaderMenuItemData[];
-}>) => {
+  mountPoints,
+}: PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
+  const scalprumState = useMemo<ScalprumState>(
+    () => ({
+      initialized: true,
+      api: {
+        dynamicRootConfig: {
+          mountPoints,
+        },
+      },
+      config: {},
+      pluginStore: new PluginStore(),
+    }),
+    [mountPoints],
+  );
   starredEntitiesApi.toggleStarred('template:default/mock-starred-template');
 
   return (
@@ -229,31 +163,60 @@ const Providers = ({
         [notificationsApiRef, client],
       ]}
     >
-      <GlobalHeaderProvider components={components} menuItems={menuItems}>
+      <ScalprumContext.Provider value={scalprumState}>
         <GlobalHeader />
-      </GlobalHeaderProvider>
+      </ScalprumContext.Provider>
     </TestApiProvider>
   );
 };
 
 createDevApp()
+  .registerPlugin(globalHeaderPlugin)
   .addThemes(getAllThemes())
   .addTranslationResource(globalHeaderTranslations)
   .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it'])
   .setDefaultLanguage('en')
   .addPage({
-    element: <Providers components={defaultComponents} />,
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+          'global.header/application-launcher':
+            defaultApplicationLauncherDropdownMountPoints,
+          'global.header/help': defaultHelpDropdownMountPoints,
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
     title: 'Default header',
     path: '/default-header',
   })
   .addPage({
     element: (
       <Providers
-        components={[
-          ...defaultComponents.filter(c => c.component !== SearchComponent),
-          { component: Spacer, priority: 100 },
-        ]}
-      />
+        mountPoints={{
+          'global.header/component': [
+            ...defaultGlobalHeaderComponentsMountPoints.filter(
+              (_mp, index) => index > 0,
+            ),
+            {
+              Component: Spacer,
+              config: {
+                priority: 100, // the greater the number, the more to the left it will be
+              },
+            },
+          ],
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+          'global.header/application-launcher':
+            defaultApplicationLauncherDropdownMountPoints,
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
     ),
     title: 'Header without search',
     path: '/header-without-search',
@@ -261,39 +224,62 @@ createDevApp()
   .addPage({
     element: (
       <Providers
-        components={[
-          {
-            component: () => (
-              <HeaderButton title="A button" variant="outlined" to="/" />
-            ),
-          },
-          {
-            component: () => (
-              <HeaderButton title="Another button" variant="outlined" to="/" />
-            ),
-          },
-          {
-            component: () => (
-              <HeaderButton title="Help button" startIcon="help" to="/help" />
-            ),
-          },
-          {
-            component: () => (
-              <HeaderButton title="GitHub button" to="https://github.com/" />
-            ),
-          },
-          {
-            component: () => (
-              <HeaderButton
-                title="GitHub button"
-                to="https://github.com/"
-                externalLinkIcon={false}
-              />
-            ),
-          },
-        ]}
-        menuItems={[]}
-      />
+        mountPoints={{
+          'global.header/component': [
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'A button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Another button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Help button',
+                  startIcon: 'help',
+                  to: '/help',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                  externalLinkIcon: false,
+                },
+              },
+            },
+          ],
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
     ),
     title: 'Header buttons',
     path: '/header-buttons',
