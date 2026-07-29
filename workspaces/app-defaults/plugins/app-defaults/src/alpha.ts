@@ -15,11 +15,13 @@
  */
 
 /**
- * New Frontend System: empty app module for the app plugin.
+ * New Frontend System: RHDH app module for the app plugin.
  *
  * @packageDocumentation
  */
 
 export { appDefaultsModule } from './appDefaultsModule';
+
+export { appDrawerExtension, appDrawerModule } from './appDrawerModule';
 
 export { appDefaultsModule as default } from './appDefaultsModule';
