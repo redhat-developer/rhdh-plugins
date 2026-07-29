@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
+import {
+  ApiBlueprint,
+  createApiFactory,
+  discoveryApiRef,
+  fetchApiRef,
+} from '@backstage/frontend-plugin-api';
+import { ScorecardApiClient, scorecardApiRef } from '../api';
 
-/**
- * Grid view layout extension for the Scorecard entity tab.
- *
- * Extension ID: scorecard-layout:catalog/scorecard-entity-layout-grid
- * @alpha
- */
-export const scorecardEntityLayoutGrid =
-  ScorecardEntityContentLayoutBlueprint.make({
-    name: 'scorecard-entity-layout-grid',
-    disabled: true,
-    params: {
-      title: 'Grid',
-      loader: () =>
-        import(
-          '../../components/Scorecard/ScorecardEntityContentGridView'
-        ).then(m => m.ScorecardEntityContentGridView),
-    },
-  });
+/** Scorecard API extension. */
+export const scorecardApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams(
+      createApiFactory({
+        api: scorecardApiRef,
+        deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
+        factory: ({ fetchApi, discoveryApi }) =>
+          new ScorecardApiClient({ fetchApi, discoveryApi }),
+      }),
+    ),
+});

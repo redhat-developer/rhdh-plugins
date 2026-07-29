@@ -26,8 +26,8 @@ import {
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { rootRouteRef, scorecardDrillDownRouteRef } from './routes';
 import { scorecardTranslations } from './translations';
-import { scorecardApi } from './alpha/extensions/api';
-import { scorecardEntityContent } from './alpha/extensions/entityTab';
+import { scorecardApi } from './extensions/api';
+import { scorecardEntityContent } from './extensions/entityTab';
 import {
   aggregatedCardWithDeprecatedMetricIdWidget,
   aggregatedCardWithDefaultAggregationWidget,
@@ -36,9 +36,9 @@ import {
   aggregatedCardWithGithubFilecheckLicenseWidget,
   aggregatedCardWithGithubFilecheckCodeownersWidget,
   aggregatedCardWithGithubOpenPrsWeightedWidget,
-} from './alpha/extensions/homePageCards';
-import { scorecardPage } from './alpha/extensions/scorecardPage';
-import { scorecardEntityLayoutGrid } from './alpha/extensions/scorecardLayoutExtensions';
+} from './extensions/homePageCards';
+import { scorecardPage } from './extensions/scorecardPage';
+import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
 
 /**
  * Extension for Scorecard translations.
@@ -51,28 +51,31 @@ const scorecardTranslation = TranslationBlueprint.make({
 
 /**
  * The primary Scorecard frontend plugin for the new Backstage frontend system.
+ *
+ * Includes page, API, entity tab, layout, and homepage widget extensions.
+ * Translations remain a separate app module (NFS requirement).
+ *
  * @public
  */
 export default createFrontendPlugin({
   pluginId: 'scorecard',
-  extensions: [scorecardApi, scorecardPage],
+  extensions: [
+    scorecardApi,
+    scorecardPage,
+    scorecardEntityContent,
+    scorecardEntityLayoutGrid,
+    aggregatedCardWithDeprecatedMetricIdWidget,
+    aggregatedCardWithDefaultAggregationWidget,
+    aggregatedCardWithJiraOpenIssuesWidget,
+    aggregatedCardWithGithubOpenPrsWidget,
+    aggregatedCardWithGithubFilecheckLicenseWidget,
+    aggregatedCardWithGithubFilecheckCodeownersWidget,
+    aggregatedCardWithGithubOpenPrsWeightedWidget,
+  ],
   routes: {
     root: rootRouteRef,
     drillDown: scorecardDrillDownRouteRef,
   },
-});
-
-/**
- * Catalog module that injects the Scorecard tab into Catalog entity pages.
- *
- * Also ships a grid layout extension (disabled by default).
- * Enable it in app-config.yaml to get a layout toggle in the entity tab.
- *
- * @public
- */
-export const scorecardCatalogModule = createFrontendModule({
-  pluginId: 'catalog',
-  extensions: [scorecardEntityContent, scorecardEntityLayoutGrid],
 });
 
 /**
@@ -84,23 +87,4 @@ export const scorecardTranslationsModule = createFrontendModule({
   extensions: [scorecardTranslation],
 });
 
-/**
- * Home module that contributes scorecard homepage widget and layout.
- * @public
- */
-export const scorecardHomeModule = createFrontendModule({
-  pluginId: 'home',
-  extensions: [
-    aggregatedCardWithDeprecatedMetricIdWidget,
-    aggregatedCardWithDefaultAggregationWidget,
-    aggregatedCardWithJiraOpenIssuesWidget,
-    aggregatedCardWithGithubOpenPrsWidget,
-    aggregatedCardWithGithubFilecheckLicenseWidget,
-    aggregatedCardWithGithubFilecheckCodeownersWidget,
-    aggregatedCardWithGithubOpenPrsWeightedWidget,
-  ],
-});
-
 export { scorecardTranslationRef, scorecardTranslations } from './translations';
-
-export * from './legacyExports';

@@ -22,9 +22,7 @@ import {
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 import scorecardPlugin, {
-  scorecardHomeModule,
   scorecardTranslationsModule,
-  scorecardCatalogModule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 import { signInModule } from './modules/signIn';
 import { navModule } from './modules/nav';
@@ -39,8 +37,6 @@ const app = createApp({
     homePageModule,
     homepageTranslationsModule,
     scorecardPlugin,
-    scorecardHomeModule,
-    scorecardCatalogModule,
     scorecardTranslationsModule,
     iconsModule,
     signInModule,

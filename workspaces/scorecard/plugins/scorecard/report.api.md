@@ -6,22 +6,24 @@
 import { AnyApiFactory } from '@backstage/frontend-plugin-api';
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
-import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { ComponentType } from 'react';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { Entity } from '@backstage/catalog-model';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
+import { FilterPredicate } from '@backstage/filter-predicates';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { HomePageWidgetBlueprintParams } from '@backstage/plugin-home-react/alpha';
+import { HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
-import { JSX as JSX_3 } from 'react/jsx-runtime';
+import { JSXElementConstructor } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { ReactElement } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
-import { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
-import { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
-import { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -30,8 +32,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -50,6 +52,174 @@ const _default: OverridableFrontendPlugin<
       >(
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
+    }>;
+    'entity-content:scorecard/entity-content-scorecard': OverridableExtensionDefinition<{
+      config: {
+        allowedFilters:
+          | {
+              kind?: string | undefined;
+              type?: string | undefined;
+            }[]
+          | undefined;
+        path: string | undefined;
+        title: string | undefined;
+        filter: FilterPredicate | undefined;
+        group: string | false | undefined;
+        icon: string | undefined;
+      };
+      configInput: {
+        allowedFilters?:
+          | {
+              kind?: string | undefined;
+              type?: string | undefined;
+            }[]
+          | undefined;
+        path?: string | undefined | undefined;
+        title?: string | undefined | undefined;
+        filter?: FilterPredicate | undefined;
+        group?: string | false | undefined | undefined;
+        icon?: string | undefined | undefined;
+      };
+      output:
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<string, 'core.routing.path', {}>
+        | ExtensionDataRef<
+            RouteRef_2<AnyRouteRefParams>,
+            'core.routing.ref',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            (entity: Entity) => boolean,
+            'catalog.entity-filter-function',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            string,
+            'catalog.entity-filter-expression',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<string, 'catalog.entity-content-title', {}>
+        | ExtensionDataRef<
+            string,
+            'catalog.entity-content-group',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            string | ReactElement<any, string | JSXElementConstructor<any>>,
+            'catalog.entity-content-icon',
+            {
+              optional: true;
+            }
+          >;
+      inputs: {
+        layouts: ExtensionInput<
+          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>
+          | ConfigurableExtensionDataRef<
+              JSX_2.Element,
+              'core.reactElement',
+              {}
+            >,
+          {
+            singleton: false;
+            optional: true;
+            internal: false;
+          }
+        >;
+      };
+      kind: 'entity-content';
+      name: 'entity-content-scorecard';
+      params: {
+        defaultPath?: [Error: `Use the 'path' param instead`];
+        path: string;
+        defaultTitle?: [Error: `Use the 'title' param instead`];
+        title: string;
+        defaultGroup?: [Error: `Use the 'group' param instead`];
+        group?:
+          | (
+              | 'overview'
+              | 'documentation'
+              | 'development'
+              | 'deployment'
+              | 'operation'
+              | 'observability'
+            )
+          | (string & {});
+        icon?: string | ReactElement;
+        loader: () => Promise<JSX.Element>;
+        routeRef?: RouteRef_2;
+        filter?: string | FilterPredicate | ((entity: Entity) => boolean);
+      };
+    }>;
+    'home-page-widget:scorecard/scorecard-default-aggregation': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-default-aggregation';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-deprecated-metric-id';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-github-filecheck-codeowners': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-filecheck-codeowners';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-github-filecheck-license': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-filecheck-license';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-github-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-github-open-prs-weighted': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-open-prs-weighted';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-jira-open-issues';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
     }>;
     'page:scorecard': OverridableExtensionDefinition<{
       kind: 'page';
@@ -127,36 +297,43 @@ const _default: OverridableFrontendPlugin<
         noHeader?: boolean;
       };
     }>;
+    'scorecard-layout:scorecard/scorecard-entity-layout-grid': OverridableExtensionDefinition<{
+      kind: 'scorecard-layout';
+      name: 'scorecard-entity-layout-grid';
+      config: {
+        groups: Record<
+          string,
+          {
+            title: string;
+            metrics: string[];
+            description?: string | undefined;
+          }
+        >;
+      };
+      configInput: {
+        groups?:
+          | Record<
+              string,
+              {
+                title: string;
+                metrics: string[];
+                description?: string | undefined;
+              }
+            >
+          | undefined;
+      };
+      output:
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<string, 'scorecard.layout-title', {}>;
+      inputs: {};
+      params: {
+        title: string;
+        loader: () => Promise<ComponentType<ScorecardLayoutProps>>;
+      };
+    }>;
   }
 >;
 export default _default;
-
-// @public
-export const EntityScorecardContent: () => JSX_3.Element;
-
-// @public
-export const scorecardCatalogModule: FrontendModule;
-
-export { ScorecardErrorStatusIcon };
-
-// @public
-export const scorecardHomeModule: FrontendModule;
-
-// @public
-export const ScorecardHomepageCard: (props: {
-  metricId?: string;
-  aggregationId?: string;
-  showSubheader?: boolean;
-  showInfo?: boolean;
-}) => JSX_3.Element;
-
-// @public
-export const ScorecardPage: () => JSX_3.Element;
-
-// @public
-export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
-
-export { ScorecardSuccessStatusIcon };
 
 // @public
 export const scorecardTranslationRef: TranslationRef<
@@ -278,8 +455,6 @@ export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
 
 // @public
 export const scorecardTranslationsModule: FrontendModule;
-
-export { ScorecardWarningStatusIcon };
 
 // (No @packageDocumentation comment for this package)
 ```

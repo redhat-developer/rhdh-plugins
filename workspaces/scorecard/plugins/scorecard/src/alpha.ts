@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  ApiBlueprint,
-  createApiFactory,
-  discoveryApiRef,
-  fetchApiRef,
-} from '@backstage/frontend-plugin-api';
-import { ScorecardApiClient, scorecardApiRef } from '../../api';
-
-/** Scorecard API extension. */
-export const scorecardApi = ApiBlueprint.make({
-  params: defineParams =>
-    defineParams(
-      createApiFactory({
-        api: scorecardApiRef,
-        deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
-        factory: ({ fetchApi, discoveryApi }) =>
-          new ScorecardApiClient({ fetchApi, discoveryApi }),
-      }),
-    ),
-});
+/**
+ * Translations remain available at the `/alpha` export.
+ * NFS plugin and modules have graduated to the primary package entry point.
+ */
+export * from './translations';

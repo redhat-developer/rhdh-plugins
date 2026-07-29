@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-import scorecardPlugin, {
-  scorecardCatalogModule,
-  scorecardHomeModule,
-  scorecardTranslationsModule,
-} from './index';
+import scorecardPlugin, { scorecardTranslationsModule } from './index';
 
 describe('scorecard NFS exports', () => {
   it('should export the scorecard plugin as default', () => {
     expect(scorecardPlugin).toBeDefined();
-  });
-
-  it('should export scorecardCatalogModule', () => {
-    expect(scorecardCatalogModule).toBeDefined();
-  });
-
-  it('should export scorecardHomeModule', () => {
-    expect(scorecardHomeModule).toBeDefined();
   });
 
   it('should export scorecardTranslationsModule', () => {

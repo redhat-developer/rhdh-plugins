@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
+import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
+
 /**
- * Translations remain available at the `/alpha` export.
- * NFS plugin and modules have graduated to the primary package entry point.
+ * Grid view layout extension for the Scorecard entity tab.
+ *
+ * Extension ID: scorecard-layout:scorecard/scorecard-entity-layout-grid
  */
-export * from '../translations';
+export const scorecardEntityLayoutGrid =
+  ScorecardEntityContentLayoutBlueprint.make({
+    name: 'scorecard-entity-layout-grid',
+    disabled: true,
+    params: {
+      title: 'Grid',
+      loader: () =>
+        import('../components/Scorecard/ScorecardEntityContentGridView').then(
+          m => m.ScorecardEntityContentGridView,
+        ),
+    },
+  });

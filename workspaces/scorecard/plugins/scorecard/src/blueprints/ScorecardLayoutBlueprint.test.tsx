@@ -40,7 +40,7 @@ describe('ScorecardEntityContentLayoutBlueprint', () => {
     expect(extensionData.kind).toBe('scorecard-layout');
     expect(extensionData.name).toBe('scorecard-entity-layout-grid');
     expect(extensionData.attachTo).toEqual({
-      id: 'entity-content:catalog/entity-content-scorecard',
+      id: 'entity-content:scorecard/entity-content-scorecard',
       input: 'layouts',
     });
   });

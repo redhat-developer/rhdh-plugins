@@ -41,7 +41,7 @@ function lazyScorecardWidget(
 ) {
   return async () => {
     const { ScorecardHomepageCardWithProvider } = await import(
-      '../../components/ScorecardHomepageSection'
+      '../components/ScorecardHomepageSection'
     );
     return { Content: factory(ScorecardHomepageCardWithProvider) };
   };
@@ -53,7 +53,6 @@ function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
 
 /**
  * NFS widget: AggregatedCardWithDeprecatedMetricId.
- * @alpha
  */
 export const aggregatedCardWithDeprecatedMetricIdWidget =
   HomePageWidgetBlueprint.make({
@@ -74,7 +73,6 @@ export const aggregatedCardWithDeprecatedMetricIdWidget =
 
 /**
  * NFS widget: AggregatedCardWithDefaultAggregation.
- * @alpha
  */
 export const aggregatedCardWithDefaultAggregationWidget =
   HomePageWidgetBlueprint.make({
@@ -95,7 +93,6 @@ export const aggregatedCardWithDefaultAggregationWidget =
 
 /**
  * NFS widget: AggregatedCardWithJiraOpenIssues.
- * @alpha
  */
 export const aggregatedCardWithJiraOpenIssuesWidget =
   HomePageWidgetBlueprint.make({
@@ -116,7 +113,6 @@ export const aggregatedCardWithJiraOpenIssuesWidget =
 
 /**
  * NFS widget: AggregatedCardWithGithubOpenPrs.
- * @alpha
  */
 export const aggregatedCardWithGithubOpenPrsWidget =
   HomePageWidgetBlueprint.make({
@@ -137,7 +133,6 @@ export const aggregatedCardWithGithubOpenPrsWidget =
 
 /**
  * NFS widget: AggregatedCardWithGithubFilecheckLicense.
- * @alpha
  */
 export const aggregatedCardWithGithubFilecheckLicenseWidget =
   HomePageWidgetBlueprint.make({
@@ -160,7 +155,6 @@ export const aggregatedCardWithGithubFilecheckLicenseWidget =
 
 /**
  * NFS widget: AggregatedCardWithGithubFilecheckCodeowners.
- * @alpha
  */
 export const aggregatedCardWithGithubFilecheckCodeownersWidget =
   HomePageWidgetBlueprint.make({
@@ -183,7 +177,6 @@ export const aggregatedCardWithGithubFilecheckCodeownersWidget =
 
 /**
  * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
- * @alpha
  */
 export const aggregatedCardWithGithubOpenPrsWeightedWidget =
   HomePageWidgetBlueprint.make({

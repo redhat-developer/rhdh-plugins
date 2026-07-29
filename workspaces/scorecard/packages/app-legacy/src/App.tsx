@@ -60,7 +60,7 @@ import {
   ScorecardSuccessStatusIcon,
   ScorecardWarningStatusIcon,
   scorecardTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard';
+} from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';

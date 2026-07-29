@@ -22,7 +22,7 @@ import {
   ExtensionBoundary,
 } from '@backstage/frontend-plugin-api';
 
-/** @alpha */
+/** @public */
 export interface ScorecardLayoutProps {
   groups: Record<
     string,
@@ -34,7 +34,7 @@ export interface ScorecardLayoutProps {
  * Extension data ref carrying the human-readable layout title
  * (e.g. "Grid", "List") so the entity tab can build a toggle.
  *
- * @alpha
+ * @public
  */
 export const scorecardLayoutTitleDataRef =
   createExtensionDataRef<string>().with({ id: 'scorecard.layout-title' });
@@ -46,12 +46,12 @@ export const scorecardLayoutTitleDataRef =
  * Platform engineers enable/disable individual layouts via app-config.yaml;
  * when multiple layouts are enabled the tab renders a toggle to switch between them.
  *
- * @alpha
+ * @public
  */
 export const ScorecardEntityContentLayoutBlueprint = createExtensionBlueprint({
   kind: 'scorecard-layout',
   attachTo: {
-    id: 'entity-content:catalog/entity-content-scorecard',
+    id: 'entity-content:scorecard/entity-content-scorecard',
     input: 'layouts',
   },
   output: [coreExtensionData.reactElement, scorecardLayoutTitleDataRef],
