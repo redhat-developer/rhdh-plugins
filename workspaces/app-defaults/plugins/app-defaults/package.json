@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@backstage/frontend-plugin-api": "^0.17.2",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.1.0"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
