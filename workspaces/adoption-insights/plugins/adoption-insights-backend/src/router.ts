@@ -50,9 +50,7 @@ export async function createRouter({
 
   router.use(express.json());
 
-  const authorizeUser = async (
-    req: Request<{}, {}, {}, QueryParams>,
-  ): Promise<void> => {
+  const authorizeUser = async (req: Request): Promise<void> => {
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
     const decision = (
       await permissions.authorize(
@@ -79,7 +77,7 @@ export async function createRouter({
   router.get(
     '/events',
     async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
-      await authorizeUser(req);
+      await authorizeUser(req as unknown as Request);
       return eventApiController.getInsights(req, res);
     },
   );
@@ -89,12 +87,14 @@ export async function createRouter({
   });
 
   router.get('/notification-preferences', async (req, res) => {
+    await authorizeUser(req);
     const userRef = await getUserEntityRef(req);
     const frequency = await db.getNotificationPreference(userRef);
     res.json({ frequency });
   });
 
   router.put('/notification-preferences', async (req, res) => {
+    await authorizeUser(req);
     const userRef = await getUserEntityRef(req);
     const frequency = req.body?.frequency;
 

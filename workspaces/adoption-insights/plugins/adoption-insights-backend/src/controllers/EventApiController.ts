@@ -116,7 +116,6 @@ class EventApiController {
         });
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
-      auditEvent.success({ meta: { eventId: event.id } });
     }
 
     const enriched = await Promise.all(
@@ -124,6 +123,7 @@ class EventApiController {
     );
     for (const event of enriched) {
       this.processor.addEvent(event);
+      auditEvent.success({ meta: { eventId: event.id } });
     }
   }
 
