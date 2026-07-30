@@ -1,10 +1,22 @@
+# Design: AiResource Agent Typed Schema
+
+## Canonical Touchpoints
+
+- RHDHPLAN-1507 — AI Asset Entity Model & Ingestion Framework (agent type ownership)
+- RHIDP-15865 — Epic: AiResource agent type schema + upstream RFC/PR
+- RHIDP-15866 — Spike: confirm agent catalog field set
+- RHIDP-15867 — AiResource agent typed schema (examples/fixtures)
+- RHIDP-15868 — Catalog processor validation for agent type
+- RHIDP-15869 — Upstream RFC + PR (parallel; not a merge gate)
+- RHDHPLAN-1113 — AiResource foundation (skills/rules; not agent ownership)
+
 ## Context
 
-RHIDP-15867 adds a typed `AiResource` agent schema in rhdh-plugins. The AiResource foundation (RHDHPLAN-1113 / workspace change `ai-resource-catalog-entity-kind`) already supports skill-shaped entities (`spec.type: skill`) with RHDH extensions such as `spec.scope` and OCI `source-location` validation. Agent typing was deferred pending a field-mapping spike (RHIDP-15866).
+RHIDP-15867 / RHIDP-15868 add a typed `AiResource` agent schema and catalog processor validation in rhdh-plugins. The AiResource foundation (RHDHPLAN-1113 / workspace change `ai-resource-catalog-entity-kind`) already supports skill-shaped entities (`spec.type: skill`) with RHDH extensions such as `spec.scope` and OCI `source-location` validation. Agent typing was deferred pending a field-mapping spike (RHIDP-15866).
 
-Spike research mapped OpenAI Agents SDK `AgentConfiguration` → Augment runtime config → Responses API. RHIDP-15866 and this change share one deliverable: the **decided catalog field mapping** below (in this design) plus thin schema requirements in `specs/ai-resource-agent-schema/spec.md`. Ownership of the agent type under program planning is RHDHPLAN-1507.
+Field choices were informed by runtime/agent-config research (including OpenAI Agents SDK `AgentConfiguration` coverage in Augment). That research is **provenance for the mapping table below**, not a product claim that catalog agents are “OpenAI-compatible.”
 
-This change encodes the **catalog entity schema** for agents—not Augment runtime config and not catalog processor enforcement (RHIDP-15868). Upstream RFC + PR is a parallel track (RHIDP-15869), not a merge gate.
+This change covers schema + processor validation for agents. Upstream RFC + PR is a parallel track (RHIDP-15869), not a merge gate.
 
 **Stakeholders**: RHDH AI team; platform engineers authoring catalog YAML; dual-track consumers (rhdh-plugins now, upstream Backstage later).
 
@@ -13,22 +25,23 @@ This change encodes the **catalog entity schema** for agents—not Augment runti
 **Goals:**
 
 - Define TypeScript types (and schema tests) for `kind: AiResource` with `spec.type: agent`
-- Align agent fields to OpenAI Agents SDK `AgentConfiguration` **core** fields without importing the SDK
-- Record the spike mapping (SDK → AiResource spec/metadata / OOS) as OpenSpec DoD for RHIDP-15866 + RHIDP-15867
+- Record the spike field mapping as OpenSpec DoD for RHIDP-15866 + RHIDP-15867
 - Provide example YAML / fixtures for a representative agent
+- Validate agent-specific fields in the catalog processor (RHIDP-15868)
 - Document dual-track approach and clear pending-agent language in OpenSpec/design
 - Use singular `spec.type: agent` consistent with `skill` / `rule`
 
 **Non-Goals:**
 
-- Catalog processor validation rules (RHIDP-15868)
 - Upstream RFC + PR (RHIDP-15869)
-- Agent runtime / SDK orchestration / Runner wiring
+- Agent runtime / orchestration / Runner wiring
 - Agent-specific entity detail UI
 - `rhdh.io/ai-asset-*` annotation mapping updates
 - Migration from interim `Component` + `ai-agent`
 - Augment-only config fields (`mcpServers`, `asTools`, `enableRAG`, `guardrails`, etc.)
 - Full `modelSettings` parity (`parallelToolCalls`, `reasoning`, `truncation`, penalties, prompt-cache, etc.)
+- Entity-ref format enforcement for `handoffs` / `tools`
+- OpenAI compatibility as a marketed contract
 
 ## Decisions
 
@@ -40,48 +53,50 @@ This change encodes the **catalog entity schema** for agents—not Augment runti
 
 **Rationale**: Story AC and upstream alignment require singular type values for filtering and authorship.
 
-### D2 — Field-align to SDK core; no SDK package dependency
+### D2 — No OpenAI Agents SDK package dependency
 
-**Choice**: Mirror OpenAI Agents SDK `AgentConfiguration` / `ModelSettings` names and shapes in our TypeScript interfaces (and any JSON-schema-like validators used in tests). Do **not** add `@openai/agents-core` as a dependency.
+**Choice**: Implement catalog types and validators in this workspace without importing `@openai/agents-core` (or related Agents SDK packages).
 
-**Rationale**: Story explicitly forbids SDK import; catalog schema must stay portable for upstream contribution and avoid coupling to Augment’s runtime adapter stack.
+**Rationale**: Catalog model must stay portable for upstream contribution and must not couple to a runtime SDK.
 
-### D3 — Spike mapping: SDK → AiResource (v1)
+### D3 — Spike mapping: research reference → AiResource (v1)
 
 Standard AiResource fields remain as for other types (`type`, `owner`, `lifecycle`; optional RHDH `scope`; content via `backstage.io/source-location` when applicable).
 
 Agent configuration fields live in **metadata/spec**, not in agent-specific annotations. Cross-cutting `rhdh.io/ai-asset-*` annotations are owned elsewhere (e.g. RHIDP-15258).
 
-| SDK `AgentConfiguration`    | AiResource                       | Required | Notes                                                                        |
-| --------------------------- | -------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| `name`                      | `metadata.name`                  | Yes      | No `spec.name`; optional `metadata.title` for display                        |
-| `instructions`              | `spec.instructions`              | Yes      | Non-empty string only (no function form in YAML)                             |
-| `handoffDescription`        | `spec.handoffDescription`        | No       | string                                                                       |
-| `model`                     | `spec.model`                     | No       | string model id                                                              |
-| `handoffs`                  | `spec.handoffs`                  | No       | `string[]`, opaque at schema layer                                           |
-| `tools`                     | `spec.tools`                     | No       | `string[]`, opaque at schema layer                                           |
-| `toolUseBehavior`           | `spec.toolUseBehavior`           | No       | `'run_llm_again'` \| `'stop_on_first_tool'` \| `string[]`; function form OOS |
-| `resetToolChoice`           | `spec.resetToolChoice`           | No       | boolean                                                                      |
-| `modelSettings.temperature` | `spec.modelSettings.temperature` | No       |                                                                              |
-| `modelSettings.maxTokens`   | `spec.modelSettings.maxTokens`   | No       |                                                                              |
-| `modelSettings.toolChoice`  | `spec.modelSettings.toolChoice`  | No       |                                                                              |
-| `outputType`                | `spec.outputSchema`              | No       | JSON Schema object and/or simple string type name                            |
+The “Research reference” column records where the catalog field was derived from during the spike; it is not a compatibility guarantee.
 
-**Explicitly OOS / follow-up** (not in v1 catalog schema): other `modelSettings` (`parallelToolCalls`, `reasoning`, `truncation`, penalties, prompt-cache, `providerData`, …), SDK `prompt` object, SDK guardrail hooks, MCP object graphs, Augment-only keys (`enableRAG`, `asTools`, `publishAs`, …), function-valued `instructions` / `toolUseBehavior`.
+| Research reference (SDK `AgentConfiguration`) | AiResource                       | Required | Notes                                                                                                                         |
+| --------------------------------------------- | -------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `name`                                        | `metadata.name`                  | Yes      | No `spec.name`; optional `metadata.title` for display                                                                         |
+| `instructions`                                | `spec.instructions`              | Yes      | Non-empty string only (no function form in YAML)                                                                              |
+| `handoffDescription`                          | `spec.handoffDescription`        | No       | string                                                                                                                        |
+| `model`                                       | `spec.model`                     | No       | string model id                                                                                                               |
+| `handoffs`                                    | `spec.handoffs`                  | No       | `string[]`, opaque (no entity-ref format check)                                                                               |
+| `tools`                                       | `spec.tools`                     | No       | `string[]`, opaque (no entity-ref format check)                                                                               |
+| `toolUseBehavior`                             | `spec.toolUseBehavior`           | No       | `'run_llm_again'` \| `'stop_on_first_tool'` \| `string[]`; function/object callback forms OOS                                 |
+| `resetToolChoice`                             | `spec.resetToolChoice`           | No       | boolean                                                                                                                       |
+| `modelSettings.temperature`                   | `spec.modelSettings.temperature` | No       | number                                                                                                                        |
+| `modelSettings.maxTokens`                     | `spec.modelSettings.maxTokens`   | No       | number                                                                                                                        |
+| `modelSettings.toolChoice`                    | `spec.modelSettings.toolChoice`  | No       | string (`auto` / `none` / `required`) or structured object as typed in schema                                                 |
+| `outputType`                                  | `spec.outputSchema`              | No       | **Deliberate adaptation**: catalog uses JSON Schema object and/or simple string type name, not a runtime type/class reference |
 
-**Rationale**: Core SDK-aligned surface that runtime adapters already cover; keeps catalog authoring light; richer settings and ref-format enforcement deferred.
+**Explicitly OOS / follow-up** (not in v1 catalog schema): other `modelSettings` (`parallelToolCalls`, `reasoning`, `truncation`, penalties, prompt-cache, `providerData`, …), prompt objects, guardrail hooks, MCP object graphs, Augment-only keys (`enableRAG`, `asTools`, `publishAs`, …), function-valued `instructions` / `toolUseBehavior`.
 
-### D4 — Opaque `handoffs` / `tools` until processor story
+**Rationale**: Small, YAML-friendly agent surface for catalog authorship; richer settings and ref-format enforcement deferred.
 
-**Choice**: Schema accepts `string[]` only. Do not require catalog entity-ref format in RHIDP-15867.
+### D4 — Opaque `handoffs` / `tools` (schema and processor)
 
-**Rationale**: Matches “string keys, resolve later” runtime patterns. RHIDP-15868 may tighten formats and relations.
+**Choice**: Accept `string[]` only. Do not require catalog entity-ref format in RHIDP-15867 or RHIDP-15868.
 
-### D5 — Schema layer in rhdh-plugins, not processor rules in this story
+**Rationale**: Matches “string keys, resolve later” patterns; entity-ref tightening deferred by agreement.
 
-**Choice**: Deliver types, example YAML, fixtures, and schema/unit tests. Do not expand `AIResourceExtensionsProcessor` with agent-field rules here.
+### D5 — Schema + processor in this OpenSpec; agent-only processor rules
 
-**Rationale**: Separates “schema + examples” DoD from ingestion validation (RHIDP-15868).
+**Choice**: Deliver types, examples, schema tests, **and** catalog processor validation for agent-specific fields. Processor does **not** re-validate core entity fields (`owner`, `lifecycle`, etc.) beyond existing catalog behavior.
+
+**Rationale**: Epic cohesion (15867 + 15868 share one field set). Keep processor focused on agent fields.
 
 ### D6 — Dual-track documentation (rhdh-plugins + upstream)
 
@@ -95,33 +110,33 @@ Agent configuration fields live in **metadata/spec**, not in agent-specific anno
 
 **Rationale**: Exercises required `instructions` and optional handoff/`modelSettings` fields in a realistic catalog authoring scenario.
 
-### D8 — Correct plural `agents` filter examples in related docs
+### D8 — Correct plural type examples in sibling discovery OpenSpec
 
-**Choice**: Where change-local or README examples filter on `spec.type=agents`, update to `agent` when touched by this work.
+**Choice**: Update `ai-resource-catalog-entity-kind` discovery scenarios from plural `agents` / `skills` to singular `agent` / `skill` as part of this change.
 
-**Rationale**: Prevents discovery/doc drift against the singular discriminator (D1).
+**Rationale**: Removes contradictory guidance against D1.
 
-### D9 — Spike + schema share this OpenSpec
+### D9 — Spike + schema + processor share this OpenSpec
 
-**Choice**: RHIDP-15866 DoD is this design’s mapping table (D3) plus the thin requirements in `specs/ai-resource-agent-schema/spec.md`, linked from a Jira comment on the spike. No separate spike markdown outside OpenSpec is required.
+**Choice**: RHIDP-15866 DoD is this design’s mapping table (D3) plus thin schema/ingestion requirements. No separate spike markdown outside OpenSpec is required.
 
-**Rationale**: One source of truth for schema story and upstream RFC inputs.
+**Rationale**: One source of truth for schema, processor, and later upstream RFC inputs.
 
 ## Risks / Trade-offs
 
-| Risk                                                 | Mitigation                                                                                             |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Upstream AiResource agent shape diverges             | Keep fields SDK-core and documented; dual-track notes that upstream may refine names                   |
-| Authors confuse Augment YAML with catalog schema     | Examples use only D3 fields; design explicitly excludes Augment-only keys                              |
-| `handoffs` / `tools` string semantics underspecified | Opaque at schema layer; processor story (RHIDP-15868) may tighten                                      |
-| `outputSchema` typing too loose or too strict        | Accept object (JSON Schema) or simple string type name; tests cover both valid forms and clear rejects |
-| Scope creep into processor / UI / annotations        | Non-goals + story OOS list; keep tasks schema-focused                                                  |
+| Risk                                                 | Mitigation                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| Upstream AiResource agent shape diverges             | Keep fields documented; dual-track notes that upstream may refine names  |
+| Authors confuse Augment YAML with catalog schema     | Examples use only D3 fields; design excludes Augment-only keys           |
+| `handoffs` / `tools` string semantics underspecified | Opaque by design; entity-ref rules deferred                              |
+| `outputSchema` typing too loose or too strict        | Accept object (JSON Schema) or simple string type name; tests cover both |
+| Scope creep into UI / annotations / upstream         | Non-goals; 15869 remains parallel OOS                                    |
 
 ## Migration Plan
 
-- Additive only: new agent type schema and examples; no migration of existing `Component` / `ai-agent` entities (OOS).
-- Rollback: remove agent types/examples/tests; skill/rule AiResource paths unchanged.
-- No catalog data migration required for this story.
+- Additive only: new agent type schema, examples, and processor rules; no migration of existing `Component` / `ai-agent` entities (OOS).
+- Rollback: remove agent types/examples/tests/processor rules; skill/rule AiResource paths unchanged.
+- No catalog data migration required for this change.
 
 ## Open Questions
 

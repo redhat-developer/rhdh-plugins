@@ -18,11 +18,13 @@ AiResource entities that represent agents MUST declare `spec.type` with the exac
 
 ### Requirement: Required agent fields
 
-An agent-shaped AiResource (`spec.type: agent`) MUST include `spec.instructions` as a non-empty string, and MUST include the standard entity identity and ownership fields required of AiResource entities in this workspace (`metadata.name`, `spec.owner`, `spec.lifecycle`). The schema MUST NOT require a separate `spec.name` field; SDK `name` maps to `metadata.name`.
+An agent-shaped AiResource (`spec.type: agent`) MUST include `spec.instructions` as a non-empty string. Entity identity uses `metadata.name` (there is no separate `spec.name`). Standard catalog fields such as `spec.owner` and `spec.lifecycle` remain normal AiResource/entity expectations and are not redefined by this agent schema capability.
+
+These are schema-layer requirements for agent authoring and tests; catalog processor behavior for agent-specific fields is specified under `ai-resource-agent-ingestion`.
 
 #### Scenario: Minimal valid agent accepted
 
-- **WHEN** an AiResource entity declares `spec.type: agent`, non-empty `spec.instructions`, `spec.owner`, `spec.lifecycle`, and a valid `metadata.name`
+- **WHEN** an AiResource entity declares `spec.type: agent`, non-empty `spec.instructions`, and a valid `metadata.name`
 - **THEN** the agent schema accepts the entity
 
 #### Scenario: Missing instructions rejected
@@ -32,15 +34,15 @@ An agent-shaped AiResource (`spec.type: agent`) MUST include `spec.instructions`
 
 ---
 
-### Requirement: Optional fields per spike mapping
+### Requirement: Optional fields per design mapping
 
-The agent schema MUST allow the optional agent fields defined in the spike mapping in this change’s `design.md` (SDK-aligned `AgentConfiguration` core fields under `spec` / `metadata`, not agent-specific annotations). Optional field membership and shapes SHALL follow that mapping table rather than a divergent inventory in code.
+The agent schema MUST allow the optional agent fields defined in this change’s `design.md` mapping table (under `spec` / `metadata`, not agent-specific annotations). Optional field membership and shapes SHALL follow that mapping rather than a divergent inventory in code.
 
 At minimum, the mapping’s optional catalog fields include: `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), and `spec.outputSchema`.
 
 #### Scenario: Optional fields from mapping accepted
 
-- **WHEN** a valid agent entity includes optional fields from the spike mapping with correctly typed values
+- **WHEN** a valid agent entity includes optional fields from the design mapping with correctly typed values
 - **THEN** the agent schema accepts the entity
 
 #### Scenario: Omitted optional fields accepted
@@ -62,7 +64,7 @@ At minimum, the mapping’s optional catalog fields include: `spec.handoffDescri
 
 ### Requirement: Agent fields in spec and metadata only
 
-Agent configuration fields from the spike mapping MUST be represented on the entity as `metadata.*` / `spec.*` fields. The agent schema MUST NOT introduce agent-specific annotations for those SDK-aligned configuration fields.
+Agent configuration fields from the design mapping MUST be represented on the entity as `metadata.*` / `spec.*` fields. The agent schema MUST NOT introduce agent-specific annotations for those configuration fields.
 
 #### Scenario: Spec-placed instructions accepted
 
@@ -71,9 +73,9 @@ Agent configuration fields from the spike mapping MUST be represented on the ent
 
 ---
 
-### Requirement: No SDK package dependency
+### Requirement: No OpenAI Agents SDK package dependency
 
-The rhdh-plugins agent schema implementation MUST NOT import `@openai/agents-core` or other OpenAI Agents SDK packages. Field alignment is by documented shape and naming only.
+The rhdh-plugins agent schema implementation MUST NOT import `@openai/agents-core` or other OpenAI Agents SDK packages.
 
 #### Scenario: Schema module has no agents-core import
 
@@ -84,7 +86,7 @@ The rhdh-plugins agent schema implementation MUST NOT import `@openai/agents-cor
 
 ### Requirement: Examples and fixtures for agent entities
 
-The workspace MUST provide example catalog YAML and/or test fixtures that demonstrate a representative agent entity covering required fields and a non-empty subset of optional fields from the spike mapping (including at least one of `handoffs` or `modelSettings`).
+The workspace MUST provide example catalog YAML and/or test fixtures that demonstrate a representative agent entity covering required fields and a non-empty subset of optional fields from the design mapping (including at least one of `handoffs` or `modelSettings`).
 
 #### Scenario: Example catalog YAML exists
 
@@ -100,7 +102,7 @@ The workspace MUST provide example catalog YAML and/or test fixtures that demons
 
 ### Requirement: Schema-layer validation tests
 
-Unit or schema tests MUST cover acceptance of valid agent entities and rejection of clearly invalid shapes at the schema layer (missing required fields, wrong `spec.type` for agent validation, wrong types on optional fields).
+Unit or schema tests MUST cover acceptance of valid agent entities and rejection of clearly invalid shapes at the schema layer (missing required agent fields, wrong `spec.type` for agent validation, wrong types on optional fields).
 
 #### Scenario: Valid agent test passes
 
@@ -116,9 +118,9 @@ Unit or schema tests MUST cover acceptance of valid agent entities and rejection
 
 ### Requirement: Dual-track documentation for agent type
 
-In-repo OpenSpec/design materials for this change MUST describe AiResource agent typing as owned under RHDHPLAN-1507 in rhdh-plugins, with upstream contribution tracked in parallel and not a merge gate. Materials MUST NOT leave agent typing described as blocked solely on RHDHPLAN-1113. The spike mapping table in `design.md` MUST remain the shared field-set source for RHIDP-15866 and RHIDP-15867.
+In-repo OpenSpec/design materials for this change MUST describe AiResource agent typing as owned under RHDHPLAN-1507 in rhdh-plugins, with upstream contribution tracked in parallel and not a merge gate. Materials MUST NOT leave agent typing described as blocked solely on RHDHPLAN-1113. The field mapping table in `design.md` MUST remain the shared field-set source for RHIDP-15866, RHIDP-15867, and RHIDP-15868.
 
-#### Scenario: Design states dual-track ownership and spike mapping
+#### Scenario: Design states dual-track ownership and field mapping
 
 - **WHEN** a reader opens this change’s design/proposal artifacts
-- **THEN** they find explicit dual-track (rhdh-plugins + upstream) language, RHDHPLAN-1507 ownership for the agent type, and the SDK→AiResource mapping table
+- **THEN** they find explicit dual-track (rhdh-plugins + upstream) language, RHDHPLAN-1507 ownership for the agent type, and the AiResource agent field mapping table
