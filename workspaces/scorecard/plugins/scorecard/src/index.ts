@@ -37,6 +37,7 @@ import {
   aggregatedCardWithGithubFilecheckCodeownersWidget,
   aggregatedCardWithGithubOpenPrsWeightedWidget,
 } from './extensions/homePageCards';
+import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
 
@@ -61,6 +62,7 @@ export default createFrontendPlugin({
   pluginId: 'scorecard',
   extensions: [
     scorecardApi,
+    scorecardIconBundle,
     scorecardPage,
     scorecardEntityContent,
     scorecardEntityLayoutGrid,
