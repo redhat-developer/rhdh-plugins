@@ -309,6 +309,9 @@ async function fetchModelCardViaAnnotations(
   ) {
     const catalogSource = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
     const catalogModel = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+    if (catalogSource === undefined || catalogModel === undefined) {
+      return [modelCardKey, modelCard];
+    }
     modelCardKey = `${catalogSource}/${catalogModel}`;
     let token = '';
     if (config.k8sToken !== undefined) {
@@ -379,7 +382,7 @@ async function processModelCatalog(
   }
 
   // Handle model card storage (converted from server.go lines 219-234)
-  if (modelCardKey && modelCardKey.length > 0) {
+  if (modelCardKey && modelCardKey.length > 0 && modelCard !== undefined) {
     const existingMcm = modelCards.get(modelCardKey);
 
     if (!existingMcm) {
