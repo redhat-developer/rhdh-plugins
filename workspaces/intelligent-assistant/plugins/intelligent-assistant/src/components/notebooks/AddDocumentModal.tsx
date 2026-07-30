@@ -72,9 +72,9 @@ const useStyles = makeStyles(theme => ({
     letterSpacing: '-0.25px',
   },
   titleTextCompact: {
-    fontWeight: 500,
-    fontSize: '1rem',
-    lineHeight: '1.375rem',
+    fontWeight: 600,
+    fontSize: '1.125rem',
+    lineHeight: '1.5rem',
     letterSpacing: '-0.25px',
   },
   closeButton: {
