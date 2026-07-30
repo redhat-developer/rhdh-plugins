@@ -25,6 +25,3 @@ spec:
   lifecycle: experimental
   owner: team-ml-platform
   scope: team
-  location:
-    type: oci
-    target: oci://quay.io/my-org/summarization-skills:latest
