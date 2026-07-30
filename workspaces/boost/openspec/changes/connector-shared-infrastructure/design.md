@@ -76,8 +76,8 @@ function loadCaBundle(connectorConfig: Config): Buffer | undefined;
 
 The caller passes the Config subtree that contains the `tls` block. This allows each connector to resolve its own config nesting before calling the shared utility:
 
-- MCP Registry: `loadCaBundle(config.getConfig('catalog.providers.mcpRegistry'))`
-- RHOAI MCP Catalog: `loadCaBundle(config.getConfig('catalog.providers.rhoai.mcpCatalog'))`
+- MCP Registry: `loadCaBundle(config.getConfig('ai-catalog.providers.mcpRegistry'))`
+- RHOAI MCP Catalog: `loadCaBundle(config.getConfig('ai-catalog.providers.rhoai.mcpCatalog'))`
 - OCI per-registry: `loadCaBundle(registryConfig)` where `registryConfig` is the per-registry Config node
 
 **Behavior:**
@@ -93,7 +93,7 @@ The caller passes the Config subtree that contains the `tls` block. This allows 
 **Integration with HTTP client:**
 
 ```typescript
-const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
+const connectorConfig = config.getConfig('ai-catalog.providers.mcpRegistry');
 const caBundle = loadCaBundle(connectorConfig);
 const agent = caBundle ? new https.Agent({ ca: caBundle }) : undefined;
 
@@ -167,7 +167,7 @@ export function createSafeRefresh(
 
 ### Decision 4: Enable/disable pattern
 
-Each connector checks `catalog.providers.<connectorId>.enabled` at backend module initialization. Disabled connectors are never registered — they produce zero resource usage.
+Each connector checks `ai-catalog.providers.<connectorId>.enabled` at backend module initialization. Disabled connectors are never registered — they produce zero resource usage.
 
 **Config schema:**
 
@@ -198,7 +198,7 @@ export default createBackendModule({
       },
       async init({ catalog, config, logger }) {
         const connectorConfig = config.getConfig(
-          'catalog.providers.mcpRegistry',
+          'ai-catalog.providers.mcpRegistry',
         );
         if (!isConnectorEnabled(connectorConfig)) {
           logger.info('MCP Registry connector is disabled');

@@ -9,27 +9,27 @@
 
 RHDHPLAN-1510 is about connector implementations — entity providers that ingest AI assets from external registries into the Backstage Software Catalog. The cross-reference targets are the Backstage entity provider interface, catalog extension points, and deployment infrastructure patterns.
 
-| Capability                                                              | Status                                                                                 |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `EntityProvider` interface (`connect`, `applyMutation`)                 | **Available**                                                                          |
-| Full mutation (`type: 'full'`)                                          | **Available**                                                                          |
-| Delta mutation (`type: 'delta'`)                                        | **Available**                                                                          |
-| `IncrementalEntityProvider` (paginated cursor-based ingestion)          | **Available**                                                                          |
-| Scheduled task runners (`SchedulerService`)                             | **Available**                                                                          |
-| App-config-driven provider schedule (`catalog.providers.<id>.schedule`) | **Available**                                                                          |
-| Per-provider isolated entity buckets                                    | **Available**                                                                          |
-| `locationKey` conflict resolution                                       | **Available**                                                                          |
-| Custom annotations (`metadata.annotations`)                             | **Available**                                                                          |
-| Custom `spec.type` values (free-form)                                   | **Available**                                                                          |
-| Mapping to built-in kinds (Resource, Component)                         | **Available**                                                                          |
-| Dynamic plugin packaging for RHDH                                       | **Available**                                                                          |
-| `catalogProcessingExtensionPoint` for provider registration             | **Available**                                                                          |
-| Custom CA bundle handling                                               | **Not built-in at catalog level** — standard Node.js/K8s TLS patterns                  |
-| K8s Secret credential injection                                         | **Not built-in at catalog level** — standard `$env:`/`$secret:` app-config patterns    |
-| OCI registry client                                                     | **Not built-in** — requires custom implementation or library                           |
-| ~~RHOAI/Kubeflow Model Registry client~~                                | ~~**Not built-in** — requires custom implementation~~ _(RHDHPLAN-404 scope)_           |
-| MCP Registry mirror support                                             | **Not built-in** — requires custom endpoint configuration                              |
-| Cross-connector fault isolation                                         | **Not built-in** — each provider runs in its own bucket but shares the Node.js process |
+| Capability                                                                 | Status                                                                                 |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `EntityProvider` interface (`connect`, `applyMutation`)                    | **Available**                                                                          |
+| Full mutation (`type: 'full'`)                                             | **Available**                                                                          |
+| Delta mutation (`type: 'delta'`)                                           | **Available**                                                                          |
+| `IncrementalEntityProvider` (paginated cursor-based ingestion)             | **Available**                                                                          |
+| Scheduled task runners (`SchedulerService`)                                | **Available**                                                                          |
+| App-config-driven provider schedule (`ai-catalog.providers.<id>.schedule`) | **Available**                                                                          |
+| Per-provider isolated entity buckets                                       | **Available**                                                                          |
+| `locationKey` conflict resolution                                          | **Available**                                                                          |
+| Custom annotations (`metadata.annotations`)                                | **Available**                                                                          |
+| Custom `spec.type` values (free-form)                                      | **Available**                                                                          |
+| Mapping to built-in kinds (Resource, Component)                            | **Available**                                                                          |
+| Dynamic plugin packaging for RHDH                                          | **Available**                                                                          |
+| `catalogProcessingExtensionPoint` for provider registration                | **Available**                                                                          |
+| Custom CA bundle handling                                                  | **Not built-in at catalog level** — standard Node.js/K8s TLS patterns                  |
+| K8s Secret credential injection                                            | **Not built-in at catalog level** — standard `$env:`/`$secret:` app-config patterns    |
+| OCI registry client                                                        | **Not built-in** — requires custom implementation or library                           |
+| ~~RHOAI/Kubeflow Model Registry client~~                                   | ~~**Not built-in** — requires custom implementation~~ _(RHDHPLAN-404 scope)_           |
+| MCP Registry mirror support                                                | **Not built-in** — requires custom endpoint configuration                              |
+| Cross-connector fault isolation                                            | **Not built-in** — each provider runs in its own bucket but shares the Node.js process |
 
 ---
 
@@ -53,14 +53,14 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 #### Acceptance Criteria Assessment
 
-| Criterion                                                                          | Feasible without upstream changes? | Assessment                                                                                                                                        |
-| ---------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Configurable target endpoint overriding `registry.modelcontextprotocol.io`         | **YES**                            | Standard app-config pattern: `catalog.providers.mcpRegistry.endpoint`. The entity provider reads the endpoint from config. No framework changes   |
-| Zero outbound requests to public endpoint when mirror configured                   | **YES**                            | Application-level — the connector uses only the configured endpoint URL. Validation test confirms no public endpoint traffic                      |
-| Custom CA bundles from K8s Secret/ConfigMap mounts for mirrored registry TLS       | **YES**                            | Standard Node.js TLS configuration. Load CA from mounted file path, pass to HTTP client. Shared utility from RHIDP-15316                          |
-| K8s Secret-based credentials for private/authenticated registries                  | **YES**                            | Standard RHDH pattern — `$env:` references in app-config resolve to mounted K8s Secret values                                                     |
-| Entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version` annotations | **YES**                            | Custom annotations set during entity emission. The productization layer enriches entities emitted by the upstream provider before `applyMutation` |
-| Integrates with RHDHPLAN-1507's shared ingestion framework/SDK validation          | **YES**                            | Application-level — the connector uses the SDK's validation functions before emitting entities                                                    |
+| Criterion                                                                          | Feasible without upstream changes? | Assessment                                                                                                                                         |
+| ---------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Configurable target endpoint overriding `registry.modelcontextprotocol.io`         | **YES**                            | Standard app-config pattern: `ai-catalog.providers.mcpRegistry.endpoint`. The entity provider reads the endpoint from config. No framework changes |
+| Zero outbound requests to public endpoint when mirror configured                   | **YES**                            | Application-level — the connector uses only the configured endpoint URL. Validation test confirms no public endpoint traffic                       |
+| Custom CA bundles from K8s Secret/ConfigMap mounts for mirrored registry TLS       | **YES**                            | Standard Node.js TLS configuration. Load CA from mounted file path, pass to HTTP client. Shared utility from RHIDP-15316                           |
+| K8s Secret-based credentials for private/authenticated registries                  | **YES**                            | Standard RHDH pattern — `$env:` references in app-config resolve to mounted K8s Secret values                                                      |
+| Entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version` annotations | **YES**                            | Custom annotations set during entity emission. The productization layer enriches entities emitted by the upstream provider before `applyMutation`  |
+| Integrates with RHDHPLAN-1507's shared ingestion framework/SDK validation          | **YES**                            | Application-level — the connector uses the SDK's validation functions before emitting entities                                                     |
 
 **Verdict: FULLY FEASIBLE** — This epic is a productization wrapper around the upstream MCP Registry connector (RHDHPLAN-393). It adds configuration, credential handling, and annotation enrichment — all standard patterns. The upstream connector handles the core `/v1/servers` API integration; this epic adds the deployment hardening. No upstream Backstage changes needed.
 
@@ -80,7 +80,7 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 | RHOAI version normalization maps MCP server version to `rhdh.io/ai-asset-version`     | **YES**                            | Application-level mapping logic — extract version identifier from MCP server manifest metadata, normalize via `normalizeAIAssetVersion()`     |
 | MCP catalog source connects to RHOAI 3.4 MCP catalog API, emits `mcp-server` entities | **YES**                            | Same pattern — REST API call, entity mapping, `applyMutation`. The RHOAI 3.4 MCP catalog API is a new RHOAI endpoint                          |
 | MCP catalog source gracefully handles absence on earlier RHOAI versions               | **YES**                            | Application-level — attempt API call, catch 404/connection error, log warning, disable MCP source for this cycle. Standard resilience pattern |
-| MCP catalog source enable/disable toggle                                              | **YES**                            | App-config-driven: `catalog.providers.rhoai.mcpCatalog.enabled: true/false`. Provider reads config at startup                                 |
+| MCP catalog source enable/disable toggle                                              | **YES**                            | App-config-driven: `ai-catalog.providers.rhoai.mcpCatalog.enabled: true/false`. Provider reads config at startup                              |
 | Cross-cluster endpoint with K8s Secret credentials and custom CA bundles              | **YES**                            | Standard patterns — configurable endpoint URL, `$env:` Secret references, CA bundle from mounted path. Shared utilities from RHIDP-15316      |
 
 **Verdict: FULLY FEASIBLE** — This is a standard entity provider implementation against the RHOAI MCP catalog API. The Backstage `EntityProvider` interface handles everything needed. No upstream Backstage changes needed. _(Model Registry integration is RHDHPLAN-404 scope.)_
@@ -127,17 +127,17 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 | Shared utility loads CA bundles from K8s Secret/ConfigMap mounts, configurable per connector | **YES**                            | Utility function: read CA file from configured mount path, create `https.Agent` with custom CA, expose for connectors to use in their HTTP clients. Standard Node.js pattern                                                                                                                                                                              |
 | One connector failure does not block other connectors or degrade non-AI catalog entities     | **YES**                            | Each entity provider runs in its own isolated bucket. Provider failures are scoped to their bucket — other providers and catalog entities are unaffected. The Backstage processing pipeline handles provider errors gracefully. Additional hardening: wrap each provider's `run()` in try/catch to prevent unhandled rejections from crashing the process |
 | Actionable error details logged per connector on failure                                     | **YES**                            | Application-level structured logging — each connector logs with its provider name, endpoint, error message, and retry status                                                                                                                                                                                                                              |
-| Connector enable/disable config pattern consistent across all connectors                     | **YES**                            | Standard app-config pattern: `catalog.providers.<connectorId>.enabled: true/false`. Each provider checks config at registration time and skips registration if disabled                                                                                                                                                                                   |
+| Connector enable/disable config pattern consistent across all connectors                     | **YES**                            | Standard app-config pattern: `ai-catalog.providers.<connectorId>.enabled: true/false`. Each provider checks config at registration time and skips registration if disabled                                                                                                                                                                                |
 
 **Verdict: FULLY FEASIBLE** — This epic is shared utility code. CA bundle loading, Secret injection, error handling, and enable/disable config are all standard Node.js and Backstage patterns. No upstream changes needed.
 
 **Key design decisions:**
 
-1. **CA bundle utility** — A shared function like `loadCaBundle(connectorConfig: Config): Buffer | undefined` — caller passes the connector's Config subtree (e.g., `config.getConfig('catalog.providers.mcpRegistry')`), and the function reads `tls.caFile` or `tls.caSecret` within that subtree, returning the CA certificate for use in `https.Agent`.
+1. **CA bundle utility** — A shared function like `loadCaBundle(connectorConfig: Config): Buffer | undefined` — caller passes the connector's Config subtree (e.g., `config.getConfig('ai-catalog.providers.mcpRegistry')`), and the function reads `tls.caFile` or `tls.caSecret` within that subtree, returning the CA certificate for use in `https.Agent`.
 
 2. **Fault isolation** — Backstage's per-provider entity buckets already provide data isolation. The shared infrastructure adds process-level isolation: `try/catch` + structured error logging in the scheduled task runner wrapper, ensuring one connector's unhandled error doesn't crash the Node.js process.
 
-3. **Enable/disable** — The backend module's `init()` function checks `catalog.providers.<connectorId>.enabled` before calling `catalog.addEntityProvider()`. Disabled connectors are never registered.
+3. **Enable/disable** — The backend module's `init()` function checks `ai-catalog.providers.<connectorId>.enabled` before calling `catalog.addEntityProvider()`. Disabled connectors are never registered.
 
 ---
 

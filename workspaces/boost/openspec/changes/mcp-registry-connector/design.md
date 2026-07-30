@@ -95,7 +95,7 @@ The wrapper intercepts `getProviderName()` and `connect()` to inject mirror endp
 
 ### Decision 2: Mirror Endpoint Configuration via app-config
 
-**Decision:** Use `catalog.providers.mcpRegistry.endpoint` in app-config to override the public registry endpoint. When unset, fall back to `registry.modelcontextprotocol.io`.
+**Decision:** Use `ai-catalog.providers.mcpRegistry.endpoint` in app-config to override the public registry endpoint. When unset, fall back to `registry.modelcontextprotocol.io`.
 
 **Rationale:**
 
@@ -158,7 +158,7 @@ catalog:
 ```typescript
 import { loadCaBundle } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
-const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
+const connectorConfig = config.getConfig('ai-catalog.providers.mcpRegistry');
 const caBundle = loadCaBundle(connectorConfig);
 
 // Pass CA bundle to HTTP client

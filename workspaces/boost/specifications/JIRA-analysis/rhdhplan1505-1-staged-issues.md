@@ -62,7 +62,7 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 1 (RHIDP-
 - 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
 - 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
 - 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
-- 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
+- 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('ai-catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
 - 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
 - 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
 - 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details
@@ -83,7 +83,7 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 2 (RHIDP-
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 3 (RHIDP-15330):
 
-- 3.1 Define enable/disable config schema: `catalog.providers.<id>.enabled: boolean`
+- 3.1 Define enable/disable config schema: `ai-catalog.providers.<id>.enabled: boolean`
 - 3.2 Create `isConnectorEnabled(connectorConfig: Config): boolean` utility — caller passes the Config subtree (same pattern as `loadCaBundle`)
 - 3.3 Implement config reader: return `true` if `enabled` is omitted (default enabled)
 - 3.4 Create registration guard pattern for backend module `init()` example in README
@@ -357,14 +357,14 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4044
 **RHIDP Stories:** RHIDP-15340
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*` and are excluded from this schema entirely). AI catalog connectors (MCP Registry, RHOAI, OCI) will add their own Zod schemas when created in Issues 7–16. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). AI catalog connectors (MCP Registry, RHOAI, OCI) will add their own Zod schemas when created in Issues 7–16. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
 
 ### Tasks
 
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 1 (RHIDP-15340):
 
-- 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `catalog.providers` fields — not part of the `boost.connectors` schema.
-- 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*`)
+- 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `ai-catalog.providers` fields — not part of the `boost.connectors` schema.
+- 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
 - 1.3 Define GitHub connector config Zod schema
 - 1.4 Define GitLab connector config Zod schema
 - 1.5 Add URL validation for `endpoint` field
@@ -409,7 +409,7 @@ Implement the MCP Registry mirror endpoint configuration with zero-internet vali
 
 From `openspec/changes/mcp-registry-connector/tasks.md` group 1 (RHIDP-15317):
 
-- 1.1 Add `catalog.providers.mcpRegistry.endpoint` config schema in `config.d.ts`
+- 1.1 Add `ai-catalog.providers.mcpRegistry.endpoint` config schema in `config.d.ts`
 - 1.2 Implement endpoint configuration loading from app-config
 - 1.3 Add environment variable override support (`MCP_REGISTRY_ENDPOINT`)
 - 1.4 Implement endpoint URL validation
@@ -677,13 +677,13 @@ Integrate shared CA bundle utility (`loadCaBundle()`) from `@red-hat-developer-h
 From `openspec/changes/mcp-registry-connector/tasks.md` group 2 (RHIDP-15318):
 
 - 2.1 Integrate shared CA bundle utility from RHIDP-15316
-- 2.2 Add `catalog.providers.mcpRegistry.tls.ca` config schema
+- 2.2 Add `ai-catalog.providers.mcpRegistry.tls.ca` config schema
 - 2.3 Implement custom CA bundle loading from file path
 - 2.4 Add graceful degradation: invalid CA bundle falls back to system CA
 - 2.5 Add warning logging for invalid CA bundle files
 - 2.6 Implement HTTPS agent configuration with custom CA bundle
 - 2.7 Enforce TLS certificate validation (`rejectUnauthorized: true`)
-- 2.8 Add `catalog.providers.mcpRegistry.auth.secretRef` config schema
+- 2.8 Add `ai-catalog.providers.mcpRegistry.auth.secretRef` config schema
 - 2.9 Implement K8s Secret reading
 - 2.10 Implement credential extraction from Secret
 - 2.11 Implement HTTP Basic Auth for username/password
@@ -792,13 +792,13 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4054
 **RHIDP Stories:** RHIDP-15323
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15314
 
-Implement deployment configuration for RHOAI connector: Zod config schema for `catalog.providers.rhoai.mcpCatalog`, enable/disable toggle, K8s Secret loader for credentials, shared CA bundle integration, Secret refresh per reconciliation cycle (no credential caching), and startup logging with graceful error handling.
+Implement deployment configuration for RHOAI connector: Zod config schema for `ai-catalog.providers.rhoai.mcpCatalog`, enable/disable toggle, K8s Secret loader for credentials, shared CA bundle integration, Secret refresh per reconciliation cycle (no credential caching), and startup logging with graceful error handling.
 
 ### Tasks
 
 From `openspec/changes/rhoai-connector/tasks.md` group 2 (RHIDP-15323):
 
-- 2.1 Define Zod config schema for `catalog.providers.rhoai.mcpCatalog`
+- 2.1 Define Zod config schema for `ai-catalog.providers.rhoai.mcpCatalog`
 - 2.2 Implement config validation in module startup
 - 2.3 Implement enable/disable toggle
 - 2.4 Implement K8s Secret loader utility

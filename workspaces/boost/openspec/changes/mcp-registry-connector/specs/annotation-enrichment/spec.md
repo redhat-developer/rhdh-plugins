@@ -140,7 +140,7 @@ metadata:
 
 **WHEN** the wrapper enriches an entity emitted by the MCP Registry connector:
 
-**THEN** the wrapper populates `rhdh.io/ai-asset-source` using the format `mcp-registry/<instance-id>`, where `<instance-id>` is the configuration key under `catalog.providers` (e.g., `mcpRegistry`).
+**THEN** the wrapper populates `rhdh.io/ai-asset-source` using the format `mcp-registry/<instance-id>`, where `<instance-id>` is the configuration key under `ai-catalog.providers` (e.g., `mcpRegistry`).
 
 **AND** the source prefix (`mcp-registry`) is constant — it identifies the connector type.
 
