@@ -22,7 +22,7 @@ import Box from '@mui/material/Box';
 import {
   LogoFull,
   LogoIcon,
-} from '@red-hat-developer-hub/backstage-plugin-theme';
+} from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 export const SidebarLogo = () => {
   const { isOpen } = useSidebarOpenState();

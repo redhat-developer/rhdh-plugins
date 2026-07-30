@@ -27,9 +27,7 @@ describe('buildGraphQlQuery', () => {
   const defaultTestParams = {
     queryBody: 'id status',
     type: 'ProcessInstances' as
-      | 'ProcessDefinitions'
-      | 'ProcessInstances'
-      | 'Jobs',
+      'ProcessDefinitions' | 'ProcessInstances' | 'Jobs',
     pagination: {
       offset: 0,
       limit: 10,

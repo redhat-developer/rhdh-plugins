@@ -14,59 +14,61 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
   OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { FormValidation } from '@rjsf/utils';
-import { JsonObject } from '@backstage/types';
 
-import {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-} from './widgets';
-import { useGetExtraErrors } from './utils';
+function LazyDecoratorContent({
+  FormComponent,
+  contentPromise,
+  ...props
+}: {
+  FormComponent: ComponentType<FormDecoratorProps>;
+  contentPromise: Promise<typeof import('./FormDecoratorContent')>;
+} & OrchestratorFormContextProps) {
+  const [Content, setContent] = useState<ComponentType<any> | null>(null);
 
-const customValidate = (
-  _formData: JsonObject | undefined,
-  errors: FormValidation<JsonObject>,
-): FormValidation<JsonObject> => {
-  // Trigger synchronous field validation
-  return errors;
-};
+  useEffect(() => {
+    let mounted = true;
+    contentPromise.then(m => {
+      if (mounted) setContent(() => m.default);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [contentPromise]);
 
-const widgets = {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-};
+  if (!Content) {
+    return null;
+  }
+
+  return <Content FormComponent={FormComponent} {...props} />;
+}
 
 export class FormWidgetsApi implements OrchestratorFormApi {
+  private contentPromise: Promise<
+    typeof import('./FormDecoratorContent')
+  > | null = null;
+
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
     console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
 
-    return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
-      return (props: OrchestratorFormContextProps) => {
-        const getExtraErrors = useGetExtraErrors();
+    this.contentPromise ??= import('./FormDecoratorContent');
+    const contentPromise = this.contentPromise;
 
-        return (
-          <FormComponent
-            widgets={widgets}
-            formContext={props}
-            customValidate={customValidate}
-            getExtraErrors={getExtraErrors}
-          />
-        );
-      };
-    };
+    return (FormComponent: ComponentType<FormDecoratorProps>) =>
+      (props: OrchestratorFormContextProps) => (
+        <LazyDecoratorContent
+          FormComponent={FormComponent}
+          contentPromise={contentPromise}
+          {...props}
+        />
+      );
   };
 
   getReviewComponent: OrchestratorFormApi['getReviewComponent'] = () => {

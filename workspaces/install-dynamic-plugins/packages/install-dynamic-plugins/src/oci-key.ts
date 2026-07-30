@@ -16,7 +16,8 @@
 import { InstallException } from './errors';
 import { log } from './log';
 import { type OciImageCache } from './image-cache';
-import { OCI_PROTO, RECOGNIZED_ALGORITHMS } from './types';
+import { OCI_PROTO } from './protocols';
+import { RECOGNIZED_ALGORITHMS } from './types';
 
 const OCI_PATTERN = [
   '^(',

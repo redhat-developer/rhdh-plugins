@@ -20,7 +20,10 @@ export { DrawerPanel } from './components/DrawerPanel';
 
 export { appDrawerContentDataRef } from './extensions/appDrawerContentDataRef';
 export { AppDrawerContentBlueprint } from './extensions/AppDrawerContentBlueprint';
-export { appDrawerModule } from './extensions/appDrawerModule';
+export {
+  appDrawerExtension,
+  appDrawerModule,
+} from './extensions/appDrawerModule';
 
 export type { ApplicationDrawerProps } from './components/ApplicationDrawer';
 export type { DrawerPanelProps } from './components/DrawerPanel';

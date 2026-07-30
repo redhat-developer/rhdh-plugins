@@ -97,8 +97,7 @@ const matches = (
 const authorize = async (
   request: HttpRequest,
   genericPermission:
-    | ResourcePermission<'orchestrator-workflow'>
-    | BasicPermission,
+    ResourcePermission<'orchestrator-workflow'> | BasicPermission,
   permissionsSvc: PermissionsService,
   httpAuth: HttpAuthService,
 ): Promise<PolicyDecision> => {

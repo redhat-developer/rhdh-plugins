@@ -19,6 +19,7 @@ import {
   DefaultGithubCredentialsProvider,
   ScmIntegrations,
 } from '@backstage/integration';
+import { graphql } from '@octokit/graphql';
 import { GithubRepository } from './types';
 
 export class GithubClient {
@@ -41,7 +42,6 @@ export class GithubClient {
       url,
     });
 
-    const { graphql } = await import('@octokit/graphql');
     return graphql.defaults({
       headers,
       baseUrl: githubIntegration.config.apiBaseUrl,

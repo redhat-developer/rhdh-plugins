@@ -59,7 +59,7 @@ import { BCCTestPage } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
 import { BUITestPage } from '@red-hat-developer-hub/backstage-plugin-bui-test';
 import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
 import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 const app = createApp({
   apis,

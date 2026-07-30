@@ -228,10 +228,10 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.headers.description': string;
     readonly 'table.headers.version': string;
     readonly 'table.headers.duration': string;
-    readonly 'table.headers.status': string;
     readonly 'table.headers.entity': string;
     readonly 'table.headers.runStatus': string;
     readonly 'table.headers.started': string;
+    readonly 'table.headers.status': string;
     readonly 'table.headers.workflowStatus': string;
     readonly 'table.headers.lastRun': string;
     readonly 'table.headers.lastRunStatus': string;
@@ -244,11 +244,11 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'table.actions.viewRuns': string;
     readonly 'table.actions.viewInputSchema': string;
     readonly 'table.actions.viewRunVariables': string;
-    readonly 'table.filters.placeholder': string;
-    readonly 'table.filters.status': string;
     readonly 'table.filters.entity': string;
     readonly 'table.filters.started': string;
+    readonly 'table.filters.status': string;
     readonly 'table.filters.runBy': string;
+    readonly 'table.filters.placeholder': string;
     readonly 'table.filters.clearAll': string;
     readonly 'table.filters.startedOptions.today': string;
     readonly 'table.filters.startedOptions.yesterday': string;
@@ -313,9 +313,9 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'run.logs.noLogsAvailable': string;
     readonly 'run.abort.button': string;
     readonly 'run.abort.title': string;
-    readonly 'run.abort.warning': string;
     readonly 'run.abort.completed.title': string;
     readonly 'run.abort.completed.message': string;
+    readonly 'run.abort.warning': string;
     readonly 'run.retrigger': string;
     readonly 'run.viewVariables': string;
     readonly 'run.suggestedNextWorkflow': string;
@@ -326,10 +326,10 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'workflow.errors.abortFailed': string;
     readonly 'workflow.errors.abortFailedWithReason': string;
     readonly 'workflow.errors.failedToLoadDetails': string;
-    readonly 'workflow.definition': string;
     readonly 'workflow.status.available': string;
     readonly 'workflow.status.unavailable': string;
     readonly 'workflow.successRatio': string;
+    readonly 'workflow.definition': string;
     readonly 'workflow.inputSchema': string;
     readonly 'workflow.inputSchemaDescription': string;
     readonly 'workflow.successRatioDescription': string;

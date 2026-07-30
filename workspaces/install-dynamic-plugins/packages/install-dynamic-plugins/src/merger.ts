@@ -24,10 +24,10 @@ import {
   type ParsedOciKey,
   tryParseOciRegistryAndPath,
 } from './oci-key';
+import { isOciUrl, OCI_PROTO } from './protocols';
 import {
   type DynamicPluginsConfig,
   isPluginDisabled,
-  OCI_PROTO,
   type Plugin,
   type PluginMap,
   type PluginSpec,
@@ -137,7 +137,7 @@ export async function mergePlugin(
       `content of the 'plugins.package' field must be a string in ${configFile}`,
     );
   }
-  if (plugin.package.startsWith(OCI_PROTO)) {
+  if (isOciUrl(plugin.package)) {
     await mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache);
   } else {
     mergeNpmPlugin(plugin, allPlugins, configFile, level);
@@ -431,7 +431,7 @@ function processOciEntry(
   sourceFile: string,
 ): void {
   const pkg = plugin.package;
-  if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
+  if (typeof pkg !== 'string' || !isOciUrl(pkg)) return;
   const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
@@ -555,7 +555,7 @@ export function filterDisabledOciPlugins(
   const out: PluginSpec[] = [];
   for (const plugin of plugins) {
     const pkg = plugin.package;
-    if (typeof pkg === 'string' && pkg.startsWith(OCI_PROTO)) {
+    if (typeof pkg === 'string' && isOciUrl(pkg)) {
       const parsed = tryParseOciRegistryAndPath(pkg);
       if (parsed && disabledRegistries.has(parsed.registry)) {
         log(`\n======= Disabling OCI plugin ${pkg}`);

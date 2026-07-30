@@ -48,11 +48,7 @@ import {
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-import scorecardPlugin, {
-  scorecardCatalogModule,
-  scorecardHomeModule,
-  scorecardTranslationsModule,
-} from '../src/alpha';
+import scorecardPlugin, { scorecardTranslationsModule } from '../src';
 import { scorecardApiRef } from '../src/api';
 
 import { MockScorecardApi, mockCatalogApi } from './mocks';
@@ -145,8 +141,6 @@ const app = createApp({
   features: [
     devNavModule,
     scorecardPlugin,
-    scorecardCatalogModule,
-    scorecardHomeModule,
     scorecardTranslationsModule,
     appDevModule,
     catalogDevModule,

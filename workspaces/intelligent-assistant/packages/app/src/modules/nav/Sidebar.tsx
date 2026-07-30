@@ -47,6 +47,7 @@ export const SidebarContent = NavContentBlueprint.make({
           <SidebarSpace />
           <SidebarDivider />
           {nav.take('page:rbac')}
+          {nav.take('page:app-visualizer')}
           {nav.take('page:user-settings')}
         </Sidebar>
       );

@@ -1,5 +1,66 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 3.0.0
+
+### Major Changes
+
+- f4b8bd4: **BREAKING**: Graduated the New Frontend System (NFS) scorecard plugin to the stable entry point and simplified NFS feature registration.
+
+  - NFS APIs move from `./alpha` to `.`; OFS APIs move to `./legacy` only (not re-exported from the main entry); translations remain at `./alpha`.
+  - `scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab, layout, and homepage widgets are now provided by the default `scorecardPlugin`. Keep only `scorecardTranslationsModule` as a separate app module.
+  - Extension IDs move from the `catalog` / `home` namespaces to `scorecard` (for example `entity-content:catalog/entity-content-scorecard` → `entity-content:scorecard/entity-content-scorecard`). Update any `app.extensions` config accordingly. See the plugin README migration notes.
+
+- 6ea1575: **BREAKING**: Rename aggregation KPI type `average` to `weightedStatusScore`.
+
+  ### App config
+
+  - `scorecard.aggregationKPIs.*.type`: `average` → `weightedStatusScore`
+
+  ### `GET /aggregations/:aggregationId` API
+
+  - `metadata.aggregationType`: `average` → `weightedStatusScore`
+  - `result.averageScore` → `result.weightedStatusScore`
+  - `result.averageWeightedSum` → `result.weightedStatusSum`
+  - `result.averageMaxPossible` → `result.weightedStatusMaxPossible`
+
+  ### Frontend translations (`metric.*`)
+
+  Update any scorecard translation overrides that used the old `average*` keys:
+
+  - `metric.averageCenterTooltipTotalLabel` → `metric.weightedStatusScoreCenterTooltipTotalLabel`
+  - `metric.averageCenterTooltipMaxLabel` → `metric.weightedStatusScoreCenterTooltipMaxLabel`
+  - `metric.averageCenterTooltipBreakdownRow_one` / `_other` → `metric.weightedStatusScoreCenterTooltipBreakdownRow_one` / `_other`
+  - `metric.averageLegendTooltipEntitiesEach_one` / `_other` → `metric.weightedStatusScoreLegendTooltipEntitiesEach_one` / `_other`
+  - `metric.averageLegendTooltipRowTotal` → `metric.weightedStatusScoreLegendTooltipRowTotal`
+
+  The `averageLegendTooltip*` keys served the removed side-legend tooltip; the center donut tooltip uses the `weightedStatusScoreCenterTooltip*` keys (including per-status breakdown rows).
+
+  ### UI `data-testid` values
+
+  Update downstream e2e selectors that targeted the weighted-status-score card center label:
+
+  - `average-card-center-percent` → `weighted-status-score-card-center-percent`
+  - `average-card-center-percent-hit-area` → `weighted-status-score-card-center-percent-hit-area`
+
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Minor Changes
+
+- 50447ac: Backstage version bump to v1.52.0
+- f024236: Introduce a MetricGroupCard component that aggregates related metrics into threshold-based bucket tiles with a filterable data sources dialog. ScorecardEntityContentGridView to render grouped metrics as MetricGroupCards and ungrouped metrics as individual Scorecard cards using a Masonry layout. Add i18n keys across all supported locales and comprehensive unit tests for all new components.
+
+### Patch Changes
+
+- 83d8a47: Removed unused `ScorecardStylesProvider` component and `@mui/styles` dependency. JSS class-name isolation is no longer needed after the MUI5 migration.
+- 963c98c: optimized how scorecard homepage is loaded
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 2.8.1
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 2.0.0
+
+### Major Changes
+
+- 20421e9: Updating x2a plugins to RHDH 1.10, including NFS for testing.
+
+### Patch Changes
+
+- 9be2af5: change publish phase actions order
+- a408de5: Add gitignore detection logging in x2a job script cleanup
+- Updated dependencies [20421e9]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.0
+
 ## 1.6.0
 
 ### Minor Changes
