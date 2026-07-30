@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="node" />
 import type { Browser, Page } from '@playwright/test';
 import { models, conversations, mockedShields } from '../fixtures/responses';
 import { openLightspeed, switchToLocale } from './testHelper';
@@ -39,17 +40,28 @@ export type LightspeedE2eBootstrap = {
 };
 
 async function loginAsGuest(page: Page) {
-  const enter = page.getByRole('button', { name: 'Enter' });
-  await enter.click();
-  await page.waitForTimeout(2000);
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const enter = page.getByRole('button', { name: 'Enter' });
+    await enter.click();
+    await page.waitForTimeout(2000);
 
-  if (process.env.APP_MODE !== 'nfs') {
-    await page
-      .getByRole('heading', { name: 'Red Hat Catalog' })
-      .waitFor({ state: 'visible', timeout: 5_000 });
+    if (process.env.APP_MODE !== 'nfs') {
+      try {
+        await page
+          .getByRole('heading', { name: 'Red Hat Catalog' })
+          .waitFor({ state: 'visible', timeout: 10_000 });
+        return;
+      } catch {
+        if (attempt === maxAttempts) throw new Error('loginAsGuest failed');
+        await page.reload();
+        await page.waitForTimeout(2000);
+      }
+    } else {
+      return;
+    }
   }
 }
-
 /**
  * One logged-in Lightspeed session with the same dev-mode mocks as the legacy
  * monolithic suite. Each Playwright test file should call this from `beforeAll`.

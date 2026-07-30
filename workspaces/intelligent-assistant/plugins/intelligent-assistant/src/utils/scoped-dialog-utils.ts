@@ -34,11 +34,14 @@ export function getScopedDialogProps(isCompact: boolean): Partial<DialogProps> {
     },
     PaperProps: {
       sx: {
-        margin: '24px !important',
+        marginTop: '16px !important',
+        marginBottom: '16px !important',
+        marginLeft: '40px !important',
+        marginRight: '40px !important',
         borderRadius: '12px !important',
-        width: 'calc(100% - 48px) !important',
-        maxWidth: 'calc(100% - 48px) !important',
-        maxHeight: 'calc(100% - 48px) !important',
+        width: 'calc(100% - 80px) !important',
+        maxWidth: 'calc(100% - 80px) !important',
+        maxHeight: 'calc(100% - 32px) !important',
         overflowX: 'hidden',
         overflowY: 'auto',
         boxSizing: 'border-box',

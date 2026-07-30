@@ -36,14 +36,13 @@ const useStyles = makeStyles(theme => ({
   },
   dialogPaperCompact: {
     borderRadius: 12,
-    padding: theme.spacing(1),
   },
   dialogTitle: {
     padding: '16px 20px',
     fontStyle: 'inherit',
   },
   dialogTitleCompact: {
-    padding: '12px 16px',
+    padding: '12px 16px !important',
     fontStyle: 'inherit',
   },
   dialogContent: {
@@ -51,10 +50,10 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(5),
   },
   dialogContentCompact: {
-    paddingTop: 0,
-    paddingBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    paddingTop: '0 !important',
+    paddingBottom: `${theme.spacing(2)}px !important`,
+    paddingLeft: `${theme.spacing(2)}px !important`,
+    paddingRight: `${theme.spacing(2)}px !important`,
   },
   titleRow: {
     display: 'flex',
@@ -87,7 +86,7 @@ const useStyles = makeStyles(theme => ({
   },
   dialogActionsCompact: {
     justifyContent: 'left',
-    padding: theme.spacing(1.5),
+    padding: `${theme.spacing(1.5)}px !important`,
     gap: theme.spacing(1),
   },
   deleteButton: {

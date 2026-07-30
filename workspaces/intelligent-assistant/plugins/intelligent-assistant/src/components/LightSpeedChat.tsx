@@ -153,14 +153,6 @@ const ConditionalWrapper = ({
 
 const useStyles = makeStyles(theme => ({
   body: {
-    height: '100% !important',
-    minHeight: '0 !important',
-    overflow: 'hidden',
-    '& .pf-chatbot-container': {
-      minHeight: '0 !important',
-      display: 'flex',
-      flexDirection: 'column',
-    },
     '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
       margin: 0,
       padding: 0,
@@ -174,6 +166,16 @@ const useStyles = makeStyles(theme => ({
       width: 0,
       height: 0,
       overflow: 'hidden',
+    },
+  },
+  bodyCompact: {
+    height: '100% !important',
+    minHeight: '0 !important',
+    overflow: 'hidden',
+    '& .pf-chatbot-container': {
+      minHeight: '0 !important',
+      display: 'flex',
+      flexDirection: 'column',
     },
   },
   header: {
@@ -239,10 +241,13 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
     marginBottom: theme.spacing(4),
   },
   notebooksHeading: {
     marginBottom: 0,
+    whiteSpace: 'nowrap',
   },
   notebooksHeadingEmpty: {
     '&&': {
@@ -1962,7 +1967,7 @@ export const LightspeedChat = ({
       )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={`${classes.body} ${
+        className={`${classes.body} ${!isFullscreenMode ? classes.bodyCompact : ''} ${
           isMcpSettingsOpen && !isChatHistoryDrawerOpen
             ? classes.mcpCollapsedDrawerOrderFix
             : ''

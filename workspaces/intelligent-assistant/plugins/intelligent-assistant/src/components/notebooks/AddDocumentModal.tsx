@@ -52,7 +52,6 @@ const useStyles = makeStyles(theme => ({
   dialogPaperCompact: {
     borderRadius: 12,
     maxWidth: '100%',
-    padding: theme.spacing(0.5),
   },
   dialogTitle: {
     display: 'flex',
@@ -64,7 +63,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px 16px 8px',
+    padding: '16px 16px 12px !important',
   },
   titleText: {
     fontWeight: 500,
@@ -85,7 +84,7 @@ const useStyles = makeStyles(theme => ({
     padding: '0 24px 24px',
   },
   dialogContentCompact: {
-    padding: '0 16px 16px',
+    padding: '0 16px 16px !important',
   },
   errorAlert: {
     marginBottom: theme.spacing(2),
@@ -122,7 +121,7 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(1),
   },
   dialogActionsCompact: {
-    padding: '12px 16px',
+    padding: '12px 16px !important',
     justifyContent: 'flex-end',
     gap: theme.spacing(1),
   },
