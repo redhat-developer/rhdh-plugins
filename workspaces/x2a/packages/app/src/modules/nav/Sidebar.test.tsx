@@ -13,4 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { Root } from './Root';
+import { SidebarContent } from './Sidebar';
+
+describe('SidebarContent', () => {
+  it('exports a NavContentBlueprint extension', () => {
+    expect(SidebarContent).toBeDefined();
+    expect(SidebarContent).toHaveProperty('$$type');
+  });
+});

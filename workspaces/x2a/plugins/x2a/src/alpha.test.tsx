@@ -13,11 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import plugin, { x2aTranslationsModule } from './alpha';
 
-ReactDOM.createRoot(window.document.getElementById('root')!).render(
-  App.createRoot(),
-);
+describe('x2a alpha', () => {
+  it('should export a valid frontend plugin', () => {
+    expect(plugin).toBeDefined();
+    expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
+  });
+
+  it('should have the correct plugin id', () => {
+    expect(plugin.id).toBe('x2a');
+  });
+
+  it('should have routes defined', () => {
+    expect(plugin.routes).toBeDefined();
+    expect(plugin.routes).toHaveProperty('root');
+  });
+
+  it('should export a translations module', () => {
+    expect(x2aTranslationsModule).toBeDefined();
+  });
+});
