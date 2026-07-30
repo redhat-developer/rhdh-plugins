@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const yaml = require('js-yaml');
 
 const RHDH_DIR = process.env.RHDH_DIR
@@ -79,8 +79,8 @@ const integrationsConfig = {
 
 const dcrConfig = {
   enabled: true,
-  // security: this is not a security issue, the configured environment is for local development only
-  allowedRedirectUriPatterns: ['cursor://*', 'https://*', 'http://*'],
+  // Local development only — http://* is intentional for DCR redirect patterns.
+  allowedRedirectUriPatterns: ['cursor://*', 'https://*', 'http://*'], // NOSONAR
 };
 
 const authProvidersConfig = {

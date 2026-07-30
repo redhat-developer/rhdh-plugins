@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-const { spawnSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+const fs = require('node:fs');
 const { MultiSelect, Select } = require('enquirer');
 
 const RHDH_CLI_VERSION = process.env.RHDH_CLI_VERSION || '1.10.7';
@@ -167,11 +167,14 @@ async function main() {
 
   console.log('🛠️ Compiling TypeScript in workspaces/x2a');
   // Local-only helper (yarn enable-in-rhdh-repo); not used in production runtime.
-  const tscResult = spawnSync('yarn', ['tsc'], {
-    // NOSONAR - PATH lookup is fine for this interactive local script
-    cwd: path.resolve(__dirname, '../'),
-    stdio: 'inherit',
-  });
+  const tscResult = spawnSync(
+    'yarn', // NOSONAR - PATH lookup is fine for this interactive local script
+    ['tsc'],
+    {
+      cwd: path.resolve(__dirname, '../'),
+      stdio: 'inherit',
+    },
+  );
 
   if (tscResult.status !== 0) {
     console.error('❌ TypeScript compilation failed.');
