@@ -40,7 +40,17 @@ export const CatalogSourceBadge = ({
   const badgeLabel =
     meta?.badge ?? getCatalogSourceLabel(plugin, sourcesConfig);
 
-  const chip = <Chip label={badgeLabel} variant="outlined" size="small" />;
+  const chip = (
+    <Chip
+      label={badgeLabel}
+      size="small"
+      sx={{
+        backgroundColor: 'action.hover',
+        fontWeight: 500,
+        fontSize: '0.75rem',
+      }}
+    />
+  );
 
   if (meta?.description) {
     return (
