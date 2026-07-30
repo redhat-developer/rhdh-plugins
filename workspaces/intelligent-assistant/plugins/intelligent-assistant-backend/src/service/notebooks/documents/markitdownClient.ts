@@ -29,11 +29,19 @@ const PLAINTEXT_EXTENSIONS = new Set(['.json', '.yaml', '.yml', '.log']);
 export async function convertToMarkdown(
   buffer: Buffer,
   originalName: string,
+  fileType: string,
 ): Promise<string> {
-  const rawExt = originalName.includes('.')
-    ? originalName.split('.').pop()!.toLowerCase()
+  const normalizedFileType = fileType.toLowerCase();
+  const ext = `.${normalizedFileType}`;
+
+  const nameExt = originalName.includes('.')
+    ? `.${originalName.split('.').pop()!.toLowerCase()}`
     : '';
-  const ext = rawExt ? `.${rawExt}` : '';
+  if (nameExt && nameExt !== ext) {
+    throw new InputError(
+      `File extension "${nameExt}" does not match declared file type "${fileType}"`,
+    );
+  }
 
   if (PLAINTEXT_EXTENSIONS.has(ext)) {
     return buffer.toString('utf-8');

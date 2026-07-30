@@ -405,6 +405,7 @@ export async function createNotebooksRouter(
       const markdown = await convertToMarkdown(
         req.file.buffer,
         req.file.originalname,
+        fileType,
       );
       const fileId = await documentService.uploadFile(markdown, title);
 
