@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { InstallException } from './errors';
-import { deepMerge, mergePlugin } from './merger';
+import { deepMerge, mergePlugin, resolveRefPlugin } from './merger';
 import type { PluginMap } from './types';
 
 describe('deepMerge', () => {
@@ -136,5 +136,82 @@ describe('mergePlugin — NPM', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mergePlugin({ package: 123 as any }, all, 'cfg.yaml', 0),
     ).rejects.toThrow(/must be a string/);
+  });
+});
+
+describe('mergePlugin — ref://', () => {
+  it('resolves ref to an OCI plugin by name', async () => {
+    const all: PluginMap = {};
+    await mergePlugin(
+      {
+        package:
+          'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123!backstage-plugin-foo',
+      },
+      all,
+      'inc.yaml',
+      0,
+    );
+    await mergePlugin(
+      { package: 'ref://backstage-plugin-foo' },
+      all,
+      'cfg.yaml',
+      1,
+    );
+    const key = 'oci://quay.io/rhdh/backstage-plugin-foo:!backstage-plugin-foo';
+    expect(all[key]?.package).toBe(
+      'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123!backstage-plugin-foo',
+    );
+  });
+});
+
+describe('resolveRefPlugin', () => {
+  it('resolves ref to an OCI plugin', () => {
+    const all: PluginMap = {
+      key: {
+        package:
+          'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123!backstage-plugin-foo',
+      },
+    };
+    expect(resolveRefPlugin('ref://backstage-plugin-foo', all)).toBe(
+      'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123!backstage-plugin-foo',
+    );
+  });
+
+  it('resolves ref to an HTTP tarball plugin', () => {
+    const all: PluginMap = {
+      key: {
+        package: 'https://example.com/plugins/backstage-plugin-bar-1.2.3.tgz',
+      },
+    };
+    expect(resolveRefPlugin('ref://backstage-plugin-bar', all)).toBe(
+      'https://example.com/plugins/backstage-plugin-bar-1.2.3.tgz',
+    );
+  });
+
+  it('resolves ref to a local plugin', () => {
+    const all: PluginMap = {
+      key: { package: './dynamic-plugins/dist/backstage-plugin-baz' },
+    };
+    expect(resolveRefPlugin('ref://backstage-plugin-baz', all)).toBe(
+      './dynamic-plugins/dist/backstage-plugin-baz',
+    );
+  });
+
+  it('throws on unknown plugin name', () => {
+    const all: PluginMap = {
+      key: {
+        package:
+          'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123!backstage-plugin-foo',
+      },
+    };
+    expect(() => resolveRefPlugin('ref://unknown-plugin', all)).toThrow(
+      "Cannot resolve ref:// reference: no plugin named 'unknown-plugin' found in included plugins",
+    );
+  });
+
+  it('throws on empty ref', () => {
+    expect(() => resolveRefPlugin('ref://', {})).toThrow(
+      'Invalid ref:// reference: empty plugin name in ref://',
+    );
   });
 });
