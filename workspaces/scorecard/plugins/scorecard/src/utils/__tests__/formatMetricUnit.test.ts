@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-export {
-  getHeightForCenterLabel,
-  getYOffsetForCenterLabel,
-} from './chartLabelUtils';
-export {
-  SCORECARD_ENTITIES_TABLE_HEADERS,
-  SCORECARD_ERROR_STATE_COLOR,
-} from './constants';
-export { getLastUpdatedLabel } from './entityTableUtils';
-export { formatWithMetricUnit } from './formatMetricUnit';
-export {
-  getStatusConfig,
-  getTranslatedStatus,
-  resolveStatusColor,
-} from './statusUtils';
-export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
-export {
-  resolveMetricTranslation,
-  extractPluginName,
-} from './translationUtils';
+import { formatWithMetricUnit } from '../formatMetricUnit';
+
+describe('formatWithMetricUnit', () => {
+  it('returns the value unchanged when unit is undefined', () => {
+    expect(formatWithMetricUnit('<24')).toBe('<24');
+  });
+
+  it('adds a space before alphabetic units', () => {
+    expect(formatWithMetricUnit('<24', 'h')).toBe('<24 h');
+  });
+
+  it('appends percent without a space', () => {
+    expect(formatWithMetricUnit('<5', '%')).toBe('<5%');
+  });
+
+  it('appends slash units without a space', () => {
+    expect(formatWithMetricUnit('>=7', '/week')).toBe('>=7/week');
+  });
+});

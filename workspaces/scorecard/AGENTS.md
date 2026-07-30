@@ -142,8 +142,9 @@ Every data source implements `MetricProvider<T extends MetricType>` from
   `app-config.yaml` under `scorecard.metricProviders.<providerId>`.
 - `getProviderDatasourceId()` — identifies the external data source.
 - `getMetrics()` — returns `Metric<T>[]`. Each `Metric` has an `id`,
-  `title`, `description`, `type` (`"number"` or `"boolean"`), and a
-  `thresholds` field providing the default `ThresholdConfig`.
+  `title`, `description`, `type` (`"number"` or `"boolean"`), a
+  `thresholds` field providing the default `ThresholdConfig`, and an
+  optional `unit` display suffix (e.g. `"h"`, `"%"`, `"/week"`).
 - `calculateMetrics(entity)` — computes metric values for a catalog
   entity. Returns `Map<string, MetricValue<T>>` keyed by metric ID.
 - `getCatalogFilter()` — returns the catalog entity filter that

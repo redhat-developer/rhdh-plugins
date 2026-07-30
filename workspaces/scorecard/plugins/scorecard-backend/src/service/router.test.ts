@@ -674,6 +674,7 @@ describe('createRouter', () => {
         title: 'GitHub Open PRs',
         description: 'Mock number description.',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       },
@@ -1035,6 +1036,7 @@ describe('createRouter', () => {
         title: 'GitHub Open PRs',
         description: 'Mock number description.',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       },
@@ -1641,6 +1643,7 @@ describe('createRouter', () => {
         title: 'Custom KPI title',
         description: 'Custom KPI description',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       });

@@ -1479,6 +1479,7 @@ describe('CatalogMetricService', () => {
         title: provider.getMetrics()[0].title,
         description: provider.getMetrics()[0].description,
         type: provider.getMetrics()[0].type,
+        unit: provider.getMetrics()[0].unit,
       });
     });
   });
