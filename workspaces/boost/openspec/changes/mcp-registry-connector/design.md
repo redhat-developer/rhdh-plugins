@@ -111,7 +111,7 @@ The wrapper intercepts `getProviderName()` and `connect()` to inject mirror endp
 **Configuration schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       # Optional mirror endpoint (falls back to registry.modelcontextprotocol.io)

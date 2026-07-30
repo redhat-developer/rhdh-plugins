@@ -57,7 +57,7 @@ RHOAI clusters may be separate from the RHDH cluster. The connector must support
 **How to apply:** Config schema under `ai-catalog.providers.rhoai.mcpCatalog` includes:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     rhoai:
       mcpCatalog:

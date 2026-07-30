@@ -70,7 +70,7 @@ This change layers productization on top of the upstream connector, adding air-g
 **Configuration schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com # Mirror endpoint (optional)

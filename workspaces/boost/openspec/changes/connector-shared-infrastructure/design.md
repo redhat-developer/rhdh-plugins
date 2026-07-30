@@ -56,7 +56,7 @@ import {
 CA bundles are loaded from mounted file paths or K8s Secret references. The config schema supports both patterns:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       tls:
@@ -172,7 +172,7 @@ Each connector checks `ai-catalog.providers.<connectorId>.enabled` at backend mo
 **Config schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       enabled: true # Default: true if omitted

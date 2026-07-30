@@ -139,7 +139,7 @@ The connector MUST support multiple registries with distinct credentials and CA 
 
 - **WHEN** the connector is configured with:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       ociSkill:
         registries:

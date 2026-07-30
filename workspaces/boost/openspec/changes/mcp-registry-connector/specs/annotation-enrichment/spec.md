@@ -151,7 +151,7 @@ metadata:
 **WHEN** multiple MCP Registry connector instances are configured:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistryPrimary:
       endpoint: https://registry-primary.internal.example.com
