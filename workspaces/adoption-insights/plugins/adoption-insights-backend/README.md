@@ -21,6 +21,20 @@ backend.add(
 );
 ```
 
+### Notifications (optional)
+
+To enable time-saved notification summaries, install the notifications backend:
+
+```bash
+yarn --cwd packages/backend add @backstage/plugin-notifications-backend
+```
+
+And add it to your backend:
+
+```ts
+backend.add(import('@backstage/plugin-notifications-backend'));
+```
+
 ## Configuration
 
 The following optional configuration parameters are available to fine tune adoption analytics events:
@@ -33,6 +47,24 @@ app:
       flushInterval: 5000 # Optional: Flush interval in milliseconds for event batching (default: 5000ms)
       debug: false # Optional: Enable debug mode to log every event in the browser console (default: false)
       licensedUsers: 100 # Administrators can set this value to see the user adoption metrics.
+
+adoptionInsights:
+  notifications:
+    enabled: true # Optional: Enable/disable time-saved notification summaries (default: true)
+```
+
+### Estimated Time Saved annotation
+
+Template owners can annotate their software templates with `rhdh.redhat.com/time-saved` to declare how many minutes each execution saves. This value is used to compute the "Est. Time Saved" column in Adoption Insights and to generate notification summaries.
+
+```yaml
+# In your template.yaml
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: my-template
+  annotations:
+    rhdh.redhat.com/time-saved: '180' # minutes saved per execution
 ```
 
 #### Permission Framework Support
@@ -106,15 +138,15 @@ If you want to run the entire project, including the frontend, run `yarn start` 
 
 ## Query Parameters
 
-| Parameter    | Type                | Required | Description                                                                                                                                     |
-| ------------ | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`       | string              | Yes      | Filter events by type (e.g., `total_users`, `active_users`,`top_plugins`,`top_templates`,`top_techdocs`,`top_searches`,`top_catalog_entities`). |
-| `start_date` | string (YYYY-MM-DD) | Yes      | Fetch events starting from this date.                                                                                                           |
-| `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                   |
-| `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                             |
-| `kind`       | string              | No       | Filter the entities by kind.                                                                                                                    |
-| `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                        |
-| `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                              |
+| Parameter    | Type                | Required | Description                                                                                                                                                         |
+| ------------ | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`       | string              | Yes      | Filter events by type (e.g., `total_users`, `active_users`,`top_plugins`,`top_templates`,`top_techdocs`,`top_searches`,`top_catalog_entities`,`time_saved_totals`). |
+| `start_date` | string (YYYY-MM-DD) | Yes      | Fetch events starting from this date.                                                                                                                               |
+| `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                                       |
+| `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                                                 |
+| `kind`       | string              | No       | Filter the entities by kind.                                                                                                                                        |
+| `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                                            |
+| `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                                                  |
 
 ## Example Request
 
@@ -180,3 +212,29 @@ GET /api/adoption-insights/events?type=top_plugins&start_date=2025-03-01&end_dat
 ```
 
 </details>
+
+# Notification Preferences API
+
+## Get notification preference
+
+`GET /api/adoption-insights/notification-preferences`
+
+Returns the authenticated user's notification frequency setting.
+
+### Response
+
+```json
+{ "frequency": "weekly" }
+```
+
+## Set notification preference
+
+`PUT /api/adoption-insights/notification-preferences`
+
+### Request Body
+
+```json
+{ "frequency": "daily" }
+```
+
+Allowed values: `daily`, `weekly`, `monthly`, `none`.

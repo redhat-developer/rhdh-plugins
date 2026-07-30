@@ -44,6 +44,10 @@ describe('EventBatchProcessor', () => {
     getTopCatalogEntitiesViews: jest
       .fn()
       .mockReturnValue({} as Knex.QueryBuilder),
+    getTimeSavedTotals: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
+    getTimeSavedPerUser: jest.fn().mockResolvedValue([]),
+    getNotificationPreference: jest.fn().mockResolvedValue('weekly'),
+    setNotificationPreference: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockLogger: jest.Mocked<LoggerService> = {

@@ -24,24 +24,33 @@ import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 
 import EventApiController from './controllers/EventApiController';
+import { EventDatabase } from './database/event-database';
 import { QueryParams } from './types/event-request';
+import { NotificationFrequency } from './types/event';
+
+const VALID_FREQUENCIES: NotificationFrequency[] = [
+  'daily',
+  'weekly',
+  'monthly',
+  'none',
+];
 
 export async function createRouter({
   httpAuth,
   permissions,
   eventApiController,
+  db,
 }: {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   eventApiController: EventApiController;
+  db: EventDatabase;
 }): Promise<express.Router> {
   const router = Router();
 
   router.use(express.json());
 
-  const authorizeUser = async (
-    req: Request<{}, {}, {}, QueryParams>,
-  ): Promise<void> => {
+  const authorizeUser = async (req: Request): Promise<void> => {
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
     const decision = (
       await permissions.authorize(
@@ -68,13 +77,38 @@ export async function createRouter({
   router.get(
     '/events',
     async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
-      await authorizeUser(req);
+      await authorizeUser(req as unknown as Request);
       return eventApiController.getInsights(req, res);
     },
   );
 
   router.post('/events', async (req, res) => {
     return eventApiController.trackEvents(req, res);
+  });
+
+  router.get('/notification-preferences', async (req, res) => {
+    await authorizeUser(req);
+    const userRef = await getUserEntityRef(req);
+    const frequency = await db.getNotificationPreference(userRef);
+    res.json({ frequency });
+  });
+
+  router.put('/notification-preferences', async (req, res) => {
+    await authorizeUser(req);
+    const userRef = await getUserEntityRef(req);
+    const frequency = req.body?.frequency;
+
+    if (!VALID_FREQUENCIES.includes(frequency)) {
+      res.status(400).json({
+        error: `Invalid frequency. Allowed values: ${VALID_FREQUENCIES.join(
+          ', ',
+        )}`,
+      });
+      return;
+    }
+
+    await db.setNotificationPreference(userRef, frequency);
+    res.json({ frequency });
   });
 
   router.get('/health', (_, response) => {

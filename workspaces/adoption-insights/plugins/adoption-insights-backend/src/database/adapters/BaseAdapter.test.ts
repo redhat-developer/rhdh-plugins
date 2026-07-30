@@ -31,6 +31,7 @@ describe('BaseAdapter', () => {
     select: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
+    whereNotNull: jest.fn().mockReturnThis(),
     whereBetween: jest.fn().mockReturnThis(),
     groupBy: jest.fn().mockReturnThis(),
     groupByRaw: jest.fn().mockReturnThis(),
@@ -62,6 +63,8 @@ describe('BaseAdapter', () => {
     db.with = jest.fn().mockReturnThis();
     db.select = jest.fn().mockReturnThis();
     db.andWhere = jest.fn().mockReturnThis();
+    db.where = jest.fn().mockReturnThis();
+    db.whereNotNull = jest.fn().mockReturnThis();
     db.whereBetween = jest.fn().mockReturnThis();
     db.leftJoin = jest.fn().mockReturnThis();
     db.groupBy = jest.fn().mockReturnThis();
@@ -423,6 +426,108 @@ describe('BaseAdapter', () => {
             ],
           },
         ],
+      });
+    });
+  });
+
+  describe('getTimeSavedTotals', () => {
+    const setupTimeSavedDb = (rows: any[]) => {
+      const dbFn = jest.fn().mockReturnValue(mockKnex) as any;
+      dbFn.raw = jest.fn().mockReturnValue('mocked_raw_sql');
+      mockKnex.groupByRaw.mockReturnThis();
+      mockKnex.orderBy.mockResolvedValue(rows);
+      return dbFn;
+    };
+
+    it('should query scaffolder create events with value and return aggregated totals', async () => {
+      const mockRows = [
+        {
+          entityref: 'template:default/my-template',
+          execution_count: 3,
+          time_saved_per_execution: 180,
+          total_time_saved_minutes: 540,
+        },
+      ];
+
+      const dbFn = setupTimeSavedDb(mockRows);
+      const db = new PostgresAdapter(dbFn, logger);
+      db.setFilters({
+        timezone: 'UTC',
+        start_date: '2026-07-01T00:00:00.000Z',
+        end_date: '2026-07-31T23:59:59.999Z',
+      });
+
+      const result = await db.getTimeSavedTotals();
+
+      expect(dbFn).toHaveBeenCalledWith('events');
+      expect(mockKnex.where).toHaveBeenCalledWith({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      });
+      expect(mockKnex.whereNotNull).toHaveBeenCalledWith('value');
+      expect(mockKnex.whereBetween).toHaveBeenCalledWith('created_at', [
+        '2026-07-01T00:00:00.000Z',
+        '2026-07-31T23:59:59.999Z',
+      ]);
+      expect(result).toEqual({
+        data: {
+          total_time_saved_minutes: 540,
+          templates: mockRows,
+        },
+      });
+    });
+
+    it('should return zero totals when no events have value', async () => {
+      const dbFn = setupTimeSavedDb([]);
+      const db = new PostgresAdapter(dbFn, logger);
+      db.setFilters({
+        timezone: 'UTC',
+        start_date: '2026-07-01T00:00:00.000Z',
+        end_date: '2026-07-31T23:59:59.999Z',
+      });
+
+      const result = await db.getTimeSavedTotals();
+
+      expect(result).toEqual({
+        data: {
+          total_time_saved_minutes: 0,
+          templates: [],
+        },
+      });
+    });
+
+    it('should sum totals across multiple templates', async () => {
+      const mockRows = [
+        {
+          entityref: 'template:default/template-a',
+          execution_count: 5,
+          time_saved_per_execution: 60,
+          total_time_saved_minutes: 300,
+        },
+        {
+          entityref: 'template:default/template-b',
+          execution_count: 2,
+          time_saved_per_execution: 180,
+          total_time_saved_minutes: 360,
+        },
+      ];
+
+      const dbFn = setupTimeSavedDb(mockRows);
+      const db = new PostgresAdapter(dbFn, logger);
+      db.setFilters({
+        timezone: 'UTC',
+        start_date: '2026-07-01T00:00:00.000Z',
+        end_date: '2026-07-31T23:59:59.999Z',
+      });
+
+      const result = await db.getTimeSavedTotals();
+
+      expect(result).toEqual({
+        data: {
+          total_time_saved_minutes: 660,
+          templates: mockRows,
+        },
       });
     });
   });

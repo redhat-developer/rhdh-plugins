@@ -22,7 +22,10 @@ import {
   TopSearches,
   TopTechDocsCount,
   TopTemplatesCount,
+  TimeSavedTotals,
   TotalUsers,
+  UserTimeSaved,
+  NotificationFrequency,
 } from '../types/event';
 import { Event } from '../models/Event';
 
@@ -60,4 +63,11 @@ export interface EventDatabase {
   getTopCatalogEntitiesViews(): Promise<
     Knex.QueryBuilder<TopCatalogEntitiesCount>
   >;
+  getTimeSavedTotals(): Promise<Knex.QueryBuilder<TimeSavedTotals>>;
+  getTimeSavedPerUser(since: string): Promise<UserTimeSaved[]>;
+  getNotificationPreference(userRef: string): Promise<NotificationFrequency>;
+  setNotificationPreference(
+    userRef: string,
+    frequency: NotificationFrequency,
+  ): Promise<void>;
 }

@@ -75,3 +75,23 @@ export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
 export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
 export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
 export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;
+
+export interface TimeSavedTemplate {
+  entityref: string;
+  execution_count: number;
+  time_saved_per_execution: number;
+  total_time_saved_minutes: number;
+}
+
+export type TimeSavedTotals = ResponseData<{
+  total_time_saved_minutes: number;
+  templates: TimeSavedTemplate[];
+}>;
+
+export type NotificationFrequency = 'daily' | 'weekly' | 'monthly' | 'none';
+
+export interface UserTimeSaved {
+  user_ref: string;
+  execution_count: number;
+  total_time_saved_minutes: number;
+}
