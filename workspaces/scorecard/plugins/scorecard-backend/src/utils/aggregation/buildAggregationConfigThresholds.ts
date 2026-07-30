@@ -26,7 +26,7 @@ export function buildAggregationConfigThresholds(
       rules: thresholdsConfig.getConfigArray('rules').map(rule => ({
         key: rule.getString('key'),
         expression: rule.getString('expression'),
-        color: rule.getString('color'),
+        color: rule.getOptionalString('color'),
       })),
     };
   }
