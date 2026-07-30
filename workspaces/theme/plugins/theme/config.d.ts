@@ -20,7 +20,7 @@
 // Keep in sync with ThemeConfig and related types in src/types.ts.
 
 export interface Config {
-  app: {
+  app?: {
     branding?: {
       /**
        * Theme configuration.
