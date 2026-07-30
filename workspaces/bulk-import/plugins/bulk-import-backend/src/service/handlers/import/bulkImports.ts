@@ -68,8 +68,7 @@ type CreateImportDryRunStatus =
   | 'REPO_EMPTY';
 
 type FindAllImportsResponse =
-  | Components.Schemas.Import[]
-  | Components.Schemas.ImportJobListV2;
+  Components.Schemas.Import[] | Components.Schemas.ImportJobListV2;
 
 export function sortImports(
   imports: Components.Schemas.Import[],

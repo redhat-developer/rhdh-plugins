@@ -26,6 +26,8 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu cronologia chat',
+    'modelSelector.disabledTooltip':
+      'Ogni sessione di chat supporta un solo modello. Per cambiare modello, apri una nuova chat.',
     'aria.chatbotSelector': 'Selettore di chatbot',
     'aria.close': 'Chiudi chatbot',
     'aria.closeDrawerPanel': 'Chiudi riquadro',

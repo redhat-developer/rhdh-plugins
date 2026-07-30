@@ -15,11 +15,7 @@
  */
 
 export type ServerStatus =
-  | 'tokenRequired'
-  | 'disabled'
-  | 'ok'
-  | 'failed'
-  | 'unknown';
+  'tokenRequired' | 'disabled' | 'ok' | 'failed' | 'unknown';
 
 export type McpServerSortColumn = 'name' | 'status';
 

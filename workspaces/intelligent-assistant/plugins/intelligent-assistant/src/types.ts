@@ -227,12 +227,7 @@ export type NotebookSession = {
  * Supported file types for notebook document uploads
  */
 export type NotebookDocumentSourceType =
-  | 'text'
-  | 'pdf'
-  | 'md'
-  | 'json'
-  | 'yaml'
-  | 'log';
+  'text' | 'pdf' | 'md' | 'json' | 'yaml' | 'log';
 
 /**
  * @public

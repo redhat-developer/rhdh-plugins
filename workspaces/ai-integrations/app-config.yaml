@@ -96,7 +96,27 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow:
+        [Component, System, API, Resource, Location, User, Group, AiResource]
+  locations:
+    # Local org + AiResource examples for entity-page verification (RHIDP-14558).
+    # Paths are relative to the backend process cwd (typically packages/backend).
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../examples/ai-resources-oci-skills.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-git.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-oci.yaml
+      rules:
+        - allow: [AiResource]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through

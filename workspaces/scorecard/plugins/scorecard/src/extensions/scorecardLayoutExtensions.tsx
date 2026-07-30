@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-import { PageBlueprint } from '@backstage/frontend-plugin-api';
-import { scorecardDrillDownRouteRef } from '../../routes';
+import { ScorecardEntityContentLayoutBlueprint } from '../blueprints';
 
 /**
- * NFS page extension for the Scorecard drill-down page.
- * @alpha
+ * Grid view layout extension for the Scorecard entity tab.
+ *
+ * Extension ID: scorecard-layout:scorecard/scorecard-entity-layout-grid
  */
-export const scorecardPage = PageBlueprint.make({
-  params: {
-    path: '/scorecard/aggregations/:aggregationId/metrics/:metricId',
-    routeRef: scorecardDrillDownRouteRef,
-    loader: () =>
-      import('../../pages/ScorecardPage').then(m => (
-        <m.ScorecardPageWithProvider />
-      )),
-  },
-});
+export const scorecardEntityLayoutGrid =
+  ScorecardEntityContentLayoutBlueprint.make({
+    name: 'scorecard-entity-layout-grid',
+    disabled: true,
+    params: {
+      title: 'Grid',
+      loader: () =>
+        import('../components/Scorecard/ScorecardEntityContentGridView').then(
+          m => m.ScorecardEntityContentGridView,
+        ),
+    },
+  });

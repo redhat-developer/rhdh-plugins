@@ -39,9 +39,7 @@ export type AppCredential = {
 export type AppCredentialError = { appId: number; error: Error };
 
 export type ExtendedGithubCredentials =
-  | GithubCredentials
-  | GithubAppCredentials
-  | GithubAppError;
+  GithubCredentials | GithubAppCredentials | GithubAppError;
 
 export type GithubAppCredentials = GithubCredentials & {
   type: 'app';

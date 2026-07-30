@@ -20,22 +20,24 @@ export interface Config {
    * @visibility frontend
    */
   'intelligent-assistant'?: {
-    prompts?: Array</**
-     * @visibility frontend
-     */
-    {
+    prompts?: Array<
       /**
-       * The title of the prompt.
-       * Displayed as the heading of the prompt.
        * @visibility frontend
        */
-      title: string;
-      /**
-       * The main question or message shown in the prompt.
-       * @visibility frontend
-       */
-      message: string;
-    }>;
+      {
+        /**
+         * The title of the prompt.
+         * Displayed as the heading of the prompt.
+         * @visibility frontend
+         */
+        title: string;
+        /**
+         * The main question or message shown in the prompt.
+         * @visibility frontend
+         */
+        message: string;
+      }
+    >;
     /**
      * Configuration for AI Notebooks
      * @visibility frontend

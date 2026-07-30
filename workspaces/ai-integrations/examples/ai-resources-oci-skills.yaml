@@ -1,0 +1,108 @@
+---
+# Example OCI Skill-shaped AiResource entities for local catalog verification
+# (RHIDP-14558 entity detail page: routing, location, relations, TechDocs).
+#
+# Shape matches upstream @backstage/plugin-catalog-backend-module-ai-model
+# (kind: AiResource, apiVersion: backstage.io/v1alpha1, spec.type: skill)
+# plus OCI Skill Registry-style annotations and RHDH optional extensions
+# (spec.scope, spec.location for current processor / Jira AC checks).
+#
+# Register via app-config catalog.locations or the catalog import UI.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: pdf-processor-skill
+  title: PDF Processor Skill
+  description: OCI-published skill that extracts and summarizes PDF documents.
+  tags:
+    - skill
+    - pdf
+    - oci
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/skills/pdf-processor:v1.2.0
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '1.2.0'
+    rhdh.io/ai-asset-source: oci-skill-registry/default
+    rhdh.io/oci-registry-url: https://quay.io
+    rhdh.io/oci-image-name: my-org/skills/pdf-processor
+    rhdh.io/oci-tag: v1.2.0
+  links:
+    - url: https://quay.io/repository/my-org/skills/pdf-processor
+      title: OCI Repository
+spec:
+  type: skill
+  lifecycle: experimental
+  owner: team-ml-platform
+  scope: team
+  disciplines:
+    - document-processing
+  categories:
+    - pdf
+  location:
+    type: oci
+    target: oci://quay.io/my-org/skills/pdf-processor:v1.2.0
+
+---
+# OCI skill WITH techdocs-ref — used to check Docs tab presence.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: code-review-skill-oci
+  title: Code Review Skill (OCI)
+  description: OCI-published code review skill with packaged TechDocs.
+  tags:
+    - skill
+    - code-review
+    - oci
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/skills/code-review:v2.0.0
+    backstage.io/techdocs-ref: dir:.
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '2.0.0'
+    rhdh.io/ai-asset-source: oci-skill-registry/default
+    rhdh.io/oci-registry-url: https://quay.io
+    rhdh.io/oci-image-name: my-org/skills/code-review
+    rhdh.io/oci-tag: v2.0.0
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ml-platform
+  scope: product
+  disciplines:
+    - software-engineering
+  categories:
+    - code-quality
+  dependsOn:
+    - airesource:default/pdf-processor-skill
+  location:
+    type: oci
+    target: oci://quay.io/my-org/skills/code-review:v2.0.0
+
+---
+# Non-skill OCI AiResource (default schema) — no TechDocs, no dependsOn.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: summarization-skills-pack
+  title: Summarization Skills Pack
+  description: Bundle of summarization prompts/skills published as one OCI artifact.
+  tags:
+    - skills
+    - summarization
+    - oci
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/summarization-skills:latest
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '0.9.0'
+    rhdh.io/ai-asset-source: oci-skill-registry/default
+    rhdh.io/oci-registry-url: https://quay.io
+    rhdh.io/oci-image-name: my-org/summarization-skills
+    rhdh.io/oci-tag: latest
+spec:
+  type: skills
+  lifecycle: experimental
+  owner: team-ml-platform
+  scope: organization
+  location:
+    type: oci
+    target: oci://quay.io/my-org/summarization-skills:latest

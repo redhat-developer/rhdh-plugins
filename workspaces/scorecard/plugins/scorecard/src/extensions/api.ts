@@ -20,7 +20,7 @@ import {
   discoveryApiRef,
   fetchApiRef,
 } from '@backstage/frontend-plugin-api';
-import { ScorecardApiClient, scorecardApiRef } from '../../api';
+import { ScorecardApiClient, scorecardApiRef } from '../api';
 
 /** Scorecard API extension. */
 export const scorecardApi = ApiBlueprint.make({

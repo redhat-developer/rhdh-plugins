@@ -1,14 +1,14 @@
 ---
-# Example: Git-backed AIResource entity
+# Example: Git-backed AiResource entity
 #
 # This entity represents an AI asset stored in a git repository.
-# Register via a normal catalog URL or location — no AIResource-specific
+# Register via a normal catalog URL or location — no AiResource-specific
 # registration logic is required.
 #
 # Register this file via the RHDH catalog URL registration UI
 # or include it in a catalog location for auto-discovery.
-apiVersion: backstage.io/v1beta1
-kind: AIResource
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
 metadata:
   name: fraud-detection-model
   description: Fraud detection model trained on transaction data.
@@ -17,7 +17,7 @@ metadata:
 spec:
   type: model
   lifecycle: production
-  owner: team-data-science
+  owner: team-ml-platform
   scope: organization
   location:
     type: git
