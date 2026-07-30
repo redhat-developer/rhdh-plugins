@@ -24,6 +24,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.ts",
+    "./homepage-translations-module": "./src/homepageTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -31,6 +32,9 @@
     "*": {
       "alpha": [
         "src/alpha/index.ts"
+      ],
+      "homepage-translations-module": [
+        "src/homepageTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"

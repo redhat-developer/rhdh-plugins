@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.ts",
     "./legacy": "./src/legacyExports.ts",
+    "./scorecard-translations-module": "./src/scorecardTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -17,6 +18,9 @@
       ],
       "legacy": [
         "src/legacyExports.ts"
+      ],
+      "scorecard-translations-module": [
+        "src/scorecardTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"

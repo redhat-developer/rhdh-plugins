@@ -6,12 +6,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.ts",
+    "./global-header-translations-module": "./src/globalHeaderTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.ts"
+      ],
+      "global-header-translations-module": [
+        "src/globalHeaderTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"
