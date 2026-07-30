@@ -72,6 +72,17 @@ const useStyles = makeStyles()(theme => ({
     padding: '0px',
   },
   values: {
+    minWidth: 0,
+    maxWidth: '100%',
+    overflowX: 'auto',
+    '& table': {
+      tableLayout: 'fixed',
+      width: '100%',
+    },
+    '& td': {
+      wordBreak: 'break-word',
+      whiteSpace: 'normal',
+    },
     '& tr > td': {
       paddingLeft: '0px',
     },

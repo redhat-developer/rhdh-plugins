@@ -23,7 +23,25 @@ import {
   StructuredMetadataTable,
 } from '@backstage/core-components';
 
+import { makeStyles } from 'tss-react/mui';
+
 import { useTranslation } from '../../hooks/useTranslation';
+
+const useStyles = makeStyles()(() => ({
+  metadataTable: {
+    minWidth: 0,
+    maxWidth: '100%',
+    overflowX: 'auto',
+    '& table': {
+      tableLayout: 'fixed',
+      width: '100%',
+    },
+    '& td': {
+      wordBreak: 'break-word',
+      whiteSpace: 'normal',
+    },
+  },
+}));
 
 export const WorkflowInputs: FC<{
   className: string;
@@ -33,6 +51,7 @@ export const WorkflowInputs: FC<{
   cardClassName: string;
 }> = ({ className, value, loading, responseError, cardClassName }) => {
   const { t } = useTranslation();
+  const { classes } = useStyles();
   const inputs = value?.data;
   return (
     <InfoCard
@@ -53,7 +72,9 @@ export const WorkflowInputs: FC<{
       )}
 
       {!loading && !responseError && inputs && (
-        <StructuredMetadataTable dense metadata={inputs} />
+        <div className={classes.metadataTable}>
+          <StructuredMetadataTable dense metadata={inputs} />
+        </div>
       )}
     </InfoCard>
   );
