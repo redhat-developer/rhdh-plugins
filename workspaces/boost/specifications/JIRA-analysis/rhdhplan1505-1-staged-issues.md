@@ -300,11 +300,11 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 8 (RHIDP-15302):
 https://github.com/redhat-developer/rhdh-plugins/issues/4043
 
 **Labels:** `ready-to-code`
-**Dependencies:** Issue 3 (#4041 — defines `ai-catalog.admin` permission used for RBAC gating)
+**Dependencies:** None
 **RHIDP Stories:** RHIDP-15335, RHIDP-15337
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15331
 
-Implement the ingestion health backend: `boost_sync_attempts` table with database migration, `SyncAttemptsRepository`, `HealthStatusService` with status derivation (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded), `GET /api/boost/ingestion-health` REST endpoint with `ai-catalog.admin` RBAC gating, and `ErrorClassifier` utility with actionable diagnostic guidance for auth failures, network errors, schema mismatches, and rate limits. The admin UI consuming this API is in Issue 26.
+Implement the ingestion health backend: `boost_sync_attempts` table with database migration, `SyncAttemptsRepository`, `HealthStatusService` with status derivation (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded), `GET /api/boost/ingestion-health` REST endpoint, and `ErrorClassifier` utility with actionable diagnostic guidance for auth failures, network errors, schema mismatches, and rate limits. RBAC gating (`ai-catalog.admin`) for this endpoint is deferred to Issue 26. The admin UI consuming this API is also in Issue 26.
 
 ### Tasks
 
@@ -323,7 +323,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 2 (RHIDP-15335
 - 2.2 Implement `GET /api/boost/ingestion-health` route returning array of connector health objects
 - 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - 2.4 Add `?includeDisabled=true` query parameter support
-- 2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)
+- ~~2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)~~ — deferred to Issue 26
 - 2.6 Add audit logging for health API requests (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
 - 2.7 Implement empty state handling
 - 2.8 Add health API integration tests
@@ -1167,13 +1167,17 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-1530
 https://github.com/redhat-developer/rhdh-plugins/issues/4064
 
 **Labels:** `ready-to-code`
-**Depends on:** Issue 5 (health API, error classification)
+**Depends on:** Issue 3 (#4041 — defines `ai-catalog.admin` permission), Issue 5 (#4043 — health API, error classification)
 **RHIDP Stories:** RHIDP-15336, RHIDP-15339
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15331
 
-Implement `IngestionHealthPanel.tsx` with per-connector health cards (PatternFly Card/Label), status badges (healthy/degraded/failing/disabled), timestamps, error summaries with diagnostic guidance, "Force Sync" buttons, disabled connector visual treatment (grey badge, no error indicators), disconnected-cluster differentiation, and health data polling via `useSWR` with 30s refresh. Includes Force Sync backend routes and connector provider integration.
+Implement `IngestionHealthPanel.tsx` with per-connector health cards (PatternFly Card/Label), status badges (healthy/degraded/failing/disabled), timestamps, error summaries with diagnostic guidance, "Force Sync" buttons, disabled connector visual treatment (grey badge, no error indicators), disconnected-cluster differentiation, and health data polling via `useSWR` with 30s refresh. Includes Force Sync backend routes, connector provider integration, and RBAC gating for the health API endpoint (deferred from Issue 5).
 
 ### Tasks
+
+Deferred from Issue 5 (RHIDP-15335 — health API RBAC gating):
+
+- 2.5 Implement RBAC gating via `ai-catalog.admin` permission check in `GET /api/boost/ingestion-health` route handler (using `permissions.authorize()`)
 
 From `openspec/changes/ingestion-health-dashboard/tasks.md` group 4 (RHIDP-15336, RHIDP-15339):
 
@@ -1387,7 +1391,7 @@ Tier 2 (depends on Tier 1):
   [23] SkillBundle RBAC Filtering        → [3]
   [24] Graduated Visibility Frontend     → [3], RHIDP-15167 (RHDHPLAN-1509)
   [25] RBAC Admin UI                     → [3], [20]
-  [26] Ingestion Health Admin UI         → [5]
+  [26] Ingestion Health Admin UI         → [3], [5]
   [27] Neo4j Sync Status Panel           → [5], [17]
   [28] Connector Config Admin UI         → [6], [22]
   [29] Analytics API + Eval Hub          → [5], [21]
