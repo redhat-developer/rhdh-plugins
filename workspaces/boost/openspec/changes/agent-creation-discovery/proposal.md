@@ -41,7 +41,7 @@ Entity providers are independently deployable as RHDH dynamic plugins — teams 
 
 ### Toolscope as Standalone Package
 
-- `@boost/toolscope` with zero Backstage dependencies (29 files)
+- `@red-hat-developer-hub/backstage-plugin-boost-toolscope` with zero Backstage dependencies (29 files)
 - Injectable `CacheAdapter` interface — default in-memory adapter for standalone use, Backstage adapter wrapping `coreServices.cache`
 
 ### Skills Marketplace Integration
