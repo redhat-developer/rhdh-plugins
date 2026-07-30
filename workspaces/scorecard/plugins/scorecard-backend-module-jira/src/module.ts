@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraOpenIssuesProvider } from './metricProviders/JiraOpenIssuesProvider';
 
+/** @public */
 export const scorecardModuleJira = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'jira',
