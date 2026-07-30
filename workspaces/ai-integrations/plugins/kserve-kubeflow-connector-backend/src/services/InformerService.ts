@@ -285,15 +285,39 @@ async function reconcileInferenceService(
     config,
   );
 
+  const lastUpdateTimeSinceEpoch = getLastUpdateTime(is);
+
   await processModelCatalog(
     importKey,
-    '',
+    lastUpdateTimeSinceEpoch,
     modelCardKey,
     modelCard,
     catalogData,
   );
 
   console.log(`Successfully reconciled InferenceService: ${namespace}/${name}`);
+}
+
+// Helper function to obtain effect last update time
+function getLastUpdateTime(is: InferenceService): string {
+  let lastUpdateTimeSinceEpoch = '';
+  if (is.status !== undefined && is.status.conditions !== undefined) {
+    const conditions = is.status.conditions;
+    for (const condition of conditions) {
+      if (condition.lastTransitionTime !== undefined) {
+        if (lastUpdateTimeSinceEpoch.length === 0) {
+          lastUpdateTimeSinceEpoch = condition.lastTransitionTime;
+          continue;
+        }
+        const lastTime = new Date(lastUpdateTimeSinceEpoch);
+        const condTime = new Date(condition.lastTransitionTime);
+        if (lastTime < condTime) {
+          lastUpdateTimeSinceEpoch = condition.lastTransitionTime;
+        }
+      }
+    }
+  }
+  return lastUpdateTimeSinceEpoch;
 }
 
 // Helper function to fetch model card based on look up key annotations on the inference service
@@ -322,7 +346,14 @@ async function fetchModelCardViaAnnotations(
       token,
       config.catalogUrl,
     );
-    modelCard = await catalogClient?.getModelCard(catalogSource, catalogModel);
+    try {
+      modelCard = await catalogClient?.getModelCard(
+        catalogSource,
+        catalogModel,
+      );
+    } catch (error) {
+      console.error('fetchModelCardViaAnnotation: getModelCard error:', error);
+    }
   }
   return [modelCardKey, modelCard];
 }
