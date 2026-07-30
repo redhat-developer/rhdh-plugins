@@ -84,15 +84,14 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      metricProviders:
-        openIssues:
-          options:
-            # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
-            mandatoryFilter: Type = Task AND Resolution = Resolved
-            # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
-            customFilter: priority in ("Critical", "Blocker")
+      openIssues:
+        options:
+          # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
+          mandatoryFilter: Type = Task AND Resolution = Resolved
+          # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
+          customFilter: priority in ("Critical", "Blocker")
 ```
 
 ## Schedule Configuration
@@ -101,17 +100,16 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      metricProviders:
-        openIssues:
-          schedule:
-            frequency:
-              cron: '0 6 * * *'
-            timeout:
-              minutes: 5
-            initialDelay:
-              seconds: 5
+      openIssues:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
 ```
 
 The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
@@ -193,18 +191,17 @@ Default thresholds for `jira.openIssues`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      metricProviders:
-        openIssues:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<10'
-              - key: warning
-                expression: '10-50'
-              - key: error
-                expression: '>50'
+      openIssues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '10-50'
+            - key: error
+              expression: '>50'
 ```
 
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.

@@ -188,10 +188,9 @@ These thresholds are **not** per-entity metric rules. They apply only to homepag
 Thresholds are applied with the following priority (highest to lowest):
 
 1. **Entity Annotations** (highest priority) - _merged_ with existing rules
-2. **App Configuration (metric)** - _completely replaces_ metric code defaults
+2. **App Configuration (metric)** - _completely replaces_ metric code defaults and provider app configuration
 3. **App Configuration (provider)** - _completely replaces_ metric code defaults
-4. **App Configuration (datasource)** - _completely replaces_ metric code defaults
-5. **Metric code defaults** (lowest priority)
+4. **Metric code defaults** (lowest priority)
 
 **Merging Behavior:**
 
@@ -220,8 +219,8 @@ appConfig: [
 
 // 3. Entity annotation overrides (merged with app-config)
 annotations: {
-  'scorecard.io/myDatasource.myMetric.thresholds.rules.warning': '10-25',
-  'scorecard.io/myDatasource.myMetric.thresholds.rules.error': '>25',
+  'scorecard.io/myMetricId.thresholds.rules.warning': '10-25',
+  'scorecard.io/myMetricId.thresholds.rules.error': '>25',
 }
 
 // Final result (annotations merged with app-config)
@@ -293,7 +292,7 @@ Add a `color` property to any threshold rule:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:
@@ -321,7 +320,7 @@ Example configuration:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:
@@ -359,7 +358,7 @@ Add an `icon` property to any threshold rule:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:

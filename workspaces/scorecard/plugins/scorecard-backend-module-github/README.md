@@ -76,18 +76,17 @@ Default thresholds for `github.openPRs`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     github:
-      metricProviders:
-        openPRs:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<10'
-              - key: warning
-                expression: '10-50'
-              - key: error
-                expression: '>50'
+      openPRs:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '10-50'
+            - key: error
+              expression: '>50'
 ```
 
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom thresholds configuration.
@@ -100,17 +99,16 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     github:
-      metricProviders:
-        openPRs:
-          schedule:
-            frequency:
-              cron: '0 6 * * *'
-            timeout:
-              minutes: 5
-            initialDelay:
-              seconds: 5
+      openPRs:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
 ```
 
 The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [schedule configuration](../scorecard-backend/docs/providers.md#metric-collection-schedulin) for custom schedule configuration.

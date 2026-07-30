@@ -74,18 +74,17 @@ All OpenSSF metrics share the same default thresholds. Default thresholds for `o
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     openssf:
-      metricProviders:
-        maintained:
-          thresholds:
-            rules:
-              - key: success
-                expression: '>7'
-              - key: warning
-                expression: '2-7'
-              - key: error
-                expression: '<2'
+      maintained:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>7'
+            - key: warning
+              expression: '2-7'
+            - key: error
+              expression: '<2'
 ```
 
 Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric provider name (e.g. `branchProtection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.

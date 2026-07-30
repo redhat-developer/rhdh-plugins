@@ -68,16 +68,15 @@ Default thresholds for `sonarqube.qualityGate`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     sonarqube:
-      metricProviders:
-        qualityGate:
-          thresholds:
-            rules:
-              - key: success
-                expression: '==true'
-              - key: error
-                expression: '==false'
+      qualityGate:
+        thresholds:
+          rules:
+            - key: success
+              expression: '==true'
+            - key: error
+              expression: '==false'
 ```
 
 ### Count metrics (lower is better)
@@ -87,18 +86,17 @@ Default thresholds for `sonarqube.openIssues`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     sonarqube:
-      metricProviders:
-        openIssues:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<1'
-              - key: warning
-                expression: '1-10'
-              - key: error
-                expression: '>10'
+      openIssues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<1'
+            - key: warning
+              expression: '1-10'
+            - key: error
+              expression: '>10'
 ```
 
 | Metric ID                         | Provider ID                       | Success | Warning | Error |
@@ -109,7 +107,7 @@ scorecard:
 | `sonarqube.reliabilityIssues`     | `sonarqube.reliabilityIssues`     | `<1`    | `1-5`   | `>5`  |
 | `sonarqube.maintainabilityIssues` | `sonarqube.maintainabilityIssues` | `<10`   | `10-50` | `>50` |
 
-Replace the provider key in the path above for the other providers in this table (e.g. `securityIssues`, `securityHotspots`). Use the same `scorecard.plugins.sonarqube.metricProviders.<providerName>.thresholds` structure as `openIssues`.
+Replace the provider key in the path above for the other providers in this table (e.g. `securityIssues`, `securityHotspots`). Use the same `scorecard.metricProviders.sonarqube.<providerName>.thresholds` structure as `openIssues`.
 
 ### Rating metrics (`securityRating`, `securityReviewRating`, `reliabilityRating`, `maintainabilityRating`)
 
@@ -118,32 +116,31 @@ All four rating metrics share the same default thresholds. Default thresholds fo
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     sonarqube:
-      metricProviders:
-        securityRating:
-          thresholds:
-            rules:
-              - key: A
-                expression: '==1'
-                color: 'success.main'
-                icon: scorecardSuccessStatusIcon
-              - key: B
-                expression: '==2'
-                color: '#bdcb28'
-                icon: scorecardSuccessStatusIcon
-              - key: C
-                expression: '==3'
-                color: 'warning.main'
-                icon: scorecardWarningStatusIcon
-              - key: D
-                expression: '==4'
-                color: '#cf5813'
-                icon: scorecardErrorStatusIcon
-              - key: E
-                expression: '==5'
-                color: 'error.main'
-                icon: scorecardErrorStatusIcon
+      securityRating:
+        thresholds:
+          rules:
+            - key: A
+              expression: '==1'
+              color: 'success.main'
+              icon: scorecardSuccessStatusIcon
+            - key: B
+              expression: '==2'
+              color: '#bdcb28'
+              icon: scorecardSuccessStatusIcon
+            - key: C
+              expression: '==3'
+              color: 'warning.main'
+              icon: scorecardWarningStatusIcon
+            - key: D
+              expression: '==4'
+              color: '#cf5813'
+              icon: scorecardErrorStatusIcon
+            - key: E
+              expression: '==5'
+              color: 'error.main'
+              icon: scorecardErrorStatusIcon
 ```
 
 Replace the `securityRating` provider key with `securityReviewRating`, `reliabilityRating`, or `maintainabilityRating` for the other rating providers.
@@ -155,18 +152,17 @@ Default thresholds for `sonarqube.codeCoverage` (higher is better):
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     sonarqube:
-      metricProviders:
-        codeCoverage:
-          thresholds:
-            rules:
-              - key: success
-                expression: '>80'
-              - key: warning
-                expression: '50-80'
-              - key: error
-                expression: '<50'
+      codeCoverage:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>80'
+            - key: warning
+              expression: '50-80'
+            - key: error
+              expression: '<50'
 ```
 
 Default thresholds for `sonarqube.codeDuplications` (lower is better):
@@ -174,18 +170,17 @@ Default thresholds for `sonarqube.codeDuplications` (lower is better):
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     sonarqube:
-      metricProviders:
-        codeDuplications:
-          thresholds:
-            rules:
-              - key: success
-                expression: '<3'
-              - key: warning
-                expression: '3-10'
-              - key: error
-                expression: '>10'
+      codeDuplications:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<3'
+            - key: warning
+              expression: '3-10'
+            - key: error
+              expression: '>10'
 ```
 
 ## Configuration
