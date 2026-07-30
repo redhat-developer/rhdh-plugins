@@ -45,6 +45,7 @@ import {
 } from './merger';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
+import { isLocalPath, isOciUrl } from './protocols';
 import {
   CONFIG_HASH_FILE,
   DPDY_FILENAME,
@@ -53,7 +54,6 @@ import {
   GLOBAL_CONFIG_FILENAME,
   isPluginDisabled,
   LOCK_FILENAME,
-  OCI_PROTO,
   type Plugin,
   type PluginMap,
   type PluginSpec,
@@ -379,11 +379,11 @@ function categorize(allPlugins: PluginMap): Categorized {
       log(`\n======= Skipping disabled plugin ${plugin.package}`);
       continue;
     }
-    if (plugin.package.startsWith(OCI_PROTO)) {
+    if (isOciUrl(plugin.package)) {
       oci.push(plugin);
       continue;
     }
-    if (plugin.package.startsWith('./')) {
+    if (isLocalPath(plugin.package)) {
       const localPath = path.join(process.cwd(), plugin.package.slice(2));
       if (existsSync(localPath)) npm.push(plugin);
       else skipped.push(plugin);
