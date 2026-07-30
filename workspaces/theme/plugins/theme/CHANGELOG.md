@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.0.1
+
+### Patch Changes
+
+- f84bc9b: Made `app` optional in config schema to avoid requiring it when no branding is configured
+
 ## 1.0.0
 
 ### Major Changes
