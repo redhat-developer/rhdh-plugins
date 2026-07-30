@@ -2,14 +2,14 @@
 
 ## 1. Locate schema home and baseline
 
-- [ ] 1.1 Find where AiResource / skill entity types (if any) live in this workspace, or choose a package home for agent types (prefer shared common / catalog-adjacent module)
+- [ ] 1.1 Follow design D10: start from upstream `@backstage/catalog-model` alpha AiResource skill/rule types + validators (`SkillAiResourceEntityV1alpha1`, `skillAiResourceEntityV1alpha1Validator`, etc.) and the MCP `mcp-server` API extension (`McpServerApiEntity` / `mcpServerApiEntityValidator`) as the implementation pattern; choose RHDH package home by mirroring how those models are consumed in this workspace
 - [x] 1.2 Correct sibling discovery OpenSpec plural `agents`/`skills` examples to singular `agent`/`skill`; confirm skill examples and remove “pending 1113” agent language where touched
 
 ## 2. Agent TypeScript schema
 
-- [ ] 2.1 Add TypeScript types for agent-shaped AiResource (`spec.type: 'agent'`) with required `instructions` and optional fields from design D3 (`handoffDescription`, `model`, `handoffs`, `tools`, `toolUseBehavior`, `resetToolChoice`, `modelSettings.{temperature,maxTokens,toolChoice}`, `outputSchema`)
-- [ ] 2.2 Add a schema validator or type-guard helper used by tests (no OpenAI Agents SDK import; opaque `string[]` for handoffs/tools)
-- [ ] 2.3 Export public types from the chosen package entrypoint / API report as needed
+- [ ] 2.1 Add an agent AiResource typed variant (union member / local mirror) with `spec.type: 'agent'`, required `instructions`, and optional fields from design D3—matching the skill/rule discriminated-type style (not an ad-hoc standalone interface)
+- [ ] 2.2 Add `KindValidator` + type guard for agent (same shape as `skillAiResourceEntityV1alpha1Validator` / `isSkillAiResourceEntity`); no OpenAI Agents SDK import; opaque `string[]` for handoffs/tools
+- [ ] 2.3 Wire validator into catalog model / backend module registration the way skill/rule (and MCP `mcp-server`) validators are registered; export public types from the chosen package entrypoint / API report as needed
 
 ## 3. Examples and fixtures
 

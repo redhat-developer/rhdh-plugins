@@ -122,6 +122,27 @@ The “Research reference” column records where the catalog field was derived 
 
 **Rationale**: One source of truth for schema, processor, and later upstream RFC inputs.
 
+### D10 — How to implement the agent schema (follow existing patterns)
+
+**Choice**: Implement `spec.type: agent` the same way upstream models typed AiResource variants and typed API subtypes—do **not** invent a parallel schema style.
+
+**Primary reference — AiResource skill/rule discriminated types** (in `@backstage/catalog-model` alpha / `@backstage/plugin-catalog-backend-module-ai-model`):
+
+- `AiResourceEntityV1alpha1` union: default | `SkillAiResourceEntityV1alpha1` | `RuleAiResourceEntityV1alpha1`
+- Per-type validators / guards: `skillAiResourceEntityV1alpha1Validator`, `ruleAiResourceEntityV1alpha1Validator`, `isSkillAiResourceEntity`, `isRuleAiResourceEntity`
+- Kind registration via `aiResourceEntityModel` / `catalogModuleAiResourceEntityModel`
+
+Agent should follow that pattern: add an `AgentAiResourceEntity…` (name TBD) member of the AiResource union (or an RHDH-local extension layer that mirrors it until upstream accepts agent), with a `KindValidator` + type guard keyed on `spec.type: 'agent'`.
+
+**Secondary reference — MCP server API discriminated extension** (same catalog-model alpha surface):
+
+- `McpServerApiEntity` with `spec.type: 'mcp-server'`, `mcpServerApiEntityValidator`, `isMcpServerApiEntity`, `mcpServerApiEntityModel`
+- Shows how Backstage extends an existing kind with a typed `spec.type` branch (useful precedent for dual-track / upstream PR work)
+
+**Local RHDH extension precedent**: this workspace’s `AIResourceExtensionsProcessor` for `spec.scope` / OCI checks—agent **field** validation (RHIDP-15868) should extend that processor path for agent-specific rules, while the **typed schema** itself follows the catalog-model validator pattern above.
+
+**Rationale**: Without these pointers, implementers (human or coding agent) will invent ad-hoc types that diverge from skill/rule and force manual rework. Gabe’s review feedback on this PR.
+
 ## Risks / Trade-offs
 
 | Risk                                                 | Mitigation                                                               |
@@ -140,5 +161,5 @@ The “Research reference” column records where the catalog field was derived 
 
 ## Open Questions
 
-1. Exact package home for agent types (e.g. shared common package vs catalog module)—resolve during implementation by following where skill/rule entity types already live (or introduce a small shared types module if none exist).
+1. Whether v1 ships only an RHDH-local agent validator/types mirroring upstream skill/rule, or also opens the upstream catalog-model PR in lockstep (RHIDP-15869 remains the formal upstream track either way).
 2. UI / annotation-mapping / Component→AiResource migration ownership remain TBC and out of this change.
