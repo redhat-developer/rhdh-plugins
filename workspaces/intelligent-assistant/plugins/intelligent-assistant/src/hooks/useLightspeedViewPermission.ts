@@ -33,7 +33,7 @@ export const useLightspeedViewPermission = () => {
   return {
     loading: canReadChats.loading || canCreateChats.loading,
     allowed: canReadChats.allowed && canCreateChats.allowed,
-    lightspeedConversationsAccessPermissionName: iaChatAccessPermission.name,
-    lightspeedChatUsePermissionName: iaChatUsePermission.name,
+    iaChatAccessPermissionName: iaChatAccessPermission.name,
+    iaChatUsePermissionName: iaChatUsePermission.name,
   };
 };

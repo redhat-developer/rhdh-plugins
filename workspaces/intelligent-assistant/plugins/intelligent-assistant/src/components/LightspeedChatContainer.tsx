@@ -74,8 +74,8 @@ const LightspeedChatContainerInner = () => {
   const {
     allowed: hasViewAccess,
     loading,
-    lightspeedConversationsAccessPermissionName,
-    lightspeedChatUsePermissionName,
+    iaChatAccessPermissionName,
+    iaChatUsePermissionName,
   } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
@@ -172,10 +172,7 @@ const LightspeedChatContainerInner = () => {
     return (
       <PermissionRequiredState
         subject={t('permission.subject.plugin')}
-        permissions={[
-          lightspeedConversationsAccessPermissionName,
-          lightspeedChatUsePermissionName,
-        ]}
+        permissions={[iaChatAccessPermissionName, iaChatUsePermissionName]}
         action={
           <Button
             variant="outlined"
