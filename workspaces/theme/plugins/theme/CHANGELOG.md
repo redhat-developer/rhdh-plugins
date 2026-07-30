@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.0.0
+
+### Major Changes
+
+- 1afcfdd: **BREAKING**: Graduated the New Frontend System (NFS) theme module to stable API.
+
+  The NFS theme module has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath has been removed.
+
+  Legacy (OFS) exports (`getThemes`, `getAllThemes`, `LogoFull`, `LogoIcon`, etc.) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+  + import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+  ```
+
+### Patch Changes
+
+- 10af16d: fix(theme): use MUI theme overrides for sidebar selected states instead of class name selectors
+
+  Replaced `class*=` CSS selectors with proper `styleOverrides.selected` on `BackstageSidebarItem` and `BackstageSidebarSubmenuItem`. The previous `class*=` approach failed in production where JSS minifies class names.
+
 ## 0.15.0
 
 ### Minor Changes
