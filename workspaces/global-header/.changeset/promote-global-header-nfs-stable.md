@@ -18,8 +18,10 @@ main package entry point. The Old Frontend System (OFS) plugin has moved to
 - **`/legacy`** now exports the OFS plugin (`createPlugin`), component
   extensions (`GlobalHeader`, `CreateDropdown`, `ProfileDropdown`, etc.), and
   legacy mount-point defaults. This entry point is **deprecated**.
-- **`/alpha`** remains unchanged (re-exports from main for backwards
-  compatibility during transition).
+- **`/alpha`** now only re-exports translations. All other
+  NFS exports that were previously here have moved to the main entry point.
+  Importing the plugin, module, blueprints, or components from `/alpha` will
+  no longer work — use the root import instead.
 - Source layout restructured: NFS code moved from `src/alpha/` to `src/`;
   OFS-only code moved into `src/legacy/`; shared components remain in
   `src/components/`.
