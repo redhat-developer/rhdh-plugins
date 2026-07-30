@@ -16,13 +16,13 @@
 
 // Converted from kserve.go in model-catalog-bridge
 
-import { PropertyKeys } from './Kfmr';
 import {
+  PropertyKeys,
   type ModelCatalog,
   type Model,
   type ModelServer,
   Type as APIType,
-} from './types'; // '@redhat-ai-dev/model-catalog-types';
+} from './types';
 
 // Annotation prefix (from brdgtypes package)
 const ANNOTATION_PREFIX = 'model-catalog-bridge.ai.redhat.com/';
