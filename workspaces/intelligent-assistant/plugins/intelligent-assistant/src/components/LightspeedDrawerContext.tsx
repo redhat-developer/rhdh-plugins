@@ -50,8 +50,8 @@ export interface LightspeedDrawerContextType {
    * Set the display mode (overlay, docked, or fullscreen/embedded).
    * When entering embedded mode, optional `embeddedNotebooks` navigates to
    * `/lightspeed/notebooks` (or a session URL) instead of the chat route.
-   * Leaving embedded for overlay or docked resets the shell tab to Chat
-   * (Notebooks is only available in fullscreen).
+   * Notebooks are available in all display modes; the shell tab and active
+   * notebook are preserved across mode switches.
    */
   setDisplayMode: (
     mode: ChatbotDisplayMode,
@@ -105,6 +105,13 @@ export interface LightspeedDrawerContextType {
    */
   shellViewTab: number;
   setShellViewTab: (tab: number) => void;
+  /**
+   * ID of the currently active notebook session, persisted across
+   * overlay/docked/fullscreen remounts so display-mode switches preserve
+   * the open notebook.
+   */
+  activeNotebookId: string | undefined;
+  setActiveNotebookId: (id: string | undefined) => void;
 }
 
 const CONTEXT_KEY = '__lightspeed_drawer_context__' as keyof typeof globalThis;

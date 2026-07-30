@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
     bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 5em)`,
     right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     maxWidth: 'min(30rem, calc(100vw - 32px)) !important',
-    overflowX: 'hidden' as const,
+    overflow: 'hidden' as const,
     transition: 'margin-right 0.3s ease',
     'body.docked-drawer-open &': {
       marginRight: DOCKED_CONTENT_OFFSET,

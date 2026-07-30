@@ -62,6 +62,7 @@ import {
   Label,
   MenuToggle,
   MenuToggleElement,
+  Button as PFButton,
   Select,
   SelectList,
   SelectOption,
@@ -71,11 +72,13 @@ import {
 } from '@patternfly/react-core';
 import {
   PenIcon,
+  PlusCircleIcon,
   PlusIcon,
   SearchIcon,
   SortAmountDownAltIcon,
   SortAmountDownIcon,
   ThumbtackIcon,
+  TimesIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
 import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
@@ -127,8 +130,12 @@ import { McpServersSettings } from './McpServersSettings';
 import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
-import { NotebookView } from './notebooks/NotebookView';
+import {
+  NotebookView,
+  type NotebookViewHandle,
+} from './notebooks/NotebookView';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
+import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
@@ -146,8 +153,14 @@ const ConditionalWrapper = ({
 
 const useStyles = makeStyles(theme => ({
   body: {
-    // remove default margin and padding from common elements
-    // lists excluded for proper formatting
+    height: '100% !important',
+    minHeight: '0 !important',
+    overflow: 'hidden',
+    '& .pf-chatbot-container': {
+      minHeight: '0 !important',
+      display: 'flex',
+      flexDirection: 'column',
+    },
     '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
       margin: 0,
       padding: 0,
@@ -190,6 +203,11 @@ const useStyles = makeStyles(theme => ({
       display: 'flex',
       alignItems: 'center',
     },
+  },
+  notebookHeaderActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
   },
   headerLogo: {
     width: 48,
@@ -279,6 +297,14 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('sm')]: {
       gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
     },
+  },
+  notebooksGridCompact: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+    gap: theme.spacing(2),
+    width: '100%',
+    maxWidth: '100%',
+    paddingBottom: theme.spacing(3),
   },
   notebookCard: {
     borderRadius: theme.spacing(1.5),
@@ -666,6 +692,8 @@ export const LightspeedChat = ({
     consumePendingOverlayThreadHandoff,
     shellViewTab,
     setShellViewTab,
+    activeNotebookId,
+    setActiveNotebookId,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const location = useLocation();
@@ -676,9 +704,6 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [activeTab, setActiveTab] = useState<number>(() => {
-    if (!isFullscreenMode) {
-      return 0;
-    }
     if (notebooksRouteMatch || notebookViewRouteMatch) {
       return 1;
     }
@@ -709,33 +734,44 @@ export const LightspeedChat = ({
   const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
     null,
   );
+  const effectiveNotebookId =
+    routeNotebookId || (!isFullscreenMode ? activeNotebookId : undefined);
   const {
     data: routeNotebook,
     isLoading: routeNotebookLoading,
     isError: routeNotebookError,
-  } = useNotebookSession(routeNotebookId);
+  } = useNotebookSession(effectiveNotebookId);
 
   useEffect(() => {
-    if (routeNotebookId && routeNotebook && !routeNotebookLoading) {
+    if (effectiveNotebookId && routeNotebook && !routeNotebookLoading) {
       setActiveNotebook(routeNotebook);
-    } else if (routeNotebookId && routeNotebookError) {
-      navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
-    } else if (!routeNotebookId && notebooksRouteMatch) {
+      setActiveNotebookId(routeNotebook.session_id);
+    } else if (effectiveNotebookId && routeNotebookError) {
+      if (isFullscreenMode) {
+        navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
+      } else {
+        setActiveNotebook(null);
+        setActiveNotebookId(undefined);
+      }
+    } else if (!effectiveNotebookId && notebooksRouteMatch) {
       setActiveNotebook(null);
     }
   }, [
-    routeNotebookId,
+    effectiveNotebookId,
     routeNotebook,
     routeNotebookLoading,
     routeNotebookError,
     notebooksRouteMatch,
+    isFullscreenMode,
     navigate,
+    setActiveNotebookId,
   ]);
 
   const [notebookAlerts, setNotebookAlerts] = useState<Partial<AlertProps>[]>(
     [],
   );
   const createNotebookMutation = useCreateNotebook();
+  const notebookViewRef = useRef<NotebookViewHandle>(null);
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
   const [conversationId, setConversationId] = useState<string>('');
@@ -756,7 +792,7 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  const showChatPanel = !isFullscreenMode || activeTab === 0;
+  const showChatPanel = activeTab === 0;
   const showNotebooksPanel =
     (notebooksEnabled || isOnNotebookRoute) && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
@@ -794,17 +830,19 @@ export const LightspeedChat = ({
   const handleNotebookTabSelect = (_event: SyntheticEvent, nextTab: number) => {
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
-    if (nextTab === 1) {
-      navigate(`${LIGHTSPEED_PATH}/notebooks`);
-      if (notebooksPermissionResolved) {
-        refetchNotebooks();
+    if (isFullscreenMode) {
+      if (nextTab === 1) {
+        navigate(`${LIGHTSPEED_PATH}/notebooks`);
+      } else {
+        navigate(
+          routeConversationId
+            ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
+            : LIGHTSPEED_PATH,
+        );
       }
-    } else {
-      navigate(
-        routeConversationId
-          ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
-          : LIGHTSPEED_PATH,
-      );
+    }
+    if (nextTab === 1 && notebooksPermissionResolved) {
+      refetchNotebooks();
     }
   };
 
@@ -833,16 +871,26 @@ export const LightspeedChat = ({
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
-          navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
+          if (isFullscreenMode) {
+            navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
+          } else {
+            setActiveNotebook(session);
+            setActiveNotebookId(session.session_id);
+          }
         },
       },
     );
-  }, [createNotebookMutation, navigate]);
+  }, [createNotebookMutation, isFullscreenMode, navigate, setActiveNotebookId]);
 
   const handleCloseNotebook = useCallback(() => {
-    navigate(`${LIGHTSPEED_PATH}/notebooks`);
+    if (isFullscreenMode) {
+      navigate(`${LIGHTSPEED_PATH}/notebooks`);
+    } else {
+      setActiveNotebook(null);
+      setActiveNotebookId(undefined);
+    }
     refetchNotebooks();
-  }, [navigate, refetchNotebooks]);
+  }, [isFullscreenMode, navigate, refetchNotebooks, setActiveNotebookId]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
@@ -1941,6 +1989,46 @@ export const LightspeedChat = ({
                 aria-label={t('aria.chatHistoryMenu')}
               />
             )}
+            {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
+              <div className={classes.notebookHeaderActions}>
+                <Tooltip content={t('notebook.view.close')} position="bottom">
+                  <PFButton
+                    variant="plain"
+                    onClick={handleCloseNotebook}
+                    aria-label={t('notebook.view.close')}
+                    size="sm"
+                  >
+                    <TimesIcon />
+                  </PFButton>
+                </Tooltip>
+                <Tooltip
+                  content={t('notebook.view.documents.add')}
+                  position="bottom"
+                >
+                  <PFButton
+                    variant="plain"
+                    onClick={() => notebookViewRef.current?.openUploadModal()}
+                    aria-label={t('notebook.view.documents.add')}
+                    size="sm"
+                  >
+                    <PlusCircleIcon />
+                  </PFButton>
+                </Tooltip>
+                <Tooltip
+                  content={t('notebook.view.sidebar.expand')}
+                  position="bottom"
+                >
+                  <PFButton
+                    variant="plain"
+                    onClick={() => notebookViewRef.current?.toggleSidebar()}
+                    aria-label={t('notebook.view.sidebar.expand')}
+                    size="sm"
+                  >
+                    <SidebarExpandIcon />
+                  </PFButton>
+                </Tooltip>
+              </div>
+            )}
             {isFullscreenMode && (
               <>
                 <RhUiAiExperienceIcon
@@ -1974,8 +2062,10 @@ export const LightspeedChat = ({
             onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
           />
         </ChatbotHeader>
-        {isFullscreenMode && <div className={classes.headerDivider} />}
-        {isFullscreenMode && shouldShowTabs && (
+        {(isFullscreenMode || shouldShowTabs) && (
+          <div className={classes.headerDivider} />
+        )}
+        {shouldShowTabs && (
           <Tabs
             value={activeTab}
             onChange={handleNotebookTabSelect}
@@ -2145,6 +2235,7 @@ export const LightspeedChat = ({
           hasNotebooksAccess &&
           activeNotebook && (
             <NotebookView
+              ref={notebookViewRef}
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={notebookDocuments}
@@ -2162,6 +2253,7 @@ export const LightspeedChat = ({
               profileLoading={profileLoading}
               topicRestrictionEnabled={topicRestrictionEnabled}
               onClose={handleCloseNotebook}
+              isCompact={!isFullscreenMode}
             />
           )}
         {showNotebooksPanel &&
@@ -2171,11 +2263,25 @@ export const LightspeedChat = ({
             <NotebooksTab
               notebooks={notebooks}
               hasNotebooks={hasNotebooks}
-              classes={classes}
+              classes={
+                isFullscreenMode
+                  ? classes
+                  : {
+                      ...classes,
+                      notebooksGrid: classes.notebooksGridCompact,
+                    }
+              }
               openNotebookMenuId={openNotebookMenuId}
               setOpenNotebookMenuId={setOpenNotebookMenuId}
               onSelectNotebook={(notebook: NotebookSession) => {
-                navigate(`${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`);
+                if (isFullscreenMode) {
+                  navigate(
+                    `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
+                  );
+                } else {
+                  setActiveNotebook(notebook);
+                  setActiveNotebookId(notebook.session_id);
+                }
               }}
               onRename={setRenameNotebookId}
               onDelete={setDeleteNotebookId}
