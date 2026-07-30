@@ -16,7 +16,7 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 **Cross-feature dependencies (RHDHPLAN-1509, RHDHPLAN-393):**
 
 - Issue 24 (RHIDP-15273 Graduated Visibility Frontend) depends on RHIDP-15167 (Entity page extensions, RHDHPLAN-1509)
-- RHIDP-15167 (RHDHPLAN-1509) depends on RHIDP-15335 (Issue 5 — Health API), creating a cross-feature cycle that must be resolved by building the API (Issue 5) first
+- RHIDP-15167 (RHDHPLAN-1509) depends on RHIDP-15335 (Issue 5 — Health API), creating a cross-feature dependency chain that must be resolved by building the API (Issue 5) first
 - Issues 7, 13, 14 (RHIDP-15317, RHIDP-15318, RHIDP-15319 — MCP Registry Connector productization under RHDHPLAN-1510) depend on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community entity provider must exist before the productization wrapper can configure its endpoint (Issue 7), integrate TLS/credentials (Issue 13), or intercept entity emission for annotation enrichment (Issue 14). RHIDP-15321 (RHOAI version normalization, also in Issue 7) and Issues 15–16 (RHOAI connector) have no RHDHPLAN-393 dependency — they query RHOAI's own MCP catalog API independently.
 
 **Maximum parallelism:** All 7 Tier 0 issues can start simultaneously. Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI). Within Tier 2, issues [23–25] (RBAC UI) are independent of [26–29] (Ingestion UI).

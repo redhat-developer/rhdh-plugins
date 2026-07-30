@@ -47,14 +47,14 @@ RHDHPLAN-1510's feature description explicitly states frontend dependencies on R
 
 All user-facing display of entities produced by RHDHPLAN-1510 connectors is delivered by RHDHPLAN-1509:
 
-| RHDHPLAN-1510 Goal (frontend aspect)                            | RHDHPLAN-1509 Coverage                  | Status                 |
-| --------------------------------------------------------------- | --------------------------------------- | ---------------------- |
-| Developers browse and see MCP servers from MCP Registry         | RHIDP-15166 (Browse page)               | Closed                 |
-| ~~Developers browse and see models/model servers from RHOAI~~   | ~~RHIDP-15166 (Browse page)~~           | _(RHDHPLAN-404 scope)_ |
-| Filter by category (`mcp-server`, `ai-model`), source connector | RHIDP-15166 + RHIDP-15449 (NFS filters) | Closed / Review        |
-| View detail page for RHOAI-sourced `ai-model` with version info | RHIDP-15167 (Entity page extensions)    | New                    |
-| View detail page for MCP Registry-sourced `mcp-server`          | RHIDP-15167 (Entity page extensions)    | New                    |
-| RBAC visibility enforcement hides denied entities               | RHIDP-15164 (consumes RHDHPLAN-1508)    | In Progress            |
+| RHDHPLAN-1510 Goal (frontend aspect)                                | RHDHPLAN-1509 Coverage                   | Status                 |
+| ------------------------------------------------------------------- | ---------------------------------------- | ---------------------- |
+| Developers browse and see MCP servers from MCP Registry             | RHIDP-15166 (Browse page)                | Closed                 |
+| ~~Developers browse and see models/model servers from RHOAI~~       | ~~RHIDP-15166 (Browse page)~~            | _(RHDHPLAN-404 scope)_ |
+| Filter by category (`mcp-server`, `ai-model`), source connector     | RHIDP-15166 + RHIDP-15449 (NFS filters)  | Closed / Review        |
+| ~~View detail page for RHOAI-sourced `ai-model` with version info~~ | ~~RHIDP-15167 (Entity page extensions)~~ | _(RHDHPLAN-404 scope)_ |
+| View detail page for MCP Registry-sourced `mcp-server`              | RHIDP-15167 (Entity page extensions)     | New                    |
+| RBAC visibility enforcement hides denied entities                   | RHIDP-15164 (consumes RHDHPLAN-1508)     | In Progress            |
 
 **Connector admin configuration UI** (enable/disable connectors, change endpoints, sync schedules) is covered by **RHDHPLAN-1513** (connector-config-hot-reload), not RHDHPLAN-1509 or RHDHPLAN-1510.
 

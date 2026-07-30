@@ -170,12 +170,12 @@ RHDHPLAN-1510 is about connector implementations — entity providers that inges
 
 ## Comparison Across Features
 
-| Aspect                               | RHDHPLAN-1507 (Entity Model)            | RHDHPLAN-1508 (RBAC)                                          | RHDHPLAN-1510 (Connectors)                 |
-| ------------------------------------ | --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
-| Epics (active / original)            | 3 of 7 (4 closed via consolidation)     | 7 of 7                                                        | 3 of 4 (1 closed via consolidation)        |
-| Epics requiring deviations from spec | 0                                       | 1 of 7 (default-deny "only affects new assets")               | 0                                          |
-| Upstream changes needed              | None                                    | None — RBAC plugin provides more infrastructure than assessed | None                                       |
-| Framework alignment                  | High                                    | Medium-High                                                   | High                                       |
-| PM discussion needed                 | No                                      | Minimal (1 area)                                              | No                                         |
-| Highest-risk epic                    | RHIDP-15295 (Neo4j sync)                | RHIDP-15274 (Policy cascade)                                  | RHIDP-15314 (RHOAI — two-source connector) |
-| Implementation complexity            | Medium 1/3 (SDK), high 2/3 (OCI, Neo4j) | Low 3/7, medium 4/7                                           | Low-Medium 2/3, medium 1/3                 |
+| Aspect                               | RHDHPLAN-1507 (Entity Model)            | RHDHPLAN-1508 (RBAC)                                          | RHDHPLAN-1510 (Connectors)                  |
+| ------------------------------------ | --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------- |
+| Epics (active / original)            | 3 of 7 (4 closed via consolidation)     | 7 of 7                                                        | 3 of 4 (1 closed via consolidation)         |
+| Epics requiring deviations from spec | 0                                       | 1 of 7 (default-deny "only affects new assets")               | 0                                           |
+| Upstream changes needed              | None                                    | None — RBAC plugin provides more infrastructure than assessed | None                                        |
+| Framework alignment                  | High                                    | Medium-High                                                   | High                                        |
+| PM discussion needed                 | No                                      | Minimal (1 area)                                              | No                                          |
+| Highest-risk epic                    | RHIDP-15295 (Neo4j sync)                | RHIDP-15274 (Policy cascade)                                  | RHIDP-15314 (RHOAI — MCP catalog connector) |
+| Implementation complexity            | Medium 1/3 (SDK), high 2/3 (OCI, Neo4j) | Low 3/7, medium 4/7                                           | Low-Medium 2/3, medium 1/3                  |
