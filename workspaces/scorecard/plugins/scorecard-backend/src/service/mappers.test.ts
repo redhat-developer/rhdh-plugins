@@ -43,16 +43,16 @@ describe('AggregatedMetricMapper', () => {
   describe('toAggregatedMetric', () => {
     it('should map DbAggregatedMetric to AggregatedMetric', () => {
       const dbMetric: DbAggregatedMetric = {
-        metric_id: 'test.metric',
+        metricId: 'test.metric',
         total: 10,
-        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
         statusCounts: {
           success: 5,
           warning: 3,
           error: 2,
         },
-        calculation_error_count: 1,
-        latest_entity_count: 12,
+        calculationErrorCount: 1,
+        latestEntityCount: 12,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
@@ -84,12 +84,12 @@ describe('AggregatedMetricMapper', () => {
 
     it('should handle empty statusCounts', () => {
       const dbMetric: DbAggregatedMetric = {
-        metric_id: 'test.metric',
+        metricId: 'test.metric',
         total: 0,
-        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
         statusCounts: {},
-        calculation_error_count: 0,
-        latest_entity_count: 0,
+        calculationErrorCount: 0,
+        latestEntityCount: 0,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
@@ -104,12 +104,12 @@ describe('AggregatedMetricMapper', () => {
   describe('toScalarAggregatedMetric', () => {
     it('should map DbScalarAggregatedMetric to scalar aggregate', () => {
       const dbMetric: DbScalarAggregatedMetric = {
-        metric_id: 'test.metric',
+        metricId: 'test.metric',
         value: 847,
         total: 42,
-        latest_entity_count: 45,
-        calculation_error_count: 3,
-        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+        latestEntityCount: 45,
+        calculationErrorCount: 3,
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
       };
 
       const result = AggregatedMetricMapper.toScalarAggregatedMetric(dbMetric);

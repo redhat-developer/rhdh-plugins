@@ -532,16 +532,16 @@ describe('createRouter', () => {
     };
 
     const mockDbAggregatedMetric: DbAggregatedMetric = {
-      metric_id: 'github.openPRs',
+      metricId: 'github.openPRs',
       total: 12,
-      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
       statusCounts: {
         error: 3,
         warning: 4,
         success: 5,
       },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
+      calculationErrorCount: 1,
+      latestEntityCount: 1,
     };
 
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -910,16 +910,16 @@ describe('createRouter', () => {
     };
 
     const mockDbAggregatedMetricForAgId: DbAggregatedMetric = {
-      metric_id: 'github.openPRs',
+      metricId: 'github.openPRs',
       total: 6,
-      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
       statusCounts: {
         error: 1,
         warning: 2,
         success: 3,
       },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
+      calculationErrorCount: 1,
+      latestEntityCount: 1,
     };
 
     let metricRegistry: MetricProvidersRegistry;
@@ -1270,12 +1270,12 @@ describe('createRouter', () => {
           'readScalarAggregatedMetricByEntityRefs',
         )
         .mockResolvedValue({
-          metric_id: 'github.openPRs',
+          metricId: 'github.openPRs',
           value: 847,
           total: 42,
-          latest_entity_count: 45,
-          calculation_error_count: 3,
-          max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+          latestEntityCount: 45,
+          calculationErrorCount: 3,
+          maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
         });
 
       jest

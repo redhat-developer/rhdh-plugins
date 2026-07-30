@@ -32,27 +32,27 @@ export class AggregatedMetricMapper {
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = toIsoTimestamp(aggregatedMetric?.max_timestamp);
+    const timestamp = toIsoTimestamp(aggregatedMetric?.maxTimestamp);
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
-      entitiesConsidered: aggregatedMetric?.latest_entity_count ?? 0,
-      calculationErrorCount: aggregatedMetric?.calculation_error_count ?? 0,
+      entitiesConsidered: aggregatedMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: aggregatedMetric?.calculationErrorCount ?? 0,
     };
   }
 
   static toScalarAggregatedMetric(
     scalarMetric?: DbScalarAggregatedMetric,
   ): ScalarAggregatedMetric {
-    const timestamp = toIsoTimestamp(scalarMetric?.max_timestamp);
+    const timestamp = toIsoTimestamp(scalarMetric?.maxTimestamp);
 
     return {
       value: scalarMetric?.value ?? 0,
       total: scalarMetric?.total ?? 0,
-      entitiesConsidered: scalarMetric?.latest_entity_count ?? 0,
-      calculationErrorCount: scalarMetric?.calculation_error_count ?? 0,
+      entitiesConsidered: scalarMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: scalarMetric?.calculationErrorCount ?? 0,
       timestamp,
     };
   }

@@ -124,11 +124,11 @@ export class CatalogMetricService {
     );
 
     return rawResults.map(
-      ({ metric_id, value, error_message, timestamp, status }) => {
+      ({ metricId, value, errorMessage, timestamp, status }) => {
         let thresholds: ThresholdConfig | undefined;
         let thresholdError: string | undefined;
 
-        const metric = this.registry.getMetric(metric_id);
+        const metric = this.registry.getMetric(metricId);
 
         try {
           thresholds = this.thresholdResolver.resolveEntityThresholds(
@@ -139,8 +139,8 @@ export class CatalogMetricService {
           if (value === null) {
             thresholdError =
               'Unable to evaluate thresholds, metric value is missing';
-          } else if (error_message) {
-            thresholdError = error_message;
+          } else if (errorMessage) {
+            thresholdError = errorMessage;
           }
         } catch (error) {
           thresholdError = stringifyError(error);
@@ -148,7 +148,7 @@ export class CatalogMetricService {
 
         const isMetricCalcError = isMetricCalculationError({
           value,
-          error_message,
+          errorMessage,
         });
 
         return {
@@ -162,7 +162,7 @@ export class CatalogMetricService {
           },
           ...(isMetricCalcError && {
             error:
-              error_message ??
+              errorMessage ??
               stringifyError(new Error(`Metric value is 'undefined'`)),
           }),
           result: {
@@ -322,7 +322,7 @@ export class CatalogMetricService {
         const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
         const response = await this.catalog.getEntitiesByRefs(
           {
-            entityRefs: batch.map(row => row.catalog_entity_ref),
+            entityRefs: batch.map(row => row.catalogEntityRef),
             fields: [
               'kind',
               'metadata.name',
@@ -337,7 +337,7 @@ export class CatalogMetricService {
         for (let j = 0; j < batch.length; j++) {
           const entity = response.items[j];
           if (!entity) continue; // null = unauthorized or not found, skip
-          entityMap.set(batch[j].catalog_entity_ref, entity);
+          entityMap.set(batch[j].catalogEntityRef, entity);
           accessibleRows.push(batch[j]);
         }
       }
@@ -402,10 +402,10 @@ export class CatalogMetricService {
     // Enrich page rows from the cached entity map
     const enrichedEntities: EntityMetricDetail[] = [];
     for (const row of pageRows) {
-      const entity = entityMap.get(row.catalog_entity_ref);
+      const entity = entityMap.get(row.catalogEntityRef);
       if (!entity) continue;
       enrichedEntities.push({
-        entityRef: row.catalog_entity_ref,
+        entityRef: row.catalogEntityRef,
         entityNamespace: entity.metadata.namespace,
         entityName: entity.metadata.name,
         entityKind: entity.kind,

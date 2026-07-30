@@ -17,51 +17,51 @@
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export type DbMetricValueCreate = {
-  catalog_entity_ref: string;
-  metric_id: string;
+  catalogEntityRef: string;
+  metricId: string;
   value?: MetricValue;
   timestamp: Date;
-  error_message?: string;
+  errorMessage?: string;
   status?: string | null;
-  entity_kind?: string;
-  entity_owner?: string;
-  entity_namespace?: string;
+  entityKind?: string;
+  entityOwner?: string;
+  entityNamespace?: string;
 };
 
 export type DbMetricValue = {
   id: number;
-  catalog_entity_ref: string;
-  metric_id: string;
+  catalogEntityRef: string;
+  metricId: string;
   value: MetricValue | null;
   timestamp: Date;
-  error_message: string | null;
+  errorMessage: string | null;
   status: string | null;
-  entity_kind: string | null;
-  entity_owner: string | null;
-  entity_namespace: string | null;
+  entityKind: string | null;
+  entityOwner: string | null;
+  entityNamespace: string | null;
 };
 
 export type DbAggregatedMetric = {
-  metric_id: string;
+  metricId: string;
   total: number;
-  max_timestamp: Date;
+  maxTimestamp: Date;
   statusCounts: Record<string, number>;
-  /** Latest row per entity is a metric calculation failure (error_message set, value null). */
-  calculation_error_count: number;
+  /** Latest row per entity is a metric calculation failure (errorMessage set, value null). */
+  calculationErrorCount: number;
   /**
-   * How many of the requested `catalog_entity_refs` have at least one latest `metric_values` row
+   * How many of the requested catalog entity refs have at least one latest `metric_values` row
    * for this metric (same cardinality the drill-down table is built from, modulo caps/filters).
    */
-  latest_entity_count: number;
+  latestEntityCount: number;
 };
 
 export type ScalarAggregationFn = 'sum' | 'average' | 'max' | 'min' | 'count';
 
 export type DbScalarAggregatedMetric = {
-  metric_id: string;
+  metricId: string;
   total: number;
-  max_timestamp: Date;
+  maxTimestamp: Date;
   value: number;
-  calculation_error_count: number;
-  latest_entity_count: number;
+  calculationErrorCount: number;
+  latestEntityCount: number;
 };

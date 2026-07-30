@@ -60,25 +60,25 @@ const provider = new MockNumberProvider('github.importantMetric', 'github');
 const latestEntityMetric = [
   {
     id: 1,
-    catalog_entity_ref: 'component:default/test-component',
-    metric_id: 'github.importantMetric',
+    catalogEntityRef: 'component:default/test-component',
+    metricId: 'github.importantMetric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: null,
+    errorMessage: null,
     status: 'success',
   } as DbMetricValue,
 ] as DbMetricValue[];
 
 const aggregatedMetric: DbAggregatedMetric = {
-  metric_id: 'github.importantMetric',
+  metricId: 'github.importantMetric',
   total: 2,
-  max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
+  maxTimestamp: new Date('2024-01-15T12:00:00.000Z'),
   statusCounts: {
     success: 1,
     warning: 1,
   },
-  calculation_error_count: 0,
-  latest_entity_count: 2,
+  calculationErrorCount: 0,
+  latestEntityCount: 2,
 };
 
 const metricsList = [
@@ -195,10 +195,10 @@ describe('CatalogMetricService', () => {
       );
 
       const multipleMetrics = [
-        { ...latestEntityMetric[0], metric_id: 'github.importantMetric' },
+        { ...latestEntityMetric[0], metricId: 'github.importantMetric' },
         {
           ...latestEntityMetric[0],
-          metric_id: 'github.numberMetric',
+          metricId: 'github.numberMetric',
           value: 10,
         },
       ];
@@ -342,7 +342,7 @@ describe('CatalogMetricService', () => {
         {
           ...latestEntityMetric[0],
           value: null,
-          error_message: 'Error message during metric calculation',
+          errorMessage: 'Error message during metric calculation',
         },
       ]);
 
@@ -365,7 +365,7 @@ describe('CatalogMetricService', () => {
       mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
         {
           ...latestEntityMetric[0],
-          error_message: 'Threshold error message during metric calculation',
+          errorMessage: 'Threshold error message during metric calculation',
         },
       ]);
 
@@ -463,20 +463,20 @@ describe('CatalogMetricService', () => {
       const batchDbResults = [
         {
           id: 1,
-          catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'filecheck.readme',
+          catalogEntityRef: 'component:default/test-component',
+          metricId: 'filecheck.readme',
           value: true,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
-          error_message: null,
+          errorMessage: null,
           status: 'success',
         },
         {
           id: 2,
-          catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'filecheck.license',
+          catalogEntityRef: 'component:default/test-component',
+          metricId: 'filecheck.license',
           value: false,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
-          error_message: null,
+          errorMessage: null,
           status: 'success',
         },
       ] as DbMetricValue[];
@@ -580,10 +580,10 @@ describe('CatalogMetricService', () => {
         ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
       });
 
-      it('should use latest_entity_count for entitiesConsidered when fewer owned refs have metric rows', async () => {
+      it('should use latestEntityCount for entitiesConsidered when fewer owned refs have metric rows', async () => {
         mockedDatabase.readAggregatedMetricByEntityRefs.mockResolvedValue({
           ...aggregatedMetric,
-          latest_entity_count: 5,
+          latestEntityCount: 5,
         });
 
         const sparse = await service.getAggregatedMetricByEntityRefs(
@@ -641,39 +641,39 @@ describe('CatalogMetricService', () => {
     const mockMetricRows: DbMetricValue[] = [
       {
         id: 1,
-        catalog_entity_ref: 'component:default/service-a',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:default/service-a',
+        metricId: 'github.importantMetric',
         value: 15,
         timestamp: new Date('2024-01-15T12:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'error',
-        entity_kind: 'Component',
-        entity_owner: 'team:default/platform',
-        entity_namespace: 'default',
+        entityKind: 'Component',
+        entityOwner: 'team:default/platform',
+        entityNamespace: 'default',
       },
       {
         id: 2,
-        catalog_entity_ref: 'component:default/service-b',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:default/service-b',
+        metricId: 'github.importantMetric',
         value: 8,
         timestamp: new Date('2024-01-15T11:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'warning',
-        entity_kind: 'Component',
-        entity_owner: 'team:default/backend',
-        entity_namespace: 'default',
+        entityKind: 'Component',
+        entityOwner: 'team:default/backend',
+        entityNamespace: 'default',
       },
       {
         id: 3,
-        catalog_entity_ref: 'component:staging/service-c',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:staging/service-c',
+        metricId: 'github.importantMetric',
         value: 3,
         timestamp: new Date('2024-01-15T10:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'success',
-        entity_kind: 'API',
-        entity_owner: 'team:default/platform',
-        entity_namespace: 'staging',
+        entityKind: 'API',
+        entityOwner: 'team:default/platform',
+        entityNamespace: 'staging',
       },
     ];
 
@@ -1275,7 +1275,7 @@ describe('CatalogMetricService', () => {
         {
           ...mockMetricRows[1],
           value: null,
-          error_message: 'Provider failed',
+          errorMessage: 'Provider failed',
           status: null,
         },
       ]);

@@ -25,6 +25,11 @@ import {
 import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 import { mergeMaxTimestamp } from '../utils/mergeMaxTimestamp';
 import { getAggregateExpression } from './utils/getAggregateExpression';
+import {
+  fromMetricValueRow,
+  toMetricValueRow,
+  type MetricValueRowWithId,
+} from './utils/mapMetricValueRow';
 
 type ReadEntityMetricsWithFiltersOptions = {
   status?: string;
@@ -47,7 +52,7 @@ type ReadEntityMetricsWithFiltersOptions = {
 type StatsRowResult = {
   latestIdsSubquery: Knex.QueryBuilder;
   latestRowCount: number;
-  calculation_error_count: number;
+  calculationErrorCount: number;
   maxTimestampAllLatest: Date;
 };
 
@@ -73,13 +78,13 @@ export class DatabaseMetricValues {
    * Get the latest ids subquery for a given metric and catalog entity refs
    */
   private getLatestIdsSubquery(
-    metric_id: string,
-    catalog_entity_refs: string[],
+    metricId: string,
+    catalogEntityRefs: string[],
   ): Knex.QueryBuilder {
     return this.dbClient(this.tableName)
       .max('id')
-      .where('metric_id', metric_id)
-      .whereIn('catalog_entity_ref', catalog_entity_refs)
+      .where('metric_id', metricId)
+      .whereIn('catalog_entity_ref', catalogEntityRefs)
       .groupBy('catalog_entity_ref');
   }
 
@@ -107,7 +112,7 @@ export class DatabaseMetricValues {
         ?.latest_row_count ?? 0,
     );
 
-    const calculation_error_count = Number(
+    const calculationErrorCount = Number(
       (statsRow as { calculation_error_count?: string | number } | undefined)
         ?.calculation_error_count ?? 0,
     );
@@ -119,7 +124,7 @@ export class DatabaseMetricValues {
     return {
       latestIdsSubquery,
       latestRowCount,
-      calculation_error_count,
+      calculationErrorCount,
       maxTimestampAllLatest,
     };
   }
@@ -181,26 +186,30 @@ export class DatabaseMetricValues {
     if (metricValues.length === 0) {
       return;
     }
-    await this.dbClient(this.tableName).insert(metricValues);
+    await this.dbClient(this.tableName).insert(
+      metricValues.map(toMetricValueRow),
+    );
   }
 
   /**
    * Get the latest metric values for a specific entity and metrics
    */
   async readLatestEntityMetricValues(
-    catalog_entity_ref: string,
-    metric_ids: string[],
+    catalogEntityRef: string,
+    metricIds: string[],
   ): Promise<DbMetricValue[]> {
-    return await this.dbClient(this.tableName)
+    const rows = await this.dbClient(this.tableName)
       .select('*')
       .whereIn(
         'id',
         this.dbClient(this.tableName)
           .max('id')
-          .whereIn('metric_id', metric_ids)
-          .where('catalog_entity_ref', catalog_entity_ref)
+          .whereIn('metric_id', metricIds)
+          .where('catalog_entity_ref', catalogEntityRef)
           .groupBy('metric_id'),
       );
+
+    return (rows as MetricValueRowWithId[]).map(fromMetricValueRow);
   }
 
   /**
@@ -216,18 +225,18 @@ export class DatabaseMetricValues {
    * Get aggregated metrics by status for multiple entities and metrics.
    */
   async readAggregatedMetricByEntityRefs(
-    catalog_entity_refs: string[],
-    metric_id: string,
+    catalogEntityRefs: string[],
+    metricId: string,
   ): Promise<DbAggregatedMetric | undefined> {
-    if (catalog_entity_refs.length === 0) {
+    if (catalogEntityRefs.length === 0) {
       return undefined;
     }
 
     const latestIdsSubquery = this.getLatestIdsSubquery(
-      metric_id,
-      catalog_entity_refs,
+      metricId,
+      catalogEntityRefs,
     );
-    const { latestRowCount, calculation_error_count, maxTimestampAllLatest } =
+    const { latestRowCount, calculationErrorCount, maxTimestampAllLatest } =
       await this.readStatsRowByLatestIdsSubquery(latestIdsSubquery);
 
     if (latestRowCount === 0) {
@@ -245,12 +254,12 @@ export class DatabaseMetricValues {
 
     if (!statusRows || statusRows.length === 0) {
       return {
-        metric_id,
+        metricId,
         total: 0,
-        max_timestamp: maxTimestampAllLatest,
+        maxTimestamp: maxTimestampAllLatest,
         statusCounts: {},
-        calculation_error_count,
-        latest_entity_count: latestRowCount,
+        calculationErrorCount,
+        latestEntityCount: latestRowCount,
       };
     }
 
@@ -271,12 +280,12 @@ export class DatabaseMetricValues {
     const mergedMax = mergeMaxTimestamp(maxTimestampAllLatest, maxTimestamp);
 
     return {
-      metric_id,
+      metricId,
       total,
-      max_timestamp: mergedMax,
+      maxTimestamp: mergedMax,
       statusCounts,
-      calculation_error_count,
-      latest_entity_count: latestRowCount,
+      calculationErrorCount,
+      latestEntityCount: latestRowCount,
     };
   }
 
@@ -284,19 +293,19 @@ export class DatabaseMetricValues {
    * Aggregate raw metric values across latest rows for multiple entities.
    */
   async readScalarAggregatedMetricByEntityRefs(
-    catalog_entity_refs: string[],
-    metric_id: string,
+    catalogEntityRefs: string[],
+    metricId: string,
     aggregationFn: ScalarAggregationFn,
   ): Promise<DbScalarAggregatedMetric | undefined> {
-    if (catalog_entity_refs.length === 0) {
+    if (catalogEntityRefs.length === 0) {
       return undefined;
     }
 
     const latestIdsSubquery = this.getLatestIdsSubquery(
-      metric_id,
-      catalog_entity_refs,
+      metricId,
+      catalogEntityRefs,
     );
-    const { latestRowCount, calculation_error_count, maxTimestampAllLatest } =
+    const { latestRowCount, calculationErrorCount, maxTimestampAllLatest } =
       await this.readStatsRowByLatestIdsSubquery(latestIdsSubquery);
 
     if (latestRowCount === 0) {
@@ -318,12 +327,12 @@ export class DatabaseMetricValues {
     );
 
     return {
-      metric_id,
+      metricId,
       total,
-      max_timestamp: mergedMax,
+      maxTimestamp: mergedMax,
       value,
-      calculation_error_count,
-      latest_entity_count: latestRowCount,
+      calculationErrorCount,
+      latestEntityCount: latestRowCount,
     };
   }
 
@@ -332,7 +341,7 @@ export class DatabaseMetricValues {
    * by status, name, kind, namespace, or owner, plus sorting and pagination.
    */
   async readEntityMetricsWithFilters(
-    metric_id: string,
+    metricId: string,
     options: ReadEntityMetricsWithFiltersOptions,
   ): Promise<DbMetricValue[]> {
     const clientName: string =
@@ -341,7 +350,7 @@ export class DatabaseMetricValues {
 
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
-      .where('metric_id', metric_id)
+      .where('metric_id', metricId)
       .groupBy('catalog_entity_ref');
 
     const query = this.dbClient(this.tableName)
@@ -389,7 +398,8 @@ export class DatabaseMetricValues {
       query.limit(options.pagination.limit).offset(options.pagination.offset);
     }
 
-    return await query;
+    const rows = await query;
+    return (rows as MetricValueRowWithId[]).map(fromMetricValueRow);
   }
 
   private applySort(
