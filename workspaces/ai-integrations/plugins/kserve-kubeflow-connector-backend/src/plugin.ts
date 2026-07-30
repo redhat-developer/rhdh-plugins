@@ -18,7 +18,10 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { setupInformer } from './services/InformerService';
+import {
+  setupInformer,
+  type ConnectorConfig,
+} from './services/InformerService';
 
 /**
  * kserveKubeflowConnectorPlugin backend plugin
@@ -33,9 +36,32 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
+        config: coreServices.rootConfig,
       },
-      async init({ logger, httpRouter }) {
-        setupInformer().catch(error => {
+      async init({ logger, httpRouter, config }) {
+        let connectorConfig: ConnectorConfig | undefined;
+
+        const providerConfigs = config.getOptionalConfig(
+          'catalog.providers.modelCatalog',
+        );
+        if (providerConfigs) {
+          const keys = providerConfigs.keys();
+          if (keys.length > 0) {
+            const providerConfig = providerConfigs.getConfig(keys[0]);
+            connectorConfig = {
+              catalogUrl: providerConfig.getOptionalString(
+                'kubeflow-model-catalog-url',
+              ),
+              defaultOwner:
+                providerConfig.getOptionalString('default-owner') || undefined,
+              defaultLifecycle:
+                providerConfig.getOptionalString('default-lifecycle') ||
+                undefined,
+            };
+          }
+        }
+
+        setupInformer(connectorConfig).catch(error => {
           logger.error('Failed to set up informer:', error);
         });
         httpRouter.use(await createRouter());

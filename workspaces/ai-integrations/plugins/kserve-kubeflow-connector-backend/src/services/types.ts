@@ -133,6 +133,7 @@ export interface KServeInferenceService {
 // ReconcilerConfig interface
 export interface ReconcilerConfig {
   catalogRoute?: Route;
+  catalogUrl?: string;
   defaultLifecycle: string;
   defaultOwner: string;
   k8sToken?: string;

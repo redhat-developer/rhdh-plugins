@@ -108,3 +108,6 @@ catalog:
         # a separate pod
         # baseUrl: 'http://localhost:9090'
         name: my-k8s-cluster
+        kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
+        default-owner: '${OWNER:-default-owner}'
+        default-lifecycle: '${LIFECYCLE:-production}'

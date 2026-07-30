@@ -60,6 +60,15 @@ export async function setupCatalogRoute(
     return;
   }
 
+  if (
+    config.catalogUrl !== undefined &&
+    config.catalogUrl !== null &&
+    config.catalogUrl.length > 0
+  ) {
+    console.log('setupCatalogRoute: catalog url configured');
+    return;
+  }
+
   if (!config.routeClient) {
     console.log('setupCatalogRoute: no route client available');
     return;
@@ -139,22 +148,30 @@ export async function fetchModelCard(
 }
 
 /**
- * Create a CatalogClient from a discovered catalog route and auth token.
- * Returns undefined if the route has no usable ingress.
+ * Create a CatalogClient from a direct URL (config) or discovered catalog route.
+ * The catalogUrl parameter takes precedence over the route's ingress host.
+ * Returns undefined if neither source provides a usable URL.
  */
 export function createCatalogClient(
-  catalogRoute: Route,
+  catalogRoute: Route | undefined,
   token: string,
+  catalogUrl?: string,
 ): CatalogClient | undefined {
-  if (
-    !catalogRoute.status?.ingress ||
-    catalogRoute.status.ingress.length === 0
+  let rootCatalogURL: string;
+
+  if (catalogUrl && catalogUrl.length > 0) {
+    rootCatalogURL = `${catalogUrl}${CATALOG_BASE_URI}`;
+  } else if (
+    catalogRoute?.status?.ingress &&
+    catalogRoute.status.ingress.length > 0
   ) {
-    console.log('createCatalogClient: catalog route has no ingress');
+    rootCatalogURL = `https://${catalogRoute.status.ingress[0].host}${CATALOG_BASE_URI}`;
+  } else {
+    console.log(
+      'createCatalogClient: no catalog URL or route ingress available',
+    );
     return undefined;
   }
-
-  const rootCatalogURL = `https://${catalogRoute.status.ingress[0].host}${CATALOG_BASE_URI}`;
 
   return {
     rootCatalogURL,

@@ -305,7 +305,7 @@ async function fetchModelCardViaAnnotations(
   let modelCard: string | undefined;
   if (
     is.metadata.annotations !== undefined &&
-    config.catalogRoute !== undefined
+    (config.catalogRoute !== undefined || config.catalogUrl !== undefined)
   ) {
     const catalogSource = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
     const catalogModel = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
@@ -314,7 +314,11 @@ async function fetchModelCardViaAnnotations(
     if (config.k8sToken !== undefined) {
       token = config.k8sToken;
     }
-    const catalogClient = createCatalogClient(config.catalogRoute, token);
+    const catalogClient = createCatalogClient(
+      config.catalogRoute,
+      token,
+      config.catalogUrl,
+    );
     modelCard = await catalogClient?.getModelCard(catalogSource, catalogModel);
   }
   return [modelCardKey, modelCard];
@@ -515,7 +519,13 @@ export function getModelCard(id: string): string | undefined {
   return undefined;
 }
 
-export const setupInformer = async () => {
+export interface ConnectorConfig {
+  catalogUrl?: string;
+  defaultOwner?: string;
+  defaultLifecycle?: string;
+}
+
+export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault();
 
@@ -539,11 +549,16 @@ export const setupInformer = async () => {
     k8sToken = process.env.K8S_TOKEN;
   }
 
-  // Initialize configuration from environment variables
+  // Initialize configuration from plugin config with environment variable fallback
   const config: ReconcilerConfig = {
     catalogRoute: undefined,
-    defaultLifecycle: process.env.LIFECYCLE || 'production',
-    defaultOwner: process.env.OWNER || 'default-owner',
+    catalogUrl: connectorConfig?.catalogUrl,
+    defaultLifecycle:
+      connectorConfig?.defaultLifecycle ||
+      process.env.LIFECYCLE ||
+      'production',
+    defaultOwner:
+      connectorConfig?.defaultOwner || process.env.OWNER || 'default-owner',
     k8sToken: k8sToken,
     routeClient: client,
     coreClient: coreClient,
