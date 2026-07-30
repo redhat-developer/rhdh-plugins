@@ -48,6 +48,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isExtensionsPackage,
+  isExtensionsPlugin,
   ExtensionsPackage,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
@@ -661,7 +662,7 @@ export const ExtensionsPluginContent = ({
               value={plugin.spec?.support?.provider}
             />
 
-            {!isExtensionsPackage(plugin) && (
+            {isExtensionsPlugin(plugin) && (
               <CatalogSourceLabel plugin={plugin} />
             )}
 
