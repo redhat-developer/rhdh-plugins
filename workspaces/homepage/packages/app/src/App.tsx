@@ -18,7 +18,7 @@ import { createApp } from '@backstage/frontend-defaults';
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 import {
-  homePageModule,
+  homePagePlugin,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
@@ -28,7 +28,7 @@ export default createApp({
     rhdhThemeModule,
     navModule,
     signInModule,
-    homePageModule,
+    homePagePlugin,
     homepageTranslationsModule,
   ],
 });

@@ -14661,7 +14661,6 @@ __metadata:
     "@backstage/plugin-catalog": "npm:^2.0.6"
     "@backstage/plugin-catalog-graph": "npm:^0.6.5"
     "@backstage/plugin-catalog-import": "npm:^0.13.14"
-    "@backstage/plugin-home": "npm:^0.9.7"
     "@backstage/plugin-kubernetes": "npm:^0.12.20"
     "@backstage/plugin-notifications": "npm:^0.5.18"
     "@backstage/plugin-org": "npm:^0.7.5"
