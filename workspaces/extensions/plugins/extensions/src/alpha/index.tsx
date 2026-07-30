@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 import {
   createFrontendModule,
   createFrontendPlugin,
-  NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
@@ -27,6 +27,12 @@ import { dynamicPluginsInfoApi, extensionApi } from './apis';
 import { allRoutes, rootRouteRef } from '../routes';
 import { extensionsTranslations } from './translations';
 
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
+
 export * from './translations';
 
 /**
@@ -35,24 +41,14 @@ export * from './translations';
 export const extensionsPage = PageBlueprint.make({
   params: {
     path: '/extensions',
+    title: 'Extensions',
+    icon: <ExtensionsIcon fontSize="inherit" />,
     routeRef: rootRouteRef,
     loader: () =>
       import('../pages/DynamicExtensionsPluginRouter').then(m =>
         compatWrapper(<m.DynamicExtensionsPluginRouter />),
       ),
     // async () => compatWrapper(<DynamicExtensionsPluginRouter/>),
-  },
-});
-
-/**
- * @alpha
- */
-
-export const extensionsNavItem = NavItemBlueprint.make({
-  params: {
-    title: 'Extensions',
-    routeRef: rootRouteRef,
-    icon: ExtensionsIcon,
   },
 });
 
@@ -82,12 +78,7 @@ export const extensionsTranslationsModule = createFrontendModule({
 const extensionsPlugin = createFrontendPlugin({
   pluginId: 'extensions',
   info: { packageJson: () => import('../../package.json') },
-  extensions: [
-    dynamicPluginsInfoApi,
-    extensionApi,
-    extensionsPage,
-    extensionsNavItem,
-  ],
+  extensions: [dynamicPluginsInfoApi, extensionApi, extensionsPage],
   routes: allRoutes,
 });
 

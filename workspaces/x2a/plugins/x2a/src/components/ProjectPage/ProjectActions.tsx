@@ -17,6 +17,7 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import ReplayIcon from '@material-ui/icons/Replay';
+import SyncIcon from '@material-ui/icons/Sync';
 import {
   Divider,
   ListItemIcon,
@@ -35,8 +36,10 @@ export type ProjectActionsProps = {
   handleDeleteClick: () => void;
   handleRunAllClick: () => void;
   handleRetriggerInitClick: () => void;
+  handleResyncClick: () => void;
   canRunAll: boolean;
   canRetriggerInit: boolean;
+  canResync: boolean;
   canDeleteProject: boolean;
 };
 
@@ -48,8 +51,10 @@ export const ProjectActions = ({
   handleDeleteClick,
   handleRunAllClick,
   handleRetriggerInitClick,
+  handleResyncClick,
   canRunAll,
   canRetriggerInit,
+  canResync,
   canDeleteProject,
 }: ProjectActionsProps) => {
   const { t } = useTranslation();
@@ -90,6 +95,13 @@ export const ProjectActions = ({
             <ReplayIcon fontSize="small" />
           </ListItemIcon>
           {t('table.actions.retriggerInit')}
+        </MenuItem>
+
+        <MenuItem onClick={handleResyncClick} disabled={!canResync}>
+          <ListItemIcon>
+            <SyncIcon fontSize="small" />
+          </ListItemIcon>
+          {t('resyncMigrationPlan.action' as any, {})}
         </MenuItem>
 
         <MenuItem onClick={handleRunAllClick} disabled={!canRunAll}>

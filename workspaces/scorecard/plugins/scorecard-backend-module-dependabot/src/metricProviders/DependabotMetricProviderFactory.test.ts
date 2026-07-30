@@ -20,6 +20,7 @@ import {
   createDependabotMetricProviders,
 } from './DependabotMetricProviderFactory';
 import { mockServices } from '@backstage/backend-test-utils';
+import { DEPENDABOT_THRESHOLDS } from './DependabotConfig';
 
 const mockConfig = new ConfigReader({
   integrations: { github: [{ host: 'github.com', token: 'test-token' }] },
@@ -33,20 +34,12 @@ describe('createDependabotMetricProvider', () => {
       mockLogger,
       'high',
     );
-    expect(provider.getProviderId()).toBe('dependabot.alerts_high');
+    expect(provider.getProviderId()).toBe('dependabot.alertsHigh');
     expect(provider.getProviderDatasourceId()).toBe('dependabot');
-    expect(provider.getMetricType()).toBe('number');
-  });
-
-  it('accepts optional thresholds', () => {
-    const thresholds = { rules: [{ key: 'ok', expression: '<1' }] };
-    const provider = createDependabotMetricProvider(
-      mockConfig,
-      mockLogger,
-      'critical',
-      thresholds,
-    );
-    expect(provider.getMetricThresholds()).toEqual(thresholds);
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(1);
+    expect(metrics[0].type).toBe('number');
+    expect(metrics[0].thresholds).toBe(DEPENDABOT_THRESHOLDS);
   });
 });
 
@@ -55,22 +48,10 @@ describe('createDependabotMetricProviders', () => {
     const providers = createDependabotMetricProviders(mockConfig, mockLogger);
     expect(providers).toHaveLength(4);
     expect(providers.map(p => p.getProviderId())).toEqual([
-      'dependabot.alerts_critical',
-      'dependabot.alerts_high',
-      'dependabot.alerts_medium',
-      'dependabot.alerts_low',
+      'dependabot.alertsCritical',
+      'dependabot.alertsHigh',
+      'dependabot.alertsMedium',
+      'dependabot.alertsLow',
     ]);
-  });
-
-  it('passes optional thresholds to all providers', () => {
-    const thresholds = { rules: [{ key: 'custom', expression: '>0' }] };
-    const providers = createDependabotMetricProviders(
-      mockConfig,
-      mockLogger,
-      thresholds,
-    );
-    providers.forEach(p => {
-      expect(p.getMetricThresholds()).toEqual(thresholds);
-    });
   });
 });

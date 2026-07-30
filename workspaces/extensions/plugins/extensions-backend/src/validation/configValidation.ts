@@ -59,6 +59,13 @@ export function validatePackageFormat(
     );
   }
 
+  const enabled = item.get('enabled');
+  if (enabled && typeof enabled !== 'boolean') {
+    throw new ConfigFormatError(
+      "Invalid installation configuration, optional 'enabled' field in package item must be a boolean",
+    );
+  }
+
   const disabled = item.get('disabled');
   if (disabled && typeof disabled !== 'boolean') {
     throw new ConfigFormatError(

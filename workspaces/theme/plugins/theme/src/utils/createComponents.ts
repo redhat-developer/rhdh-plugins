@@ -34,6 +34,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageHeaderTabs?: Component;
   BackstageSidebar?: Component;
   BackstageSidebarItem?: Component;
+  BackstageSidebarSubmenuItem?: Component;
   BackstagePage?: Component;
   BackstageContent?: Component;
   BackstageContentHeader?: Component;
@@ -174,17 +175,18 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   // MUI AppBar
-  if (options.appBar !== 'mui') {
-    components.MuiAppBar = {
-      styleOverrides: {
-        root: {
+  components.MuiAppBar = {
+    styleOverrides: {
+      root: {
+        boxShadow: 'none',
+        ...(options.appBar !== 'mui' && {
           backgroundColor: general.appBarBackgroundColor,
           backgroundImage: general.appBarBackgroundImage,
           outline: 'none',
-        },
+        }),
       },
-    };
-  }
+    },
+  };
 
   // MUI buttons
   // Don't disableRipple for MuiButtonBase as it will affect all the buttons
@@ -628,9 +630,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
+          alignItems: 'stretch',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -643,16 +645,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
                 color: 'inherit !important',
               },
             },
-          '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
-            {
-              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-              color: `${navigationSelectedColor} !important`,
-            },
-
-          '& [class*="BackstageSidebarSubmenuItem-selected-"]': {
-            background: `${sidebarItemInteractionBackgroundColor} !important`,
-            color: `${navigationSelectedColor} !important`,
-          },
         },
       },
     };
@@ -660,7 +652,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           borderRadius: '6px',
-          width: 'calc(100% - 0.5rem) !important',
+          width: 'calc(100% - 1rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
@@ -673,8 +665,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: sidebarItemInteractionBackgroundColor,
-          color: navigationSelectedColor,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
+        },
+      },
+    };
+    components.BackstageSidebarSubmenuItem = {
+      styleOverrides: {
+        selected: {
+          background: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };
@@ -701,10 +701,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&:hover, &:focus-visible': {
             backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
           },
-        },
-        selected: {
-          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-          color: `${navigationSelectedColor} !important`,
+          '&.Mui-selected': {
+            backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+            color: `${navigationSelectedColor} !important`,
+          },
         },
       },
     };
@@ -775,6 +775,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               margin: general.pageInset,
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+            },
+            // Prevent TechDocs double scrollbar: the page-inset max-height puts
+            // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.
+            // Letting <main> expand moves the scroll to the parent root instead.
+            "& > main:has([data-testid='techdocs-native-shadowroot'])": {
+              height: 'auto !important',
+              maxHeight: 'none !important',
+              borderRadius: '1rem',
+              marginRight: '0.5rem',
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page

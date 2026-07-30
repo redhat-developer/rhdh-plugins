@@ -28,5 +28,5 @@ export const isEligibleForRetriggerInit = (project: Project): boolean => {
     !!initJobStatus && JobStatus.from(initJobStatus).isActive();
   const hasModules =
     !!project.status?.modulesSummary && project.status.modulesSummary.total > 0;
-  return !hasModules && !initRunning;
+  return !hasModules && !initRunning && !project.migrationPlan;
 };

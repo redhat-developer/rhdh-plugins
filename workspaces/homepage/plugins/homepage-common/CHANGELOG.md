@@ -1,5 +1,33 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-common
 
+## 0.4.0
+
+### Minor Changes
+
+- a6fced5: Backstage version bump to v1.52.1
+
+## 0.3.0
+
+### Minor Changes
+
+- 0186e63: Add `unless` exclusion block and `tags` for RBAC conditional policy filtering to homepage default widgets.
+
+  `unless` is the denylist counterpart to `if` — it uses the same shape (`users`, `groups`, `permissions`) and hides a widget when any condition matches. Deny wins over `if`, and on group nodes it prunes the entire subtree.
+
+  `tags` is an optional string array on leaf nodes (e.g. `['admin', 'developer']`) used with the new `HAS_TAG` permission rule for RBAC conditional filtering. Widgets without tags bypass tag-based filtering.
+
+## 0.2.1
+
+### Patch Changes
+
+- a25f33d: Renamed the frontend homepage plugin from `@red-hat-developer-hub/backstage-plugin-dynamic-home-page` to `@red-hat-developer-hub/backstage-plugin-homepage` for consistency with the sibling `homepage-backend` and `homepage-common` packages.
+
+## 0.2.0
+
+### Minor Changes
+
+- 1aa10e7: Backsatge version bump to v1.51.0
+
 ## 0.1.2
 
 ### Patch Changes

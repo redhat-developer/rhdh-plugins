@@ -159,7 +159,7 @@ describe('LokiProvider', () => {
             },
           }),
         ),
-      ).toThrow(/must not contain "\}"/);
+      ).toThrow(/must not contain unquoted "\{" or "\}"/);
     });
 
     it('rejects logPipelineFilters containing opening brace', () => {
@@ -171,13 +171,13 @@ describe('LokiProvider', () => {
                 loki: {
                   baseUrl: 'http://localhost:3100',
                   token: 't',
-                  logPipelineFilters: ['| pattern `{stream}`'],
+                  logPipelineFilters: ['| foo {bar="baz"}'],
                 },
               },
             },
           }),
         ),
-      ).toThrow(/must not contain "\{"/);
+      ).toThrow(/must not contain unquoted "\{" or "\}"/);
     });
 
     it('rejects logPipelineFilters entries that trim to empty (whitespace-only)', () => {
@@ -323,7 +323,7 @@ describe('LokiProvider', () => {
       it('rejects baseUrl when the resolved URL has no hostname', () => {
         const OriginalURL = globalThis.URL;
         globalThis.URL = class URLWithEmptyHostname extends OriginalURL {
-          get hostname(): string {
+          get hostname() {
             return '';
           }
         };
@@ -860,12 +860,12 @@ describe('LokiProvider', () => {
         nodes: [],
       };
 
-      const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z&limit=50';
-
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
-      const parsedURLToFetch = new URL(urlToFetch);
-      expect(parsedURLToFetch.searchParams.get('limit')).toEqual('50');
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      const actualURL = new URL(calls[0][0] as string);
+      expect(actualURL.searchParams.get('limit')).toEqual('50');
     });
   });
 });

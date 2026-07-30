@@ -34,7 +34,7 @@ describe('validateAggregationConfig', () => {
 
   it('should not throw when all KPI entries are valid and metrics are registered', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
@@ -43,7 +43,7 @@ describe('validateAggregationConfig', () => {
             title: 'GitHub PRs',
             description: 'Open pull requests',
             type: aggregationTypes.statusGrouped,
-            metricId: 'github.open_prs',
+            metricId: 'github.openPRs',
           },
         },
       },
@@ -56,7 +56,7 @@ describe('validateAggregationConfig', () => {
 
   it('should throw InputError when a KPI entry fails schema validation', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
     const tooLong = 'a'.repeat(256);
 
     const rootConfig = new ConfigReader({
@@ -66,7 +66,7 @@ describe('validateAggregationConfig', () => {
             title: tooLong,
             description: 'Valid description',
             type: aggregationTypes.statusGrouped,
-            metricId: 'github.open_prs',
+            metricId: 'github.openPRs',
           },
         },
       },
@@ -79,7 +79,7 @@ describe('validateAggregationConfig', () => {
 
   it('should throw InputError when aggregation type is invalid', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
@@ -88,7 +88,7 @@ describe('validateAggregationConfig', () => {
             title: 'Valid title',
             description: 'Valid description',
             type: 'notARealAggregationType',
-            metricId: 'github.open_prs',
+            metricId: 'github.openPRs',
           },
         },
       },
@@ -109,7 +109,7 @@ describe('validateAggregationConfig', () => {
             title: 'GitHub PRs',
             description: 'Open pull requests',
             type: aggregationTypes.statusGrouped,
-            metricId: 'github.open_prs',
+            metricId: 'github.openPRs',
           },
         },
       },
@@ -117,23 +117,23 @@ describe('validateAggregationConfig', () => {
 
     expect(() => validateAggregationConfig({ rootConfig, registry })).toThrow(
       new Error(
-        `Metric provider with ID 'github.open_prs' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.openPrsKpi).`,
+        `Metric provider with ID 'github.openPRs' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.openPrsKpi).`,
       ),
     );
   });
 
-  it('should not throw when average KPI has options.statusScores (app-config shape)', () => {
+  it('should not throw when weightedStatusScore KPI has options.statusScores (app-config shape)', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
           openPrsWeightedKpi: {
             title: 'GitHub Open PRs (weighted health)',
-            type: aggregationTypes.average,
-            description: 'Weighted health average for open PRs.',
-            metricId: 'github.open_prs',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score for open PRs.',
+            metricId: 'github.openPRs',
             options: {
               statusScores: {
                 success: 100,
@@ -151,18 +151,18 @@ describe('validateAggregationConfig', () => {
     ).not.toThrow();
   });
 
-  it('should throw when type is average but required options block is missing', () => {
+  it('should throw when type is weightedStatusScore but required options block is missing', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
-            title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
-            metricId: 'github.open_prs',
+          weightedKpi: {
+            title: 'Weighted status score KPI',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
+            metricId: 'github.openPRs',
           },
         },
       },
@@ -173,18 +173,18 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should throw InputError when type is average but options.statusScores is empty', () => {
+  it('should throw InputError when type is weightedStatusScore but options.statusScores is empty', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
-            title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
-            metricId: 'github.open_prs',
+          weightedKpi: {
+            title: 'Weighted status score KPI',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
+            metricId: 'github.openPRs',
             options: { statusScores: {} },
           },
         },
@@ -196,18 +196,18 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should not throw when average KPI includes optional thresholds', () => {
+  it('should not throw when weightedStatusScore KPI includes optional thresholds', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
-            title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
-            metricId: 'github.open_prs',
+          weightedKpi: {
+            title: 'Weighted status score KPI',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
+            metricId: 'github.openPRs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
               thresholds: {
@@ -238,16 +238,16 @@ describe('validateAggregationConfig', () => {
 
   it('should throw when thresholds has an invalid expression', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
-            title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
-            metricId: 'github.open_prs',
+          weightedKpi: {
+            title: 'Weighted status score KPI',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
+            metricId: 'github.openPRs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
               thresholds: {
@@ -270,18 +270,18 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should throw when average KPI thresholds leave a gap on the number line', () => {
+  it('should throw when weightedStatusScore KPI thresholds leave a gap on the number line', () => {
     const registry = new MetricProvidersRegistry();
-    registry.register(new MockNumberProvider('github.open_prs', 'github'));
+    registry.register(new MockNumberProvider('github.openPRs', 'github'));
 
     const rootConfig = new ConfigReader({
       scorecard: {
         aggregationKPIs: {
-          avgKpi: {
-            title: 'Avg KPI',
-            type: aggregationTypes.average,
-            description: 'Weighted health',
-            metricId: 'github.open_prs',
+          weightedKpi: {
+            title: 'Weighted status score KPI',
+            type: aggregationTypes.weightedStatusScore,
+            description: 'Weighted health score',
+            metricId: 'github.openPRs',
             options: {
               statusScores: { success: 100, warning: 50, error: 0 },
               thresholds: {

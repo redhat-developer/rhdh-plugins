@@ -179,6 +179,55 @@ export function parseAndValidateLogStreamSelectors(
 }
 
 /**
+ * Rejects `{` / `}` outside quoted LogQL literals so pipeline config cannot
+ * close the stream selector (`{...}`) and inject a new selector. Braces inside
+ * `"..."` or `` `...` `` (e.g. `line_format "{{.message}}"`) are allowed.
+ */
+function assertNoUnquotedLogQlBraces(element: string, context: string): void {
+  let i = 0;
+  while (i < element.length) {
+    const ch = element[i];
+    if (ch === '"') {
+      i = skipQuotedString(element, i + 1, '"', context);
+      continue;
+    }
+    if (ch === '`') {
+      i = skipQuotedString(element, i + 1, '`', context);
+      continue;
+    }
+    if (ch === '{' || ch === '}') {
+      throw new InputError(
+        `${context}: entry must not contain unquoted "{" or "}"`,
+      );
+    }
+    i++;
+  }
+}
+
+function skipQuotedString(
+  element: string,
+  start: number,
+  quote: '"' | '`',
+  context: string,
+): number {
+  let i = start;
+  while (i < element.length) {
+    const ch = element[i];
+    if (quote === '"' && ch === '\\') {
+      i += 2;
+      continue;
+    }
+    if (ch === quote) {
+      return i + 1;
+    }
+    i++;
+  }
+  throw new InputError(
+    `${context}: entry contains an unclosed ${quote === '"' ? 'double-quoted' : 'backtick-quoted'} string`,
+  );
+}
+
+/**
  * Reads and validates `logPipelineFilters` at startup.
  */
 export function parseAndValidateLogPipelineFilters(
@@ -200,12 +249,7 @@ export function parseAndValidateLogPipelineFilters(
     if (/[\r\n\u2028\u2029]/.test(element)) {
       throw new InputError(`${ctx}: entry must not contain line breaks`);
     }
-    if (element.includes('{')) {
-      throw new InputError(`${ctx}: entry must not contain "{"`);
-    }
-    if (element.includes('}')) {
-      throw new InputError(`${ctx}: entry must not contain "}"`);
-    }
+    assertNoUnquotedLogQlBraces(element, ctx);
     return element;
   });
 }

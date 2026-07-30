@@ -1,6 +1,15 @@
 app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
+  extensions:
+    - app/routes:
+        config:
+          redirects:
+            - from: /
+              to: /catalog
+    - api:app/app-language:
+        config:
+          availableLanguages: [en, de, es, fr, it, ja]
 
 organization:
   name: My Company
@@ -111,3 +120,8 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+# Uncomment to enable pseudo-localization for identifying untranslated strings
+# i18n:
+#   pseudolocalization:
+#     enabled: true
+#     language: en

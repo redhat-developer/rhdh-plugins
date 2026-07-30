@@ -21,6 +21,7 @@ import {
 } from '../../__fixtures__/mockProviders';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
 import { ThresholdConfigFormatError } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 const numberMetricThresholds = {
   rules: [
@@ -41,13 +42,16 @@ describe('mergeEntityAndProviderThresholds', () => {
   let entity: Entity;
 
   const numberMetricProvider = new MockNumberProvider(
-    'github.important_metric',
+    'github.importantMetric',
     'github',
   );
   const booleanMetricProvider = new MockBooleanProvider(
-    'jira.boolean_metric',
+    'jira.booleanMetric',
     'jira',
   );
+
+  const numberMetric = numberMetricProvider.getMetrics()[0];
+  const booleanMetric = booleanMetricProvider.getMetrics()[0];
 
   beforeEach(() => {
     entity = {
@@ -65,19 +69,21 @@ describe('mergeEntityAndProviderThresholds', () => {
   });
 
   describe('when entity has no threshold overrides', () => {
-    it('should return provider thresholds unchanged for number metric', () => {
+    it('should return metric thresholds unchanged for number metric', () => {
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual(numberMetricThresholds);
     });
 
-    it('should return provider thresholds unchanged for boolean metric', () => {
+    it('should return metric thresholds unchanged for boolean metric', () => {
       const result = mergeEntityAndProviderThresholds(
         entity,
-        booleanMetricProvider,
+        booleanMetric,
+        booleanMetricProvider.getProviderId(),
       );
       expect(result).toEqual(booleanMetricThresholds);
     });
@@ -86,7 +92,8 @@ describe('mergeEntityAndProviderThresholds', () => {
       entity.metadata.annotations = {};
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
       expect(result).toEqual(numberMetricThresholds);
     });
@@ -95,20 +102,22 @@ describe('mergeEntityAndProviderThresholds', () => {
       entity.metadata = { name: 'test-component' };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
       expect(result).toEqual(numberMetricThresholds);
     });
   });
 
   describe('when entity has valid threshold overrides', () => {
-    it('should override single provider threshold rule for number metric', () => {
+    it('should override single metric threshold rule for number metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual({
@@ -120,15 +129,16 @@ describe('mergeEntityAndProviderThresholds', () => {
       });
     });
 
-    it('should override multiple provider threshold rules for number metric', () => {
+    it('should override multiple metric threshold rules for number metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
-        'scorecard.io/github.important_metric.thresholds.rules.warning': '>30',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<=30',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '>30',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<=30',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual({
@@ -140,13 +150,14 @@ describe('mergeEntityAndProviderThresholds', () => {
       });
     });
 
-    it('should override provider threshold rule for boolean metric', () => {
+    it('should override metric threshold rule for boolean metric', () => {
       entity.metadata.annotations = {
-        'scorecard.io/jira.boolean_metric.thresholds.rules.success': '!=false',
+        'scorecard.io/jira.booleanMetric.thresholds.rules.success': '!=false',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        booleanMetricProvider,
+        booleanMetric,
+        booleanMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual({
@@ -159,11 +170,12 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should ignore annotations with empty expression values', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual(numberMetricThresholds);
@@ -172,12 +184,13 @@ describe('mergeEntityAndProviderThresholds', () => {
     it('should ignore annotations that do not match the provider prefix', () => {
       entity.metadata.annotations = {
         'scorecard.io/other.provider.thresholds.rules.error': '>50',
-        'scorecard.io/github.important_metric.thresholds.rules.warning': '>30',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<=30',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '>30',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<=30',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual({
@@ -191,14 +204,14 @@ describe('mergeEntityAndProviderThresholds', () => {
 
     it('should handle range expressions in overrides', () => {
       entity.metadata.annotations = {
-        'scorecard.io/github.important_metric.thresholds.rules.error': '>100',
-        'scorecard.io/github.important_metric.thresholds.rules.warning':
-          '0-100',
-        'scorecard.io/github.important_metric.thresholds.rules.success': '<0',
+        'scorecard.io/github.importantMetric.thresholds.rules.error': '>100',
+        'scorecard.io/github.importantMetric.thresholds.rules.warning': '0-100',
+        'scorecard.io/github.importantMetric.thresholds.rules.success': '<0',
       };
       const result = mergeEntityAndProviderThresholds(
         entity,
-        numberMetricProvider,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
       );
 
       expect(result).toEqual({
@@ -210,35 +223,36 @@ describe('mergeEntityAndProviderThresholds', () => {
       });
     });
 
-    it('should preserve color from provider rules when overriding', () => {
-      class MockColorNumberProvider extends MockNumberProvider {
-        getMetricThresholds() {
-          return {
-            rules: [
-              { key: 'low', expression: '<10', color: 'success.main' },
-              {
-                key: 'high',
-                expression: '10-20',
-                color: '#FF0000',
-                icon: 'scorecardWarningStatusIcon',
-              },
-              { key: 'error', expression: '>20' },
-            ],
-          };
-        }
-      }
-
-      const provider = new MockColorNumberProvider(
-        'github.custom_metric',
-        'github',
-      );
-
-      entity.metadata.annotations = {
-        'scorecard.io/github.custom_metric.thresholds.rules.high': '10-60',
-        'scorecard.io/github.custom_metric.thresholds.rules.error': '>60',
+    it('should preserve color from metric rules when overriding', () => {
+      const customMetric: Metric<'number'> = {
+        id: 'github.customMetric',
+        title: 'Custom Metric',
+        description: 'Custom metric description.',
+        type: 'number',
+        thresholds: {
+          rules: [
+            { key: 'low', expression: '<10', color: 'success.main' },
+            {
+              key: 'high',
+              expression: '10-20',
+              color: '#FF0000',
+              icon: 'scorecardWarningStatusIcon',
+            },
+            { key: 'error', expression: '>20' },
+          ],
+        },
       };
 
-      const result = mergeEntityAndProviderThresholds(entity, provider);
+      entity.metadata.annotations = {
+        'scorecard.io/github.customMetric.thresholds.rules.high': '10-60',
+        'scorecard.io/github.customMetric.thresholds.rules.error': '>60',
+      };
+
+      const result = mergeEntityAndProviderThresholds(
+        entity,
+        customMetric,
+        'github.customMetric',
+      );
 
       expect(result).toEqual({
         rules: [
@@ -255,71 +269,94 @@ describe('mergeEntityAndProviderThresholds', () => {
     });
 
     it('should throw when merged annotation rules leave a gap on the real line', () => {
-      class PartitionProvider extends MockNumberProvider {
-        getMetricThresholds() {
-          return {
-            rules: [
-              { key: 'success', expression: '<10' },
-              { key: 'warning', expression: '10-20' },
-              { key: 'error', expression: '>20' },
-            ],
-          };
-        }
-      }
-      const provider = new PartitionProvider(
-        'github.partition_metric',
-        'github',
-      );
-      entity.metadata.annotations = {
-        'scorecard.io/github.partition_metric.thresholds.rules.warning':
-          '11-20',
+      const partitionMetric: Metric<'number'> = {
+        id: 'github.partitionMetric',
+        title: 'Partition Metric',
+        description: 'Test',
+        type: 'number',
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '<10' },
+            { key: 'warning', expression: '10-20' },
+            { key: 'error', expression: '>20' },
+          ],
+        },
       };
 
-      expect(() => mergeEntityAndProviderThresholds(entity, provider)).toThrow(
-        ThresholdConfigFormatError,
-      );
-      expect(() => mergeEntityAndProviderThresholds(entity, provider)).toThrow(
-        /do not cover the entire real line/,
-      );
+      entity.metadata.annotations = {
+        'scorecard.io/github.partitionMetric.thresholds.rules.warning': '11-20',
+      };
+
+      expect(() =>
+        mergeEntityAndProviderThresholds(
+          entity,
+          partitionMetric,
+          'github.partitionMetric',
+        ),
+      ).toThrow(ThresholdConfigFormatError);
+      expect(() =>
+        mergeEntityAndProviderThresholds(
+          entity,
+          partitionMetric,
+          'github.partitionMetric',
+        ),
+      ).toThrow(/do not cover the entire real line/);
     });
   });
 
   it('should throw error for invalid threshold expression', () => {
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.error': 'invalid',
+      'scorecard.io/github.importantMetric.thresholds.rules.error': 'invalid',
     };
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, numberMetricProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
+      ),
     ).toThrow(ThresholdConfigFormatError);
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, numberMetricProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        numberMetric,
+        numberMetricProvider.getProviderId(),
+      ),
     ).toThrow(
-      "Invalid threshold annotation 'scorecard.io/github.important_metric.thresholds.rules.error: invalid' in entity 'component:default/test-component'",
+      "Invalid threshold annotation 'scorecard.io/github.importantMetric.thresholds.rules.error: invalid' in entity 'component:default/test-component'",
     );
   });
 
   it('should throw ThresholdConfigFormatError with annotation path when boolean override expression is invalid', () => {
     entity.metadata.annotations = {
-      'scorecard.io/jira.boolean_metric.thresholds.rules.success': '>40',
+      'scorecard.io/jira.booleanMetric.thresholds.rules.success': '>40',
     };
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        booleanMetric,
+        booleanMetricProvider.getProviderId(),
+      ),
     ).toThrow(ThresholdConfigFormatError);
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, booleanMetricProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        booleanMetric,
+        booleanMetricProvider.getProviderId(),
+      ),
     ).toThrow(
-      "Invalid threshold annotation 'scorecard.io/jira.boolean_metric.thresholds.rules.success: >40' in entity 'component:default/test-component'",
+      "Invalid threshold annotation 'scorecard.io/jira.booleanMetric.thresholds.rules.success: >40' in entity 'component:default/test-component'",
     );
   });
 
-  it('should preserve order of provider rules when overriding', () => {
+  it('should preserve order of metric rules when overriding', () => {
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.success': '<=20',
-      'scorecard.io/github.important_metric.thresholds.rules.error': '>50',
+      'scorecard.io/github.importantMetric.thresholds.rules.success': '<=20',
+      'scorecard.io/github.importantMetric.thresholds.rules.error': '>50',
     };
     const result = mergeEntityAndProviderThresholds(
       entity,
-      numberMetricProvider,
+      numberMetric,
+      numberMetricProvider.getProviderId(),
     );
 
     expect(result.rules[0]).toEqual({ key: 'error', expression: '>50' });
@@ -328,36 +365,34 @@ describe('mergeEntityAndProviderThresholds', () => {
   });
 
   it('should throw error when entity has invalid threshold key', () => {
-    class MockProvider extends MockNumberProvider {
-      constructor(
-        providerId: string,
-        datasourceId: string,
-        title: string = 'Mock Number Metric',
-        description: string = 'Mock number description.',
-      ) {
-        super(providerId, datasourceId, title, description);
-      }
+    const singleRuleMetric: Metric<'number'> = {
+      id: 'github.importantMetric',
+      title: 'Mock Number Metric',
+      description: 'Mock number description.',
+      type: 'number',
+      thresholds: {
+        rules: [{ key: 'error', expression: '>40' }],
+      },
+    };
 
-      getMetricThresholds() {
-        return {
-          rules: [{ key: 'error', expression: '>40' }],
-        };
-      }
-    }
-    const mockedProvider = new MockProvider(
-      'github.important_metric',
-      'github',
-    );
     entity.metadata.annotations = {
-      'scorecard.io/github.important_metric.thresholds.rules.success': '<=10',
+      'scorecard.io/github.importantMetric.thresholds.rules.success': '<=10',
     };
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, mockedProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        singleRuleMetric,
+        'github.importantMetric',
+      ),
     ).toThrow(ThresholdConfigFormatError);
     expect(() =>
-      mergeEntityAndProviderThresholds(entity, mockedProvider),
+      mergeEntityAndProviderThresholds(
+        entity,
+        singleRuleMetric,
+        'github.importantMetric',
+      ),
     ).toThrow(
-      'Unable to override component:default/test-component thresholds by {"key":"success","expression":"<=10"}, metric provider github.important_metric does not support key success',
+      'Unable to override component:default/test-component thresholds by {"key":"success","expression":"<=10"}, metric provider github.importantMetric does not support key success',
     );
   });
 });

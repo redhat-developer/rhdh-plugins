@@ -11,7 +11,7 @@ The Learn Section Card is designed to help users quickly discover learning resou
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: home.page/cards
           importName: OnboardingSection

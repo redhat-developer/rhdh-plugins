@@ -56,7 +56,7 @@ export function AllowedToolsSelector({
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
           Allowed Tools
         </Typography>
-        <Typography variant="caption" color="textSecondary">
+        <Typography variant="caption" color="text.secondary">
           {draft.allowedTools?.length
             ? `${draft.allowedTools.length} of ${tools.length} selected`
             : `All ${tools.length} tools enabled`}
@@ -64,7 +64,7 @@ export function AllowedToolsSelector({
       </Box>
       <Typography
         variant="caption"
-        color="textSecondary"
+        color="text.secondary"
         sx={{ display: 'block', mb: 1 }}
       >
         Select specific tools to reduce token usage. Leave unchecked to send all

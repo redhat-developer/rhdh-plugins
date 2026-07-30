@@ -55,9 +55,14 @@ import {
   workflowInstanceRouteRef,
   workflowRunsRouteRef,
 } from '../../routes';
-import { getErrorObject } from '../../utils/ErrorUtils';
+import {
+  extractSsoReauthorizeUrl,
+  getErrorObject,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
 import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
 import MissingSchemaNotice from './MissingSchemaNotice';
 import { mergeQueryParamsIntoFormData } from './queryParamsToFormData';
 import { getSchemaUpdater } from './schemaUpdater';
@@ -204,11 +209,16 @@ export const ExecuteWorkflowPage = () => {
   } else {
     pageContent = (
       <Grid container spacing={2} direction="column" wrap="nowrap">
-        {updateError && (
+        {updateError && !isSamlSsoError(updateError) && (
           <Grid item>
             <ResponseErrorPanel error={updateError} />
           </Grid>
         )}
+        <SamlSsoExpiredDialog
+          open={!!updateError && isSamlSsoError(updateError)}
+          reauthorizeUrl={extractSsoReauthorizeUrl(updateError)}
+          onClose={() => setUpdateError(undefined)}
+        />
         <Grid item>
           <InfoCard title={t('run.title')}>
             {!!schema ? (
@@ -222,6 +232,7 @@ export const ExecuteWorkflowPage = () => {
                 isExecuting={isExecuting}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
+                onSamlSsoError={err => setUpdateError(err)}
                 t={t as unknown as TranslationFunction}
                 executeLabel={t('common.run')}
                 executeAsEventLabel={

@@ -22,4 +22,5 @@ permission:
       users:
         - name: user:default/developer-user
       superUsers:
-        - name: user:default/developer-user
+        []
+        # - name: user:default/developer-user

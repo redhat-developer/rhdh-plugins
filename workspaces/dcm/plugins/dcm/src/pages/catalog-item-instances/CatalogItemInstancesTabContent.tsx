@@ -17,7 +17,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, IconButton, Tooltip, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -29,12 +41,12 @@ import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-com
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
-import { DcmErrorSnackbar } from '../../components/DcmErrorSnackbar';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
+import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { InstanceFormFields } from './components/InstanceFormFields';
 import {
@@ -66,11 +78,14 @@ const useStyles = makeStyles(() => ({
 export function CatalogItemInstancesTabContent() {
   const classes = useStyles();
   const catalogApi = useApi(catalogApiRef);
+  const { t } = useTranslation();
 
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [rehydratingId, setRehydratingId] = useState<string | null>(null);
   const [rehydrateError, setRehydrateError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [rehydrateConfirmInst, setRehydrateConfirmInst] =
+    useState<CatalogItemInstance | null>(null);
 
   const crud = useCrudTab<CatalogItemInstance, InstanceForm>({
     loadFn: async () => {
@@ -98,7 +113,7 @@ export function CatalogItemInstancesTabContent() {
 
   const { handleOpenDelete, setItems } = crud;
 
-  const handleRehydrate = useCallback(
+  const executeRehydrate = useCallback(
     async (inst: CatalogItemInstance) => {
       const id = inst.uid ?? '';
       if (!id) return;
@@ -108,15 +123,19 @@ export function CatalogItemInstancesTabContent() {
       try {
         const updated = await catalogApi.rehydrateCatalogItemInstance(id);
         setItems(prev => prev.map(row => (row.uid === id ? updated : row)));
-        setSuccessMessage('Catalog item instance rehydrated successfully.');
+        setSuccessMessage(t('instances.rehydrateSuccess'));
       } catch (err) {
         setRehydrateError(extractApiError(err));
       } finally {
         setRehydratingId(null);
       }
     },
-    [catalogApi, setItems],
+    [catalogApi, setItems, t],
   );
+
+  const handleRehydrate = useCallback((inst: CatalogItemInstance) => {
+    setRehydrateConfirmInst(inst);
+  }, []);
 
   const catalogItemName = useCallback(
     (id: string) => {
@@ -129,7 +148,7 @@ export function CatalogItemInstancesTabContent() {
   const columns = useMemo<TableColumn<CatalogItemInstance>[]>(
     () => [
       {
-        title: 'Display name',
+        title: t('instances.columns.displayName'),
         field: 'display_name',
         render: inst => (
           <TruncatedText
@@ -142,7 +161,7 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: 'Catalog item',
+        title: t('instances.columns.catalogItem'),
         field: 'spec.catalog_item_id',
         render: inst => (
           <Chip
@@ -154,7 +173,7 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: 'Resource ID',
+        title: t('instances.columns.resourceId'),
         field: 'resource_id',
         render: inst => (
           <TruncatedText
@@ -168,7 +187,7 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: 'API version',
+        title: t('instances.columns.apiVersion'),
         field: 'api_version',
         render: inst => (
           <Chip
@@ -179,7 +198,7 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: 'Created',
+        title: t('instances.columns.created'),
         field: 'create_time',
         render: inst =>
           inst.create_time ? (
@@ -188,12 +207,12 @@ export function CatalogItemInstancesTabContent() {
             </Typography>
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
       {
-        title: 'Actions',
+        title: t('common.actions'),
         field: 'actions',
         sorting: false,
         width: '120px',
@@ -201,7 +220,7 @@ export function CatalogItemInstancesTabContent() {
           const busy = rehydratingId === inst.uid;
           return (
             <Box className={classes.actionsCell}>
-              <Tooltip title="Rehydrate">
+              <Tooltip title={t('instances.rehydrateTooltip')}>
                 <Typography
                   component="span"
                   variant="inherit"
@@ -209,7 +228,7 @@ export function CatalogItemInstancesTabContent() {
                 >
                   <IconButton
                     size="small"
-                    aria-label="Rehydrate instance"
+                    aria-label={t('instances.rehydrateAriaLabel')}
                     disabled={busy}
                     onClick={() => handleRehydrate(inst)}
                   >
@@ -217,7 +236,7 @@ export function CatalogItemInstancesTabContent() {
                   </IconButton>
                 </Typography>
               </Tooltip>
-              <Tooltip title="Delete">
+              <Tooltip title={t('instances.deleteTooltip')}>
                 <Typography
                   component="span"
                   variant="inherit"
@@ -225,7 +244,7 @@ export function CatalogItemInstancesTabContent() {
                 >
                   <IconButton
                     size="small"
-                    aria-label="Delete instance"
+                    aria-label={t('instances.deleteAriaLabel')}
                     disabled={busy}
                     onClick={() => handleOpenDelete(inst)}
                   >
@@ -244,6 +263,7 @@ export function CatalogItemInstancesTabContent() {
       handleRehydrate,
       catalogItemName,
       rehydratingId,
+      t,
     ],
   );
 
@@ -261,24 +281,26 @@ export function CatalogItemInstancesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
+        actionError={rehydrateError}
+        onDismissActionError={() => setRehydrateError(null)}
         search={crud.search}
         onSearchChange={crud.setSearch}
         page={crud.page}
         pageSize={crud.pageSize}
         onPageChange={crud.onPageChange}
         onRowsPerPageChange={crud.onRowsPerPageChange}
-        emptyTitle="No instances provisioned"
-        emptyDescription="Catalog item instances represent provisioned services. Create an instance from a catalog item to provision a service on the registered provider infrastructure."
-        primaryActionLabel="Create"
+        emptyTitle={t('instances.emptyTitle')}
+        emptyDescription={t('instances.emptyDescription')}
+        primaryActionLabel={t('instances.createButton')}
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
-        entityLabel="Catalog item instances"
+        entityLabel={t('instances.entityLabel')}
       />
 
       <DcmFormDialog
         open={crud.createOpen}
         onClose={crud.handleCloseCreate}
-        title="Create catalog item instance"
+        title={t('instances.createDialogTitle')}
         maxWidth="sm"
         error={crud.createError}
         submitting={crud.createSubmitting}
@@ -286,9 +308,9 @@ export function CatalogItemInstancesTabContent() {
           <DcmFormDialogActions
             onSubmit={crud.handleCreateSubmit}
             onCancel={crud.handleCloseCreate}
-            submitLabel="Create"
+            submitLabel={t('instances.createButton')}
             submitting={crud.createSubmitting}
-            disabled={false}
+            disabled={!isInstanceFormValid(crud.createForm)}
           />
         }
       >
@@ -312,23 +334,51 @@ export function CatalogItemInstancesTabContent() {
         resourceName={
           crud.deletingItem?.display_name ?? crud.deletingItem?.uid ?? ''
         }
-        resourceLabel="instance"
-      />
-
-      <DcmErrorSnackbar
+        resourceLabel={t('instances.deleteLabel')}
         error={crud.deleteError}
-        onClose={() => crud.setDeleteError(null)}
-      />
-
-      <DcmErrorSnackbar
-        error={rehydrateError}
-        onClose={() => setRehydrateError(null)}
+        isSubmitting={crud.deleteSubmitting}
       />
 
       <DcmSuccessSnackbar
         message={successMessage}
         onClose={() => setSuccessMessage(null)}
       />
+
+      <Dialog
+        open={Boolean(rehydrateConfirmInst)}
+        onClose={() => setRehydrateConfirmInst(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>{t('instances.rehydrateDialogTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {(t as any)('instances.rehydrateDialogBody', {
+              instanceName:
+                rehydrateConfirmInst?.display_name ??
+                rehydrateConfirmInst?.uid ??
+                t('instances.rehydrateDialogFallbackName'),
+            })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRehydrateConfirmInst(null)}>
+            {t('instances.rehydrateDialogCancel')}
+          </Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={() => {
+              if (rehydrateConfirmInst) {
+                executeRehydrate(rehydrateConfirmInst);
+              }
+              setRehydrateConfirmInst(null);
+            }}
+          >
+            {t('instances.rehydrateDialogConfirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

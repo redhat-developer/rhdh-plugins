@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -36,16 +36,22 @@ import {
   Tooltip,
   Typography,
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import AddIcon from '@material-ui/icons/Add';
 import CodeIcon from '@material-ui/icons/Code';
 import DeleteIcon from '@material-ui/icons/Delete';
 import PublishIcon from '@material-ui/icons/Publish';
 import { makeStyles } from '@material-ui/core/styles';
 import { load as loadYaml } from 'js-yaml';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
+import docco from 'react-syntax-highlighter/dist/esm/styles/hljs/docco';
+
+SyntaxHighlighter.registerLanguage('json', json);
 
 const useStyles = makeStyles(theme => ({
   fieldRow: {
-    background: 'rgba(0,0,0,0.03)',
+    background: theme.palette.action.hover,
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(1.25, 1.5),
   },
@@ -61,6 +67,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const useSchemaEditorStyles = makeStyles(theme => ({
   schemaLabel: {
@@ -69,44 +76,158 @@ const useSchemaEditorStyles = makeStyles(theme => ({
   dialogContent: {
     paddingTop: theme.spacing(1),
   },
-  monoInput: {
-    fontFamily: 'monospace',
-    fontSize: 12,
+  editorWrapper: {
+    position: 'relative' as const,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    overflow: 'hidden',
+    '&:focus-within': {
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
+    },
+  },
+  editorWrapperError: {
+    borderColor: theme.palette.error.main,
+    '&:focus-within': {
+      borderColor: theme.palette.error.main,
+      boxShadow: `0 0 0 1px ${theme.palette.error.main}`,
+    },
+  },
+  editorTextarea: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    margin: 0,
+    padding: '12px',
+    border: 'none',
+    outline: 'none',
+    resize: 'none' as const,
+    background: 'transparent',
+    color: 'transparent',
+    caretColor: theme.palette.text.primary,
+    fontFamily:
+      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+    fontSize: 13,
+    lineHeight: '1.45',
+    whiteSpace: 'pre' as const,
+    overflowWrap: 'normal' as const,
+    overflow: 'auto',
+    zIndex: 1,
+    WebkitTextFillColor: 'transparent',
+  },
+  editorHighlight: {
+    margin: 0,
+    padding: '12px !important',
+    minHeight: 280,
+    fontFamily:
+      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important',
+    fontSize: '13px !important',
+    lineHeight: '1.45 !important',
+    whiteSpace: 'pre' as const,
+    overflowWrap: 'normal' as const,
+    overflow: 'auto',
+    background: `${theme.palette.background.paper} !important`,
+  },
+  editorHelperText: {
+    marginTop: theme.spacing(0.5),
+    display: 'block',
   },
 }));
 
 type SchemaButtonProps = Readonly<{
   value: string;
   onChange: (v: string) => void;
+  /** Error on the stored value (e.g. from import or duplicate detection). */
+  fieldError?: string;
 }>;
 
-function SchemaButton({ value, onChange }: SchemaButtonProps) {
+function validateSchemaJsonRaw(raw: string): 'object' | 'syntax' | '' {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return 'object';
+    }
+    return '';
+  } catch {
+    return 'syntax';
+  }
+}
+
+function prettyPrintIfValid(raw: string): string {
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
+function SchemaButton({ value, onChange, fieldError }: SchemaButtonProps) {
   const classes = useSchemaEditorStyles();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
-  const [parseError, setParseError] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  const jsonErrorCode = useMemo(() => validateSchemaJsonRaw(draft), [draft]);
+  let jsonError = '';
+  if (jsonErrorCode === 'object') {
+    jsonError = t('catalogItems.form.schemaMustBeObject');
+  } else if (jsonErrorCode === 'syntax') {
+    jsonError = t('catalogItems.form.schemaInvalidJson');
+  }
+  const applyDisabled = draft.trim() !== '' && Boolean(jsonErrorCode);
+  const hasError = Boolean(draft.trim() && jsonErrorCode);
 
   const handleOpen = () => {
-    setDraft(value);
-    setParseError('');
+    setDraft(value ? prettyPrintIfValid(value) : '');
     setOpen(true);
   };
 
-  const handleApply = () => {
-    const trimmed = draft.trim();
-    if (trimmed) {
-      try {
-        JSON.parse(trimmed);
-      } catch {
-        setParseError('Invalid JSON — fix the syntax before applying.');
-        return;
-      }
-    }
-    onChange(trimmed);
+  const handleApply = useCallback(() => {
+    if (applyDisabled) return;
+    onChange(draft.trim());
     setOpen(false);
-  };
+  }, [applyDisabled, draft, onChange]);
 
   const handleClose = () => setOpen(false);
+
+  const syncScroll = () => {
+    if (textareaRef.current && highlightRef.current) {
+      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter') return;
+    const afterEnter = `${draft}\n`;
+    const formatted = prettyPrintIfValid(afterEnter);
+    if (formatted !== afterEnter) {
+      e.preventDefault();
+      setDraft(formatted);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = e.clipboardData.getData('text');
+    const { selectionStart: start, selectionEnd: end } = e.currentTarget;
+    const afterPaste =
+      draft.slice(0, start ?? 0) + pasted + draft.slice(end ?? 0);
+    const formatted = prettyPrintIfValid(afterPaste);
+    if (formatted !== afterPaste) {
+      e.preventDefault();
+      setDraft(formatted);
+    }
+  };
 
   return (
     <>
@@ -116,7 +237,7 @@ function SchemaButton({ value, onChange }: SchemaButtonProps) {
           color="textSecondary"
           className={classes.schemaLabel}
         >
-          Validation schema
+          {t('catalogItems.form.schemaLabel')}
         </Typography>
         <Box display="flex" alignItems="center" gridGap={6}>
           <Button
@@ -124,38 +245,71 @@ function SchemaButton({ value, onChange }: SchemaButtonProps) {
             variant="outlined"
             startIcon={<CodeIcon fontSize="small" />}
             onClick={handleOpen}
-            color="primary"
+            color={fieldError ? 'secondary' : 'primary'}
           >
-            View JSON
+            {value
+              ? t('catalogItems.form.schemaEditButton')
+              : t('catalogItems.form.schemaAddButton')}
           </Button>
         </Box>
+        {fieldError && (
+          <Typography variant="caption" color="error">
+            {fieldError}
+          </Typography>
+        )}
       </Box>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Validation schema</DialogTitle>
+        <DialogTitle>{t('catalogItems.form.schemaDialogTitle')}</DialogTitle>
         <DialogContent className={classes.dialogContent}>
-          <TextField
-            value={draft}
-            onChange={e => {
-              setDraft(e.target.value);
-              setParseError('');
-            }}
-            error={Boolean(parseError)}
-            helperText={
-              parseError ||
-              'JSON Schema object — e.g. {"type":"integer","minimum":0}'
-            }
-            fullWidth
-            multiline
-            minRows={14}
-            variant="outlined"
-            inputProps={{ className: classes.monoInput }}
-          />
+          <Box
+            className={`${classes.editorWrapper} ${
+              hasError ? classes.editorWrapperError : ''
+            }`}
+          >
+            <div ref={highlightRef} style={{ overflow: 'hidden' }}>
+              <SyntaxHighlighter
+                language="json"
+                style={docco}
+                className={classes.editorHighlight}
+              >
+                {draft || ' '}
+              </SyntaxHighlighter>
+            </div>
+            <textarea
+              ref={textareaRef}
+              className={classes.editorTextarea}
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onScroll={syncScroll}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              placeholder='{"type":"integer","minimum":0}'
+            />
+          </Box>
+          <Typography
+            variant="caption"
+            color={hasError ? 'error' : 'textSecondary'}
+            className={classes.editorHelperText}
+          >
+            {(draft.trim() && jsonError) ||
+              t('catalogItems.form.schemaDialogHelper')}
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleApply} color="primary" variant="contained">
-            Apply
+          <Button onClick={handleClose}>
+            {t('catalogItems.form.schemaDialogCancel')}
+          </Button>
+          <Button
+            onClick={handleApply}
+            color="primary"
+            variant="contained"
+            disabled={applyDisabled}
+          >
+            {t('catalogItems.form.schemaDialogApply')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -168,17 +322,21 @@ import {
   emptyFieldRow,
   hasValidFields,
   validateCatalogItemForm,
+  validateFieldRows,
 } from '../catalogItemFormTypes';
-import type { FieldRow } from '../catalogItemFormTypes';
+import type { FieldRow, FieldRowErrors } from '../catalogItemFormTypes';
 
 type ScalarFields = Omit<CatalogItemForm, 'fields'>;
 type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
 
-function serviceTypeHelperText(isEditMode: boolean, count: number): string {
-  if (isEditMode) return 'Service type cannot be changed after creation';
-  if (count === 0)
-    return 'No service types available — create one in the Service types tab';
-  return 'Select the service type this item is based on';
+function serviceTypeHelperText(
+  isEditMode: boolean,
+  count: number,
+  t: (key: string) => string,
+): string {
+  if (isEditMode) return t('catalogItems.form.serviceTypeHelperEdit');
+  if (count === 0) return t('catalogItems.form.serviceTypeHelperNoTypes');
+  return t('catalogItems.form.serviceTypeHelperDefault');
 }
 
 export type CatalogItemFormFieldsProps = Readonly<{
@@ -202,8 +360,14 @@ export function CatalogItemFormFields({
   isEditMode,
 }: CatalogItemFormFieldsProps) {
   const classes = useStyles();
-  const errors = useMemo(() => validateCatalogItemForm(form), [form]);
+  const { t } = useTranslation();
+  const errors = useMemo(() => validateCatalogItemForm(form, t), [form, t]);
+  const fieldRowErrors = useMemo(
+    () => validateFieldRows(form.fields, t),
+    [form.fields, t],
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState('');
 
   const set =
     (field: keyof ScalarFields) =>
@@ -223,8 +387,13 @@ export function CatalogItemFormFields({
       return { ...prev, fields: updated };
     });
 
-  const addField = () =>
+  const canAddField =
+    form.fields.length === 0 || form.fields.at(-1)!.path.trim() !== '';
+
+  const addField = () => {
+    if (!canAddField) return;
     setForm(prev => ({ ...prev, fields: [...prev.fields, emptyFieldRow()] }));
+  };
 
   const removeField = (index: number) =>
     setForm(prev => {
@@ -245,9 +414,10 @@ export function CatalogItemFormFields({
         const parsed = isYaml ? loadYaml(text) : JSON.parse(text);
         setForm(catalogItemFromPayload(parsed));
         setTouched({});
+        setImportError('');
       })
       .catch(() => {
-        // silently ignore parse errors; form remains unchanged
+        setImportError(t('catalogItems.form.importError'));
       });
     e.target.value = '';
   };
@@ -256,32 +426,43 @@ export function CatalogItemFormFields({
 
   return (
     <Box display="flex" flexDirection="column" gridGap={16}>
-      <Box display="flex" justifyContent="flex-end">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,.yaml,.yml"
-          hidden
-          onChange={handleImportFile}
-        />
-        <Tooltip title="Fill the form from a JSON or YAML catalog item definition">
-          <Button
-            size="small"
-            startIcon={<PublishIcon />}
-            onClick={() => fileInputRef.current?.click()}
-            className={classes.importButton}
+      <Box display="flex" flexDirection="column" gridGap={8}>
+        <Box display="flex" justifyContent="flex-end">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,.yaml,.yml"
+            hidden
+            onChange={handleImportFile}
+          />
+          <Tooltip title={t('catalogItems.form.importTooltip')}>
+            <Button
+              size="small"
+              startIcon={<PublishIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              className={classes.importButton}
+            >
+              {t('catalogItems.form.importButton')}
+            </Button>
+          </Tooltip>
+        </Box>
+        {importError && (
+          <MuiAlert
+            severity="error"
+            variant="outlined"
+            onClose={() => setImportError('')}
           >
-            Import from file
-          </Button>
-        </Tooltip>
+            {importError}
+          </MuiAlert>
+        )}
       </Box>
 
       <TextField
-        label="Display name *"
+        label={t('catalogItems.form.displayNameLabel')}
         helperText={
           touched.display_name && errors.display_name
             ? errors.display_name
-            : 'Human-readable name for this catalog item (max 63 characters)'
+            : t('catalogItems.form.displayNameHelper')
         }
         error={Boolean(touched.display_name && errors.display_name)}
         value={form.display_name}
@@ -293,11 +474,11 @@ export function CatalogItemFormFields({
       />
 
       <TextField
-        label="API version *"
+        label={t('catalogItems.form.apiVersionLabel')}
         helperText={
           touched.api_version && errors.api_version
             ? errors.api_version
-            : 'Must follow the pattern v<number>[alpha|beta][number] — e.g. v1, v1alpha1'
+            : t('catalogItems.form.apiVersionHelper')
         }
         error={Boolean(touched.api_version && errors.api_version)}
         value={form.api_version}
@@ -313,18 +494,31 @@ export function CatalogItemFormFields({
         size="small"
         fullWidth
         disabled={isEditMode}
+        error={Boolean(
+          !isEditMode &&
+            (touched.service_type || submitAttempted) &&
+            errors.service_type,
+        )}
       >
-        <InputLabel shrink>Service type</InputLabel>
+        <InputLabel shrink>
+          {t('catalogItems.form.serviceTypeLabel')}
+        </InputLabel>
         <Select
           value={form.service_type}
-          onChange={e =>
+          onChange={e => {
             setForm(prev => ({
               ...prev,
               service_type: e.target.value as string,
-            }))
-          }
+            }));
+            setTouched(prev => ({ ...prev, service_type: true }));
+          }}
           displayEmpty
-          input={<OutlinedInput notched label="Service type" />}
+          input={
+            <OutlinedInput
+              notched
+              label={t('catalogItems.form.serviceTypeLabel')}
+            />
+          }
         >
           <MenuItem value="">
             <em>None</em>
@@ -336,116 +530,142 @@ export function CatalogItemFormFields({
           ))}
         </Select>
         <FormHelperText>
-          {serviceTypeHelperText(isEditMode, serviceTypes.length)}
+          {!isEditMode &&
+          (touched.service_type || submitAttempted) &&
+          errors.service_type
+            ? errors.service_type
+            : serviceTypeHelperText(isEditMode, serviceTypes.length, t)}
         </FormHelperText>
       </FormControl>
 
       <Divider />
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2">
-          Fields *{' '}
+          {t('catalogItems.form.fieldsLabel')}{' '}
           <Typography variant="caption" color="textSecondary">
-            (at least one required)
+            {t('catalogItems.form.fieldsCaption')}
           </Typography>
         </Typography>
-        <Button
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={addField}
-          color="primary"
+        <Tooltip
+          title={canAddField ? '' : t('catalogItems.form.fieldAddTooltip')}
         >
-          Add field
-        </Button>
+          <Box component="span" display="inline-block">
+            <Button
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={addField}
+              color="primary"
+              disabled={!canAddField}
+            >
+              {t('catalogItems.form.fieldAddButton')}
+            </Button>
+          </Box>
+        </Tooltip>
       </Box>
 
       {showFieldsError && (
         <Typography variant="caption" color="error">
-          Add at least one field with a non-empty path.
+          {t('catalogItems.form.fieldsErrorEmpty')}
         </Typography>
       )}
 
-      {form.fields.map((row, i) => (
-        <Box
-          key={row.id}
-          display="flex"
-          flexDirection="column"
-          gridGap={8}
-          className={classes.fieldRow}
-        >
-          {/* Primary row: path, display name, editable toggle, delete */}
-          <Box display="flex" alignItems="flex-start" gridGap={8}>
-            <Box flex={2}>
-              <TextField
-                label="Path *"
-                helperText="e.g. config.replicas"
-                value={row.path}
-                onChange={e => setField(i, 'path', e.target.value)}
-                fullWidth
-                variant="outlined"
+      {form.fields.map((row, i) => {
+        const rowErrors: FieldRowErrors = fieldRowErrors[i] ?? {};
+        return (
+          <Box
+            key={row.id}
+            display="flex"
+            flexDirection="column"
+            gridGap={8}
+            className={classes.fieldRow}
+          >
+            {/* Primary row: path, display name, editable toggle, delete */}
+            <Box display="flex" alignItems="flex-start" gridGap={8}>
+              <Box flex={2}>
+                <TextField
+                  label={t('catalogItems.form.fieldPathLabel')}
+                  helperText={
+                    rowErrors.path ?? t('catalogItems.form.fieldPathHelper')
+                  }
+                  error={Boolean(rowErrors.path)}
+                  value={row.path}
+                  onChange={e => setField(i, 'path', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              <Box flex={2}>
+                <TextField
+                  label={t('catalogItems.form.fieldDisplayNameLabel')}
+                  value={row.display_name}
+                  onChange={e => setField(i, 'display_name', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              <Box
+                display="flex"
+                alignItems="center"
+                className={classes.fieldRowSwitch}
+              >
+                <FormControlLabel
+                  control={
+                    <Switch
+                      size="small"
+                      checked={row.editable}
+                      onChange={e => setField(i, 'editable', e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography variant="caption">
+                      {t('catalogItems.form.fieldEditableLabel')}
+                    </Typography>
+                  }
+                />
+              </Box>
+              <IconButton
                 size="small"
-              />
+                aria-label={t('catalogItems.form.fieldRemoveAriaLabel')}
+                onClick={() => removeField(i)}
+                className={classes.fieldRowDelete}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
             </Box>
-            <Box flex={2}>
-              <TextField
-                label="Display name"
-                value={row.display_name}
-                onChange={e => setField(i, 'display_name', e.target.value)}
-                fullWidth
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-            <Box
-              display="flex"
-              alignItems="center"
-              className={classes.fieldRowSwitch}
-            >
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={row.editable}
-                    onChange={e => setField(i, 'editable', e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label={<Typography variant="caption">Editable</Typography>}
-              />
-            </Box>
-            <IconButton
-              size="small"
-              aria-label="Remove field"
-              onClick={() => removeField(i)}
-              className={classes.fieldRowDelete}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
 
-          {/* Secondary row: default value and validation schema */}
-          <Box display="flex" alignItems="flex-start" gridGap={8}>
-            <Box flex={1}>
-              <TextField
-                label="Default value"
-                helperText='Any JSON value — e.g. 42, "hello", true, [1,2]'
-                value={row.default_value}
-                onChange={e => setField(i, 'default_value', e.target.value)}
-                fullWidth
-                variant="outlined"
-                size="small"
-                multiline
-                minRows={2}
-              />
-            </Box>
-            <Box flex={1} paddingTop={0.5}>
-              <SchemaButton
-                value={row.validation_schema}
-                onChange={v => setField(i, 'validation_schema', v)}
-              />
+            {/* Secondary row: default value and validation schema */}
+            <Box display="flex" alignItems="flex-start" gridGap={8}>
+              <Box flex={1}>
+                <TextField
+                  label={t('catalogItems.form.fieldDefaultValueLabel')}
+                  helperText={
+                    rowErrors.default_value ??
+                    t('catalogItems.form.fieldDefaultValueHelper')
+                  }
+                  error={Boolean(rowErrors.default_value)}
+                  value={row.default_value}
+                  onChange={e => setField(i, 'default_value', e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  multiline
+                  minRows={2}
+                />
+              </Box>
+              <Box flex={1} paddingTop={0.5}>
+                <SchemaButton
+                  value={row.validation_schema}
+                  onChange={v => setField(i, 'validation_schema', v)}
+                  fieldError={rowErrors.validation_schema}
+                />
+              </Box>
             </Box>
           </Box>
-        </Box>
-      ))}
+        );
+      })}
     </Box>
   );
 }

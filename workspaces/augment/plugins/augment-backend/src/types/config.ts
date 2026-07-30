@@ -689,4 +689,15 @@ export interface AgentConfig {
    * - 'disabled': No truncation (default)
    */
   truncation?: 'auto' | 'disabled';
+
+  /**
+   * How this agent is published to the chat gallery.
+   * - 'router': Published as a user-facing entry point. Typically has handoffs to specialists.
+   * - 'specialist': Hidden from gallery. Only reachable via handoffs/asTools from other agents.
+   * - 'standalone': Published independently. No team affiliation, directly selectable by users.
+   * Default: auto-derived from topology -- agents with outgoing handoffs/asTools default to 'router',
+   * agents that are targets of another agent's handoffs/asTools default to 'specialist',
+   * agents with no connections default to 'standalone'.
+   */
+  publishAs?: 'router' | 'specialist' | 'standalone';
 }

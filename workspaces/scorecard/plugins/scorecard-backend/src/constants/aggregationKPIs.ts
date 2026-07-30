@@ -23,25 +23,26 @@ export const AGGREGATION_KPIS_CONFIG_PATH =
   'scorecard.aggregationKPIs' as const;
 
 /**
- * Default applied by `AverageAggregationStrategy` when `options.thresholds` is omitted
+ * Default applied by `WeightedStatusScoreAggregationStrategy` when `options.thresholds` is omitted
  * from app-config. Higher headline percentage (0–100) = better. Evaluated in order; first match wins.
  */
-export const DEFAULT_AVERAGE_KPI_RESULT_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    {
-      key: 'success',
-      expression: '>=80',
-      color: ScorecardThresholdRuleColors.SUCCESS,
-    },
-    {
-      key: 'warning',
-      expression: '30-80',
-      color: ScorecardThresholdRuleColors.WARNING,
-    },
-    {
-      key: 'error',
-      expression: '<30',
-      color: ScorecardThresholdRuleColors.ERROR,
-    },
-  ],
-};
+export const DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS: ThresholdConfig =
+  {
+    rules: [
+      {
+        key: 'success',
+        expression: '>=80',
+        color: ScorecardThresholdRuleColors.SUCCESS,
+      },
+      {
+        key: 'warning',
+        expression: '30-80',
+        color: ScorecardThresholdRuleColors.WARNING,
+      },
+      {
+        key: 'error',
+        expression: '<30',
+        color: ScorecardThresholdRuleColors.ERROR,
+      },
+    ],
+  };

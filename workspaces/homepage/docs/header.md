@@ -42,7 +42,7 @@ The title can be changed by overriding the `title` property of the dynamic home 
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage for customizable homepage
@@ -69,7 +69,7 @@ You can also use a `subtitle` property which isn't used by default:
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -90,7 +90,7 @@ Some titles might look just good if the users have or have not a profile `displa
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -115,7 +115,7 @@ The page title could override the header title to display a slightly different t
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -147,7 +147,7 @@ To show the current time you must specific at least the `format`:
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -164,7 +164,7 @@ Showing the current date instead of time:
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -183,7 +183,7 @@ By default the format is based on the browser language settings. You can enforce
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -201,7 +201,7 @@ There is also an option to specify a label shown above the time. This is especia
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
@@ -243,7 +243,7 @@ The world clock option (thanks to the upstream home plugin) provides you the opt
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage

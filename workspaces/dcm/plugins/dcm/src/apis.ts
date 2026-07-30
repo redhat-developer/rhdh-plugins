@@ -15,6 +15,7 @@
  */
 
 import { createApiRef } from '@backstage/core-plugin-api';
+import type { ApiRef } from '@backstage/core-plugin-api';
 import type {
   CatalogApi,
   PolicyManagerApi,
@@ -30,7 +31,7 @@ import type {
  *
  * @public
  */
-export const catalogApiRef = createApiRef<CatalogApi>({
+export const catalogApiRef: ApiRef<CatalogApi> = createApiRef<CatalogApi>({
   id: 'plugin.dcm.catalog',
 });
 
@@ -41,9 +42,10 @@ export const catalogApiRef = createApiRef<CatalogApi>({
  *
  * @public
  */
-export const policyManagerApiRef = createApiRef<PolicyManagerApi>({
-  id: 'plugin.dcm.policy-manager',
-});
+export const policyManagerApiRef: ApiRef<PolicyManagerApi> =
+  createApiRef<PolicyManagerApi>({
+    id: 'plugin.dcm.policy-manager',
+  });
 
 /**
  * Backstage API ref for the DCM Providers service.
@@ -52,9 +54,11 @@ export const policyManagerApiRef = createApiRef<PolicyManagerApi>({
  *
  * @public
  */
-export const providersApiRef = createApiRef<ProvidersApi>({
-  id: 'plugin.dcm.providers',
-});
+export const providersApiRef: ApiRef<ProvidersApi> = createApiRef<ProvidersApi>(
+  {
+    id: 'plugin.dcm.providers',
+  },
+);
 
 /**
  * Backstage API ref for the DCM Resources service.
@@ -63,6 +67,8 @@ export const providersApiRef = createApiRef<ProvidersApi>({
  *
  * @public
  */
-export const resourcesApiRef = createApiRef<ResourcesApi>({
-  id: 'plugin.dcm.resources',
-});
+export const resourcesApiRef: ApiRef<ResourcesApi> = createApiRef<ResourcesApi>(
+  {
+    id: 'plugin.dcm.resources',
+  },
+);

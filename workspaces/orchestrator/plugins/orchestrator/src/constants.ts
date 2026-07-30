@@ -33,3 +33,11 @@ export const DEFAULT_TABLE_PAGE_SIZE = 20;
  */
 export const ENFORCING_UNIQUE_WORKFLOW_IDS_DOC_URL =
   'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.9/html-single/orchestrator_in_red_hat_developer_hub/index#unique-workflow-id-requirements-to-prevent-duplicates_build-and-deploy-serverless-workflows';
+
+/** RHDH docs — build and deploy Serverless Workflows (empty state CTA). */
+export const BUILD_WORKFLOWS_DOC_URL =
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/orchestrator_in_red_hat_developer_hub/build-and-deploy-serverless-workflows_orchestrator-in-rhdh';
+
+/** Scaffolder create page filtered to workflow templates (empty runs state CTA). */
+export const RUN_WORKFLOW_SCAFFOLDER_URL =
+  '/create?filters[kind]=template&filters[type]=workflow&filters[user]=all';

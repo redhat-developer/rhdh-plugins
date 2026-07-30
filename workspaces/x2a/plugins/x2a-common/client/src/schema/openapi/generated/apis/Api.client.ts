@@ -33,7 +33,6 @@ import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/Projects
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdCancelPostRequest } from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
-import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
 import { ProjectsProjectIdPatchRequest } from '../models/ProjectsProjectIdPatchRequest.model';
 import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
 import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
@@ -169,15 +168,6 @@ export type ProjectsProjectIdModulesModuleIdRunPost = {
     moduleId: string;
   };
   body: ProjectsProjectIdModulesModuleIdRunPostRequest;
-};
-/**
- * @public
- */
-export type ProjectsProjectIdModulesPost = {
-  path: {
-    projectId: string;
-  };
-  body: ProjectsProjectIdModulesPostRequest;
 };
 /**
  * @public
@@ -549,35 +539,6 @@ export class DefaultApiClient {
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
       moduleId: request.path.moduleId,
-    });
-
-    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
-      },
-      method: 'POST',
-      body: JSON.stringify(request.body),
-    });
-  }
-
-  /**
-   * **TEMPORARY ENDPOINT FOR TESTING ONLY**  This endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.  According to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase). The proper implementation will be added when the init phase integration is complete.  TODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)
-   * Creates a new module for a project
-   * @param projectId -
-   * @param projectsProjectIdModulesPostRequest -
-   */
-  public async projectsProjectIdModulesPost(
-    // @ts-ignore
-    request: ProjectsProjectIdModulesPost,
-    options?: RequestOptions,
-  ): Promise<TypedResponse<Module>> {
-    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
-
-    const uriTemplate = `/projects/{projectId}/modules`;
-
-    const uri = parser.parse(uriTemplate).expand({
-      projectId: request.path.projectId,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

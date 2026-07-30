@@ -217,12 +217,12 @@ export const PromptsPanel = () => {
       ) : (
         <Box sx={EMPTY_STATE_SX}>
           <ViewCarouselOutlinedIcon sx={EMPTY_ICON_SX} />
-          <Typography variant="body1" color="textSecondary" textAlign="center">
+          <Typography variant="body1" color="text.secondary" textAlign="center">
             No prompt groups configured yet.
           </Typography>
           <Typography
             variant="body2"
-            color="textSecondary"
+            color="text.secondary"
             textAlign="center"
             sx={{ maxWidth: 360 }}
           >

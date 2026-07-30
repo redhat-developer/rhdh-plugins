@@ -16,12 +16,14 @@
 
 import Button from '@mui/material/Button';
 import Step from '@mui/material/Step';
+import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { isBackwardStepNavigable } from '../utils/isBackwardStepNavigable';
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
@@ -45,6 +47,10 @@ const useStyles = makeStyles()(theme => ({
   formWrapper: {
     padding: theme.spacing(2),
   },
+  stepper: {
+    overflowX: 'auto',
+    overflowY: 'hidden',
+  },
 }));
 
 export type OrchestratorFormStep = {
@@ -60,7 +66,7 @@ const OrchestratorFormStepper = ({
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
-  const { activeStep, reviewStep } = useStepperContext();
+  const { activeStep, goToStep, reviewStep } = useStepperContext();
   const stepsWithReview = [
     ...steps,
     { content: reviewStep, title: t('common.review'), key: 'review' },
@@ -71,22 +77,37 @@ const OrchestratorFormStepper = ({
       <Stepper
         activeStep={activeStep}
         variant="elevation"
-        style={{ overflowX: 'auto' }}
+        className={classes.stepper}
         alternativeLabel
       >
-        {stepsWithReview?.map((step, index) => (
-          <Step key={step.key} className={classes.step}>
-            <StepLabel
-              aria-label={`Step ${index + 1} ${step.title}`}
-              aria-disabled="false"
-              tabIndex={0}
+        {stepsWithReview?.map((step, index) => {
+          const canNavigateBack = isBackwardStepNavigable(index, activeStep);
+          const stepLabel = (
+            <Typography variant="h6" component="h2">
+              {step.title}
+            </Typography>
+          );
+          const ariaLabel = `Step ${index + 1} ${step.title}`;
+
+          return (
+            <Step
+              key={step.key}
+              className={classes.step}
+              completed={canNavigateBack}
             >
-              <Typography variant="h6" component="h2">
-                {step.title}
-              </Typography>
-            </StepLabel>
-          </Step>
-        ))}
+              {canNavigateBack ? (
+                <StepButton
+                  onClick={() => goToStep(index)}
+                  aria-label={ariaLabel}
+                >
+                  {stepLabel}
+                </StepButton>
+              ) : (
+                <StepLabel aria-label={ariaLabel}>{stepLabel}</StepLabel>
+              )}
+            </Step>
+          );
+        })}
       </Stepper>
       <div className={classes.formWrapper}>
         {stepsWithReview[activeStep].content}

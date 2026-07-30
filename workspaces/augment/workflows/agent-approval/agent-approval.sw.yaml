@@ -1,0 +1,171 @@
+specVersion: '0.8'
+id: agentApproval
+name: Agent Lifecycle Approval
+annotations:
+  - 'workflow-type/infrastructure'
+version: 0.1.0
+description: >
+  SonataFlow workflow for agent lifecycle approval. When an agent is submitted
+  for review (draft -> review), this workflow suspends in a callback state
+  awaiting an admin decision CloudEvent. If no decision is received within
+  the configured timeout, an escalation notification is sent.
+timeouts:
+  workflowExecTimeout:
+    duration: P7D
+start: NotifyReviewSubmitted
+extensions:
+  - extensionid: workflow-uri-definitions
+    definitions:
+      notifications: 'https://raw.githubusercontent.com/rhdhorchestrator/serverless-workflows/main/workflows/shared/specs/notifications-openapi.yaml'
+      augment: 'specs/augment-agent-lifecycle.yaml'
+dataInputSchema:
+  failOnValidationErrors: true
+  schema: schemas/agent-approval-input.json
+errors:
+  - name: approvalTimeout
+    code: TimedOut
+  - name: notAvailable
+    code: '404'
+functions:
+  - name: createNotification
+    operation: notifications#createNotification
+  - name: promoteAgent
+    operation: augment#promoteAgent
+  - name: demoteAgent
+    operation: augment#demoteAgent
+  - name: logInfo
+    type: custom
+    operation: 'sysout:INFO'
+events:
+  - name: approvalDecisionEvent
+    source: augment.admin
+    type: io.rhdhorchestrator.agent.approval.decision
+    correlation:
+      - contextAttributeName: kogitoprocrefid
+states:
+  - name: NotifyReviewSubmitted
+    type: operation
+    actions:
+      - name: logSubmission
+        functionRef:
+          refName: logInfo
+          arguments:
+            message: '"Agent submitted for review: " + .agentId + " by " + .submittedBy'
+      - name: notifyAdmins
+        functionRef:
+          refName: createNotification
+          arguments:
+            recipients:
+              type: 'broadcast'
+            payload:
+              title: '"Agent Review: " + .agentName + " (" + .agentId + ")"'
+              description: '"Agent submitted for review by " + .submittedBy + ". Please approve or reject."'
+              topic: 'Agent Lifecycle'
+              link: .reviewUrl
+              severity: 'normal'
+    onErrors:
+      - errorRef: notAvailable
+        transition: WaitForDecision
+    transition: WaitForDecision
+
+  - name: WaitForDecision
+    type: callback
+    action:
+      functionRef:
+        refName: logInfo
+        arguments:
+          message: '"Waiting for admin decision on agent: " + .agentId'
+    eventRef: approvalDecisionEvent
+    eventDataFilter:
+      data: '.decision'
+      toStateData: '.adminDecision'
+    timeouts:
+      eventTimeout: PT72H
+    onErrors:
+      - errorRef: approvalTimeout
+        transition: EscalateTimeout
+    transition: ProcessDecision
+
+  - name: EscalateTimeout
+    type: operation
+    actions:
+      - name: logEscalation
+        functionRef:
+          refName: logInfo
+          arguments:
+            message: '"Escalation: No decision on agent " + .agentId + " within 72h"'
+      - name: escalationNotification
+        functionRef:
+          refName: createNotification
+          arguments:
+            recipients:
+              type: 'broadcast'
+            payload:
+              title: '"ESCALATION: Agent " + .agentName + " awaiting review for 72+ hours"'
+              description: '"Agent " + .agentId + " submitted by " + .submittedBy + " has been pending review for over 72 hours. Please take action."'
+              topic: 'Agent Lifecycle'
+              link: .reviewUrl
+              severity: 'high'
+    onErrors:
+      - errorRef: notAvailable
+        transition: WaitForDecision
+    transition: WaitForDecision
+
+  - name: ProcessDecision
+    type: switch
+    dataConditions:
+      - condition: (.adminDecision.approved == true)
+        transition: ApproveAgent
+      - condition: (.adminDecision.approved == false)
+        transition: RejectAgent
+    defaultCondition:
+      transition: WaitForDecision
+
+  - name: ApproveAgent
+    type: operation
+    actions:
+      - name: promoteToStaging
+        functionRef:
+          refName: promoteAgent
+          arguments:
+            agentId: .agentId
+            targetStage: 'staging'
+      - name: notifyApproval
+        functionRef:
+          refName: createNotification
+          arguments:
+            recipients:
+              entityRef: .submittedBy
+            payload:
+              title: '"Agent Approved: " + .agentName'
+              description: '"Your agent " + .agentId + " has been approved and moved to staging by " + .adminDecision.decidedBy'
+              topic: 'Agent Lifecycle'
+              severity: 'normal'
+    stateDataFilter:
+      output: '{agentId: .agentId, outcome: "approved", decidedBy: .adminDecision.decidedBy}'
+    end: true
+
+  - name: RejectAgent
+    type: operation
+    actions:
+      - name: demoteToDraft
+        functionRef:
+          refName: demoteAgent
+          arguments:
+            agentId: .agentId
+            targetStage: 'draft'
+            reason: .adminDecision.reason
+      - name: notifyRejection
+        functionRef:
+          refName: createNotification
+          arguments:
+            recipients:
+              entityRef: .submittedBy
+            payload:
+              title: '"Agent Rejected: " + .agentName'
+              description: '"Your agent " + .agentId + " was rejected by " + .adminDecision.decidedBy + ". Reason: " + (.adminDecision.reason // "No reason provided")'
+              topic: 'Agent Lifecycle'
+              severity: 'normal'
+    stateDataFilter:
+      output: '{agentId: .agentId, outcome: "rejected", decidedBy: .adminDecision.decidedBy, reason: .adminDecision.reason}'
+    end: true

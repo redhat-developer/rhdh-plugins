@@ -111,6 +111,9 @@ export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 /** Maximum length for config values in validation. */
 export const MAX_CONFIG_VALUE_SIZE = 100_000;
 
+/** Maximum length for a single message content field (characters). */
+export const MAX_MESSAGE_CONTENT_LENGTH = 100_000;
+
 /** Maximum length for a model identifier. */
 export const MAX_MODEL_LENGTH = 200;
 
@@ -136,8 +139,10 @@ export const DEFAULT_CHUNK_OVERLAP = 50;
 /** Default limit for conversation listing. */
 export const DEFAULT_CONVERSATIONS_LIMIT = 50;
 
-/** Cache TTL for RuntimeConfigResolver (ms). */
-export const CONFIG_CACHE_TTL_MS = 5_000;
+/** Cache TTL for RuntimeConfigResolver (ms).
+ *  Admin saves trigger explicit invalidation, so this can be generous
+ *  to avoid redundant DB reads within the same request lifecycle. */
+export const CONFIG_CACHE_TTL_MS = 30_000;
 
 // ---------------------------------------------------------------------------
 // Stream / loop limits

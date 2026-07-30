@@ -18,6 +18,9 @@ import type { Page } from '@playwright/test';
 import { mockApiResponse } from './apiUtils';
 import { ScorecardRoutes } from '../constants/routes';
 import {
+  emptyGithubAggregatedResponse,
+  emptyJiraAggregatedResponse,
+  emptyOpenPrsWeightedAggregatedResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
   notAllowedAggregationErrorBody,
@@ -26,6 +29,7 @@ import {
   openPrsWeightedAggregatedResponse,
   openPrsWeightedKpiMetadataResponse,
 } from './scorecardResponseUtils';
+import { AGGREGATED_CARDS_METRIC_IDS } from '../constants/aggregations';
 
 function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openIssuesKpi')) {
@@ -37,10 +41,10 @@ function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openPrsWeightedKpi')) {
     return openPrsWeightedKpiMetadataResponse;
   }
-  if (url.includes('jira.open_issues')) {
+  if (url.includes('jira.openIssues')) {
     return jiraAggregatedResponse.metadata;
   }
-  if (url.includes('github.open_prs')) {
+  if (url.includes('github.openPRs')) {
     return githubAggregatedResponse.metadata;
   }
   return openPrsKpiMetadataResponse;
@@ -65,6 +69,73 @@ export async function mockHomepageAggregationsPermissionDenied(
     }
     await route.fulfill({
       status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify(notAllowedAggregationErrorBody),
+    });
+  });
+  await page.reload();
+}
+
+export async function mockAggregationNoDataFound(page: Page): Promise<void> {
+  await page.route('**/api/scorecard/aggregations/**', async route => {
+    const url = route.request().url();
+
+    if (url.includes('metadata')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(aggregationMetadataForRequestUrl(url)),
+      });
+      return;
+    }
+
+    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyOpenPrsWeightedAggregatedResponse),
+      });
+      return;
+    }
+
+    const githubAggregations = [
+      AGGREGATED_CARDS_METRIC_IDS.githubOpenPrsKpi,
+      AGGREGATED_CARDS_METRIC_IDS.githubMetricId,
+    ];
+    const isGithubAggregation = githubAggregations.some(aggregation =>
+      url.includes(aggregation),
+    );
+
+    if (isGithubAggregation) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyGithubAggregatedResponse),
+      });
+
+      return;
+    }
+
+    const jiraAggregations = [
+      AGGREGATED_CARDS_METRIC_IDS.jiraOpenIssuesKpi,
+      AGGREGATED_CARDS_METRIC_IDS.jiraMetricId,
+    ];
+    const isJiraAggregation = jiraAggregations.some(aggregation =>
+      url.includes(aggregation),
+    );
+
+    if (isJiraAggregation) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyJiraAggregatedResponse),
+      });
+
+      return;
+    }
+
+    await route.fulfill({
+      status: 404,
       contentType: 'application/json',
       body: JSON.stringify(notAllowedAggregationErrorBody),
     });
@@ -103,4 +174,6 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
     openPrsWeightedAggregatedResponse,
   );
+
+  await page.reload();
 }

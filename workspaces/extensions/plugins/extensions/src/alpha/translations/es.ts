@@ -159,8 +159,12 @@ const extensionsTranslationEs = createTranslationMessages({
       'No se puede gestionar el paquete en el entorno de producción.',
     'installedPackages.table.tooltips.installationDisabled':
       'No se puede gestionar el paquete porque la instalación del complemento está deshabilitada. Para habilitarlo, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      'Falta la entidad de catálogo',
     'installedPackages.table.tooltips.enableActions':
-      'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
+      'Para habilitar acciones, agregue una entidad de catálogo para este paquete.',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Ver documentación',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'No tiene permiso para descargar la configuración. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noEditPermissions':
@@ -211,7 +215,6 @@ const extensionsTranslationEs = createTranslationMessages({
     'metadata.category': 'Categoría',
     'metadata.versions': 'Versiones',
     'metadata.backstageCompatibility': 'Versión de compatibilidad de Backstage',
-    'supportTypes.certifiedBy': 'Certificado por {{value}} ({{count}})',
     'supportTypes.verifiedBy': 'Verificado por {{value}} ({{count}})',
     'supportTypes.customPlugins': 'Complementos personalizados ({{count}})',
     'collection.kubernetes': 'Kubernetes',
@@ -288,12 +291,9 @@ const extensionsTranslationEs = createTranslationMessages({
     'aria.collapseSection': 'Contraer sección',
     'aria.sortBy': 'Ordenar por {{field}}',
     'aria.filterBy': 'Filtrar por {{field}}',
-    'badges.certified': 'Certificado',
-    'badges.certifiedBy': 'Certificado por {{provider}}',
     'badges.verified': 'Verificado',
     'badges.verifiedBy': 'Verificado por {{provider}}',
     'badges.customPlugin': 'Complemento personalizado',
-    'badges.stableAndSecured': 'Estable y protegido por {{provider}}',
     'badges.generallyAvailable': 'Disponibilidad general (GA)',
     'badges.gaAndSupportedBy':
       'Disponibilidad general (GA) y con soporte de {{provider}}',

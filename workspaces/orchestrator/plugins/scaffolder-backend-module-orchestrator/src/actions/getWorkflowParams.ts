@@ -18,22 +18,9 @@ import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types';
 
-import { isAxiosError } from 'axios';
 import { dump } from 'js-yaml';
 
-import { getOrchestratorApi, getRequestConfigOption } from './utils';
-
-const getError = (err: unknown): Error => {
-  if (
-    isAxiosError<{ error: { message: string; name: string } }>(err) &&
-    err.response?.data?.error?.message
-  ) {
-    const error = new Error(err.response?.data?.error?.message);
-    error.name = err.response?.data?.error?.name || 'Error';
-    return error;
-  }
-  return err as Error;
-};
+import { getError, getOrchestratorApi, getRequestConfigOption } from './utils';
 
 const indentString = (str: string, indent: number) =>
   indent ? str.replace(/^/gm, ' '.repeat(indent)) : str;

@@ -239,7 +239,7 @@ describe('useCrudTab', () => {
       expect(result.current.items.find(i => i.id === '2')).toBeUndefined();
     });
 
-    it('sets deleteError and closes dialog on failure', async () => {
+    it('sets deleteError and keeps dialog open on failure', async () => {
       const opts = makeOptions({
         deleteFn: jest.fn().mockRejectedValue(new Error('delete failed')),
       });
@@ -252,7 +252,9 @@ describe('useCrudTab', () => {
       await waitFor(() =>
         expect(result.current.deleteError).toBe('delete failed'),
       );
-      expect(result.current.deleteOpen).toBe(false);
+      // Dialog stays open so the user can see the error inline
+      expect(result.current.deleteOpen).toBe(true);
+      expect(result.current.deleteSubmitting).toBe(false);
       // Item should NOT be removed from the list
       expect(result.current.items.find(i => i.id === '1')).toBeDefined();
     });
@@ -282,6 +284,32 @@ describe('useCrudTab', () => {
       act(() => result.current.reload());
       await waitFor(() => expect(result.current.loading).toBe(false));
       expect(loadFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('sets refreshing=true and loading=false during a manual reload', async () => {
+      let resolveSecond!: (items: Item[]) => void;
+      const loadFn = jest
+        .fn()
+        .mockResolvedValueOnce([...ITEMS])
+        .mockImplementationOnce(
+          () =>
+            new Promise(r => {
+              resolveSecond = r;
+            }),
+        );
+
+      const { result } = renderHook(() =>
+        useCrudTab<Item, Form>(makeOptions({ loadFn })),
+      );
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      act(() => result.current.reload());
+
+      expect(result.current.refreshing).toBe(true);
+      expect(result.current.loading).toBe(false);
+
+      act(() => resolveSecond([...ITEMS]));
+      await waitFor(() => expect(result.current.refreshing).toBe(false));
     });
 
     it('clears loadError on successful reload', async () => {

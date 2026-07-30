@@ -160,8 +160,12 @@ const extensionsTranslationIt = createTranslationMessages({
       "Impossibile gestire il pacchetto nell'ambiente di produzione.",
     'installedPackages.table.tooltips.installationDisabled':
       "Impossibile gestire il pacchetto perché l'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
+    'installedPackages.table.tooltips.enableActionsTitle':
+      "L'entità del catalogo è mancante",
     'installedPackages.table.tooltips.enableActions':
-      "Per abilitare le azioni, aggiungere un'entità catalogo per questo pacchetto",
+      "Per abilitare le azioni, aggiungere un'entità catalogo per questo pacchetto.",
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Visualizza documentazione',
     'installedPackages.table.tooltips.noDownloadPermissions':
       "L'utente non dispone dell'autorizzazione per scaricare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noEditPermissions':
@@ -212,7 +216,6 @@ const extensionsTranslationIt = createTranslationMessages({
     'metadata.category': 'Categoria',
     'metadata.versions': 'Versioni',
     'metadata.backstageCompatibility': 'Versione compatibile con Backstage',
-    'supportTypes.certifiedBy': 'Certificato da {{value}} ({{count}})',
     'supportTypes.verifiedBy': 'Verificato da {{value}} ({{count}})',
     'supportTypes.customPlugins': 'Plugin personalizzati ({{count}})',
     'collection.kubernetes': 'Kubernetes',
@@ -290,12 +293,9 @@ const extensionsTranslationIt = createTranslationMessages({
     'aria.collapseSection': 'Comprimi sezione',
     'aria.sortBy': 'Ordina per {{field}}',
     'aria.filterBy': 'Filtra per {{field}}',
-    'badges.certified': 'Certificato',
-    'badges.certifiedBy': 'Certificato da {{provider}}',
     'badges.verified': 'Verificato',
     'badges.verifiedBy': 'Verificato da {{provider}}',
     'badges.customPlugin': 'Plugin personalizzato',
-    'badges.stableAndSecured': 'Stabile e protetto da {{provider}}',
     'badges.generallyAvailable': 'Generalmente disponibile',
     'badges.gaAndSupportedBy':
       'Generalmente disponibile e supportato da {{provider}}',

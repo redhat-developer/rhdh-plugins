@@ -1,5 +1,43 @@
 # @red-hat-developer-hub/extensions-cli
 
+## 0.19.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.1
+
+## 0.19.0
+
+### Minor Changes
+
+- 2636ed4: Replaced `disabled` field with `enabled` in plugin configuration
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
+## 0.18.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
+## 0.18.0
+
+### Minor Changes
+
+- 763507e: Removed the Plugin Certification Program. The `CERTIFIED_BY` annotation, certification badges, certified filter, and all related UI, translations, and metadata have been removed from the Extensions Catalog.
+- 53a5d1d: bump to 1.51.1
+
+### Patch Changes
+
+- Updated dependencies [763507e]
+- Updated dependencies [53a5d1d]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.0
+
 ## 0.17.1
 
 ### Patch Changes

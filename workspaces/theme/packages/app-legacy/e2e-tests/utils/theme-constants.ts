@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 type ThemeInfo = {
-  name:
-    | 'RHDH Light (latest)'
-    | 'RHDH Dark (latest)'
-    | 'RHDH Light (customized)'
-    | 'RHDH Dark (customized)'
-    | 'Backstage Light'
-    | 'Backstage Dark';
+  name: string;
   primaryColor: string;
   headerColor1: string;
   headerColor2: string;
@@ -30,14 +24,14 @@ type ThemeInfo = {
 export class ThemeConstants {
   static getThemes() {
     const lightLatest: ThemeInfo = {
-      name: 'RHDH Light (latest)',
+      name: 'Light',
       primaryColor: 'rgb(0, 102, 204)',
       headerColor1: 'rgb(255, 255, 255)',
       headerColor2: 'rgb(255, 255, 255)',
       navigationIndicatorColor: 'rgba(0, 0, 0, 0)',
     };
     const darkLatest: ThemeInfo = {
-      name: 'RHDH Dark (latest)',
+      name: 'Dark',
       primaryColor: 'rgb(146, 197, 249)',
       headerColor1: 'rgb(41, 41, 41)',
       headerColor2: 'rgb(41, 41, 41)',

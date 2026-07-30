@@ -70,6 +70,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'projectModulesCard.noModules': 'Aucun module trouvé pour le moment...',
     'projectModulesCard.toReview': 'réviser',
     'projectModulesCard.published': 'publié',
+    'projectModulesCard.spinner':
+      'Phase de découverte en cours et mise à jour de la liste des modules depuis le plan de migration…',
     'projectPage.title': 'Projet',
     'projectPage.actionsTooltip':
       'Cliquez pour ouvrir le menu pour les actions du projet',
@@ -114,6 +116,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
     'module.summary.cancelled': 'Annulé',
+    'module.summary.removed': 'Supprimé',
     'module.summary.toReview_one':
       '{{count}} module avec des artefacts à réviser',
     'module.summary.toReview_other':
@@ -139,6 +142,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.statuses.success': 'Succès',
     'module.statuses.error': 'Erreur',
     'module.statuses.cancelled': 'Annulé',
+    'module.statuses.removed': 'Supprimé',
     'artifact.types.migrated_sources': 'Sources migrées',
     'artifact.types.project_metadata': 'Métadonnées du projet',
     'artifact.types.ansible_project': 'Projet AAP',
@@ -186,6 +190,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Échec de l'exécution de la phase pour le module",
     'modulePage.phases.cancelError':
       "Échec de l'annulation de la phase pour le module",
+    'modulePage.phases.attempts': 'Tentatives',
+    'modulePage.phases.totalElapsed': 'Durée totale',
     'modulePage.phases.commitId': 'Dernier ID de commit',
     'modulePage.phases.viewLog': 'Voir le journal',
     'modulePage.phases.hideLog': 'Masquer le journal',
@@ -271,6 +277,20 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Erreur lors de la relance de la phase d'initialisation du projet « {{name}} »",
     'retriggerInit.errorStart':
       "Erreur lors du démarrage de l'initialisation du projet",
+    'resyncMigrationPlan.action': 'Resynchroniser le plan de migration',
+    'resyncMigrationPlan.confirm.title':
+      'Resynchroniser le plan de migration pour « {{name}} » ?',
+    'resyncMigrationPlan.confirm.message':
+      "Cette opération relira le plan de migration depuis le dépôt cible et mettra à jour la liste des modules en conséquence. Les nouveaux modules seront ajoutés et ceux qui ne figurent plus dans le plan seront marqués comme supprimés. Si vous modifiez le document, par exemple en supprimant un module, assurez-vous qu'il reste cohérent.",
+    'resyncMigrationPlan.confirm.warning':
+      "Les modules marqués comme supprimés conserveront leur historique de jobs mais ne seront plus éligibles à de nouvelles exécutions de phase. Cette action ne peut pas être annulée pour les modules supprimés sauf s'ils sont rajoutés au plan de migration.",
+    'resyncMigrationPlan.confirm.confirmButton': 'Resynchroniser',
+    'resyncMigrationPlan.running':
+      'Resynchronisation de la liste des modules depuis le plan de migration…',
+    'resyncMigrationPlan.error':
+      'Erreur lors de la resynchronisation du plan de migration pour le projet « {{name}} »',
+    'resyncMigrationPlan.errorStart':
+      'Erreur lors du démarrage de la resynchronisation du plan de migration',
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'obligatoire',

@@ -17,10 +17,7 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { type Entity } from '@backstage/catalog-model';
 
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 import { OpenSSFClient } from '../clients/OpenSSFClient';
@@ -32,13 +29,8 @@ import {
 
 export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   protected readonly openSSFClient: OpenSSFClient;
-  protected readonly thresholds: ThresholdConfig;
 
-  constructor(
-    readonly config: OpenSSFMetricConfig,
-    thresholds: ThresholdConfig,
-  ) {
-    this.thresholds = thresholds;
+  constructor(readonly config: OpenSSFMetricConfig) {
     this.config = config;
     this.openSSFClient = new OpenSSFClient();
   }
@@ -62,26 +54,21 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   getProviderId(): string {
     const normalizedName = this.getMetricName()
       .toLowerCase()
-      .replace(/-/g, '_');
+      .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     return `openssf.${normalizedName}`;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: this.getMetricDisplayTitle(),
-      description: this.getMetricDescription(),
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: this.getMetricDisplayTitle(),
+        description: this.getMetricDescription(),
+        type: 'number',
+        thresholds: OPENSSF_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -90,7 +77,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const scorecard = await this.openSSFClient.getScorecard(entity);
 
     const metricName = this.getMetricName();
@@ -103,7 +90,10 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
         `OpenSSF check '${metricName}' has invalid score ${metric.score}`,
       );
     }
-    return metric.score;
+
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), metric.score);
+    return results;
   }
 }
 
@@ -112,7 +102,5 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
  * @returns Array of OpenSSF metric providers
  */
 export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
-  return OPENSSF_METRICS.map(
-    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS),
-  );
+  return OPENSSF_METRICS.map(config => new OpenSSFMetricProvider(config));
 }

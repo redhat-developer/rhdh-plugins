@@ -38,6 +38,7 @@ export type AdminConfigKey =
   | 'activeVectorStoreIds'
   | 'model'
   | 'baseUrl'
+  | 'kagentiBaseUrl'
   | 'toolChoice'
   | 'enableWebSearch'
   | 'enableCodeInterpreter'
@@ -57,7 +58,16 @@ export type AdminConfigKey =
   | 'maxToolCalls'
   | 'maxOutputTokens'
   | 'temperature'
-  | 'safetyIdentifier';
+  | 'safetyIdentifier'
+  | 'chatAgents'
+  | 'chatTools'
+  | 'devSpacesApiUrl'
+  | 'devSpacesToken'
+  | 'devSpacesNamespace'
+  | 'workflows'
+  | 'workflowVersions'
+  | 'workflowTestSuites'
+  | 'workflowEvaluations';
 
 /**
  * A single admin config entry stored in the database.

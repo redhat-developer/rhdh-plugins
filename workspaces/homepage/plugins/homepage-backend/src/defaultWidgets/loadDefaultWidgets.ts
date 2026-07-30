@@ -48,7 +48,9 @@ export const defaultWidgetNodeSchema: z.ZodType<DefaultWidgetNode> = z.lazy(
         ref: z.string().min(1).optional(),
         props: z.record(z.string(), z.unknown()).optional(),
         layout: z.record(z.string(), z.unknown()).optional(),
+        tags: z.array(z.string().min(1)).optional(),
         if: visibilitySchema.optional(),
+        unless: visibilitySchema.optional(),
         children: z.array(defaultWidgetNodeSchema).optional(),
       })
       .strict()
@@ -94,6 +96,7 @@ export function collectReferencedPermissions(
   const out = new Set<string>();
   const walk = (n: DefaultWidgetNode) => {
     n.if?.permissions?.forEach(p => out.add(p));
+    n.unless?.permissions?.forEach(p => out.add(p));
     n.children?.forEach(walk);
   };
   nodes.forEach(walk);

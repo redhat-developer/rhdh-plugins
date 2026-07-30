@@ -52,10 +52,11 @@ export const getRequestConfigOption = async (
   authService: AuthService,
   ctx: any,
 ) => {
-  const { token } = (await authService.getPluginRequestToken({
+  const tokenResponse = await authService.getPluginRequestToken({
     onBehalfOf: await ctx.getInitiatorCredentials(),
     targetPluginId: 'orchestrator',
-  })) ?? { token: ctx.secrets?.backstageToken };
+  });
+  const token = tokenResponse?.token ?? ctx.secrets?.backstageToken;
 
   const reqConfigOption: AxiosRequestConfig = {
     headers: {

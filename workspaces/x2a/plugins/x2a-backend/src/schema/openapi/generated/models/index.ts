@@ -36,7 +36,6 @@ export * from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 export * from '../models/ProjectsProjectIdDelete200Response.model';
 export * from '../models/ProjectsProjectIdModulesModuleIdCancelPostRequest.model';
 export * from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
-export * from '../models/ProjectsProjectIdModulesPostRequest.model';
 export * from '../models/ProjectsProjectIdPatchRequest.model';
 export * from '../models/ProjectsProjectIdRunPost200Response.model';
 export * from '../models/ProjectsProjectIdRunPostRequest.model';

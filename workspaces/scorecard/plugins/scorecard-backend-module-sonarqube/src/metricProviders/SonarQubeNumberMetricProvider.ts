@@ -15,10 +15,7 @@
  */
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getThresholdsFromConfig,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { type Entity } from '@backstage/catalog-model';
@@ -44,24 +41,28 @@ export class SonarQubeNumberMetricProvider
     super(client, metricId, thresholds, 'number');
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const { instanceName, projectKey } = parseProjectKeyAnnotation(entity);
     const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
 
-    if ('useOpenIssuesApi' in mapping) {
-      return this.client.getOpenIssuesCount(projectKey, instanceName);
-    }
+    let value: number;
 
-    if ('apiKey' in mapping) {
+    if ('useOpenIssuesApi' in mapping) {
+      value = await this.client.getOpenIssuesCount(projectKey, instanceName);
+    } else if ('apiKey' in mapping) {
       const measures = await this.client.getMeasures(
         projectKey,
         [mapping.apiKey],
         instanceName,
       );
-      return measures[mapping.apiKey];
+      value = measures[mapping.apiKey];
+    } else {
+      throw new Error(`Unsupported metric ID: ${this.metricId}`);
     }
 
-    throw new Error(`Unsupported metric ID: ${this.metricId}`);
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), value);
+    return results;
   }
 
   static fromConfig(
@@ -70,14 +71,10 @@ export class SonarQubeNumberMetricProvider
     metricId: SonarQubeNumberMetricId,
   ): SonarQubeNumberMetricProvider {
     const client = new SonarQubeClient(config, logger);
-
-    const thresholds =
-      getThresholdsFromConfig(
-        config,
-        `scorecard.plugins.sonarqube.${metricId}.thresholds`,
-        'number',
-      ) ?? SONARQUBE_NUMBER_THRESHOLDS[metricId];
-
-    return new SonarQubeNumberMetricProvider(client, metricId, thresholds);
+    return new SonarQubeNumberMetricProvider(
+      client,
+      metricId,
+      SONARQUBE_NUMBER_THRESHOLDS[metricId],
+    );
   }
 }

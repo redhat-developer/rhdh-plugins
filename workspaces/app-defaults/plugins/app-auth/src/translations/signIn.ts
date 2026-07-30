@@ -74,6 +74,14 @@ export const signInTranslationRef = createTranslationRef({
           title: 'OIDC',
           message: 'Sign in using OIDC',
         },
+        keycloak: {
+          title: 'Keycloak',
+          message: 'Sign in using Keycloak',
+        },
+        pingfederate: {
+          title: 'PingFederate',
+          message: 'Sign in using PingFederate',
+        },
         okta: {
           title: 'Okta',
           message: 'Sign in using Okta',

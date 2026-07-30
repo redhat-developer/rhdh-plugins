@@ -16,7 +16,14 @@
 import { Fragment } from 'react';
 import { InfoCard, Link } from '@backstage/core-components';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Divider, Grid, Typography } from '@material-ui/core';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  Grid,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { CurrentPhaseCell } from '../CurrentPhaseCell';
@@ -24,19 +31,41 @@ import { getLastPhaseReached } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { moduleRouteRef } from '../../routes';
 
-export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
+export const ProjectModulesCard = ({
+  modules,
+  resyncing,
+}: {
+  modules: Module[];
+  resyncing?: boolean;
+}) => {
   const { t } = useTranslation();
   const modulePath = useRouteRef(moduleRouteRef);
 
-  return (
-    <InfoCard
-      title={t('projectModulesCard.title' as any, {
-        count: modules.length.toString(),
+  const sortedModules = [...modules].sort((a, b) => {
+    const aRemoved = !!a.removedAt;
+    const bRemoved = !!b.removedAt;
+    if (aRemoved !== bRemoved) return aRemoved ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+  const activeCount = modules.filter(m => !m.removedAt).length;
+
+  const title = (
+    <Box display="flex" alignItems="center">
+      {t('projectModulesCard.title' as any, {
+        count: activeCount.toString(),
       })}
-      variant="gridItem"
-    >
+      {resyncing && (
+        <Tooltip title={t('projectModulesCard.spinner' as any, {})}>
+          <CircularProgress size={16} style={{ marginLeft: 8 }} />
+        </Tooltip>
+      )}
+    </Box>
+  );
+
+  return (
+    <InfoCard title={title} variant="gridItem">
       <Grid container direction="row" spacing={2}>
-        {modules.length === 0 && (
+        {sortedModules.length === 0 && (
           <Grid item xs={12}>
             <Typography variant="body1">
               {t('projectModulesCard.noModules')}
@@ -44,7 +73,7 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
           </Grid>
         )}
 
-        {modules.map((module, index) => {
+        {sortedModules.map((module, index) => {
           const lastJob = getLastPhaseReached(module);
           return (
             <Fragment key={module.id}>
@@ -64,7 +93,7 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
               <Grid item xs={12} sm={4}>
                 <CurrentPhaseCell phase={lastJob?.phase} />
               </Grid>
-              {index < modules.length - 1 && (
+              {index < sortedModules.length - 1 && (
                 <Grid item xs={12}>
                   <Divider orientation="horizontal" variant="fullWidth" />
                 </Grid>

@@ -20,11 +20,49 @@ import {
   UserContext,
   VisibleDefaultWidget,
 } from './types';
+import { matches } from '../permissions/permissionUtils';
 
-export function isVisible(
-  visibility: DefaultWidgetVisibility | undefined,
+function matchesVisibility(
+  defaultWidget: DefaultWidgetNode,
+  visibility: DefaultWidgetVisibility,
   ctx: UserContext,
 ): boolean {
+  const matchesAnyUser =
+    visibility.users?.some(ref => ref === ctx.userEntityRef) ?? false;
+  const matchesAnyGroup =
+    visibility.groups?.some(ref => ctx.groupEntityRefs.has(ref)) ?? false;
+  const matchesAnyOtherPolicy =
+    visibility.permissions?.some(p => {
+      const decision = ctx.otherPolicyDecisions.get(p);
+      if (!decision) return false;
+      return (
+        decision.result === 'ALLOW' ||
+        (decision.result === 'CONDITIONAL' &&
+          matches(defaultWidget, decision.conditions))
+      );
+    }) ?? false;
+
+  return matchesAnyUser || matchesAnyGroup || matchesAnyOtherPolicy;
+}
+
+export function isVisible(
+  defaultWidget: DefaultWidgetNode,
+  ctx: UserContext,
+): boolean {
+  const hasTags = (defaultWidget?.tags?.length ?? 0) > 0;
+
+  if (ctx.defaultWidgetsReadDecision.result === 'DENY' && hasTags) {
+    return false;
+  }
+
+  if (
+    ctx.defaultWidgetsReadDecision.result === 'CONDITIONAL' &&
+    !matches(defaultWidget, ctx.defaultWidgetsReadDecision.conditions)
+  ) {
+    return false;
+  }
+
+  const visibility = defaultWidget.if;
   if (!visibility) return true;
 
   const hasAny =
@@ -33,30 +71,23 @@ export function isVisible(
     (visibility.permissions?.length ?? 0) > 0;
   if (!hasAny) return true;
 
-  const matchUser =
-    visibility.users?.some(ref => ref === ctx.userEntityRef) ?? false;
-  const matchGroup =
-    visibility.groups?.some(ref => ctx.groupEntityRefs.has(ref)) ?? false;
-  const matchPermission =
-    visibility.permissions?.some(
-      p => ctx.permissionDecisions.get(p) === 'ALLOW',
-    ) ?? false;
-
-  return matchUser || matchGroup || matchPermission;
+  return matchesVisibility(defaultWidget, visibility, ctx);
 }
 
-export function filterToVisibleLeafIds(
-  nodes: DefaultWidgetNode[],
+export function isExcluded(
+  defaultWidget: DefaultWidgetNode,
   ctx: UserContext,
-): string[] {
-  const out: string[] = [];
-  const walk = (node: DefaultWidgetNode) => {
-    if (!isVisible(node.if, ctx)) return;
-    if (node.id !== undefined) out.push(node.id);
-    node.children?.forEach(walk);
-  };
-  nodes.forEach(walk);
-  return out;
+): boolean {
+  const visibility = defaultWidget.unless;
+  if (!visibility) return false;
+
+  const hasAny =
+    (visibility.users?.length ?? 0) > 0 ||
+    (visibility.groups?.length ?? 0) > 0 ||
+    (visibility.permissions?.length ?? 0) > 0;
+  if (!hasAny) return false;
+
+  return matchesVisibility(defaultWidget, visibility, ctx);
 }
 
 export function filterToVisibleLeaves(
@@ -65,7 +96,8 @@ export function filterToVisibleLeaves(
 ): VisibleDefaultWidget[] {
   const out: VisibleDefaultWidget[] = [];
   const walk = (node: DefaultWidgetNode) => {
-    if (!isVisible(node.if, ctx)) return;
+    if (!isVisible(node, ctx)) return;
+    if (isExcluded(node, ctx)) return;
     if (node.id !== undefined) {
       const card: VisibleDefaultWidget = {
         id: node.id,

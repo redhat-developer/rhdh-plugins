@@ -11,6 +11,8 @@ backend:
     connection: ':memory:'
 
 dcm:
+  apiUrl: ${DCM_API_URL:-}
+  # Legacy env var; kept until deploy configs switch to DCM_API_URL.
   apiGatewayUrl: ${DCM_API_GATEWAY_URL:-}
   ssoBaseUrl: ${DCM_SSO_BASE_URL:-}
   clientId: ${DCM_CLIENT_ID:-}

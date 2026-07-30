@@ -146,16 +146,16 @@ describe('CustomLegend', () => {
     );
   });
 
-  it('should render two legend items for average donut segment names with translation key fallback', () => {
-    const averagePieData = [
-      { name: 'averageScoreFill', value: 75, color: '#F0AB00' },
-      { name: 'averageScoreRemainder', value: 25, color: '#e0e0e0' },
+  it('should render two legend items for weightedStatusScore donut segment names with translation key fallback', () => {
+    const weightedStatusScorePieData = [
+      { name: 'weightedStatusScoreFill', value: 75, color: '#F0AB00' },
+      { name: 'weightedStatusScoreRemainder', value: 25, color: '#e0e0e0' },
     ];
 
     render(
       <div data-chart-container>
         <CustomLegend
-          pieData={averagePieData}
+          pieData={weightedStatusScorePieData}
           activeIndex={null}
           setActiveIndex={jest.fn()}
           setTooltipPosition={jest.fn()}
@@ -163,10 +163,12 @@ describe('CustomLegend', () => {
       </div>,
     );
 
-    expect(screen.getByText('AverageScoreFill')).toBeInTheDocument();
-    expect(screen.getByText('AverageScoreRemainder')).toBeInTheDocument();
-    expect(screen.getByTestId('legend-colorbox-averageScoreFill')).toHaveStyle(
-      'background-color: #F0AB00',
-    );
+    expect(screen.getByText('WeightedStatusScoreFill')).toBeInTheDocument();
+    expect(
+      screen.getByText('WeightedStatusScoreRemainder'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('legend-colorbox-weightedStatusScoreFill'),
+    ).toHaveStyle('background-color: #F0AB00');
   });
 });

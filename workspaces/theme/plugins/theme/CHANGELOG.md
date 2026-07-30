@@ -1,5 +1,47 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.15.0
+
+### Minor Changes
+
+- 22d09cd: Backstage version bump to v1.52.1
+
+## 0.14.11
+
+### Patch Changes
+
+- a3302ac: prevent overlapping scrollbars on TechDocs pages
+
+## 0.14.10
+
+### Patch Changes
+
+- 9342bf0: Inline ThemeConfig types in config.d.ts to avoid importing from the package entry point, which pulls in @mui/material types that crash ts-json-schema-generator on `typeof window.matchMedia`.
+
+## 0.14.9
+
+### Patch Changes
+
+- eed88f3: Fix broken `config.d.ts` import path: change `import { ThemeConfig } from './src'` to `'./'` so the published package resolves correctly during config schema validation.
+
+## 0.14.8
+
+### Patch Changes
+
+- 6a1b1f0: Replace Material UI v4 imports with MUI v5 and add workspace ESLint restrictions to prevent v4 regressions.
+
+## 0.14.7
+
+### Patch Changes
+
+- 4d80582: fix(RHDHBUGS-2291): use `&.Mui-selected` syntax for MuiBottomNavigationAction to resolve CSS specificity console warning
+
+## 0.14.6
+
+### Patch Changes
+
+- bb01e90: Removed the box shadow from the AppBar component
+
 ## 0.14.5
 
 ### Patch Changes

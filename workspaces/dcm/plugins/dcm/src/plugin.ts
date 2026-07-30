@@ -29,9 +29,6 @@ import {
 
 import {
   rootRouteRef,
-  serviceSpecsRouteRef,
-  environmentDetailsRouteRef,
-  serviceSpecDetailsRouteRef,
   providersRouteRef,
   policiesRouteRef,
   serviceTypesRouteRef,
@@ -55,9 +52,6 @@ export const dcmPlugin = createPlugin({
   id: 'dcm',
   routes: {
     root: rootRouteRef,
-    serviceSpecs: serviceSpecsRouteRef,
-    environmentDetails: environmentDetailsRouteRef,
-    serviceSpecDetails: serviceSpecDetailsRouteRef,
     providers: providersRouteRef,
     policies: policiesRouteRef,
     serviceTypes: serviceTypesRouteRef,

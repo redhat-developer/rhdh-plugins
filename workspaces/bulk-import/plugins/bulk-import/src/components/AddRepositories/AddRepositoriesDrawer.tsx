@@ -27,7 +27,6 @@ import Container from '@mui/material/Container';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -39,22 +38,6 @@ import {
 import { urlHelper } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import { RepositoriesTable } from './RepositoriesTable';
-
-const useStyles = makeStyles({
-  drawerPaper: {
-    ['@media (max-width: 960px)']: {
-      '& > div[class*="MuiDrawer-paper-"]': {
-        width: '-webkit-fill-available',
-      },
-    },
-  },
-  drawerContainer: {
-    padding: '20px',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-});
 
 export const AddRepositoriesDrawer = ({
   open,
@@ -70,7 +53,6 @@ export const AddRepositoriesDrawer = ({
   orgData: AddRepositoryData;
 }) => {
   const { t } = useTranslation();
-  const classes = useStyles();
   const { values, status, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
   const [searchString, setSearchString] = useState<string>('');
@@ -106,10 +88,23 @@ export const AddRepositoriesDrawer = ({
       anchor="right"
       open={open}
       variant="temporary"
-      className={classes.drawerPaper}
+      sx={{
+        '@media (max-width: 960px)': {
+          '& > div[class*="MuiDrawer-paper-"]': {
+            width: '-webkit-fill-available',
+          },
+        },
+      }}
       onClose={onClose}
     >
-      <Container className={classes.drawerContainer}>
+      <Container
+        sx={{
+          padding: '20px',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div>
             <Typography variant="h5">{orgData?.orgName}</Typography>

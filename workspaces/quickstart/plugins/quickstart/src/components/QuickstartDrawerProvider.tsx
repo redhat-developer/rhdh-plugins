@@ -20,9 +20,9 @@ import {
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
-import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
+import Snackbar from '@mui/material/Snackbar';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';

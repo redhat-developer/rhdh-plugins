@@ -70,7 +70,7 @@ describe('homepagePlugin', () => {
                   ],
                 },
                 {
-                  if: { permissions: ['homepage.platform.read'] },
+                  if: { permissions: ['homepage.default-widgets.read'] },
                   children: [{ id: 'platform-inner', ref: 'rhdh.platform' }],
                 },
               ],
@@ -81,8 +81,12 @@ describe('homepagePlugin', () => {
           entities: [userEntityWithGroups(['group:default/developers'])],
         }),
         mockServices.permissions.mock({
-          authorize: async requests =>
-            requests.map(() => ({ result: AuthorizeResult.DENY })),
+          authorizeConditional: async requests =>
+            requests.map((_, i) =>
+              i === 0
+                ? { result: AuthorizeResult.ALLOW }
+                : { result: AuthorizeResult.DENY },
+            ),
         }).factory,
       ],
     });
@@ -110,7 +114,7 @@ describe('homepagePlugin', () => {
                 { id: 'public', ref: 'rhdh.public' },
                 {
                   if: {
-                    permissions: ['homepage.platform.read'],
+                    permissions: ['homepage.default-widgets.read'],
                   },
                   children: [
                     {
@@ -126,7 +130,7 @@ describe('homepagePlugin', () => {
         }),
         catalogServiceMock.factory({ entities: [userEntityWithGroups([])] }),
         mockServices.permissions.mock({
-          authorize: async requests =>
+          authorizeConditional: async requests =>
             requests.map(() => ({ result: AuthorizeResult.ALLOW })),
         }).factory,
       ],

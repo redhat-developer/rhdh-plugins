@@ -1,8 +1,0 @@
-dynamicPlugins:
-  frontend:
-    red-hat-developer-hub.backstage-plugin-application-listener-test:
-      mountPoints:
-        - mountPoint: application/listener
-          importName: CrashListener
-        - mountPoint: application/listener
-          importName: LocationListener

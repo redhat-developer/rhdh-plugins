@@ -17,6 +17,7 @@
 import { JsonObject, JsonValue } from '@backstage/types';
 
 import get from 'lodash/get';
+import has from 'lodash/has';
 
 import {
   HiddenCondition,
@@ -58,32 +59,88 @@ function matchesAny(
 }
 
 /**
+ * Resolves the value for a `when` path. Prefers the current object's form data
+ * (sibling fields in the same step/object), then falls back to root form data
+ * for cross-step paths such as `step1.field1`.
+ */
+export function getValueForWhen(
+  when: string,
+  localFormData: JsonObject,
+  rootFormData?: JsonObject,
+): JsonValue | undefined {
+  if (has(localFormData, when)) {
+    return get(localFormData, when);
+  }
+  if (rootFormData !== undefined && rootFormData !== localFormData) {
+    return get(rootFormData, when);
+  }
+  return get(localFormData, when);
+}
+
+/**
  * Evaluate a simple condition object
  */
 function evaluateConditionObject(
   condition: HiddenConditionObject,
-  formData: JsonObject,
+  localFormData: JsonObject,
+  rootFormData?: JsonObject,
 ): boolean {
-  const fieldValue = get(formData, condition.when);
+  const fieldValue = getValueForWhen(
+    condition.when,
+    localFormData,
+    rootFormData,
+  );
+
+  let hasCondition = false;
+  let shouldHide = true;
 
   // Check isEmpty condition
   if (condition.isEmpty !== undefined) {
+    hasCondition = true;
     const empty = isEmptyValue(fieldValue);
-    return condition.isEmpty ? empty : !empty;
+    if (!(condition.isEmpty ? empty : !empty)) {
+      shouldHide = false;
+    }
   }
 
   // Check 'is' condition (hide if field equals any value)
   if (condition.is !== undefined) {
-    return matchesAny(fieldValue, condition.is);
+    hasCondition = true;
+    if (!matchesAny(fieldValue, condition.is)) {
+      shouldHide = false;
+    }
   }
 
   // Check 'isNot' condition (hide if field does NOT equal any value)
   if (condition.isNot !== undefined) {
-    return !matchesAny(fieldValue, condition.isNot);
+    hasCondition = true;
+    if (matchesAny(fieldValue, condition.isNot)) {
+      shouldHide = false;
+    }
+  }
+
+  // Check 'isNotEmptyList' condition
+  if (condition.isNotEmptyList !== undefined) {
+    hasCondition = true;
+    const isNonEmptyList = Array.isArray(fieldValue) && fieldValue.length > 0;
+    if (!(condition.isNotEmptyList ? isNonEmptyList : !isNonEmptyList)) {
+      shouldHide = false;
+    }
+  }
+
+  // Check 'notContains' condition (hide when array does not include value)
+  if (condition.notContains !== undefined) {
+    hasCondition = true;
+    const notContainsValue =
+      Array.isArray(fieldValue) &&
+      !fieldValue.some(item => matchesAny(item, condition.notContains!));
+    if (!notContainsValue) {
+      shouldHide = false;
+    }
   }
 
   // No valid condition found, don't hide
-  return false;
+  return hasCondition ? shouldHide : false;
 }
 
 /**
@@ -91,19 +148,20 @@ function evaluateConditionObject(
  */
 function evaluateCompositeCondition(
   condition: HiddenConditionComposite,
-  formData: JsonObject,
+  localFormData: JsonObject,
+  rootFormData?: JsonObject,
 ): boolean {
   // Evaluate 'allOf' (AND logic - all must be true)
   if (condition.allOf) {
     return condition.allOf.every(subCondition =>
-      evaluateHiddenCondition(subCondition, formData),
+      evaluateHiddenCondition(subCondition, localFormData, rootFormData),
     );
   }
 
   // Evaluate 'anyOf' (OR logic - at least one must be true)
   if (condition.anyOf) {
     return condition.anyOf.some(subCondition =>
-      evaluateHiddenCondition(subCondition, formData),
+      evaluateHiddenCondition(subCondition, localFormData, rootFormData),
     );
   }
 
@@ -114,10 +172,14 @@ function evaluateCompositeCondition(
 /**
  * Evaluate a hidden condition
  * Returns true if the field should be hidden
+ *
+ * @param localFormData - Form data for the current object (sibling field scope)
+ * @param rootFormData - Optional root form data for cross-step/cross-object `when` paths
  */
 export function evaluateHiddenCondition(
   condition: HiddenCondition,
-  formData: JsonObject,
+  localFormData: JsonObject,
+  rootFormData?: JsonObject,
 ): boolean {
   // Handle boolean (static)
   if (typeof condition === 'boolean') {
@@ -126,12 +188,12 @@ export function evaluateHiddenCondition(
 
   // Handle simple condition object
   if ('when' in condition) {
-    return evaluateConditionObject(condition, formData);
+    return evaluateConditionObject(condition, localFormData, rootFormData);
   }
 
   // Handle composite condition
   if ('allOf' in condition || 'anyOf' in condition) {
-    return evaluateCompositeCondition(condition, formData);
+    return evaluateCompositeCondition(condition, localFormData, rootFormData);
   }
 
   // Unknown condition type, don't hide

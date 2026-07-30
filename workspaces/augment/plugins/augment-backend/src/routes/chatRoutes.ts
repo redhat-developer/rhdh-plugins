@@ -13,14 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import type { Response } from 'express';
-import type { NormalizedStreamEvent } from '../providers';
+import type { NormalizedStreamEvent, AgenticProvider } from '../providers';
+import { getProviderDescriptor } from '../providers';
 import type { ChatMessage } from '../types';
 import type { SafetyChatResponse, EvaluatedChatResponse } from '../types';
 import { createWithRoute } from './routeWrapper';
+import { SseHeartbeat } from './sseRouteHelpers';
+import { sanitizeErrorMessage } from '../services/utils/errorSanitizer';
 import type { FlushableResponse, RouteContext } from './types';
+import type { AdminConfigService } from '../services/AdminConfigService';
+import { trySkillChatProxy } from './skillChatProxy';
 
 function getLastUserContent(messages: ChatMessage[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -52,6 +60,7 @@ function buildSafetyResponse(
 function setupSseStream(
   res: Response,
   logger: LoggerService,
+  onDisconnect?: () => void,
 ): {
   abortController: AbortController;
   clientDisconnectedRef: { current: boolean };
@@ -61,6 +70,7 @@ function setupSseStream(
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   res.flushHeaders();
 
   const clientDisconnectedRef = { current: false };
@@ -68,9 +78,46 @@ function setupSseStream(
   res.on('close', () => {
     clientDisconnectedRef.current = true;
     abortController.abort();
+    onDisconnect?.();
     logger.info('Client disconnected from stream');
   });
   return { abortController, clientDisconnectedRef };
+}
+
+interface StreamToolCall {
+  id: string;
+  name: string;
+  serverLabel: string;
+  arguments?: string;
+  output?: string;
+  error?: string;
+  status: string;
+}
+
+interface StreamRagSource {
+  filename: string;
+  text?: string;
+  score?: number;
+  fileId?: string;
+}
+
+interface StreamCitation {
+  title?: string;
+  url?: string;
+  snippet?: string;
+}
+
+interface StreamMetadata {
+  agentName?: string;
+  toolCalls: StreamToolCall[];
+  ragSources: StreamRagSource[];
+  citations: StreamCitation[];
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+  };
+  reasoning: string;
 }
 
 function createStreamEventForwarder(
@@ -81,10 +128,15 @@ function createStreamEventForwarder(
   forward: (event: NormalizedStreamEvent) => void;
   streamedTextRef: { current: string };
   streamModelRef: { current: string | undefined };
+  streamMetadataRef: { current: StreamMetadata };
 } {
   const streamedTextRef = { current: '' };
   const streamModelRef = { current: undefined as string | undefined };
-  const state = { draining: false };
+  const streamMetadataRef: { current: StreamMetadata } = {
+    current: { toolCalls: [], ragSources: [], citations: [], reasoning: '' },
+  };
+  const MAX_PENDING_EVENTS = 500;
+  const state = { draining: false, terminated: false };
   const pendingQueue: string[] = [];
 
   function onDrain() {
@@ -100,7 +152,11 @@ function createStreamEventForwarder(
   }
 
   function flushQueue() {
-    while (pendingQueue.length > 0 && !clientDisconnectedRef.current) {
+    while (
+      pendingQueue.length > 0 &&
+      !clientDisconnectedRef.current &&
+      !state.terminated
+    ) {
       const next = pendingQueue.shift()!;
       if (!writeAndFlush(next)) {
         state.draining = true;
@@ -115,7 +171,13 @@ function createStreamEventForwarder(
       streamModelRef.current = (event as { model?: string }).model;
     } else if (event.type === 'stream.text.delta' && event.delta) {
       streamedTextRef.current += event.delta;
+    } else if (
+      event.type === 'stream.artifact' &&
+      (event as { content?: string }).content
+    ) {
+      streamedTextRef.current += (event as { content?: string }).content;
     } else if (event.type === 'stream.completed' && event.usage) {
+      streamMetadataRef.current.usage = event.usage;
       const u = event.usage;
       if (u.output_tokens === 0 && !streamedTextRef.current) {
         logger.warn(
@@ -136,11 +198,63 @@ function createStreamEventForwarder(
       logger.info(
         `HITL: Tool approval required for "${event.name}" - waiting for user decision`,
       );
+    } else if (event.type === 'stream.agent.handoff') {
+      const he = event as { toAgent?: string };
+      if (he.toAgent) streamMetadataRef.current.agentName = he.toAgent;
+    } else if (event.type === 'stream.reasoning.delta' && event.delta) {
+      streamMetadataRef.current.reasoning += event.delta;
+    } else if (event.type === 'stream.tool.started') {
+      streamMetadataRef.current.toolCalls.push({
+        id: event.callId,
+        name: event.name,
+        serverLabel: event.serverLabel || '',
+        status: 'running',
+      });
+    } else if (event.type === 'stream.tool.completed') {
+      const tc = streamMetadataRef.current.toolCalls.find(
+        t => t.id === event.callId,
+      );
+      if (tc) {
+        tc.output = event.output;
+        tc.status = 'completed';
+      }
+    } else if (event.type === 'stream.tool.failed') {
+      const tc = streamMetadataRef.current.toolCalls.find(
+        t => t.id === event.callId,
+      );
+      if (tc) {
+        tc.error = event.error;
+        tc.status = 'failed';
+      }
+    } else if (event.type === 'stream.rag.results') {
+      for (const src of event.sources) {
+        streamMetadataRef.current.ragSources.push({
+          filename: src.filename,
+          text: src.text,
+          score: src.score,
+          fileId: src.fileId,
+        });
+      }
+    } else if (event.type === 'stream.citation') {
+      const citationEvent = event as { citations?: StreamCitation[] };
+      if (citationEvent.citations) {
+        for (const c of citationEvent.citations) {
+          streamMetadataRef.current.citations.push(c);
+        }
+      }
     }
 
-    if (!clientDisconnectedRef.current) {
+    if (!clientDisconnectedRef.current && !state.terminated) {
       const payload = `data: ${JSON.stringify(event)}\n\n`;
       if (state.draining) {
+        if (pendingQueue.length >= MAX_PENDING_EVENTS) {
+          logger.warn(
+            `SSE backpressure queue exceeded ${MAX_PENDING_EVENTS} events — terminating slow client`,
+          );
+          state.terminated = true;
+          res.end();
+          return;
+        }
         pendingQueue.push(payload);
         return;
       }
@@ -151,7 +265,7 @@ function createStreamEventForwarder(
     }
   };
 
-  return { forward, streamedTextRef, streamModelRef };
+  return { forward, streamedTextRef, streamModelRef, streamMetadataRef };
 }
 
 function handleStreamErrorAndCleanup(
@@ -164,9 +278,10 @@ function handleStreamErrorAndCleanup(
   const msg = toErrorMessage(error);
   logger.error(`Streaming error: ${msg}`);
   if (!clientDisconnectedRef.current) {
+    const { message: safeMsg } = sanitizeErrorMessage(msg);
     const errorEvent: NormalizedStreamEvent = {
       type: 'stream.error',
-      error: msg,
+      error: safeMsg,
       code: 'stream_error',
     };
     res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
@@ -190,7 +305,23 @@ async function resolveConversationId(
   const userRef = await getUserRef(req);
   let resolvedConversationId = conversationId;
 
-  if (!sessionId || !sessions || resolvedConversationId) {
+  if (!sessionId || !sessions) {
+    return { resolvedConversationId, userRef };
+  }
+
+  if (resolvedConversationId) {
+    const ownerSession = await sessions.findSessionByConversation(
+      resolvedConversationId,
+      userRef,
+    );
+    if (!ownerSession) {
+      throw new InputError('Conversation not found or access denied');
+    }
+    if (ownerSession.id !== sessionId) {
+      throw new InputError(
+        'Session ID does not match the conversation. Use the correct session.',
+      );
+    }
     return { resolvedConversationId, userRef };
   }
 
@@ -203,7 +334,8 @@ async function resolveConversationId(
     return { resolvedConversationId: session.conversationId, userRef };
   }
 
-  if (!provider.conversations) {
+  const desc = getProviderDescriptor(provider.id);
+  if (!provider.conversations || desc?.capabilities.contextHydration) {
     return { resolvedConversationId, userRef };
   }
 
@@ -219,7 +351,9 @@ async function resolveConversationId(
       resolvedConversationId = newConvId;
       logger.info(`Created conversation ${newConvId} for session ${sessionId}`);
     } else {
-      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+      await provider.conversations
+        .deleteContainer?.(newConvId)
+        .catch(e => logger.debug(`cleanup of ${newConvId} failed: ${e}`));
       const refreshed = await sessions.getSession(sessionId, userRef);
       resolvedConversationId = refreshed?.conversationId ?? undefined;
       logger.info(
@@ -228,7 +362,9 @@ async function resolveConversationId(
     }
   } catch (convErr) {
     if (newConvId) {
-      await provider.conversations.deleteContainer?.(newConvId).catch(() => {});
+      await provider.conversations
+        .deleteContainer?.(newConvId)
+        .catch(e => logger.debug(`cleanup of ${newConvId} failed: ${e}`));
     }
     logger.warn(
       `Could not create LlamaStack conversation for session ${sessionId}, continuing without: ${convErr}`,
@@ -241,11 +377,70 @@ async function resolveConversationId(
 /**
  * Registers chat, streaming, and human-in-the-loop approval endpoints.
  */
-export function registerChatRoutes(ctx: RouteContext): void {
+/**
+ * Determine whether a chat request should be routed to the orchestration
+ * fallback provider instead of the primary Kagenti provider.
+ * Returns the orchestration provider when: (1) the primary is Kagenti,
+ * (2) an orchestration fallback exists, and (3) the requested model is
+ * NOT a known Kagenti agent.
+ *
+ * Uses a cached set of Kagenti agent IDs (refreshed periodically) to
+ * distinguish Kagenti agents from LlamaStack model IDs. This avoids
+ * fragile heuristics like slash-counting which break for model IDs
+ * like "vllm-inference/gemma-4-31b-it".
+ */
+const KAGENTI_AGENTS_CACHE_KEY = 'kagenti:agent-ids';
+const KAGENTI_CACHE_TTL_MS = 30_000;
+
+async function refreshKagentiCache(
+  primary: AgenticProvider,
+  cache?: CacheService,
+): Promise<Set<string>> {
+  if (cache) {
+    const cached = await cache.get<string[]>(KAGENTI_AGENTS_CACHE_KEY);
+    if (cached) {
+      return new Set(cached);
+    }
+  }
+  let agentIds: string[] = [];
+  try {
+    const agents = (await primary.listAgents?.()) ?? [];
+    agentIds = agents.map(a => a.id);
+  } catch {
+    // On failure, return empty set; short TTL will force retry
+  }
+  if (cache) {
+    await cache.set(KAGENTI_AGENTS_CACHE_KEY, agentIds, {
+      ttl: agentIds.length > 0 ? KAGENTI_CACHE_TTL_MS : 5_000,
+    });
+  }
+  return new Set(agentIds);
+}
+
+async function resolveProvider(
+  primary: AgenticProvider,
+  orchestration: AgenticProvider | undefined,
+  model: string | undefined,
+  cache?: CacheService,
+): Promise<AgenticProvider> {
+  const desc = getProviderDescriptor(primary.id);
+  if (!desc?.capabilities.agentLifecycle || !orchestration || !model) {
+    return primary;
+  }
+  const knownAgents = await refreshKagentiCache(primary, cache);
+  if (knownAgents.has(model)) {
+    return primary;
+  }
+  return orchestration;
+}
+
+export function registerChatRoutes(
+  ctx: RouteContext,
+  adminConfig?: AdminConfigService,
+): void {
   const {
     router,
     logger,
-    provider,
     sessions,
     sendRouteError,
     toErrorMessage,
@@ -263,6 +458,12 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'Failed to process chat message',
       async (req, res) => {
         const parsed = parseChatRequest(req.body);
+        const provider = await resolveProvider(
+          ctx.provider,
+          ctx.orchestrationProvider,
+          parsed.model,
+          ctx.cache,
+        );
         const {
           messages,
           enableRAG,
@@ -271,19 +472,46 @@ export function registerChatRoutes(ctx: RouteContext): void {
           sessionId,
         } = parsed;
 
-        await provider.refreshDynamicConfig?.();
+        const [, { resolvedConversationId, userRef }] = await Promise.all([
+          provider.refreshDynamicConfig?.(),
+          resolveConversationId(
+            conversationId,
+            sessionId,
+            sessions,
+            provider,
+            getUserRef,
+            req,
+            logger,
+          ),
+        ]);
 
-        const { resolvedConversationId } = await resolveConversationId(
-          conversationId,
-          sessionId,
-          sessions,
-          provider,
-          getUserRef,
-          req,
-          logger,
-        );
+        // Hydrate provider context from DB for non-streaming path
+        const chatDescriptor = getProviderDescriptor(provider.id);
+        if (
+          chatDescriptor?.capabilities.contextHydration &&
+          sessionId &&
+          sessions
+        ) {
+          const existingCtx = await provider.getSessionContextId!(sessionId);
+          if (!existingCtx) {
+            const ctxFromDb =
+              resolvedConversationId ||
+              (await sessions.getSession(sessionId, userRef))?.conversationId;
+            if (ctxFromDb) {
+              await provider.hydrateSessionContext!(
+                sessionId,
+                ctxFromDb,
+                parsed.model,
+              );
+            }
+          }
+        }
 
         const userContent = getLastUserContent(messages);
+
+        if (provider.setUserContext) {
+          provider.setUserContext(userRef);
+        }
 
         if (provider.safety?.isEnabled()) {
           const safetyResult = await provider.safety.checkInput(userContent);
@@ -301,6 +529,8 @@ export function registerChatRoutes(ctx: RouteContext): void {
           enableRAG,
           previousResponseId,
           conversationId: resolvedConversationId,
+          sessionId,
+          model: parsed.model,
         });
 
         if (provider.safety?.isEnabled()) {
@@ -340,6 +570,48 @@ export function registerChatRoutes(ctx: RouteContext): void {
           }
         }
 
+        // Persist provider context ID for non-streaming path
+        if (
+          chatDescriptor?.capabilities.contextHydration &&
+          sessionId &&
+          sessions
+        ) {
+          const ctxId = await provider.getSessionContextId!(sessionId);
+          if (ctxId) {
+            await sessions
+              .setConversationIdIfNull(sessionId, userRef, ctxId)
+              .catch(err =>
+                logger.warn(
+                  `Failed to link provider context for session ${sessionId}: ${err}`,
+                ),
+              );
+          }
+        }
+
+        // Persist messages to local store (non-streaming path)
+        if (sessionId && sessions) {
+          try {
+            if (userContent) {
+              await sessions.addMessage({
+                sessionId,
+                role: 'user',
+                content: userContent,
+              });
+            }
+            if (response.content) {
+              await sessions.addMessage({
+                sessionId,
+                role: 'assistant',
+                content: response.content,
+              });
+            }
+          } catch (persistErr) {
+            logger.warn(
+              `Failed to persist messages for session ${sessionId}: ${persistErr}`,
+            );
+          }
+        }
+
         res.json(response);
       },
     ),
@@ -360,6 +632,25 @@ export function registerChatRoutes(ctx: RouteContext): void {
       );
       return;
     }
+
+    if (adminConfig) {
+      const handled = await trySkillChatProxy({
+        model: parsedRequest.model,
+        messages: parsedRequest.messages,
+        adminConfig,
+        config: ctx.config,
+        logger,
+        res: res as FlushableResponse,
+      });
+      if (handled) return;
+    }
+
+    const provider = await resolveProvider(
+      ctx.provider,
+      ctx.orchestrationProvider,
+      parsedRequest.model,
+      ctx.cache,
+    );
     const {
       messages,
       enableRAG,
@@ -368,33 +659,62 @@ export function registerChatRoutes(ctx: RouteContext): void {
       sessionId,
     } = parsedRequest;
 
+    const heartbeat = new SseHeartbeat(res);
     const { abortController, clientDisconnectedRef } = setupSseStream(
       res,
       logger,
+      () => heartbeat.stop(),
     );
-    const { forward, streamedTextRef } = createStreamEventForwarder(
-      res,
-      clientDisconnectedRef,
-      logger,
-    );
+    const { forward, streamedTextRef, streamMetadataRef } =
+      createStreamEventForwarder(res, clientDisconnectedRef, logger);
+    heartbeat.start();
 
     try {
-      await provider.refreshDynamicConfig?.();
+      const [, { resolvedConversationId, userRef }] = await Promise.all([
+        provider.refreshDynamicConfig?.(),
+        resolveConversationId(
+          conversationId,
+          sessionId,
+          sessions,
+          provider,
+          getUserRef,
+          req,
+          logger,
+        ),
+      ]);
 
-      const { resolvedConversationId, userRef } = await resolveConversationId(
-        conversationId,
-        sessionId,
-        sessions,
-        provider,
-        getUserRef,
-        req,
-        logger,
-      );
+      // Hydrate provider session cache from DB so conversation continues
+      // across server restarts.
+      const streamDescriptor = getProviderDescriptor(provider.id);
+      if (
+        streamDescriptor?.capabilities.contextHydration &&
+        sessionId &&
+        sessions
+      ) {
+        const existingCtx = await provider.getSessionContextId!(sessionId);
+        if (!existingCtx) {
+          const ctxFromDb =
+            resolvedConversationId ||
+            (await sessions.getSession(sessionId, userRef))?.conversationId;
+          if (ctxFromDb) {
+            await provider.hydrateSessionContext!(
+              sessionId,
+              ctxFromDb,
+              parsedRequest.model,
+            );
+          }
+        }
+      }
+
+      if (provider.setUserContext) {
+        provider.setUserContext(userRef);
+      }
 
       if (provider.safety?.isEnabled()) {
         const userContent = getLastUserContent(messages);
         const safetyResult = await provider.safety.checkInput(userContent);
         if (!safetyResult.safe) {
+          heartbeat.stop();
           const errorEvent: NormalizedStreamEvent = {
             type: 'stream.error',
             error:
@@ -408,8 +728,11 @@ export function registerChatRoutes(ctx: RouteContext): void {
       }
 
       let eventCount = 0;
+      const streamStartMs = Date.now();
+      let firstEventMs: number | undefined;
       const wrappedForward = (event: NormalizedStreamEvent) => {
         eventCount++;
+        if (!firstEventMs) firstEventMs = Date.now();
         forward(event);
       };
 
@@ -419,13 +742,36 @@ export function registerChatRoutes(ctx: RouteContext): void {
           enableRAG,
           previousResponseId,
           conversationId: resolvedConversationId,
+          sessionId,
+          model: parsedRequest.model,
         },
         wrappedForward,
         abortController.signal,
       );
 
-      logger.debug(`Stream completed with ${eventCount} events`);
+      const durationMs = Date.now() - streamStartMs;
+      const ttfbMs = firstEventMs ? firstEventMs - streamStartMs : undefined;
+      const ttfbInfo =
+        ttfbMs !== undefined ? `, ${ttfbMs}ms to first event` : '';
+      const zeroWarn =
+        eventCount === 0
+          ? ' (WARNING: zero events received from provider)'
+          : '';
+      logger.info(
+        `Stream completed: ${eventCount} events, ${durationMs}ms total${ttfbInfo}${zeroWarn}`,
+      );
 
+      if (eventCount === 0 && !clientDisconnectedRef.current) {
+        const zeroEventError: NormalizedStreamEvent = {
+          type: 'stream.error',
+          error:
+            'The agent returned no response. It may not support streaming — check agent capabilities.',
+          code: 'empty_stream',
+        };
+        res.write(`data: ${JSON.stringify(zeroEventError)}\n\n`);
+      }
+
+      let outputSafetyBlocked = false;
       if (
         streamedTextRef.current &&
         provider.safety?.isEnabled() &&
@@ -435,6 +781,7 @@ export function registerChatRoutes(ctx: RouteContext): void {
           streamedTextRef.current,
         );
         if (!outputResult.safe) {
+          outputSafetyBlocked = true;
           logger.warn(
             `Streamed output blocked by safety: ${outputResult.violation}`,
           );
@@ -449,29 +796,101 @@ export function registerChatRoutes(ctx: RouteContext): void {
         }
       }
 
-      if (sessionId && sessions) {
-        try {
-          const lastUserContent = getLastUserContent(messages);
-          if (lastUserContent) {
-            const session = await sessions.getSession(sessionId, userRef);
-            if (session && session.title.startsWith('Chat ')) {
-              const autoTitle = lastUserContent.slice(0, 80) || session.title;
-              await sessions.updateTitle(sessionId, userRef, autoTitle);
-            }
-          }
-          await sessions.touch(sessionId, userRef);
-        } catch (touchErr) {
-          logger.warn(
-            `Failed to update session ${sessionId} after stream: ${touchErr}`,
-          );
-        }
-      }
-
+      // Close the SSE connection immediately so the client is unblocked.
+      // Session bookkeeping runs in the background below.
+      heartbeat.stop();
       if (!clientDisconnectedRef.current) {
         res.write('data: [DONE]\n\n');
         res.end();
       }
+
+      // Fire-and-forget: persist session metadata without blocking the client.
+      if (sessionId && sessions) {
+        const lastUserContent = getLastUserContent(messages);
+        const meta = streamMetadataRef.current;
+        const streamedText = streamedTextRef.current;
+
+        Promise.resolve()
+          .then(async () => {
+            const titleAndTouch: Promise<void>[] = [];
+
+            if (lastUserContent) {
+              titleAndTouch.push(
+                sessions.getSession(sessionId, userRef).then(async session => {
+                  if (session && session.title.startsWith('Chat ')) {
+                    const autoTitle =
+                      lastUserContent.slice(0, 80) || session.title;
+                    await sessions.updateTitle(sessionId, userRef, autoTitle);
+                  }
+                }),
+              );
+            }
+
+            titleAndTouch.push(sessions.touch(sessionId, userRef));
+
+            if (streamDescriptor?.capabilities.contextHydration) {
+              const ctxId = await provider.getSessionContextId!(sessionId);
+              if (ctxId) {
+                titleAndTouch.push(
+                  sessions
+                    .setConversationIdIfNull(sessionId, userRef, ctxId)
+                    .then(linked => {
+                      if (linked) {
+                        logger.info(
+                          `Linked session ${sessionId} to provider context ${ctxId}`,
+                        );
+                      }
+                    }),
+                );
+              }
+            }
+
+            await Promise.all(titleAndTouch);
+
+            const messagePersists: Promise<unknown>[] = [];
+            if (lastUserContent) {
+              messagePersists.push(
+                sessions.addMessage({
+                  sessionId,
+                  role: 'user',
+                  content: lastUserContent,
+                }),
+              );
+            }
+            if (streamedText && !outputSafetyBlocked) {
+              messagePersists.push(
+                sessions.addMessage({
+                  sessionId,
+                  role: 'assistant',
+                  content: streamedText,
+                  agentName: meta.agentName,
+                  toolCalls:
+                    meta.toolCalls.length > 0
+                      ? JSON.stringify(meta.toolCalls)
+                      : undefined,
+                  ragSources:
+                    meta.ragSources.length > 0
+                      ? JSON.stringify(meta.ragSources)
+                      : undefined,
+                  usage: meta.usage ? JSON.stringify(meta.usage) : undefined,
+                  reasoning: meta.reasoning || undefined,
+                  citations:
+                    meta.citations.length > 0
+                      ? JSON.stringify(meta.citations)
+                      : undefined,
+                }),
+              );
+            }
+            await Promise.all(messagePersists);
+          })
+          .catch(bgErr => {
+            logger.warn(
+              `Background session bookkeeping failed for ${sessionId}: ${bgErr}`,
+            );
+          });
+      }
     } catch (error) {
+      heartbeat.stop();
       handleStreamErrorAndCleanup(
         res,
         clientDisconnectedRef,
@@ -488,14 +907,43 @@ export function registerChatRoutes(ctx: RouteContext): void {
       'POST /chat/approve',
       'Failed to process approval',
       async (req, res) => {
-        const { responseId, callId, approved, toolName, toolArguments } =
-          parseApprovalRequest(req.body);
+        const provider = ctx.provider;
+        const {
+          responseId,
+          callId,
+          approved,
+          toolName,
+          toolArguments,
+          reason,
+        } = parseApprovalRequest(req.body);
 
         logger.info(
           `Processing ${
             approved ? 'approval' : 'rejection'
           } for responseId=${responseId}, callId=${callId}, tool=${toolName}`,
         );
+
+        if (provider.submitApproval) {
+          const result = await provider.submitApproval({
+            responseId,
+            callId,
+            approved: approved === true,
+            toolName,
+            toolArguments,
+            reason,
+          });
+          res.json({
+            success: true,
+            rejected: !approved,
+            content: result.content,
+            responseId: result.responseId,
+            toolExecuted: result.toolExecuted,
+            toolOutput: result.toolOutput,
+            pendingApproval: result.pendingApproval,
+            handoff: result.handoff,
+          });
+          return;
+        }
 
         if (!provider.conversations) {
           res.status(501).json({

@@ -50,4 +50,8 @@ export interface Module {
    * Detailed error information if the module failed to execute
    */
   errorDetails?: string;
+  /**
+   * Timestamp when the module was soft-deleted during a migration plan resync. Null/missing for active modules.
+   */
+  removedAt?: Date;
 }

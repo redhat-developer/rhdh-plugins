@@ -134,4 +134,29 @@ describe('TimingCell', () => {
 
     expect(screen.getByText('Running for 12m 10s')).toBeInTheDocument();
   });
+
+  it('uses telemetry-based duration when telemetry is present', () => {
+    jest.setSystemTime(new Date('2024-01-01T12:35:00Z'));
+
+    const lastJob: Job = {
+      id: 'job-1',
+      projectId: 'proj-1',
+      phase: 'migrate',
+      status: 'success',
+      k8sJobName: 'k8s-job-1',
+      startedAt: new Date('2024-01-01T12:00:00Z'),
+      finishedAt: new Date('2024-01-01T12:30:00Z'),
+      telemetry: {
+        summary: 'ok',
+        phase: 'migrate',
+        startedAt: new Date('2024-01-01T12:23:00Z'),
+        endedAt: new Date('2024-01-01T12:30:00Z'),
+      },
+    };
+
+    render(<TimingCell lastJob={lastJob} />);
+    expect(
+      screen.getByText('Finished 5m ago (took 7m 0s)'),
+    ).toBeInTheDocument();
+  });
 });

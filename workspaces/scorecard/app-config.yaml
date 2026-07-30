@@ -14,13 +14,14 @@ app:
           path: /
 
     # Scorecard tab: entity shows tab if it matches any filter below.
-    - entity-content:catalog/entity-content-scorecard:
+    - entity-content:scorecard/entity-content-scorecard:
         config:
           allowedFilters:
             - kind: component # e.g. Component with spec.type: website
               type: website
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true
@@ -122,6 +123,17 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  # Uncomment this when MCP Actions are needed
+  # actions:
+  #   pluginSources:
+  #     - 'scorecard'
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
+
 integrations:
   github:
     - host: github.com
@@ -171,8 +183,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:development/guest
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -192,7 +203,6 @@ catalog:
       target: ../../examples/orgs/guest.yaml
       rules:
         - allow: [User, Group]
-
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml
 
@@ -232,12 +242,12 @@ scorecard:
       title: GitHub Open PRs KPI
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
-      metricId: github.open_prs
+      metricId: github.openPRs
     openPrsWeightedKpi:
       title: GitHub Open PRs (weighted health)
-      type: average
-      description: Weighted health average for open PRs by threshold status across your entities.
-      metricId: github.open_prs
+      type: weightedStatusScore
+      description: Weighted health score for open PRs by threshold status across your entities.
+      metricId: github.openPRs
       options:
         statusScores:
           success: 100
@@ -258,7 +268,7 @@ scorecard:
       title: Jira Open Issues KPI
       type: statusGrouped
       description: This KPI is provide information about Jira open issues grouped by status.
-      metricId: jira.open_issues
+      metricId: jira.openIssues
     licenseFileExistsKpi:
       title: License File Exists KPI
       type: statusGrouped
@@ -266,13 +276,13 @@ scorecard:
       metricId: filecheck.license
   plugins:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     github:
-      open_prs:
+      openPRs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

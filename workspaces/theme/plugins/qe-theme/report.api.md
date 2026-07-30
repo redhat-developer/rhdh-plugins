@@ -4,9 +4,9 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { default as DarkIcon } from '@material-ui/icons/Brightness2';
+import { default as DarkIcon } from '@mui/icons-material/Brightness2';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { default as LightIcon } from '@material-ui/icons/WbSunny';
+import { default as LightIcon } from '@mui/icons-material/WbSunny';
 import { ReactNode } from 'react';
 
 export { DarkIcon };

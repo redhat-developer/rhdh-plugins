@@ -29,7 +29,13 @@ export type CustomAuthApiRefType = OAuthApi &
   SessionApi;
 
 // @alpha
+export const keycloakAuthApiRef: ApiRef<CustomAuthApiRefType>;
+
+// @alpha
 export const oidcAuthApiRef: ApiRef<CustomAuthApiRefType>;
+
+// @alpha
+export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType>;
 
 // @alpha
 export const samlAuthApiRef: ApiRef<CustomAuthApiRefType>;
@@ -63,6 +69,10 @@ export const signInTranslationRef: TranslationRef<
     readonly 'signIn.providers.google.message': 'Sign in using Google';
     readonly 'signIn.providers.oidc.title': 'OIDC';
     readonly 'signIn.providers.oidc.message': 'Sign in using OIDC';
+    readonly 'signIn.providers.keycloak.title': 'Keycloak';
+    readonly 'signIn.providers.keycloak.message': 'Sign in using Keycloak';
+    readonly 'signIn.providers.pingfederate.title': 'PingFederate';
+    readonly 'signIn.providers.pingfederate.message': 'Sign in using PingFederate';
     readonly 'signIn.providers.okta.title': 'Okta';
     readonly 'signIn.providers.okta.message': 'Sign in using Okta';
     readonly 'signIn.providers.onelogin.title': 'OneLogin';

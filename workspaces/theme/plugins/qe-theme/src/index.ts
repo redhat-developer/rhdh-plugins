@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@material-ui/icons/WbSunny';
-export { default as DarkIcon } from '@material-ui/icons/Brightness2';
+export { default as LightIcon } from '@mui/icons-material/WbSunny';
+export { default as DarkIcon } from '@mui/icons-material/Brightness2';
 
 export { qeThemePlugin as default } from './plugin';
 

@@ -40,19 +40,28 @@ export function useIngestDropZone({
       if (!files || files.length === 0) return;
       clearUploadError();
       let succeeded = 0;
+      const failedNames: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const ok = await upload(files[i], vectorStoreId ?? undefined).then(
           () => true,
           () => false,
         );
-        if (ok) succeeded++;
+        if (ok) {
+          succeeded++;
+        } else {
+          failedNames.push(files[i].name);
+        }
       }
       if (fileInputRef.current) fileInputRef.current.value = '';
-      if (succeeded > 0) {
-        const message = `${succeeded} file${
-          succeeded !== 1 ? 's' : ''
-        } ingested successfully.`;
-        onUploadComplete?.(message);
+      const total = files.length;
+      if (succeeded === total) {
+        onUploadComplete?.(
+          `${succeeded} file${succeeded !== 1 ? 's' : ''} ingested successfully.`,
+        );
+      } else if (succeeded > 0) {
+        onUploadComplete?.(
+          `${succeeded} of ${total} files ingested. Failed: ${failedNames.join(', ')}`,
+        );
       }
     },
     [upload, clearUploadError, vectorStoreId, onUploadComplete],

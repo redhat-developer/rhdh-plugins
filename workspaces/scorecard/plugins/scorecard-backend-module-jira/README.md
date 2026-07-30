@@ -77,10 +77,6 @@ proxy:
         Authorization: Basic SomeTokenHere
 ```
 
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the Jira metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
 ### Options Configuration
 
 Options define configuration that affect fetch jira issues global configuration, but all options are optional. This settings are closely related with annotation settings and whole jira issues loading process.
@@ -90,7 +86,7 @@ Options define configuration that affect fetch jira issues global configuration,
 scorecard:
   plugins:
     jira:
-      open_issues:
+      openIssues:
         options:
           # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
           mandatoryFilter: Type = Task AND Resolution = Resolved
@@ -106,7 +102,7 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 scorecard:
   plugins:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency:
             cron: '0 6 * * *'
@@ -180,27 +176,32 @@ spec:
 
 ## Available Metrics
 
-### Jira Issues (`jira.open_issues`)
+### Jira Issues (`jira.openIssues`)
 
 This metric counts all jira issues that match the filter condition specified in annotation and app-config.yaml
 
-- **Metric ID**: `jira.open_issues`
+- **Metric ID**: `jira.openIssues`
 - **Type**: `Number`
 - **Datasource**: `jira`
-- **Default thresholds**:
+
+## Default thresholds
+
+Default thresholds for `jira.openIssues`:
 
 ```yaml
 # app-config.yaml
 scorecard:
   plugins:
     jira:
-      open_issues:
+      openIssues:
         thresholds:
           rules:
             - key: success
-              expression: '<=50'
+              expression: '<10'
             - key: warning
-              expression: '>50'
+              expression: '10-50'
             - key: error
-              expression: '>100'
+              expression: '>50'
 ```
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.

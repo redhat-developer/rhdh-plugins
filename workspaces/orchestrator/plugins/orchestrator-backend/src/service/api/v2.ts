@@ -160,8 +160,17 @@ export class V2 {
       workflowIds,
     });
 
+    // Fetch the instances again but without the pagination filter to get the total count.
+    const totalCount = (
+      await this.orchestratorService.fetchInstances({
+        filter,
+        workflowIds,
+      })
+    ).length;
+
     const result: ProcessInstanceListResultDTO = {
-      items: instances?.map(mapToProcessInstanceDTO),
+      totalCount,
+      items: instances.map(mapToProcessInstanceDTO),
       paginationInfo: {
         pageSize: pagination?.limit,
         offset: pagination?.offset,

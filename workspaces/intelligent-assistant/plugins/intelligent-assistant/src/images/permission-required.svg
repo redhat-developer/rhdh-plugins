@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Illustration" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 108 108">
+  <title>Manage cloud services illustration - Gray</title>
+<desc>cloud, public, private, data, applications, managed platform, hybrid cloud, connections</desc>
+<metadata><?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 8.0-c001 1.000000, 0000/00/00-00:00:00        ">
+   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <rdf:Description rdf:about=""
+            xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:tiff="http://ns.adobe.com/tiff/1.0/">
+         <xmp:brand-content-type>Illustration</xmp:brand-content-type>
+         <xmp:brand-image-use-case>Full</xmp:brand-image-use-case>
+         <xmp:brand-content-subtype>Illustration</xmp:brand-content-subtype>
+         <xmp:rhcc-uploaded-by>alwilker@redhat.com</xmp:rhcc-uploaded-by>
+         <xmp:CreateDate>2024-11-25T16:17:18.697Z</xmp:CreateDate>
+         <xmp:rhcc-effective-on>2024-11-25T16:17:18.697Z</xmp:rhcc-effective-on>
+         <xmp:rhcc-metadata-complete-moderator>pending</xmp:rhcc-metadata-complete-moderator>
+         <xmp:rhcc-translation-id>TRA267cb102-85d8-4bd4-8e0b-63d792ebcda0</xmp:rhcc-translation-id>
+         <xmp:rhcc-notify-portal-subscribers-on-change>yes</xmp:rhcc-notify-portal-subscribers-on-change>
+         <xmp:rhcc-effective-on-set-on-upload>true</xmp:rhcc-effective-on-set-on-upload>
+         <xmp:rhcc-metadata-complete-uploader>pending</xmp:rhcc-metadata-complete-uploader>
+         <xmp:rhcc-file-last-modified>2024-11-25T16:17:34.114Z</xmp:rhcc-file-last-modified>
+         <xmp:rhcc-audience>rhcc-audience:internal</xmp:rhcc-audience>
+         <xmp:brand-people>no</xmp:brand-people>
+         <xmp:rhcc-aspect-ratio>square</xmp:rhcc-aspect-ratio>
+         <xmp:brand-isolated-background>yes</xmp:brand-isolated-background>
+         <xmp:rhcc-derivative-id>DER267cb102-85d8-4bd4-8e0b-63d792ebcda0</xmp:rhcc-derivative-id>
+         <xmp:rhcc-rights-restricted>no</xmp:rhcc-rights-restricted>
+         <xmp:brand-colorway>
+            <rdf:Bag>
+               <rdf:li>colorway:gray</rdf:li>
+               <rdf:li>colorway:red</rdf:li>
+            </rdf:Bag>
+         </xmp:brand-colorway>
+         <dc:modified>2024-11-25T16:20:30.487Z</dc:modified>
+         <dc:format>image/svg+xml</dc:format>
+         <dc:title>
+            <rdf:Alt>
+               <rdf:li xml:lang="x-default">Manage cloud services illustration - Gray</rdf:li>
+            </rdf:Alt>
+         </dc:title>
+         <dc:description>
+            <rdf:Alt>
+               <rdf:li xml:lang="x-default">cloud, public, private, data, applications, managed platform, hybrid cloud, connections</rdf:li>
+            </rdf:Alt>
+         </dc:description>
+         <tiff:ImageLength>108</tiff:ImageLength>
+         <tiff:ImageWidth>108</tiff:ImageWidth>
+      </rdf:Description>
+   </rdf:RDF>
+</x:xmpmeta>
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                 
+<?xpacket end="w"?></metadata>
+<defs>
+    <style>
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11 {
+        fill: none;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-5, .cls-6, .cls-8, .cls-12, .cls-9, .cls-11 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-6, .cls-7, .cls-10 {
+        stroke-linecap: round;
+      }
+
+      .cls-1, .cls-9, .cls-11 {
+        stroke-width: .4px;
+      }
+
+      .cls-1, .cls-11 {
+        stroke: #c7c7c7;
+      }
+
+      .cls-13 {
+        clip-path: url(#clippath);
+      }
+
+      .cls-2, .cls-14, .cls-15, .cls-16, .cls-17, .cls-18, .cls-19 {
+        stroke-width: 0px;
+      }
+
+      .cls-3, .cls-4, .cls-5, .cls-8, .cls-9 {
+        stroke: #e00;
+      }
+
+      .cls-3, .cls-6, .cls-7, .cls-8 {
+        stroke-width: .2px;
+      }
+
+      .cls-20 {
+        clip-path: url(#clippath-1);
+      }
+
+      .cls-21 {
+        clip-path: url(#clippath-2);
+      }
+
+      .cls-14 {
+        fill: #e0e0e0;
+      }
+
+      .cls-15 {
+        fill: #000;
+      }
+
+      .cls-4, .cls-5, .cls-12 {
+        stroke-width: .3px;
+      }
+
+      .cls-6, .cls-7, .cls-10 {
+        stroke: #fff;
+      }
+
+      .cls-7, .cls-10 {
+        stroke-linejoin: round;
+      }
+
+      .cls-16, .cls-12 {
+        fill: #c7c7c7;
+      }
+
+      .cls-17 {
+        fill: #e00;
+      }
+
+      .cls-12 {
+        stroke: #a3a3a3;
+      }
+
+      .cls-18 {
+        fill: #a3a3a3;
+      }
+
+      .cls-19 {
+        fill: #fff;
+      }
+
+      .cls-10 {
+        stroke-width: .18px;
+      }
+    </style>
+    <clipPath id="clippath">
+      <polygon class="cls-2" points="55.49 61.61 43.76 61.61 37.9 71.77 43.76 81.92 55.49 81.92 61.36 71.77 55.49 61.61"/>
+    </clipPath>
+    <clipPath id="clippath-1">
+      <polygon class="cls-2" points="24.42 30.62 10.81 30.62 4 42.4 10.81 54.19 24.42 54.19 31.22 42.4 24.42 30.62"/>
+    </clipPath>
+    <clipPath id="clippath-2">
+      <polygon class="cls-2" points="85.07 25.97 75.47 25.97 70.67 34.28 75.47 42.59 85.07 42.59 89.87 34.28 85.07 25.97"/>
+    </clipPath>
+  </defs>
+  <g id="Gray_20">
+    <circle id="Background" class="cls-14" cx="53.98" cy="54" r="33.56"/>
+    <g id="Lines">
+      <path class="cls-9" d="M86.39,38.48v-1.51c0-1.44-1.16-2.6-2.6-2.6h-28.27c-1.44,0-2.6,1.16-2.6,2.6v5.87"/>
+      <path class="cls-9" d="M16.06,60.93v8.29c0,1.44,1.16,2.6,2.6,2.6h28.27c1.44,0,2.6-1.16,2.6-2.6v-5.87"/>
+    </g>
+    <g id="Hex_center" data-name="Hex center">
+      <polygon class="cls-18" points="56.43 61.58 44.7 61.58 38.83 71.74 45.27 81.03 57 81.03 62.29 71.74 56.43 61.58"/>
+      <polygon class="cls-19" points="55.49 61.61 43.76 61.61 37.9 71.77 43.76 81.92 55.49 81.92 61.36 71.77 55.49 61.61"/>
+      <g class="cls-13">
+        <g>
+          <g>
+            <polygon class="cls-16" points="44.98 74.31 41.58 72.35 36.94 73.07 35.69 75.75 39.09 77.71 43.73 76.99 44.98 74.31"/>
+            <polygon class="cls-16" points="55.74 74.31 52.34 72.35 47.7 73.07 46.46 75.75 49.86 77.71 54.5 76.99 55.74 74.31"/>
+            <polygon class="cls-16" points="66.51 74.31 63.11 72.35 58.47 73.07 57.22 75.75 60.62 77.71 65.26 76.99 66.51 74.31"/>
+          </g>
+          <g>
+            <polygon class="cls-16" points="49.84 80.62 46.44 78.66 41.8 79.38 40.55 82.06 43.95 84.02 48.59 83.3 49.84 80.62"/>
+            <polygon class="cls-16" points="60.6 80.62 57.2 78.66 52.56 79.38 51.32 82.06 54.72 84.02 59.36 83.3 60.6 80.62"/>
+          </g>
+          <g>
+            <polygon class="cls-16" points="44.98 61.69 41.58 59.73 36.94 60.45 35.69 63.13 39.09 65.09 43.73 64.37 44.98 61.69"/>
+            <polygon class="cls-16" points="55.74 61.69 52.34 59.73 47.7 60.45 46.46 63.13 49.86 65.09 54.5 64.37 55.74 61.69"/>
+            <polygon class="cls-16" points="66.51 61.69 63.11 59.73 58.47 60.45 57.22 63.13 60.62 65.09 65.26 64.37 66.51 61.69"/>
+          </g>
+          <g>
+            <polygon class="cls-16" points="49.84 68 46.44 66.04 41.8 66.76 40.55 69.44 43.95 71.4 48.59 70.68 49.84 68"/>
+            <polygon class="cls-16" points="60.6 68 57.2 66.04 52.56 66.76 51.32 69.44 54.72 71.4 59.36 70.68 60.6 68"/>
+          </g>
+        </g>
+      </g>
+      <polygon class="cls-2" points="55.49 61.71 43.76 61.71 37.9 71.87 43.76 82.03 55.49 82.03 61.36 71.87 55.49 61.71"/>
+      <polygon class="cls-9" points="55.52 61.56 43.79 61.56 37.92 71.72 43.79 81.88 55.52 81.88 61.38 71.72 55.52 61.56"/>
+    </g>
+    <g id="Hex_left" data-name="Hex left">
+      <polygon class="cls-18" points="27.01 32.98 13.4 32.98 5.4 42.36 12.2 54.14 25.81 54.14 32.62 42.36 27.01 32.98"/>
+      <polygon class="cls-19" points="24.42 30.62 10.81 30.62 4 42.4 10.81 54.19 24.42 54.19 31.22 42.4 24.42 30.62"/>
+      <g class="cls-20">
+        <g>
+          <rect class="cls-19" x="10.22" y="48.79" width="9.22" height="8.31"/>
+          <path class="cls-16" d="M19.14,49.09v7.71h-8.62v-7.71h8.62M19.44,48.79h-9.22v8.31h9.22v-8.31h0Z"/>
+          <rect class="cls-16" x="10.22" y="47.82" width="9.22" height="1.56"/>
+          <line class="cls-6" x1="11.04" y1="48.6" x2="16.18" y2="48.6"/>
+          <circle class="cls-19" cx="17.96" cy="48.6" r=".19"/>
+          <circle class="cls-19" cx="18.54" cy="48.6" r=".19"/>
+          <rect class="cls-19" x="22.8" y="48.79" width="9.22" height="8.31"/>
+          <path class="cls-16" d="M31.71,49.09v7.71h-8.62v-7.71h8.62M32.01,48.79h-9.22v8.31h9.22v-8.31h0Z"/>
+          <rect class="cls-16" x="22.8" y="47.82" width="9.22" height="1.56"/>
+          <circle class="cls-19" cx="30.54" cy="48.6" r=".19"/>
+          <circle class="cls-19" cx="31.11" cy="48.6" r=".19"/>
+          <g>
+            <g>
+              <rect class="cls-19" x="10.22" y="25.42" width="9.22" height="8.31"/>
+              <path class="cls-16" d="M19.14,25.72v7.71h-8.62v-7.71h8.62M19.44,25.42h-9.22v8.31h9.22v-8.31h0Z"/>
+              <rect class="cls-16" x="10.22" y="24.45" width="9.22" height="1.56"/>
+              <line class="cls-6" x1="11.04" y1="25.22" x2="16.18" y2="25.22"/>
+              <circle class="cls-19" cx="17.96" cy="25.22" r=".19"/>
+              <circle class="cls-19" cx="18.54" cy="25.22" r=".19"/>
+              <rect class="cls-19" x="22.8" y="25.42" width="9.22" height="8.31"/>
+              <path class="cls-16" d="M31.71,25.72v7.71h-8.62v-7.71h8.62M32.01,25.42h-9.22v8.31h9.22v-8.31h0Z"/>
+              <rect class="cls-16" x="22.8" y="24.45" width="9.22" height="1.56"/>
+              <line class="cls-6" x1="23.61" y1="25.22" x2="28.75" y2="25.22"/>
+            </g>
+            <circle class="cls-19" cx="30.54" cy="25.22" r=".19"/>
+            <circle class="cls-19" cx="31.11" cy="25.22" r=".19"/>
+            <rect class="cls-19" x="3.58" y="37.1" width="9.22" height="8.31"/>
+            <path class="cls-16" d="M12.49,37.4v7.71H3.88v-7.71h8.62M12.79,37.1H3.58v8.31h9.22v-8.31h0Z"/>
+            <rect class="cls-16" x="3.58" y="36.13" width="9.22" height="1.56"/>
+            <line class="cls-6" x1="4.39" y1="36.91" x2="9.53" y2="36.91"/>
+            <circle class="cls-19" cx="11.32" cy="36.91" r=".19"/>
+            <circle class="cls-19" cx="11.89" cy="36.91" r=".19"/>
+            <rect class="cls-19" x="16.15" y="37.1" width="9.22" height="8.31"/>
+            <path class="cls-16" d="M25.07,37.4v7.71h-8.62v-7.71h8.62M25.37,37.1h-9.22v8.31h9.22v-8.31h0Z"/>
+            <rect class="cls-16" x="16.15" y="36.13" width="9.22" height="1.56"/>
+            <line class="cls-6" x1="16.97" y1="36.91" x2="22.1" y2="36.91"/>
+            <circle class="cls-19" cx="23.89" cy="36.91" r=".19"/>
+            <circle class="cls-19" cx="24.46" cy="36.91" r=".19"/>
+            <rect class="cls-19" x="28.72" y="37.1" width="9.22" height="8.31"/>
+            <path class="cls-16" d="M37.64,37.4v7.71h-8.62v-7.71h8.62M37.94,37.1h-9.22v8.31h9.22v-8.31h0Z"/>
+            <rect class="cls-16" x="28.72" y="36.13" width="9.22" height="1.56"/>
+            <line class="cls-6" x1="29.54" y1="36.91" x2="34.68" y2="36.91"/>
+            <circle class="cls-19" cx="36.46" cy="36.91" r=".19"/>
+            <circle class="cls-19" cx="37.04" cy="36.91" r=".19"/>
+            <line class="cls-3" x1="36.69" y1="38.24" x2="37.46" y2="38.24"/>
+          </g>
+        </g>
+      </g>
+      <polygon class="cls-2" points="24.42 30.62 10.81 30.62 4 42.4 10.81 54.19 24.42 54.19 31.22 42.4 24.42 30.62"/>
+      <polygon class="cls-9" points="24.42 30.62 10.81 30.62 4 42.4 10.81 54.19 24.42 54.19 31.22 42.4 24.42 30.62"/>
+    </g>
+    <g id="Hex_right" data-name="Hex right">
+      <polygon class="cls-18" points="86.3 26.48 76.7 26.48 71.9 33.84 76.7 42.16 86.3 42.16 90.82 34.13 86.3 26.48"/>
+      <g>
+        <g class="cls-21">
+          <polygon class="cls-19" points="85.07 25.97 75.47 25.97 70.67 34.28 75.47 42.59 85.07 42.59 89.87 34.28 85.07 25.97"/>
+          <g>
+            <path class="cls-16" d="M71.57,28.22c-.26,0-.47.21-.47.47v3.73c0,.26.21.47.47.47s.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47ZM76.54,27.28c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM79.03,28.22c-.26,0-.47.21-.47.47v3.73c0,.26.21.47.47.47s.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47ZM82.6,24.95c0-1.29-1.05-2.33-2.33-2.33s-2.33,1.05-2.33,2.33,1.05,2.33,2.33,2.33,2.33-1.05,2.33-2.33ZM80.27,26.35c-.77,0-1.4-.63-1.4-1.4s.63-1.4,1.4-1.4,1.4.63,1.4,1.4-.63,1.4-1.4,1.4ZM81.51,28.22c-.26,0-.47.21-.47.47v3.73c0,.26.21.47.47.47s.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47ZM75.3,28.22c-1.28,0-2.33,1.05-2.33,2.33s1.05,2.33,2.33,2.33,2.33-1.05,2.33-2.33-1.05-2.33-2.33-2.33ZM75.3,31.95c-.77,0-1.4-.63-1.4-1.4s.63-1.4,1.4-1.4,1.4.63,1.4,1.4-.63,1.4-1.4,1.4Z"/>
+            <path class="cls-16" d="M83.28,30.55c0,1.29,1.05,2.33,2.33,2.33s2.33-1.05,2.33-2.33-1.05-2.33-2.33-2.33-2.33,1.05-2.33,2.33ZM85.61,29.15c.77,0,1.4.63,1.4,1.4s-.63,1.4-1.4,1.4-1.4-.63-1.4-1.4.63-1.4,1.4-1.4ZM84.36,27.28c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47Z"/>
+            <path class="cls-16" d="M72.47,36.61c0-1.29-1.05-2.33-2.33-2.33s-2.33,1.05-2.33,2.33,1.05,2.33,2.33,2.33,2.33-1.05,2.33-2.33ZM70.14,38.01c-.77,0-1.4-.63-1.4-1.4s.63-1.4,1.4-1.4,1.4.63,1.4,1.4-.63,1.4-1.4,1.4Z"/>
+            <path class="cls-16" d="M86.67,38.94c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM84.18,38.94c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM86.67,44.54c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM79.21,39.87c-.26,0-.47.21-.47.47v3.73c0,.26.21.47.47.47s.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47ZM76.72,38.94c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM80.61,42.21c0,1.29,1.05,2.33,2.33,2.33s2.33-1.05,2.33-2.33-1.05-2.33-2.33-2.33-2.33,1.05-2.33,2.33ZM82.94,40.81c.77,0,1.4.63,1.4,1.4s-.63,1.4-1.4,1.4-1.4-.63-1.4-1.4.63-1.4,1.4-1.4ZM73.15,42.21c0,1.29,1.05,2.33,2.33,2.33s2.33-1.05,2.33-2.33-1.05-2.33-2.33-2.33-2.33,1.05-2.33,2.33ZM75.48,40.81c.77,0,1.4.63,1.4,1.4s-.63,1.4-1.4,1.4-1.4-.63-1.4-1.4.63-1.4,1.4-1.4ZM74.24,38.94c.26,0,.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47s-.47.21-.47.47v3.73c0,.26.21.47.47.47ZM80.45,38.94c1.28,0,2.33-1.05,2.33-2.33s-1.05-2.33-2.33-2.33-2.33,1.05-2.33,2.33,1.05,2.33,2.33,2.33ZM80.45,35.21c.77,0,1.4.63,1.4,1.4s-.63,1.4-1.4,1.4-1.4-.63-1.4-1.4.63-1.4,1.4-1.4Z"/>
+            <path class="cls-16" d="M89.46,34.28c-.26,0-.47.21-.47.47v3.73c0,.26.21.47.47.47s.47-.21.47-.47v-3.73c0-.26-.21-.47-.47-.47Z"/>
+          </g>
+        </g>
+        <polygon class="cls-9" points="85.07 25.97 75.47 25.97 70.67 34.28 75.47 42.59 85.07 42.59 89.87 34.28 85.07 25.97"/>
+      </g>
+    </g>
+    <g id="Window_bottom" data-name="Window bottom">
+      <rect class="cls-19" x="73.65" y="69" width="9.22" height="8.31"/>
+      <path class="cls-14" d="M82.86,69.58s-1.1,5.98-9.15,7.73h9.15v-7.73Z"/>
+      <rect class="cls-17" x="73.71" y="68.03" width="9.15" height="1.54"/>
+      <line class="cls-10" x1="74.52" y1="68.8" x2="79.62" y2="68.8"/>
+      <circle class="cls-19" cx="81.39" cy="68.8" r=".19"/>
+      <circle class="cls-19" cx="81.96" cy="68.8" r=".19"/>
+      <polygon class="cls-5" points="82.86 73 82.86 68.03 73.71 68.03 73.71 77.31 76.96 77.31 82.86 77.31 82.86 73"/>
+      <line class="cls-4" x1="73.65" y1="70.16" x2="71.32" y2="70.16"/>
+      <line class="cls-4" x1="69.46" y1="74.74" x2="73.65" y2="74.74"/>
+      <line class="cls-4" x1="69.13" y1="70.16" x2="66.81" y2="70.16"/>
+      <line class="cls-4" x1="66.56" y1="74.74" x2="67.72" y2="74.74"/>
+      <line class="cls-4" x1="76.18" y1="72.45" x2="63.95" y2="72.45"/>
+    </g>
+    <g id="Window_top" data-name="Window top">
+      <rect class="cls-19" x="41.43" y="34.4" width="6.17" height="5.57"/>
+      <rect class="cls-17" x="41.47" y="33.75" width="6.13" height="1.03"/>
+      <path class="cls-14" d="M41.47,39.96s5.6-1.23,6.13-5.18v5.18h-6.13Z"/>
+      <line class="cls-7" x1="42.02" y1="34.27" x2="45.43" y2="34.27"/>
+      <circle class="cls-19" cx="46.61" cy="34.27" r=".13"/>
+      <circle class="cls-19" cx="47" cy="34.27" r=".13"/>
+      <polygon class="cls-8" points="47.6 37.08 47.6 33.75 41.47 33.75 41.47 39.96 43.65 39.96 47.6 39.96 47.6 37.08"/>
+      <line class="cls-3" x1="41.43" y1="35.17" x2="39.87" y2="35.17"/>
+      <line class="cls-3" x1="38.63" y1="38.24" x2="41.43" y2="38.24"/>
+      <line class="cls-3" x1="38.41" y1="35.17" x2="36.85" y2="35.17"/>
+      <line class="cls-3" x1="43.13" y1="36.71" x2="34.94" y2="36.71"/>
+    </g>
+    <g id="Cloud_left" data-name="Cloud left">
+      <path class="cls-12" d="M38.83,45.89c-.81,0-1.6.12-2.34.35-1.78-3.35-5.3-5.63-9.36-5.63-4.51,0-8.36,2.82-9.89,6.8-2.88.1-5.34,1.89-6.4,4.41-.4-.1-.83-.16-1.26-.16-2.8,0-5.07,2.27-5.07,5.07s2.27,5.07,5.07,5.07h29.25c4.39,0,7.95-3.56,7.95-7.95s-3.56-7.95-7.95-7.95Z"/>
+      <path class="cls-18" d="M17.24,47.58s3.68-.25,4.9,2.28c0,0-3.14-6.82,3.95-9.21,0,0-5.91.09-8.86,6.93Z"/>
+    </g>
+    <g id="Cloud_right" data-name="Cloud right">
+      <path class="cls-12" d="M96.05,45.88c-.81,0-1.6.12-2.34.35-1.78-3.35-5.3-5.63-9.36-5.63-4.51,0-8.36,2.82-9.89,6.8-2.88.1-5.34,1.89-6.4,4.41-.4-.1-.83-.16-1.26-.16-2.8,0-5.07,2.27-5.07,5.07s2.27,5.07,5.07,5.07h29.25c4.39,0,7.95-3.56,7.95-7.95s-3.56-7.95-7.95-7.95Z"/>
+      <path class="cls-18" d="M74.46,47.58s3.68-.25,4.9,2.28c0,0-3.14-6.82,3.95-9.21,0,0-5.91.09-8.86,6.93Z"/>
+    </g>
+    <g id="Cloud_center" data-name="Cloud center">
+      <path class="cls-19" d="M73.98,43.37c-1.16,0-2.29.18-3.34.5-2.54-4.78-7.58-8.04-13.37-8.04-6.45,0-11.95,4.03-14.13,9.71-4.12.14-7.63,2.69-9.14,6.3-.58-.15-1.18-.23-1.8-.23-4,0-7.25,3.24-7.25,7.25s3.24,7.25,7.25,7.25h41.79c6.28,0,11.37-5.09,11.37-11.37s-5.09-11.37-11.37-11.37Z"/>
+      <path class="cls-11" d="M73.98,43.37c-1.16,0-2.29.18-3.34.5-2.54-4.78-7.58-8.04-13.37-8.04-6.45,0-11.95,4.03-14.13,9.71-4.12.14-7.63,2.69-9.14,6.3-.58-.15-1.18-.23-1.8-.23-4,0-7.25,3.24-7.25,7.25s3.24,7.25,7.25,7.25h41.79c6.28,0,11.37-5.09,11.37-11.37s-5.09-11.37-11.37-11.37Z"/>
+      <path class="cls-15" d="M60.09,48.67c0-1.71-1.38-3.09-3.09-3.09s-3.09,1.38-3.09,3.09c0,1.2.69,2.24,1.69,2.75v3.06c0,.77.63,1.4,1.4,1.4s1.4-.63,1.4-1.4v-3.06c1-.51,1.69-1.55,1.69-2.75Z"/>
+      <path class="cls-1" d="M65.91,48.01c1.93-2.72,5.11-4.5,8.71-4.5.87,0,1.71.1,2.51.3"/>
+    </g>
+  </g>
+</svg>

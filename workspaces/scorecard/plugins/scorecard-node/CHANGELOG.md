@@ -1,5 +1,53 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 3.0.0
+
+### Minor Changes
+
+- c7f89e7: Introduce `scorecardCollectorsExtensionPoint` for registering collectors to fetch data from different datasources, and `scorecardCollectorsServiceRef` for consuming collected data in metric providers `calculateMetrics` through `collect(...)`.
+- 50447ac: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- efb4c4f: Remove unused uuid dependency
+- Updated dependencies [8c85bd4]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
+## 2.7.9
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+
+## 2.7.8
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
 ## 2.7.7
 
 ### Patch Changes

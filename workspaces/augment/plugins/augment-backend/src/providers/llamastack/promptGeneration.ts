@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-/** @deprecated Import from '../responses-api/chat/promptGeneration' instead */
-export * from '../responses-api/chat/promptGeneration';
+/** @deprecated Import from '../../services/promptGeneration' instead */
+export * from '../../services/promptGeneration';

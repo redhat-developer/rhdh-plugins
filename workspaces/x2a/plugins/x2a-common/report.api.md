@@ -44,6 +44,42 @@ export interface Artifact {
 }
 
 // @public (undocumented)
+export class ArtifactKind {
+    // (undocumented)
+    static all(): readonly ArtifactKind[];
+    // (undocumented)
+    static readonly ANSIBLE_PROJECT: ArtifactKind;
+    // (undocumented)
+    equals(other: ArtifactKind): boolean;
+    // (undocumented)
+    static from(raw: string): ArtifactKind;
+    // (undocumented)
+    isAnsibleProject(): boolean;
+    // (undocumented)
+    isMigratedSources(): boolean;
+    // (undocumented)
+    isMigrationPlan(): boolean;
+    // (undocumented)
+    isModuleMigrationPlan(): boolean;
+    // (undocumented)
+    isProjectMetadata(): boolean;
+    // (undocumented)
+    static readonly MIGRATED_SOURCES: ArtifactKind;
+    // (undocumented)
+    static readonly MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly MODULE_MIGRATION_PLAN: ArtifactKind;
+    // (undocumented)
+    static readonly PROJECT_METADATA: ArtifactKind;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    readonly value: ArtifactType;
+    // (undocumented)
+    static values(): readonly ArtifactType[];
+}
+
+// @public (undocumented)
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public
@@ -102,7 +138,6 @@ export class DefaultApiClient {
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
-    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdPatch(request: ProjectsProjectIdPatch, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     rulesGet(request: RulesGet, options?: RequestOptions): Promise<TypedResponse<RulesGet200Response>>;
@@ -147,9 +182,11 @@ export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
+    attemptCount?: number;
     commitId?: string;
     errorDetails?: string;
     finishedAt?: Date;
+    firstAttemptAt?: Date;
     id: string;
     k8sJobName: string;
     moduleId?: string;
@@ -231,6 +268,7 @@ export interface Module {
     projectId: string;
     // (undocumented)
     publish?: Job;
+    removedAt?: Date;
     sourcePath: string;
     // (undocumented)
     status?: ModuleStatus;
@@ -247,13 +285,14 @@ export interface ModulesStatusSummary {
     error: number;
     finished: number;
     pending: number;
+    removed: number;
     running: number;
     total: number;
     waiting: number;
 }
 
 // @public (undocumented)
-export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled';
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error' | 'cancelled' | 'removed';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -485,20 +524,6 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
 }
 
 // @public (undocumented)
-export type ProjectsProjectIdModulesPost = {
-    path: {
-        projectId: string;
-    };
-    body: ProjectsProjectIdModulesPostRequest;
-};
-
-// @public (undocumented)
-export interface ProjectsProjectIdModulesPostRequest {
-    name: string;
-    sourcePath: string;
-}
-
-// @public (undocumented)
 export type ProjectsProjectIdPatch = {
     path: {
         projectId: string;
@@ -534,6 +559,7 @@ export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
 export interface ProjectsProjectIdRunPostRequest {
     // (undocumented)
     aapCredentials?: AAPCredentials;
+    refresh?: boolean;
     // (undocumented)
     sourceRepoAuth: GitRepoAuth;
     // (undocumented)

@@ -37,6 +37,11 @@ export const createFetchTechDocsAction = ({
   actionsRegistry.register({
     name: 'fetch-techdocs',
     title: 'Fetch TechDoc Entities',
+    attributes: {
+      destructive: false,
+      readOnly: true,
+      idempotent: true,
+    },
     description: `Search and retrieve all TechDoc entities from the Backstage Server
 
       List all Backstage entities with techdocs. Results are returned in JSON array format, where each

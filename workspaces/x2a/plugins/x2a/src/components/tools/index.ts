@@ -27,3 +27,4 @@ export * from './downloadLogFile';
 export * from './hasPhasePrerequisites';
 export * from './areEligibleModulesToRun';
 export * from './isEligibleForRetriggerInit';
+export * from './isEligibleForResync';

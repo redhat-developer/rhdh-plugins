@@ -17,8 +17,6 @@
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 
-import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
 import { SonarQubeBooleanMetricProvider } from './SonarQubeBooleanMetricProvider';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -49,55 +47,32 @@ function entity(projectKey = 'my-project'): Entity {
 }
 
 describe('SonarQubeBooleanMetricProvider', () => {
-  describe('getMetricThresholds', () => {
-    it('should return default thresholds when none provided', () => {
+  describe('getMetrics', () => {
+    it('should create provider with default thresholds on metric', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
-      expect(provider.getMetricThresholds()).toBeDefined();
-      expect(provider.getMetricThresholds().rules).toHaveLength(2);
-    });
-
-    it('should return custom thresholds when provided', () => {
-      const custom: ThresholdConfig = {
-        rules: [
-          { key: 'ok', expression: '==true', color: '#00ff00', icon: 'ok' },
-        ],
-      };
-      const mockConfiWithCustomThresholds = new ConfigReader({
-        scorecard: {
-          plugins: {
-            sonarqube: {
-              quality_gate: {
-                thresholds: custom,
-              },
-            },
-          },
-        },
-      });
-      const provider = SonarQubeBooleanMetricProvider.fromConfig(
-        mockConfiWithCustomThresholds,
-        mockLogger,
-        'quality_gate',
-      );
-      expect(provider.getMetricThresholds()).toEqual(custom);
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].thresholds).toBeDefined();
+      expect(metrics[0].thresholds.rules).toHaveLength(2);
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it('should return true when quality gate passes', async () => {
       mockGetQualityGateStatus.mockResolvedValue(true);
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
-      const result = await provider.calculateMetric(entity());
+      const results = await provider.calculateMetrics(entity());
 
-      expect(result).toBe(true);
+      expect(results.get(provider.getProviderId())).toBe(true);
       expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
         'my-project',
         undefined,
@@ -109,12 +84,12 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
-      const result = await provider.calculateMetric(entity());
+      const results = await provider.calculateMetrics(entity());
 
-      expect(result).toBe(false);
+      expect(results.get(provider.getProviderId())).toBe(false);
     });
 
     it('should pass instanceName when annotation has instance prefix', async () => {
@@ -122,10 +97,10 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
 
-      await provider.calculateMetric(entity('internal/my-project'));
+      await provider.calculateMetrics(entity('internal/my-project'));
 
       expect(mockGetQualityGateStatus).toHaveBeenCalledWith(
         'my-project',
@@ -137,12 +112,12 @@ describe('SonarQubeBooleanMetricProvider', () => {
       const provider = SonarQubeBooleanMetricProvider.fromConfig(
         mockConfig,
         mockLogger,
-        'quality_gate',
+        'qualityGate',
       );
       const e = entity();
       delete e.metadata.annotations!['sonarqube.org/project-key'];
 
-      await expect(provider.calculateMetric(e)).rejects.toThrow(
+      await expect(provider.calculateMetrics(e)).rejects.toThrow(
         "Missing annotation 'sonarqube.org/project-key'",
       );
     });

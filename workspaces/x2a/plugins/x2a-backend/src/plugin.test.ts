@@ -120,6 +120,11 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   // modules
   createModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   deleteModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  softDeleteModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  restoreModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  updateModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   listModules: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   // jobs

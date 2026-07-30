@@ -45,6 +45,25 @@ export const oidcAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
 });
 
 /**
+ * Keycloak auth API for the RHDH multi-provider sign-in page (OIDC-backed).
+ *
+ * @alpha
+ */
+export const keycloakAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
+  id: 'internal.auth.keycloak',
+});
+
+/**
+ * PingFederate auth API for the RHDH multi-provider sign-in page (OIDC-backed).
+ *
+ * @alpha
+ */
+export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType> =
+  createApiRef({
+    id: 'internal.auth.pingfederate',
+  });
+
+/**
  * Auth0 auth API for the RHDH multi-provider sign-in page.
  *
  * @alpha

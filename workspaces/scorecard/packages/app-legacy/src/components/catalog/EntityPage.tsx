@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Button, Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import {
   EntityApiDefinitionCard,
   EntityConsumedApisCard,
@@ -72,7 +73,7 @@ import {
   EntityKubernetesContent,
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
-import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
 import { GithubIssuesCard } from '@backstage-community/plugin-github-issues';
 import { EntityGithubPullRequestsContent } from '@roadiehq/backstage-plugin-github-pull-requests';
@@ -282,7 +283,7 @@ const websiteEntityPage = (
  * NOTE: This page is designed to work on small screens such as mobile devices.
  * This is based on Material UI Grid. If breakpoints are used, each grid item must set the `xs` prop to a column size or to `true`,
  * since this does not default. If no breakpoints are used, the items will equitably share the available space.
- * https://material-ui.com/components/grid/#basic-grid.
+ * https://mui.com/material-ui/react-grid/#basic-grid.
  */
 
 const defaultEntityPage = (

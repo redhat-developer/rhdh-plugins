@@ -38,8 +38,7 @@ const getHiddenCondition = (
     return undefined;
   }
   return (uiSchema as Record<string, any>)[name]?.['ui:hidden'] as
-    | HiddenCondition
-    | undefined;
+    HiddenCondition | undefined;
 };
 
 const HiddenObjectFieldTemplate = (
@@ -76,8 +75,8 @@ const HiddenObjectFieldTemplate = (
     ButtonTemplates: { AddButton },
   } = registry.templates;
 
-  const rootFormData =
-    (formContext?.formData as JsonObject) || (formData as JsonObject) || {};
+  const rootFormData = (formContext?.formData as JsonObject) || {};
+  const localFormData = (formData as JsonObject) || rootFormData;
 
   return (
     <>
@@ -105,7 +104,11 @@ const HiddenObjectFieldTemplate = (
           const hiddenCondition = getHiddenCondition(uiSchema, element.name);
           const isHiddenByCondition =
             hiddenCondition !== undefined
-              ? evaluateHiddenCondition(hiddenCondition, rootFormData)
+              ? evaluateHiddenCondition(
+                  hiddenCondition,
+                  localFormData,
+                  rootFormData,
+                )
               : false;
           const isHidden = element.hidden || isHiddenByCondition;
 

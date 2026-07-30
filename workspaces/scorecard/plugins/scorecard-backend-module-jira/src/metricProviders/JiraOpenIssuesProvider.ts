@@ -16,16 +16,12 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { JIRA_CONFIG_PATH, OPEN_ISSUES_CONFIG_PATH } from '../constants';
+import { JIRA_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getThresholdsFromConfig,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
@@ -44,20 +40,10 @@ const { PROJECT_KEY } = ScorecardJiraAnnotations;
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
-  private constructor(
-    config: Config,
-    connectionStrategy: ConnectionStrategy,
-    thresholds: ThresholdConfig,
-  ) {
+  private constructor(config: Config, connectionStrategy: ConnectionStrategy) {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
-    this.thresholds = thresholds;
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -71,22 +57,21 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'jira.open_issues';
+    return 'jira.openIssues';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of issues that are currently open in Jira.',
-      type: this.getMetricType(),
-      history: true,
-    };
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'Jira open blocking tickets',
+        description:
+          'Highlights the number of issues that are currently open in Jira.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   supportsEntity(entity: Entity): boolean {
@@ -119,17 +104,13 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       );
     }
 
-    const thresholds =
-      getThresholdsFromConfig(
-        config,
-        `${OPEN_ISSUES_CONFIG_PATH}.thresholds`,
-        'number',
-      ) ?? DEFAULT_NUMBER_THRESHOLDS;
-
-    return new JiraOpenIssuesProvider(config, connectionStrategy, thresholds);
+    return new JiraOpenIssuesProvider(config, connectionStrategy);
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    return this.jiraClient.getCountOpenIssues(entity);
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
+    const value = await this.jiraClient.getCountOpenIssues(entity);
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), value);
+    return results;
   }
 }

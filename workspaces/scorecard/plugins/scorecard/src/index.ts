@@ -19,18 +19,78 @@
  * @packageDocumentation
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import {
+  createFrontendModule,
+  createFrontendPlugin,
+} from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { rootRouteRef, scorecardDrillDownRouteRef } from './routes';
+import { scorecardTranslations } from './translations';
+import { scorecardApi } from './extensions/api';
+import { scorecardEntityContent } from './extensions/entityTab';
+import {
+  aggregatedCardWithDeprecatedMetricIdWidget,
+  aggregatedCardWithDefaultAggregationWidget,
+  aggregatedCardWithGithubOpenPrsWidget,
+  aggregatedCardWithJiraOpenIssuesWidget,
+  aggregatedCardWithGithubFilecheckLicenseWidget,
+  aggregatedCardWithGithubFilecheckCodeownersWidget,
+  aggregatedCardWithGithubOpenPrsWeightedWidget,
+} from './extensions/homePageCards';
+import { scorecardPage } from './extensions/scorecardPage';
+import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+/**
+ * Extension for Scorecard translations.
+ */
+const scorecardTranslation = TranslationBlueprint.make({
+  params: {
+    resource: scorecardTranslations,
+  },
 });
 
-export * from './plugin';
+/**
+ * The primary Scorecard frontend plugin for the new Backstage frontend system.
+ *
+ * Includes page, API, entity tab, layout, and homepage widget extensions.
+ * Translations remain a separate app module (NFS requirement).
+ *
+ * @public
+ */
+export default createFrontendPlugin({
+  pluginId: 'scorecard',
+  extensions: [
+    scorecardApi,
+    scorecardPage,
+    scorecardEntityContent,
+    scorecardEntityLayoutGrid,
+    aggregatedCardWithDeprecatedMetricIdWidget,
+    aggregatedCardWithDefaultAggregationWidget,
+    aggregatedCardWithJiraOpenIssuesWidget,
+    aggregatedCardWithGithubOpenPrsWidget,
+    aggregatedCardWithGithubFilecheckLicenseWidget,
+    aggregatedCardWithGithubFilecheckCodeownersWidget,
+    aggregatedCardWithGithubOpenPrsWeightedWidget,
+  ],
+  routes: {
+    root: rootRouteRef,
+    drillDown: scorecardDrillDownRouteRef,
+  },
+});
 
-export { scorecardTranslations, scorecardTranslationRef } from './translations';
+/**
+ * App module that automatically registers Scorecard translations.
+ * @public
+ */
+export const scorecardTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [scorecardTranslation],
+});
 
-export { default as ScorecardSuccessStatusIcon } from '@mui/icons-material/CheckCircleOutline';
-export { default as ScorecardWarningStatusIcon } from '@mui/icons-material/WarningAmber';
-export { default as ScorecardErrorStatusIcon } from '@mui/icons-material/DangerousOutlined';
+export { scorecardTranslationRef, scorecardTranslations } from './translations';
+
+/**
+ * Props for Scorecard entity-tab layout components.
+ * @public
+ */
+export type { ScorecardLayoutProps } from './blueprints/ScorecardLayoutBlueprint';

@@ -69,6 +69,8 @@ const StatusWithText = ({
       return <StatusPending>{children}</StatusPending>;
     case 'cancelled':
       return <StatusAborted>{children}</StatusAborted>;
+    case 'removed':
+      return <StatusAborted>{children}</StatusAborted>;
     default:
       return (
         <Box component="span" className={classes.unknownStatus}>
@@ -86,7 +88,9 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
   const styles = useStyles();
 
-  const status = module?.status;
+  const status: ModuleStatus | undefined = module?.removedAt
+    ? 'removed'
+    : module?.status;
 
   let chip;
   if (status === 'success') {

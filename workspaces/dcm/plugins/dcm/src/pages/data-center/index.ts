@@ -15,7 +15,3 @@
  */
 
 export { DataCenterPage } from './DataCenterPage';
-export { EnvironmentsTabContent } from './EnvironmentsTabContent';
-export { ServiceSpecsTabContent } from '../service-spec';
-export type { Environment } from '../../data/environments';
-export type { ServiceSpec } from '../../data/service-specs';

@@ -23,10 +23,11 @@ For AI: Follow this exact sequence for any plugin translation:
 - [ ] **4. Create hooks** (`src/hooks/useTranslation.ts`, `src/hooks/useLanguage.ts`)
 - [ ] **5. Create Trans component** (`src/components/Trans.tsx`)
 - [ ] **6. Replace hardcoded strings** (components, utilities, constants)
-- [ ] **7. Add test mocks** (`src/test-utils/mockTranslations.ts`)
-- [ ] **8. Update all tests** (apply mock pattern)
-- [ ] **9. Configure app integration** (dev mode + main app)
-- [ ] **10. Validate translations** (consistency, grammar, interpolation)
+- [ ] **7. Add translation key integrity test** (`src/translations/ref.test.ts`)
+- [ ] **8. Add test mocks** (`src/test-utils/mockTranslations.ts`)
+- [ ] **9. Update all tests** (apply mock pattern)
+- [ ] **10. Configure app integration** (dev mode + main app)
+- [ ] **11. Validate translations** (consistency, grammar, interpolation)
 
 ## Decision Trees
 
@@ -47,6 +48,7 @@ Plugin structure:
 src/
 ├── translations/
 │   ├── ref.ts          # English messages (nested objects)
+│   ├── ref.test.ts     # Key integrity test (ref vs language files)
 │   ├── de.ts           # German (flat keys)
 │   ├── fr.ts           # French (flat keys)
 │   ├── it.ts           # Italian (flat keys)
@@ -420,6 +422,105 @@ describe('MyComponent', () => {
   });
 });
 ```
+
+### Translation Key Integrity Test (ref.test.ts)
+
+Add a test that verifies every language file has exactly the same keys as the
+reference. This catches missing or stale keys early — before they surface as
+runtime fallbacks.
+
+```typescript
+// src/translations/ref.test.ts
+import { myPluginMessages } from './ref';
+import myPluginTranslationDe from './de';
+import myPluginTranslationEs from './es';
+import myPluginTranslationFr from './fr';
+import myPluginTranslationIt from './it';
+// Import additional language modules as needed
+
+function flattenMessages(
+  obj: Record<string, unknown>,
+  prefix = '',
+): Record<string, string> {
+  const flattened: Record<string, string> = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        Object.assign(
+          flattened,
+          flattenMessages(value as Record<string, unknown>, newKey),
+        );
+      } else {
+        flattened[newKey] = String(value);
+      }
+    }
+  }
+  return flattened;
+}
+
+const refKeys = new Set(
+  Object.keys(flattenMessages(myPluginMessages as Record<string, unknown>)),
+);
+const refKeysSorted = Array.from(refKeys).sort();
+
+const deMessages = flattenMessages(myPluginTranslationDe.messages);
+const esMessages = flattenMessages(myPluginTranslationEs.messages);
+const frMessages = flattenMessages(myPluginTranslationFr.messages);
+const itMessages = flattenMessages(myPluginTranslationIt.messages);
+
+const languageModules = [
+  ['de', deMessages],
+  ['es', esMessages],
+  ['fr', frMessages],
+  ['it', itMessages],
+  // Add more languages as needed
+] as const;
+
+describe('ref (translation keys)', () => {
+  it('has at least one key', () => {
+    expect(refKeys.size).toBeGreaterThan(0);
+  });
+
+  describe.each(languageModules)('"%s" translations', (_lang, messages) => {
+    describe('has exactly the same keys as ref (no more, no less)', () => {
+      const langKeys = Object.keys(messages);
+      const langKeysSet = new Set(langKeys);
+      const langKeysSorted = [...langKeys].sort();
+
+      const missing = refKeysSorted.filter(k => !langKeysSet.has(k));
+      const extra = langKeysSorted.filter(k => !refKeys.has(k));
+
+      it('should have no missing keys', () => {
+        expect(missing).toEqual([]);
+      });
+
+      it('should have no extra keys', () => {
+        expect(extra).toEqual([]);
+      });
+
+      it('should have the same number of keys as ref', () => {
+        expect(langKeys).toHaveLength(refKeys.size);
+      });
+    });
+  });
+});
+```
+
+**Why this test matters:**
+
+- Detects keys added to `ref.ts` but not yet translated
+- Detects stale keys left in language files after a refactor
+- Runs with standard `jest` - no extra dependencies needed
+- `describe.each` keeps the output clear: each language gets its own test group
+
+Update the checklist item count and the file structure to include this file when
+setting up a new plugin.
 
 ## App Integration
 

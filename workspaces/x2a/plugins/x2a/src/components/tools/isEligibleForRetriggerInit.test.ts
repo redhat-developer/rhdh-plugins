@@ -15,12 +15,19 @@
  */
 
 import {
+  Artifact,
   Job,
   JobStatusEnum,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { isEligibleForRetriggerInit } from './isEligibleForRetriggerInit';
+
+const migrationPlanArtifact: Artifact = {
+  id: 'artifact-1',
+  type: 'migration_plan',
+  value: 'https://repo.example.com/plan.md',
+};
 
 const baseProject: Project = {
   id: '123',
@@ -65,6 +72,7 @@ describe('isEligibleForRetriggerInit', () => {
           running: 0,
           error: 0,
           cancelled: 0,
+          removed: 0,
         },
       },
     };
@@ -124,6 +132,28 @@ describe('isEligibleForRetriggerInit', () => {
           running: 1,
           error: 0,
           cancelled: 0,
+          removed: 0,
+        },
+      },
+    };
+    expect(isEligibleForRetriggerInit(project)).toBe(false);
+  });
+
+  it('returns false when migration plan exists but no active modules', () => {
+    const project: Project = {
+      ...baseProject,
+      migrationPlan: migrationPlanArtifact,
+      status: {
+        state: 'initialized',
+        modulesSummary: {
+          total: 0,
+          finished: 0,
+          waiting: 0,
+          pending: 0,
+          running: 0,
+          error: 0,
+          cancelled: 0,
+          removed: 2,
         },
       },
     };
@@ -144,6 +174,7 @@ describe('isEligibleForRetriggerInit', () => {
           running: 0,
           error: 0,
           cancelled: 0,
+          removed: 0,
         },
       },
     };

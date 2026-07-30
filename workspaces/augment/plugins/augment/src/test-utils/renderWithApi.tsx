@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { ReactNode } from 'react';
 // eslint-disable-next-line @backstage/no-undeclared-imports
 import { TestApiProvider } from '@backstage/test-utils';
 import { augmentApiRef } from '../api';
 import type { AugmentApi } from '../api';
 
 export function createApiTestWrapper(api: Partial<AugmentApi>) {
-  return ({ children }: { children: React.ReactNode }) => (
+  return ({ children }: { children: ReactNode }) => (
     <TestApiProvider apis={[[augmentApiRef, api as AugmentApi]]}>
       {children}
     </TestApiProvider>

@@ -39,38 +39,41 @@ import LibraryBooks from '@mui/icons-material/LibraryBooks';
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { Administration } from '@backstage-community/plugin-rbac';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
-
-const useSidebarLogoStyles = makeStyles({
-  root: {
-    width: sidebarConfig.drawerWidthClosed,
-    height: 3 * sidebarConfig.logoHeight,
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    marginBottom: -14,
-  },
-  link: {
-    width: sidebarConfig.drawerWidthClosed,
-    marginLeft: 24,
-  },
-});
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const SidebarLogo = () => {
-  const classes = useSidebarLogoStyles();
   const { isOpen } = useSidebarOpenState();
 
   return (
-    <div className={classes.root}>
-      <Link to="/" underline="none" className={classes.link} aria-label="Home">
+    <Box
+      sx={{
+        width: sidebarConfig.drawerWidthClosed,
+        height: 3 * sidebarConfig.logoHeight,
+        display: 'flex',
+        flexFlow: 'row nowrap',
+        alignItems: 'center',
+        mb: '-14px',
+      }}
+    >
+      <Link
+        to="/"
+        underline="none"
+        aria-label="Home"
+        style={{
+          width: sidebarConfig.drawerWidthClosed,
+          marginLeft: 24,
+        }}
+      >
         {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
-    </div>
+    </Box>
   );
 };
 

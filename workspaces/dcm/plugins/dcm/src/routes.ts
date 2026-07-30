@@ -19,30 +19,6 @@ export const rootRouteRef = createRouteRef({
   id: 'dcm',
 });
 
-export const serviceSpecsRouteRef = createSubRouteRef({
-  id: 'dcm-service-specs',
-  parent: rootRouteRef,
-  path: '/service-specs',
-});
-
-export const environmentDetailsRouteRef = createSubRouteRef({
-  id: 'dcm-environment-details',
-  parent: rootRouteRef,
-  path: '/environments/:id',
-});
-
-export const serviceSpecDetailsRouteRef = createSubRouteRef({
-  id: 'dcm-service-spec-details',
-  parent: rootRouteRef,
-  path: '/service-specs/:id',
-});
-
-export const DCM_DETAILS_TABS = {
-  overview: '/',
-  entities: '/entities',
-  requestHistory: '/request-history',
-} as const;
-
 // ── API-aligned tab route refs ─────────────────────────────────────────────
 
 export const providersRouteRef = createSubRouteRef({

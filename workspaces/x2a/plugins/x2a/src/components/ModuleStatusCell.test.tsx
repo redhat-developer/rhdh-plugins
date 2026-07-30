@@ -115,4 +115,18 @@ describe('ModuleStatusCell', () => {
     expect(screen.getByText('Cancelled')).toBeInTheDocument();
     expect(screen.queryByText('review')).not.toBeInTheDocument();
   });
+
+  it('renders removed status when removedAt is set, regardless of underlying status', () => {
+    renderWithTheme(
+      <ModuleStatusCell
+        module={{
+          ...baseModule,
+          status: 'success',
+          removedAt: new Date('2026-05-01T00:00:00Z'),
+        }}
+      />,
+    );
+    expect(screen.getByText('Removed')).toBeInTheDocument();
+    expect(screen.queryByText('Success')).not.toBeInTheDocument();
+  });
 });

@@ -20,37 +20,22 @@ import type { McpAuthService } from '../../llamastack/McpAuthService';
 import type { MCPServerConfig, ResponsesApiFunctionTool } from '../../../types';
 import { BACKEND_TOOL_DISCOVERY_TTL_MS } from '../../../constants';
 import { toErrorMessage } from '../../../services/utils';
-import { isPrivateUrlWithDns } from '../../../services/utils/SsrfGuard';
-import { connectToMcpServer } from '../../../services/utils/mcpClient';
+import {
+  processDiscoveryResults,
+  collectSucceededServerIds,
+  preserveFailedServerTools,
+  swapRegistryAndCleanup,
+  closeOrphanedClients,
+} from './toolDiscoveryHelpers';
+import type { ResolvedTool } from './toolDiscoveryHelpers';
+import {
+  connectAndListToolsSafe,
+  executeToolOnClient,
+  isSessionError,
+} from './toolClientOps';
 
 const SEPARATOR = '__';
 
-interface ResolvedTool {
-  serverId: string;
-  serverUrl: string;
-  originalName: string;
-  prefixedName: string;
-  description: string;
-  inputSchema: Record<string, unknown>;
-}
-
-/**
- * Executes MCP tool calls on behalf of LlamaStack using the official
- * @modelcontextprotocol/sdk Client.
- *
- * When LlamaStack cannot reach MCP servers (network isolation),
- * this service converts MCP tools into function tools and proxies
- * tool execution through the Backstage backend, which CAN reach
- * the MCP servers.
- *
- * Flow:
- *   1. discoverTools() — connects to MCP servers via the SDK Client,
- *      lists tools, and converts them to function tool definitions
- *   2. isBackendTool() — checks if a function_call name belongs to
- *      a backend-managed MCP tool
- *   3. executeTool() — calls the MCP server via the SDK Client's
- *      callTool() and returns the result text
- */
 export class BackendToolExecutor {
   private registry = new Map<string, ResolvedTool>();
   private clients = new Map<string, Client>();
@@ -86,12 +71,6 @@ export class BackendToolExecutor {
     };
   }
 
-  /**
-   * Strip verbose metadata from JSON Schema to reduce token footprint
-   * while preserving the structure the LLM needs for tool calling.
-   * Keeps: type, properties (names + types), required, enum, items.
-   * Removes: nested descriptions, examples, $schema, title, default, additionalProperties.
-   */
   static slimSchema(schema: Record<string, unknown>): Record<string, unknown> {
     const STRIP_KEYS = new Set([
       'description',
@@ -107,8 +86,7 @@ export class BackendToolExecutor {
       if (obj !== null && typeof obj === 'object') {
         const out: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-          if (STRIP_KEYS.has(k)) continue;
-          out[k] = slim(v);
+          if (!STRIP_KEYS.has(k)) out[k] = slim(v);
         }
         return out;
       }
@@ -117,10 +95,6 @@ export class BackendToolExecutor {
     return slim(schema) as Record<string, unknown>;
   }
 
-  /**
-   * Connect to all configured MCP servers using the official SDK,
-   * discover their tools, and register them as function tool definitions.
-   */
   async discoverTools(
     servers: MCPServerConfig[],
   ): Promise<ResponsesApiFunctionTool[]> {
@@ -130,164 +104,69 @@ export class BackendToolExecutor {
 
     const results = await Promise.allSettled(
       servers.map(async server => {
-        const { client, tools: serverTools } =
-          await this.connectAndListToolsSafe(server, { skipSsrfCheck: true });
+        const { client, tools: serverTools } = await connectAndListToolsSafe(
+          server,
+          this.mcpAuth,
+          this.skipTlsVerify,
+          this.logger,
+          { skipSsrfCheck: true },
+        );
         return { server, serverTools, client };
       }),
     );
 
-    this.processDiscoveryResults(results, nextRegistry, nextClients, tools);
-
-    const succeededServerIds = this.collectSucceededServerIds(results);
-    this.preserveFailedServerTools(
-      succeededServerIds,
+    processDiscoveryResults(
+      results,
       nextRegistry,
       nextClients,
       tools,
+      BackendToolExecutor.prefixName,
+      BackendToolExecutor.slimSchema,
+      this.logger,
     );
 
-    if (this.shouldKeepPreviousRegistry(nextRegistry, succeededServerIds)) {
-      this.closeOrphanedClients(nextClients);
-      return this.rebuildFromExistingRegistry();
-    }
+    const succeededServerIds = collectSucceededServerIds(results);
+    preserveFailedServerTools(
+      succeededServerIds,
+      this.registry,
+      nextRegistry,
+      nextClients,
+      this.clients,
+      tools,
+      BackendToolExecutor.slimSchema,
+      this.logger,
+    );
 
-    this.swapRegistryAndCleanup(nextRegistry, nextClients, servers.length);
-    return tools;
-  }
-
-  private processDiscoveryResults(
-    results: PromiseSettledResult<{
-      server: MCPServerConfig;
-      serverTools: Array<{
-        name: string;
-        description?: string;
-        inputSchema?: unknown;
-      }>;
-      client: Client | null;
-    }>[],
-    nextRegistry: Map<string, ResolvedTool>,
-    nextClients: Map<string, Client>,
-    tools: ResponsesApiFunctionTool[],
-  ): void {
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        this.logger.error(
-          `[BackendToolExecutor] Server discovery rejected: ${toErrorMessage(result.reason)}`,
-        );
-        continue;
-      }
-      const { server, serverTools, client } = result.value;
-      if (client) nextClients.set(server.id, client);
-
-      for (const tool of serverTools) {
-        const prefixedName = BackendToolExecutor.prefixName(
-          server.id,
-          tool.name,
-        );
-        const resolved: ResolvedTool = {
-          serverId: server.id,
-          serverUrl: server.url,
-          originalName: tool.name,
-          prefixedName,
-          description:
-            tool.description || `Tool ${tool.name} from ${server.id}`,
-          inputSchema: (tool.inputSchema as Record<string, unknown>) || {
-            type: 'object',
-            properties: {},
-          },
-        };
-        nextRegistry.set(prefixedName, resolved);
-        tools.push({
-          type: 'function',
-          name: prefixedName,
-          description: resolved.description,
-          parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
-        });
-      }
-      this.logger.info(
-        `[BackendToolExecutor] Discovered ${serverTools.length} tools from ${server.id}: [${serverTools.map(t => t.name).join(', ')}]`,
-      );
-    }
-  }
-
-  private collectSucceededServerIds(
-    results: PromiseSettledResult<{
-      server: MCPServerConfig;
-      client: Client | null;
-    }>[],
-  ): Set<string> {
-    const ids = new Set<string>();
-    for (const result of results) {
-      if (result.status === 'fulfilled' && result.value.client !== null) {
-        ids.add(result.value.server.id);
-      }
-    }
-    return ids;
-  }
-
-  private preserveFailedServerTools(
-    succeededServerIds: Set<string>,
-    nextRegistry: Map<string, ResolvedTool>,
-    nextClients: Map<string, Client>,
-    tools: ResponsesApiFunctionTool[],
-  ): void {
-    let preservedCount = 0;
-    for (const [key, resolved] of this.registry) {
-      if (
-        !nextRegistry.has(key) &&
-        !succeededServerIds.has(resolved.serverId)
-      ) {
-        nextRegistry.set(key, resolved);
-        tools.push({
-          type: 'function',
-          name: resolved.prefixedName,
-          description: resolved.description,
-          parameters: BackendToolExecutor.slimSchema(resolved.inputSchema),
-        });
-        preservedCount++;
-      }
-    }
-    for (const [serverId, client] of this.clients) {
-      if (!nextClients.has(serverId) && !succeededServerIds.has(serverId)) {
-        nextClients.set(serverId, client);
-      }
-    }
-    if (preservedCount > 0) {
-      this.logger.warn(
-        `[BackendToolExecutor] Preserved ${preservedCount} tool(s) from failed server(s) during partial re-discovery`,
-      );
-    }
-  }
-
-  private shouldKeepPreviousRegistry(
-    nextRegistry: Map<string, ResolvedTool>,
-    succeededServerIds: Set<string>,
-  ): boolean {
-    return (
+    if (
       nextRegistry.size === 0 &&
       this.registry.size > 0 &&
       succeededServerIds.size === 0
-    );
-  }
-
-  private closeOrphanedClients(nextClients: Map<string, Client>): void {
-    this.logger.warn(
-      `[BackendToolExecutor] No servers reachable during rediscovery (previous: ${this.registry.size}). ` +
-        `Keeping previous registry and cached tool definitions.`,
-    );
-    for (const [id, client] of nextClients) {
-      if (!this.clients.has(id) || this.clients.get(id) !== client) {
-        client.close().catch(err => {
-          this.logger.warn(
-            `[BackendToolExecutor] Error closing orphaned client ${id}: ${toErrorMessage(err)}`,
-          );
-        });
-      }
+    ) {
+      closeOrphanedClients(
+        nextClients,
+        this.clients,
+        this.registry.size,
+        this.logger,
+      );
+      return this.cachedTools ?? this.rebuildFromRegistry();
     }
+
+    const staleClients = new Map(this.clients);
+    this.registry = nextRegistry;
+    this.clients = nextClients;
+    this.discoveryGeneration++;
+    swapRegistryAndCleanup(
+      staleClients,
+      nextClients,
+      servers.length,
+      this.registry.size,
+      this.discoveryGeneration,
+      this.logger,
+    );
+    return tools;
   }
 
-  private rebuildFromExistingRegistry(): ResponsesApiFunctionTool[] {
-    if (this.cachedTools) return this.cachedTools;
+  private rebuildFromRegistry(): ResponsesApiFunctionTool[] {
     const rebuilt: ResponsesApiFunctionTool[] = [];
     for (const resolved of this.registry.values()) {
       rebuilt.push({
@@ -300,31 +179,6 @@ export class BackendToolExecutor {
     return rebuilt;
   }
 
-  private swapRegistryAndCleanup(
-    nextRegistry: Map<string, ResolvedTool>,
-    nextClients: Map<string, Client>,
-    serverCount: number,
-  ): void {
-    const staleClients = new Map(this.clients);
-    this.registry = nextRegistry;
-    this.clients = nextClients;
-    this.discoveryGeneration++;
-
-    for (const [id, client] of staleClients) {
-      if (!nextClients.has(id)) {
-        client.close().catch(err => {
-          this.logger.warn(
-            `[BackendToolExecutor] Error closing stale client ${id}: ${toErrorMessage(err)}`,
-          );
-        });
-      }
-    }
-
-    this.logger.info(
-      `[BackendToolExecutor] Total: ${this.registry.size} function tools from ${serverCount} server(s) (generation=${this.discoveryGeneration})`,
-    );
-  }
-
   private static serverCacheKey(servers: MCPServerConfig[]): string {
     return servers
       .map(s => s.id)
@@ -332,13 +186,6 @@ export class BackendToolExecutor {
       .join(',');
   }
 
-  /**
-   * Returns cached tools if the cache is still valid (within TTL) and
-   * was populated for the same set of servers.
-   * Otherwise triggers a fresh `discoverTools()` call.
-   * Concurrent callers share a single in-flight request only when they
-   * request the same server set.
-   */
   async ensureToolsDiscovered(
     servers: MCPServerConfig[],
   ): Promise<ResponsesApiFunctionTool[]> {
@@ -346,13 +193,11 @@ export class BackendToolExecutor {
     if (
       this.cachedTools &&
       this.cachedServerKey === key &&
-      this.isWithinTtl()
-    ) {
+      Date.now() - this.lastDiscoveryTimestamp < BACKEND_TOOL_DISCOVERY_TTL_MS
+    )
       return this.cachedTools;
-    }
-    if (this.inflightDiscovery !== null && this.inflightServerKey === key) {
+    if (this.inflightDiscovery !== null && this.inflightServerKey === key)
       return this.inflightDiscovery;
-    }
     this.inflightServerKey = key;
     this.inflightDiscovery = this.discoverTools(servers)
       .then(tools => {
@@ -368,24 +213,12 @@ export class BackendToolExecutor {
     return this.inflightDiscovery;
   }
 
-  /**
-   * Force the next `ensureToolsDiscovered` call to re-fetch.
-   * Does NOT clear the registry or close clients — those remain
-   * available for in-flight requests until the next successful
-   * discovery atomically swaps them out.
-   */
   invalidateCache(): void {
     this.cachedTools = null;
     this.cachedServerKey = '';
     this.lastDiscoveryTimestamp = 0;
     this.logger.info(
       '[BackendToolExecutor] Tool cache invalidated (registry and clients preserved for in-flight requests)',
-    );
-  }
-
-  private isWithinTtl(): boolean {
-    return (
-      Date.now() - this.lastDiscoveryTimestamp < BACKEND_TOOL_DISCOVERY_TTL_MS
     );
   }
 
@@ -397,45 +230,28 @@ export class BackendToolExecutor {
     functionName: string,
   ): { serverId: string; originalName: string } | undefined {
     const tool = this.resolveTool(functionName);
-    if (!tool) return undefined;
-    return { serverId: tool.serverId, originalName: tool.originalName };
+    return tool
+      ? { serverId: tool.serverId, originalName: tool.originalName }
+      : undefined;
   }
 
-  /**
-   * Normalize a tool name by stripping file extensions the LLM may
-   * hallucinate (e.g. "rhokp__solr_query.json" → "rhokp__solr_query").
-   */
   private static normalizeFunctionName(name: string): string {
     return name.replace(/\.(json|yaml|yml|xml|txt)$/i, '');
   }
 
-  /**
-   * Resolve a tool by exact prefixed name first, then progressively
-   * fuzzier matching for names the LLM may hallucinate:
-   *
-   *  1. Exact match
-   *  2. After stripping file extensions (.json, .yaml, etc.)
-   *  3. Suffix match for unprefixed names (e.g. "pods_list" → "ocp-mcp__pods_list")
-   *  4. Collapsed-separator match: LLMs often use single `_` where the
-   *     registered name uses `__`. For each registered `{serverId}__{tool}`,
-   *     check if the query equals `{serverId}_{tool}`.
-   *  5. Case-insensitive exact match as a last resort.
-   */
   resolveTool(functionName: string): ResolvedTool | undefined {
     const exact = this.registry.get(functionName);
     if (exact) return exact;
-
     const normalized = BackendToolExecutor.normalizeFunctionName(functionName);
     if (normalized !== functionName) {
-      const afterNorm = this.registry.get(normalized);
-      if (afterNorm) {
+      const r = this.registry.get(normalized);
+      if (r) {
         this.logger.warn(
           `[BackendToolExecutor] Tool "${functionName}" resolved to "${normalized}" after stripping extension`,
         );
-        return afterNorm;
+        return r;
       }
     }
-
     const suffix = `${SEPARATOR}${normalized}`;
     for (const [key, value] of this.registry) {
       if (key.endsWith(suffix)) {
@@ -445,17 +261,14 @@ export class BackendToolExecutor {
         return value;
       }
     }
-
     for (const [key, value] of this.registry) {
-      const singleUnderscore = `${value.serverId}_${value.originalName}`;
-      if (normalized === singleUnderscore) {
+      if (normalized === `${value.serverId}_${value.originalName}`) {
         this.logger.warn(
-          `[BackendToolExecutor] Tool "${functionName}" resolved to "${key}" via collapsed-separator match (_ → __)`,
+          `[BackendToolExecutor] Tool "${functionName}" resolved to "${key}" via collapsed-separator match`,
         );
         return value;
       }
     }
-
     const lower = normalized.toLowerCase();
     for (const [key, value] of this.registry) {
       if (key.toLowerCase() === lower) {
@@ -465,7 +278,6 @@ export class BackendToolExecutor {
         return value;
       }
     }
-
     return undefined;
   }
 
@@ -473,87 +285,60 @@ export class BackendToolExecutor {
     return this.registry.size;
   }
 
-  /**
-   * Execute a tool call using the connected MCP SDK Client.
-   * Returns the result as a string suitable for function_call_output.
-   */
   async executeTool(
     functionName: string,
     argumentsJson: string,
   ): Promise<string> {
     const tool = this.resolveTool(functionName);
-    if (!tool) {
-      return JSON.stringify({
-        error: `Unknown tool: ${functionName}`,
-      });
-    }
-
+    if (!tool)
+      return JSON.stringify({ error: `Unknown tool: ${functionName}` });
     let args: Record<string, unknown>;
     try {
       args = JSON.parse(argumentsJson);
     } catch {
       args = {};
     }
-
     this.logger.info(
       `[BackendToolExecutor] Executing ${tool.originalName} on ${tool.serverId}`,
     );
-
     try {
-      const client = this.clients.get(tool.serverId);
+      let client = this.clients.get(tool.serverId);
       if (!client) {
         this.logger.warn(
           `[BackendToolExecutor] No connected client for ${tool.serverId}, reconnecting...`,
         );
-        const server: MCPServerConfig = {
-          id: tool.serverId,
-          name: tool.serverId,
-          type: 'streamable-http',
-          url: tool.serverUrl,
-        };
-        const reconnectedClient = await this.reconnectToServer(server);
-        if (!reconnectedClient) {
+        client = (await this.reconnectToServer(tool)) ?? undefined;
+        if (!client)
           return JSON.stringify({
             error: `Failed to connect to MCP server ${tool.serverId}`,
           });
-        }
-        return this.executeToolOnClient(reconnectedClient, tool, args);
       }
-
-      return await this.executeToolOnClient(client, tool, args);
+      return await executeToolOnClient(client, tool, args, this.logger);
     } catch (error) {
       const msg = toErrorMessage(error);
-
-      if (this.isSessionError(msg)) {
+      if (isSessionError(msg)) {
         this.logger.warn(
-          `[BackendToolExecutor] Session expired for ${tool.serverId}, reconnecting and retrying...`,
+          `[BackendToolExecutor] Session expired for ${tool.serverId}, reconnecting...`,
         );
         this.clients.delete(tool.serverId);
-        const server: MCPServerConfig = {
-          id: tool.serverId,
-          name: tool.serverId,
-          type: 'streamable-http',
-          url: tool.serverUrl,
-        };
-        const freshClient = await this.reconnectToServer(server);
-        if (!freshClient) {
+        const freshClient = await this.reconnectToServer(tool);
+        if (!freshClient)
           return JSON.stringify({
-            error: `Failed to reconnect to MCP server ${tool.serverId} after session expiry`,
+            error: `Failed to reconnect to MCP server ${tool.serverId}`,
           });
-        }
         try {
-          return await this.executeToolOnClient(freshClient, tool, args);
-        } catch (retryError) {
-          const retryMsg = toErrorMessage(retryError);
-          this.logger.error(
-            `[BackendToolExecutor] Retry failed for ${tool.originalName} on ${tool.serverId}: ${retryMsg}`,
+          return await executeToolOnClient(
+            freshClient,
+            tool,
+            args,
+            this.logger,
           );
+        } catch (retryError) {
           return JSON.stringify({
-            error: `Tool execution failed after reconnect: ${retryMsg}`,
+            error: `Tool execution failed after reconnect: ${toErrorMessage(retryError)}`,
           });
         }
       }
-
       this.logger.error(
         `[BackendToolExecutor] Failed to execute ${tool.originalName} on ${tool.serverId}: ${msg}`,
       );
@@ -561,149 +346,36 @@ export class BackendToolExecutor {
     }
   }
 
-  // ===========================================================================
-  // Private — SDK Client management
-  // ===========================================================================
-
-  /**
-   * Connect to an MCP server and list its tools without mutating
-   * instance state. Returns both the client and the tool list so
-   * `discoverTools` can collect them into temporary maps and perform
-   * an atomic swap.
-   */
-  private async connectAndListToolsSafe(
-    server: MCPServerConfig,
-    options?: { skipSsrfCheck?: boolean },
-  ): Promise<{
-    client: Client | null;
-    tools: Array<{ name: string; description?: string; inputSchema?: unknown }>;
-  }> {
-    if (!options?.skipSsrfCheck) {
-      const ssrfReason = await isPrivateUrlWithDns(server.url);
-      if (ssrfReason) {
-        this.logger.warn(
-          `[BackendToolExecutor] Skipping MCP server ${server.id}: URL blocked by SSRF guard (${ssrfReason})`,
-        );
-        return { client: null, tools: [] };
-      }
-    }
-
-    this.logger.info(
-      `[BackendToolExecutor] Connecting to MCP server ${server.id} @ ${server.url} (skipTlsVerify=${this.skipTlsVerify})`,
+  private async reconnectToServer(tool: ResolvedTool): Promise<Client | null> {
+    const server: MCPServerConfig = {
+      id: tool.serverId,
+      name: tool.serverId,
+      type: 'streamable-http',
+      url: tool.serverUrl,
+    };
+    const { client } = await connectAndListToolsSafe(
+      server,
+      this.mcpAuth,
+      this.skipTlsVerify,
+      this.logger,
+      { skipSsrfCheck: true },
     );
-
-    const authHeaders = await this.mcpAuth.getServerHeaders(server);
-
-    try {
-      const { client, tools } = await connectToMcpServer(server.url, {
-        headers: authHeaders,
-        skipTlsVerify: this.skipTlsVerify,
-        clientName: 'augment-backend',
-      });
-
-      this.logger.info(
-        `[BackendToolExecutor] ${server.id} tools/list: ${tools.length} tool(s) [${tools.map(t => t.name).join(', ')}]`,
-      );
-
-      return { client, tools };
-    } catch (err) {
-      this.logger.error(
-        `[BackendToolExecutor] Failed to connect to ${server.id}: ${toErrorMessage(err)}`,
-      );
-      return { client: null, tools: [] };
-    }
-  }
-
-  /**
-   * Reconnect to a single MCP server and store the client directly.
-   * Used only by `executeTool` when a client is missing (reconnection path).
-   */
-  private async reconnectToServer(
-    server: MCPServerConfig,
-  ): Promise<Client | null> {
-    const { client } = await this.connectAndListToolsSafe(server, {
-      skipSsrfCheck: true,
-    });
-    if (client) {
-      this.clients.set(server.id, client);
-    }
+    if (client) this.clients.set(tool.serverId, client);
     return client;
   }
 
-  private isSessionError(message: string): boolean {
-    const lower = message.toLowerCase();
-    return (
-      lower.includes('session not found') ||
-      lower.includes('session expired') ||
-      lower.includes('session_not_found') ||
-      lower.includes('invalid session')
-    );
-  }
-
-  /**
-   * Execute a tool call on a connected MCP SDK Client.
-   */
-  private async executeToolOnClient(
-    client: Client,
-    tool: ResolvedTool,
-    args: Record<string, unknown>,
-  ): Promise<string> {
-    const result = await client.callTool({
-      name: tool.originalName,
-      arguments: args,
-    });
-
-    if (result.isError) {
-      const errorText = Array.isArray(result.content)
-        ? result.content
-            .filter(
-              (c: { type: string; text?: string }) =>
-                c.type === 'text' && c.text,
-            )
-            .map((c: { type: string; text?: string }) => c.text)
-            .join('\n')
-        : JSON.stringify(result.content);
-      this.logger.error(
-        `[BackendToolExecutor] Tool ${tool.originalName} returned error: ${errorText}`,
-      );
-      return JSON.stringify({ error: errorText || 'Tool returned an error' });
-    }
-
-    let formattedResult: string;
-    if (Array.isArray(result.content)) {
-      const textParts = result.content
-        .filter(
-          (c: { type: string; text?: string }) => c.type === 'text' && c.text,
-        )
-        .map((c: { type: string; text?: string }) => c.text!);
-      formattedResult =
-        textParts.length > 0
-          ? textParts.join('\n')
-          : JSON.stringify(result.content);
-    } else {
-      formattedResult = JSON.stringify(result.content ?? result);
-    }
-
-    return formattedResult;
-  }
-
-  /** Close all connected MCP SDK clients (used for graceful shutdown). */
   async closeAllClients(): Promise<void> {
-    const closePromises = Array.from(this.clients.entries()).map(
-      async ([serverId, client]) => {
+    await Promise.allSettled(
+      Array.from(this.clients.entries()).map(async ([id, client]) => {
         try {
           await client.close();
-          this.logger.info(
-            `[BackendToolExecutor] Closed client for ${serverId}`,
-          );
         } catch (err) {
           this.logger.warn(
-            `[BackendToolExecutor] Error closing client for ${serverId}: ${toErrorMessage(err)}`,
+            `[BackendToolExecutor] Error closing client for ${id}: ${toErrorMessage(err)}`,
           );
         }
-      },
+      }),
     );
-    await Promise.allSettled(closePromises);
     this.clients.clear();
   }
 }

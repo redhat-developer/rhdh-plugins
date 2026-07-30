@@ -19,7 +19,7 @@ import { useAsync } from 'react-use';
 import { Content } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 
 import { orchestratorApiRef } from '../../api';
 import { entityWorkflowRouteRef } from '../../routes';
@@ -51,21 +51,22 @@ export const CatalogWorkflowPage = () => {
     >
       <Content>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <RunButton
-              isAvailable={workflowOverviewDTO?.data.isAvailable}
-              entityRef={`${kind}:${namespace}/${name}`}
-            />
-          </Grid>
+          <RunButton
+            isAvailable={workflowOverviewDTO?.data.isAvailable}
+            entityRef={`${kind}:${namespace}/${name}`}
+          />
           <Grid item xs={12}>
             <WorkflowDetailsTabContent
               loadingWorkflowOverview={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
               errorWorkflowOverview={errorWorkflowOverview}
+              showInputSchema={false}
+              showSuccessRatio={false}
+              detailsLayout="entity"
             />
           </Grid>
           <Grid item xs={12}>
-            <WorkflowRunsTabContent />
+            <WorkflowRunsTabContent showRunsEmptyState={false} />
           </Grid>
         </Grid>
       </Content>

@@ -32,6 +32,8 @@ export interface ChatRequest {
   conversationId?: string;
   /** Session ID — when provided, the backend manages conversation_id lookup/creation */
   sessionId?: string;
+  /** Model or agent identifier (e.g. "namespace/agentName" for Kagenti) */
+  model?: string;
 }
 
 export type { ChatResponse };

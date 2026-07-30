@@ -20,7 +20,6 @@ nav:
       - Recently visited: cards/recently-visited.md
       - Top visited: cards/top-visited.md
       - Featured docs: cards/featured-docs.md
-      - Jokes: cards/jokes.md
       - World clock: cards/worldclock.md
   - Extend with plugins:
       - Create a new card: create-a-new-card.md

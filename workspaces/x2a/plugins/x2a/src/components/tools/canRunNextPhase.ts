@@ -22,6 +22,10 @@ import { getNextPhase } from './getNextPhase';
 import { hasPhasePrerequisites } from './hasPhasePrerequisites';
 
 export const canRunNextPhase = (module: Module, project: Project): boolean => {
+  if (module.removedAt) {
+    return false;
+  }
+
   const nextPhase = getNextPhase(module);
 
   if (!nextPhase) {

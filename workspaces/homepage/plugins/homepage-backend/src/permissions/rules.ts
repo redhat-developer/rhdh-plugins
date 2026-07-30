@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  createPermissionRule,
-  type PermissionRule,
-} from '@backstage/plugin-permission-node';
+import { createPermissionRule } from '@backstage/plugin-permission-node';
 import { z } from 'zod/v3';
-import {
-  VisibleDefaultWidget,
-  RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-} from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+import { DefaultWidgetNode } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
+
 import { homepageDefaultWidgetPermissionResourceRef } from './resource';
 
 export type HomepageDefaultWidgetFilter = {
@@ -30,14 +25,11 @@ export type HomepageDefaultWidgetFilter = {
   values: Array<string> | undefined;
 };
 
-type HasWidgetIdParams = { widgetIds?: string[] | undefined };
-
 const hasWidgetId = createPermissionRule({
   name: 'HAS_WIDGET_ID',
   description:
     'Should allow users to access homepage widgets with specified widget IDs',
   resourceRef: homepageDefaultWidgetPermissionResourceRef,
-
   paramsSchema: z.object({
     widgetIds: z
       .string()
@@ -45,20 +37,38 @@ const hasWidgetId = createPermissionRule({
       .optional()
       .describe('List of widget IDs to match on'),
   }),
-  apply: (widget: VisibleDefaultWidget, { widgetIds }: HasWidgetIdParams) => {
-    return widgetIds && widgetIds.length > 0
-      ? widgetIds.includes(widget.id)
-      : true;
+  apply: (defaultWidget: DefaultWidgetNode, { widgetIds }) => {
+    if (!widgetIds || widgetIds.length === 0 || !defaultWidget.id) return false;
+    return widgetIds.includes(defaultWidget.id);
   },
-  toQuery: ({ widgetIds }: HasWidgetIdParams) => ({
-    key: 'widgetId',
-    values: widgetIds,
-  }),
-} as any) as unknown as PermissionRule<
-  VisibleDefaultWidget,
-  HomepageDefaultWidgetFilter,
-  typeof RESOURCE_TYPE_HOMEPAGE_DEFAULT_WIDGET,
-  HasWidgetIdParams
->;
+  toQuery: ({ widgetIds }) => {
+    return {
+      key: 'widgetId',
+      values: widgetIds,
+    };
+  },
+});
 
-export const rules = { hasWidgetId };
+const hasTag = createPermissionRule({
+  name: 'HAS_TAG',
+  description:
+    'Should allow users to access homepage widgets with specified tags',
+  resourceRef: homepageDefaultWidgetPermissionResourceRef,
+  paramsSchema: z.object({
+    tags: z.string().array().optional().describe('List of tags to match on'),
+  }),
+  apply: (defaultWidget: DefaultWidgetNode, { tags }) => {
+    // When the POLICY has NO TAG is configured, this rule isn't complete,
+    // so we return false to avoid granting access to all widgets.
+    if (!tags || tags.length === 0) return false;
+    // When the configured DEFAULT WIDGET has NO TAGS, it is considered visible for anyone.
+    if (!defaultWidget.tags || defaultWidget.tags.length === 0) return true;
+    return tags.some(tag => defaultWidget.tags!.includes(tag));
+  },
+  toQuery: ({ tags }) => ({
+    key: 'tag',
+    values: tags,
+  }),
+});
+
+export const rules = { hasWidgetId, hasTag };

@@ -154,7 +154,7 @@ const configurationEndpointsTestCases = [
       req.patch(
         '/api/extensions/package/default/package11/configuration/disable',
       ),
-    body: { disabled: true },
+    body: { enabled: false },
   },
   {
     description: 'GET /plugin/:namespace/:name/configuration',
@@ -172,7 +172,7 @@ const configurationEndpointsTestCases = [
     description: 'PATCH /plugin/:namespace/:name/configuration/disable',
     reqBuilder: (req: request.SuperTest<request.Test>) =>
       req.patch('/api/extensions/plugin/default/plugin1/configuration/disable'),
-    body: { disabled: true },
+    body: { enabled: false },
   },
 ];
 
@@ -633,22 +633,22 @@ describe('createRouter', () => {
   });
 
   describe('PATCH /plugin/:namespace/:name/configuration/disable', () => {
-    it('should fail when disabled missing with InputError 400', async () => {
+    it('should fail when neither enabled nor disabled is present with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const response = await request(backendServer).patch(
         '/api/extensions/plugin/default/plugin1/configuration/disable',
       );
-      expectInputError(response, "'disabled' must be present boolean");
+      expectInputError(response, "'enabled' must be a present boolean");
     });
 
-    it('should fail when bad disabled format with InputError 400', async () => {
+    it('should fail when enabled is not a boolean with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const response = await request(backendServer)
         .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
-        .send({ disabled: 'invalid' });
-      expectInputError(response, "'disabled' must be present boolean");
+        .send({ enabled: 'invalid' });
+      expectInputError(response, "'enabled' must be a boolean");
     });
 
     it('should fail when plugin not found with NotFoundError 404', async () => {
@@ -660,24 +660,40 @@ describe('createRouter', () => {
 
       const response = await request(backendServer)
         .patch('/api/extensions/plugin/default/not-found/configuration/disable')
-        .send({ disabled: true });
+        .send({ enabled: false });
       expectNotFoundError(response, ExtensionsKind.Plugin);
     });
 
     it.each([
-      ['enable', false],
-      ['disable', true],
-    ])('should %s the plugin configuration', async (_, disabled) => {
+      ['enable', true],
+      ['disable', false],
+    ])(
+      'should %s the plugin configuration via enabled field',
+      async (_, enabled) => {
+        const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
+
+        const response = await request(backendServer)
+          .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
+          .send({ enabled });
+        expect(
+          mockInstallationDataService.setPluginEnabled,
+        ).toHaveBeenCalledWith(mockPlugins[0], enabled);
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({ status: 'OK' });
+      },
+    );
+
+    it('should accept legacy disabled field for backward compatibility', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const response = await request(backendServer)
         .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
-        .send({ disabled });
-      expect(
-        mockInstallationDataService.setPluginDisabled,
-      ).toHaveBeenCalledWith(mockPlugins[0], disabled);
+        .send({ disabled: true });
+      expect(mockInstallationDataService.setPluginEnabled).toHaveBeenCalledWith(
+        mockPlugins[0],
+        false,
+      );
       expect(response.status).toEqual(200);
-      expect(response.body).toEqual({ status: 'OK' });
     });
   });
 
@@ -774,24 +790,24 @@ describe('createRouter', () => {
   });
 
   describe('PATCH /package/:namespace/:name/configuration/disable', () => {
-    it('should fail when disabled missing with InputError 400', async () => {
+    it('should fail when neither enabled nor disabled is present with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer).patch(
         '/api/extensions/package/default/package11/configuration/disable',
       );
-      expectInputError(response, "'disabled' must be present boolean");
+      expectInputError(response, "'enabled' must be a present boolean");
     });
 
-    it('should fail when bad disabled format with InputError 400', async () => {
+    it('should fail when enabled is not a boolean with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
         .patch(
           '/api/extensions/package/default/package11/configuration/disable',
         )
-        .send({ disabled: 'invalid' });
-      expectInputError(response, "'disabled' must be present boolean");
+        .send({ enabled: 'invalid' });
+      expectInputError(response, "'enabled' must be a boolean");
     });
 
     it('should fail when package not found with NotFoundError 404', async () => {
@@ -806,26 +822,43 @@ describe('createRouter', () => {
         .patch(
           '/api/extensions/package/default/not-found/configuration/disable',
         )
-        .send({ disabled: true });
+        .send({ enabled: false });
       expectNotFoundError(response, ExtensionsKind.Package);
     });
 
     it.each([
-      ['enable', false],
-      ['disable', true],
-    ])('should %s the package configuration', async (_, disabled) => {
+      ['enable', true],
+      ['disable', false],
+    ])(
+      'should %s the package configuration via enabled field',
+      async (_, enabled) => {
+        const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
+
+        const response = await request(backendServer)
+          .patch(
+            '/api/extensions/package/default/package11/configuration/disable',
+          )
+          .send({ enabled });
+        expect(
+          mockInstallationDataService.setPackageEnabled,
+        ).toHaveBeenCalledWith(mockDynamicPackage11.package, enabled);
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({ status: 'OK' });
+      },
+    );
+
+    it('should accept legacy disabled field for backward compatibility', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
         .patch(
           '/api/extensions/package/default/package11/configuration/disable',
         )
-        .send({ disabled });
+        .send({ disabled: true });
       expect(
-        mockInstallationDataService.setPackageDisabled,
-      ).toHaveBeenCalledWith(mockDynamicPackage11.package, disabled);
+        mockInstallationDataService.setPackageEnabled,
+      ).toHaveBeenCalledWith(mockDynamicPackage11.package, false);
       expect(response.status).toEqual(200);
-      expect(response.body).toEqual({ status: 'OK' });
     });
   });
 

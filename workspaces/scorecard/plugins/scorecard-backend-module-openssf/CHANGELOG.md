@@ -1,5 +1,65 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf
 
+## 0.4.0
+
+### Minor Changes
+
+- 50447ac: Backstage version bump to v1.52.0
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Patch Changes
+
+- Updated dependencies [c7f89e7]
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
+## 0.3.1
+
+### Patch Changes
+
+- 7ead71c: Correct default threshold documentation and add missing threshold documentation in scorecard backend module READMEs to match provider code defaults.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.1
+
+## 0.3.0
+
+### Minor Changes
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- Updated dependencies [efb4c4f]
+- Updated dependencies [8c85bd4]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
+## 0.2.13
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.9
+
+## 0.2.12
+
+### Patch Changes
+
+- 6699550: Custom thresholds for filecheck, openssf, and dependabot are now
+  configurable. Custom threshold handling has been centralized in
+  `scorecard-backend`, you can define custom thresholds under
+  `scorecard.plugins.<providerId>.thresholds`. Provider IDs typically
+  follow the format `<datasource>.<metric>`.
+- Updated dependencies [6699550]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.7.8
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
 ## 0.2.11
 
 ### Patch Changes

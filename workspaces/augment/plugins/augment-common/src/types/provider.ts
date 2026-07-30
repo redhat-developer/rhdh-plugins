@@ -22,7 +22,7 @@
  * Built-in AI provider identifiers shipped with the plugin.
  * @public
  */
-export type BuiltInProviderType = 'llamastack' | 'googleadk';
+export type BuiltInProviderType = 'llamastack' | 'googleadk' | 'kagenti';
 
 /**
  * All accepted provider identifiers.
@@ -50,6 +50,17 @@ export interface ProviderCapabilities {
   readonly evaluation: boolean;
   readonly conversations: boolean;
   readonly mcpTools: boolean;
+  readonly tools: boolean;
+  /** Provider manages tool lifecycle (build, deploy, route) */
+  readonly toolLifecycle: boolean;
+  /** Provider manages agent lifecycle (build, deploy, migrate) */
+  readonly agentLifecycle: boolean;
+  /** Provider supports DevSpaces integration */
+  readonly devSpaces: boolean;
+  /** Provider needs context hydrated from DB on non-streaming paths */
+  readonly contextHydration: boolean;
+  /** Provider registers its own sub-routes (e.g. kagenti-specific endpoints) */
+  readonly providerRoutes: boolean;
 }
 
 /**
@@ -75,6 +86,8 @@ export interface ProviderConfigField {
   readonly options?: readonly string[];
   /** Placeholder text for text inputs */
   readonly placeholder?: string;
+  /** Whether the field value is sensitive (passwords, secrets) and should be masked in UI */
+  readonly sensitive?: boolean;
 }
 
 /**
@@ -122,6 +135,7 @@ export const GLOBAL_CONFIG_KEYS = [
   'agents',
   'defaultAgent',
   'maxAgentTurns',
+  'devSpacesApiUrl',
 ] as const;
 
 /**
@@ -136,6 +150,7 @@ export const GLOBAL_CONFIG_KEYS = [
 export const PROVIDER_SCOPED_KEYS = [
   'model',
   'baseUrl',
+  'kagentiBaseUrl',
   'toolChoice',
   'enableWebSearch',
   'enableCodeInterpreter',

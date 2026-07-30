@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useAsync } from 'react-use';
 
-import { CopyTextButton, Link } from '@backstage/core-components';
+import { Link } from '@backstage/core-components';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
+import { EntityRefLink } from '@backstage/plugin-catalog-react';
 
-import { Box } from '@material-ui/core';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
@@ -49,9 +53,6 @@ const useStyles = makeStyles()(_ => ({
     '& > div': {
       width: '80%',
     },
-    '& > button': {
-      maxHeight: '20px',
-    },
   },
 }));
 
@@ -60,6 +61,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
+  const [copied, setCopied] = useState(false);
   const orchestratorApi = useApi(orchestratorApiRef);
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
@@ -71,7 +73,12 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
   const workflowPageLink = useRouteRef(workflowRouteRef);
 
   return (
-    <Grid container alignContent="flex-start" spacing="1rem">
+    <Grid
+      container
+      alignContent="flex-start"
+      spacing="1rem"
+      sx={{ minWidth: 0 }}
+    >
       <Grid item md={7} key="Workflow">
         <AboutField label={t('workflow.fields.workflow')}>
           <Link to={workflowPageLink({ workflowId: details.workflowId })}>
@@ -87,6 +94,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
             <b>
               <WorkflowInstanceStatusIndicator
                 status={details.state as ProcessInstanceStatusDTO}
+                compact
               />
             </b>
           </Typography>
@@ -97,7 +105,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           <Typography variant="subtitle2" component="div">
             <b>
               {!error && !loading ? (
-                <WorkflowStatus availability={value?.isAvailable} />
+                <WorkflowStatus availability={value?.isAvailable} compact />
               ) : (
                 VALUE_UNAVAILABLE
               )}
@@ -120,11 +128,24 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
             >
               {details.id}
             </Typography>
-            <CopyTextButton
-              text={details.id}
-              tooltipText={t('workflow.fields.workflowIdCopied')}
-              tooltipDelay={2000}
-            />
+            <Tooltip
+              title={
+                copied
+                  ? t('workflow.fields.workflowIdCopied')
+                  : t('workflow.fields.workflowIdCopy')
+              }
+            >
+              <IconButton
+                size="small"
+                onClick={async () => {
+                  await window.navigator.clipboard.writeText(details.id);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: '1rem' }} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </AboutField>
       </Grid>
@@ -142,14 +163,7 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={12} key="Description">
-        <AboutField label={t('workflow.fields.description')}>
-          <Typography variant="subtitle2" component="div">
-            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
-      <Grid item md={12} key="Version">
+      <Grid item md={7} key="Version">
         <AboutField label={t('workflow.fields.version')}>
           <Typography variant="subtitle2" component="div">
             <b>
@@ -157,6 +171,27 @@ export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
                 ? (value?.version ?? VALUE_UNAVAILABLE)
                 : VALUE_UNAVAILABLE}
             </b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={5} key="Run by">
+        <AboutField label={t('workflow.fields.runBy')}>
+          {details.initiatorEntity ? (
+            <EntityRefLink
+              entityRef={details.initiatorEntity}
+              defaultKind="user"
+            />
+          ) : (
+            <Typography variant="subtitle2" component="div">
+              <b>{VALUE_UNAVAILABLE}</b>
+            </Typography>
+          )}
+        </AboutField>
+      </Grid>
+      <Grid item md={12} key="Description">
+        <AboutField label={t('workflow.fields.description')}>
+          <Typography variant="subtitle2" component="div">
+            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>

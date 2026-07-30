@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Boost minor updates",
+      "matchFileNames": ["workspaces/boost/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Boost)"
+      ],
+      "addLabels": ["boost"]
+    },
+    {
+      "description": "all Boost patch updates",
+      "matchFileNames": ["workspaces/boost/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Boost)"
+      ],
+      "addLabels": ["boost"]
+    },
+    {
+      "description": "all Boost dev dependency updates",
+      "matchFileNames": ["workspaces/boost/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Boost)"
+      ],
+      "addLabels": ["boost"]
+    }
+  ]
+}

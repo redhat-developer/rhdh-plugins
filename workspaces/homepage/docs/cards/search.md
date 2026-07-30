@@ -9,7 +9,7 @@ The search bar is a simple component that allows the user to start a search.
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: home.page/cards
           importName: SearchBar

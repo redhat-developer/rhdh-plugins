@@ -16,10 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { FilecheckClient } from '../clients/FilecheckClient';
 import {
@@ -30,16 +27,10 @@ import {
 export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
   private readonly client: FilecheckClient;
   private readonly filesConfig: FilecheckConfig;
-  private readonly thresholds: ThresholdConfig;
 
-  constructor(
-    client: FilecheckClient,
-    filesConfig: FilecheckConfig,
-    thresholds?: ThresholdConfig,
-  ) {
+  constructor(client: FilecheckClient, filesConfig: FilecheckConfig) {
     this.client = client;
     this.filesConfig = filesConfig;
-    this.thresholds = thresholds ?? DEFAULT_FILECHECK_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
@@ -50,43 +41,23 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
     return 'filecheck';
   }
 
-  getMetricIds(): string[] {
-    return this.filesConfig.files.map(f => `filecheck.${f.id}`);
-  }
-
-  getMetricType(): 'boolean' {
-    return 'boolean';
-  }
-
-  getMetric(): Metric<'boolean'> {
-    return this.getMetrics()[0];
-  }
-
   getMetrics(): Metric<'boolean'>[] {
     return this.filesConfig.files.map(f => ({
       id: `filecheck.${f.id}`,
       title: `File: ${f.path}`,
       description: `Checks if ${f.path} exists in the repository.`,
       type: 'boolean' as const,
+      thresholds: DEFAULT_FILECHECK_THRESHOLDS,
       history: true,
     }));
   }
 
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
+      kind: 'component',
       'metadata.annotations.backstage.io/source-location':
         CATALOG_FILTER_EXISTS,
     };
-  }
-
-  async calculateMetric(entity: Entity): Promise<boolean> {
-    const results = await this.calculateMetrics(entity);
-    const firstId = this.getMetricIds()[0];
-    return results.get(firstId) ?? false;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, boolean>> {

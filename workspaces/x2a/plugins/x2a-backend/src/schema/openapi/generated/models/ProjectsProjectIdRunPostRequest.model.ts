@@ -31,4 +31,8 @@ export interface ProjectsProjectIdRunPostRequest {
    * Optional user prompt for customizing the migration
    */
   userPrompt?: string;
+  /**
+   * When true, runs init in refresh mode to resync the module list from an existing migration plan
+   */
+  refresh?: boolean;
 }

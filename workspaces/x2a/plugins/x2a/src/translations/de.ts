@@ -69,6 +69,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'projectModulesCard.noModules': 'Noch keine Module gefunden...',
     'projectModulesCard.toReview': 'überprüfen',
     'projectModulesCard.published': 'veröffentlicht',
+    'projectModulesCard.spinner':
+      'Erkennungsphase läuft und Modulliste wird aus dem Migrationsplan aktualisiert…',
     'projectPage.title': 'Projekt',
     'projectPage.actionsTooltip':
       'Klicken Sie, um das Menü für Projektaktionen zu öffnen',
@@ -112,6 +114,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
     'module.summary.cancelled': 'Abgebrochen',
+    'module.summary.removed': 'Entfernt',
     'module.summary.toReview_one':
       '{{count}} Modul mit zu überprüfenden Artefakten',
     'module.summary.toReview_other':
@@ -137,6 +140,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.success': 'Erfolg',
     'module.statuses.error': 'Fehler',
     'module.statuses.cancelled': 'Abgebrochen',
+    'module.statuses.removed': 'Entfernt',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
     'artifact.types.ansible_project': 'AAP-Projekt',
@@ -185,6 +189,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim Ausführen der Phase für das Modul',
     'modulePage.phases.cancelError':
       'Fehler beim Abbrechen der Phase für das Modul',
+    'modulePage.phases.attempts': 'Versuche',
+    'modulePage.phases.totalElapsed': 'Gesamtdauer',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',
@@ -264,6 +270,20 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
+    'resyncMigrationPlan.action': 'Migrationsplan neu synchronisieren',
+    'resyncMigrationPlan.confirm.title':
+      'Migrationsplan für „{{name}}" neu synchronisieren?',
+    'resyncMigrationPlan.confirm.message':
+      'Der Migrationsplan wird aus dem Ziel-Repository neu eingelesen und die Modulliste entsprechend aktualisiert. Neue Module werden hinzugefügt und Module, die nicht mehr im Plan enthalten sind, werden als entfernt markiert. Wenn Sie das Dokument ändern, etwa ein Modul entfernen, achten Sie darauf, dass das Dokument schlüssig bleibt.',
+    'resyncMigrationPlan.confirm.warning':
+      'Als entfernt markierte Module behalten ihre Job-Historie, sind aber nicht mehr für neue Phasenläufe berechtigt. Diese Aktion kann für entfernte Module nicht rückgängig gemacht werden, es sei denn, sie werden dem Migrationsplan erneut hinzugefügt.',
+    'resyncMigrationPlan.confirm.confirmButton': 'Neu synchronisieren',
+    'resyncMigrationPlan.running':
+      'Modulliste wird vom Migrationsplan neu synchronisiert…',
+    'resyncMigrationPlan.error':
+      'Fehler bei der Neusynchronisierung des Migrationsplans für Projekt „{{name}}"',
+    'resyncMigrationPlan.errorStart':
+      'Fehler beim Starten der Migrationsplan-Neusynchronisierung',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Keine Regeln konfiguriert.',

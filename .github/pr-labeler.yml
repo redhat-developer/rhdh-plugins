@@ -30,10 +30,6 @@ workspace/extensions:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/extensions/**']
 
-workspace/global-floating-action-button:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/global-floating-action-button/**']
-
 workspace/global-header:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/global-header/**']
@@ -46,9 +42,9 @@ workspace/konflux:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/konflux/**']
 
-workspace/lightspeed:
+workspace/intelligent-assistant:
   - changed-files:
-      - any-glob-to-any-file: ['workspaces/lightspeed/**']
+      - any-glob-to-any-file: ['workspaces/intelligent-assistant/**']
 
 workspace/mcp-integrations:
   - changed-files:
@@ -69,10 +65,6 @@ workspace/quickstart:
 workspace/repo-tools:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/repo-tools/**']
-
-workspace/sandbox:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/sandbox/**']
 
 workspace/scorecard:
   - changed-files:

@@ -90,6 +90,12 @@ export interface UseCrudTabOptions<T, F extends Record<string, unknown>> {
    * Each table should use a unique key (e.g. `'providers'`, `'policies'`).
    */
   storageKey?: string;
+  /** Message shown in the success snackbar after a successful create. */
+  createSuccessMessage?: string;
+  /** Message shown in the success snackbar after a successful edit. */
+  editSuccessMessage?: string;
+  /** Message shown in the success snackbar after a successful delete. */
+  deleteSuccessMessage?: string;
 }
 
 type TouchedMap<F> = Partial<Record<keyof F, boolean>>;
@@ -99,6 +105,8 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   items: T[];
   setItems: React.Dispatch<React.SetStateAction<T[]>>;
   loading: boolean;
+  /** True only during a manual reload after the first successful load. The table stays visible. */
+  refreshing: boolean;
   loadError: string | null;
   reload: () => void;
 
@@ -139,11 +147,16 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   // ── Delete dialog ──────────────────────────────────────────────────────────
   deleteOpen: boolean;
   deletingItem: T | null;
+  deleteSubmitting: boolean;
   deleteError: string | null;
   setDeleteError: React.Dispatch<React.SetStateAction<string | null>>;
   handleOpenDelete: (item: T) => void;
   handleCloseDelete: () => void;
   handleDeleteConfirm: () => void;
+
+  // ── Success snackbar ───────────────────────────────────────────────────────
+  successMessage: string | null;
+  clearSuccessMessage: () => void;
 }
 
 /**
@@ -181,7 +194,9 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── List ─────────────────────────────────────────────────────────────────
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   // ── Search + pagination ──────────────────────────────────────────────────
   const [search, setSearch] = useState('');
@@ -189,6 +204,10 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const [pageSize, setPageSize] = usePersistedPageSize(
     options.storageKey ?? '',
   );
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
 
   // ── Create dialog ────────────────────────────────────────────────────────
   const [createOpen, setCreateOpen] = useState(false);
@@ -208,7 +227,11 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   // ── Delete dialog ────────────────────────────────────────────────────────
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<T | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // ── Success snackbar ─────────────────────────────────────────────────────
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Keep latest mutable values in refs so stable callbacks can read them.
   const createFormRef = useRef(createForm);
@@ -223,21 +246,35 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const editSubmittingRef = useRef(editSubmitting);
   editSubmittingRef.current = editSubmitting;
 
+  const deleteSubmittingRef = useRef(deleteSubmitting);
+  deleteSubmittingRef.current = deleteSubmitting;
+
   const deletingItemRef = useRef(deletingItem);
   deletingItemRef.current = deletingItem;
 
   // ── Load ─────────────────────────────────────────────────────────────────
   const reload = useCallback(() => {
-    setLoading(true);
+    if (hasLoadedRef.current) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setLoadError(null);
     optsRef.current
       .loadFn()
-      .then(setItems)
+      .then(result => {
+        setItems(result);
+        hasLoadedRef.current = true;
+      })
       .catch(err => {
         setLoadError(extractApiError(err));
         setItems([]);
+        hasLoadedRef.current = false;
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   }, []); // stable — reads via ref
 
   useEffect(() => {
@@ -259,6 +296,19 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     const start = page * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
+
+  // Clamp the current page when items are removed (e.g. after a delete) and
+  // the page index points beyond the last valid page.
+  useEffect(() => {
+    if (page === 0) return;
+    const lastValidPage = Math.max(
+      0,
+      Math.ceil(filtered.length / pageSize) - 1,
+    );
+    if (page > lastValidPage) {
+      setPage(lastValidPage);
+    }
+  }, [filtered.length, page, pageSize]);
 
   const onPageChange = useCallback(
     (p: number, ps: number) => {
@@ -305,6 +355,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         setCreateOpen(false);
         setCreateForm(ef());
         setCreateTouched({});
+        setSuccessMessage(optsRef.current.createSuccessMessage ?? null);
       })
       .catch(err => setCreateError(extractApiError(err)))
       .finally(() => setCreateSubmitting(false));
@@ -341,6 +392,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
         setEditOpen(false);
         setEditingId(null);
         setEditTouched({});
+        setSuccessMessage(optsRef.current.editSuccessMessage ?? null);
       })
       .catch(err => setEditError(extractApiError(err)))
       .finally(() => setEditSubmitting(false));
@@ -354,6 +406,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   }, []);
 
   const handleCloseDelete = useCallback(() => {
+    if (deleteSubmittingRef.current) return;
     setDeleteOpen(false);
     setDeletingItem(null);
     setDeleteError(null);
@@ -364,24 +417,31 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     const item = deletingItemRef.current;
     if (!deleteFn || !item) return;
     const id = gId(item);
+    setDeleteSubmitting(true);
+    setDeleteError(null);
     deleteFn(id)
       .then(() => {
         setItems(removeItemById(id, gId));
         setDeleteOpen(false);
         setDeletingItem(null);
+        setDeleteSubmitting(false);
+        setSuccessMessage(optsRef.current.deleteSuccessMessage ?? null);
       })
       .catch(err => {
         setDeleteError(extractApiError(err));
-        setDeleteOpen(false);
-        setDeletingItem(null);
+        setDeleteSubmitting(false);
+        // dialog stays open so the user can see the error
       });
   }, []);
+
+  const clearSuccessMessage = useCallback(() => setSuccessMessage(null), []);
 
   return {
     // List
     items,
     setItems,
     loading,
+    refreshing,
     loadError,
     reload,
 
@@ -422,10 +482,15 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     // Delete
     deleteOpen,
     deletingItem,
+    deleteSubmitting,
     deleteError,
     setDeleteError,
     handleOpenDelete,
     handleCloseDelete,
     handleDeleteConfirm,
+
+    // Success snackbar
+    successMessage,
+    clearSuccessMessage,
   };
 }

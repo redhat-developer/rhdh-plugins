@@ -24,7 +24,12 @@ plugins:
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
+                  textKey: menuItem.orchestrator
                 path: /orchestrator
+            menuItems:
+              orchestrator:
+                parent: default.admin
+                icon: orchestratorIcon
             entityTabs:
               - path: /workflows
                 title: Workflows

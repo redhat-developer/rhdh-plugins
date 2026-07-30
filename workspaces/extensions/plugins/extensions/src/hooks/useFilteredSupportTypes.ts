@@ -54,12 +54,7 @@ export const useFilteredSupportTypes = () => {
   // Get current filters excluding support type filters
   // This should exclude all support type filters so we can show all available support types
   const nonSupportFilters = filters.filter(
-    filter =>
-      !(
-        filter === 'certified' ||
-        filter === 'custom' ||
-        filter.startsWith('support-level=')
-      ),
+    filter => !(filter === 'custom' || filter.startsWith('support-level=')),
   );
 
   // Calculate available support types from the filtered plugin data
@@ -114,35 +109,6 @@ export const useFilteredSupportTypes = () => {
     }
 
     const allSupportTypeItems: CustomSelectItem[] = [];
-
-    // Count certified plugins
-    const certifiedPlugins = availablePlugins.filter(
-      plugin =>
-        plugin.metadata?.annotations?.[ExtensionsAnnotation.CERTIFIED_BY],
-    );
-    if (certifiedPlugins.length > 0) {
-      const certifiedProviders = Array.from(
-        new Set(
-          certifiedPlugins
-            .map(
-              p => p.metadata?.annotations?.[ExtensionsAnnotation.CERTIFIED_BY],
-            )
-            .filter(Boolean),
-        ),
-      ).join(', ');
-
-      allSupportTypeItems.push({
-        label: t('badges.certified'),
-        value: 'certified',
-        count: certifiedPlugins.length,
-        isBadge: true,
-        badgeColor: colors.certified,
-        helperText: t('badges.stableAndSecured' as any, {
-          provider: certifiedProviders,
-        }),
-        displayOrder: 2,
-      });
-    }
 
     // Count custom plugins
     const customPlugins = availablePlugins.filter(

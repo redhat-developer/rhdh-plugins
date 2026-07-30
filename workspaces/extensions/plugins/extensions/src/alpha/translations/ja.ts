@@ -160,8 +160,12 @@ const extensionsTranslationJa = createTranslationMessages({
       'パッケージは実稼働環境では管理できません。',
     'installedPackages.table.tooltips.installationDisabled':
       'プラグインのインストールが無効になっているため、パッケージを管理できません。これを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      'カタログエンティティーがありません',
     'installedPackages.table.tooltips.enableActions':
-      'アクションを有効にするには、このパッケージのカタログエンティティーを追加してください',
+      'アクションを有効にするには、このパッケージのカタログエンティティーを追加してください。',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'ドキュメントを表示',
     'installedPackages.table.tooltips.noDownloadPermissions':
       '設定をダウンロードする権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noEditPermissions':
@@ -210,7 +214,6 @@ const extensionsTranslationJa = createTranslationMessages({
     'metadata.category': 'カテゴリー',
     'metadata.versions': 'バージョン',
     'metadata.backstageCompatibility': 'Backstage 互換バージョン',
-    'supportTypes.certifiedBy': '{{value}} により認定済み ({{count}})',
     'supportTypes.verifiedBy': '{{value}} により検証済み ({{count}})',
     'supportTypes.customPlugins': 'カスタムプラグイン ({{count}})',
     'collection.kubernetes': 'Kubernetes',
@@ -287,12 +290,9 @@ const extensionsTranslationJa = createTranslationMessages({
     'aria.collapseSection': 'セクションを折りたたむ',
     'aria.sortBy': '{{field}} でソート',
     'aria.filterBy': '{{field}} でフィルタリング',
-    'badges.certified': '認定済み',
-    'badges.certifiedBy': '{{provider}} により認定済み',
     'badges.verified': '検証済み',
     'badges.verifiedBy': '{{provider}} により検証済み',
     'badges.customPlugin': 'カスタムプラグイン',
-    'badges.stableAndSecured': '安定および {{provider}} により保護',
     'badges.generallyAvailable': '一般提供 (GA)',
     'badges.gaAndSupportedBy':
       '一般提供 (GA) および {{provider}} のサポート対象',

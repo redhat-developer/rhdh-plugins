@@ -98,6 +98,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           to="debug-default-widgets"
           text="Default Widgets"
         />
+        <SidebarItem
+          icon={HomeIcon}
+          to="debug-saved-widgets"
+          text="Saved Widgets"
+        />
         <SidebarDivider />
         <SidebarItem icon={CatalogIcon} to="catalog" text="Catalog" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />

@@ -76,4 +76,15 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend'
   ),
 );
+backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
+  ),
+);
 backend.start();

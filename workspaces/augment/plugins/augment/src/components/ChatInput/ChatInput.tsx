@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef, useCallback } from 'react';
+import {
+  useMemo,
+  useRef,
+  useCallback,
+  type FC,
+  type Ref,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import SendIcon from '@mui/icons-material/Send';
 import StopIcon from '@mui/icons-material/Stop';
@@ -57,16 +66,24 @@ export interface ChatInputProps {
   /** Whether file upload is enabled */
   enableFileUpload?: boolean;
   /** Ref to the underlying textarea for programmatic focus */
-  inputRef?: React.Ref<HTMLTextAreaElement>;
+  inputRef?: Ref<HTMLTextAreaElement>;
   /** Name of the currently active agent (multi-agent conversations) */
   activeAgentName?: string;
+  /** The selected model/agent ID (e.g. namespace/name) */
+  selectedModel?: string;
+  /** Whether this is a Kagenti provider */
+  isKagenti?: boolean;
+  /** Called when user clears the agent selection */
+  onClearAgent?: () => void;
+  /** When true, sending is blocked until the user selects an agent */
+  requireAgent?: boolean;
 }
 
 /**
  * ChatInput - Input component for the chat interface
  * Handles text input, send/stop buttons, and new chat button
  */
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput: FC<ChatInputProps> = ({
   value,
   onChange,
   onSend,
@@ -81,25 +98,32 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   enableFileUpload = false,
   inputRef,
   activeAgentName,
+  selectedModel,
+  isKagenti = false,
+  onClearAgent,
+  requireAgent = false,
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const styles = useMemo(
-    () => createChatInputStyles(theme, isTyping),
-    [theme, isTyping],
+    () => createChatInputStyles(theme, isTyping, requireAgent),
+    [theme, isTyping, requireAgent],
   );
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const hasValue = value.trim().length > 0;
+  const canSend = hasValue && !requireAgent;
+
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      onSend();
+      if (canSend) onSend();
     }
   };
 
   const handleFileChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file && onFileSelect) {
         onFileSelect(file);
@@ -111,8 +135,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     [onFileSelect],
   );
 
-  const hasValue = value.trim().length > 0;
-
   return (
     <Box sx={styles.container}>
       <Box sx={styles.centeredWrapper}>
@@ -123,7 +145,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               title={t('chatInput.newConversationShortcut')}
               placement="top"
             >
-              <span>
+              <Box component="span">
                 <IconButton
                   onClick={onNewChat}
                   disabled={isTyping}
@@ -132,7 +154,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 >
                   <AddIcon sx={styles.newChatIcon} />
                 </IconButton>
-              </span>
+              </Box>
             </Tooltip>
           )}
 
@@ -178,22 +200,60 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               }}
             >
               {/* Active agent indicator */}
-              {activeAgentName && (
+              {(activeAgentName || selectedModel) && (
                 <Chip
-                  label={`Talking to: ${activeAgentName}`}
+                  icon={
+                    <Box
+                      component="span"
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: theme.palette.success.main,
+                        ml: 0.5,
+                      }}
+                    />
+                  }
+                  label={
+                    activeAgentName ||
+                    (selectedModel?.includes('/')
+                      ? selectedModel.split('/').pop()
+                      : selectedModel)
+                  }
                   size="small"
                   variant="outlined"
+                  onDelete={onClearAgent}
                   sx={{
                     alignSelf: 'flex-start',
                     mb: 0.5,
                     maxWidth: '100%',
                     fontSize: '0.7rem',
-                    height: 22,
+                    height: 24,
                     borderColor: theme.palette.primary.main,
                     color: theme.palette.primary.main,
                     fontWeight: 500,
+                    '& .MuiChip-deleteIcon': {
+                      fontSize: 14,
+                      color: theme.palette.text.secondary,
+                      '&:hover': { color: theme.palette.text.primary },
+                    },
                   }}
                 />
+              )}
+              {/* Prompt to select agent when none chosen */}
+              {isKagenti && !activeAgentName && !selectedModel && !isTyping && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    alignSelf: 'flex-start',
+                    mb: 0.5,
+                    fontSize: '0.7rem',
+                    color: theme.palette.text.disabled,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {t('chatInput.selectAgentPrompt')}
+                </Typography>
               )}
               {/* Attached file indicator */}
               {attachedFile && (
@@ -226,7 +286,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 autoFocus
                 inputRef={inputRef}
                 inputProps={{
-                  'aria-label': 'Chat message input',
+                  'aria-label': t('chatInput.chatMessageInput'),
                 }}
               />
             </Box>
@@ -241,14 +301,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <StopIcon sx={{ fontSize: 18 }} />
               </IconButton>
             ) : (
-              <IconButton
-                sx={styles.createSendButton(hasValue)}
-                onClick={onSend}
-                disabled={!hasValue}
-                aria-label={t('chatInput.sendMessage')}
+              <Tooltip
+                title={requireAgent ? t('chatInput.selectAgentPrompt') : ''}
+                placement="top"
               >
-                <SendIcon sx={{ fontSize: 18 }} />
-              </IconButton>
+                <Box component="span">
+                  <IconButton
+                    sx={styles.createSendButton(canSend)}
+                    onClick={onSend}
+                    disabled={!canSend}
+                    aria-label={t('chatInput.sendMessage')}
+                  >
+                    <SendIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+              </Tooltip>
             )}
           </Box>
         </Box>

@@ -9,7 +9,7 @@ Shows some techdocs.
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: home.page/cards
           importName: FeaturedDocsCard

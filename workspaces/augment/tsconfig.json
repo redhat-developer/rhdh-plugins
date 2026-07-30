@@ -12,6 +12,12 @@
   "compilerOptions": {
     "outDir": "dist-types",
     "rootDir": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@kagenti/adk/core": ["./node_modules/@kagenti/adk/dist/core.d.ts"],
+      "@kagenti/adk/extensions": [
+        "./node_modules/@kagenti/adk/dist/extensions.d.ts"
+      ]
+    }
   }
 }

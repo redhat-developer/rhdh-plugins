@@ -11,7 +11,9 @@ This plugin allows bulk import of multiple catalog entities into the catalog.
 The sections below are relevant for static plugins. If the plugin is expected to be installed as a dynamic one:
 
 - Follow https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/dynamic-plugins.md#installing-a-dynamic-plugin-package-in-the-showcase
-- Add content of `app-config.janus-idp.yaml` into `app-config.local.yaml`.
+- Add content of `app-config.yaml` into `app-config.local.yaml`.
+
+> **Important:** Dynamic plugin configurations must now use `module: Legacy` instead of `module: BulkImportPlugin`. See the `app-config.yaml` in this plugin for the updated configuration.
 
 #### Prerequisites
 
@@ -46,7 +48,7 @@ g, user:default/<login-id/user-name>, role:default/team_a
 
    ```tsx title="packages/app/src/App.tsx"
    /* highlight-add-next-line */
-   import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+   import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
    ...
    /* highlight-add-start */
     <Route
@@ -61,7 +63,7 @@ g, user:default/<login-id/user-name>, role:default/team_a
 
    ```tsx title="packages/app/src/components/Root/Root.tsx"
    /* highlight-add-next-line */
-   import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+   import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
     <SidebarPage>
@@ -73,6 +75,8 @@ g, user:default/<login-id/user-name>, role:default/team_a
     </SidebarPage>
    );
    ```
+
+> **Note:** The main entry point (`@red-hat-developer-hub/backstage-plugin-bulk-import`) now exports the New Frontend System (NFS) plugin. Legacy (OFS) consumers must use the `./legacy` subpath.
 
 ## On Behalf of User Access
 
@@ -117,16 +121,19 @@ Refer to the Backstage documentation for [GitHub auth](https://backstage.io/docs
 
 ## New Frontend System
 
-If you're using Backstage's new frontend system, add the plugin to your app:
+The main entry point (`@red-hat-developer-hub/backstage-plugin-bulk-import`) exports the New Frontend System (NFS) plugin as the default export. Add it to your app:
 
 ```tsx
 // packages/app/src/App.tsx
-import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import bulkImportPlugin, {
+  bulkImportTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 
 export default createApp({
   features: [
     // ...other plugins
     bulkImportPlugin,
+    bulkImportTranslationsModule,
   ],
 });
 ```
@@ -135,6 +142,7 @@ The plugin will automatically provide:
 
 - Bulk Import page at `/bulk-import` with all existing features
 - A "Bulk import" navigation item in the sidebar
+- Translations support (via `bulkImportTranslationsModule`)
 
 ### Extensions
 

@@ -135,6 +135,8 @@ export interface JobCreateParams {
     // (undocumented)
     projectName: string;
     // (undocumented)
+    refresh?: boolean;
+    // (undocumented)
     sourceRepo: GitRepo;
     // (undocumented)
     sourceTechnology?: SourceTechnology;
@@ -362,6 +364,7 @@ export interface X2ADatabaseServiceApi {
     // (undocumented)
     listModules(args: {
         projectId: string;
+        includeRemoved?: boolean;
     }): Promise<Module[]>;
     // (undocumented)
     listProjects(query: ProjectsGet['query'], options: {
@@ -375,6 +378,14 @@ export interface X2ADatabaseServiceApi {
     // (undocumented)
     listRules(): Promise<RuleEntity[]>;
     // (undocumented)
+    restoreModule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
+    softDeleteModule(args: {
+        id: string;
+    }): Promise<number>;
+    // (undocumented)
     updateJob(update: {
         id: string;
         log?: string | null;
@@ -386,6 +397,12 @@ export interface X2ADatabaseServiceApi {
         telemetry?: Telemetry | null;
         commitId?: string;
     }): Promise<Job | undefined>;
+    // (undocumented)
+    updateModule(args: {
+        id: string;
+        sourcePath?: string;
+        technology?: Module['technology'];
+    }): Promise<number>;
     // (undocumented)
     updateProject(args: {
         projectId: string;

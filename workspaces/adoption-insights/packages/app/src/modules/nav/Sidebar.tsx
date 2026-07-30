@@ -22,25 +22,41 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  UserSettingsSignInAvatar,
+  Settings as SidebarSettings,
+} from '@backstage/plugin-user-settings';
 import { SidebarLogo } from './SidebarLogo';
-import MenuIcon from '@material-ui/icons/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
     component: ({ navItems }) => {
-      const nav = navItems.withComponent(item => (
-        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
-      ));
+      const allItems = navItems.rest();
+      const mainItems = allItems.filter(
+        item => !item.href.includes('/settings'),
+      );
       return (
         <Sidebar>
           <SidebarLogo />
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             <SidebarScrollWrapper>
-              {nav.rest({ sortBy: 'title' })}
+              {mainItems.map(item => (
+                <SidebarItem
+                  key={item.href}
+                  icon={() => item.icon}
+                  to={item.href}
+                  text={item.title}
+                />
+              ))}
             </SidebarScrollWrapper>
           </SidebarGroup>
           <SidebarSpace />
+          <SidebarDivider />
+          <SidebarGroup label="Settings" icon={<UserSettingsSignInAvatar />}>
+            <SidebarSettings />
+          </SidebarGroup>
         </Sidebar>
       );
     },

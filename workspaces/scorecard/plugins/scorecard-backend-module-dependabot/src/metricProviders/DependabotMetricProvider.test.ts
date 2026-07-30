@@ -18,7 +18,10 @@ import { ConfigReader } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import { DependabotMetricProvider } from './DependabotMetricProvider';
-import { DEPENDABOT_SEVERITY_METRIC } from './DependabotConfig';
+import {
+  DEPENDABOT_SEVERITY_METRIC,
+  DEPENDABOT_THRESHOLDS,
+} from './DependabotConfig';
 import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -66,12 +69,12 @@ describe('DependabotMetricProvider', () => {
     });
   });
 
-  describe('getProviderId / getMetric', () => {
+  describe('getProviderId / getMetrics', () => {
     it.each([
-      ['critical', 'dependabot.alerts_critical', 'Dependabot Critical Alerts'],
-      ['high', 'dependabot.alerts_high', 'Dependabot High Alerts'],
-      ['medium', 'dependabot.alerts_medium', 'Dependabot Medium Alerts'],
-      ['low', 'dependabot.alerts_low', 'Dependabot Low Alerts'],
+      ['critical', 'dependabot.alertsCritical', 'Dependabot Critical Alerts'],
+      ['high', 'dependabot.alertsHigh', 'Dependabot High Alerts'],
+      ['medium', 'dependabot.alertsMedium', 'Dependabot Medium Alerts'],
+      ['low', 'dependabot.alertsLow', 'Dependabot Low Alerts'],
     ] as const)(
       'for %s returns id %s and title %s',
       (severity, expectedId, expectedTitle) => {
@@ -81,50 +84,19 @@ describe('DependabotMetricProvider', () => {
           severity,
         );
         expect(provider.getProviderId()).toBe(expectedId);
-        const metric = provider.getMetric();
+        const metrics = provider.getMetrics();
+        expect(metrics).toHaveLength(1);
+        const metric = metrics[0];
         expect(metric.id).toBe(expectedId);
         expect(metric.title).toBe(expectedTitle);
         expect(metric.description).toBe(
           DEPENDABOT_SEVERITY_METRIC[severity].description,
         );
         expect(metric.type).toBe('number');
+        expect(metric.thresholds).toEqual(DEPENDABOT_THRESHOLDS);
         expect(metric.history).toBe(true);
       },
     );
-  });
-
-  describe('getMetricType', () => {
-    it('returns number', () => {
-      const provider = new DependabotMetricProvider(
-        mockConfig,
-        mockLogger,
-        'critical',
-      );
-      expect(provider.getMetricType()).toBe('number');
-    });
-  });
-
-  describe('getMetricThresholds', () => {
-    it('returns default thresholds when none provided', () => {
-      const provider = new DependabotMetricProvider(
-        mockConfig,
-        mockLogger,
-        'critical',
-      );
-      expect(provider.getMetricThresholds()).toBeDefined();
-      expect(provider.getMetricThresholds().rules).toBeDefined();
-    });
-
-    it('returns custom thresholds when provided', () => {
-      const custom = { rules: [{ key: 'ok', expression: '<1' }] };
-      const provider = new DependabotMetricProvider(
-        mockConfig,
-        mockLogger,
-        'critical',
-        custom,
-      );
-      expect(provider.getMetricThresholds()).toEqual(custom);
-    });
   });
 
   describe('getCatalogFilter', () => {
@@ -193,7 +165,7 @@ describe('DependabotMetricProvider', () => {
     );
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     it.each(['critical', 'high', 'medium', 'low'] as const)(
       'calls getAlerts with target from getEntitySourceLocation and returns count',
       async severity => {
@@ -205,9 +177,9 @@ describe('DependabotMetricProvider', () => {
         );
         const ent = entity();
 
-        const result = await provider.calculateMetric(ent);
+        const results = await provider.calculateMetrics(ent);
 
-        expect(result).toBe(2);
+        expect(results.get(provider.getProviderId())).toBe(2);
         // target comes from getEntitySourceLocation(entity), not hardcoded
         expect(mockGetAlerts).toHaveBeenCalledWith(
           'https://github.com/owner/repo',
@@ -228,7 +200,8 @@ describe('DependabotMetricProvider', () => {
         mockLogger,
         'critical',
       );
-      expect(await provider.calculateMetric(entity())).toBe(0);
+      const results = await provider.calculateMetrics(entity());
+      expect(results.get(provider.getProviderId())).toBe(0);
     });
 
     it('propagates errors when getAlerts fails', async () => {
@@ -239,7 +212,7 @@ describe('DependabotMetricProvider', () => {
         'critical',
       );
 
-      await expect(provider.calculateMetric(entity())).rejects.toThrow(
+      await expect(provider.calculateMetrics(entity())).rejects.toThrow(
         'dependabot unavailable',
       );
       expect(mockGetAlerts).toHaveBeenCalledWith(

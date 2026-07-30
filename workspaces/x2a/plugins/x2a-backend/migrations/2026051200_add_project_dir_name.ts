@@ -15,7 +15,34 @@
  */
 
 import type { Knex } from 'knex';
-import { Project } from '../src/services/Project';
+
+const MAX_BASE_NAME_LENGTH = 64;
+const SHORT_ID_LENGTH = 6;
+const DEFAULT_BASE_NAME = 'project';
+
+function computeDirName(id: string, name: string): string {
+  let sanitized = name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-{2,}/g, '-');
+
+  let start = 0;
+  while (start < sanitized.length && sanitized[start] === '-') start++;
+  sanitized = sanitized.substring(start);
+
+  let end = sanitized.length;
+  while (end > 0 && sanitized[end - 1] === '-') end--;
+  sanitized = sanitized.substring(0, end);
+
+  sanitized = sanitized.substring(0, MAX_BASE_NAME_LENGTH);
+  while (sanitized.length > 0 && sanitized[sanitized.length - 1] === '-') {
+    sanitized = sanitized.substring(0, sanitized.length - 1);
+  }
+
+  const baseName = sanitized || DEFAULT_BASE_NAME;
+  const shortId = id.substring(0, SHORT_ID_LENGTH);
+  return `${baseName}-${shortId}`;
+}
 
 /**
  * Adds the dir_name column and renames created_by to owned_by in the projects table.
@@ -36,7 +63,7 @@ export async function up(knex: Knex): Promise<void> {
   for (const row of rows) {
     await knex('projects')
       .where('id', row.id)
-      .update({ dir_name: new Project(row.id, row.name).dirName });
+      .update({ dir_name: computeDirName(row.id, row.name) });
   }
 
   // SQLite does not support ALTER COLUMN to set NOT NULL after the fact.

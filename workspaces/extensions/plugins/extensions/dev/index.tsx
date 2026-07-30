@@ -43,11 +43,7 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import {
-  extensionsPage,
-  extensionsNavItem,
-  extensionsTranslationsModule,
-} from '../src/alpha';
+import { extensionsPage, extensionsTranslationsModule } from '../src/alpha';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
 import { allRoutes } from '../src/routes';
@@ -97,12 +93,7 @@ const pluginHeaderActionsModule = createFrontendModule({
 const extensionsDevPlugin = createFrontendPlugin({
   pluginId: 'extensions',
   info: { packageJson: () => import('../package.json') },
-  extensions: [
-    mockExtensionApi,
-    mockDynamicPluginsInfoApi,
-    extensionsPage,
-    extensionsNavItem,
-  ],
+  extensions: [mockExtensionApi, mockDynamicPluginsInfoApi, extensionsPage],
   routes: allRoutes,
 });
 

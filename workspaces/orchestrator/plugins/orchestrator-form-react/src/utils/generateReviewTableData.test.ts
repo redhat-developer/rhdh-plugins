@@ -236,6 +236,52 @@ describe('mapSchemaToData', () => {
     expect(result).toEqual(expectedResult);
   });
 
+  it('should include conditionally hidden schema fields not present in form data when includeHiddenFields is true', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        inputs: {
+          type: 'object',
+          title: 'Step 1',
+          properties: {
+            field1: {
+              type: 'string',
+              title: 'Field 1',
+            },
+            conditionalDetail: {
+              type: 'string',
+              title: 'Field 3',
+              'ui:hidden': {
+                anyOf: [{ when: 'field1', isNot: 'show' }],
+              },
+            } as JSONSchema7,
+          },
+        },
+      },
+    };
+
+    const data = {
+      inputs: {
+        field1: 'hide',
+      },
+    };
+
+    expect(generateReviewTableData(schema, data)).toEqual({
+      'Step 1': {
+        'Field 1': 'hide',
+      },
+    });
+
+    expect(
+      generateReviewTableData(schema, data, { includeHiddenFields: true }),
+    ).toEqual({
+      'Step 1': {
+        'Field 1': 'hide',
+        'Field 3': undefined,
+      },
+    });
+  });
+
   it('should exclude nested hidden fields from review table', () => {
     const schema: JSONSchema7 = {
       type: 'object',
@@ -350,6 +396,34 @@ describe('mapSchemaToData', () => {
 
     const result = generateReviewTableData(schema, data);
     expect(result).toEqual(expectedResult);
+  });
+
+  it('should mask values for fields with ui:widget: password', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+          title: 'Username',
+        },
+        password: {
+          type: 'string',
+          title: 'Password',
+          'ui:widget': 'password',
+        } as JSONSchema7,
+      },
+    };
+
+    const data = {
+      username: 'alice',
+      password: 'super-secret-123',
+    };
+
+    const result = generateReviewTableData(schema, data);
+    expect(result).toEqual({
+      Username: 'alice',
+      Password: '******',
+    });
   });
 
   it('returns an empty object when form data is empty (e.g. display-only ActiveText)', () => {

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras
 
+## 0.4.3
+
+### Patch Changes
+
+- dcf930d: Add missing MCP tool attribute annotations (`readOnly`, `destructive`, `idempotent`) to `fetch-template-metadata`, `query-catalog-entities`, and `analyze-techdocs-coverage` tools.
+
 ## 0.4.2
 
 ### Patch Changes

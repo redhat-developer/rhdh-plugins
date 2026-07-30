@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { ReactElement } from 'react';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SchoolIcon from '@mui/icons-material/School';
@@ -55,7 +55,7 @@ export const ICON_NAMES = [
 
 export type IconName = (typeof ICON_NAMES)[number];
 
-export const getIconForName = (iconName?: string): React.ReactElement => {
+export const getIconForName = (iconName?: string): ReactElement => {
   switch (iconName?.toLowerCase()) {
     case 'rocket':
       return <RocketLaunchIcon />;

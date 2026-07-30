@@ -14,21 +14,57 @@
  * limitations under the License.
  */
 
+import { ReactElement, ReactNode, useMemo, useState } from 'react';
+
 import { TabbedLayout } from '@backstage/core-components';
 
-import { Box } from '@material-ui/core';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { useAllWorkflowOverviews } from '../../hooks/useWorkflowsCount';
 import { workflowInstancesRouteRef } from '../../routes';
+import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
 import { useIsDarkMode } from '../../utils/isDarkMode';
+import { translateMessage } from '../Trans';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 import { WorkflowsTabContent } from './WorkflowsTabContent';
 
+const TAB_ICON_PROPS = {
+  fontSize: 'small' as const,
+};
+
+const TAB_LABEL_STYLE = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+} as const;
+
+// HeaderTabs uses @material-ui/core Tab (v4), which stacks separate icon/label
+// vertically. Render both inline inside tabProps.icon and clear label instead.
+const TabLabel = ({
+  icon,
+  children,
+}: {
+  icon: ReactElement;
+  children: ReactNode;
+}) => (
+  <Typography component="span" style={TAB_LABEL_STYLE}>
+    {icon}
+    {children}
+  </Typography>
+);
+
 const useStyles = makeStyles<{ isDarkMode: boolean }>()(
   (_, { isDarkMode }) => ({
     tabbedLayout: {
+      '& .MuiTab-root': {
+        minHeight: 48,
+      },
       '& .Mui-selected': {
         color: isDarkMode ? '#ffffff !important' : '#151515 !important',
       },
@@ -40,17 +76,63 @@ export const OrchestratorPage = () => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
+  const [search, setSearch] = useState('');
+  const allWorkflows = useAllWorkflowOverviews();
+
+  const displayedWorkflowsCount = useMemo(() => {
+    if (!allWorkflows.isReady || allWorkflows.count === undefined) {
+      return undefined;
+    }
+
+    if (!search.trim()) {
+      return allWorkflows.count;
+    }
+
+    return filterWorkflowOverviewsBySearch(allWorkflows.overviews ?? [], search)
+      .length;
+  }, [
+    allWorkflows.count,
+    allWorkflows.isReady,
+    allWorkflows.overviews,
+    search,
+  ]);
+
+  const workflowsTabTitle =
+    displayedWorkflowsCount !== undefined
+      ? translateMessage(t, 'table.title.workflows', {
+          count: displayedWorkflowsCount,
+        })
+      : t('page.tabs.workflows');
 
   return (
     <BaseOrchestratorPage title={t('page.title')} noPadding>
       <Box className={classes.tabbedLayout}>
         <TabbedLayout>
-          <TabbedLayout.Route path="/" title={t('page.tabs.workflows')}>
-            <WorkflowsTabContent />
+          <TabbedLayout.Route
+            path="/"
+            title={workflowsTabTitle}
+            tabProps={{
+              label: '',
+              icon: (
+                <TabLabel icon={<AccountTreeIcon {...TAB_ICON_PROPS} />}>
+                  {workflowsTabTitle}
+                </TabLabel>
+              ),
+            }}
+          >
+            <WorkflowsTabContent search={search} onSearchChange={setSearch} />
           </TabbedLayout.Route>
           <TabbedLayout.Route
             path={workflowInstancesRouteRef.path}
             title={t('page.tabs.allRuns')}
+            tabProps={{
+              label: '',
+              icon: (
+                <TabLabel icon={<PlaylistPlayIcon {...TAB_ICON_PROPS} />}>
+                  {t('page.tabs.allRuns')}
+                </TabLabel>
+              ),
+            }}
           >
             <WorkflowRunsTabContent />
           </TabbedLayout.Route>

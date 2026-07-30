@@ -18,39 +18,52 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import { TableColumn, Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, Typography } from '@material-ui/core';
+import { Box, Button, Chip, Typography } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
+import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // ── Tab content ─────────────────────────────────────────────────────────────
 
 export function ServiceTypesTabContent() {
   const classes = useDcmStyles();
   const catalogApi = useApi(catalogApiRef);
+  const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = usePersistedPageSize('service-types');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     catalogApi
       .listServiceTypes()
       .then(res => setServiceTypes(res.results ?? []))
-      .catch(() => setServiceTypes([]))
+      .catch(err => {
+        setLoadError(extractApiError(err));
+        setServiceTypes([]);
+      })
       .finally(() => setLoading(false));
   }, [catalogApi]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return serviceTypes;
@@ -71,7 +84,7 @@ export function ServiceTypesTabContent() {
   const columns = useMemo<TableColumn<ServiceType>[]>(
     () => [
       {
-        title: 'Service type',
+        title: t('serviceTypes.columns.serviceType'),
         field: 'service_type',
         render: st => (
           <Box className={classes.nameCellBox}>
@@ -96,7 +109,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'API version',
+        title: t('serviceTypes.columns.apiVersion'),
         field: 'api_version',
         render: st => (
           <Chip
@@ -107,7 +120,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'Path',
+        title: t('serviceTypes.columns.path'),
         field: 'path',
         render: st => (
           <TruncatedText
@@ -121,7 +134,7 @@ export function ServiceTypesTabContent() {
         ),
       },
       {
-        title: 'Created',
+        title: t('serviceTypes.columns.created'),
         field: 'create_time',
         render: st =>
           st.create_time ? (
@@ -130,27 +143,47 @@ export function ServiceTypesTabContent() {
             </Typography>
           ) : (
             <Typography variant="caption" color="textSecondary">
-              —
+              -
             </Typography>
           ),
       },
     ],
-    [classes],
+    [classes, t],
   );
 
   if (loading) return <Progress />;
+
+  if (loadError) {
+    return (
+      <Box p={2}>
+        <MuiAlert
+          severity="error"
+          variant="outlined"
+          action={
+            <Button color="inherit" size="small" onClick={load}>
+              {t('common.retry')}
+            </Button>
+          }
+        >
+          {loadError}
+        </MuiAlert>
+      </Box>
+    );
+  }
 
   return (
     <Box className={classes.root}>
       {serviceTypes.length === 0 ? (
         <DcmDataCenterTabEmptyState
-          title="No service types defined"
-          description="Service types define the template schema for catalog items."
+          title={t('serviceTypes.emptyTitle')}
+          description={t('serviceTypes.emptyDescription')}
           illustrationSrc={emptyIllustration}
         />
       ) : (
         <DcmSearchTableCard<ServiceType>
-          title={`Service types (${filtered.length})`}
+          title={(t as any)('serviceTypes.cardTitle', {
+            count: filtered.length,
+          })}
           data={paginated}
           columns={columns}
           totalCount={filtered.length}

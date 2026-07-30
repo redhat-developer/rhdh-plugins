@@ -17,9 +17,9 @@
 import { PropsWithChildren } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import HomeIcon from '@material-ui/icons/Home';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import LibraryBooks from '@material-ui/icons/LibraryBooks';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import HomeIcon from '@mui/icons-material/Home';
+import LibraryBooks from '@mui/icons-material/LibraryBooks';
 import {
   Sidebar,
   SidebarDivider,
@@ -29,9 +29,9 @@ import {
   SidebarScrollWrapper,
   SidebarSpace,
 } from '@backstage/core-components';
-import MenuIcon from '@material-ui/icons/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
+import GroupIcon from '@mui/icons-material/People';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
-import GroupIcon from '@material-ui/icons/People';
 import {
   GlobalHeaderComponent,
   defaultGlobalHeaderComponentsMountPoints,

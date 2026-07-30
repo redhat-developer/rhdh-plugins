@@ -1,0 +1,8 @@
+base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/fix.yaml#sha256=f966f0b8cd9b58289f19b446cfc4fd343c9079d9c9acee0260824b57e896e068
+agent: rhdh/agents/fix.md
+policy: rhdh/policies/code.yaml
+host_files:
+  - src: rhdh/bin/yarn
+    dest: /sandbox/workspace/bin/yarn
+  - src: rhdh/env/yarn-proxy.env
+    dest: /sandbox/workspace/.env.d/yarn-proxy.env

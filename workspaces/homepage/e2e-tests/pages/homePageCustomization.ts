@@ -30,7 +30,8 @@ export class HomePageCustomization {
 
   // Locators
   private readonly editButton = () => this.page.getByText('Edit');
-  private readonly saveButton = () => this.page.getByText('Save');
+  private readonly saveButton = () =>
+    this.page.getByText('Save', { exact: true });
   private readonly clearAllButton = () => this.page.getByText('Clear all');
   private readonly restoreDefaultsButton = () =>
     this.page.getByText('Restore defaults');
@@ -231,7 +232,7 @@ export class HomePageCustomization {
     await this.page.waitForTimeout(1000); // Wait for dialog to open
 
     // Select the specific widget type from the dialog
-    await this.page.getByRole('button', { name: title }).click();
+    await this.page.getByRole('button', { name: title, exact: true }).click();
     await this.page.waitForTimeout(1000);
   }
 

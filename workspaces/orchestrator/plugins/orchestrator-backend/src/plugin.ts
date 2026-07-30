@@ -18,8 +18,8 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
+import { orchestratorPermissions } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import {
   WorkflowLogProvider,
   workflowLogsExtensionEndpoint,
@@ -27,6 +27,12 @@ import {
 
 import { WorkflowLogsProvidersRegistry } from './providers/WorkflowLogsProvidersRegistry';
 import { createRouter } from './routerWrapper';
+import { initPublicServices } from './service/initPublicServices';
+import {
+  fetchWorkflowResources,
+  orchestratorPermissionRules,
+  orchestratorWorkflowResourceRef,
+} from './service/permission-rules';
 
 /**
  * @public
@@ -52,19 +58,39 @@ export const orchestratorPlugin = createBackendPlugin({
         auditor: coreServices.auditor,
         config: coreServices.rootConfig,
         discovery: coreServices.discovery,
-        catalogApi: catalogServiceRef,
         urlReader: coreServices.urlReader,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
         httpAuth: coreServices.httpAuth,
         http: coreServices.httpRouter,
         userInfo: coreServices.userInfo,
       },
       async init(props) {
-        const { http } = props;
+        const { http, permissionsRegistry } = props;
+
+        const publicServices = initPublicServices(
+          props.logger,
+          props.config,
+          props.scheduler,
+          workflowLogsProvidersRegistry,
+        );
+
+        permissionsRegistry.addResourceType({
+          resourceRef: orchestratorWorkflowResourceRef,
+          getResources: resourceRefs =>
+            fetchWorkflowResources(
+              publicServices.orchestratorService,
+              resourceRefs,
+            ),
+          permissions: orchestratorPermissions,
+          rules: orchestratorPermissionRules,
+        });
+
         const router = await createRouter({
           ...props,
           workflowLogsProvidersRegistry,
+          publicServices,
         });
         http.use(router);
         http.addAuthPolicy({

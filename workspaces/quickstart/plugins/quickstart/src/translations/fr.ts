@@ -28,6 +28,7 @@ const quickstartTranslationFr = createTranslationMessages({
     'button.gotIt': "J'ai compris",
     'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
     'button.quickstart': 'Démarrage rapide',
+    'content.loading': 'Chargement',
     'content.emptyState.title':
       "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
     'dev.currentState': 'État actuel du tiroir : {{state}}',
@@ -81,7 +82,8 @@ const quickstartTranslationFr = createTranslationMessages({
     'steps.getStartedWithLightspeed.ctaTitle': 'En savoir plus',
     'steps.getStartedWithLightspeed.description':
       "Résolvez les problèmes, générez du code et découvrez les ressources de la plateforme grâce à un chat basé sur l'IA.",
-    'steps.getStartedWithLightspeed.title': 'Démarrez avec Lightspeed',
+    'steps.getStartedWithLightspeed.title':
+      'Démarrez avec Intelligent Assistant',
     'steps.importApplication.ctaTitle': 'Importer',
     'steps.importApplication.description':
       'Importez votre code et vos services existants dans le catalogue pour les organiser et y accéder via votre portail développeur.',
@@ -100,8 +102,8 @@ const quickstartTranslationFr = createTranslationMessages({
     'steps.setupAuthentication.title': "Configurer l'authentification",
     'steps.setupLightspeed.ctaTitle': 'En savoir plus',
     'steps.setupLightspeed.description':
-      "Connectez Lightspeed à un modèle de langage étendu (LLM) pris en charge et configurez les autorisations pour fournir votre assistance basée sur l'IA à vos développeurs.",
-    'steps.setupLightspeed.title': 'Configurer à la vitesse de la lumière',
+      "Connectez Intelligent Assistant à un modèle de langage étendu (LLM) pris en charge et configurez les autorisations pour fournir votre assistance basée sur l'IA à vos développeurs.",
+    'steps.setupLightspeed.title': 'Configurer Intelligent Assistant',
   },
 });
 

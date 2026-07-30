@@ -28,12 +28,17 @@ export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x
  * Project status is calculated from its modules.
  *
  * Its "state" is accompanied by summary of its modules statuses.
+ *
+ * The removed modules are excluded from project status calculation.
  */
 export function calculateProjectStatus(
   projectModules: Module[],
   initJob?: Job,
 ): ProjectStatus {
-  const total = projectModules.length;
+  const activeModules = projectModules.filter(m => !m.removedAt);
+  const removedCount = projectModules.length - activeModules.length;
+
+  const total = activeModules.length;
   if (!initJob && total === 0) {
     return {
       state: ProjectState.CREATED.value,
@@ -45,11 +50,12 @@ export function calculateProjectStatus(
         running: 0,
         error: 0,
         cancelled: 0,
+        removed: removedCount,
       },
     };
   }
 
-  const modulesWithStatus = projectModules.map(module => ({
+  const modulesWithStatus = activeModules.map(module => ({
     module,
     status: module.status ? JobStatus.from(module.status) : undefined,
     publishStatus: module.publish?.status
@@ -95,6 +101,7 @@ export function calculateProjectStatus(
       running,
       error,
       cancelled,
+      removed: removedCount,
     },
   };
 }

@@ -20,7 +20,7 @@ import {
   Job,
   JobStatusEnum,
   Artifact,
-  ArtifactType,
+  ArtifactKind,
   MigrationPhase,
   SourceTechnology,
   Telemetry,
@@ -62,6 +62,9 @@ export function mapRowToModule(row: Record<string, unknown>): Module {
     sourcePath: row.source_path as string,
     technology: (row.technology as SourceTechnology) || undefined,
     projectId: row.project_id as string,
+    removedAt: row.removed_at
+      ? new Date(row.removed_at as string | Date)
+      : undefined,
   };
 }
 
@@ -106,8 +109,7 @@ function parseTelemetry(raw: string | undefined): Telemetry | undefined {
 export function mapRowToArtifact(row: Record<string, unknown>): Artifact {
   return {
     id: row.id as string,
-    // Following retype is fragile if DB writes do not respect the enum
-    type: row.type as ArtifactType,
+    type: ArtifactKind.from(row.type as string).value,
     value: row.value as string,
   };
 }

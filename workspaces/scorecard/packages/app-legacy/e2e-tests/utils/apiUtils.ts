@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Response } from '@playwright/test';
 import { Page, expect } from '@playwright/test';
 import { ScorecardRoutes } from '../constants/routes';
 
@@ -35,6 +36,48 @@ export async function waitUntilApiCallSucceeds(
   );
 
   expect(response.status()).toBe(200);
+}
+
+function isAggregationDataUrl(url: string, aggregationId: string): boolean {
+  return (
+    url.includes(`/api/scorecard/aggregations/${aggregationId}`) &&
+    !url.includes('/metadata')
+  );
+}
+
+/**
+ * Waits for GET /api/scorecard/aggregations/{aggregationId} (not /metadata).
+ * Start the returned promise before the action that triggers the fetch (e.g. page.reload).
+ */
+export function waitForAggregationResponse(
+  page: Page,
+  aggregationId: string,
+): Promise<Response> {
+  const status = 200;
+  const timeout = 60_000;
+
+  return page.waitForResponse(
+    async res => {
+      const isStatusValid = res.status() === status;
+
+      if (!isAggregationDataUrl(res.url(), aggregationId) || !isStatusValid) {
+        return false;
+      }
+
+      try {
+        const json = await res.json();
+        const result = json?.result;
+
+        return (
+          result?.weightedStatusScore !== undefined ||
+          result?.total !== undefined
+        );
+      } catch {
+        return false;
+      }
+    },
+    { timeout },
+  );
 }
 
 export async function mockApiResponse(
@@ -155,7 +198,7 @@ export async function mockMetricsApi(
 
 /**
  * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
- * Use with direct navigation to /scorecard/aggregations/jira.open_issues/metrics/jira.open_issues
+ * Use with direct navigation to /scorecard/aggregations/jira.openIssues/metrics/jira.openIssues
  */
 export async function mockJiraDrillDownMissingPermission(
   page: Page,
@@ -167,22 +210,19 @@ export async function mockJiraDrillDownMissingPermission(
       status: 403,
       contentType: 'application/json',
       body: notAllowedError403Body(
-        '/metrics/jira.open_issues/catalog/aggregations',
+        '/metrics/jira.openIssues/catalog/aggregations',
       ),
     });
   });
-  await page.route(
-    entitiesDrillDownPattern('jira.open_issues'),
-    async route => {
-      await route.fulfill({
-        status: 403,
-        contentType: 'application/json',
-        body: notAllowedError403Body(
-          '/metrics/jira.open_issues/catalog/aggregations/entities?page=1&pageSize=5',
-        ),
-      });
-    },
-  );
+  await page.route(entitiesDrillDownPattern('jira.openIssues'), async route => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: notAllowedError403Body(
+        '/metrics/jira.openIssues/catalog/aggregations/entities?page=1&pageSize=5',
+      ),
+    });
+  });
 }
 
 /**
@@ -192,7 +232,7 @@ export async function mockJiraDrillDownMissingPermission(
 export async function mockScorecardEntitiesDrillDown(
   page: Page,
   responseData: object,
-  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  metricId: 'github.openPRs' | 'jira.openIssues' = 'github.openPRs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {
@@ -238,7 +278,7 @@ function sortEntitiesByStatus(
 export async function mockScorecardEntitiesDrillDownWithSort(
   page: Page,
   responseData: object,
-  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  metricId: 'github.openPRs' | 'jira.openIssues' = 'github.openPRs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {

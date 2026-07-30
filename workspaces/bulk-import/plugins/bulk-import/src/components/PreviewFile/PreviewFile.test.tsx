@@ -45,19 +45,6 @@ jest.mock('../DrawerContext', () => ({
   useDrawer: jest.fn(),
 }));
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  makeStyles: () => () => {
-    return {
-      paper: 'paper',
-      createButton: 'create',
-      footer: 'footer',
-      header: 'header',
-      body: 'body',
-    };
-  },
-}));
-
 class MockBulkImportApi {
   async getImportAction(
     repo: string,

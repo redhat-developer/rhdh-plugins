@@ -16,6 +16,8 @@
 
 import { LoggerService, SchedulerService } from '@backstage/backend-plugin-api';
 
+import { WorkflowAvailabilityResponse } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 
@@ -101,7 +103,7 @@ export class WorkflowCacheService {
       });
       await Promise.all(
         Object.entries(idUrlMap).map(async ([definitionId, serviceUrl]) => {
-          let isServiceUp = false;
+          let isServiceUp: WorkflowAvailabilityResponse | undefined;
           try {
             isServiceUp = await this.sonataFlowService.pingWorkflowService({
               definitionId,
@@ -112,7 +114,7 @@ export class WorkflowCacheService {
               `Ping workflow ${definitionId} service threw error: ${err}`,
             );
           }
-          if (isServiceUp) {
+          if (isServiceUp?.isAvailable) {
             this.definitionIdCache.add(definitionId);
             this.unavailableDefinitionIdCache.delete(definitionId);
           } else {

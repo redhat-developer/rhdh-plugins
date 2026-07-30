@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
@@ -24,11 +24,16 @@ import { useEffectiveConfig, useProviders } from '../../../hooks';
 import { ProviderSelector } from '../ProviderSelector';
 import { ProviderPlaceholder } from '../ProviderPlaceholder';
 import { ModelConnectionSection } from './ModelConnectionSection';
-import { ToolsSection } from './ToolsSection';
 import { McpServersSection } from './McpServersSection';
 import { SafetyEvalPanel } from '../SafetyEvalPanel/SafetyEvalPanel';
 import { EvaluationSection } from '../SafetyEvalPanel/EvaluationSection';
 import { KnowledgeBasePanel } from '../KnowledgeBasePanel';
+import {
+  CONTENT_MAX_WIDTH,
+  PAGE_TITLE_SX,
+  PAGE_SUBTITLE_SX,
+} from '../shared/commandCenterStyles';
+import { PanelIntroBanner } from '../shared/PanelIntroBanner';
 
 type SubTab =
   | 'connection'
@@ -46,16 +51,25 @@ interface TabDef {
 
 const ALL_TABS: readonly TabDef[] = [
   { label: 'Model', value: 'connection' },
-  { label: 'Tools', value: 'tools' },
   { label: 'MCP Servers', value: 'mcp', capability: 'mcpTools' },
   { label: 'RAG', value: 'knowledge', capability: 'rag' },
   { label: 'Safety', value: 'safety', capability: 'safety' },
   { label: 'Evaluation', value: 'evaluation', capability: 'evaluation' },
 ] as const;
 
-const CONTENT_SX = { px: 3, py: 2, maxWidth: 960, mx: 'auto' } as const;
+const CONTENT_SX = {
+  px: 3,
+  py: 2,
+  maxWidth: CONTENT_MAX_WIDTH,
+  mx: 'auto',
+} as const;
 
-const HEADER_OUTER_SX = { px: 3, pt: 3, maxWidth: 960, mx: 'auto' } as const;
+const HEADER_OUTER_SX = {
+  px: 3,
+  pt: 3,
+  maxWidth: CONTENT_MAX_WIDTH,
+  mx: 'auto',
+} as const;
 
 const HEADER_ROW_SX = {
   display: 'flex',
@@ -71,7 +85,7 @@ const TABS_SX = {
   '& .MuiTab-root': {
     minHeight: 40,
     textTransform: 'none',
-    fontSize: '0.8125rem',
+    fontSize: '0.8125rem' /* typeScale.bodySmall */,
     minWidth: 'auto',
     px: 2,
     mr: 0.5,
@@ -103,6 +117,16 @@ export const AgentConfigPanel = () => {
     [activeProvider],
   );
 
+  // Reset to a valid tab when capabilities change (e.g. provider switch)
+  useEffect(() => {
+    if (
+      visibleTabs.length > 0 &&
+      !visibleTabs.some(t => t.value === activeTab)
+    ) {
+      setActiveTab('connection');
+    }
+  }, [visibleTabs, activeTab]);
+
   const handleTabChange = useCallback(
     (_: unknown, v: string) => {
       setActiveTab(v as SubTab);
@@ -120,7 +144,9 @@ export const AgentConfigPanel = () => {
       <Box sx={{ width: '100%' }}>
         <Box sx={HEADER_OUTER_SX}>
           <Box sx={HEADER_ROW_SX}>
-            <Typography variant="h5">Platform</Typography>
+            <Typography variant="h5" sx={PAGE_TITLE_SX}>
+              Platform
+            </Typography>
             <ProviderSelector
               providers={providers}
               activeProviderId={activeProviderId}
@@ -138,10 +164,10 @@ export const AgentConfigPanel = () => {
       <Box sx={HEADER_OUTER_SX}>
         <Box sx={HEADER_ROW_SX}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 0.5 }}>
+            <Typography variant="h5" sx={{ ...PAGE_TITLE_SX, mb: 0.5 }}>
               Platform
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" sx={PAGE_SUBTITLE_SX}>
               Configure the shared infrastructure &mdash; model, tools,
               knowledge base, and safety &mdash; that powers all agents.
             </Typography>
@@ -154,12 +180,21 @@ export const AgentConfigPanel = () => {
         </Box>
       </Box>
 
+      <Box sx={{ px: 3, maxWidth: CONTENT_MAX_WIDTH, mx: 'auto' }}>
+        <PanelIntroBanner storageKey="platform-config">
+          Platform Config controls the shared AI infrastructure — model
+          endpoints, tool registrations, RAG pipelines, and safety guardrails —
+          used by all agents.
+        </PanelIntroBanner>
+      </Box>
+
       <Box
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
-          mb: 1,
-          maxWidth: 960,
+          mb: 2,
+          px: 3,
+          maxWidth: CONTENT_MAX_WIDTH,
           mx: 'auto',
         }}
       >
@@ -184,14 +219,7 @@ export const AgentConfigPanel = () => {
             onConfigSaved={refreshConfig}
             providerName={providerName}
           />
-        </Box>
-      )}
-      {activeTab === 'tools' && (
-        <Box sx={CONTENT_SX}>
-          <ToolsSection
-            effectiveConfig={effectiveConfig}
-            onConfigSaved={refreshConfig}
-          />
+          {/* Agent Ops (KagentiConnectionSection) moved to its own sub-tab */}
         </Box>
       )}
       {activeTab === 'mcp' && (
@@ -202,7 +230,11 @@ export const AgentConfigPanel = () => {
           />
         </Box>
       )}
-      {activeTab === 'knowledge' && <KnowledgeBasePanel />}
+      {activeTab === 'knowledge' && (
+        <Box sx={CONTENT_SX}>
+          <KnowledgeBasePanel />
+        </Box>
+      )}
       {activeTab === 'safety' && (
         <SafetyEvalPanel
           effectiveConfig={effectiveConfig}

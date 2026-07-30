@@ -26,21 +26,13 @@ export async function runAccessibilityTests(
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
 
-  // Known violations filtered until fixed in UI; track in https://issues.redhat.com/browse/RHDHBUGS-2216
-  const filteredViolations = accessibilityScanResults.violations.filter(
-    v =>
-      ![
-        'aria-input-field-name',
-        'button-name',
-        'color-contrast', // MUI Tooltip default styling
-        'svg-img-alt', // Recharts pie segments
-      ].includes(v.id),
-  );
-
   await testInfo.attach(attachName, {
     body: JSON.stringify(accessibilityScanResults, null, 2),
     contentType: 'application/json',
   });
 
-  expect(filteredViolations, 'Accessibility violations found').toEqual([]);
+  expect(
+    accessibilityScanResults.violations,
+    'Accessibility violations found',
+  ).toEqual([]);
 }

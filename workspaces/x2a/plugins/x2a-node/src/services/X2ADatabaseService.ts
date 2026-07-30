@@ -112,9 +112,22 @@ export interface X2ADatabaseServiceApi {
     skipEnrichment?: boolean;
   }): Promise<Module | undefined>;
 
-  listModules(args: { projectId: string }): Promise<Module[]>;
+  listModules(args: {
+    projectId: string;
+    includeRemoved?: boolean;
+  }): Promise<Module[]>;
 
   deleteModule(args: { id: string }): Promise<number>;
+
+  softDeleteModule(args: { id: string }): Promise<number>;
+
+  restoreModule(args: { id: string }): Promise<number>;
+
+  updateModule(args: {
+    id: string;
+    sourcePath?: string;
+    technology?: Module['technology'];
+  }): Promise<number>;
 
   createJob(job: CreateJobInput): Promise<Job>;
 

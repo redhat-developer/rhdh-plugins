@@ -53,6 +53,7 @@ export type OrchestratorFormContextProps = {
   setIsChangedByUser: (id: string, isChangedByUser: boolean) => void;
   handleFetchStarted?: () => void;
   handleFetchEnded?: () => void;
+  onSamlSsoError?: (error: Error) => void;
 };
 
 // @public
@@ -90,7 +91,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:131:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:132:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 ```

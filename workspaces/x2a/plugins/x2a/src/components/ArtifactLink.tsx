@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 import { makeStyles } from '@material-ui/core';
-import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Artifact,
+  ArtifactKind,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useScmHostMap } from '../hooks/useScmHostMap';
 import { useTranslation } from '../hooks/useTranslation';
@@ -47,18 +50,18 @@ export const ArtifactLink = ({
     return t('module.phases.none');
   }
 
-  const url =
-    artifact.type === 'ansible_project'
-      ? artifact.value
-      : buildArtifactUrl(
-          artifact.value,
-          targetRepoUrl,
-          targetRepoBranch,
-          hostMap,
-        );
+  const kind = ArtifactKind.from(artifact.type);
+  const url = kind.isAnsibleProject()
+    ? artifact.value
+    : buildArtifactUrl(
+        artifact.value,
+        targetRepoUrl,
+        targetRepoBranch,
+        hostMap,
+      );
   return (
     <ExternalLink to={url} className={classes.artifact}>
-      {humanizeArtifactType(t, artifact.type)}
+      {humanizeArtifactType(t, kind)}
     </ExternalLink>
   );
 };

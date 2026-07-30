@@ -19,9 +19,7 @@ import { ComponentType, Fragment, useCallback, useMemo, useState } from 'react';
 import { JsonObject } from '@backstage/types';
 
 import { UiSchema } from '@rjsf/utils';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import cloneDeep from 'lodash/cloneDeep';
-import get from 'lodash/get';
+import type { JSONSchema7 } from 'json-schema';
 
 import {
   OrchestratorFormContextProps,
@@ -37,17 +35,10 @@ import {
   StepperContextProvider,
   useStepperContext,
 } from '../utils/StepperContext';
+import { getNumSteps, removeHiddenSteps } from './OrchestratorForm.helpers';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
 import SingleStepForm from './SingleStepForm';
-
-const getNumSteps = (schema: JSONSchema7): number | undefined => {
-  if (schema.type !== 'object' || !schema.properties) return undefined;
-  const isMultiStep = Object.values(schema.properties).every(
-    prop => (prop as JSONSchema7).type === 'object',
-  );
-  return isMultiStep ? Object.keys(schema.properties).length : undefined;
-};
 
 /**
  * @public
@@ -57,6 +48,7 @@ export type OrchestratorFormProps = {
   schema: JSONSchema7;
   updateSchema: OrchestratorFormContextProps['updateSchema'];
   setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
+  onSamlSsoError?: OrchestratorFormContextProps['onSamlSsoError'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
@@ -64,48 +56,6 @@ export type OrchestratorFormProps = {
   t: TranslationFunction;
   executeLabel?: string;
   executeAsEventLabel?: string;
-};
-
-/**
- * Remove hidden steps from the schema.
- *
- * A wizard step is removed when
- *   "type": "object"
- *   "ui:widget": "hidden"
- *   and properties are empty ("properties": {})
- *
- * @param schema - The schema to remove hidden steps from.
- * @returns The schema with hidden steps removed.
- */
-const removeHiddenSteps = (schema: JSONSchema7): JSONSchema7 => {
-  if (typeof schema.properties === 'object') {
-    const hiddenSteps = Object.entries(schema.properties)
-      .map(([key, value]: [string, JSONSchema7Definition]) => {
-        const uiWidget = get(value, 'ui:widget');
-        if (
-          typeof value !== 'boolean' &&
-          value.type === 'object' &&
-          uiWidget === 'hidden' &&
-          value.properties &&
-          Object.keys(value.properties).length === 0
-        ) {
-          return key;
-        }
-        return undefined;
-      })
-      .filter(Boolean) as string[];
-
-    if (hiddenSteps.length > 0) {
-      const newSchema = cloneDeep(schema);
-      hiddenSteps.forEach(step => {
-        delete newSchema.properties?.[step];
-      });
-
-      return newSchema;
-    }
-  }
-
-  return schema;
 };
 
 type ReviewStepHostProps = {
@@ -157,6 +107,7 @@ const OrchestratorForm = ({
   isExecuting,
   initialFormData,
   setAuthTokenDescriptors,
+  onSamlSsoError,
   t,
   executeLabel,
   executeAsEventLabel,
@@ -270,6 +221,7 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          onSamlSsoError={onSamlSsoError}
           getIsChangedByUser={getIsChangedByUser}
           setIsChangedByUser={setIsChangedByUser}
         >
@@ -284,6 +236,7 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          onSamlSsoError={onSamlSsoError}
           getIsChangedByUser={getIsChangedByUser}
           setIsChangedByUser={setIsChangedByUser}
         />

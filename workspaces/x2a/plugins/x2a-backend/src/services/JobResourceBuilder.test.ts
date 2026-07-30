@@ -764,6 +764,31 @@ describe('JobResourceBuilder', () => {
           ]),
         );
       });
+
+      it('should include INIT_REFRESH env var when refresh is true', () => {
+        const paramsWithRefresh: JobCreateParams = {
+          ...baseParams,
+          refresh: true,
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          paramsWithRefresh,
+          mockConfig,
+        );
+
+        const container = job.spec?.template.spec?.containers![0];
+        expect(container!.env).toEqual(
+          expect.arrayContaining([{ name: 'INIT_REFRESH', value: 'true' }]),
+        );
+      });
+
+      it('should not include INIT_REFRESH env var when refresh is not set', () => {
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+
+        const container = job.spec?.template.spec?.containers![0];
+        const envNames = container!.env!.map(e => e.name);
+        expect(envNames).not.toContain('INIT_REFRESH');
+      });
     });
 
     describe('Command generation for init phase', () => {

@@ -11,7 +11,6 @@ import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
-import { IconComponent } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
@@ -24,29 +23,6 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha (undocumented)
-export const extensionsNavItem: OverridableExtensionDefinition<{
-  kind: 'nav-item';
-  name: undefined;
-  config: {};
-  configInput: {};
-  output: ExtensionDataRef<
-    {
-      title: string;
-      icon: IconComponent;
-      routeRef: RouteRef<undefined>;
-    },
-    'core.nav-item.target',
-    {}
-  >;
-  inputs: {};
-  params: {
-    title: string;
-    icon: IconComponent;
-    routeRef: RouteRef<undefined>;
-  };
-}>;
-
-// @alpha (undocumented)
 export const extensionsPage: OverridableExtensionDefinition<{
   kind: 'page';
   name: undefined;
@@ -55,8 +31,8 @@ export const extensionsPage: OverridableExtensionDefinition<{
     title: string | undefined;
   };
   configInput: {
-    title?: string | undefined;
     path?: string | undefined;
+    title?: string | undefined;
   };
   output:
     | ExtensionDataRef<string, 'core.routing.path', {}>
@@ -180,27 +156,6 @@ const extensionsPlugin: OverridableFrontendPlugin<
         params: ApiFactory<TApi, TImpl, TDeps>,
       ) => ExtensionBlueprintParams<AnyApiFactory>;
     }>;
-    'nav-item:extensions': OverridableExtensionDefinition<{
-      kind: 'nav-item';
-      name: undefined;
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<
-        {
-          title: string;
-          icon: IconComponent;
-          routeRef: RouteRef<undefined>;
-        },
-        'core.nav-item.target',
-        {}
-      >;
-      inputs: {};
-      params: {
-        title: string;
-        icon: IconComponent;
-        routeRef: RouteRef<undefined>;
-      };
-    }>;
     'page:extensions': OverridableExtensionDefinition<{
       kind: 'page';
       name: undefined;
@@ -209,8 +164,8 @@ const extensionsPlugin: OverridableFrontendPlugin<
         title: string | undefined;
       };
       configInput: {
-        title?: string | undefined;
         path?: string | undefined;
+        title?: string | undefined;
       };
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
@@ -354,7 +309,9 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'installedPackages.table.columns.actions': string;
     readonly 'installedPackages.table.tooltips.installationDisabled': string;
     readonly 'installedPackages.table.tooltips.packageProductionDisabled': string;
+    readonly 'installedPackages.table.tooltips.enableActionsTitle': string;
     readonly 'installedPackages.table.tooltips.enableActions': string;
+    readonly 'installedPackages.table.tooltips.enableActionsDocsLink': string;
     readonly 'installedPackages.table.tooltips.noDownloadPermissions': string;
     readonly 'installedPackages.table.tooltips.noEditPermissions': string;
     readonly 'installedPackages.table.tooltips.noTogglePermissions': string;
@@ -480,7 +437,6 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'tooltips.missingDynamicArtifact': string;
     readonly 'tooltips.extensionsDisabled': string;
     readonly 'tooltips.noPermissions': string;
-    readonly 'supportTypes.certifiedBy': string;
     readonly 'supportTypes.verifiedBy': string;
     readonly 'supportTypes.customPlugins': string;
     readonly 'collection.kubernetes': string;
@@ -506,12 +462,9 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'aria.expandSection': string;
     readonly 'aria.collapseSection': string;
     readonly 'aria.sortBy': string;
-    readonly 'badges.certifiedBy': string;
     readonly 'badges.verifiedBy': string;
-    readonly 'badges.certified': string;
     readonly 'badges.verified': string;
     readonly 'badges.customPlugin': string;
-    readonly 'badges.stableAndSecured': string;
     readonly 'badges.generallyAvailable': string;
     readonly 'badges.gaAndSupportedBy': string;
     readonly 'badges.gaAndSupported': string;

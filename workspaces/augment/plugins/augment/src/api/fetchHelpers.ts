@@ -25,7 +25,10 @@ export function jsonBody(
 ): RequestInit {
   return {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Backstage-Request': 'augment',
+    },
     body: JSON.stringify(body),
     ...extra,
   };

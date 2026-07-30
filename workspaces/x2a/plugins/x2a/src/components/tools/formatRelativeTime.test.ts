@@ -23,10 +23,12 @@ import x2aPluginTranslationEs from '../../translations/es';
 import x2aPluginTranslationDe from '../../translations/de';
 import x2aPluginTranslationFr from '../../translations/fr';
 import x2aPluginTranslationIt from '../../translations/it';
+import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   formatDuration,
   formatRelativeTime,
   formatTimeAgo,
+  getEffectiveDurationSeconds,
 } from './formatRelativeTime';
 
 const t = mockT as unknown as TFuncX2A;
@@ -461,5 +463,85 @@ describe('locale-specific compositions', () => {
     ) as unknown as TFuncX2A;
     const result = formatRelativeTime(tEs, startedAt, undefined);
     expect(result).toBe('En ejecución desde hace 2d 3h');
+  });
+});
+
+describe('formatRelativeTime with durationOverrideSeconds', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2024-01-01T12:00:00Z'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('uses durationOverrideSeconds for the "took" part when provided', () => {
+    const startedAt = new Date('2024-01-01T11:00:00Z');
+    const finishedAt = new Date('2024-01-01T11:55:00Z');
+    const result = formatRelativeTime(t, startedAt, finishedAt, 420);
+    expect(result).toBe('Finished 5m ago (took 7m 0s)');
+  });
+
+  it('falls back to computed duration when override is undefined', () => {
+    const startedAt = new Date('2024-01-01T11:40:00Z');
+    const finishedAt = new Date('2024-01-01T11:55:00Z');
+    const result = formatRelativeTime(t, startedAt, finishedAt, undefined);
+    expect(result).toBe('Finished 5m ago (took 15m 0s)');
+  });
+
+  it('does not affect running display', () => {
+    const startedAt = new Date('2024-01-01T11:57:30Z');
+    const result = formatRelativeTime(t, startedAt, undefined, 999);
+    expect(result).toBe('Running for 2m 30s');
+  });
+});
+
+describe('getEffectiveDurationSeconds', () => {
+  const baseJob: Job = {
+    id: 'job-1',
+    projectId: 'proj-1',
+    phase: 'analyze',
+    status: 'success',
+    k8sJobName: 'k8s-job-1',
+    startedAt: new Date('2024-01-01T12:00:00Z'),
+    finishedAt: new Date('2024-01-01T12:30:00Z'),
+  };
+
+  it('returns job-level duration when no telemetry', () => {
+    expect(getEffectiveDurationSeconds(baseJob)).toBe(1800);
+  });
+
+  it('returns telemetry-based duration when telemetry is present', () => {
+    const job: Job = {
+      ...baseJob,
+      telemetry: {
+        summary: 'ok',
+        phase: 'analyze',
+        startedAt: new Date('2024-01-01T12:20:00Z'),
+        endedAt: new Date('2024-01-01T12:27:00Z'),
+      },
+    };
+    expect(getEffectiveDurationSeconds(job)).toBe(420);
+  });
+
+  it('uses telemetry.startedAt with job.finishedAt when telemetry.endedAt is missing', () => {
+    const job: Job = {
+      ...baseJob,
+      telemetry: {
+        summary: 'ok',
+        phase: 'analyze',
+        startedAt: new Date('2024-01-01T12:20:00Z'),
+      },
+    };
+    expect(getEffectiveDurationSeconds(job)).toBe(600);
+  });
+
+  it('returns undefined when job has no finishedAt and no telemetry', () => {
+    const runningJob: Job = {
+      ...baseJob,
+      finishedAt: undefined,
+    };
+    expect(getEffectiveDurationSeconds(runningJob)).toBeUndefined();
   });
 });

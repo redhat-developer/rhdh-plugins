@@ -16,7 +16,10 @@
 
 import type { Theme } from '@mui/material/styles';
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  MetricResult,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { scorecardTranslationRef } from '../translations';
@@ -117,3 +120,19 @@ export const resolveStatusColor = (
     theme.palette.error.main
   );
 };
+
+/**
+ * Checks if a metric has a data error.
+ * @param metric - The metric to check.
+ * @returns True if the metric has a data error, false otherwise.
+ */
+export const hasMetricDataError = (metric: MetricResult): boolean =>
+  metric.status === 'error' || metric.result?.value === null;
+
+/**
+ * Checks if a metric has a threshold error.
+ * @param metric - The metric to check.
+ * @returns True if the metric has a threshold error, false otherwise.
+ */
+export const hasThresholdError = (metric: MetricResult): boolean =>
+  metric.result?.thresholdResult?.status === 'error';

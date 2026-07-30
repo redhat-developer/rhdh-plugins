@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -63,7 +63,7 @@ function getErrorConfig(code?: string) {
   }
 }
 
-export const ErrorCard = React.memo(function ErrorCard({
+export const ErrorCard = memo(function ErrorCard({
   message,
   code,
   onRetry,

@@ -28,10 +28,12 @@ import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function ResourcesTabContent() {
   const classes = useDcmStyles();
   const resourcesApi = useApi(resourcesApiRef);
+  const { t } = useTranslation();
 
   const [instances, setInstances] = useState<ServiceTypeInstance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,10 @@ export function ResourcesTabContent() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
+
   const filtered = useMemo(() => {
     if (!search.trim()) return instances;
     const q = search.toLowerCase();
@@ -74,7 +80,7 @@ export function ResourcesTabContent() {
   const columns = useMemo<TableColumn<ServiceTypeInstance>[]>(
     () => [
       {
-        title: 'ID',
+        title: t('resources.columns.id'),
         field: 'id',
         render: inst => (
           <TruncatedText
@@ -87,7 +93,7 @@ export function ResourcesTabContent() {
         ),
       },
       {
-        title: 'Service type',
+        title: t('resources.columns.serviceType'),
         field: 'spec.service_type',
         render: inst =>
           inst.spec?.service_type ? (
@@ -101,7 +107,7 @@ export function ResourcesTabContent() {
           ),
       },
       {
-        title: 'Provider',
+        title: t('resources.columns.provider'),
         field: 'provider_name',
         render: inst => (
           <TruncatedText
@@ -114,7 +120,7 @@ export function ResourcesTabContent() {
         ),
       },
       {
-        title: 'Status',
+        title: t('resources.columns.status'),
         field: 'status',
         render: inst =>
           inst.status ? (
@@ -124,7 +130,7 @@ export function ResourcesTabContent() {
           ),
       },
       {
-        title: 'Created',
+        title: t('resources.columns.created'),
         field: 'create_time',
         render: inst =>
           inst.create_time ? (
@@ -136,7 +142,7 @@ export function ResourcesTabContent() {
           ),
       },
     ],
-    [classes],
+    [classes, t],
   );
 
   if (loading) return <Progress />;
@@ -149,7 +155,7 @@ export function ResourcesTabContent() {
           variant="outlined"
           action={
             <Button color="inherit" size="small" onClick={load}>
-              Retry
+              {t('common.retry')}
             </Button>
           }
         >
@@ -163,13 +169,13 @@ export function ResourcesTabContent() {
     <Box className={classes.root}>
       {instances.length === 0 ? (
         <DcmDataCenterTabEmptyState
-          title="No resources found"
-          description="Service type instances provisioned through DCM will appear here."
+          title={t('resources.emptyTitle')}
+          description={t('resources.emptyDescription')}
           illustrationSrc={emptyIllustration}
         />
       ) : (
         <DcmSearchTableCard<ServiceTypeInstance>
-          title={`Resources (${filtered.length})`}
+          title={(t as any)('resources.cardTitle', { count: filtered.length })}
           data={paginated}
           columns={columns}
           totalCount={filtered.length}

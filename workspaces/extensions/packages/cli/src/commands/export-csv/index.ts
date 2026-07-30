@@ -213,8 +213,6 @@ export default async ({
     support: p => p?.spec?.support,
     publisher: p => p?.spec?.publisher,
     highlights: p => (p?.spec?.highlights || []).join(', '),
-    'certified-by': p =>
-      p?.metadata?.annotations?.['extensions.backstage.io/certified-by'],
     'verified-by': p =>
       p?.metadata?.annotations?.['extensions.backstage.io/verified-by'],
     'pre-installed': p =>

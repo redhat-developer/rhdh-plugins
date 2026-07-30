@@ -116,9 +116,6 @@ const SupportTypeFilter = () => {
   const selected = useMemo(() => {
     const selectedFilters = searchParams.getAll('filter');
     return items.filter(item => {
-      if (item.value === 'certified') {
-        return selectedFilters.includes('certified');
-      }
       if (item.value === 'custom') {
         return selectedFilters.includes('custom');
       }
@@ -148,9 +145,7 @@ const SupportTypeFilter = () => {
           params.forEach((value, key) => {
             if (
               key === 'filter' &&
-              (value === `certified` ||
-                value === `custom` ||
-                value.startsWith('support-level='))
+              (value === `custom` || value.startsWith('support-level='))
             ) {
               add();
             } else {

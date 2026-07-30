@@ -15,9 +15,12 @@
  */
 
 import {
+  FieldFilter,
   FieldFilterOperatorEnum,
   Filter,
   IntrospectionField,
+  LogicalFilter,
+  NestedFilter,
   ProcessInstanceStatusDTO,
   TypeKind,
   TypeName,
@@ -26,6 +29,7 @@ import {
 import { FilterClause } from '../types/filterClause';
 import {
   buildFilterCondition,
+  groupNestedFilters,
   isOperatorAllowedForField,
 } from './filterBuilder';
 
@@ -116,7 +120,7 @@ describe('column filters', () => {
     field: string,
     operator: FieldFilterOperatorEnum,
     value: any,
-  ): Filter => ({
+  ): FieldFilter => ({
     field,
     operator,
     value,
@@ -128,6 +132,7 @@ describe('column filters', () => {
     filter: Filter | undefined;
     expectedResult: string | FilterClause;
     expectedFormattedValue: Array<string | boolean | string[]>;
+    expectedVariableTypes?: string[];
   };
   describe('empty filter testcases', () => {
     const emptyFilterTestCases: FilterTestCase[] = [
@@ -519,6 +524,7 @@ describe('column filters', () => {
         ),
         expectedResult: `start: {equal: $variable1}`,
         expectedFormattedValue: [testDate1],
+        expectedVariableTypes: ['DateTime!'],
       },
       {
         name: 'returns correct filter for single date field with isNull operator (false as boolean)',
@@ -595,6 +601,7 @@ describe('column filters', () => {
         ]),
         expectedResult: `start: {between: {from: $variable1, to: $variable2}}`,
         expectedFormattedValue: [testDate1, testDate2],
+        expectedVariableTypes: ['DateTime!', 'DateTime!'],
       },
       {
         name: 'returns correct OR filter for multiple id fields with equal, isNull, and GT operators',
@@ -683,6 +690,7 @@ describe('column filters', () => {
         filter,
         expectedResult,
         expectedFormattedValue,
+        expectedVariableTypes,
       }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
@@ -698,6 +706,9 @@ describe('column filters', () => {
               `$${item.clauseVariableName}`,
             );
             expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
           });
           expect(formattedClause).toBe(result.clause);
         });
@@ -718,6 +729,7 @@ describe('column filters', () => {
         ),
         expectedResult: `state: {equal: $variable1}`,
         expectedFormattedValue: ['COMPLETED'],
+        expectedVariableTypes: ['ProcessInstanceState'],
       },
     ];
 
@@ -728,6 +740,7 @@ describe('column filters', () => {
         filter,
         expectedResult,
         expectedFormattedValue,
+        expectedVariableTypes,
       }) => {
         it(`${name}`, () => {
           const result = buildFilterCondition(
@@ -743,10 +756,233 @@ describe('column filters', () => {
               `$${item.clauseVariableName}`,
             );
             expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
           });
           expect(formattedClause).toBe(result.clause);
         });
       },
     );
+  });
+  describe('nested filter testcases', () => {
+    const variablesIntrospection = [
+      createIntrospectionField('variables', TypeName.String),
+    ];
+
+    const nestedFilterTestCases: FilterTestCase[] = [
+      {
+        name: 'returns correct filter for a single nested field filter',
+        introspectionFields: variablesIntrospection,
+        filter: {
+          field: 'variables',
+          nested: createFieldFilter(
+            'targetEntity',
+            FieldFilterOperatorEnum.Eq,
+            'component:default/my-app',
+          ),
+        },
+        expectedResult: 'variables: {targetEntity: {equal: $variable1}}',
+        expectedFormattedValue: ['component:default/my-app'],
+      },
+      {
+        name: 'combines multiple nested field filters for the same parent field',
+        introspectionFields: variablesIntrospection,
+        filter: {
+          field: 'variables',
+          nested: [
+            createFieldFilter(
+              'targetEntity',
+              FieldFilterOperatorEnum.Eq,
+              'component:default/my-app',
+            ),
+            createFieldFilter(
+              'initiatorEntity',
+              FieldFilterOperatorEnum.Eq,
+              'user:default/jdoe',
+            ),
+          ],
+        } as unknown as NestedFilter,
+        expectedResult:
+          'variables: {targetEntity: {equal: $variable1}, initiatorEntity: {equal: $variable2}}',
+        expectedFormattedValue: [
+          'component:default/my-app',
+          'user:default/jdoe',
+        ],
+      },
+    ];
+
+    nestedFilterTestCases.forEach(
+      ({
+        name,
+        introspectionFields,
+        filter,
+        expectedResult,
+        expectedFormattedValue,
+        expectedVariableTypes,
+      }) => {
+        it(`${name}`, () => {
+          const result = buildFilterCondition(
+            introspectionFields,
+            'ProcessInstance',
+            filter,
+          );
+          expect(result).toBeDefined();
+          let formattedClause = expectedResult as string;
+          result.clauseVariable.forEach((item, index) => {
+            formattedClause = formattedClause.replace(
+              `$variable${index + 1}`,
+              `$${item.clauseVariableName}`,
+            );
+            expect(item.formattedValue).toEqual(expectedFormattedValue[index]);
+            expect(item.clauseVariableType).toBe(
+              expectedVariableTypes?.[index] ?? item.clauseVariableType,
+            );
+          });
+          expect(formattedClause).toBe(result.clause);
+        });
+      },
+    );
+  });
+});
+
+describe('groupNestedFilters', () => {
+  const targetEntityNestedFilter: NestedFilter = {
+    field: 'variables',
+    nested: {
+      field: 'targetEntity',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'component:default/my-app',
+    },
+  };
+
+  const initiatorEntityNestedFilter: NestedFilter = {
+    field: 'variables',
+    nested: {
+      field: 'initiatorEntity',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'user:default/jdoe',
+    },
+  };
+
+  const procId1Filter: FieldFilter = {
+    field: 'processId',
+    operator: FieldFilterOperatorEnum.Eq,
+    value: 'processId1',
+  };
+
+  it('returns non-logical filters unchanged', () => {
+    expect(groupNestedFilters(targetEntityNestedFilter)).toEqual(
+      targetEntityNestedFilter,
+    );
+    expect(groupNestedFilters(procId1Filter)).toEqual(procId1Filter);
+  });
+
+  it('combines multiple nested filters for the same field', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          field: 'variables',
+          nested: [
+            targetEntityNestedFilter.nested,
+            initiatorEntityNestedFilter.nested,
+          ],
+        },
+      ],
+    });
+  });
+
+  it('leaves a single nested filter unchanged when only one exists for the field', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual(filter);
+  });
+
+  it('does not combine filters that target different fields', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, procId1Filter],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [targetEntityNestedFilter, procId1Filter],
+    });
+  });
+
+  it('combines non-adjacent nested filters for the same field while preserving order', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [
+        targetEntityNestedFilter,
+        procId1Filter,
+        initiatorEntityNestedFilter,
+      ],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          field: 'variables',
+          nested: [
+            targetEntityNestedFilter.nested,
+            initiatorEntityNestedFilter.nested,
+          ],
+        },
+        procId1Filter,
+      ],
+    });
+  });
+
+  it('recursively groups nested filters inside child logical filters', () => {
+    const filter: LogicalFilter = {
+      operator: 'AND',
+      filters: [
+        {
+          operator: 'OR',
+          filters: [targetEntityNestedFilter, initiatorEntityNestedFilter],
+        },
+        procId1Filter,
+      ],
+    };
+
+    const result = groupNestedFilters(filter);
+
+    expect(result).toEqual({
+      operator: 'AND',
+      filters: [
+        {
+          operator: 'OR',
+          filters: [
+            {
+              field: 'variables',
+              nested: [
+                targetEntityNestedFilter.nested,
+                initiatorEntityNestedFilter.nested,
+              ],
+            },
+          ],
+        },
+        procId1Filter,
+      ],
+    });
   });
 });

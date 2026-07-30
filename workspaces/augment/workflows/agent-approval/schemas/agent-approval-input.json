@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Approval Workflow Input",
+  "description": "Input data for the agent lifecycle approval workflow",
+  "type": "object",
+  "required": ["agentId", "agentName", "submittedBy"],
+  "properties": {
+    "agentId": {
+      "type": "string",
+      "description": "Unique agent identifier (e.g. 'namespace/name' or agent key)"
+    },
+    "agentName": {
+      "type": "string",
+      "description": "Human-readable agent display name"
+    },
+    "submittedBy": {
+      "type": "string",
+      "description": "Backstage user entity ref of who submitted the agent for review"
+    },
+    "reviewUrl": {
+      "type": "string",
+      "description": "URL to the review queue in RHDH for deep-linking in notifications"
+    },
+    "agentSource": {
+      "type": "string",
+      "enum": ["kagenti", "orchestration", "workflow-builder"],
+      "description": "Origin of the agent"
+    },
+    "agentFramework": {
+      "type": "string",
+      "description": "Agent framework (e.g. 'a2a', 'responses-api', 'workflow-builder')"
+    }
+  },
+  "additionalProperties": false
+}

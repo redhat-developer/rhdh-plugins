@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
@@ -44,18 +41,15 @@ const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
  */
 export class DependabotMetricProvider implements MetricProvider<'number'> {
   private readonly dependabotClient: DependabotClient;
-  private readonly thresholds: ThresholdConfig;
   private readonly severity: DependabotSeverity;
 
   constructor(
     config: Config,
     logger: LoggerService,
     severity: DependabotSeverity,
-    thresholds?: ThresholdConfig,
   ) {
     this.severity = severity;
     this.dependabotClient = new DependabotClient(config, logger);
-    this.thresholds = thresholds ?? DEPENDABOT_THRESHOLDS;
   }
 
   getProviderDatasourceId(): string {
@@ -66,23 +60,18 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
     return DEPENDABOT_SEVERITY_METRIC[this.severity].id;
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
+  getMetrics(): Metric<'number'>[] {
     const meta = DEPENDABOT_SEVERITY_METRIC[this.severity];
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+    return [
+      {
+        id: meta.id,
+        title: meta.title,
+        description: meta.description,
+        type: 'number',
+        thresholds: DEPENDABOT_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -115,7 +104,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
     return { owner, repo };
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const repository = this.getRepository(entity);
     const { target } = getEntitySourceLocation(entity);
     const alerts = await this.dependabotClient.getAlerts(
@@ -123,6 +112,8 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
       repository,
       this.severity,
     );
-    return alerts.length;
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), alerts.length);
+    return results;
   }
 }

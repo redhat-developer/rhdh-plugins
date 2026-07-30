@@ -17,6 +17,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DcmFormDialogActions } from './DcmFormDialogActions';
 
+jest.mock('../hooks/useTranslation', () => {
+  const mod = require('../test-utils/mockTranslations');
+  return { useTranslation: mod.mockUseTranslation };
+});
+
 describe('DcmFormDialogActions', () => {
   it('renders the submit and cancel buttons', () => {
     render(

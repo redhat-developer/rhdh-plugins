@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -46,7 +46,7 @@ interface InstructionsTabProps {
   onRefreshModels: () => void;
 }
 
-export const InstructionsTab = React.memo(function InstructionsTab({
+export const InstructionsTab = memo(function InstructionsTab({
   agent,
   agents,
   availableMcpServers,

@@ -75,7 +75,7 @@ If no files are configured, no metrics are registered and the module has no effe
 
 ### Entity Requirements
 
-Entities must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
+Only **Component** entities are checked. They must have the `backstage.io/source-location` annotation set (typically added automatically by the catalog ingestion process):
 
 ```yaml
 # catalog-info.yaml
@@ -93,16 +93,31 @@ Each configured file produces one boolean metric.
 - **Metric ID**: `filecheck.<id>` (where `<id>` is the key from the `files` config)
 - **Type**: Boolean
 - **Datasource**: `filecheck`
-- **Default thresholds**:
 
-  | Threshold key | Expression | Description            |
-  | ------------- | ---------- | ---------------------- |
-  | `exist`       | `==true`   | File exists (success)  |
-  | `missing`     | `==false`  | File is absent (error) |
+## Default thresholds
 
-### Threshold Configuration
+All configured file checks share the same default thresholds. Default thresholds for `filecheck` (applies to every `filecheck.<id>` metric):
 
-You can override the default thresholds via `app-config.yaml`. Check out the detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    filecheck:
+      thresholds:
+        rules:
+          - key: exist
+            expression: '==true'
+            icon: scorecardSuccessStatusIcon
+            color: 'success.main'
+          - key: missing
+            expression: '==false'
+            icon: scorecardErrorStatusIcon
+            color: 'error.main'
+```
+
+Custom threshold keys other than `success`, `warning`, or `error` must include `color` and `icon` in app-config.
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Schedule Configuration
 

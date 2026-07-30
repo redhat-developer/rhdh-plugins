@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { PolicyDecision } from '@backstage/plugin-permission-common';
+
 export type {
   DefaultWidgetNode,
   DefaultWidgetVisibility,
@@ -21,10 +23,9 @@ export type {
   VisibleDefaultWidget,
 } from '@red-hat-developer-hub/backstage-plugin-homepage-common';
 
-export type PermissionDecision = 'ALLOW' | 'DENY';
-
 export interface UserContext {
   userEntityRef: string;
   groupEntityRefs: Set<string>;
-  permissionDecisions: Map<string, PermissionDecision>;
+  defaultWidgetsReadDecision: PolicyDecision;
+  otherPolicyDecisions: Map<string, PolicyDecision>;
 }

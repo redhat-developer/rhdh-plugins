@@ -32,23 +32,21 @@ export interface Article {
 }
 
 type NewsCardProps = {
-  key: string;
   article: Article;
 };
 
 export const NewsCard: FC<NewsCardProps> = ({
-  key,
   article: { title, description, link, thumbnail },
 }) => {
   const theme = useTheme();
 
   return (
-    <Link to={link} style={{ textDecoration: 'none' }}>
+    <Link to={link} style={{ textDecoration: 'none', display: 'block' }}>
       <Card
-        key={key}
         elevation={2}
         sx={{
           height: thumbnail ? '330px' : '180px',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
