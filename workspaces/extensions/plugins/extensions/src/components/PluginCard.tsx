@@ -25,6 +25,7 @@ import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
@@ -150,54 +151,80 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
     >
       <BadgeTriange plugin={plugin} />
       <CardContent sx={{ backgroundColor: 'transparent' }}>
-        <Stack spacing={2}>
+        <Stack spacing={1}>
           <Stack
             direction="row"
             spacing={2}
             sx={{ minHeight: '120px', alignItems: 'center' }}
           >
             <PluginIcon plugin={plugin} size={80} />
-            <Stack spacing={0.5} sx={{ justifyContent: 'center' }}>
-              <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-                {plugin.metadata.title ?? plugin.metadata.name}
-              </Typography>
-
-              {plugin.spec?.authors ? (
+            <Stack
+              spacing={0.5}
+              sx={{ justifyContent: 'center', flex: 1, overflow: 'hidden' }}
+            >
+              <Tooltip
+                title={plugin.metadata.title ?? plugin.metadata.name}
+                disableHoverListener={
+                  (plugin.metadata.title ?? plugin.metadata.name).length <= 30
+                }
+              >
                 <Typography
-                  variant="subtitle2"
-                  style={{ fontWeight: 'normal' }}
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: '500',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
                 >
-                  {plugin.spec.authors.map((author, index) => (
-                    <Fragment key={author.name}>
-                      {index > 0 ? t('common.comma') : t('common.by')}
-                      <Link
-                        key={author.name}
-                        to={withFilter('author', author.name)}
-                        color="primary"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {author.name}
-                      </Link>
-                    </Fragment>
-                  ))}
+                  {plugin.metadata.title ?? plugin.metadata.name}
                 </Typography>
-              ) : null}
+              </Tooltip>
 
-              {plugin.spec?.categories && plugin.spec.categories.length > 0 ? (
-                <Typography
-                  variant="subtitle2"
-                  style={{ fontWeight: 'normal' }}
-                >
-                  <CategoryLinkButton
-                    categoryName={plugin.spec.categories[0]}
-                    to={withFilter('category', plugin.spec.categories[0])}
-                    onClick={e => e.stopPropagation()}
-                  />
-                </Typography>
-              ) : null}
-              <CatalogSourceBadge plugin={plugin} />
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                {plugin.spec?.authors ? (
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
+                    {plugin.spec.authors.map((author, index) => (
+                      <Fragment key={author.name}>
+                        {index > 0 ? t('common.comma') : t('common.by')}
+                        <Link
+                          key={author.name}
+                          to={withFilter('author', author.name)}
+                          color="primary"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {author.name}
+                        </Link>
+                      </Fragment>
+                    ))}
+                  </Typography>
+                ) : (
+                  <span />
+                )}
+                <CatalogSourceBadge plugin={plugin} />
+              </Stack>
             </Stack>
           </Stack>
+
+          {plugin.spec?.categories && plugin.spec.categories.length > 0 ? (
+            <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+              {plugin.spec.categories.map(category => (
+                <CategoryLinkButton
+                  key={category}
+                  categoryName={category}
+                  to={withFilter('category', category)}
+                  onClick={e => e.stopPropagation()}
+                />
+              ))}
+            </Stack>
+          ) : null}
 
           <Typography
             variant="subtitle2"

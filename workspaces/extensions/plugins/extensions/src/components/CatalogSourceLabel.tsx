@@ -15,6 +15,7 @@
  */
 
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
@@ -26,6 +27,36 @@ import {
   getCatalogSourceLabel,
 } from '../hooks/useCatalogSourceConfig';
 import { useTranslation } from '../hooks/useTranslation';
+
+export const CatalogSourceChip = ({ plugin }: { plugin: ExtensionsPlugin }) => {
+  const sourcesConfig = useCatalogSourceConfig();
+  const sourceKey =
+    plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+
+  if (!sourceKey) return null;
+
+  const label = getCatalogSourceLabel(plugin, sourcesConfig);
+  const meta = sourcesConfig[sourceKey];
+
+  const chip = (
+    <Chip
+      label={label}
+      variant="outlined"
+      size="small"
+      sx={{ cursor: 'default' }}
+    />
+  );
+
+  if (meta?.description) {
+    return (
+      <Tooltip title={meta.description} placement="right" arrow>
+        {chip}
+      </Tooltip>
+    );
+  }
+
+  return chip;
+};
 
 export const CatalogSourceLabel = ({
   plugin,
