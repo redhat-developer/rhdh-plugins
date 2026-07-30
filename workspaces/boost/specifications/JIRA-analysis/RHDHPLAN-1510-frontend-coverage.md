@@ -93,7 +93,7 @@ RHDHPLAN-1510 is, like RHDHPLAN-1507, entirely backend work with zero frontend d
 
 The frontend relationship is clean:
 
-- **RHDHPLAN-1510** produces entities (MCP servers from MCP Registry, models/model servers from RHOAI)
+- **RHDHPLAN-1510** produces entities (MCP servers from MCP Registry; RHOAI connector scope is MCP catalog only per RHDHPLAN-404)
 - **RHDHPLAN-1509** displays those entities in browse/search/detail pages (RHIDP-15166, 15167)
 - **RHDHPLAN-1513** provides the admin config UI for managing connectors (connector-config-hot-reload)
 - **RHDHPLAN-1508** applies RBAC visibility to those entities

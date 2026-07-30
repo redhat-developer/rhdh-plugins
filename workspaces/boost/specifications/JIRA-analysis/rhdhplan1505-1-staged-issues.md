@@ -23,7 +23,7 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 
 **Jira-to-GitHub issue mapping is not 1:1.** GitHub issues are scoped for single fullsend `/fs-code` runs, while Jira stories are scoped by feature deliverable. When a Jira story defines an interface or foundation that later issues adopt or extend, the story's work naturally splits across dependency tiers — you define the annotation scheme in Tier 0 before providers can emit those annotations in Tier 1. The alternative (combining tiers into one larger issue) would defeat single-fullsend scoping and block parallelism. Five RHIDP stories have work split this way; three additional stories are referenced after completion as dependencies. The Jira story cannot be closed until the "Completed" issue finishes.
 
-For now, we will be employing the RHDH process convention used for our Jira tracking for upstream work, where we'll remove RHDIP stories from sprints as needed, and put into Waiting, if there are sprint wide gaps for implementing various stages of a story.
+For now, we will be employing the RHDH process convention used for our Jira tracking for upstream work, where we'll remove RHIDP stories from sprints as needed, and put into Waiting, if there are sprint wide gaps for implementing various stages of a story.
 But as we progress, if further break up of a story is more seamless, we'll pursue that. But in other words, we will be honoring the Story granularity conventions in the RHDH skills used to craft our stories.
 
 | RHIDP Story                                   | Started (definition/foundation)                                                 | Completed (adoption/extension)                       | Referenced after completion                   |
@@ -52,7 +52,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4039
 **RHIDP Stories:** RHIDP-15265, RHIDP-15266, RHIDP-15329, RHIDP-15330
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15316
 
-Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples, plus connector integration tasks to wire each connector to the shared package.
+Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples.
 
 ### Tasks
 
@@ -111,14 +111,7 @@ From `openspec/changes/connector-shared-infrastructure/tasks.md` group 6 (RHIDP-
 - 6.6 Add air-gapped deployment variant
 - 6.7 Place reference YAML in `workspaces/boost/examples/`
 
-From `openspec/changes/connector-shared-infrastructure/tasks.md` group 7 (Connector Integration):
-
-- 7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- 7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- 7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- 7.4 Verify all three connectors use consistent CA bundle loading pattern
-- 7.5 Verify all three connectors use consistent enable/disable config
-- 7.6 Verify all three connectors use consistent structured error logging
+~~From `openspec/changes/connector-shared-infrastructure/tasks.md` group 7 (Connector Integration) — **deferred**: these tasks require connectors that are created in Tier 1 (Issues 9–16). Each connector issue will consume `boost-connector-utils` as part of its own implementation. See Issues 9 (OCI), 13–14 (MCP Registry), 15–16 (RHOAI).~~
 
 From `openspec/changes/ai-catalog-entity-model/tasks.md` group 6 (RHIDP-15265 — moved to RHIDP-15316):
 
@@ -144,7 +137,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4040
 **RHIDP Stories:** RHIDP-15255, RHIDP-15259, RHIDP-15303
 **Feature:** RHDHPLAN-1507 — Epic RHIDP-15258
 
-Create the `@boost/entity-provider-sdk` package with the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`), version normalization utility, CatalogProcessor validator, `AIAssetEntityProvider` interface definition, `Neo4jSyncAdapter` interface, and `SkillBundleMetadata` type. This issue establishes all type contracts — the delta sync framework and package publishing are in Issue 8.
+Create the `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`), version normalization utility, CatalogProcessor validator, `AIAssetEntityProvider` interface definition, `Neo4jSyncAdapter` interface, and `SkillBundleMetadata` type. This issue establishes all type contracts — the delta sync framework and package publishing are in Issue 8.
 
 ### Tasks
 
@@ -160,7 +153,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 1 (RHIDP-15255):
 
 From `openspec/changes/ai-catalog-entity-model/tasks.md` group 2 (RHIDP-15259, RHIDP-15260 — package+interface):
 
-- 2.1 Create `@boost/entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`
+- 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`
 - 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()`
 - 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern
 - 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`
@@ -243,7 +236,9 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4042
 **RHIDP Stories:** RHIDP-15346, RHIDP-15347, RHIDP-15302
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15334 + RHDHPLAN-1507 — Epic RHIDP-15258
 
-Document the annotation specification mapping `rhdh.io/ai-asset-*` annotations to upstream Backstage RFCs (#32062 McpServer, #33060 ai-model/ai-model-server), with confidence levels and transformation rules. Create the `@boost/migration-readiness` CLI scaffold for dry-run migration assessments. Create the migration design document with mapping tables and backward compatibility strategy. This is readiness assessment — actual migration is future work.
+Document the annotation specification mapping `rhdh.io/ai-asset-*` annotations to upstream Backstage RFCs (#32062 McpServer, #33060 ai-model/ai-model-server), with confidence levels and transformation rules. Create the `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI scaffold for dry-run migration assessments. Create the migration design document with mapping tables and backward compatibility strategy. This is readiness assessment — actual migration is future work.
+
+> **Deferral note:** This issue bundles RHDHPLAN-1507 work (RHIDP-15302 — migration design doc) with RHDHPLAN-1513 work (RHIDP-15346/15347 — annotation spec mapping and migration CLI). If RHDHPLAN-1513 is deferred from 2.1, this issue must be split: RHIDP-15302 stays (it is RHDHPLAN-1507 scope), RHIDP-15346 and RHIDP-15347 defer with RHDHPLAN-1513. See `RHDHPLAN-1513-defer-from-2-1-staging-and-jira-impact.md` for full deferral analysis.
 
 ### Tasks
 
@@ -264,7 +259,7 @@ From `openspec/changes/upstream-schema-alignment/tasks.md` group 1 (RHIDP-15346)
 
 From `openspec/changes/upstream-schema-alignment/tasks.md` group 2 (RHIDP-15347):
 
-- 2.1 Create `@boost/migration-readiness` CLI package structure
+- 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI package structure
 - 2.2 Set up TypeScript configuration and build pipeline
 - 2.3 Implement catalog API client for entity enumeration
 - 2.4 Filter entities by `rhdh.io/ai-asset-category` annotation presence
@@ -305,7 +300,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 8 (RHIDP-15302):
 https://github.com/redhat-developer/rhdh-plugins/issues/4043
 
 **Labels:** `ready-to-code`
-**Dependencies:** None
+**Dependencies:** Issue 3 (#4041 — defines `ai-catalog.admin` permission used for RBAC gating)
 **RHIDP Stories:** RHIDP-15335, RHIDP-15337
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15331
 
@@ -362,14 +357,14 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4044
 **RHIDP Stories:** RHIDP-15340
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Define Zod connector config schemas (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*` and are excluded from this schema entirely). AI catalog connectors (MCP Registry, RHOAI, OCI) will add their own Zod schemas when created in Issues 7–16. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
 
 ### Tasks
 
 From `openspec/changes/connector-config-hot-reload/tasks.md` group 1 (RHIDP-15340):
 
-- 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `ai-catalog.providers` fields — not part of the `boost.connectors` schema.
-- 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
+- 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `catalog.providers` fields — not part of the `boost.connectors` schema.
+- 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `catalog.providers.<id>.*`)
 - 1.3 Define GitHub connector config Zod schema
 - 1.4 Define GitLab connector config Zod schema
 - 1.5 Add URL validation for `endpoint` field
@@ -559,7 +554,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4048
 **RHIDP Stories:** RHIDP-15297
 **Feature:** RHDHPLAN-1507 — Epic RHIDP-15294
 
-Add multi-registry configuration support (distinct credentials, CA bundles, and sync schedules per registry instance), K8s pull secret loader with Docker `config.json` parsing, custom CA bundle integration via shared `@boost/connector-utils`, and air-gapped registry support with no external DNS resolution.
+Add multi-registry configuration support (distinct credentials, CA bundles, and sync schedules per registry instance), K8s pull secret loader with Docker `config.json` parsing, custom CA bundle integration via shared `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`, and air-gapped registry support with no external DNS resolution.
 
 ### Tasks
 
@@ -675,7 +670,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4051
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15313
 **Cross-feature dependency:** RHIDP-15318 depends on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community provider must exist as the integration target for TLS/credential wrapping.
 
-Integrate shared CA bundle utility (`loadCaBundle()`) from `@boost/connector-utils`, implement K8s Secret-based authentication (Basic Auth and Bearer token), Secret data caching with 5-minute TTL and invalidation on 401, and per-connector TLS configuration isolation.
+Integrate shared CA bundle utility (`loadCaBundle()`) from `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`, implement K8s Secret-based authentication (Basic Auth and Bearer token), Secret data caching with 5-minute TTL and invalidation on 401, and per-connector TLS configuration isolation.
 
 ### Tasks
 
@@ -1310,7 +1305,7 @@ Implement analytics REST API endpoints (sync history, quality scores, match cove
 
 ### Tasks
 
-From `openspec/changes/ingestion-audit-metrics/tasks.md` group 5 (RHIDP-15344):
+From `openspec/changes/ingestion-audit-metrics/tasks.md` group 5 (RHIDP-15280 / former RHIDP-15344):
 
 - 5.1 Define analytics API routes
 - 5.2 Add `GET /api/boost/admin/analytics/sync-history` endpoint
