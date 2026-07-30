@@ -6,7 +6,9 @@
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
 // @public
-export const rhdhThemeModule: FrontendModule;
+const rhdhThemeModule: FrontendModule;
+export default rhdhThemeModule;
+export { rhdhThemeModule };
 
 // (No @packageDocumentation comment for this package)
 ```

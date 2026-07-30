@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-import { rhdhThemeModule } from './index';
+import defaultExport, { rhdhThemeModule } from './index';
+import rhdhThemeModuleExport from './rhdhThemeModuleExport';
 
 describe('theme NFS exports', () => {
   it('should export rhdhThemeModule', () => {
     expect(rhdhThemeModule).toBeDefined();
+  });
+
+  it('should export rhdhThemeModule as default', () => {
+    expect(defaultExport).toBeDefined();
+    expect(defaultExport).toBe(rhdhThemeModule);
+  });
+
+  it('should export rhdhThemeModule from rhdh-theme-module subpath', () => {
+    expect(rhdhThemeModuleExport).toBeDefined();
+    expect(rhdhThemeModuleExport).toBe(rhdhThemeModule);
   });
 });

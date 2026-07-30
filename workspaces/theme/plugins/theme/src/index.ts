@@ -32,7 +32,7 @@ import { getAllThemes } from './themes';
  *
  * @public
  */
-export const rhdhThemeModule = createFrontendModule({
+const rhdhThemeModule = createFrontendModule({
   pluginId: 'app',
   extensions: getAllThemes().map(appTheme =>
     ThemeBlueprint.make({
@@ -49,3 +49,6 @@ export const rhdhThemeModule = createFrontendModule({
     }),
   ),
 });
+
+export { rhdhThemeModule };
+export default rhdhThemeModule;
