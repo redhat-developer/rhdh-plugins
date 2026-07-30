@@ -16,6 +16,8 @@
 
 import { useEffect, useRef } from 'react';
 
+import { useTheme } from '@mui/material/styles';
+
 import { useAppDrawer } from '../hooks/useAppDrawer';
 import { DrawerPanel } from './DrawerPanel';
 import type { AppDrawerContent } from '../types';
@@ -45,6 +47,7 @@ export const ApplicationDrawer = ({
   children,
   contents,
 }: ApplicationDrawerProps) => {
+  const theme = useTheme();
   const { activeDrawerId, getWidth, setWidth } = useAppDrawer();
   const initializedRef = useRef<Set<string>>(new Set());
 
@@ -81,7 +84,11 @@ export const ApplicationDrawer = ({
     <>
       <div
         style={{
+          display: 'grid',
+          gridTemplateRows: '1fr',
+          gridTemplateColumns: '1fr',
           minHeight: '100vh',
+          backgroundColor: theme.palette.background.default,
           transition: `margin-right 225ms cubic-bezier(${
             isOpen ? '0, 0, 0.2, 1' : '0.4, 0, 0.6, 1'
           })`,

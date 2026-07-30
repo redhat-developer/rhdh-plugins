@@ -15,11 +15,14 @@
  */
 
 import { render, screen, act } from '@testing-library/react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { useAppDrawer } from '../hooks/useAppDrawer';
 import { drawerStore } from '../utils/drawerStore';
 import { ApplicationDrawer } from './ApplicationDrawer';
 import type { AppDrawerContent } from '../types';
+
+const theme = createTheme({ palette: { background: { default: '#292929' } } });
 
 function OpenButton({ id }: { id: string }) {
   const { openDrawer } = useAppDrawer();
@@ -33,10 +36,12 @@ function CloseButton({ id }: { id: string }) {
 
 function renderWithProvider(contents: AppDrawerContent[]) {
   return render(
-    <ApplicationDrawer contents={contents}>
-      <OpenButton id="test-drawer" />
-      <CloseButton id="test-drawer" />
-    </ApplicationDrawer>,
+    <ThemeProvider theme={theme}>
+      <ApplicationDrawer contents={contents}>
+        <OpenButton id="test-drawer" />
+        <CloseButton id="test-drawer" />
+      </ApplicationDrawer>
+    </ThemeProvider>,
   );
 }
 
@@ -90,14 +95,18 @@ describe('ApplicationDrawer', () => {
     );
   });
 
-  it('applies minHeight 100vh to wrapper div for full viewport height', () => {
+  it('applies grid layout with minHeight 100vh and theme background for full viewport height', () => {
     const contents: AppDrawerContent[] = [
       { id: 'test-drawer', element: <div>Content</div> },
     ];
     const { container } = renderWithProvider(contents);
 
     const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.style.display).toBe('grid');
+    expect(wrapper.style.gridTemplateRows).toBe('1fr');
+    expect(wrapper.style.gridTemplateColumns).toBe('1fr');
     expect(wrapper.style.minHeight).toBe('100vh');
+    expect(wrapper.style.backgroundColor).toBeTruthy();
   });
 
   it('removes CSS class and variable when drawer is closed', () => {
