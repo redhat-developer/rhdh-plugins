@@ -16,8 +16,7 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 import { navModule } from './modules';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export default createApp({
-  features: [navModule, rhdhThemeModule],
+  features: [navModule],
 });
