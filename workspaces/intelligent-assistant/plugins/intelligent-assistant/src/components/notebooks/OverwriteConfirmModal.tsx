@@ -26,6 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileTypeIcon } from './FileTypeIcon';
 
 const useStyles = makeStyles(theme => ({
@@ -97,6 +98,7 @@ type OverwriteConfirmModalProps = {
   onClose: () => void;
   onConfirm: () => void;
   fileNames: string[];
+  isCompact?: boolean;
 };
 
 export const OverwriteConfirmModal = ({
@@ -104,6 +106,7 @@ export const OverwriteConfirmModal = ({
   onClose,
   onConfirm,
   fileNames,
+  isCompact = false,
 }: OverwriteConfirmModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -116,6 +119,7 @@ export const OverwriteConfirmModal = ({
       PaperProps={{
         className: classes.dialogPaper,
       }}
+      {...getScopedDialogProps(isCompact)}
     >
       <DialogTitle className={classes.dialogTitle}>
         <Typography component="h2" className={classes.titleText}>

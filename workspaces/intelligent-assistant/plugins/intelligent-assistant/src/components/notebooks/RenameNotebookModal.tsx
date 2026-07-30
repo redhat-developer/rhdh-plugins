@@ -31,13 +31,22 @@ import Typography from '@mui/material/Typography';
 
 import { useRenameNotebook } from '../../hooks/notebooks/useRenameNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 
 const useStyles = makeStyles(theme => ({
   dialogPaper: {
     borderRadius: 16,
   },
+  dialogPaperCompact: {
+    borderRadius: 12,
+    padding: theme.spacing(1),
+  },
   dialogTitle: {
     padding: '16px 20px',
+    fontStyle: 'inherit',
+  },
+  dialogTitleCompact: {
+    padding: '12px 16px',
     fontStyle: 'inherit',
   },
   titleRow: {
@@ -58,8 +67,16 @@ const useStyles = makeStyles(theme => ({
     paddingTop: 0,
     paddingLeft: theme.spacing(2.5),
   },
+  dialogContentCompact: {
+    paddingTop: 0,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+  },
   description: {
     marginBottom: theme.spacing(3),
+  },
+  descriptionCompact: {
+    marginBottom: theme.spacing(2),
   },
   textField: {
     marginTop: 0,
@@ -69,9 +86,19 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(2.5),
     marginRight: theme.spacing(2.5),
   },
+  errorBoxCompact: {
+    maxWidth: '100%',
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+  },
   dialogActions: {
     justifyContent: 'left',
     padding: theme.spacing(2.5),
+    gap: theme.spacing(1),
+  },
+  dialogActionsCompact: {
+    justifyContent: 'left',
+    padding: theme.spacing(1.5),
     gap: theme.spacing(1),
   },
   submitButton: {
@@ -93,11 +120,13 @@ export const RenameNotebookModal = ({
   onClose,
   sessionId,
   currentName,
+  isCompact = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
   sessionId: string;
   currentName: string;
+  isCompact?: boolean;
 }) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -122,6 +151,8 @@ export const RenameNotebookModal = ({
     }
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
@@ -129,11 +160,15 @@ export const RenameNotebookModal = ({
       aria-labelledby="rename-notebook-modal"
       aria-describedby="rename-notebook-modal-body"
       fullWidth
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
         <Box className={classes.titleRow}>
           <Typography component="span" className={classes.titleText}>
             {t('notebooks.rename.title').replace('{{name}}', currentName)}
@@ -142,7 +177,7 @@ export const RenameNotebookModal = ({
             aria-label="close"
             onClick={onClose}
             title={t('common.close')}
-            size="large"
+            size={isCompact ? 'small' : 'large'}
             className={classes.closeButton}
           >
             <CloseIcon />
@@ -151,12 +186,16 @@ export const RenameNotebookModal = ({
       </DialogTitle>
       <DialogContent
         id="rename-notebook-modal-body"
-        className={classes.dialogContent}
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
       >
         <Typography
           variant="body2"
           color="textSecondary"
-          className={classes.description}
+          className={
+            isCompact ? classes.descriptionCompact : classes.description
+          }
         >
           {t('notebooks.rename.description')}
         </Typography>
@@ -175,11 +214,15 @@ export const RenameNotebookModal = ({
         />
       </DialogContent>
       {isError && (
-        <Box className={classes.errorBox}>
+        <Box className={isCompact ? classes.errorBoxCompact : classes.errorBox}>
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           variant="contained"
           className={classes.submitButton}

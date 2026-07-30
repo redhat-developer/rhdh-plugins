@@ -696,7 +696,10 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
     };
 
     return (
-      <div className={classes.root}>
+      <div
+        className={classes.root}
+        style={isCompact ? { position: 'relative' as const } : undefined}
+      >
         {toastAlerts.length > 0 && (
           <AlertGroup
             hasAnimations
@@ -849,6 +852,7 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
           onDuplicatesFound={handleDuplicatesFound}
           filesToAdd={filesToAddToModal}
           onFilesAdded={handleFilesAddedToModal}
+          isCompact={isCompact}
         />
 
         <OverwriteConfirmModal
@@ -856,6 +860,7 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
           onClose={handleOverwriteCancel}
           onConfirm={handleOverwriteConfirm}
           fileNames={filesToOverwrite.map(f => f.name)}
+          isCompact={isCompact}
         />
 
         <DeleteDocumentModal
@@ -863,6 +868,7 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
           onClose={() => setDeleteDocumentTarget(null)}
           onConfirm={confirmDeleteDocument}
           documentName={deleteDocumentTarget?.name ?? ''}
+          isCompact={isCompact}
         />
       </div>
     );

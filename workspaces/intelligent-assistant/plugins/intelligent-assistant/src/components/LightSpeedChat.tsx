@@ -1957,17 +1957,7 @@ export const LightspeedChat = ({
           currentName={
             notebooks.find(n => n.session_id === renameNotebookId)?.name ?? ''
           }
-        />
-      )}
-      {deleteNotebookId && (
-        <DeleteNotebookModal
-          isOpen={Boolean(deleteNotebookId)}
-          onClose={() => setDeleteNotebookId(null)}
-          onDeleted={handleNotebookDeleted}
-          sessionId={deleteNotebookId}
-          name={
-            notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
-          }
+          isCompact={!isFullscreenMode}
         />
       )}
       <Chatbot
@@ -2260,34 +2250,58 @@ export const LightspeedChat = ({
           !notebooksPermissionLoading &&
           hasNotebooksAccess &&
           !activeNotebook && (
-            <NotebooksTab
-              notebooks={notebooks}
-              hasNotebooks={hasNotebooks}
-              classes={
-                isFullscreenMode
-                  ? classes
-                  : {
-                      ...classes,
-                      notebooksGrid: classes.notebooksGridCompact,
-                    }
-              }
-              openNotebookMenuId={openNotebookMenuId}
-              setOpenNotebookMenuId={setOpenNotebookMenuId}
-              onSelectNotebook={(notebook: NotebookSession) => {
-                if (isFullscreenMode) {
-                  navigate(
-                    `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
-                  );
-                } else {
-                  setActiveNotebook(notebook);
-                  setActiveNotebookId(notebook.session_id);
-                }
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+                overflow: 'hidden',
               }}
-              onRename={setRenameNotebookId}
-              onDelete={setDeleteNotebookId}
-              onCreateNotebook={handleCreateNotebook}
-              t={t}
-            />
+            >
+              <NotebooksTab
+                notebooks={notebooks}
+                hasNotebooks={hasNotebooks}
+                classes={
+                  isFullscreenMode
+                    ? classes
+                    : {
+                        ...classes,
+                        notebooksGrid: classes.notebooksGridCompact,
+                      }
+                }
+                openNotebookMenuId={openNotebookMenuId}
+                setOpenNotebookMenuId={setOpenNotebookMenuId}
+                onSelectNotebook={(notebook: NotebookSession) => {
+                  if (isFullscreenMode) {
+                    navigate(
+                      `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
+                    );
+                  } else {
+                    setActiveNotebook(notebook);
+                    setActiveNotebookId(notebook.session_id);
+                  }
+                }}
+                onRename={setRenameNotebookId}
+                onDelete={setDeleteNotebookId}
+                onCreateNotebook={handleCreateNotebook}
+                t={t}
+              />
+              {deleteNotebookId && (
+                <DeleteNotebookModal
+                  isOpen={Boolean(deleteNotebookId)}
+                  onClose={() => setDeleteNotebookId(null)}
+                  onDeleted={handleNotebookDeleted}
+                  sessionId={deleteNotebookId}
+                  name={
+                    notebooks.find(n => n.session_id === deleteNotebookId)
+                      ?.name ?? ''
+                  }
+                  isCompact={!isFullscreenMode}
+                />
+              )}
+            </div>
           )}
         {showNotebooksPanel &&
           !notebooksPermissionLoading &&

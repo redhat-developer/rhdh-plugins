@@ -41,6 +41,7 @@ import {
   getNotebookAcceptedFileTypes,
   validateFiles,
 } from '../../utils/notebook-upload-utils';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileListItem } from './FileListItem';
 
 const useStyles = makeStyles(theme => ({
@@ -48,11 +49,22 @@ const useStyles = makeStyles(theme => ({
     borderRadius: 24,
     maxWidth: 578,
   },
+  dialogPaperCompact: {
+    borderRadius: 12,
+    maxWidth: '100%',
+    padding: theme.spacing(0.5),
+  },
   dialogTitle: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '24px 24px 16px',
+  },
+  dialogTitleCompact: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px 8px',
   },
   titleText: {
     fontWeight: 500,
@@ -60,11 +72,20 @@ const useStyles = makeStyles(theme => ({
     lineHeight: '1.625rem',
     letterSpacing: '-0.25px',
   },
+  titleTextCompact: {
+    fontWeight: 500,
+    fontSize: '1rem',
+    lineHeight: '1.375rem',
+    letterSpacing: '-0.25px',
+  },
   closeButton: {
     color: theme.palette.text.primary,
   },
   dialogContent: {
     padding: '0 24px 24px',
+  },
+  dialogContentCompact: {
+    padding: '0 16px 16px',
   },
   errorAlert: {
     marginBottom: theme.spacing(2),
@@ -100,6 +121,11 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'flex-end',
     gap: theme.spacing(1),
   },
+  dialogActionsCompact: {
+    padding: '12px 16px',
+    justifyContent: 'flex-end',
+    gap: theme.spacing(1),
+  },
   addButton: {
     textTransform: 'none',
   },
@@ -120,6 +146,7 @@ type AddDocumentModalProps = {
   onDuplicatesFound?: (files: File[]) => void;
   filesToAdd?: File[];
   onFilesAdded?: () => void;
+  isCompact?: boolean;
 };
 
 export const AddDocumentModal = ({
@@ -134,13 +161,13 @@ export const AddDocumentModal = ({
   onDuplicatesFound,
   filesToAdd,
   onFilesAdded,
+  isCompact = false,
 }: AddDocumentModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const uploadMutation = useUploadDocument();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
   const totalExistingAndSelected =
     existingDocumentNames.length + selectedFiles.length;
   const remainingSlots = NOTEBOOK_MAX_FILES - totalExistingAndSelected;
@@ -224,17 +251,26 @@ export const AddDocumentModal = ({
     onClose();
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
       aria-labelledby="add-document-modal-title"
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
+        <Typography
+          component="h2"
+          className={isCompact ? classes.titleTextCompact : classes.titleText}
+        >
           {t('notebook.upload.modal.title')}
           {selectedFiles.length > 0 &&
             ` (${selectedFiles.length}/${NOTEBOOK_MAX_FILES - existingDocumentNames.length})`}
@@ -249,7 +285,11 @@ export const AddDocumentModal = ({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
+      <DialogContent
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
+      >
         {validationErrors.length > 0 && (
           <Alert severity="error" className={classes.errorAlert}>
             {validationErrors
@@ -315,7 +355,11 @@ export const AddDocumentModal = ({
         )}
       </DialogContent>
 
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           onClick={handleClose}
           className={classes.cancelButton}
