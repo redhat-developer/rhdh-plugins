@@ -28,4 +28,41 @@ export const lightspeedNotebooksUsePermission: BasicPermission;
 
 // @public
 export const lightspeedPermissions: BasicPermission[];
+
+// @public
+export const lightspeedSavedPromptsManagePermission: BasicPermission;
+
+// @public
+export interface SavedPrompt {
+  content: string;
+  created_at: string;
+  id: string;
+  name: string;
+  updated_at: string;
+}
+
+// @public
+export interface SavedPromptCreateRequest {
+  content: string;
+  name: string;
+}
+
+// @public
+export interface SavedPromptDeleteResponse {
+  deleted: boolean;
+  prompt_id: string;
+  response: string;
+}
+
+// @public
+export interface SavedPromptsConfig {
+  max_content_length: number;
+  max_display_name_length: number;
+  max_prompts_per_user: number;
+}
+
+// @public
+export interface SavedPromptsListResponse {
+  prompts: SavedPrompt[];
+}
 ```
