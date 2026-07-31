@@ -98,7 +98,7 @@ must be verified against this full table.
 ### Filecheck (dynamic)
 
 Filecheck metric IDs follow the pattern `filecheck.<id>` where `<id>`
-comes from the `scorecard.plugins.filecheck.files` configuration in
+comes from the `scorecard.metricProviders.filecheck.fileExistence.options.files` configuration in
 `app-config.yaml`. IDs are user-defined, not hardcoded. Example:
 `filecheck.license`.
 
@@ -130,7 +130,7 @@ Every data source implements `MetricProvider<T extends MetricType>` from
 
 - `getProviderId()` — unique string identifying the provider (e.g.,
   `"sonarqube"`, `"dependabot"`). Used as the config key in
-  `app-config.yaml` under `scorecard.plugins.<providerId>`.
+  `app-config.yaml` under `scorecard.metricProviders.<providerId>`.
 - `getProviderDatasourceId()` — identifies the external data source.
 - `getMetrics()` — returns `Metric<T>[]`. Each `Metric` has an `id`,
   `title`, `description`, `type` (`"number"` or `"boolean"`), and a
@@ -159,8 +159,8 @@ Higher tiers override lower tiers:
    overrides by configuration, most specific level wins
    (metric > provider), complete replace of metric defaults.
    - metric:
-     `plugins.<datasource>.metricProviders.<providerName>.metrics.<metricName>.thresholds`
-   - provider: `plugins.<datasource>.metricProviders.<providerName>.thresholds`
+     `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+   - provider: `metricProviders.<datasource>.<providerName>.thresholds`
      Config keys are local names (no datasource prefix).
 3. **Metric defaults** (lowest priority) — the `thresholds` field on
    each `Metric` object returned by `getMetrics()`. Used when no config

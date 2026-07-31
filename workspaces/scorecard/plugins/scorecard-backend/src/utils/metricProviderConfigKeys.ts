@@ -33,7 +33,7 @@ export function getProviderLocalConfigKey(
 
 /**
  * Local config key for a metric under
- * `scorecard.metricProviders.<datasource>.<provider>.metrics.<key>`.
+ * `scorecard.metricProviders.<datasource>.<providerName>.metrics.<key>`.
  * Metric IDs are validated at registry startup as `<datasource>.<metricName>`.
  */
 export function getMetricLocalConfigKey(
