@@ -60,14 +60,20 @@ export const iaMcpManagePermission = createPermission({
   },
 });
 
-/** This permission is used to access AI Notebooks features
+/** This permission is used to access, create, and query intelligent-assistant notebooks
  * @public
  */
 export const iaNotebooksUsePermission = createPermission({
   name: 'intelligent-assistant.notebooks.use',
-  attributes: {
-    action: 'update',
-  },
+  attributes: {},
+});
+
+/** This permission is used to update and delete intelligent-assistant notebooks
+ * @public
+ */
+export const iaNotebooksManagePermission = createPermission({
+  name: 'intelligent-assistant.notebooks.manage',
+  attributes: {},
 });
 
 /** This permission is used to list, create, and delete saved prompts and read saved-prompts config
@@ -99,6 +105,7 @@ export const iaPermissions = [
   iaChatUsePermission,
   iaMcpReadPermission,
   iaMcpManagePermission,
+  iaNotebooksManagePermission,
   iaNotebooksUsePermission,
   iaSavedPromptsManagePermission,
   iaSkillsAccessPermission,

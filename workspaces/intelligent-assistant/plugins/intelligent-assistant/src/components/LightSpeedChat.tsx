@@ -704,8 +704,11 @@ export const LightspeedChat = ({
     }
     return 0;
   });
-  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
-    useLightspeedNotebooksPermission();
+  const {
+    allowed: hasNotebooksAccess,
+    loading: notebooksPermissionLoading,
+    iaNotebooksUsePermissionName,
+  } = useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
 
@@ -2196,7 +2199,7 @@ export const LightspeedChat = ({
           !hasNotebooksAccess && (
             <PermissionRequiredState
               subject={t('permission.subject.notebooks')}
-              permissions={['intelligent-assistant.notebooks.use']}
+              permissions={[iaNotebooksUsePermissionName]}
               action={
                 <Button
                   variant="outlined"
