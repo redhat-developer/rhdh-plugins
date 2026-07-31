@@ -20,7 +20,7 @@ import type {
   UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
-import { InputError } from '@backstage/errors';
+import { InputError, ServiceUnavailableError } from '@backstage/errors';
 import { ConditionTransformer } from '@backstage/plugin-permission-node';
 
 import Ajv from 'ajv';
@@ -136,7 +136,9 @@ export const createExecuteWorkflowAction = ({
       });
 
       if (!executionResponse) {
-        throw new Error(`Failed to execute workflow "${workflowId}"`);
+        throw new ServiceUnavailableError(
+          `Failed to execute workflow "${workflowId}"`,
+        );
       }
 
       const instanceId = executionResponse.id;

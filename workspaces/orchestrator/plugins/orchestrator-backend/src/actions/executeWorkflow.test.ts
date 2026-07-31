@@ -16,7 +16,12 @@
 
 import { mockServices } from '@backstage/backend-test-utils';
 import { actionsRegistryServiceMock } from '@backstage/backend-test-utils/alpha';
-import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
+import {
+  InputError,
+  NotAllowedError,
+  NotFoundError,
+  ServiceUnavailableError,
+} from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { OrchestratorService } from '../service/OrchestratorService';
@@ -219,6 +224,68 @@ describe('createExecuteWorkflowAction', () => {
       instanceId: 'instance-1',
       status: 'PENDING',
     });
+  });
+
+  it('falls back to a PENDING status and logs a warning when fetching the initial status fails', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    setUpWorkflow();
+    (mockOrchestratorService.executeWorkflow as jest.Mock).mockResolvedValue({
+      id: 'instance-1',
+    });
+    (mockOrchestratorService.fetchInstance as jest.Mock).mockRejectedValue(
+      new Error('data index unavailable'),
+    );
+
+    createExecuteWorkflowAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    const result = await mockActionsRegistry.invoke({
+      id: 'test:execute-workflow',
+      input: { workflowId: 'workflow1', inputs: {} },
+    });
+
+    expect(result.output).toMatchObject({
+      instanceId: 'instance-1',
+      status: 'PENDING',
+    });
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('instance-1'),
+    );
+  });
+
+  it('throws ServiceUnavailableError when the workflow engine returns no execution response', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    setUpWorkflow();
+    (mockOrchestratorService.executeWorkflow as jest.Mock).mockResolvedValue(
+      undefined,
+    );
+
+    createExecuteWorkflowAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:execute-workflow',
+        input: { workflowId: 'workflow1', inputs: {} },
+      }),
+    ).rejects.toThrow(ServiceUnavailableError);
+    expect(mockOrchestratorService.fetchInstance).not.toHaveBeenCalled();
   });
 
   it('throws NotFoundError when the workflow does not exist', async () => {
