@@ -24,6 +24,8 @@ import {
 } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
+import Ajv from 'ajv';
+
 import { OrchestratorService } from '../service/OrchestratorService';
 import { testConditionTransformer as conditionTransformer } from './__fixtures__/testConditionTransformer';
 import { createExecuteWorkflowAction } from './executeWorkflow';
@@ -286,6 +288,62 @@ describe('createExecuteWorkflowAction', () => {
       }),
     ).rejects.toThrow(ServiceUnavailableError);
     expect(mockOrchestratorService.fetchInstance).not.toHaveBeenCalled();
+  });
+
+  it('caches the compiled Ajv validator across repeated calls for the same workflow schema', async () => {
+    const compileSpy = jest.spyOn(Ajv.prototype, 'compile');
+    try {
+      const mockActionsRegistry = actionsRegistryServiceMock();
+      const mockPermissions = mockServices.permissions.mock();
+      allowAccess(mockPermissions);
+      setUpWorkflow({
+        dataInputSchema: 'schema.json',
+        inputSchema: {
+          type: 'object',
+          properties: { name: { type: 'string' } },
+          required: ['name'],
+        },
+      });
+      (mockOrchestratorService.executeWorkflow as jest.Mock).mockResolvedValue({
+        id: 'instance-1',
+      });
+      (mockOrchestratorService.fetchInstance as jest.Mock).mockResolvedValue({
+        id: 'instance-1',
+        processId: 'workflow1',
+        state: 'ACTIVE',
+        nodes: [],
+      });
+
+      createExecuteWorkflowAction({
+        actionsRegistry: mockActionsRegistry,
+        permissions: mockPermissions,
+        userInfo: mockUserInfo,
+        orchestratorService: mockOrchestratorService,
+        conditionTransformer,
+        logger,
+      });
+
+      // Prime the cache (may or may not compile, depending on cache state
+      // left over from other tests sharing this workflowId/schema).
+      await mockActionsRegistry.invoke({
+        id: 'test:execute-workflow',
+        input: { workflowId: 'workflow1', inputs: { name: 'first' } },
+      });
+      compileSpy.mockClear();
+
+      // A second call with the same workflowId/schema must reuse the cached
+      // validator rather than recompiling - regardless of cache state above.
+      await expect(
+        mockActionsRegistry.invoke({
+          id: 'test:execute-workflow',
+          input: { workflowId: 'workflow1', inputs: { age: 42 } },
+        }),
+      ).rejects.toThrow(InputError);
+
+      expect(compileSpy).not.toHaveBeenCalled();
+    } finally {
+      compileSpy.mockRestore();
+    }
   });
 
   it('throws NotFoundError when the workflow does not exist', async () => {

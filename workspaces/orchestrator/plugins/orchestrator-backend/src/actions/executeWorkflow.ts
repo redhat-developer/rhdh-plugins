@@ -23,7 +23,7 @@ import type { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha
 import { InputError, ServiceUnavailableError } from '@backstage/errors';
 import { ConditionTransformer } from '@backstage/plugin-permission-node';
 
-import Ajv from 'ajv';
+import Ajv, { ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 
 import { orchestratorWorkflowUsePermission } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -34,6 +34,37 @@ import { resolveWorkflowDefinition } from '../service/resolveWorkflowDefinition'
 import * as workflowAuth from '../service/workflowAuthorization';
 
 const PENDING_STATUS = 'PENDING';
+
+// A single shared Ajv instance, and a small bounded (LRU-ish) cache of
+// compiled validators keyed by workflow id + input-schema version, so that
+// repeated execute-workflow calls for the same workflow don't recompile the
+// schema on every invocation.
+const ajv = addFormats(new Ajv({ allErrors: true, strict: false }));
+const MAX_CACHED_VALIDATORS = 100;
+const validatorCache = new Map<string, ValidateFunction>();
+
+function getOrCompileValidator(
+  cacheKey: string,
+  schema: object,
+): ValidateFunction {
+  const cached = validatorCache.get(cacheKey);
+  if (cached) {
+    // Re-insert to mark as most-recently-used (Map preserves insertion order).
+    validatorCache.delete(cacheKey);
+    validatorCache.set(cacheKey, cached);
+    return cached;
+  }
+
+  const validate = ajv.compile(schema);
+  if (validatorCache.size >= MAX_CACHED_VALIDATORS) {
+    const oldestKey = validatorCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      validatorCache.delete(oldestKey);
+    }
+  }
+  validatorCache.set(cacheKey, validate);
+  return validate;
+}
 
 export const createExecuteWorkflowAction = ({
   actionsRegistry,
@@ -106,8 +137,10 @@ export const createExecuteWorkflowAction = ({
           });
 
         if (infoWithSchema?.inputSchema) {
-          const ajv = addFormats(new Ajv({ allErrors: true, strict: false }));
-          const validate = ajv.compile(infoWithSchema.inputSchema);
+          const validate = getOrCompileValidator(
+            `${workflowId}:${definition.dataInputSchema}`,
+            infoWithSchema.inputSchema,
+          );
 
           if (!validate(inputs)) {
             throw new InputError(
