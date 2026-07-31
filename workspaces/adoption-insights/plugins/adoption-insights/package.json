@@ -7,12 +7,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.tsx",
+    "./adoption-insights-translations-module": "./src/adoptionInsightsTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha.tsx"
+      ],
+      "adoption-insights-translations-module": [
+        "src/adoptionInsightsTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"

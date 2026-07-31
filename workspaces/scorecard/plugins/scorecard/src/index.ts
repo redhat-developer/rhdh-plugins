@@ -44,6 +44,7 @@ import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtension
  * Extension for Scorecard translations.
  */
 const scorecardTranslation = TranslationBlueprint.make({
+  name: 'scorecard-translations',
   params: {
     resource: scorecardTranslations,
   },
