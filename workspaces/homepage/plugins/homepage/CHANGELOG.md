@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 1.17.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+
 ## 1.17.0
 
 ### Minor Changes
