@@ -22,13 +22,13 @@ The catalog SHALL support filtering AIResource entities by `spec.type`.
 
 #### Scenario: Filter by content type
 
-- **WHEN** a client calls `GET /api/catalog/entities?filter=kind=AIResource,spec.type=skills`
-- **THEN** the response contains only AIResource entities that declare `spec.type: skills`
+- **WHEN** a client calls `GET /api/catalog/entities?filter=kind=AIResource,spec.type=skill`
+- **THEN** the response contains only AIResource entities that declare `spec.type: skill`
 
 #### Scenario: Filter returns entities matching exact type value
 
-- **WHEN** a client filters on `spec.type=agents`
-- **THEN** only AIResource entities with `spec.type: agents` are returned
+- **WHEN** a client filters on `spec.type=agent`
+- **THEN** only AIResource entities with `spec.type: agent` are returned
 
 ---
 
