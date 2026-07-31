@@ -72,7 +72,7 @@
 - [ ] 9.3 Unit tests pass (`yarn test -- --watchAll=false` in url-reader plugin)
 - [ ] 9.4 Prettier checks pass (`yarn prettier`)
 - [ ] 9.5 Lint checks pass (`yarn lint:all`)
-- [ ] 9.6 `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/<sourceId>/<multi/segment/modelName>` returns 200 with model card markdown
+- [ ] 9.6 `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/<sourceId>/<multi/segment/modelName>` returns 200 with model card markdown (assumes RHDH running locally via `yarn dev` from the `ai-integrations` workspace)
 - [ ] 9.7 TechDocs page renders in RHDH UI for entities with auto-set `backstage.io/techdocs-ref`
 - [ ] 9.8 Integration tested against upstream KServe/Kubeflow
 - [ ] 9.9 Integration tested against RHOAI on OCP

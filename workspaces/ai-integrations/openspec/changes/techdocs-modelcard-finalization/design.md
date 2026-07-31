@@ -25,7 +25,7 @@ KServe.ts: generateModelCatalog()
   ↓ [REST API: /models/:model/:version]
 ModelCatalogGenerator.ts (entity provider)
   → reads TechDocsKey annotation
-  → prepends svcUrl: "http://localhost:7007/api/kserve-kubeflow-connector"
+  → prepends svcUrl: "http://localhost:7007/api/kserve-kubeflow-connector" (when running via `yarn dev`)
   → wraps in url: prefix
   → sets backstage.io/techdocs-ref = "url:http://localhost:7007/api/kserve-kubeflow-connector/modelcard/<sourceId>/<modelName>"
   ↓ [Backstage TechDocs builder]
@@ -164,6 +164,6 @@ After all changes:
 2. `yarn build:all` succeeds
 3. Unit tests pass (`yarn test -- --watchAll=false` in url-reader plugin)
 4. Prettier and lint checks pass
-5. `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16` returns 200 with model card markdown
+5. `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16` returns 200 with model card markdown (assumes RHDH running locally via `yarn dev` from the `ai-integrations` workspace)
 6. TechDocs page renders in browser for entities with auto-set `backstage.io/techdocs-ref`
 7. Integration tested against upstream KServe/Kubeflow and RHOAI on OCP

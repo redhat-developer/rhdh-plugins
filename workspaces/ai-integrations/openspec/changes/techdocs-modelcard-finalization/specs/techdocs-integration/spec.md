@@ -57,7 +57,7 @@ The entity provider's `ModelCatalogGenerator.ts` SHALL prepend `svcUrl` and add 
 #### Scenario: Full URL construction
 
 - **GIVEN** TechDocsKey is `/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16`
-- **AND** svcUrl is `http://localhost:7007/api/kserve-kubeflow-connector`
+- **AND** svcUrl is `http://localhost:7007/api/kserve-kubeflow-connector` (when running via `yarn dev` from the `ai-integrations` workspace)
 - **WHEN** `ModelCatalogGenerator.ts` processes the TechDocs annotation
 - **THEN** `backstage.io/techdocs-ref` is set to `url:http://localhost:7007/api/kserve-kubeflow-connector/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16`
 
