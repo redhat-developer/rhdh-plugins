@@ -35,6 +35,7 @@ import {
   lightspeedMcpManagePermission,
   lightspeedMcpReadPermission,
   lightspeedPermissions,
+  lightspeedSavedPromptsManagePermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -640,6 +641,25 @@ export async function createRouter(
     apiProxy,
   );
 
+  router.get(
+    '/v1/saved-prompts/config',
+    generalRateLimiter,
+    requirePermission(lightspeedSavedPromptsManagePermission),
+    apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
+  );
+  router.get(
+    '/v1/saved-prompts',
+    generalRateLimiter,
+    requirePermission(lightspeedSavedPromptsManagePermission),
+    apiProxy,
+  );
+  router.delete(
+    '/v1/saved-prompts/:prompt_id',
+    generalRateLimiter,
+    requirePermission(lightspeedSavedPromptsManagePermission),
+    apiProxy,
+  );
+
   router.post(
     '/v1/feedback',
     generalRateLimiter,
@@ -677,6 +697,51 @@ export async function createRouter(
         response.status(fetchResponse.status).json(data);
       } catch (error) {
         const errormsg = `Error while sending feedback: ${error}`;
+        logger.error(errormsg);
+        response.status(500).json({ error: errormsg });
+      }
+    },
+  );
+
+  router.post(
+    '/v1/saved-prompts',
+    generalRateLimiter,
+    requirePermission(lightspeedSavedPromptsManagePermission),
+    async (request, response) => {
+      try {
+        const { userEntityRef } = getIdentity(request);
+
+        logger.info(
+          `/v1/saved-prompts receives call from user: ${userEntityRef}`,
+        );
+
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const requestBody = JSON.stringify(request.body);
+        const fetchResponse = await fetch(
+          `${lcsBaseUrl}/v1/saved-prompts?${userQueryParam}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          },
+        );
+
+        if (!fetchResponse.ok) {
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'creating saved prompt',
+            response,
+          );
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while creating saved prompt: ${error}`;
         logger.error(errormsg);
         response.status(500).json({ error: errormsg });
       }
