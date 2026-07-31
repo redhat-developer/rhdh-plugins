@@ -13,4 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { globalHeaderTranslationsModule as default } from './alpha';
+export { globalHeaderTranslationsModule as default } from './index';

@@ -86,6 +86,16 @@ export const lightspeedNotebooksUsePermission = createPermission({
   },
 });
 
+/** This permission is used to list, create, and delete saved prompts and read saved-prompts config
+ * @public
+ */
+export const lightspeedSavedPromptsManagePermission = createPermission({
+  name: 'intelligent-assistant.saved-prompts.manage',
+  attributes: {
+    action: 'update',
+  },
+});
+
 /**
  * List of all permissions on permission polices.
  *
@@ -99,4 +109,5 @@ export const lightspeedPermissions = [
   lightspeedMcpReadPermission,
   lightspeedMcpManagePermission,
   lightspeedNotebooksUsePermission,
+  lightspeedSavedPromptsManagePermission,
 ];
