@@ -42,7 +42,8 @@ p, role:default/team_a, intelligent-assistant.chat.use, use, allow
 p, role:default/team_a, intelligent-assistant.chat.manage, use, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
+p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 
 # Required for MCP server management (if configured)
 p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
