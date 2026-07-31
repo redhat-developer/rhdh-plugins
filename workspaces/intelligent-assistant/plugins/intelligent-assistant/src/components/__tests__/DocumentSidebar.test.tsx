@@ -55,6 +55,11 @@ describe('DocumentSidebar', () => {
     expect(screen.getByText('Test Notebook')).toBeInTheDocument();
   });
 
+  it('should render a separator between the title and documents sections', () => {
+    render(<DocumentSidebar {...defaultProps} />);
+    expect(screen.getByRole('separator')).toBeInTheDocument();
+  });
+
   it('should render nothing when collapsed', () => {
     const { container } = render(
       <DocumentSidebar {...defaultProps} collapsed />,
