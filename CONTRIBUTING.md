@@ -450,6 +450,8 @@ Consider archiving when the plugin is unmaintained, has no owner, has unfixable 
    - `ARCHIVED_WORKSPACES.md`
    - `.github/CODEOWNERS` (full workspace only — removes the `/workspaces/<name>` line)
    - `.github/renovate.json` and `.github/renovate-presets/workspace/rhdh-<workspace>-presets.json` (full workspace only, when present)
+   - `.github/labeler.yml` and `.github/pr-labeler.yml` (full workspace only, removes the workspace's entry)
+   - `codecov.yml` (full workspace only, removes the workspace's entry)
 
    It does **not** delete source directories; do that in the next step.
 

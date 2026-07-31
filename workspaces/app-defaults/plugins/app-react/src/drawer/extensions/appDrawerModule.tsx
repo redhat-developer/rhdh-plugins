@@ -30,8 +30,10 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  * blueprint API while adding a custom `drawers` input for content extensions.
  * Drawer state is managed by a global singleton store (see drawerStore.ts)
  * rather than a React context provider.
+ *
+ * @alpha
  */
-const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
+export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
   name: 'drawer',
   inputs: {
     drawers: createExtensionInput([appDrawerContentDataRef]),

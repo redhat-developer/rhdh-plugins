@@ -73,7 +73,7 @@ import {
   EntityKubernetesContent,
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
-import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
 import { GithubIssuesCard } from '@backstage-community/plugin-github-issues';
 import { EntityGithubPullRequestsContent } from '@roadiehq/backstage-plugin-github-pull-requests';

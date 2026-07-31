@@ -117,11 +117,11 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-intelligent-assistant:
       dynamicRoutes:
         - path: /intelligent-assistant
-          importName: LightspeedPage          # unchanged
+          importName: LightspeedPage # unchanged
           module: Legacy
       mountPoints:
         - mountPoint: application/internal/drawer-content
-          importName: LightspeedChatContainer  # unchanged
+          importName: LightspeedChatContainer # unchanged
           module: Legacy
           config:
             id: intelligent-assistant

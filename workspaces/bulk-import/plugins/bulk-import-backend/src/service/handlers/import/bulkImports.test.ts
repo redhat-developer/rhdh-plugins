@@ -453,8 +453,7 @@ describe('bulkimports.ts unit tests', () => {
           .mockResolvedValue([]);
 
         const apiVersion = apiVersionStr as
-          | Paths.FindAllImports.Parameters.ApiVersion
-          | undefined;
+          Paths.FindAllImports.Parameters.ApiVersion | undefined;
         let resp = await findAllImports(
           {
             logger,
@@ -813,8 +812,7 @@ describe('bulkimports.ts unit tests', () => {
           .mockResolvedValue([]);
 
         const apiVersion = apiVersionStr as
-          | Paths.FindAllImports.Parameters.ApiVersion
-          | undefined;
+          Paths.FindAllImports.Parameters.ApiVersion | undefined;
         let resp = await findAllImports(
           {
             logger,

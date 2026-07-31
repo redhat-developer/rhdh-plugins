@@ -22,9 +22,7 @@ export function generateReviewTableData(
 
 // @public
 export type HiddenCondition =
-  | boolean
-  | HiddenConditionObject
-  | HiddenConditionComposite;
+  boolean | HiddenConditionObject | HiddenConditionComposite;
 
 // @public
 export interface HiddenConditionComposite {

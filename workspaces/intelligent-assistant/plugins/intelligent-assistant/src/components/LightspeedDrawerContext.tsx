@@ -26,8 +26,7 @@ import { FileContent } from '../types';
  * @public
  */
 export type LightspeedEmbeddedNotebooksTarget =
-  | 'notebooks'
-  | { notebookSessionId: string };
+  'notebooks' | { notebookSessionId: string };
 
 /**
  * Type for LightspeedDrawerContext

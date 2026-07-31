@@ -54,6 +54,7 @@ const adoptionInsightsApi = ApiBlueprint.make({
 });
 
 const adoptionInsightsTranslation = TranslationBlueprint.make({
+  name: 'adoption-insights-translations',
   params: {
     resource: adoptionInsightsTranslations,
   },

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-mcp-extras
 
+## 1.0.0
+
+### Major Changes
+
+- 20421e9: Updating x2a plugins to RHDH 1.10, including NFS for testing.
+
+### Patch Changes
+
+- Updated dependencies [20421e9]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.0
+
 ## 0.3.0
 
 ### Minor Changes

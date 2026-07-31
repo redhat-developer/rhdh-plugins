@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "description": "Empty RHDH app module for the new frontend system",
   "main": "src/alpha.ts",
@@ -47,7 +47,8 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/frontend-plugin-api": "^0.17.2"
+    "@backstage/frontend-plugin-api": "^0.17.2",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"

@@ -16,6 +16,7 @@
 import { createHash } from 'node:crypto';
 import { statSync, existsSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
+import { isLocalPath } from './protocols';
 import { type Plugin } from './types';
 
 /**
@@ -41,7 +42,7 @@ export function computePluginHash(plugin: Plugin): string {
       continue;
     copy[k] = v;
   }
-  if (plugin.package.startsWith('./')) {
+  if (isLocalPath(plugin.package)) {
     copy._local_package_info = localPackageInfo(plugin.package);
   }
   const serialized = stableStringify(copy);

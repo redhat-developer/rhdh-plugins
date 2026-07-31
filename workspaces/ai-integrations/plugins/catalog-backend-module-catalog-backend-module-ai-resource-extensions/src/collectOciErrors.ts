@@ -14,58 +14,85 @@
  * limitations under the License.
  */
 
-import { Entity } from '@backstage/catalog-model';
+import {
+  ANNOTATION_SOURCE_LOCATION,
+  Entity,
+  parseLocationRef,
+} from '@backstage/catalog-model';
 
 /**
  * Collects OCI-related validation errors for an AIResource entity
  * without throwing. Returns an array of error messages (empty if valid).
  *
+ * Validates the `backstage.io/source-location` annotation when its
+ * location-ref target uses the `oci://` scheme. The annotation must
+ * use the Backstage location-ref form `url:oci://…`.
+ *
+ * Uses upstream `parseLocationRef` for parsing, which normalizes
+ * leading/trailing whitespace around type and target.
+ *
  * @internal
  */
 export function collectOciErrors(entity: Entity): string[] {
-  const specLocation = (entity.spec as Record<string, unknown> | undefined)
-    ?.location as Record<string, unknown> | undefined;
+  const annotation = entity.metadata?.annotations?.[ANNOTATION_SOURCE_LOCATION];
 
-  if (specLocation?.type !== 'oci') {
+  if (annotation === undefined || annotation === null) {
     return [];
   }
 
-  const target = specLocation?.target;
-
-  if (typeof target !== 'string' || target.trim() === '') {
-    return [
-      'spec.location.target must be a non-empty string with an oci:// URI (e.g. oci://quay.io/org/model:tag)',
-    ];
+  let type: string;
+  let target: string;
+  try {
+    ({ type, target } = parseLocationRef(annotation));
+  } catch {
+    // Not a valid location-ref (no colon, empty type/target, etc.)
+    // Leave it for other processors to handle.
+    return [];
   }
 
-  if (target !== target.trim()) {
-    return [
-      'spec.location.target must not have leading or trailing whitespace (e.g. oci://quay.io/org/model:tag)',
-    ];
-  }
-
-  if (!target.startsWith('oci://')) {
-    const sanitized = Array.from(String(target))
+  // Detect bare `oci://…` without the required `url:` prefix.
+  // parseLocationRef parses `oci://host/path` as type `oci` with a
+  // non-URL target, which breaks future UrlReader integration.
+  if (type === 'oci') {
+    const sanitized = Array.from(annotation.trim())
       .filter(c => c.charCodeAt(0) > 0x1f)
       .join('')
       .slice(0, 200);
     return [
-      `spec.location.target '${sanitized}' must start with the oci:// prefix (e.g. oci://quay.io/org/model:tag)`,
+      `${ANNOTATION_SOURCE_LOCATION} '${sanitized}' uses a bare oci:// URI; ` +
+        `the Backstage location-ref form url:oci://… is required ` +
+        `(e.g. url:oci://quay.io/org/model:tag)`,
     ];
   }
 
+  // Only apply OCI validation when the location-ref type is `url` and
+  // the target starts with `oci://`.
+  if (type !== 'url' || !target.startsWith('oci://')) {
+    return [];
+  }
+
   const ociPath = target.slice('oci://'.length);
+
+  if (ociPath === '') {
+    return [
+      `${ANNOTATION_SOURCE_LOCATION} target 'oci://' is not a valid OCI ` +
+        `reference; expected format url:oci://registry/repository[:tag|@digest]`,
+    ];
+  }
+
   const parts = ociPath.split('/');
 
   // Reject missing registry/repo, empty segments (e.g. trailing slash),
   // and whitespace inside path segments (e.g. oci:// quay.io/...).
   if (parts.length < 2 || parts.some(part => part === '' || /\s/.test(part))) {
-    const sanitized = Array.from(String(target))
+    const sanitized = Array.from(target)
       .filter(c => c.charCodeAt(0) > 0x1f)
       .join('')
       .slice(0, 200);
     return [
-      `spec.location.target '${sanitized}' is not a valid OCI reference; expected format oci://registry/repository[:tag|@digest]`,
+      `${ANNOTATION_SOURCE_LOCATION} target '${sanitized}' is not a valid ` +
+        `OCI reference; expected format ` +
+        `url:oci://registry/repository[:tag|@digest]`,
     ];
   }
 

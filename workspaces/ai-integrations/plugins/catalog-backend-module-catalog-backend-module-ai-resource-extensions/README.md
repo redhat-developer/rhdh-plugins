@@ -26,25 +26,33 @@ When present, `spec.scope` must be one of:
 Omitting `spec.scope` is valid. Invalid values produce an actionable error
 naming the field, the received value, and the accepted values.
 
-#### `spec.location.target` (OCI)
+#### `backstage.io/source-location` (OCI)
 
-When `spec.location.type` is `oci`, validates that `spec.location.target`
-is a well-formed `oci://registry/repository[:tag|@digest]` URI. Validation
-is format-only — the processor makes no outbound registry or HTTP calls.
+When `backstage.io/source-location` uses the location-ref form
+`url:oci://…`, validates that the OCI target is a well-formed
+`oci://registry/repository[:tag|@digest]` URI. Validation is format-only —
+the processor makes no outbound registry or HTTP calls.
+
+Bare `oci://…` annotations (without the `url:` prefix) are rejected with
+an actionable error explaining the required `url:oci://…` format. The
+`url:` prefix is required because bare `oci://…` parses as location type
+`oci` with a non-URL target, which would break future UrlReader integration.
+
+Non-OCI source-locations (e.g. `url:https://…`) are not subject to OCI
+format rules and pass through without validation.
 
 ## Schema Fields
 
 An `AIResource` entity uses `apiVersion: backstage.io/v1beta1` and
-`kind: AIResource`. The following `spec` fields are relevant:
+`kind: AIResource`. The following fields are relevant:
 
-| Field                  | Enforced by this module | Description                                                                                      |
-| ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
-| `spec.type`            | no¹                     | The type of AI asset (e.g. `model`)                                                              |
-| `spec.lifecycle`       | no¹                     | Lifecycle stage (e.g. `experimental`, `production`)                                              |
-| `spec.owner`           | no¹                     | Owning entity reference (e.g. `team-data-science`)                                               |
-| `spec.scope`           | optional, validated     | RHDH extension. Accepted values: `organization`, `product`, `team`. Omitting the field is valid. |
-| `spec.location.type`   | no¹                     | Source type — `git` or `oci`                                                                     |
-| `spec.location.target` | when type is `oci`      | Location URI. For `git`: a repository URL. For `oci`: an `oci://` URI (see below).               |
+| Field                          | Enforced by this module | Description                                                                                      |
+| ------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `spec.type`                    | no¹                     | The type of AI asset (e.g. `model`)                                                              |
+| `spec.lifecycle`               | no¹                     | Lifecycle stage (e.g. `experimental`, `production`)                                              |
+| `spec.owner`                   | no¹                     | Owning entity reference (e.g. `team-data-science`)                                               |
+| `spec.scope`                   | optional, validated     | RHDH extension. Accepted values: `organization`, `product`, `team`. Omitting the field is valid. |
+| `backstage.io/source-location` | when target is `oci://` | Standard Backstage annotation. For OCI assets use `url:oci://…` (see below).                     |
 
 ¹ These fields are typical for Backstage entities but are **not** validated or
 required by the processors in this module. Entities missing these fields will
@@ -65,10 +73,10 @@ interfaces — no AIResource-specific registration flow is required.
 
 ### Git-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource` and
-   `spec.location.type: git`.
-2. Set `backstage.io/source-location` and `spec.location.target` to the
-   repository URL so consumers can locate the source repository.
+1. Create a `catalog-info.yaml` with `kind: AIResource`.
+2. Set `backstage.io/source-location` to the repository URL using the
+   standard location-ref form (e.g. `url:https://github.com/my-org/my-repo`)
+   so consumers can locate the source repository.
 3. Register the entity YAML via the RHDH catalog URL registration UI or
    include it in a catalog location for auto-discovery.
 
@@ -77,10 +85,14 @@ for a complete example.
 
 ### OCI-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource` and
-   `spec.location.type: oci`.
-2. Set `spec.location.target` to an `oci://` URI pointing to the OCI
-   artifact (e.g. `oci://quay.io/my-org/my-model:latest`).
+1. Create a `catalog-info.yaml` with `kind: AIResource`.
+2. Set `backstage.io/source-location` to an OCI reference using the
+   location-ref form `url:oci://…`
+   (e.g. `url:oci://quay.io/my-org/my-model:latest`).
+
+   **Important:** use the `url:oci://…` form — not bare `oci://…`. The
+   `url:` prefix is required by the Backstage location-ref convention.
+
 3. Register the file via the RHDH catalog URL registration UI or include
    it in a catalog location for auto-discovery.
 
@@ -89,11 +101,11 @@ for a complete example.
 
 ## OCI Validation-Only Behavior
 
-The `AIResourceOciProcessor` validates the `spec.location.target` format
-when `spec.location.type` is `oci`. It checks:
+The `AIResourceExtensionsProcessor` validates the `backstage.io/source-location`
+annotation when the location-ref target uses the `oci://` scheme. It checks:
 
-- The target is a non-empty string with no leading or trailing whitespace.
-- The target starts with the `oci://` scheme prefix.
+- The annotation uses the `url:oci://…` location-ref form (not bare `oci://…`).
+- The OCI target is a non-empty string with no leading or trailing whitespace.
 - The URI contains at least a registry and a repository path
   (e.g. `oci://quay.io/org/model:tag`).
 

@@ -175,9 +175,12 @@ export class ScaffolderTaskDao {
   ): Promise<ScaffolderTask[]> {
     return await this.knex('scaffolder_tasks')
       .where({ repositoryId })
-      .select<
-        ScaffolderTask[]
-      >('taskId', 'repositoryId', 'scaffolderOptions', 'executedAt');
+      .select<ScaffolderTask[]>(
+        'taskId',
+        'repositoryId',
+        'scaffolderOptions',
+        'executedAt',
+      );
   }
 
   async lastExecutedTaskByRepoId(

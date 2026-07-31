@@ -20,7 +20,7 @@ import { InstallException } from './errors';
 import { log } from './log';
 import { resolveImage } from './image-resolver';
 import { type Skopeo } from './skopeo';
-import { DOCKER_PROTO, OCI_PROTO } from './types';
+import { DOCKER_PROTO, OCI_PROTO } from './protocols';
 
 type OciManifest = {
   layers?: Array<{ digest: string }>;

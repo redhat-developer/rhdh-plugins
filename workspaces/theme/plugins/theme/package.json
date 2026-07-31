@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-theme",
-  "version": "0.15.0",
+  "version": "1.0.1",
   "description": "Red Hat Developer Hub Theme",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -25,13 +25,13 @@
   ],
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha/index.ts",
+    "./legacy": "./src/legacyExports.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha/index.ts"
+      "legacy": [
+        "src/legacyExports.ts"
       ],
       "package.json": [
         "package.json"

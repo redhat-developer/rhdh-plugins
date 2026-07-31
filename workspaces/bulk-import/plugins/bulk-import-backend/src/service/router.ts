@@ -293,8 +293,7 @@ export async function createRouter(
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
 
       const userTokens = res.locals.scmTokens as
-        | Record<string, string>
-        | undefined;
+        Record<string, string> | undefined;
 
       if (!userTokens || Object.keys(userTokens).length === 0) {
         return res.status(401).json({
@@ -343,8 +342,7 @@ export async function createRouter(
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
 
       const userTokens = res.locals.scmTokens as
-        | Record<string, string>
-        | undefined;
+        Record<string, string> | undefined;
 
       if (!userTokens || Object.keys(userTokens).length === 0) {
         return res.status(401).json({
