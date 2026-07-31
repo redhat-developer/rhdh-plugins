@@ -8,6 +8,7 @@
     ".": "./src/index.tsx",
     "./alpha": "./src/alpha.ts",
     "./legacy": "./src/legacyExports.ts",
+    "./bulk-import-translations-module": "./src/bulkImportTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -17,6 +18,9 @@
       ],
       "legacy": [
         "src/legacyExports.ts"
+      ],
+      "bulk-import-translations-module": [
+        "src/bulkImportTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"
