@@ -55,7 +55,7 @@ catalog:
           ...
 ```
 
-Both the connector (`plugin.ts`) and url-reader (`readBridgeConfigs`) navigate this two-level structure. The entity provider's existing config reading at `catalog.providers.modelCatalog` also uses this pattern. The `config.d.ts` schema must declare these fields or Backstage's config validation silently strips them.
+Both the connector (`plugin.ts`) and url-reader (`readBridgeConfigs`) navigate this two-level structure. The entity provider's config reading (`readModelCatalogApiEntityConfigs` in `config.ts`) uses flat single-level iteration and reads connector-level fields (e.g., `schedule`) — it does not need the cluster sub-keys and is unaffected by this change. The `config.d.ts` schema must declare these fields or Backstage's config validation silently strips them.
 
 ## Goals / Non-Goals
 
@@ -117,19 +117,22 @@ If KServe.ts included the full URL or the `url:` prefix, the result would be dou
 
 ### D5 — Two-level config iteration in url-reader
 
-**Choice:** Update `readBridgeConfigs` to iterate connector keys then cluster sub-keys:
+**Choice:** Update `readBridgeConfigs` to iterate connector keys then cluster sub-keys, filtering out non-cluster keys (e.g., `schedule`) that may coexist at the connector level:
 
 ```typescript
 for (const connectorId of configs.keys()) {
   const connectorConfig = configs.getConfig(connectorId);
   for (const clusterKey of connectorConfig.keys()) {
-    const clusterConfig = connectorConfig.getConfig(clusterKey);
+    const clusterConfig = connectorConfig.getOptionalConfig(clusterKey);
+    if (!clusterConfig || !clusterConfig.has('kubeflow-model-catalog-url')) {
+      continue; // skip connector-level non-cluster objects (e.g., schedule)
+    }
     result.push(readBridgeConfig(connectorId, clusterConfig));
   }
 }
 ```
 
-**Rationale:** The config structure nests cluster keys under connector keys (e.g., `kserve-kubeflow-connector.cluster-1`). The old flat iteration (`configs.keys().map(id => readBridgeConfig(id, ...))`) treated the connector key as the leaf, missing the cluster level entirely. The entity provider already uses this two-level pattern.
+**Rationale:** The config structure nests cluster keys under connector keys (e.g., `kserve-kubeflow-connector.cluster-1`). The old flat iteration (`configs.keys().map(id => readBridgeConfig(id, ...))`) treated the connector key as the leaf, missing the cluster level entirely. The entity provider's config reading (`readModelCatalogApiEntityConfigs`) uses flat single-level iteration for its own connector-level fields and is unaffected by this change. Connector-level keys like `schedule` may coexist alongside cluster sub-keys, so the iteration must filter them via `getOptionalConfig` and field presence checks.
 
 ### D6 — Config schema in config.d.ts uses index signature for cluster sub-keys
 
@@ -161,6 +164,6 @@ After all changes:
 2. `yarn build:all` succeeds
 3. Unit tests pass (`yarn test -- --watchAll=false` in url-reader plugin)
 4. Prettier and lint checks pass
-5. `curl` to `/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16` returns 200 with model card markdown
+5. `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/redhat_ai_validated_models/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16` returns 200 with model card markdown
 6. TechDocs page renders in browser for entities with auto-set `backstage.io/techdocs-ref`
 7. Integration tested against upstream KServe/Kubeflow and RHOAI on OCP

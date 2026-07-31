@@ -153,9 +153,9 @@ The config schema in `catalog-backend-module-model-catalog/config.d.ts` SHALL de
 - **THEN** Backstage config validation preserves these fields
 - **AND** `providerConfigs.keys()` returns a non-empty array
 
-#### Scenario: Existing fields still work
+#### Scenario: Existing connector-level fields still work
 
-- **WHEN** `app-config.yaml` contains `baseUrl`, `system`, `owner`, `schedule` at the connector level
+- **WHEN** `app-config.yaml` contains `system`, `owner`, `schedule` at the connector level
 - **THEN** these fields continue to pass validation and are accessible via the config API
 
 ---

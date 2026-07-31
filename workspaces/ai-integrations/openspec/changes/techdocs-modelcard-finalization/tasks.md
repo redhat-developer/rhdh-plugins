@@ -45,7 +45,7 @@
 ## 6. Align URL Reader BridgeConfig with Cluster-Nested Config
 
 - [ ] 6.1 Update `BridgeConfig` type: replace `baseUrl: string` with `name: string`, `kubeflowModelCatalogUrl: string`, `defaultOwner: string`, `defaultLifecycle: string`
-- [ ] 6.2 Update `readBridgeConfigs` to iterate two levels: connector keys then cluster sub-keys
+- [ ] 6.2 Update `readBridgeConfigs` to iterate two levels: connector keys then cluster sub-keys, filtering out connector-level non-cluster objects (e.g., `schedule`) via `getOptionalConfig` and field presence checks (e.g., `has('kubeflow-model-catalog-url')`)
 - [ ] 6.3 Update `readBridgeConfig` to read `name`, `kubeflow-model-catalog-url`, `default-owner`, `default-lifecycle` from the cluster sub-config
 - [ ] 6.4 Update test fixtures in `plugin.test.ts` to use cluster-nested config structure and new `BridgeConfig` fields
 - [ ] 6.5 Verify url-reader tests pass (`yarn test -- --watchAll=false`)
@@ -72,7 +72,7 @@
 - [ ] 9.3 Unit tests pass (`yarn test -- --watchAll=false` in url-reader plugin)
 - [ ] 9.4 Prettier checks pass (`yarn prettier`)
 - [ ] 9.5 Lint checks pass (`yarn lint:all`)
-- [ ] 9.6 `curl` to `/modelcard/<sourceId>/<multi/segment/modelName>` returns 200 with model card markdown
+- [ ] 9.6 `curl http://localhost:7007/api/kserve-kubeflow-connector/modelcard/<sourceId>/<multi/segment/modelName>` returns 200 with model card markdown
 - [ ] 9.7 TechDocs page renders in RHDH UI for entities with auto-set `backstage.io/techdocs-ref`
 - [ ] 9.8 Integration tested against upstream KServe/Kubeflow
 - [ ] 9.9 Integration tested against RHOAI on OCP
