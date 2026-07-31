@@ -18,18 +18,19 @@
  * Building-block React components for custom global-header UI.
  *
  * Import from `@red-hat-developer-hub/backstage-plugin-global-header/components`
- * so these stay off the main NFS sync chunk (`/alpha` today; the stable root
- * export after graduation). Path is `./components` (not `./alpha/components`)
- * because Module Federation entry mounts may not contain nested slashes.
+ * so these stay off the root NFS sync chunk. Prefer dynamic `import()`
+ * inside blueprint loaders.
  *
- * @alpha
+ * @public
  * @packageDocumentation
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
-export { HeaderIconButton as GlobalHeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
-export type { HeaderIconButtonProps } from '../components/HeaderIconButton/HeaderIconButton';
+import './configureMuiClassName';
+
+export { HeaderIconButton as GlobalHeaderIconButton } from './components/HeaderIconButton/HeaderIconButton';
+export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
 
 export { GlobalHeaderMenuItem } from './components/GlobalHeaderMenuItem';
 export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuItem';
@@ -42,7 +43,7 @@ export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdow
  * expose. Backstage only federates entry points whose default export is a
  * recognized feature type.
  *
- * @alpha
+ * @public
  */
 export default createFrontendModule({
   pluginId: 'global-header',

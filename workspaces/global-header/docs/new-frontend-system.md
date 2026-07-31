@@ -2,6 +2,13 @@
 
 The global header is the top-level navigation bar in Red Hat Developer Hub. It ships with sensible defaults -- a company logo, search, notifications, and user profile -- but is designed to be extended by other plugins and configured by deployers.
 
+The NFS surface is **stable** on the package root
+(`@red-hat-developer-hub/backstage-plugin-global-header`). Building-block UI
+components live on a separate `/components` entry so they stay off the main
+Module Federation sync chunk. Prefer `/legacy` only for Old Frontend System
+(mount-point) apps. `/alpha` is a deprecated translations-only shim — do not
+use it for the plugin, module, or blueprints.
+
 This guide explains how to:
 
 - [Set up the header in your app](#setup)
@@ -39,7 +46,7 @@ yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-global-heade
 import { createApp } from '@backstage/frontend-defaults';
 import globalHeaderPlugin, {
   globalHeaderModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createApp({
   features: [
@@ -54,14 +61,15 @@ Both are required. The **module** provides the wrapper; the **plugin** provides 
 
 ## Add a toolbar component
 
-Import `GlobalHeaderComponentBlueprint` and call `.make()`. There are three ways to define what renders.
+Import `GlobalHeaderComponentBlueprint` from the root and call `.make()`.
+There are three ways to define what renders.
 
 ### Option A: Provide data, let the framework render
 
 Supply `icon`, `title`, and `link` (or `onClick`). The framework renders a styled icon button for you.
 
 ```typescript
-import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myButton = GlobalHeaderComponentBlueprint.make({
   name: 'my-button',
@@ -77,10 +85,11 @@ export const myButton = GlobalHeaderComponentBlueprint.make({
 ### Option B: Use building-block components
 
 For dropdowns or more control, provide a `loader` (preferred) that dynamically
-imports building blocks from `/components` (kept off the main `/alpha` sync chunk):
+imports building blocks from `/components` (kept off the root NFS sync
+chunk):
 
 ```typescript
-import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myDropdown = GlobalHeaderComponentBlueprint.make({
   name: 'my-dropdown',
@@ -148,7 +157,7 @@ Import `GlobalHeaderMenuItemBlueprint`. The `target` field routes the item to th
 Provide `title`, `link`, and optionally `icon` / `sectionLabel`. Items that share a `sectionLabel` are grouped under that heading.
 
 ```typescript
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const docsItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-docs',
@@ -166,11 +175,11 @@ export const docsItem = GlobalHeaderMenuItemBlueprint.make({
 ### Custom component item using building blocks
 
 Use `GlobalHeaderMenuItem` from `/components` inside a blueprint `loader` so the
-UI stays off the main `/alpha` sync chunk. The component receives `handleClose`
-and `hideDivider` as props from the dropdown.
+UI stays off the root NFS sync chunk. The component receives
+`handleClose` and `hideDivider` as props from the dropdown.
 
 ```typescript
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myDocsItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-docs-link',
@@ -241,7 +250,7 @@ import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
 import {
   GlobalHeaderComponentBlueprint,
   GlobalHeaderMenuItemBlueprint,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createFrontendPlugin({
   pluginId: 'my-plugin',
@@ -363,7 +372,8 @@ Extension ID pattern: `gh-menu-item:global-header/<name>`
 
 For plugin authors building custom toolbar components or dropdowns, the plugin exports lower-level building blocks and React hooks:
 
-**Building-block components** (import from `/components` — not the main `/alpha` entry):
+**Building-block components** (import from `/components` — not the root
+entry — so MUI stays off the main NFS sync chunk):
 
 | Component                | Key props                        | Purpose                                                                      |
 | ------------------------ | -------------------------------- | ---------------------------------------------------------------------------- |
@@ -379,6 +389,8 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 ```
 
+Prefer dynamic `import()` of these from inside blueprint `loader`s.
+
 **Context hooks** (direct access to collected extension data):
 
 | Hook                               | Returns                                    |
@@ -388,4 +400,9 @@ import {
 
 **Translations:** Use `titleKey` / `subTitleKey` for i18n. Keys containing dots (e.g. `'applicationLauncher.sections.documentation'`) are auto-resolved. The plugin exports `globalHeaderTranslationRef` and `globalHeaderTranslations` for overrides.
 
-Blueprints, modules, and hooks are available from `@red-hat-developer-hub/backstage-plugin-global-header/alpha`. Building-block components are available from `@red-hat-developer-hub/backstage-plugin-global-header/components`.
+| Entry              | Use for                                                           |
+| ------------------ | ----------------------------------------------------------------- |
+| Package root (`.`) | NFS plugin, module, blueprints, hooks, translations               |
+| `/components`      | Building-block UI only (`GlobalHeaderMenuItem`, dropdowns, icons) |
+| `/legacy`          | Deprecated OFS / mount-point API                                  |
+| `/alpha`           | Deprecated translations re-export only (not an NFS entry)         |

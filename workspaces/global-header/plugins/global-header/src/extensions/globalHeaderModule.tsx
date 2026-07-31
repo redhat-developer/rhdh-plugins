@@ -37,7 +37,7 @@ import { readConfigMenuItems } from '../utils/readConfigMenuItems';
 import { readConfigComponents } from '../utils/readConfigComponents';
 
 // AppRootWrapperBlueprint has no loader — lazy the AppBar shell so MUI stays
-// off the ./alpha federation sync chunk (same idea as PageBlueprint loaders).
+// off the root federation sync chunk (same idea as PageBlueprint loaders).
 const LazyGlobalHeader = lazy(() =>
   import('../components/GlobalHeader').then(m => ({ default: m.GlobalHeader })),
 );
