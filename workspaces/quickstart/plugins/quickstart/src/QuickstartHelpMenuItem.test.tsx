@@ -32,13 +32,22 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-app-react', () => ({
   }),
 }));
 
-jest.mock('@red-hat-developer-hub/backstage-plugin-global-header', () => ({
-  MenuItemLink: ({ title, icon }: { title?: string; icon?: string }) => (
-    <span data-testid="menu-item-link" data-icon={icon}>
-      {title}
-    </span>
-  ),
-}));
+jest.mock(
+  '@red-hat-developer-hub/backstage-plugin-global-header/alpha',
+  () => ({
+    GlobalHeaderMenuItem: ({
+      title,
+      onClick,
+    }: {
+      title?: string;
+      onClick?: () => void;
+    }) => (
+      <button type="button" role="menuitem" onClick={onClick}>
+        {title}
+      </button>
+    ),
+  }),
+);
 
 describe('QuickstartHelpMenuItem', () => {
   beforeEach(() => {
@@ -71,18 +80,5 @@ describe('QuickstartHelpMenuItem', () => {
 
     expect(mockToggleDrawer).toHaveBeenCalledWith(QUICKSTART_DRAWER_ID);
     expect(handleClose).toHaveBeenCalled();
-  });
-
-  it('forwards ref to the underlying MenuItem element', async () => {
-    const ref = { current: null as HTMLLIElement | null };
-
-    await renderInTestApp(
-      <ul role="menu">
-        <QuickstartHelpMenuItem ref={ref} />
-      </ul>,
-    );
-
-    expect(ref.current).toBeInstanceOf(HTMLLIElement);
-    expect(ref.current).toHaveAttribute('role', 'menuitem');
   });
 });

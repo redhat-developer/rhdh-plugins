@@ -14,50 +14,35 @@
  * limitations under the License.
  */
 
-import { forwardRef } from 'react';
-import type { Ref } from 'react';
-
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { MenuItemLink } from '@red-hat-developer-hub/backstage-plugin-global-header';
-
-import MenuItem from '@mui/material/MenuItem';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 
 import { QUICKSTART_DRAWER_ID } from './const';
 
 /**
  * Help-dropdown menu item that toggles the Quick start drawer.
  *
- * Uses `forwardRef` so MUI Menu focus management can attach a ref to the
- * underlying `MenuItem`. Avoids `GlobalHeaderMenuItem` without a `to` prop,
- * which (in global-header 1.21.0) rendered `MenuItem component={Fragment}` and
- * dropped click handlers / menuitem role.
+ * Relies on `GlobalHeaderMenuItem` from global-header >= 1.21.1, which no
+ * longer uses `component={Fragment}` when `to` is absent (that dropped
+ * onClick / menuitem role in 1.21.0).
  */
-export const QuickstartHelpMenuItem = forwardRef(
-  function QuickstartHelpMenuItem(
-    {
-      handleClose,
-    }: {
-      handleClose?: () => void;
-    },
-    ref: Ref<HTMLLIElement>,
-  ) {
-    const { toggleDrawer } = useAppDrawer();
+export const QuickstartHelpMenuItem = ({
+  handleClose,
+}: {
+  handleClose?: () => void;
+}) => {
+  const { toggleDrawer } = useAppDrawer();
 
-    const handleClick = () => {
-      toggleDrawer(QUICKSTART_DRAWER_ID);
-      handleClose?.();
-    };
+  const handleClick = () => {
+    toggleDrawer(QUICKSTART_DRAWER_ID);
+    handleClose?.();
+  };
 
-    return (
-      <MenuItem
-        ref={ref}
-        disableRipple
-        disableTouchRipple
-        onClick={handleClick}
-        sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
-      >
-        <MenuItemLink to="" title="Quick start" icon="waving_hand" />
-      </MenuItem>
-    );
-  },
-);
+  return (
+    <GlobalHeaderMenuItem
+      title="Quick start"
+      icon="waving_hand"
+      onClick={handleClick}
+    />
+  );
+};
