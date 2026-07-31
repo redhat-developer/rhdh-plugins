@@ -14,6 +14,11 @@ When an AiResource entity declares `spec.type: agent`, the catalog processor MUS
 - **WHEN** an AiResource entity with `spec.type: agent` omits `spec.instructions` or sets it to an empty string
 - **THEN** the catalog processor rejects ingestion with an actionable error that names `spec.instructions`
 
+#### Scenario: Wrong-type instructions rejected at ingestion
+
+- **WHEN** an AiResource entity with `spec.type: agent` sets `spec.instructions` to a non-string value (for example a number or array)
+- **THEN** the catalog processor rejects ingestion with an actionable error that names `spec.instructions`
+
 #### Scenario: Invalid optional agent field shape rejected at ingestion
 
 - **WHEN** an AiResource entity with `spec.type: agent` sets an optional agent field to a clearly wrong type (for example `spec.handoffs` as a non-array, or `spec.resetToolChoice` as a non-boolean)

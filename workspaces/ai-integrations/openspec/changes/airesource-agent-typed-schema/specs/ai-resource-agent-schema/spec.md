@@ -32,6 +32,11 @@ These are schema-layer requirements for agent authoring and tests; catalog proce
 - **WHEN** an AiResource entity declares `spec.type: agent` but omits `spec.instructions` or sets it to an empty string
 - **THEN** the agent schema rejects the entity with an error that names `spec.instructions`
 
+#### Scenario: Wrong-type instructions rejected
+
+- **WHEN** an AiResource entity declares `spec.type: agent` but sets `spec.instructions` to a non-string value (for example a number or array)
+- **THEN** the agent schema rejects the entity with an error that names `spec.instructions`
+
 ---
 
 ### Requirement: Optional fields per design mapping
