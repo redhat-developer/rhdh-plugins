@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+- 9d2012f: add model-validation route to verify whether a model is multimodal. Can now attach images to models that support it.
+
+### Patch Changes
+
+- 21e3f43: Require `intelligent-assistant.chat.update` on `PUT /v2/conversations/:conversation_id` instead of the `intelligent-assistant.chat.create` permission.
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [81b7ed2]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.2.0
+
 ## 3.1.0
 
 ### Patch Changes

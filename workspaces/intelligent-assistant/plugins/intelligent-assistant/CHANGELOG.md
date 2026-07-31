@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+
+### Patch Changes
+
+- 3d96cd5: Disable model selector during active chat sessions, show localized tooltip, and move attach button to the left
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [81b7ed2]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.2.0
+
 ## 3.1.0
 
 ### Minor Changes
