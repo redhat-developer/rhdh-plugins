@@ -29,6 +29,10 @@ import {
 import { OrchestratorService } from '../service/OrchestratorService';
 import { OrchestratorFilters } from '../service/permission-rules';
 import * as workflowAuth from '../service/workflowAuthorization';
+import { Pagination } from '../types/pagination';
+
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 100;
 
 export const createListWorkflowsAction = ({
   actionsRegistry,
@@ -66,6 +70,23 @@ export const createListWorkflowsAction = ({
             .nativeEnum(ProcessInstanceState)
             .optional()
             .describe("Filter workflows by their last run's status"),
+          limit: z
+            .number()
+            .int()
+            .min(1)
+            .max(MAX_LIMIT)
+            .optional()
+            .describe(
+              `Maximum number of workflows to return (1-${MAX_LIMIT}, default ${DEFAULT_LIMIT})`,
+            ),
+          offset: z
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe(
+              'Number of workflows to skip, for paging through results (default 0)',
+            ),
         }),
       output: z =>
         z.object({
@@ -91,19 +112,27 @@ export const createListWorkflowsAction = ({
         orchestratorWorkflowPermission,
       );
 
-      const overviews =
-        (await orchestratorService.fetchWorkflowOverviews({})) ?? [];
+      const pagination: Pagination = {
+        limit: input.limit ?? DEFAULT_LIMIT,
+        offset: input.offset ?? 0,
+      };
 
-      const authorizedIds = await workflowAuth.filterAuthorizedWorkflowIds(
-        credentials,
-        permissions,
-        overviews.map(overview => overview.workflowId),
-        conditionTransformer,
-        logger,
+      const overviews =
+        (await orchestratorService.fetchWorkflowOverviews({ pagination })) ??
+        [];
+
+      const authorizedIds = new Set(
+        await workflowAuth.filterAuthorizedWorkflowIds(
+          credentials,
+          permissions,
+          overviews.map(overview => overview.workflowId),
+          conditionTransformer,
+          logger,
+        ),
       );
 
       const workflows = overviews
-        .filter(overview => authorizedIds.includes(overview.workflowId))
+        .filter(overview => authorizedIds.has(overview.workflowId))
         .filter(
           overview =>
             !input.name ||

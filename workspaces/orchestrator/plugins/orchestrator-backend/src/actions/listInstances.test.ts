@@ -225,6 +225,88 @@ describe('createListInstancesAction', () => {
     );
   });
 
+  it('defaults to a bounded page (limit 50, offset 0) when pagination is not specified', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([]);
+
+    createListInstancesAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await mockActionsRegistry.invoke({
+      id: 'test:list-instances',
+      input: {},
+    });
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pagination: { limit: 50, offset: 0 },
+      }),
+    );
+  });
+
+  it('passes through caller-supplied limit and offset', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([]);
+
+    createListInstancesAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await mockActionsRegistry.invoke({
+      id: 'test:list-instances',
+      input: { limit: 10, offset: 20 },
+    });
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pagination: { limit: 10, offset: 20 },
+      }),
+    );
+  });
+
+  it('rejects a limit greater than the maximum page size', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+
+    createListInstancesAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:list-instances',
+        input: { limit: 500 },
+      }),
+    ).rejects.toThrow(/Invalid input/);
+    expect(mockOrchestratorService.fetchInstances).not.toHaveBeenCalled();
+  });
+
   it('returns an empty array without querying instances when no workflows are authorized', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();

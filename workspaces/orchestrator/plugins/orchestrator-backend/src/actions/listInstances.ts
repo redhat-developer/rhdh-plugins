@@ -32,6 +32,10 @@ import { mapToProcessInstanceDTO } from '../service/api/mapping/V2Mappings';
 import { OrchestratorService } from '../service/OrchestratorService';
 import { OrchestratorFilters } from '../service/permission-rules';
 import * as workflowAuth from '../service/workflowAuthorization';
+import { Pagination } from '../types/pagination';
+
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 100;
 
 export const createListInstancesAction = ({
   actionsRegistry,
@@ -66,6 +70,23 @@ export const createListInstancesAction = ({
             .nativeEnum(ProcessInstanceState)
             .optional()
             .describe('Filter instances by their current status'),
+          limit: z
+            .number()
+            .int()
+            .min(1)
+            .max(MAX_LIMIT)
+            .optional()
+            .describe(
+              `Maximum number of instances to return (1-${MAX_LIMIT}, default ${DEFAULT_LIMIT})`,
+            ),
+          offset: z
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe(
+              'Number of instances to skip, for paging through results (default 0)',
+            ),
         }),
       output: z =>
         z.object({
@@ -130,9 +151,15 @@ export const createListInstancesAction = ({
         );
       }
 
+      const pagination: Pagination = {
+        limit: input.limit ?? DEFAULT_LIMIT,
+        offset: input.offset ?? 0,
+      };
+
       const rawInstances = await orchestratorService.fetchInstances({
         filter,
         workflowIds: authorizedWorkflowIds,
+        pagination,
       });
 
       const instances = rawInstances

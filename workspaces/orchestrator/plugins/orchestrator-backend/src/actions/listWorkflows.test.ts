@@ -193,6 +193,85 @@ describe('createListWorkflowsAction', () => {
     );
   });
 
+  it('defaults to a bounded page (limit 50, offset 0) when pagination is not specified', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+    (
+      mockOrchestratorService.fetchWorkflowOverviews as jest.Mock
+    ).mockResolvedValue(overviews);
+
+    createListWorkflowsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await mockActionsRegistry.invoke({
+      id: 'test:list-workflows',
+      input: {},
+    });
+
+    expect(mockOrchestratorService.fetchWorkflowOverviews).toHaveBeenCalledWith(
+      { pagination: { limit: 50, offset: 0 } },
+    );
+  });
+
+  it('passes through caller-supplied limit and offset', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+    (
+      mockOrchestratorService.fetchWorkflowOverviews as jest.Mock
+    ).mockResolvedValue(overviews);
+
+    createListWorkflowsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await mockActionsRegistry.invoke({
+      id: 'test:list-workflows',
+      input: { limit: 5, offset: 15 },
+    });
+
+    expect(mockOrchestratorService.fetchWorkflowOverviews).toHaveBeenCalledWith(
+      { pagination: { limit: 5, offset: 15 } },
+    );
+  });
+
+  it('rejects a limit greater than the maximum page size', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+
+    createListWorkflowsAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:list-workflows',
+        input: { limit: 500 },
+      }),
+    ).rejects.toThrow(/Invalid input/);
+    expect(
+      mockOrchestratorService.fetchWorkflowOverviews,
+    ).not.toHaveBeenCalled();
+  });
+
   it('throws NotAllowedError when the read permission is denied outright', async () => {
     const mockActionsRegistry = actionsRegistryServiceMock();
     const mockPermissions = mockServices.permissions.mock();
