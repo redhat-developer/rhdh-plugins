@@ -128,7 +128,7 @@ describe('useTemplateUnitEvaluator', () => {
       result.current('rjsfConfig.defaultEnvironment', {} as any),
     ).resolves.toBe('from-config');
     expect(configApi.getOptionalString).toHaveBeenCalledWith(
-      'orchestrator.rjsf-widgets.defaultEnvironment'
+      'orchestrator.rjsf-widgets.defaultEnvironment',
     );
   });
 
