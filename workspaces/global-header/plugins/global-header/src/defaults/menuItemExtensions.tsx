@@ -62,7 +62,7 @@ export const logoutMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
     target: 'profile',
     priority: 10,
     loader: () =>
-      import('../../components/LogoutButton/LogoutButton').then(
+      import('../components/LogoutButton/LogoutButton').then(
         m => m.LogoutButton,
       ),
   },
@@ -80,7 +80,7 @@ export const supportButtonMenuItemExtension =
       target: 'help',
       priority: 10,
       loader: () =>
-        import('../../components/SupportButton/SupportButton').then(
+        import('../components/SupportButton/SupportButton').then(
           m => m.SupportButton,
         ),
     },
