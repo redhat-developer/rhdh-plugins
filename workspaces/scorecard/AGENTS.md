@@ -157,11 +157,10 @@ Higher tiers override lower tiers:
    `mergeEntityAndMetricThresholds()`.
 2. **`app-config.yaml` overrides** (middle priority) — administrator
    overrides by configuration, most specific level wins
-   (datasource < provider < metric), complete replace of metric defaults.
+   (metric > provider), complete replace of metric defaults.
    - metric:
      `plugins.<datasource>.metricProviders.<providerName>.metrics.<metricName>.thresholds`
    - provider: `plugins.<datasource>.metricProviders.<providerName>.thresholds`
-   - datasource: `plugins.<datasource>.thresholds`
      Config keys are local names (no datasource prefix).
 3. **Metric defaults** (lowest priority) — the `thresholds` field on
    each `Metric` object returned by `getMetrics()`. Used when no config

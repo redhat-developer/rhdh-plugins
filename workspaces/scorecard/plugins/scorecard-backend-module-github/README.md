@@ -111,4 +111,4 @@ scorecard:
             seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [schedule configuration](../scorecard-backend/docs/providers.md#metric-collection-schedulin) for custom schedule configuration.
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for custom schedule configuration.

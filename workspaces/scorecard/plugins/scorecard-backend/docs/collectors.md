@@ -109,7 +109,7 @@ export const scorecardModuleCustomDatasource = createBackendModule({
 
 ## Use collectors from a metric provider
 
-To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetric`:
+To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetrics`:
 
 ```ts
 import { createBackendModule } from '@backstage/backend-plugin-api';
