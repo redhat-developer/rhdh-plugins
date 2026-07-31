@@ -33,7 +33,7 @@ export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
     priority: 200,
     loader: async () => {
       const [{ CompanyLogo }, { rhdhLogo }] = await Promise.all([
-        import('../../components/CompanyLogo/CompanyLogo'),
+        import('../components/CompanyLogo/CompanyLogo'),
         import('./rhdhLogo'),
       ]);
       return () => <CompanyLogo to="/" logo={rhdhLogo} />;
@@ -48,7 +48,7 @@ export const searchExtension = GlobalHeaderComponentBlueprint.make({
     priority: 100,
     layout: { flexGrow: 1 },
     loader: () =>
-      import('../../components/SearchComponent/SearchComponent').then(
+      import('../components/SearchComponent/SearchComponent').then(
         m => m.SearchComponent,
       ),
   },
@@ -60,7 +60,7 @@ export const spacerExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 99,
     layout: { flexGrow: 0 },
-    loader: () => import('../../components/Spacer/Spacer').then(m => m.Spacer),
+    loader: () => import('../components/Spacer/Spacer').then(m => m.Spacer),
   },
 });
 
@@ -82,7 +82,7 @@ export const starredDropdownExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 85,
     loader: () =>
-      import('../../components/HeaderDropdownComponent/StarredDropdown').then(
+      import('../components/HeaderDropdownComponent/StarredDropdown').then(
         m => m.StarredDropdown,
       ),
   },
@@ -117,7 +117,7 @@ export const notificationButtonExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 70,
     loader: () =>
-      import('../../components/NotificationButton/NotificationButton').then(
+      import('../components/NotificationButton/NotificationButton').then(
         m => m.NotificationButton,
       ),
   },
@@ -128,8 +128,7 @@ export const dividerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'divider',
   params: {
     priority: 50,
-    loader: () =>
-      import('../../components/Divider/Divider').then(m => m.Divider),
+    loader: () => import('../components/Divider/Divider').then(m => m.Divider),
   },
 });
 

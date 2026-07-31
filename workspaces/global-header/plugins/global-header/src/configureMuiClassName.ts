@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
- */
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
-export * from '../translations';
+/**
+ * Prefix MUI class names so global-header styles do not clash with the host.
+ * Imported only from lazy UI entry points (`GlobalHeader`, `/components`,
+ * `/legacy`) so MUI stays off the root NFS sync chunk.
+ */
+ClassNameGenerator.configure(componentName =>
+  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
+);
