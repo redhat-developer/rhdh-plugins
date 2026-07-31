@@ -85,7 +85,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   {}
@@ -127,3 +128,6 @@ catalog:
         # a separate pod
         # baseUrl: 'http://localhost:9090'
         name: my-k8s-cluster
+        kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
+        default-owner: '${OWNER:-default-owner}'
+        default-lifecycle: '${LIFECYCLE:-production}'

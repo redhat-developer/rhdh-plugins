@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/cli-module-install-dynamic-plugins
 
+## 0.4.0
+
+### Minor Changes
+
+- 924cefe: Add `ref://` plugin reference resolution to simplify plugin configuration
+
 ## 0.3.0
 
 ### Minor Changes
