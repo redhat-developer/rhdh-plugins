@@ -29,13 +29,13 @@ import { GlobalHeaderProvider } from '../extensions/GlobalHeaderContext';
 import type { GlobalHeaderMenuItemData } from '../types';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
-jest.mock('../../hooks/useTranslation', () => {
-  const { mockUseTranslation } = require('../../test-utils/mockTranslations');
+jest.mock('../hooks/useTranslation', () => {
+  const { mockUseTranslation } = require('../test-utils/mockTranslations');
   return { useTranslation: mockUseTranslation };
 });
 
-jest.mock('../../components/Trans', () => {
-  const { MockTrans } = require('../../test-utils/mockTranslations');
+jest.mock('../components/Trans', () => {
+  const { MockTrans } = require('../test-utils/mockTranslations');
   return { Trans: MockTrans };
 });
 

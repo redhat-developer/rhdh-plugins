@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// Self-load the outlined icon font on this lazy UI path so ligature fallbacks
+// work in hosts (e.g. RHDH) that do not import material-icons CSS themselves.
+import 'material-icons/iconfont/outlined.css';
+
 import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
@@ -36,6 +41,10 @@ function toMaterialIconLigature(name: string): string {
 }
 
 /**
+ * Same resolution order as Quickstart's `QuickstartItemIcon`: system icon,
+ * inline SVG, image URL, then Material Icons outlined ligature. The font CSS
+ * is imported above so the ligature path works without host setup.
+ *
  * @public
  */
 export const HeaderIcon = ({
@@ -69,7 +78,8 @@ export const HeaderIcon = ({
   if (
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
-    icon.startsWith('/')
+    icon.startsWith('/') ||
+    icon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon

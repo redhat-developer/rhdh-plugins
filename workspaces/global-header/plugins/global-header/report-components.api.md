@@ -9,16 +9,16 @@ import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import type { ReactNode } from 'react';
 
-// @alpha
+// @public
 const _default: FrontendModule;
 export default _default;
 
-// @alpha
+// @public
 export const GlobalHeaderDropdown: (
   input: GlobalHeaderDropdownProps,
 ) => JSX_2.Element | null;
 
-// @alpha
+// @public
 export interface GlobalHeaderDropdownProps {
   buttonContent: ReactNode;
   buttonProps?: ComponentProps<typeof Button>;
@@ -34,12 +34,12 @@ export const GlobalHeaderIconButton: (
   input: HeaderIconButtonProps,
 ) => JSX_2.Element;
 
-// @alpha
+// @public
 export const GlobalHeaderMenuItem: (
   input: GlobalHeaderMenuItemProps,
 ) => JSX_2.Element;
 
-// @alpha
+// @public
 export interface GlobalHeaderMenuItemProps {
   icon?: string;
   onClick?: () => void;

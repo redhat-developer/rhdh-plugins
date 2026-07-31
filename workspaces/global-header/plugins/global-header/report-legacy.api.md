@@ -386,6 +386,4 @@ export interface SupportButtonProps {
   // (undocumented)
   tooltip?: string;
 }
-
-// (No @packageDocumentation comment for this package)
 ```

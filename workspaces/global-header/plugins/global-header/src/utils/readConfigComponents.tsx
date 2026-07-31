@@ -21,7 +21,7 @@ import type { Config } from '@backstage/config';
 import type { GlobalHeaderComponentData } from '../types';
 
 const LazyHeaderIconButton = lazy(() =>
-  import('../../components/HeaderIconButton/HeaderIconButton').then(m => ({
+  import('../components/HeaderIconButton/HeaderIconButton').then(m => ({
     default: m.HeaderIconButton,
   })),
 );
@@ -33,7 +33,7 @@ const LazyHeaderIconButton = lazy(() =>
  * Config-driven components are always rendered as a `HeaderIconButton`
  * (icon + link), matching the data-driven tier of
  * `GlobalHeaderComponentBlueprint`. The button is lazy-loaded so it stays
- * off the `./alpha` federation sync chunk.
+ * off the root federation sync chunk when loaded via blueprint loaders.
  */
 export function readConfigComponents(
   configApi: Config,

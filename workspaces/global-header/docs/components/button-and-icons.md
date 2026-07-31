@@ -57,16 +57,25 @@ Config parameters:
 
 Props:
 
-| Props       | Description                                                                             |
-| ----------- | --------------------------------------------------------------------------------------- |
-| `icon`      | The icon can reference a Backstage icon, an inline svg image or a remote icon (url)\*\* |
-| `color`     | Optional, one of `inherit`, `primary`, `secondary`, `default`, default is `inherit`     |
-| `size`      | Optional, one of `small`, `medium`, `large`, default is `medium`                        |
-| `ariaLabel` | Optional accessibility label                                                            |
+| Props       | Description                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| `icon`      | Backstage system icon name, MUI icon name (e.g. `quiz`, `manage_accounts`), inline `<svg>`, or image URL |
+| `color`     | Optional, one of `inherit`, `primary`, `secondary`, `default`, default is `inherit`                      |
+| `size`      | Optional, one of `small`, `medium`, `large`, default is `medium`                                         |
+| `ariaLabel` | Optional accessibility label                                                                             |
 
 \*SVG images must start with `<svg`.
 
-\*\*Please note that remote URLs must be accepted in the CSP.
+\*\*Remote URLs must be accepted in the CSP.
+
+Resolution order (same pattern as Quickstart's `QuickstartItemIcon`):
+
+1. `app.getSystemIcon(icon)` when the host registered the id
+2. Inline `<svg>` markup
+3. Image URL (`http(s)://`, `/`, or `data:image/`)
+4. Material Icons **outlined** ligature for other string ids
+
+The plugin loads `material-icons/iconfont/outlined.css` with `HeaderIcon`, so ligature fallbacks work in hosts that do not import that font themselves (including RHDH). CamelCase ids are converted to snake_case ligatures (e.g. `manageAccounts` → `manage_accounts`).
 
 ## HeaderIconButton
 
@@ -93,6 +102,7 @@ Props:
 | ----------- | ----------------------------------------------------------------------------------- |
 | `title`     | Required information for the button which is used as tooltip and for accessability. |
 | `to`        | Required internal or external link                                                  |
+| `icon`      | Optional icon, see `HeaderIcon` > `icon` for more information                       |
 | `tooltip`   | Optional                                                                            |
 | `color`     | Optional, one of `inherit`, `primary`, `secondary`, `default`, default is `inherit` |
 | `size`      | Optional, one of `small`, `medium`, `large`, default is `medium`                    |

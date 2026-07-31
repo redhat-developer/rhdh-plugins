@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
+import AppsIcon from '@mui/icons-material/Apps';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
-import { HeaderIcon } from '../../components/HeaderIcon/HeaderIcon';
-import { useTranslation } from '../../hooks/useTranslation';
-import { DropdownEmptyState } from '../../components/HeaderDropdownComponent/DropdownEmptyState';
+import { useTranslation } from '../hooks/useTranslation';
+import { DropdownEmptyState } from './HeaderDropdownComponent/DropdownEmptyState';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
 /**
@@ -34,15 +34,15 @@ export const ApplicationLauncherDropdown = () => {
       target="app-launcher"
       isIconButton
       tooltip={t('applicationLauncher.tooltip')}
-      buttonContent={<HeaderIcon icon="apps" size="medium" />}
+      buttonContent={<AppsIcon />}
       emptyState={
         <DropdownEmptyState
           title={t('applicationLauncher.noLinksTitle')}
           subTitle={t('applicationLauncher.noLinksSubtitle')}
           icon={
-            <Box sx={{ color: 'text.disabled', fontSize: 64, lineHeight: 1 }}>
-              <HeaderIcon icon="app_registration" size="large" />
-            </Box>
+            <AppRegistrationIcon
+              sx={{ fontSize: 64, color: 'text.disabled' }}
+            />
           }
         />
       }

@@ -132,7 +132,7 @@ function createDataDrivenToolbarLoader(
   return async () => {
     if (params.link) {
       const { HeaderIconButton } = await import(
-        '../../components/HeaderIconButton/HeaderIconButton'
+        '../components/HeaderIconButton/HeaderIconButton'
       );
       return () => (
         <HeaderIconButton
@@ -154,9 +154,9 @@ function createDataDrivenToolbarLoader(
     ] = await Promise.all([
       import('@mui/material/IconButton'),
       import('@mui/material/Tooltip'),
-      import('../../components/HeaderIcon/HeaderIcon'),
-      import('../../hooks/useTranslation'),
-      import('../../utils/translationUtils'),
+      import('../components/HeaderIcon/HeaderIcon'),
+      import('../hooks/useTranslation'),
+      import('../utils/translationUtils'),
     ]);
 
     return () => {
