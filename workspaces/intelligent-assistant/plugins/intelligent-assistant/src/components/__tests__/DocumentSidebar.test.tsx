@@ -57,7 +57,22 @@ describe('DocumentSidebar', () => {
 
   it('should render a separator between the title and documents sections', () => {
     render(<DocumentSidebar {...defaultProps} />);
-    expect(screen.getByRole('separator')).toBeInTheDocument();
+    const separator = screen.getByRole('separator');
+    expect(separator).toBeInTheDocument();
+    expect(separator.className).toMatch(/sectionDivider/);
+    expect(
+      Array.from(document.styleSheets).some(sheet => {
+        try {
+          return Array.from(sheet.cssRules).some(rule =>
+            rule.cssText.includes(
+              '--pf-t--global--border--color--default, #c7c7c7',
+            ),
+          );
+        } catch {
+          return false;
+        }
+      }),
+    ).toBe(true);
   });
 
   it('should render nothing when collapsed', () => {

@@ -50,7 +50,7 @@ const useStyles = makeStyles(theme => ({
     gap: theme.spacing(1),
   },
   sectionDivider: {
-    borderTop: '1px solid var(--pf-t--global--border--color--default)',
+    borderTop: '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     marginLeft: -theme.spacing(2),
