@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 3.0.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+
 ## 3.0.0
 
 ### Major Changes
