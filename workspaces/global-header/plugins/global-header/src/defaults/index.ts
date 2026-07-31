@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+export * from './toolbarExtensions';
+export * from './menuItemExtensions';
 
 import {
   companyLogoExtension,
@@ -27,40 +28,43 @@ import {
   notificationButtonExtension,
   dividerExtension,
   profileDropdownExtension,
+} from './toolbarExtensions';
+
+import {
   settingsMenuItemExtension,
   myProfileMenuItemExtension,
   logoutMenuItemExtension,
   supportButtonMenuItemExtension,
   appLauncherDevHubMenuItemExtension,
   appLauncherRhdhLocalMenuItemExtension,
-} from './defaults';
+} from './menuItemExtensions';
 
 /**
- * Plugin providing the default global header toolbar items and
- * dropdown menu items.
- *
+ * All default toolbar component extensions.
  * @public
  */
-const globalHeaderPlugin = createFrontendPlugin({
-  pluginId: 'global-header',
-  extensions: [
-    companyLogoExtension,
-    searchExtension,
-    spacerExtension,
-    selfServiceButtonExtension,
-    starredDropdownExtension,
-    applicationLauncherDropdownExtension,
-    helpDropdownExtension,
-    notificationButtonExtension,
-    dividerExtension,
-    profileDropdownExtension,
-    settingsMenuItemExtension,
-    myProfileMenuItemExtension,
-    logoutMenuItemExtension,
-    supportButtonMenuItemExtension,
-    appLauncherDevHubMenuItemExtension,
-    appLauncherRhdhLocalMenuItemExtension,
-  ],
-});
+export const defaultToolbarExtensions = [
+  companyLogoExtension,
+  searchExtension,
+  spacerExtension,
+  selfServiceButtonExtension,
+  starredDropdownExtension,
+  applicationLauncherDropdownExtension,
+  helpDropdownExtension,
+  notificationButtonExtension,
+  dividerExtension,
+  profileDropdownExtension,
+];
 
-export default globalHeaderPlugin;
+/**
+ * All default menu item extensions.
+ * @public
+ */
+export const defaultMenuItemExtensions = [
+  settingsMenuItemExtension,
+  myProfileMenuItemExtension,
+  logoutMenuItemExtension,
+  supportButtonMenuItemExtension,
+  appLauncherDevHubMenuItemExtension,
+  appLauncherRhdhLocalMenuItemExtension,
+];

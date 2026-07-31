@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-/**
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
- */
+import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
+import { GlobalHeaderComponent } from './GlobalHeaderComponent';
 
-export * from '../translations';
+export const GlobalHeader = () => {
+  const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
+
+  return (
+    <GlobalHeaderComponent
+      globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
+    />
+  );
+};

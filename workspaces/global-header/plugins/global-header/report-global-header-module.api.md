@@ -6,8 +6,8 @@
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
 // @public
-const globalHeaderTranslationsModule: FrontendModule;
-export default globalHeaderTranslationsModule;
+const globalHeaderModule: FrontendModule;
+export default globalHeaderModule;
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { globalHeaderTranslationsModule } from './alpha';
+import { globalHeaderTranslationsModule } from './index';
 import translationsModuleDefault from './globalHeaderTranslationsModuleExport';
 
 describe('global-header NFS exports', () => {
