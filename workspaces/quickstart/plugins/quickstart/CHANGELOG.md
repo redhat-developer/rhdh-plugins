@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 2.0.0
+
+### Major Changes
+
+- 4576392: **Breaking:** Legacy (OFS) component exports have been removed from the main `./` entry point and are now exclusively available at the `./legacy` subpath. OFS consumers must update their imports:
+
+  ```diff
+  - import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+  + import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
+  ```
+
+### Patch Changes
+
+- 03fd5c6: Bump global-header to 1.21.5 so Quick start help menu items use the fixed GlobalHeaderMenuItem (no Fragment when `to` is absent), restoring click handling
+
 ## 1.12.2
 
 ### Patch Changes

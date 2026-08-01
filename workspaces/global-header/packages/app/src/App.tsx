@@ -28,7 +28,7 @@ import {
   globalHeaderTranslationsModule,
   GlobalHeaderMenuItemBlueprint,
   GlobalHeaderMenuItem,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { navModule } from './modules/nav';
 
 const signInModule = createFrontendModule({
