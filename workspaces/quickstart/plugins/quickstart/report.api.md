@@ -4,16 +4,12 @@
 
 ```ts
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { CSSProperties } from 'react';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { PropsWithChildren } from 'react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -81,85 +77,7 @@ const _default: OverridableFrontendPlugin<
 export default _default;
 
 // @public
-export type DrawerPartialState = {
-  id: string;
-  isDrawerOpen: boolean;
-  drawerWidth: number;
-  setDrawerWidth: (width: number) => void;
-  closeDrawer: () => void;
-};
-
-// @public
-export type DrawerStateExposerProps = {
-  onStateChange: (state: DrawerPartialState) => void;
-};
-
-// @public
-export const filterQuickstartItemsByRole: (
-  items: QuickstartItemData[],
-  userRole: string,
-) => QuickstartItemData[];
-
-// @public
-export const QuickstartButton: (
-  input: QuickstartButtonProps,
-) => JSX_2.Element | null;
-
-// @public
-export interface QuickstartButtonProps {
-  onClick?: () => void;
-  style?: CSSProperties;
-  title?: string;
-}
-
-// @public
-export const QuickstartDrawerContent: () => JSX_2.Element | null;
-
-// @public
-export interface QuickstartDrawerContextType {
-  closeDrawer: () => void;
-  drawerWidth: number;
-  isDrawerOpen: boolean;
-  openDrawer: () => void;
-  roleLoading: boolean;
-  setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
-  toggleDrawer: () => void;
-  userRole: UserRole | null;
-}
-
-// @public
-export const QuickstartDrawerProvider: (
-  input: PropsWithChildren,
-) => JSX_2.Element;
-
-// @public
-export const QuickstartDrawerStateExposer: (
-  input: DrawerStateExposerProps,
-) => null;
-
-// @public
 export const quickstartInitModule: FrontendModule;
-
-// @public
-export interface QuickstartItemCtaData {
-  link: string;
-  text: string;
-  textKey?: string;
-}
-
-// @public
-export interface QuickstartItemData {
-  cta?: QuickstartItemCtaData;
-  description: string;
-  descriptionKey?: string;
-  icon?: string;
-  roles?: string[];
-  title: string;
-  titleKey?: string;
-}
-
-// @public
-export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
 
 // @public
 export const quickstartTranslationRef: TranslationRef<
@@ -231,12 +149,6 @@ export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
 // @public
 export const quickstartTranslationsModule: FrontendModule;
-
-// @public
-export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;
-
-// @public
-export type UserRole = 'admin' | 'developer';
 
 // (No @packageDocumentation comment for this package)
 ```
