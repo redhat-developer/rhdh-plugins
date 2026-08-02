@@ -405,7 +405,7 @@ export async function createNotebooksRouter(
         status: 'processing',
         document_id: newTitle || title,
         session_id: sessionId,
-        message: 'Document upload started',
+        message: 'Resource upload started',
       });
 
       // Upload document to vector store in background
@@ -451,7 +451,7 @@ export async function createNotebooksRouter(
         createDocumentResponse(
           documentId,
           sessionId,
-          'Document deleted successfully',
+          'Resource deleted successfully',
         ),
       );
     }),

@@ -222,16 +222,16 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{max}} 件中 {{count}} 件のファイルを選択',
     'notebook.upload.modal.separator': 'または',
-    'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
+    'notebook.upload.modal.title': 'ノートブックにリソースを追加',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
-    'notebook.view.documents.count': '{{count}} 件のドキュメント',
+    'notebook.view.documents.count': '{{count}} 件のリソース',
     'notebook.view.documents.maxReached':
-      '最大10個のドキュメントが許可されています。新しいドキュメントをアップロードするには、ドキュメントを削除してください。',
-    'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
+      '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
+    'notebook.view.documents.uploading': 'リソースをアップロード中',
     'notebook.view.input.disabledTooltip':
       'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
-    'notebook.view.input.placeholder': 'ドキュメントについて質問する...',
+    'notebook.view.input.placeholder': 'リソースについて質問する...',
     'notebook.view.sidebar.collapse': 'サイドバーを折りたたむ',
     'notebook.view.sidebar.expand': 'サイドバーを展開する',
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
@@ -250,7 +250,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'このノートブックはここに表示されなくなります。アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートブックを削除しました！',
-    'notebooks.documents': 'ドキュメント',
+    'notebooks.documents': 'リソース',
     'notebooks.empty.action': '新しいノートブックを作成',
     'notebooks.empty.description':
       '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',
