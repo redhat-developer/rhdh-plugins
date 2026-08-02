@@ -22,6 +22,7 @@ export function mapJiraIssues(issues: JiraSearchIssue[]): JiraIssue[] {
   return issues.map(issue => ({
     id: issue.id,
     createdAt: toIsoDateTime(issue.fields.created),
+    updatedAt: toIsoDateTime(issue.fields.updated),
     resolutionAt: issue.fields.resolutiondate
       ? toIsoDateTime(issue.fields.resolutiondate)
       : null,

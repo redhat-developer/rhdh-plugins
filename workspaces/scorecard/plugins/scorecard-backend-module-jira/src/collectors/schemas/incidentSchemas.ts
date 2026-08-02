@@ -26,12 +26,14 @@ export const incidentsCollectorInputSchema = z
      * `jira/incident-issue-type` when set.
      */
     issueType: z.string().min(1).optional(),
+    updatedSince: z.string().datetime(),
   })
   .passthrough();
 
 const incidentSchema = z.object({
   id: z.string(),
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
   resolutionAt: z.string().datetime().nullable(),
 });
 

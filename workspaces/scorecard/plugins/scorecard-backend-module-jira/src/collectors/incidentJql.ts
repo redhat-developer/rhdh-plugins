@@ -34,11 +34,13 @@ export function buildIncidentJql(
     from: string;
     to: string;
     issueType?: string;
+    updatedSince: string;
   },
   entity: Entity,
 ): string {
   const from = toJiraDateTime(options.from);
   const to = toJiraDateTime(options.to);
+  const updatedSince = toJiraDateTime(options.updatedSince);
   const issueType = resolveIncidentIssueType(entity, options.issueType);
 
   return joinJqlClauses([
@@ -46,6 +48,7 @@ export function buildIncidentJql(
     `type = "${issueType}"`,
     `created >= "${from}"`,
     `created <= "${to}"`,
+    `updated >= "${updatedSince}"`,
   ]);
 }
 

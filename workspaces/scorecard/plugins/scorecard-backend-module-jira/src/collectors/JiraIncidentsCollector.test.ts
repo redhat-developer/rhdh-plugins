@@ -40,6 +40,7 @@ describe('JiraIncidentsCollector', () => {
   const input = {
     from: '2026-06-01T00:00:00.000Z',
     to: '2026-06-30T23:59:59.999Z',
+    updatedSince: '2026-06-01T00:00:00.000Z',
   };
 
   const mockEntity = newEntityComponent({
@@ -50,6 +51,7 @@ describe('JiraIncidentsCollector', () => {
     {
       id: 'INC-100',
       createdAt: '2026-06-01T10:00:00.000Z',
+      updatedAt: '2026-06-01T12:00:00.000Z',
       resolutionAt: '2026-06-01T12:00:00.000Z',
     },
   ];
@@ -79,7 +81,7 @@ describe('JiraIncidentsCollector', () => {
       await collector.collect({ entity: mockEntity, input });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
+        '(project = "INC") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
       );
     });
 
@@ -90,7 +92,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
+        '(project = "INC") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
       );
     });
 
@@ -105,7 +107,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
+        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
       );
     });
 
@@ -119,7 +121,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
+        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
       );
     });
 

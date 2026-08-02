@@ -314,6 +314,7 @@ describe('JiraCloudClient', () => {
               id: '10001',
               fields: {
                 created: '2026-06-01T10:00:00.000+0530',
+                updated: '2026-06-01T12:00:00.000+0530',
                 resolutiondate: '2026-06-01T12:00:00.000+0530',
               },
             },
@@ -335,11 +336,16 @@ describe('JiraCloudClient', () => {
         {
           id: '10001',
           createdAt: '2026-06-01T04:30:00.000Z',
+          updatedAt: '2026-06-01T06:30:00.000Z',
           resolutionAt: '2026-06-01T06:30:00.000Z',
         },
       ]);
       expect(requestBody.jql).toContain('project = "INC"');
-      expect(requestBody.fields).toEqual(['created', 'resolutiondate']);
+      expect(requestBody.fields).toEqual([
+        'created',
+        'updated',
+        'resolutiondate',
+      ]);
       expect(requestBody).not.toHaveProperty('maxResults');
     });
   });
