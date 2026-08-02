@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-export * from './mockCollectors';
-export * from './mockCollectorsService';
-export * from './mockDoraDataService';
-export * from './mockEntity';
+export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
+  if (!watermark || watermark < windowFrom) {
+    return windowFrom;
+  }
+  return watermark;
+}

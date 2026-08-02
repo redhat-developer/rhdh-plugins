@@ -22,10 +22,15 @@ import {
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { migrate } from './database/migration';
+import { DatabaseDoraDeployments } from './database/DatabaseDoraDeployments';
+import { DatabaseDoraIncidents } from './database/DatabaseDoraIncidents';
+import { DatabaseDoraPullRequests } from './database/DatabaseDoraPullRequests';
 import { DoraChangeFailureRateProvider } from './metricProviders/DoraChangeFailureRateProvider';
 import { DoraDeploymentFrequencyProvider } from './metricProviders/DoraDeploymentFrequencyProvider';
 import { DoraMedianLeadTimeForChangesProvider } from './metricProviders/DoraMedianLeadTimeForChangesProvider';
 import { DoraMeanTimeToRestoreProvider } from './metricProviders/DoraMeanTimeToRestoreProvider';
+import { DefaultDoraDataService } from './service/DoraDataService';
+import { DefaultDoraSyncService } from './service/DoraSyncService';
 
 export const scorecardModuleDora = createBackendModule({
   pluginId: 'scorecard',
@@ -36,26 +41,46 @@ export const scorecardModuleDora = createBackendModule({
         collectorsService: scorecardCollectorsServiceRef,
         config: coreServices.rootConfig,
         database: coreServices.database,
-        logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ collectorsService, config, database, logger, metrics }) {
+      async init({ collectorsService, config, database, metrics }) {
         await migrate(database);
+
+        const dbClient = await database.getClient();
+        const deploymentsDb = new DatabaseDoraDeployments(dbClient);
+        const incidentsDb = new DatabaseDoraIncidents(dbClient);
+        const pullRequestsDb = new DatabaseDoraPullRequests(dbClient);
+
+        const doraSyncService = new DefaultDoraSyncService(
+          collectorsService,
+          deploymentsDb,
+          incidentsDb,
+          pullRequestsDb,
+        );
+        const doraDataService = new DefaultDoraDataService(
+          deploymentsDb,
+          incidentsDb,
+          pullRequestsDb,
+        );
 
         metrics.addMetricProvider(
           DoraDeploymentFrequencyProvider.fromConfig(config, {
-            collectorsService,
+            doraSyncService,
+            doraDataService,
           }),
           DoraMedianLeadTimeForChangesProvider.fromConfig(config, {
-            collectorsService,
+            doraSyncService,
+            doraDataService,
             logger,
           }),
           DoraMeanTimeToRestoreProvider.fromConfig(config, {
-            collectorsService,
+            doraSyncService,
+            doraDataService,
             logger,
           }),
           DoraChangeFailureRateProvider.fromConfig(config, {
-            collectorsService,
+            doraSyncService,
+            doraDataService,
             logger,
           }),
         );

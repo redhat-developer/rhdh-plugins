@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import type { Deployment } from '../schemas/deploymentSchemas';
-
 /**
  * Missing/unknown environment is treated as production. Named environments must
  * match one of the configured production environment names (case-insensitive).
  */
 export function isProductionEnvironment(
-  environment: string | undefined,
+  environment: string | null | undefined,
   productionEnvironments: string[],
 ): boolean {
   if (!environment) {
@@ -35,7 +33,7 @@ export function isProductionEnvironment(
 }
 
 export function isSuccessfulProductionDeployment(
-  deployment: Deployment,
+  deployment: { result: string; environment?: string | null },
   productionEnvironments: string[],
 ): boolean {
   if (deployment.result !== 'success') {

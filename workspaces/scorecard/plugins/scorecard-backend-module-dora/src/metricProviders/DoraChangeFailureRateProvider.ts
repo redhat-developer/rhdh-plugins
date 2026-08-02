@@ -14,44 +14,38 @@
  * limitations under the License.
  */
 
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  type ScorecardCollectorsService,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
-import {
-  deploymentsCollectorInputSchema,
-  deploymentsCollectorOutputSchema,
-} from './schemas/deploymentSchemas';
-import {
-  incidentsCollectorInputSchema,
-  incidentsCollectorOutputSchema,
-} from './schemas/incidentSchemas';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import {
   DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS,
   type DoraChangeFailureRateConfig,
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
 import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 type DoraChangeFailureRateProviderOptions = {
-  collectorsService: ScorecardCollectorsService;
+  doraSyncService: DoraSyncService;
+  doraDataService: DoraDataService;
   config: DoraChangeFailureRateConfig;
   logger: LoggerService;
 };
 
 export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
-  private readonly collectorsService: ScorecardCollectorsService;
+  private readonly doraSyncService: DoraSyncService;
+  private readonly doraDataService: DoraDataService;
   private readonly config: DoraChangeFailureRateConfig;
   private readonly logger: LoggerService;
 
   private constructor(options: DoraChangeFailureRateProviderOptions) {
-    this.collectorsService = options.collectorsService;
+    this.doraSyncService = options.doraSyncService;
+    this.doraDataService = options.doraDataService;
     this.config = options.config;
     this.logger = options.logger;
   }
@@ -59,12 +53,14 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
   static fromConfig(
     config: Config,
     options: {
-      collectorsService: ScorecardCollectorsService;
+      doraSyncService: DoraSyncService;
+      doraDataService: DoraDataService;
       logger: LoggerService;
     },
   ): DoraChangeFailureRateProvider {
     return new DoraChangeFailureRateProvider({
-      collectorsService: options.collectorsService,
+      doraSyncService: options.doraSyncService,
+      doraDataService: options.doraDataService,
       config: parseDoraChangeFailureRateConfig(config),
       logger: options.logger,
     });
@@ -106,53 +102,45 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     const from = new Date();
     from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
 
-    const deploymentsCollected = await this.collectorsService.collect<
-      typeof deploymentsCollectorInputSchema,
-      typeof deploymentsCollectorOutputSchema
-    >({
-      collectorId: this.config.deploymentsCollector.id,
-      contract: {
-        inputSchema: deploymentsCollectorInputSchema,
-        outputSchema: deploymentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.deploymentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
-    });
+    await Promise.all([
+      this.doraSyncService.syncDeployments(entity, {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.deploymentsCollector,
+      }),
+      this.doraSyncService.syncIncidents(entity, {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.incidentsCollector,
+      }),
+    ]);
 
-    const successfulProductionDeployments =
-      deploymentsCollected.deployments.filter(deployment =>
-        isSuccessfulProductionDeployment(
-          deployment,
-          this.config.productionEnvironments,
-        ),
-      );
+    const catalogEntityRef = stringifyEntityRef(entity);
+    const [deployments, incidents] = await Promise.all([
+      this.doraDataService.readDeployments(catalogEntityRef, {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.deploymentsCollector,
+      }),
+      this.doraDataService.readIncidents(catalogEntityRef, {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.incidentsCollector,
+      }),
+    ]);
+
+    const successfulProductionDeployments = deployments.filter(deployment =>
+      isSuccessfulProductionDeployment(
+        deployment,
+        this.config.productionEnvironments,
+      ),
+    );
 
     if (successfulProductionDeployments.length < 2) {
       throw new Error(
         `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${successfulProductionDeployments.length}`,
       );
     }
-
-    const incidentsCollected = await this.collectorsService.collect<
-      typeof incidentsCollectorInputSchema,
-      typeof incidentsCollectorOutputSchema
-    >({
-      collectorId: this.config.incidentsCollector.id,
-      contract: {
-        inputSchema: incidentsCollectorInputSchema,
-        outputSchema: incidentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.incidentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
-    });
 
     let deploymentsWithIncidents = 0;
     let evaluatedDeployments = 0;
@@ -164,26 +152,22 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
       const deployment = successfulProductionDeployments[deploymentIndex];
       const nextDeployment =
         successfulProductionDeployments[deploymentIndex + 1];
-      const deploymentCreatedAt = new Date(deployment.createdAt).getTime();
-      const nextDeploymentCreatedAt = new Date(
-        nextDeployment.createdAt,
-      ).getTime();
+      const deploymentCreatedAt = deployment.createdAt.getTime();
+      const nextDeploymentCreatedAt = nextDeployment.createdAt.getTime();
       if (nextDeploymentCreatedAt <= deploymentCreatedAt) {
         this.logger.warn(
           `Skipping deployment interval ${deployment.id}..${
             nextDeployment.id
           } for ${stringifyEntityRef(
             entity,
-          )} while calculating ${this.getProviderId()}: non-increasing createdAt (deployment=${
-            deployment.createdAt
-          }, nextDeployment=${nextDeployment.createdAt})`,
+          )} while calculating ${this.getProviderId()}: non-increasing createdAt (deployment=${deployment.createdAt.toISOString()}, nextDeployment=${nextDeployment.createdAt.toISOString()})`,
         );
         continue;
       }
 
       evaluatedDeployments += 1;
-      const hasIncident = incidentsCollected.incidents.some(incident => {
-        const incidentCreatedAt = new Date(incident.createdAt).getTime();
+      const hasIncident = incidents.some(incident => {
+        const incidentCreatedAt = incident.createdAt.getTime();
         return (
           incidentCreatedAt >= deploymentCreatedAt &&
           incidentCreatedAt < nextDeploymentCreatedAt

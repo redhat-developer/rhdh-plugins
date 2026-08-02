@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Deployment } from '../schemas/deploymentSchemas';
 import {
   isProductionEnvironment,
   isSuccessfulProductionDeployment,
@@ -24,6 +23,7 @@ describe('deploymentFilterUtils', () => {
   describe('isProductionEnvironment', () => {
     it('treats missing environment as production', () => {
       expect(isProductionEnvironment(undefined, ['production'])).toBe(true);
+      expect(isProductionEnvironment(null, ['production'])).toBe(true);
     });
 
     it('matches any configured environment name case-insensitively', () => {
@@ -40,19 +40,19 @@ describe('deploymentFilterUtils', () => {
     it('requires success and a production environment', () => {
       expect(
         isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'production' } as Deployment,
+          { result: 'success', environment: 'production' },
           ['production'],
         ),
       ).toBe(true);
       expect(
         isSuccessfulProductionDeployment(
-          { result: 'failure', environment: 'production' } as Deployment,
+          { result: 'failure', environment: 'production' },
           ['production'],
         ),
       ).toBe(false);
       expect(
         isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'development' } as Deployment,
+          { result: 'success', environment: 'development' },
           ['production'],
         ),
       ).toBe(false);

@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-export * from './mockCollectors';
-export * from './mockCollectorsService';
-export * from './mockDoraDataService';
-export * from './mockEntity';
+import type { CollectorConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export type CollectorCallOptions = {
+  collector: CollectorConfig;
+};
+
+export type WindowOptions = {
+  windowFrom: Date;
+  windowTo: Date;
+};

@@ -14,80 +14,68 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
 import {
-  buildMockDeploymentsCollector,
-  buildMockDeploymentPullRequestsCollector,
-  buildMockCollectorsService,
+  buildMockDoraServices,
+  dbDeployment,
+  dbPullRequest,
   mockEntity,
 } from './__fixtures__';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import { DoraMedianLeadTimeForChangesProvider } from './DoraMedianLeadTimeForChangesProvider';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
 } from '../constants';
-import { Deployment } from './schemas/deploymentSchemas';
-import { PullRequest } from './schemas/pullRequestSchemas';
 import { DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS } from './DoraConfig';
 
-const mockLogger = mockServices.logger.mock();
-
 describe('DoraMedianLeadTimeForChangesProvider', () => {
-  const deployments: Deployment[] = [
-    {
+  const mockLogger = mockServices.logger.mock();
+  const deployments = [
+    dbDeployment({
       id: '100',
       commitSha: 'sha-previous',
       environment: 'production',
       createdAt: '2026-06-06T12:00:00.000Z',
       result: 'success',
-    },
-    {
+    }),
+    dbDeployment({
       id: '101',
       commitSha: 'sha-current',
       environment: 'production',
       createdAt: '2026-06-08T12:00:00.000Z',
       result: 'success',
-    },
+    }),
   ];
-  const pullRequests: PullRequest[] = [
-    {
+  const pullRequests = [
+    dbPullRequest({
       id: '123',
       firstCommitAt: '2026-06-05T12:00:00.000Z', // 72h from sha-current createdAt
-    },
-    {
+      deploymentId: '101',
+    }),
+    dbPullRequest({
       id: '124',
       firstCommitAt: '2026-06-07T12:00:00.000Z', // 24h from sha-current createdAt
-    },
+      deploymentId: '101',
+    }),
   ];
 
-  let deploymentsCollector: ReturnType<typeof buildMockDeploymentsCollector>;
-  let deploymentPullRequestsCollector: ReturnType<
-    typeof buildMockDeploymentPullRequestsCollector
-  >;
-  let collectorsService: ReturnType<
-    typeof buildMockCollectorsService
-  >['collectorsService'];
-  let collect: ReturnType<typeof buildMockCollectorsService>['collect'];
+  let doraSyncService: jest.Mocked<DoraSyncService>;
+  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraMedianLeadTimeForChangesProvider;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    deploymentsCollector = buildMockDeploymentsCollector({
+    ({ doraSyncService, doraDataService } = buildMockDoraServices({
       deployments,
-      collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-    });
-    deploymentPullRequestsCollector = buildMockDeploymentPullRequestsCollector({
       pullRequests,
-      collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-    });
-    ({ collectorsService, collect } = buildMockCollectorsService({
-      collectors: [deploymentsCollector, deploymentPullRequestsCollector],
     }));
     provider = DoraMedianLeadTimeForChangesProvider.fromConfig(
       new ConfigReader({}),
       {
-        collectorsService,
+        doraSyncService,
+        doraDataService,
         logger: mockLogger,
       },
     );
@@ -106,24 +94,29 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should use default collectors when no config', async () => {
+    it('should sync deployments and pull requests with default collectors', async () => {
       await provider.calculateMetrics(mockEntity);
-      expect(collect).toHaveBeenCalledWith(
+
+      expect(doraSyncService.syncDeployments).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-          input: expect.objectContaining({
-            from: expect.any(String),
-            to: expect.any(String),
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+            input: {},
           }),
         }),
       );
-      expect(collect).toHaveBeenCalledWith(
+      expect(
+        doraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-          input: expect.objectContaining({
-            baseCommitSha: 'sha-previous',
-            headCommitSha: 'sha-current',
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
           }),
+          deploymentId: '101',
+          baseCommitSha: 'sha-previous',
+          headCommitSha: 'sha-current',
         }),
       );
     });
@@ -132,24 +125,11 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customDeploymentsCollectorId = 'custom:deployments';
       const customDeploymentPullRequestsCollectorId =
         'custom:deploymentPullRequests';
-      const customDeploymentsCollector = buildMockDeploymentsCollector({
-        deployments,
-        collectorId: customDeploymentsCollectorId,
-      });
-      const customDeploymentPullRequestsCollector =
-        buildMockDeploymentPullRequestsCollector({
+      const { doraSyncService: sync, doraDataService: data } =
+        buildMockDoraServices({
+          deployments,
           pullRequests,
-          collectorId: customDeploymentPullRequestsCollectorId,
         });
-      const {
-        collectorsService: customCollectorsService,
-        collect: customCollect,
-      } = buildMockCollectorsService({
-        collectors: [
-          customDeploymentsCollector,
-          customDeploymentPullRequestsCollector,
-        ],
-      });
 
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
@@ -181,33 +161,38 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           },
         }),
         {
-          collectorsService: customCollectorsService,
+          doraSyncService: sync,
+          doraDataService: data,
           logger: mockLogger,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(customCollect).toHaveBeenCalledTimes(2);
-      expect(customCollect).toHaveBeenCalledWith(
+      expect(sync.syncDeployments).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: customDeploymentsCollectorId,
-          input: expect.objectContaining({
-            from: expect.any(String),
-            to: expect.any(String),
-            artificialDeploymentFlag: true,
-            customDeploymentsInputLabel: 'deployments-custom-input',
+          collector: expect.objectContaining({
+            id: customDeploymentsCollectorId,
+            input: expect.objectContaining({
+              artificialDeploymentFlag: true,
+              customDeploymentsInputLabel: 'deployments-custom-input',
+            }),
           }),
         }),
       );
-      expect(customCollect).toHaveBeenCalledWith(
+      expect(sync.syncPullRequestsForDeployment).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: customDeploymentPullRequestsCollectorId,
-          input: expect.objectContaining({
-            baseCommitSha: 'sha-previous',
-            headCommitSha: 'sha-current',
-            artificialPullRequestsLabel: 'prs-custom-input',
+          collector: expect.objectContaining({
+            id: customDeploymentPullRequestsCollectorId,
+            input: expect.objectContaining({
+              artificialPullRequestsLabel: 'prs-custom-input',
+            }),
           }),
+          deploymentId: '101',
+          baseCommitSha: 'sha-previous',
+          headCommitSha: 'sha-current',
         }),
       );
     });
@@ -219,81 +204,112 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should calculate median with multiple pull requests across multiple deployment ranges', async () => {
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments: [
-          {
-            id: '400',
-            commitSha: 'sha-1',
-            environment: 'production',
-            createdAt: '2026-06-10T00:00:00.000Z',
-            result: 'success',
-          },
-          {
-            id: '401',
-            commitSha: 'sha-2',
-            environment: 'production',
-            createdAt: '2026-06-11T00:00:00.000Z',
-            result: 'success',
-          },
-          {
-            id: '402',
-            commitSha: 'sha-3',
-            environment: 'production',
-            createdAt: '2026-06-12T00:00:00.000Z',
-            result: 'success',
-          },
-        ],
-      });
-      jest
-        .mocked(deploymentPullRequestsCollector.collect)
-        .mockResolvedValueOnce({
-          pullRequests: [
-            { id: '501', firstCommitAt: '2026-06-10T18:00:00.000Z' }, // 6h from sha-2 createdAt
-            { id: '502', firstCommitAt: '2026-06-10T12:00:00.000Z' }, // 12h from sha-2 createdAt
-          ],
-        })
-        .mockResolvedValueOnce({
-          pullRequests: [
-            { id: '503', firstCommitAt: '2026-06-11T12:00:00.000Z' },
-          ], // 12h from sha-3 createdAt
-        });
+      doraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '400',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '401',
+          commitSha: 'sha-2',
+          environment: 'production',
+          createdAt: '2026-06-11T00:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '402',
+          commitSha: 'sha-3',
+          environment: 'production',
+          createdAt: '2026-06-12T00:00:00.000Z',
+          result: 'success',
+        }),
+      ]);
+      doraDataService.readPullRequestsForDeployment
+        .mockResolvedValueOnce([
+          dbPullRequest({
+            id: '501',
+            firstCommitAt: '2026-06-10T18:00:00.000Z', // 6h
+            deploymentId: '401',
+          }),
+          dbPullRequest({
+            id: '502',
+            firstCommitAt: '2026-06-10T12:00:00.000Z', // 12h
+            deploymentId: '401',
+          }),
+        ])
+        .mockResolvedValueOnce([
+          dbPullRequest({
+            id: '503',
+            firstCommitAt: '2026-06-11T12:00:00.000Z', // 12h
+            deploymentId: '402',
+          }),
+        ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
       expect(results.get('dora.medianLeadTimeForChanges')).toBe(12);
-      expect(deploymentPullRequestsCollector.collect).toHaveBeenCalledTimes(2);
-      expect(deploymentPullRequestsCollector.collect).toHaveBeenNthCalledWith(
+      expect(
+        doraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        doraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenNthCalledWith(
         1,
+        mockEntity,
         expect.objectContaining({
-          input: expect.objectContaining({
-            baseCommitSha: 'sha-1',
-            headCommitSha: 'sha-2',
-          }),
+          deploymentId: '401',
+          baseCommitSha: 'sha-1',
+          headCommitSha: 'sha-2',
         }),
       );
-      expect(deploymentPullRequestsCollector.collect).toHaveBeenNthCalledWith(
+      expect(
+        doraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenNthCalledWith(
         2,
+        mockEntity,
         expect.objectContaining({
-          input: expect.objectContaining({
-            baseCommitSha: 'sha-2',
-            headCommitSha: 'sha-3',
-          }),
+          deploymentId: '402',
+          baseCommitSha: 'sha-2',
+          headCommitSha: 'sha-3',
         }),
       );
     });
 
     it('should throw when fewer than 2 successful production deployments are found', async () => {
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments: [],
-      });
+      doraDataService.readDeployments.mockResolvedValueOnce([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments/,
       );
-      expect(deploymentPullRequestsCollector.collect).not.toHaveBeenCalled();
+      expect(
+        doraSyncService.syncPullRequestsForDeployment,
+      ).not.toHaveBeenCalled();
     });
 
     it('should use configured productionEnvironments when filtering deployments', async () => {
+      const { doraSyncService: sync, doraDataService: data } =
+        buildMockDoraServices({
+          deployments: [
+            dbDeployment({
+              id: '400',
+              commitSha: 'sha-1',
+              environment: 'production',
+              createdAt: '2026-06-10T00:00:00.000Z',
+              result: 'success',
+            }),
+            dbDeployment({
+              id: '401',
+              commitSha: 'sha-2',
+              environment: 'prod',
+              createdAt: '2026-06-11T00:00:00.000Z',
+              result: 'success',
+            }),
+          ],
+        });
+
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
@@ -309,71 +325,78 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           },
         }),
         {
-          collectorsService,
+          doraSyncService: sync,
+          doraDataService: data,
           logger: mockLogger,
         },
       );
-
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments: [
-          {
-            id: '400',
-            commitSha: 'sha-1',
-            environment: 'production',
-            createdAt: '2026-06-10T00:00:00.000Z',
-            result: 'success',
-          },
-          {
-            id: '401',
-            commitSha: 'sha-2',
-            environment: 'prod',
-            createdAt: '2026-06-11T00:00:00.000Z',
-            result: 'success',
-          },
-        ],
-      });
 
       await expect(customProvider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments.*found 1/,
       );
     });
 
-    it('should skip failed deployment intervals and calculate median from the rest', async () => {
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments: [
-          {
-            id: '400',
-            commitSha: 'sha-1',
-            environment: 'production',
-            createdAt: '2026-06-10T00:00:00.000Z',
-            result: 'success',
-          },
-          {
-            id: '401',
-            commitSha: 'sha-2',
-            environment: 'production',
-            createdAt: '2026-06-11T00:00:00.000Z',
-            result: 'success',
-          },
-          {
-            id: '402',
-            commitSha: 'sha-3',
-            environment: 'production',
-            createdAt: '2026-06-12T00:00:00.000Z',
-            result: 'success',
-          },
-        ],
-      });
-      jest
-        .mocked(deploymentPullRequestsCollector.collect)
-        .mockRejectedValueOnce(new Error('GitHub compare failed'))
-        .mockResolvedValueOnce({
+    it('should throw when no pull requests with measurable lead time are found', async () => {
+      doraDataService.readPullRequestsForDeployment.mockResolvedValue([]);
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        /no pull requests with a measurable lead time/,
+      );
+    });
+
+    it('should skip deployment intervals when pull request sync fails and warn', async () => {
+      const { doraSyncService: sync, doraDataService: data } =
+        buildMockDoraServices({
+          deployments: [
+            dbDeployment({
+              id: '100',
+              commitSha: 'sha-1',
+              environment: 'production',
+              createdAt: '2026-06-10T00:00:00.000Z',
+              result: 'success',
+            }),
+            dbDeployment({
+              id: '101',
+              commitSha: 'sha-2',
+              environment: 'production',
+              createdAt: '2026-06-11T00:00:00.000Z',
+              result: 'success',
+            }),
+            dbDeployment({
+              id: '102',
+              commitSha: 'sha-3',
+              environment: 'production',
+              createdAt: '2026-06-12T00:00:00.000Z',
+              result: 'success',
+            }),
+          ],
           pullRequests: [
-            { id: '503', firstCommitAt: '2026-06-11T12:00:00.000Z' }, // 12h
+            dbPullRequest({
+              id: '503',
+              firstCommitAt: '2026-06-11T12:00:00.000Z', // 12h
+              deploymentId: '102',
+            }),
           ],
         });
+      sync.syncPullRequestsForDeployment
+        .mockRejectedValueOnce(new Error('GitHub compare failed'))
+        .mockResolvedValueOnce(undefined);
+      data.readPullRequestsForDeployment.mockResolvedValue([
+        dbPullRequest({
+          id: '503',
+          firstCommitAt: '2026-06-11T12:00:00.000Z',
+          deploymentId: '102',
+        }),
+      ]);
 
-      const results = await provider.calculateMetrics(mockEntity);
+      const results = await DoraMedianLeadTimeForChangesProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          doraSyncService: sync,
+          doraDataService: data,
+          logger: mockLogger,
+        },
+      ).calculateMetrics(mockEntity);
 
       expect(results.get('dora.medianLeadTimeForChanges')).toBe(12);
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -387,35 +410,19 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       );
     });
 
-    it('should throw when no pull requests with measurable lead time are found', async () => {
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments,
-      });
-      jest.mocked(deploymentPullRequestsCollector.collect).mockResolvedValue({
-        pullRequests: [],
-      });
-
-      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
-        /no pull requests with a measurable lead time/,
-      );
-    });
-
     it('should skip pull requests with negative lead time and warn', async () => {
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments,
-      });
-      jest.mocked(deploymentPullRequestsCollector.collect).mockResolvedValue({
-        pullRequests: [
-          {
-            id: '999',
-            firstCommitAt: '2026-06-09T12:00:00.000Z', // after sha-current deployment
-          },
-          {
-            id: '124',
-            firstCommitAt: '2026-06-07T12:00:00.000Z', // 24h lead time
-          },
-        ],
-      });
+      doraDataService.readPullRequestsForDeployment.mockResolvedValue([
+        dbPullRequest({
+          id: '999',
+          firstCommitAt: '2026-06-09T12:00:00.000Z', // after sha-current deployment
+          deploymentId: '101',
+        }),
+        dbPullRequest({
+          id: '124',
+          firstCommitAt: '2026-06-07T12:00:00.000Z', // 24h lead time
+          deploymentId: '101',
+        }),
+      ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
@@ -428,10 +435,10 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       );
     });
 
-    it('should throw when all deployment intervals fail to collect pull requests', async () => {
-      jest
-        .mocked(deploymentPullRequestsCollector.collect)
-        .mockRejectedValue(new Error('collector unavailable'));
+    it('should throw when all deployment intervals fail to sync pull requests', async () => {
+      doraSyncService.syncPullRequestsForDeployment.mockRejectedValue(
+        new Error('collector unavailable'),
+      );
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /no pull requests with a measurable lead time/,
@@ -440,33 +447,6 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         expect.stringContaining(
           'Skipping deployment interval sha-previous..sha-current',
         ),
-      );
-    });
-
-    it('should fail when deployments are not sorted ascending by createdAt', async () => {
-      const unsortedDeployments: Deployment[] = [
-        {
-          id: '200',
-          commitSha: 'sha-later',
-          environment: 'production',
-          createdAt: '2026-06-08T12:00:00.000Z',
-          result: 'success',
-        },
-        {
-          id: '201',
-          commitSha: 'sha-earlier',
-          environment: 'production',
-          createdAt: '2026-06-06T12:00:00.000Z',
-          result: 'success',
-        },
-      ];
-
-      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
-        deployments: unsortedDeployments,
-      });
-
-      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
-        'Deployments must be sorted in ascending order by createdAt',
       );
     });
   });

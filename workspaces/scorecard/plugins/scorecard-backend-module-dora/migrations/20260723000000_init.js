@@ -17,23 +17,51 @@
 exports.up = async function up(knex) {
   await knex.schema.createTable('dora_deployments', table => {
     table.string('id').primary().notNullable();
+    table.string('catalog_entity_ref').notNullable();
+    table.string('collector_id').notNullable();
     table.string('original_deployment_id').notNullable();
     table.string('commit_sha').notNullable();
     table.string('environment').nullable();
     table.dateTime('created_at', { precision: 0 }).notNullable();
     table.string('result').notNullable();
+
+    table.unique([
+      'catalog_entity_ref',
+      'collector_id',
+      'original_deployment_id',
+    ]);
+    // Deployment reads: entity + collector + created_at window (ordered by created_at)
+    table.index(
+      ['catalog_entity_ref', 'collector_id', 'created_at'],
+      'dora_deployments_entity_collector_created_at_idx',
+    );
   });
 
   await knex.schema.createTable('dora_incidents', table => {
     table.string('id').primary().notNullable();
+    table.string('catalog_entity_ref').notNullable();
+    table.string('collector_id').notNullable();
     table.string('original_incident_id').notNullable();
     table.dateTime('created_at', { precision: 0 }).notNullable();
     table.dateTime('updated_at', { precision: 0 }).notNullable();
     table.dateTime('resolution_at', { precision: 0 }).nullable();
+
+    table.unique([
+      'catalog_entity_ref',
+      'collector_id',
+      'original_incident_id',
+    ]);
+    // Incident reads: entity + collector + created_at window (ordered by created_at)
+    table.index(
+      ['catalog_entity_ref', 'collector_id', 'created_at'],
+      'dora_incidents_entity_collector_created_at_idx',
+    );
   });
 
   await knex.schema.createTable('dora_pull_requests', table => {
     table.string('id').primary().notNullable();
+    table.string('catalog_entity_ref').notNullable();
+    table.string('collector_id').notNullable();
     table.string('original_pr_id').notNullable();
     table.dateTime('first_commit_at', { precision: 0 }).notNullable();
     table
@@ -42,6 +70,18 @@ exports.up = async function up(knex) {
       .inTable('dora_deployments')
       .onDelete('CASCADE')
       .nullable();
+
+    table.unique([
+      'catalog_entity_ref',
+      'collector_id',
+      'original_pr_id',
+      'deployment_id',
+    ]);
+    // Lead-time reads: PRs for one entity/collector/deployment
+    table.index(
+      ['catalog_entity_ref', 'collector_id', 'deployment_id'],
+      'dora_pull_requests_entity_collector_deployment_idx',
+    );
   });
 };
 

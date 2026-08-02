@@ -14,44 +14,35 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
 import { DoraMeanTimeToRestoreProvider } from './DoraMeanTimeToRestoreProvider';
-import {
-  buildMockCollectorsService,
-  buildMockIncidentsCollector,
-  mockEntity,
-} from './__fixtures__';
+import { buildMockDoraServices, dbIncident, mockEntity } from './__fixtures__';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import { DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } from '../constants';
 import { DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS } from './DoraConfig';
 
-const mockLogger = mockServices.logger.mock();
-
 describe('DoraMeanTimeToRestoreProvider', () => {
-  let incidentsCollector: ReturnType<typeof buildMockIncidentsCollector>;
-  let collectorsService: ReturnType<
-    typeof buildMockCollectorsService
-  >['collectorsService'];
-  let collect: ReturnType<typeof buildMockCollectorsService>['collect'];
+  const mockLogger = mockServices.logger.mock();
+  let doraSyncService: jest.Mocked<DoraSyncService>;
+  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraMeanTimeToRestoreProvider;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    incidentsCollector = buildMockIncidentsCollector({
+    ({ doraSyncService, doraDataService } = buildMockDoraServices({
       incidents: [
-        {
+        dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T10:00:00.000Z',
+          updatedAt: '2026-06-10T12:00:00.000Z',
           resolutionAt: '2026-06-10T12:00:00.000Z',
-        },
+        }),
       ],
-      collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-    });
-    ({ collectorsService, collect } = buildMockCollectorsService({
-      collectors: [incidentsCollector],
     }));
     provider = DoraMeanTimeToRestoreProvider.fromConfig(new ConfigReader({}), {
-      collectorsService,
+      doraSyncService,
+      doraDataService,
       logger: mockLogger,
     });
   });
@@ -69,15 +60,23 @@ describe('DoraMeanTimeToRestoreProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should use default collector when no config', async () => {
+    it('should sync and read with default collector when no config', async () => {
       await provider.calculateMetrics(mockEntity);
 
-      expect(collect).toHaveBeenCalledWith(
+      expect(doraSyncService.syncIncidents).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-          input: expect.objectContaining({
-            from: expect.any(String),
-            to: expect.any(String),
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+            input: {},
+          }),
+        }),
+      );
+      expect(doraDataService.readIncidents).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           }),
         }),
       );
@@ -85,22 +84,17 @@ describe('DoraMeanTimeToRestoreProvider', () => {
 
     it('should use custom collector and pass custom inputs', async () => {
       const customIncidentsCollectorId = 'custom:incidents';
-      const customIncidentsCollector = buildMockIncidentsCollector({
-        incidents: [
-          {
-            id: 'INC-2',
-            createdAt: '2026-06-10T10:00:00.000Z',
-            resolutionAt: '2026-06-10T12:00:00.000Z',
-          },
-        ],
-        collectorId: customIncidentsCollectorId,
-      });
-      const {
-        collectorsService: customCollectorsService,
-        collect: customCollect,
-      } = buildMockCollectorsService({
-        collectors: [customIncidentsCollector],
-      });
+      const { doraSyncService: sync, doraDataService: data } =
+        buildMockDoraServices({
+          incidents: [
+            dbIncident({
+              id: 'INC-2',
+              createdAt: '2026-06-10T10:00:00.000Z',
+              updatedAt: '2026-06-10T12:00:00.000Z',
+              resolutionAt: '2026-06-10T12:00:00.000Z',
+            }),
+          ],
+        });
       const customProvider = DoraMeanTimeToRestoreProvider.fromConfig(
         new ConfigReader({
           scorecard: {
@@ -123,45 +117,48 @@ describe('DoraMeanTimeToRestoreProvider', () => {
           },
         }),
         {
-          collectorsService: customCollectorsService,
+          doraSyncService: sync,
+          doraDataService: data,
           logger: mockLogger,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(customCollect).toHaveBeenCalledWith(
+      expect(sync.syncIncidents).toHaveBeenCalledWith(
+        mockEntity,
         expect.objectContaining({
-          collectorId: customIncidentsCollectorId,
-          input: expect.objectContaining({
-            from: expect.any(String),
-            to: expect.any(String),
-            customIncidentsInputLabel: 'incidents-custom-input',
+          collector: expect.objectContaining({
+            id: customIncidentsCollectorId,
+            input: expect.objectContaining({
+              customIncidentsInputLabel: 'incidents-custom-input',
+            }),
           }),
         }),
       );
     });
 
     it('should calculate mean time to restore in hours', async () => {
-      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
-        incidents: [
-          {
-            id: 'INC-1',
-            createdAt: '2026-06-10T10:00:00.000Z',
-            resolutionAt: '2026-06-10T11:00:00.000Z', // 1h
-          },
-          {
-            id: 'INC-2',
-            createdAt: '2026-06-11T10:00:00.000Z',
-            resolutionAt: '2026-06-11T12:00:00.000Z', // 2h
-          },
-          {
-            id: 'INC-3',
-            createdAt: '2026-06-12T10:00:00.000Z',
-            resolutionAt: '2026-06-12T16:00:00.000Z', // 6h
-          },
-        ],
-      });
+      doraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-06-10T10:00:00.000Z',
+          updatedAt: '2026-06-10T11:00:00.000Z',
+          resolutionAt: '2026-06-10T11:00:00.000Z', // 1h
+        }),
+        dbIncident({
+          id: 'INC-2',
+          createdAt: '2026-06-11T10:00:00.000Z',
+          updatedAt: '2026-06-11T12:00:00.000Z',
+          resolutionAt: '2026-06-11T12:00:00.000Z', // 2h
+        }),
+        dbIncident({
+          id: 'INC-3',
+          createdAt: '2026-06-12T10:00:00.000Z',
+          updatedAt: '2026-06-12T16:00:00.000Z',
+          resolutionAt: '2026-06-12T16:00:00.000Z', // 6h
+        }),
+      ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
@@ -169,15 +166,14 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when no resolved incidents are found', async () => {
-      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
-        incidents: [
-          {
-            id: 'INC-1',
-            createdAt: '2026-06-10T10:00:00.000Z',
-            resolutionAt: null,
-          },
-        ],
-      });
+      doraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-06-10T10:00:00.000Z',
+          updatedAt: '2026-06-10T10:00:00.000Z',
+          resolutionAt: null,
+        }),
+      ]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
@@ -185,9 +181,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when no incidents are found', async () => {
-      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
-        incidents: [],
-      });
+      doraDataService.readIncidents.mockResolvedValueOnce([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
@@ -195,15 +189,14 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when resolved incidents are invalid and none are measurable', async () => {
-      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
-        incidents: [
-          {
-            id: 'INC-1',
-            createdAt: '2026-06-10T12:00:00.000Z',
-            resolutionAt: '2026-06-10T10:00:00.000Z',
-          },
-        ],
-      });
+      doraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-06-10T12:00:00.000Z',
+          updatedAt: '2026-06-10T12:00:00.000Z',
+          resolutionAt: '2026-06-10T10:00:00.000Z',
+        }),
+      ]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /resolutionAt before createdAt and no measurable recovery times/,
@@ -214,20 +207,20 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should skip invalid resolved incidents and calculate mean from the rest', async () => {
-      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
-        incidents: [
-          {
-            id: 'INC-1',
-            createdAt: '2026-06-10T12:00:00.000Z',
-            resolutionAt: '2026-06-10T10:00:00.000Z',
-          },
-          {
-            id: 'INC-2',
-            createdAt: '2026-06-11T10:00:00.000Z',
-            resolutionAt: '2026-06-11T12:00:00.000Z', // 2h
-          },
-        ],
-      });
+      doraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-06-10T12:00:00.000Z',
+          updatedAt: '2026-06-10T12:00:00.000Z',
+          resolutionAt: '2026-06-10T10:00:00.000Z',
+        }),
+        dbIncident({
+          id: 'INC-2',
+          createdAt: '2026-06-11T10:00:00.000Z',
+          updatedAt: '2026-06-11T12:00:00.000Z',
+          resolutionAt: '2026-06-11T12:00:00.000Z', // 2h
+        }),
+      ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 

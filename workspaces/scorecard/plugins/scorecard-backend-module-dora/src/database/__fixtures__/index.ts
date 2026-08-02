@@ -14,7 +14,4 @@
  * limitations under the License.
  */
 
-export * from './mockCollectors';
-export * from './mockCollectorsService';
-export * from './mockDoraDataService';
-export * from './mockEntity';
+export * from './testDatabase';

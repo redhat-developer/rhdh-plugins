@@ -14,40 +14,38 @@
  * limitations under the License.
  */
 
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  type ScorecardCollectorsService,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
-import {
-  incidentsCollectorInputSchema,
-  incidentsCollectorOutputSchema,
-} from './schemas/incidentSchemas';
-import { calculateMean } from './utils/calculationUtils';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import {
   DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS,
   type DoraMeanTimeToRestoreConfig,
   parseDoraMeanTimeToRestoreConfig,
 } from './DoraConfig';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { calculateMean } from './utils/calculationUtils';
 
 type DoraMeanTimeToRestoreProviderOptions = {
-  collectorsService: ScorecardCollectorsService;
+  doraSyncService: DoraSyncService;
+  doraDataService: DoraDataService;
   config: DoraMeanTimeToRestoreConfig;
   logger: LoggerService;
 };
 
 export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
-  private readonly collectorsService: ScorecardCollectorsService;
+  private readonly doraSyncService: DoraSyncService;
+  private readonly doraDataService: DoraDataService;
   private readonly config: DoraMeanTimeToRestoreConfig;
   private readonly logger: LoggerService;
 
   private constructor(options: DoraMeanTimeToRestoreProviderOptions) {
-    this.collectorsService = options.collectorsService;
+    this.doraSyncService = options.doraSyncService;
+    this.doraDataService = options.doraDataService;
     this.config = options.config;
     this.logger = options.logger;
   }
@@ -55,12 +53,14 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
   static fromConfig(
     config: Config,
     options: {
-      collectorsService: ScorecardCollectorsService;
+      doraSyncService: DoraSyncService;
+      doraDataService: DoraDataService;
       logger: LoggerService;
     },
   ): DoraMeanTimeToRestoreProvider {
     return new DoraMeanTimeToRestoreProvider({
-      collectorsService: options.collectorsService,
+      doraSyncService: options.doraSyncService,
+      doraDataService: options.doraDataService,
       config: parseDoraMeanTimeToRestoreConfig(config),
       logger: options.logger,
     });
@@ -102,39 +102,35 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
     const from = new Date();
     from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
 
-    const incidentsCollected = await this.collectorsService.collect<
-      typeof incidentsCollectorInputSchema,
-      typeof incidentsCollectorOutputSchema
-    >({
-      collectorId: this.config.incidentsCollector.id,
-      contract: {
-        inputSchema: incidentsCollectorInputSchema,
-        outputSchema: incidentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.incidentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
+    await this.doraSyncService.syncIncidents(entity, {
+      windowFrom: from,
+      windowTo: to,
+      collector: this.config.incidentsCollector,
     });
+
+    const incidents = await this.doraDataService.readIncidents(
+      stringifyEntityRef(entity),
+      {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.incidentsCollector,
+      },
+    );
 
     const recoveryHours: number[] = [];
     let invalidResolvedIncidents = 0;
-    for (const incident of incidentsCollected.incidents) {
+    for (const incident of incidents) {
       if (!incident.resolutionAt) {
         continue;
       }
-      const createdAtTimestamp = new Date(incident.createdAt).getTime();
-      const resolutionAtTimestamp = new Date(incident.resolutionAt).getTime();
+      const createdAtTimestamp = incident.createdAt.getTime();
+      const resolutionAtTimestamp = incident.resolutionAt.getTime();
       if (resolutionAtTimestamp < createdAtTimestamp) {
         invalidResolvedIncidents += 1;
         this.logger.warn(
           `Skipping incident ${incident.id} for ${stringifyEntityRef(
             entity,
-          )} while calculating ${this.getProviderId()}: resolutionAt (${
-            incident.resolutionAt
-          }) is before createdAt (${incident.createdAt})`,
+          )} while calculating ${this.getProviderId()}: resolutionAt (${incident.resolutionAt.toISOString()}) is before createdAt (${incident.createdAt.toISOString()})`,
         );
         continue;
       }
