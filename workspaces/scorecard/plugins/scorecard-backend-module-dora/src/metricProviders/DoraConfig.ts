@@ -21,6 +21,7 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
+  DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
@@ -268,4 +269,14 @@ export function parseDoraChangeFailureRateConfig(
       providerConfigPath,
     ),
   };
+}
+
+/**
+ * Parses DORA source-data retention days from the root Backstage config.
+ */
+export function parseDoraDataRetentionDays(config: Config): number {
+  return (
+    config.getOptionalNumber('dora.dataRetentionDays') ??
+    DORA_DEFAULT_DATA_RETENTION_DAYS
+  );
 }

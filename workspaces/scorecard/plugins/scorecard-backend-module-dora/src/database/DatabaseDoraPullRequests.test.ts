@@ -173,4 +173,46 @@ describe('DatabaseDoraPullRequests', () => {
       },
     );
   });
+
+  describe('deleteOlderThan', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes pull requests with first commit before the cutoff - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        const prCollectorId = 'github:deploymentRangePullRequests';
+
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-old',
+            firstCommitAt: new Date('2025-01-01T00:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-new',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+
+        const deleted = await pullRequests.deleteOlderThan(
+          new Date('2026-01-01T00:00:00.000Z'),
+        );
+        const remaining = await pullRequests.readByEntityCollectorAndDeployment(
+          entityRef,
+          prCollectorId,
+          deployment.id,
+        );
+
+        expect(deleted).toBe(1);
+        expect(remaining.map(row => row.originalPrId)).toEqual(['pr-new']);
+      },
+    );
+  });
 });

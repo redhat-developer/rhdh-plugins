@@ -1,0 +1,105 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  LoggerService,
+  SchedulerService,
+  SchedulerServiceTaskScheduleDefinition,
+} from '@backstage/backend-plugin-api';
+import type { Config } from '@backstage/config';
+import { randomUUID } from 'node:crypto';
+import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
+import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
+import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
+import { parseDoraDataRetentionDays } from '../metricProviders/DoraConfig';
+import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
+import { daysToMilliseconds } from './utils';
+
+type Options = {
+  scheduler: SchedulerService;
+  logger: LoggerService;
+  config: Config;
+  deployments: DoraDeploymentsStore;
+  incidents: DoraIncidentsStore;
+  pullRequests: DoraPullRequestsStore;
+};
+
+export class CleanupExpiredDataTask {
+  private readonly config: Config;
+  private readonly logger: LoggerService;
+  private readonly scheduler: SchedulerService;
+  private readonly deployments: DoraDeploymentsStore;
+  private readonly incidents: DoraIncidentsStore;
+  private readonly pullRequests: DoraPullRequestsStore;
+
+  private static readonly CLEANUP_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
+    {
+      frequency: { days: 1 },
+      timeout: { minutes: 2 },
+      initialDelay: { seconds: 3 },
+    };
+
+  constructor(options: Options) {
+    this.config = options.config;
+    this.logger = options.logger;
+    this.scheduler = options.scheduler;
+    this.deployments = options.deployments;
+    this.incidents = options.incidents;
+    this.pullRequests = options.pullRequests;
+  }
+
+  async start(): Promise<void> {
+    const taskRunner = this.scheduler.createScheduledTaskRunner(
+      CleanupExpiredDataTask.CLEANUP_SCHEDULE,
+    );
+
+    await taskRunner.run({
+      id: DORA_CLEANUP_EXPIRED_DATA_TASK_ID,
+      fn: async () => {
+        const logger = this.logger.child({
+          taskId: DORA_CLEANUP_EXPIRED_DATA_TASK_ID,
+          taskInstanceId: randomUUID(),
+        });
+
+        try {
+          await this.cleanupExpiredData(logger);
+        } catch (error) {
+          logger.error('Failed to cleanup expired DORA data', error);
+        }
+      },
+    });
+  }
+
+  private async cleanupExpiredData(logger: LoggerService): Promise<void> {
+    const dataRetentionDays = parseDoraDataRetentionDays(this.config);
+    const olderThan = new Date(
+      Date.now() - daysToMilliseconds(dataRetentionDays),
+    );
+
+    const deletedPullRequests = await this.pullRequests.deleteOlderThan(
+      olderThan,
+    );
+    const deletedDeployments = await this.deployments.deleteOlderThan(
+      olderThan,
+    );
+    const deletedIncidents = await this.incidents.deleteOlderThan(olderThan);
+
+    logger.info(
+      `Deleted ${deletedDeployments} deployments, ${deletedIncidents} incidents, ` +
+        `${deletedPullRequests} pull requests older than ${dataRetentionDays} days`,
+    );
+  }
+}

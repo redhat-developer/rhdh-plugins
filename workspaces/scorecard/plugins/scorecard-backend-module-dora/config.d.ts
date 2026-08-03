@@ -21,7 +21,19 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
-  /** Configuration for scorecard dora plugin */
+  /**
+   * Configuration for scorecard dora plugin.
+   */
+  dora?: {
+    /**
+     * Number of days to retain scorecard DORA source data (deployments, incidents,
+     * pull requests) in the database. Older data is cleaned up by the
+     * `scorecard-dora:cleanup-expired-data` task.
+     * @default 365
+     */
+    dataRetentionDays?: number;
+  };
+  /** Configuration for scorecard dora metric providers */
   scorecard?: {
     metricProviders?: {
       dora?: {

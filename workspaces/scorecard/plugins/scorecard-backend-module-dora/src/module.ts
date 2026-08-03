@@ -32,6 +32,7 @@ import { DoraMedianLeadTimeForChangesProvider } from './metricProviders/DoraMedi
 import { DoraMeanTimeToRestoreProvider } from './metricProviders/DoraMeanTimeToRestoreProvider';
 import { DefaultDoraDataService } from './service/DoraDataService';
 import { DefaultDoraSyncService } from './service/DoraSyncService';
+import { CleanupExpiredDataTask } from './scheduler/CleanupExpiredDataTask';
 
 export const scorecardModuleDora = createBackendModule({
   pluginId: 'scorecard',
@@ -42,9 +43,18 @@ export const scorecardModuleDora = createBackendModule({
         collectorsService: scorecardCollectorsServiceRef,
         config: coreServices.rootConfig,
         database: coreServices.database,
+        logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
+        scheduler: coreServices.scheduler,
       },
-      async init({ collectorsService, config, database, metrics }) {
+      async init({
+        collectorsService,
+        config,
+        database,
+        logger,
+        metrics,
+        scheduler,
+      }) {
         await migrate(database);
 
         const dbClient = await database.getClient();
@@ -87,6 +97,15 @@ export const scorecardModuleDora = createBackendModule({
             logger,
           }),
         );
+
+        await new CleanupExpiredDataTask({
+          scheduler,
+          logger,
+          config,
+          deployments: deploymentsDb,
+          incidents: incidentsDb,
+          pullRequests: pullRequestsDb,
+        }).start();
       },
     });
   },

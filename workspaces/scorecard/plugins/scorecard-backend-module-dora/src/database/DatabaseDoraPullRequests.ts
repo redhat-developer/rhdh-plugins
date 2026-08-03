@@ -30,6 +30,7 @@ export interface DoraPullRequestsStore {
     collectorId: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]>;
+  deleteOlderThan(olderThan: Date): Promise<number>;
 }
 
 export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
@@ -71,5 +72,11 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
       .orderBy('first_commit_at', 'asc');
 
     return rows.map(fromDoraPullRequestRow);
+  }
+
+  async deleteOlderThan(olderThan: Date): Promise<number> {
+    return await this.dbClient(this.tableName)
+      .where('first_commit_at', '<', olderThan)
+      .del();
   }
 }

@@ -16,6 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import {
+  DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
@@ -23,6 +24,7 @@ import {
 } from '../constants';
 import {
   parseDoraChangeFailureRateConfig,
+  parseDoraDataRetentionDays,
   parseDoraDeploymentFrequencyConfig,
   parseDoraMeanTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
@@ -245,6 +247,26 @@ describe('DoraConfig', () => {
         },
         productionEnvironments: ['prod', 'live'],
       });
+    });
+  });
+
+  describe('parseDoraDataRetentionDays', () => {
+    it('returns the default when unset', () => {
+      expect(parseDoraDataRetentionDays(new ConfigReader({}))).toBe(
+        DORA_DEFAULT_DATA_RETENTION_DAYS,
+      );
+    });
+
+    it('returns the configured value', () => {
+      expect(
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            dora: {
+              dataRetentionDays: 90,
+            },
+          }),
+        ),
+      ).toBe(90);
     });
   });
 });

@@ -169,4 +169,51 @@ describe('DatabaseDoraIncidents', () => {
       },
     );
   });
+
+  describe('deleteOlderThan', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes incidents created before the cutoff - %p',
+      async databaseId => {
+        const { incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'jira:incidents';
+
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-old',
+            createdAt: new Date('2025-01-01T00:00:00.000Z'),
+            updatedAt: new Date('2025-01-01T00:00:00.000Z'),
+            resolutionAt: null,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-new',
+            createdAt: new Date('2026-06-10T00:00:00.000Z'),
+            updatedAt: new Date('2026-06-10T00:00:00.000Z'),
+            resolutionAt: null,
+          },
+        ]);
+
+        const deleted = await incidents.deleteOlderThan(
+          new Date('2026-01-01T00:00:00.000Z'),
+        );
+        const remaining = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2025-01-01T00:00:00.000Z'),
+          new Date('2026-12-31T00:00:00.000Z'),
+        );
+
+        expect(deleted).toBe(1);
+        expect(remaining.map(row => row.originalIncidentId)).toEqual([
+          'INC-new',
+        ]);
+      },
+    );
+  });
 });

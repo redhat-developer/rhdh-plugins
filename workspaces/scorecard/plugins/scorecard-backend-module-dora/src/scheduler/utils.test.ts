@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-export const DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID = 'github:deployments';
-export const DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID =
-  'github:deploymentPullRequests';
-export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:incidents';
-export const DORA_TIME_WINDOW_DAYS = 30;
-export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
-export const DORA_DEFAULT_DATA_RETENTION_DAYS = 365;
-export const DORA_CLEANUP_EXPIRED_DATA_TASK_ID =
-  'scorecard-dora:cleanup-expired-data' as const;
+import { daysToMilliseconds } from './utils';
+
+describe('daysToMilliseconds', () => {
+  it('converts days to milliseconds', () => {
+    expect(daysToMilliseconds(1)).toBe(86400000);
+  });
+});

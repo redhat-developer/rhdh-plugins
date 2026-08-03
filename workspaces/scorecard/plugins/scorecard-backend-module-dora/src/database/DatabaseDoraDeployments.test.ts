@@ -229,4 +229,53 @@ describe('DatabaseDoraDeployments', () => {
       },
     );
   });
+
+  describe('deleteOlderThan', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes deployments created before the cutoff - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'github:deployments';
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-old',
+            commitSha: 'sha-old',
+            environment: 'production',
+            createdAt: new Date('2025-01-01T00:00:00.000Z'),
+            result: 'success',
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-new',
+            commitSha: 'sha-new',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T00:00:00.000Z'),
+            result: 'success',
+          },
+        ]);
+
+        const deleted = await deployments.deleteOlderThan(
+          new Date('2026-01-01T00:00:00.000Z'),
+        );
+        const remaining = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2025-01-01T00:00:00.000Z'),
+          new Date('2026-12-31T00:00:00.000Z'),
+        );
+
+        expect(deleted).toBe(1);
+        expect(remaining.map(row => row.originalDeploymentId)).toEqual([
+          'dep-new',
+        ]);
+      },
+    );
+  });
 });

@@ -31,6 +31,7 @@ export interface DoraDeploymentsStore {
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]>;
+  deleteOlderThan(olderThan: Date): Promise<number>;
 }
 
 export class DatabaseDoraDeployments implements DoraDeploymentsStore {
@@ -73,5 +74,11 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       .orderBy('created_at', 'asc');
 
     return rows.map(fromDoraDeploymentRow);
+  }
+
+  async deleteOlderThan(olderThan: Date): Promise<number> {
+    return await this.dbClient(this.tableName)
+      .where('created_at', '<', olderThan)
+      .del();
   }
 }
