@@ -19,7 +19,7 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 - RHIDP-15167 (RHDHPLAN-1509) depends on RHIDP-15335 (Issue 5 — Health API), creating a cross-feature dependency chain that must be resolved by building the API (Issue 5) first
 - Issues 7, 13, 14 (RHIDP-15317, RHIDP-15318, RHIDP-15319 — MCP Registry Connector productization under RHDHPLAN-1510) depend on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community entity provider must exist before the productization wrapper can configure its endpoint (Issue 7), integrate TLS/credentials (Issue 13), or intercept entity emission for annotation enrichment (Issue 14). RHIDP-15321 (RHOAI version normalization, also in Issue 7) and Issues 15–16 (RHOAI connector) have no RHDHPLAN-393 dependency — they query RHOAI's own MCP catalog API independently.
 
-**Maximum parallelism:** All 7 Tier 0 issues can start simultaneously. Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI). Within Tier 2, issues [23–25] (RBAC UI) are independent of [26–29] (Ingestion UI).
+**Maximum parallelism:** All 7 Tier 0 issues can start simultaneously. Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI); issues [23–24] (RBAC frontend) and [26] (Ingestion Health UI) are also independent of the connector issues. Within Tier 2, issues [25] (RBAC Admin UI) and [27–29] (Ingestion/Analytics UI) can run in parallel.
 
 **Jira-to-GitHub issue mapping is not 1:1.** GitHub issues are scoped for single fullsend `/fs-code` runs, while Jira stories are scoped by feature deliverable. When a Jira story defines an interface or foundation that later issues adopt or extend, the story's work naturally splits across dependency tiers — you define the annotation scheme in Tier 0 before providers can emit those annotations in Tier 1. The alternative (combining tiers into one larger issue) would defeat single-fullsend scoping and block parallelism. Five RHIDP stories have work split this way; three additional stories are referenced after completion as dependencies. The Jira story cannot be closed until the "Completed" issue finishes.
 
@@ -444,7 +444,7 @@ From `openspec/changes/rhoai-connector/tasks.md` group 7 (RHIDP-15321):
 
 ---
 
-# Tier 1 — Depends on Tier 0 (15 issues)
+# Tier 1 — Depends on Tier 0 (18 issues)
 
 ---
 
@@ -681,7 +681,7 @@ Integrate shared CA bundle utility (`loadCaBundle()`) from `@red-hat-developer-h
 From `openspec/changes/mcp-registry-connector/tasks.md` group 2 (RHIDP-15318):
 
 - 2.1 Integrate shared CA bundle utility from RHIDP-15316
-- 2.2 Add `ai-catalog.providers.mcpRegistry.tls.ca` config schema
+- 2.2 Add `ai-catalog.providers.mcpRegistry.tls.caFile` config schema
 - 2.3 Implement custom CA bundle loading from file path
 - 2.4 Add graceful degradation: invalid CA bundle falls back to system CA
 - 2.5 Add warning logging for invalid CA bundle files
@@ -1076,10 +1076,6 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 5 (RHIDP-1534
 
 ---
 
-# Tier 2 — Depends on Tier 1 (7 issues)
-
----
-
 ## SkillBundle RBAC Filtering (issue 23 of 29)
 
 https://github.com/redhat-developer/rhdh-plugins/issues/4061
@@ -1133,36 +1129,6 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 3 (RHIDP-1527
 ### Specifications
 
 - `openspec/changes/ai-catalog-asset-governance/specs/graduated-visibility/spec.md`
-
----
-
-## RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)
-
-https://github.com/redhat-developer/rhdh-plugins/issues/4063
-
-**Labels:** `ready-to-code`
-**Depends on:** Issue 3 (permission definitions), Issue 20 (policy cascade + default-deny backend)
-**RHIDP Stories:** RHIDP-15307, RHIDP-15308, RHIDP-15309
-**Feature:** RHDHPLAN-1508 — Epic RHIDP-15304
-
-Create standalone page at `/ai-catalog/admin/rbac` with `RequirePermission` gating, implement current policies view fetching from RBAC REST API, policy creation/deletion forms with confirmation dialogs, default posture view and change controls, and sidebar navigation item with permission-based visibility.
-
-### Tasks
-
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):
-
-- 8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)
-- 8.2 Implement current policies view from RBAC REST API (RHIDP-15307)
-- 8.3 Implement policy creation form (RHIDP-15308)
-- 8.4 Implement policy deletion with confirmation dialog (RHIDP-15308)
-- 8.5 Implement default posture view and change controls (RHIDP-15309)
-- 8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)
-- 8.7 Add error handling for RBAC REST API failures
-
-### Specifications
-
-- `openspec/changes/ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`
-- `openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`
 
 ---
 
@@ -1222,6 +1188,40 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 ### Specifications
 
 - `openspec/changes/ingestion-health-dashboard/specs/admin-health-ui/spec.md`
+
+---
+
+# Tier 2 — Depends on Tier 1 (4 issues)
+
+---
+
+## RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4063
+
+**Labels:** `ready-to-code`
+**Depends on:** Issue 3 (permission definitions), Issue 20 (policy cascade + default-deny backend)
+**RHIDP Stories:** RHIDP-15307, RHIDP-15308, RHIDP-15309
+**Feature:** RHDHPLAN-1508 — Epic RHIDP-15304
+
+Create standalone page at `/ai-catalog/admin/rbac` with `RequirePermission` gating, implement current policies view fetching from RBAC REST API, policy creation/deletion forms with confirmation dialogs, default posture view and change controls, and sidebar navigation item with permission-based visibility.
+
+### Tasks
+
+From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):
+
+- 8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)
+- 8.2 Implement current policies view from RBAC REST API (RHIDP-15307)
+- 8.3 Implement policy creation form (RHIDP-15308)
+- 8.4 Implement policy deletion with confirmation dialog (RHIDP-15308)
+- 8.5 Implement default posture view and change controls (RHIDP-15309)
+- 8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)
+- 8.7 Add error handling for RBAC REST API failures
+
+### Specifications
+
+- `openspec/changes/ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`
+- `openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`
 
 ---
 
@@ -1390,12 +1390,12 @@ Tier 1 (depends on Tier 0):
   [20] Version Policy Cascade + Default-Deny → [3]
   [21] RBAC Audit Logging                → [3]
   [22] Hot-Reload Propagation            → [6]
-
-Tier 2 (depends on Tier 1):
   [23] SkillBundle RBAC Filtering        → [3]
   [24] Graduated Visibility Frontend     → [3], RHIDP-15167 (RHDHPLAN-1509)
-  [25] RBAC Admin UI                     → [3], [20]
   [26] Ingestion Health Admin UI         → [3], [5]
+
+Tier 2 (depends on Tier 1):
+  [25] RBAC Admin UI                     → [3], [20]
   [27] Neo4j Sync Status Panel           → [5], [17]
   [28] Connector Config Admin UI         → [6], [22]
   [29] Analytics API + Eval Hub          → [5], [21]
