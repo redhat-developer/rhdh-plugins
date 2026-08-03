@@ -24,6 +24,8 @@ The connector was merged in PR #3705 and rebased in RHIDP-15199. The url-reader 
 - **mkdocs.yml generation**: Add `mkdocs.yml` creation to the url-reader's `dir()` method so the TechDocs builder can process model card markdown
 - **Config alignment**: Update url-reader's `BridgeConfig` type and `readBridgeConfigs` to match the cluster-nested config structure (`catalog.providers.modelCatalog.<connector>.<cluster>.{fields}`)
 - **Config schema declaration**: Add new config fields to `catalog-backend-module-model-catalog/config.d.ts` so Backstage's config validation doesn't silently strip them
+- **Service-to-service auth**: URL reader authenticates to the connector using Backstage's `getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'` — no static admin token fallback needed
+- **Config robustness**: `safeGetOptionalString` wrapper handles Backstage ConfigReader TypeError on empty env var substitution; `readBridgeConfigs` does not gate on `has('kubeflow-model-catalog-url')` since `ConfigReader.has()` is unreliable for env var substitution defaults
 
 ## Capabilities
 
@@ -42,7 +44,6 @@ The connector was merged in PR #3705 and rebased in RHIDP-15199. The url-reader 
 ## Non-goals
 
 - Merging `catalog-techdoc-url-reader-backend` into the connector plugin (deferred per Design Decision 6 in parent openspec)
-- Resolving the plugin-to-plugin auth workaround (the `RHDH_TOKEN` env var for static admin token)
 - Adding TechDocs search indexing support
 - Multi-cluster connector instances (TODO added, deferred)
 

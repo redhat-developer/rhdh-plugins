@@ -73,7 +73,6 @@ Both the connector (`plugin.ts`) and url-reader (`readBridgeConfigs`) navigate t
 **Non-Goals:**
 
 - Merging url-reader into the connector (deferred per parent Decision 6)
-- Resolving plugin-to-plugin auth (RHDH_TOKEN workaround stays)
 - Multi-cluster support (TODO placed, deferred)
 - TechDocs search index population (separate Backstage concern)
 
@@ -124,15 +123,15 @@ for (const connectorId of configs.keys()) {
   const connectorConfig = configs.getConfig(connectorId);
   for (const clusterKey of connectorConfig.keys()) {
     const clusterConfig = connectorConfig.getOptionalConfig(clusterKey);
-    if (!clusterConfig || !clusterConfig.has('kubeflow-model-catalog-url')) {
-      continue; // skip connector-level non-cluster objects (e.g., schedule)
+    if (!clusterConfig) {
+      continue;
     }
     result.push(readBridgeConfig(connectorId, clusterConfig));
   }
 }
 ```
 
-**Rationale:** The config structure nests cluster keys under connector keys (e.g., `kserve-kubeflow-connector.cluster-1`). The old flat iteration (`configs.keys().map(id => readBridgeConfig(id, ...))`) treated the connector key as the leaf, missing the cluster level entirely. The entity provider's config reading (`readModelCatalogApiEntityConfigs`) uses flat single-level iteration for its own connector-level fields and is unaffected by this change. Connector-level keys like `schedule` may coexist alongside cluster sub-keys, so the iteration must filter them via `getOptionalConfig` and field presence checks.
+**Rationale:** The config structure nests cluster keys under connector keys (e.g., `kserve-kubeflow-connector.cluster-1`). The old flat iteration (`configs.keys().map(id => readBridgeConfig(id, ...))`) treated the connector key as the leaf, missing the cluster level entirely. The entity provider's config reading (`readModelCatalogApiEntityConfigs`) uses flat single-level iteration for its own connector-level fields and is unaffected by this change. Non-config sub-keys are filtered by `getOptionalConfig` returning falsy. The iteration does NOT gate on `has('kubeflow-model-catalog-url')` — see D7 for why.
 
 ### D6 — Config schema in config.d.ts uses index signature for cluster sub-keys
 
@@ -146,6 +145,26 @@ for (const connectorId of configs.keys()) {
 
 **Rationale:** Backstage's config validation silently strips fields not declared in any plugin's `config.d.ts`. Without this declaration, `providerConfigs.keys()` returns an empty array because the cluster sub-keys and their fields don't pass validation. The union type accommodates both the new cluster sub-key objects and the existing scalar/schedule fields at the connector level.
 
+### D7 — Do not gate on `has('kubeflow-model-catalog-url')` in url-reader config iteration
+
+**Choice:** Accept any sub-config under the connector key as a cluster config. Do not require `kubeflow-model-catalog-url` to be present — it is optional and discoverable on OCP.
+
+**Rationale:** Backstage's `ConfigReader.has()` returns `false` for config keys whose values come from env var substitution with empty defaults (e.g., `${KUBEFLOW_MODEL_CATALOG_URL:-}`), even when the env var is set in the process environment. This caused `readBridgeConfigs` to skip all cluster configs, producing zero `BridgeConfig` entries. The url-reader's `bridgePredicate` then returned `false` for every URL, and TechDocs triggered `NotAllowedError: Reading from '...' is not allowed` because no URL reader matched.
+
+**Alternative considered:** Use `getOptionalString` instead of `has` as the gate. Rejected because `kubeflow-model-catalog-url` is genuinely optional — when running on OCP, the connector can discover the Kubeflow Model Catalog URL from the cluster.
+
+### D8 — `safeGetOptionalString` wrapper for Backstage ConfigReader TypeError
+
+**Choice:** Wrap `config.getOptionalString(key)` in a try/catch that returns `''` on TypeError. Used for all optional string config reads in `readBridgeConfig`.
+
+**Rationale:** Backstage's `ConfigReader` throws a `TypeError` when `getOptionalString` encounters an empty string value produced by env var substitution like `${VAR:-}`. This is arguably a Backstage bug — `getOptionalString` should return `undefined` or `''` for empty values, not throw. The wrapper makes config reading robust against this edge case without requiring upstream fixes.
+
+### D9 — Service-to-service token for url-reader → connector auth
+
+**Choice:** The url-reader uses Backstage's `getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'` to authenticate requests to the connector's `/modelcard` endpoint. No `RHDH_TOKEN` env var fallback.
+
+**Rationale:** The initial implementation used a static admin token (`RHDH_TOKEN` env var) as a fallback because service-to-service auth was untested. Debugging revealed two issues: (1) the `targetPluginId` was incorrectly set (wrong plugin ID), and (2) the bridge configs were empty (see D7), so the predicate never matched and auth was never attempted. After fixing both, service-to-service auth works correctly. The `RHDH_TOKEN` env var is still required for Backstage's `backend.auth.externalAccess` config but is no longer used by the url-reader at request time.
+
 ## Risks / Trade-offs
 
 | Risk                                                                                              | Mitigation                                                                                                 |
@@ -155,6 +174,8 @@ for (const connectorId of configs.keys()) {
 | Wildcard route matches any number of path segments — could match unintended URLs                  | The model card key lookup in `getModelCard()` will return `undefined` for unknown keys, resulting in a 404 |
 | `mkdocs.yml` is minimal — may not work with all mkdocs themes or plugins                          | TechDocs patcher auto-injects `techdocs-core`; the minimal config is sufficient                            |
 | Multi-cluster TODO is unimplemented — only the first cluster key is used                          | Documented with TODO comment; sufficient for single-cluster deployments                                    |
+| Backstage `ConfigReader.has()` unreliable for env var substitution defaults                       | Avoided entirely (D7); `safeGetOptionalString` (D8) handles the related `getOptionalString` TypeError      |
+| `safeGetOptionalString` swallows all errors, not just TypeError                                   | Acceptable — the catch returns `''` which is the same as a missing optional field                          |
 
 ## Verification
 

@@ -160,6 +160,50 @@ The config schema in `catalog-backend-module-model-catalog/config.d.ts` SHALL de
 
 ---
 
+## Service-to-Service Token Auth
+
+### Requirement: URL reader authenticates to the connector using Backstage service-to-service tokens
+
+The url-reader SHALL use `getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'` to obtain a service-to-service token for authenticating requests to the connector's `/modelcard` endpoint.
+
+#### Scenario: Service-to-service token is used
+
+- **WHEN** the url-reader's `readUrl` method fetches a model card URL
+- **THEN** it calls `auth.getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'`
+- **AND** the resulting token is sent in the `Authorization: Bearer <token>` header
+- **AND** no static admin token (`RHDH_TOKEN`) fallback is used
+
+#### Scenario: Correct targetPluginId
+
+- **WHEN** `getPluginRequestToken` is called
+- **THEN** `targetPluginId` is `'kserve-kubeflow-connector'` (matching the connector's `pluginId`)
+- **AND** the connector's auth middleware accepts the token
+
+---
+
+## Config Robustness
+
+### Requirement: Config reading handles empty env var substitution
+
+The url-reader's config reading SHALL handle edge cases in Backstage's `ConfigReader` when config values come from env var substitution with empty defaults (e.g., `${VAR:-}`).
+
+#### Scenario: safeGetOptionalString handles TypeError
+
+- **GIVEN** a config key whose value is an empty string from env var substitution (e.g., `${KUBEFLOW_MODEL_CATALOG_URL:-}`)
+- **WHEN** `readBridgeConfig` reads that key
+- **THEN** `safeGetOptionalString` catches the Backstage ConfigReader TypeError
+- **AND** returns `''` instead of throwing
+
+#### Scenario: readBridgeConfigs does not gate on kubeflow-model-catalog-url
+
+- **GIVEN** a cluster sub-config exists under the connector key
+- **AND** `kubeflow-model-catalog-url` is not present or has an empty env var default
+- **WHEN** `readBridgeConfigs` iterates cluster sub-keys
+- **THEN** the cluster config is still accepted (not skipped)
+- **AND** a `BridgeConfig` entry is created with `kubeflowModelCatalogUrl: ''`
+
+---
+
 ## Build and Quality
 
 ### Requirement: All quality gates pass
