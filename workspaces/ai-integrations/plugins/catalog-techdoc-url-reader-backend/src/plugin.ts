@@ -119,6 +119,9 @@ export function readBridgeConfigs(config: Config): BridgeConfig[] {
       if (!clusterConfig) {
         continue;
       }
+      if (clusterConfig.has('frequency') || clusterConfig.has('timeout')) {
+        continue;
+      }
       result.push(readBridgeConfig(connectorId, clusterConfig));
     }
   }
