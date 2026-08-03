@@ -2,21 +2,22 @@
 
 ### Requirement: TechDocsKey is auto-set when catalog annotations are present
 
-When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `model-catalog-bridge.ai.redhat.com/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint. The entity provider's `ModelCatalogGenerator.ts` discovers the connector's base URL via `discovery.getBaseUrl()` and prepends it when constructing the final `backstage.io/techdocs-ref` annotation.
+When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `rhdh.io/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint. The entity provider's `ModelCatalogGenerator.ts` discovers the connector's base URL via `discovery.getBaseUrl()` and prepends it when constructing the final `backstage.io/techdocs-ref` annotation.
 
 #### Scenario: Auto-set TechDocsKey for annotated InferenceService
 
 - **WHEN** an InferenceService has `rhdh.io/catalog-source` = `<sourceId>` and `rhdh.io/catalog-model` = `<modelName>`
-- **AND** no `model-catalog-bridge.ai.redhat.com/techdocs` annotation is set
+- **AND** no `rhdh.io/techdocs` annotation is set
 - **THEN** `techdocsUrl` is set to `/modelcard/<sourceId>/<modelName>`
 - **AND** the value is a path only — no `url:` prefix, no base URL prefix
 - **AND** the `TechDocs` key in the model annotations contains this path
 
 #### Scenario: Explicit TechDocsKey takes precedence
 
-- **WHEN** an InferenceService has a `model-catalog-bridge.ai.redhat.com/techdocs` annotation set
+- **WHEN** an InferenceService has a `rhdh.io/techdocs` annotation set to a full URL (e.g., `https://github.com/redhat-ai-dev/granite-docs/tree/main`)
 - **THEN** the explicit value is used as `techdocsUrl`
 - **AND** the auto-set logic is skipped
+- **AND** the entity provider does NOT prepend `svcUrl` (only relative paths starting with `/` get the prefix)
 
 #### Scenario: No catalog annotations skips auto-set
 
@@ -30,7 +31,7 @@ When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-mo
 
 ### Requirement: TechDocsKey path is correctly transformed into a full techdocs-ref annotation
 
-The entity provider's `ModelCatalogGenerator.ts` SHALL resolve the connector's base URL via `discovery.getBaseUrl()`, prepend it as `svcUrl`, and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation.
+The entity provider's `ModelCatalogGenerator.ts` SHALL resolve the connector's base URL via `discovery.getBaseUrl()`, prepend it as `svcUrl` only when the TechDocsKey value is a relative path (starts with `/`), and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation. Full URLs (explicit `rhdh.io/techdocs` annotations) are used as-is.
 
 #### Scenario: Full URL construction
 

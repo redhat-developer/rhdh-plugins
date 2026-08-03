@@ -10,10 +10,10 @@
 The TechDocs / model card pipeline spans three plugins:
 
 1. **`kserve-kubeflow-connector-backend`** — K8s Informer watches InferenceService CRs, `KServe.ts` converts them to `ModelCatalog` JSON with annotations including `TechDocsKey`, router serves model card markdown at `/modelcard/:sourceId/*`
-2. **`catalog-backend-module-model-catalog`** — Entity provider polls the connector's REST API. `ModelCatalogGenerator.ts` (lines 149-159) transforms the `TechDocsKey` annotation: prepends `svcUrl` (the connector's base URL) and wraps in `url:` prefix to produce the `backstage.io/techdocs-ref` annotation
+2. **`catalog-backend-module-model-catalog`** — Entity provider polls the connector's REST API. `ModelCatalogGenerator.ts` transforms the `TechDocsKey` annotation: for relative paths (starting with `/`), prepends `svcUrl` (the connector's base URL); for full URLs (explicit `rhdh.io/techdocs` annotations), uses the value as-is. Wraps in `url:` prefix to produce the `backstage.io/techdocs-ref` annotation
 3. **`catalog-techdoc-url-reader-backend`** — Custom URL reader that matches `backstage.io/techdocs-ref` URLs containing `modelcard` and a known connector ID. Fetches the markdown, writes it to disk with a `mkdocs.yml`, and returns a tree response for the TechDocs builder
 
-The `url:` prefix on `backstage.io/techdocs-ref` is a Backstage convention that triggers URL reader dispatch. The entity provider already handles adding this prefix — KServe.ts must set TechDocsKey as a **path only** (e.g., `/modelcard/sourceId/modelName`), not a full URL.
+The `url:` prefix on `backstage.io/techdocs-ref` is a Backstage convention that triggers URL reader dispatch. The entity provider already handles adding this prefix. When auto-set (no explicit `rhdh.io/techdocs` annotation), KServe.ts sets TechDocsKey as a **path only** (e.g., `/modelcard/sourceId/modelName`). When explicitly set via `rhdh.io/techdocs`, the value can be a full URL pointing to any host.
 
 ### Data flow
 
@@ -82,13 +82,14 @@ Both the connector (`plugin.ts`) and url-reader (`readBridgeConfigs`) navigate t
 
 **Choice:** In `KServe.ts`, set `techdocsUrl = `/modelcard/${sourceId}/${modelName}`\` — a path only. Do not include the connector's base URL or the `url:` prefix in the annotation value. The connector plugin does NOT use `coreServices.discovery` — the entity provider (`catalog-backend-module-model-catalog`) already resolves the connector's base URL via its own `DiscoveryService` and prepends it when constructing the `backstage.io/techdocs-ref` annotation.
 
-**Rationale:** `ModelCatalogGenerator.ts` (lines 149-159) already handles the full URL construction:
+**Rationale:** `ModelCatalogGenerator.ts` handles the URL construction:
 
-1. Reads the `TechDocs` annotation key from the model
+1. Reads the `techdocs` annotation key from the model
 2. Calls `discovery.getBaseUrl(this.name)` to get `svcUrl` (the connector's base URL)
-3. Prepends `svcUrl` and wraps the result in `url:` prefix
+3. If the value starts with `/` (relative path), prepends `svcUrl`; if it's already a full URL (explicit `rhdh.io/techdocs` annotation), uses it as-is
+4. Wraps the result in `url:` prefix
 
-If KServe.ts included the full URL or the `url:` prefix, the result would be double-concatenated (e.g., `url:http://...url:http://...`). The path-only approach keeps KServe.ts decoupled from the entity provider's URL construction logic. The connector does not need its own `DiscoveryService` dependency since all URL resolution happens in the entity provider.
+The auto-set path-only approach keeps KServe.ts decoupled from the entity provider's URL construction logic, while explicit `rhdh.io/techdocs` annotations allow full URLs pointing to any host (e.g., external documentation repositories). The connector does not need its own `DiscoveryService` dependency since all URL resolution happens in the entity provider.
 
 ### D2 — Wildcard route for multi-segment model names
 

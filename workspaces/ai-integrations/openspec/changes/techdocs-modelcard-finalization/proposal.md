@@ -12,7 +12,7 @@ Additionally, the Express route `/modelcard/:sourceId/:modelName` only matches m
 
 ## Starting Point
 
-The connector was merged in PR #3705 and rebased in RHIDP-15199. The url-reader plugin exists but its config reading is stale. The entity provider (`catalog-backend-module-model-catalog`) already handles the `backstage.io/techdocs-ref` annotation in `ModelCatalogGenerator.ts` — it prepends `svcUrl` and wraps in the `url:` prefix that triggers Backstage URL reader dispatch.
+The connector was merged in PR #3705 and rebased in RHIDP-15199. The url-reader plugin exists but its config reading is stale. The entity provider (`catalog-backend-module-model-catalog`) already handles the `backstage.io/techdocs-ref` annotation in `ModelCatalogGenerator.ts` — for relative paths it prepends `svcUrl`, for full URLs (explicit `rhdh.io/techdocs`) it uses the value as-is, and wraps in the `url:` prefix that triggers Backstage URL reader dispatch.
 
 ## What Changes
 

@@ -170,7 +170,7 @@ export enum NormalizerFormat {
 // Custom property keys (from brdgtypes package)
 export const PropertyKeys = {
   LicenseKey: 'license',
-  TechDocsKey: 'TechDocs',
+  TechDocsKey: 'techdocs',
   RHOAIModelCatalogSourceModelVersion:
     'rhoai-model-catalog-source-model-version',
   RHOAIModelCatalogSourceModelKey: 'rhoai-model-catalog-source-model',

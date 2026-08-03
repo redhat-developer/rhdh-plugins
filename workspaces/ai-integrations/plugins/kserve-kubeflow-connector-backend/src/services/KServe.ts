@@ -27,7 +27,7 @@ import {
 import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
 // Annotation prefix (from brdgtypes package)
-const ANNOTATION_PREFIX = 'model-catalog-bridge.ai.redhat.com/';
+const ANNOTATION_PREFIX = 'rhdh.io/';
 
 // Model framework constants (from kserve.go line 25-36)
 const FRAMEWORK_SKLEARN = 'sklearn';
