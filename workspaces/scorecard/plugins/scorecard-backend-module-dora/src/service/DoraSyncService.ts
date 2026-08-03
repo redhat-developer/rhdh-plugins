@@ -32,7 +32,7 @@ import {
   deploymentPullRequestsCollectorOutputSchema,
 } from '../metricProviders/schemas/pullRequestSchemas';
 import type { WindowOptions, CollectorCallOptions } from './types';
-import { laterOf } from './syncUtils';
+import { coalesceInFlight, laterOf } from './syncUtils';
 
 /**
  * Collects new DORA source data via collectors and persists it.
@@ -57,6 +57,10 @@ export interface DoraSyncService {
 }
 
 export class DefaultDoraSyncService implements DoraSyncService {
+  private readonly inflightDeployments = new Map<string, Promise<void>>();
+  private readonly inflightIncidents = new Map<string, Promise<void>>();
+  private readonly inflightPullRequests = new Map<string, Promise<void>>();
+
   constructor(
     private readonly collectorsService: ScorecardCollectorsService,
     private readonly deploymentsDb: DoraDeploymentsStore,
@@ -68,12 +72,25 @@ export class DefaultDoraSyncService implements DoraSyncService {
    * Retrieves and persists deployments
    * that were created after the last successfully synced deployment's createdAt
    * for a given entity and collector.
+   *
+   * Concurrent syncs for the same entity and collector share one in-flight fetch.
    */
-  async syncDeployments(
+  syncDeployments(
     entity: Entity,
     options: WindowOptions & CollectorCallOptions,
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
+    const key = `${catalogEntityRef}\0${options.collector.id}`;
+    return coalesceInFlight(this.inflightDeployments, key, () =>
+      this.doSyncDeployments(entity, options, catalogEntityRef),
+    );
+  }
+
+  private async doSyncDeployments(
+    entity: Entity,
+    options: WindowOptions & CollectorCallOptions,
+    catalogEntityRef: string,
+  ): Promise<void> {
     const collectorId = options.collector.id;
     const syncWatermark = await this.deploymentsDb.getLatestCreatedAt(
       catalogEntityRef,
@@ -115,12 +132,25 @@ export class DefaultDoraSyncService implements DoraSyncService {
    * Retrieves and persists incidents
    * that were updated after the last successfully synced incident's updatedAt
    * for a given entity and collector.
+   *
+   * Concurrent syncs for the same entity and collector share one in-flight fetch.
    */
-  async syncIncidents(
+  syncIncidents(
     entity: Entity,
     options: WindowOptions & CollectorCallOptions,
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
+    const key = `${catalogEntityRef}\0${options.collector.id}`;
+    return coalesceInFlight(this.inflightIncidents, key, () =>
+      this.doSyncIncidents(entity, options, catalogEntityRef),
+    );
+  }
+
+  private async doSyncIncidents(
+    entity: Entity,
+    options: WindowOptions & CollectorCallOptions,
+    catalogEntityRef: string,
+  ): Promise<void> {
     const collectorId = options.collector.id;
     const watermark = await this.incidentsDb.getLatestUpdatedAt(
       catalogEntityRef,
@@ -163,8 +193,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
   /**
    * Retrieves and persists PRs for a deployment when none are stored yet.
    * `deploymentId` is the persisted deployments row id (FK).
+   *
+   * Concurrent syncs for the same entity, collector, and deployment share one
+   * in-flight fetch.
    */
-  async syncPullRequestsForDeployment(
+  syncPullRequestsForDeployment(
     entity: Entity,
     options: CollectorCallOptions & {
       deploymentId: string;
@@ -173,6 +206,21 @@ export class DefaultDoraSyncService implements DoraSyncService {
     },
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
+    const key = `${catalogEntityRef}\0${options.collector.id}\0${options.deploymentId}`;
+    return coalesceInFlight(this.inflightPullRequests, key, () =>
+      this.doSyncPullRequestsForDeployment(entity, options, catalogEntityRef),
+    );
+  }
+
+  private async doSyncPullRequestsForDeployment(
+    entity: Entity,
+    options: CollectorCallOptions & {
+      deploymentId: string;
+      baseCommitSha: string;
+      headCommitSha: string;
+    },
+    catalogEntityRef: string,
+  ): Promise<void> {
     const collectorId = options.collector.id;
 
     const existing =

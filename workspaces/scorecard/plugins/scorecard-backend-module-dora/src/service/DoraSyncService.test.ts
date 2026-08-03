@@ -141,6 +141,75 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
+    'coalesces concurrent deployment syncs for the same entity and collector - %p',
+    async databaseId => {
+      const { deployments, incidents, pullRequests } = await createTestDatabase(
+        await databases.init(databaseId),
+      );
+
+      let resolveCollect!: () => void;
+      const collectGate = new Promise<void>(resolve => {
+        resolveCollect = resolve;
+      });
+
+      const deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '100',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      jest.mocked(deploymentsCollector.collect).mockImplementation(async () => {
+        await collectGate;
+        return {
+          deployments: [
+            {
+              id: '100',
+              commitSha: 'sha-1',
+              environment: 'production',
+              createdAt: '2026-06-10T00:00:00.000Z',
+              result: 'success',
+            },
+          ],
+        };
+      });
+
+      const { collectorsService, collect } = buildMockCollectorsService({
+        collectors: [deploymentsCollector],
+      });
+      const syncService = new DefaultDoraSyncService(
+        collectorsService,
+        deployments,
+        incidents,
+        pullRequests,
+      );
+
+      const windowFrom = new Date('2026-06-01T00:00:00.000Z');
+      const windowTo = new Date('2026-06-30T00:00:00.000Z');
+      const options = {
+        windowFrom,
+        windowTo,
+        collector: {
+          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          input: {},
+        },
+      };
+
+      const first = syncService.syncDeployments(mockEntity, options);
+      const second = syncService.syncDeployments(mockEntity, options);
+      resolveCollect();
+      await Promise.all([first, second]);
+
+      expect(collect).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
     'syncs incidents with created after window start and updated since the last watermark - %p',
     async databaseId => {
       const { deployments, incidents, pullRequests } = await createTestDatabase(

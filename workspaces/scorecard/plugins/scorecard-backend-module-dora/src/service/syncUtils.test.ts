@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { laterOf } from './syncUtils';
+import { coalesceInFlight, laterOf } from './syncUtils';
 
 describe('laterOf', () => {
   const windowFrom = new Date('2026-06-01T00:00:00.000Z');
@@ -36,5 +36,70 @@ describe('laterOf', () => {
   it('returns watermark when it equals windowFrom', () => {
     const watermark = new Date('2026-06-01T00:00:00.000Z');
     expect(laterOf(windowFrom, watermark)).toBe(watermark);
+  });
+});
+
+describe('coalesceInFlight', () => {
+  it('shares one in-flight promise for the same key', async () => {
+    const inflight = new Map<string, Promise<string>>();
+    let resolveRun!: (value: string) => void;
+    const run = jest.fn(
+      () =>
+        new Promise<string>(resolve => {
+          resolveRun = resolve;
+        }),
+    );
+
+    const first = coalesceInFlight(inflight, 'key-a', run);
+    const second = coalesceInFlight(inflight, 'key-a', run);
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(second).toBe(first);
+
+    resolveRun('done');
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      'done',
+      'done',
+    ]);
+    expect(inflight.size).toBe(0);
+  });
+
+  it('runs separately for different keys', async () => {
+    const inflight = new Map<string, Promise<string>>();
+    const runA = jest.fn(async () => 'a');
+    const runB = jest.fn(async () => 'b');
+
+    await expect(
+      Promise.all([
+        coalesceInFlight(inflight, 'key-a', runA),
+        coalesceInFlight(inflight, 'key-b', runB),
+      ]),
+    ).resolves.toEqual(['a', 'b']);
+
+    expect(runA).toHaveBeenCalledTimes(1);
+    expect(runB).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows a new run after the previous one settles', async () => {
+    const inflight = new Map<string, Promise<number>>();
+    const run = jest.fn().mockResolvedValueOnce(1).mockResolvedValueOnce(2);
+
+    await expect(coalesceInFlight(inflight, 'key-a', run)).resolves.toBe(1);
+    await expect(coalesceInFlight(inflight, 'key-a', run)).resolves.toBe(2);
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears the key when the run fails so a retry can start', async () => {
+    const inflight = new Map<string, Promise<string>>();
+    const run = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce('ok');
+
+    await expect(coalesceInFlight(inflight, 'key-a', run)).rejects.toThrow(
+      'boom',
+    );
+    await expect(coalesceInFlight(inflight, 'key-a', run)).resolves.toBe('ok');
+    expect(run).toHaveBeenCalledTimes(2);
   });
 });

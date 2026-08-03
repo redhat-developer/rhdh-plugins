@@ -20,3 +20,25 @@ export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
   }
   return watermark;
 }
+
+/**
+ * Shares one in-flight promise per key so concurrent callers wait on the same work.
+ */
+export function coalesceInFlight<T>(
+  inflight: Map<string, Promise<T>>,
+  key: string,
+  run: () => Promise<T>,
+): Promise<T> {
+  const existing = inflight.get(key);
+  if (existing) {
+    return existing;
+  }
+
+  const promise = run().finally(() => {
+    if (inflight.get(key) === promise) {
+      inflight.delete(key);
+    }
+  });
+  inflight.set(key, promise);
+  return promise;
+}
