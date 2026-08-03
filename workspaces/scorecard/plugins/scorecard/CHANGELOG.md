@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.0.0
+
+### Patch Changes
+
+- e9b1af3: Add scalprum config and default app configuration example
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+
 ## 3.0.1
 
 ### Patch Changes
