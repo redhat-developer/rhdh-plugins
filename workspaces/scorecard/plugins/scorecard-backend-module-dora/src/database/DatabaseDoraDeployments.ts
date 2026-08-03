@@ -17,7 +17,6 @@
 import { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import {
-  asDate,
   fromDoraDeploymentRow,
   toDoraDeploymentRow,
   type DbDoraDeploymentRow,
@@ -26,10 +25,6 @@ import { DbDoraDeployment, DbDoraDeploymentCreate } from './types';
 
 export interface DoraDeploymentsStore {
   upsert(deployments: DbDoraDeploymentCreate[]): Promise<void>;
-  getLatestCreatedAt(
-    catalogEntityRef: string,
-    collectorId: string,
-  ): Promise<Date | undefined>;
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
@@ -61,23 +56,6 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
         'original_deployment_id',
       ])
       .merge(['commit_sha', 'environment', 'created_at', 'result']);
-  }
-
-  async getLatestCreatedAt(
-    catalogEntityRef: string,
-    collectorId: string,
-  ): Promise<Date | undefined> {
-    const row = await this.dbClient(this.tableName)
-      .where('catalog_entity_ref', catalogEntityRef)
-      .andWhere('collector_id', collectorId)
-      .max('created_at as latest')
-      .first();
-
-    if (!row?.latest) {
-      return undefined;
-    }
-
-    return asDate(row.latest);
   }
 
   async readByEntityCollectorAndWindow(

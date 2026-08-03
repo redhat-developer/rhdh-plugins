@@ -18,6 +18,7 @@ import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
+import type { DoraLastSyncStore } from '../database/DatabaseDoraLastSync';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
 import {
   deploymentsCollectorInputSchema,
@@ -66,11 +67,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
     private readonly deploymentsDb: DoraDeploymentsStore,
     private readonly incidentsDb: DoraIncidentsStore,
     private readonly pullRequestsDb: DoraPullRequestsStore,
+    private readonly lastSyncDb: DoraLastSyncStore,
   ) {}
 
   /**
-   * Retrieves and persists deployments
-   * that were created after the last successfully synced deployment's createdAt
+   * Retrieves and persists deployments created after the last successful sync
    * for a given entity and collector.
    *
    * Concurrent syncs for the same entity and collector share one in-flight fetch.
@@ -92,11 +93,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
-    const syncWatermark = await this.deploymentsDb.getLatestCreatedAt(
+    const lastSyncedAt = await this.lastSyncDb.getLastSyncedAt(
       catalogEntityRef,
       collectorId,
     );
-    const syncFrom = laterOf(options.windowFrom, syncWatermark);
+    const syncFrom = laterOf(options.windowFrom, lastSyncedAt);
 
     const collected = await this.collectorsService.collect<
       typeof deploymentsCollectorInputSchema,
@@ -126,11 +127,16 @@ export class DefaultDoraSyncService implements DoraSyncService {
         result: deployment.result,
       })),
     );
+
+    await this.lastSyncDb.setLastSyncedAt(
+      catalogEntityRef,
+      collectorId,
+      options.windowTo,
+    );
   }
 
   /**
-   * Retrieves and persists incidents
-   * that were updated after the last successfully synced incident's updatedAt
+   * Retrieves and persists incidents updated after the last successful sync
    * for a given entity and collector.
    *
    * Concurrent syncs for the same entity and collector share one in-flight fetch.
@@ -152,11 +158,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
-    const watermark = await this.incidentsDb.getLatestUpdatedAt(
+    const lastSyncedAt = await this.lastSyncDb.getLastSyncedAt(
       catalogEntityRef,
       collectorId,
     );
-    const updatedSince = laterOf(options.windowFrom, watermark);
+    const updatedSince = laterOf(options.windowFrom, lastSyncedAt);
 
     const collected = await this.collectorsService.collect<
       typeof incidentsCollectorInputSchema,
@@ -187,6 +193,12 @@ export class DefaultDoraSyncService implements DoraSyncService {
           ? new Date(incident.resolutionAt)
           : null,
       })),
+    );
+
+    await this.lastSyncDb.setLastSyncedAt(
+      catalogEntityRef,
+      collectorId,
+      options.windowTo,
     );
   }
 

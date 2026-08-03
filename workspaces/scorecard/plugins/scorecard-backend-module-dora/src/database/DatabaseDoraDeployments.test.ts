@@ -24,91 +24,209 @@ describe('DatabaseDoraDeployments', () => {
     ids: ['POSTGRES_15', 'SQLITE_3'],
   });
 
-  it.each(databases.eachSupportedId())(
-    'upserts, reads cursor and window scoped by collector - %p',
-    async databaseId => {
-      const { deployments } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      const entityRef = 'component:default/service-a';
-      const collectorId = 'github:deployments';
-      const otherCollectorId = 'github:deploymentWorkflowRuns';
+  describe('upsert', () => {
+    it.each(databases.eachSupportedId())(
+      'inserts deployments - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'github:deployments';
 
-      expect(
-        await deployments.getLatestCreatedAt(entityRef, collectorId),
-      ).toBeUndefined();
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            result: 'success',
+          },
+        ]);
 
-      await deployments.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: collectorId,
-          originalDeploymentId: 'dep-1',
-          commitSha: 'sha-1',
-          environment: 'production',
-          createdAt: new Date('2026-06-01T10:00:00.000Z'),
-          result: 'success',
-        },
-        {
-          catalogEntityRef: entityRef,
-          collectorId: collectorId,
-          originalDeploymentId: 'dep-2',
-          commitSha: 'sha-2',
-          environment: 'production',
-          createdAt: new Date('2026-06-10T10:00:00.000Z'),
-          result: 'success',
-        },
-        {
-          // Same original id from a different collector is a distinct row
-          catalogEntityRef: entityRef,
-          collectorId: otherCollectorId,
-          originalDeploymentId: 'dep-2',
-          commitSha: 'sha-other',
-          environment: 'production',
-          createdAt: new Date('2026-06-20T10:00:00.000Z'),
-          result: 'success',
-        },
-      ]);
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
 
-      const cursor = await deployments.getLatestCreatedAt(
-        entityRef,
-        collectorId,
-      );
-      expect(cursor?.toISOString()).toBe('2026-06-10T10:00:00.000Z');
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toEqual(expect.any(String));
+        expect(rows[0].originalDeploymentId).toBe('dep-1');
+        expect(rows[0].commitSha).toBe('sha-1');
+      },
+    );
 
-      await deployments.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: collectorId,
-          originalDeploymentId: 'dep-2',
-          commitSha: 'sha-2-updated',
-          environment: 'production',
-          createdAt: new Date('2026-06-10T10:00:00.000Z'),
-          result: 'failure',
-        },
-      ]);
+    it.each(databases.eachSupportedId())(
+      'merges updates on natural key conflict - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'github:deployments';
 
-      const windowRows = await deployments.readByEntityCollectorAndWindow(
-        entityRef,
-        collectorId,
-        new Date('2026-06-01T00:00:00.000Z'),
-        new Date('2026-06-30T00:00:00.000Z'),
-      );
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            result: 'success',
+          },
+        ]);
+        // Conflict on (catalog_entity_ref, collector_id, original_deployment_id) for commitSha
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1-updated',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            result: 'failure',
+          },
+        ]);
 
-      expect(windowRows).toHaveLength(2);
-      expect(windowRows[1].commitSha).toBe('sha-2-updated');
-      expect(windowRows[1].result).toBe('failure');
-      expect(windowRows[0].id).toEqual(expect.any(String));
-      expect(windowRows[1].id).toEqual(expect.any(String));
-    },
-  );
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
 
-  it.each(databases.eachSupportedId())(
-    'no-ops when upserting an empty list - %p',
-    async databaseId => {
-      const { deployments } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      await expect(deployments.upsert([])).resolves.toBeUndefined();
-    },
-  );
+        expect(rows).toHaveLength(1);
+        expect(rows[0].commitSha).toBe('sha-1-updated');
+        expect(rows[0].result).toBe('failure');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'treats the same original id from different collectors as distinct - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: 'github:deployments',
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            result: 'success',
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: 'github:deploymentWorkflowRuns',
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-other',
+            environment: 'production',
+            createdAt: new Date('2026-06-20T10:00:00.000Z'),
+            result: 'success',
+          },
+        ]);
+
+        const githubRows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          'github:deployments',
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        const workflowRows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          'github:deploymentWorkflowRuns',
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(githubRows).toHaveLength(1);
+        expect(githubRows[0].commitSha).toBe('sha-1');
+        expect(workflowRows).toHaveLength(1);
+        expect(workflowRows[0].commitSha).toBe('sha-other');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'no-ops when upserting an empty list - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        await expect(deployments.upsert([])).resolves.toBeUndefined();
+      },
+    );
+  });
+
+  describe('readByEntityCollectorAndWindow', () => {
+    it.each(databases.eachSupportedId())(
+      'returns rows in the window for the given collector - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'github:deployments';
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-before',
+            commitSha: 'sha-before',
+            environment: 'production',
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+            result: 'success',
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            result: 'success',
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-2',
+            commitSha: 'sha-2',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            result: 'success',
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: 'github:deploymentWorkflowRuns',
+            originalDeploymentId: 'dep-other',
+            commitSha: 'sha-other',
+            environment: 'production',
+            createdAt: new Date('2026-06-15T10:00:00.000Z'),
+            result: 'success',
+          },
+        ]);
+
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(rows.map(row => row.originalDeploymentId)).toEqual([
+          'dep-1',
+          'dep-2',
+        ]);
+      },
+    );
+  });
 });

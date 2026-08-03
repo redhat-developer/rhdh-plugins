@@ -17,7 +17,6 @@
 import { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import {
-  asDate,
   fromDoraIncidentRow,
   toDoraIncidentRow,
   type DbDoraIncidentRow,
@@ -26,10 +25,6 @@ import { DbDoraIncident, DbDoraIncidentCreate } from './types';
 
 export interface DoraIncidentsStore {
   upsert(incidents: DbDoraIncidentCreate[]): Promise<void>;
-  getLatestUpdatedAt(
-    catalogEntityRef: string,
-    collectorId: string,
-  ): Promise<Date | undefined>;
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
@@ -61,23 +56,6 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
         'original_incident_id',
       ])
       .merge(['created_at', 'updated_at', 'resolution_at']);
-  }
-
-  async getLatestUpdatedAt(
-    catalogEntityRef: string,
-    collectorId: string,
-  ): Promise<Date | undefined> {
-    const row = await this.dbClient(this.tableName)
-      .where('catalog_entity_ref', catalogEntityRef)
-      .andWhere('collector_id', collectorId)
-      .max('updated_at as latest')
-      .first();
-
-    if (!row?.latest) {
-      return undefined;
-    }
-
-    return asDate(row.latest);
   }
 
   async readByEntityCollectorAndWindow(

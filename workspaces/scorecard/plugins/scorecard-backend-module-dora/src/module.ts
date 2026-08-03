@@ -24,6 +24,7 @@ import {
 import { migrate } from './database/migration';
 import { DatabaseDoraDeployments } from './database/DatabaseDoraDeployments';
 import { DatabaseDoraIncidents } from './database/DatabaseDoraIncidents';
+import { DatabaseDoraLastSync } from './database/DatabaseDoraLastSync';
 import { DatabaseDoraPullRequests } from './database/DatabaseDoraPullRequests';
 import { DoraChangeFailureRateProvider } from './metricProviders/DoraChangeFailureRateProvider';
 import { DoraDeploymentFrequencyProvider } from './metricProviders/DoraDeploymentFrequencyProvider';
@@ -50,12 +51,14 @@ export const scorecardModuleDora = createBackendModule({
         const deploymentsDb = new DatabaseDoraDeployments(dbClient);
         const incidentsDb = new DatabaseDoraIncidents(dbClient);
         const pullRequestsDb = new DatabaseDoraPullRequests(dbClient);
+        const lastSyncDb = new DatabaseDoraLastSync(dbClient);
 
         const doraSyncService = new DefaultDoraSyncService(
           collectorsService,
           deploymentsDb,
           incidentsDb,
           pullRequestsDb,
+          lastSyncDb,
         );
         const doraDataService = new DefaultDoraDataService(
           deploymentsDb,

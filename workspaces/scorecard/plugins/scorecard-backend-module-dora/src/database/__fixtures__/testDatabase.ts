@@ -18,6 +18,7 @@ import { resolvePackagePath } from '@backstage/backend-plugin-api';
 import type { Knex } from 'knex';
 import { DatabaseDoraDeployments } from '../DatabaseDoraDeployments';
 import { DatabaseDoraIncidents } from '../DatabaseDoraIncidents';
+import { DatabaseDoraLastSync } from '../DatabaseDoraLastSync';
 import { DatabaseDoraPullRequests } from '../DatabaseDoraPullRequests';
 
 const migrationsDir = resolvePackagePath(
@@ -35,6 +36,7 @@ export async function createTestDatabase(client: Knex) {
     client,
     deployments: new DatabaseDoraDeployments(client),
     incidents: new DatabaseDoraIncidents(client),
+    lastSync: new DatabaseDoraLastSync(client),
     pullRequests: new DatabaseDoraPullRequests(client),
   };
 }

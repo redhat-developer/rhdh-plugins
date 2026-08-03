@@ -38,11 +38,10 @@ describe('DefaultDoraSyncService', () => {
   });
 
   it.each(databases.eachSupportedId())(
-    'syncs deployments created after the last watermark - %p',
+    'syncs deployments from the last successful sync watermark - %p',
     async databaseId => {
-      const { deployments, incidents, pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
 
       const deploymentsCollector = buildMockDeploymentsCollector({
         deployments: [
@@ -65,6 +64,7 @@ describe('DefaultDoraSyncService', () => {
         deployments,
         incidents,
         pullRequests,
+        lastSync,
       );
       const dataService = new DefaultDoraDataService(
         deployments,
@@ -73,12 +73,13 @@ describe('DefaultDoraSyncService', () => {
       );
 
       const windowFrom = new Date('2026-06-01T00:00:00.000Z');
-      const windowTo = new Date('2026-06-30T00:00:00.000Z');
+      const firstWindowTo = new Date('2026-06-15T00:00:00.000Z');
+      const secondWindowTo = new Date('2026-06-30T00:00:00.000Z');
       const catalogEntityRef = stringifyEntityRef(mockEntity);
 
       await syncService.syncDeployments(mockEntity, {
         windowFrom,
-        windowTo,
+        windowTo: firstWindowTo,
         collector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
@@ -87,7 +88,7 @@ describe('DefaultDoraSyncService', () => {
 
       const first = await dataService.readDeployments(catalogEntityRef, {
         windowFrom,
-        windowTo,
+        windowTo: secondWindowTo,
         collector: { id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID },
       });
 
@@ -96,10 +97,18 @@ describe('DefaultDoraSyncService', () => {
         expect.objectContaining({
           input: expect.objectContaining({
             from: windowFrom.toISOString(),
-            to: windowTo.toISOString(),
+            to: firstWindowTo.toISOString(),
           }),
         }),
       );
+      expect(
+        (
+          await lastSync.getLastSyncedAt(
+            catalogEntityRef,
+            DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          )
+        )?.toISOString(),
+      ).toBe(firstWindowTo.toISOString());
 
       jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
         deployments: [
@@ -107,7 +116,7 @@ describe('DefaultDoraSyncService', () => {
             id: '101',
             commitSha: 'sha-2',
             environment: 'production',
-            createdAt: '2026-06-15T00:00:00.000Z',
+            createdAt: '2026-06-20T00:00:00.000Z',
             result: 'success',
           },
         ],
@@ -115,7 +124,7 @@ describe('DefaultDoraSyncService', () => {
 
       await syncService.syncDeployments(mockEntity, {
         windowFrom,
-        windowTo,
+        windowTo: secondWindowTo,
         collector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
@@ -124,7 +133,7 @@ describe('DefaultDoraSyncService', () => {
 
       const second = await dataService.readDeployments(catalogEntityRef, {
         windowFrom,
-        windowTo,
+        windowTo: secondWindowTo,
         collector: { id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID },
       });
 
@@ -132,8 +141,8 @@ describe('DefaultDoraSyncService', () => {
       expect(collect).toHaveBeenLastCalledWith(
         expect.objectContaining({
           input: expect.objectContaining({
-            from: '2026-06-10T00:00:00.000Z', // uses latest createdAt watermark
-            to: windowTo.toISOString(),
+            from: firstWindowTo.toISOString(),
+            to: secondWindowTo.toISOString(),
           }),
         }),
       );
@@ -143,9 +152,8 @@ describe('DefaultDoraSyncService', () => {
   it.each(databases.eachSupportedId())(
     'coalesces concurrent deployment syncs for the same entity and collector - %p',
     async databaseId => {
-      const { deployments, incidents, pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
 
       let resolveCollect!: () => void;
       const collectGate = new Promise<void>(resolve => {
@@ -187,6 +195,7 @@ describe('DefaultDoraSyncService', () => {
         deployments,
         incidents,
         pullRequests,
+        lastSync,
       );
 
       const windowFrom = new Date('2026-06-01T00:00:00.000Z');
@@ -200,6 +209,9 @@ describe('DefaultDoraSyncService', () => {
         },
       };
 
+      // Hold the first collect open so the sync stays in-flight, then start a
+      // second sync for the same entity/collector.
+      // Both should share that one collector call, not run two fetches.
       const first = syncService.syncDeployments(mockEntity, options);
       const second = syncService.syncDeployments(mockEntity, options);
       resolveCollect();
@@ -210,11 +222,10 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
-    'syncs incidents with created after window start and updated since the last watermark - %p',
+    'syncs incidents updated since the last successful sync watermark - %p',
     async databaseId => {
-      const { deployments, incidents, pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
 
       const incidentsCollector = buildMockIncidentsCollector({
         incidents: [
@@ -236,14 +247,16 @@ describe('DefaultDoraSyncService', () => {
         deployments,
         incidents,
         pullRequests,
+        lastSync,
       );
 
       const windowFrom = new Date('2026-06-01T00:00:00.000Z');
-      const windowTo = new Date('2026-06-30T00:00:00.000Z');
+      const firstWindowTo = new Date('2026-06-15T00:00:00.000Z');
+      const secondWindowTo = new Date('2026-06-30T00:00:00.000Z');
 
       await syncService.syncIncidents(mockEntity, {
         windowFrom,
-        windowTo,
+        windowTo: firstWindowTo,
         collector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
@@ -254,7 +267,7 @@ describe('DefaultDoraSyncService', () => {
         expect.objectContaining({
           input: expect.objectContaining({
             from: windowFrom.toISOString(),
-            to: windowTo.toISOString(),
+            to: firstWindowTo.toISOString(),
             updatedSince: windowFrom.toISOString(),
           }),
         }),
@@ -262,7 +275,7 @@ describe('DefaultDoraSyncService', () => {
 
       await syncService.syncIncidents(mockEntity, {
         windowFrom,
-        windowTo,
+        windowTo: secondWindowTo,
         collector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
@@ -273,8 +286,8 @@ describe('DefaultDoraSyncService', () => {
         expect.objectContaining({
           input: expect.objectContaining({
             from: windowFrom.toISOString(),
-            to: windowTo.toISOString(),
-            updatedSince: '2026-06-11T00:00:00.000Z', // uses latest updatedAt watermark
+            to: secondWindowTo.toISOString(),
+            updatedSince: firstWindowTo.toISOString(),
           }),
         }),
       );

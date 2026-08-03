@@ -83,9 +83,18 @@ exports.up = async function up(knex) {
       'dora_pull_requests_entity_collector_deployment_idx',
     );
   });
+
+  await knex.schema.createTable('dora_last_sync', table => {
+    table.string('catalog_entity_ref').notNullable();
+    table.string('collector_id').notNullable();
+    table.dateTime('last_synced_at', { precision: 0 }).notNullable();
+
+    table.primary(['catalog_entity_ref', 'collector_id']);
+  });
 };
 
 exports.down = async function down(knex) {
+  await knex.schema.dropTable('dora_last_sync');
   await knex.schema.dropTable('dora_pull_requests');
   await knex.schema.dropTable('dora_incidents');
   await knex.schema.dropTable('dora_deployments');

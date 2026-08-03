@@ -16,131 +16,161 @@
 
 import { TestDatabases } from '@backstage/backend-test-utils';
 import { createTestDatabase } from './__fixtures__';
+import { DatabaseDoraDeployments } from './DatabaseDoraDeployments';
 
 jest.setTimeout(60000);
+
+async function seedDeployment(
+  deploymentsDb: DatabaseDoraDeployments,
+  entityRef = 'component:default/service-a',
+) {
+  const deploymentsCollectorId = 'github:deployments';
+  await deploymentsDb.upsert([
+    {
+      catalogEntityRef: entityRef,
+      collectorId: deploymentsCollectorId,
+      originalDeploymentId: 'dep-1',
+      commitSha: 'sha-1',
+      environment: 'production',
+      createdAt: new Date('2026-06-10T10:00:00.000Z'),
+      result: 'success',
+    },
+  ]);
+  const [deployment] = await deploymentsDb.readByEntityCollectorAndWindow(
+    entityRef,
+    deploymentsCollectorId,
+    new Date('2026-06-01T00:00:00.000Z'),
+    new Date('2026-06-30T00:00:00.000Z'),
+  );
+  return { entityRef, deployment };
+}
 
 describe('DatabaseDoraPullRequests', () => {
   const databases = TestDatabases.create({
     ids: ['POSTGRES_15', 'SQLITE_3'],
   });
 
-  it.each(databases.eachSupportedId())(
-    'upserts and reads by deployment - %p',
-    async databaseId => {
-      const { deployments, pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      const entityRef = 'component:default/service-a';
-      const deploymentsCollectorId = 'github:deployments';
-      const prCollectorId = 'github:deploymentRangePullRequests';
+  describe('upsert', () => {
+    it.each(databases.eachSupportedId())(
+      'inserts pull requests - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        const prCollectorId = 'github:deploymentRangePullRequests';
 
-      await deployments.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: deploymentsCollectorId,
-          originalDeploymentId: 'dep-1',
-          commitSha: 'sha-1',
-          environment: 'production',
-          createdAt: new Date('2026-06-10T10:00:00.000Z'),
-          result: 'success',
-        },
-      ]);
-      const [deployment] = await deployments.readByEntityCollectorAndWindow(
-        entityRef,
-        deploymentsCollectorId,
-        new Date('2026-06-01T00:00:00.000Z'),
-        new Date('2026-06-30T00:00:00.000Z'),
-      );
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
 
-      await pullRequests.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: prCollectorId,
-          originalPrId: 'pr-1',
-          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-          deploymentId: deployment.id,
-        },
-      ]);
+        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+          entityRef,
+          prCollectorId,
+          deployment.id,
+        );
 
-      const rows = await pullRequests.readByEntityCollectorAndDeployment(
-        entityRef,
-        prCollectorId,
-        deployment.id,
-      );
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toEqual(expect.any(String));
+        expect(rows[0].originalPrId).toBe('pr-1');
+        expect(rows[0].deploymentId).toBe(deployment.id);
+      },
+    );
 
-      expect(rows).toHaveLength(1);
-      expect(rows[0].originalPrId).toBe('pr-1');
-      expect(rows[0].deploymentId).toBe(deployment.id);
-      expect(rows[0].id).toEqual(expect.any(String));
-    },
-  );
+    it.each(databases.eachSupportedId())(
+      'merges updates on natural key conflict - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        const prCollectorId = 'github:deploymentRangePullRequests';
 
-  it.each(databases.eachSupportedId())(
-    'merges pull request updates on natural key conflict - %p',
-    async databaseId => {
-      const { deployments, pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      const entityRef = 'component:default/service-a';
-      const prCollectorId = 'github:deploymentRangePullRequests';
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+        // Conflict on (catalog_entity_ref, collector_id, original_pr_id, deployment_id) for firstCommitAt
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T12:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
 
-      await deployments.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: 'github:deployments',
-          originalDeploymentId: 'dep-1',
-          commitSha: 'sha-1',
-          environment: 'production',
-          createdAt: new Date('2026-06-10T10:00:00.000Z'),
-          result: 'success',
-        },
-      ]);
-      const [deployment] = await deployments.readByEntityCollectorAndWindow(
-        entityRef,
-        'github:deployments',
-        new Date('2026-06-01T00:00:00.000Z'),
-        new Date('2026-06-30T00:00:00.000Z'),
-      );
+        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+          entityRef,
+          prCollectorId,
+          deployment.id,
+        );
 
-      await pullRequests.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: prCollectorId,
-          originalPrId: 'pr-1',
-          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-          deploymentId: deployment.id,
-        },
-      ]);
-      await pullRequests.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: prCollectorId,
-          originalPrId: 'pr-1',
-          firstCommitAt: new Date('2026-06-09T12:00:00.000Z'),
-          deploymentId: deployment.id,
-        },
-      ]);
+        expect(rows).toHaveLength(1);
+        expect(rows[0].firstCommitAt.toISOString()).toBe(
+          '2026-06-09T12:00:00.000Z',
+        );
+      },
+    );
 
-      const rows = await pullRequests.readByEntityCollectorAndDeployment(
-        entityRef,
-        prCollectorId,
-        deployment.id,
-      );
+    it.each(databases.eachSupportedId())(
+      'no-ops when upserting an empty list - %p',
+      async databaseId => {
+        const { pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        await expect(pullRequests.upsert([])).resolves.toBeUndefined();
+      },
+    );
+  });
 
-      expect(rows).toHaveLength(1);
-      expect(rows[0].firstCommitAt.toISOString()).toBe(
-        '2026-06-09T12:00:00.000Z',
-      );
-    },
-  );
+  describe('readByEntityCollectorAndDeployment', () => {
+    it.each(databases.eachSupportedId())(
+      'returns pull requests for the given deployment - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        const prCollectorId = 'github:deploymentRangePullRequests';
 
-  it.each(databases.eachSupportedId())(
-    'no-ops when upserting an empty list - %p',
-    async databaseId => {
-      const { pullRequests } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      await expect(pullRequests.upsert([])).resolves.toBeUndefined();
-    },
-  );
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-2',
+            firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+
+        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+          entityRef,
+          prCollectorId,
+          deployment.id,
+        );
+
+        expect(rows.map(row => row.originalPrId)).toEqual(['pr-1', 'pr-2']);
+      },
+    );
+  });
 });

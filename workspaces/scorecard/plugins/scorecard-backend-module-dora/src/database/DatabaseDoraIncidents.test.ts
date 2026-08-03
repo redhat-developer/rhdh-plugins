@@ -24,68 +24,149 @@ describe('DatabaseDoraIncidents', () => {
     ids: ['POSTGRES_15', 'SQLITE_3'],
   });
 
-  it.each(databases.eachSupportedId())(
-    'upserts resolution updates and reads window - %p',
-    async databaseId => {
-      const { incidents } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      const entityRef = 'component:default/service-a';
-      const collectorId = 'jira:incidents';
+  describe('upsert', () => {
+    it.each(databases.eachSupportedId())(
+      'inserts incidents - %p',
+      async databaseId => {
+        const { incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'jira:incidents';
 
-      expect(
-        await incidents.getLatestUpdatedAt(entityRef, collectorId),
-      ).toBeUndefined();
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-1',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-01T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+        ]);
 
-      await incidents.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: collectorId,
-          originalIncidentId: 'INC-1',
-          createdAt: new Date('2026-06-01T10:00:00.000Z'),
-          updatedAt: new Date('2026-06-01T10:00:00.000Z'),
-          resolutionAt: null,
-        },
-      ]);
+        const rows = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
 
-      await incidents.upsert([
-        {
-          catalogEntityRef: entityRef,
-          collectorId: collectorId,
-          originalIncidentId: 'INC-1',
-          createdAt: new Date('2026-06-01T10:00:00.000Z'),
-          updatedAt: new Date('2026-06-02T12:00:00.000Z'),
-          resolutionAt: new Date('2026-06-02T12:00:00.000Z'),
-        },
-      ]);
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toEqual(expect.any(String));
+        expect(rows[0].originalIncidentId).toBe('INC-1');
+        expect(rows[0].resolutionAt).toBeNull();
+      },
+    );
 
-      const rows = await incidents.readByEntityCollectorAndWindow(
-        entityRef,
-        collectorId,
-        new Date('2026-06-01T00:00:00.000Z'),
-        new Date('2026-06-30T00:00:00.000Z'),
-      );
+    it.each(databases.eachSupportedId())(
+      'merges resolution updates on natural key conflict - %p',
+      async databaseId => {
+        const { incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'jira:incidents';
 
-      expect(rows).toHaveLength(1);
-      expect(rows[0].id).toEqual(expect.any(String));
-      expect(rows[0].resolutionAt?.toISOString()).toBe(
-        '2026-06-02T12:00:00.000Z',
-      );
-      expect(
-        (
-          await incidents.getLatestUpdatedAt(entityRef, collectorId)
-        )?.toISOString(),
-      ).toBe('2026-06-02T12:00:00.000Z');
-    },
-  );
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-1',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-01T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+        ]);
+        // Conflict on (catalog_entity_ref, collector_id, original_incident_id) for updatedAt and resolutionAt
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-1',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-02T12:00:00.000Z'),
+            resolutionAt: new Date('2026-06-02T12:00:00.000Z'),
+          },
+        ]);
 
-  it.each(databases.eachSupportedId())(
-    'no-ops when upserting an empty list - %p',
-    async databaseId => {
-      const { incidents } = await createTestDatabase(
-        await databases.init(databaseId),
-      );
-      await expect(incidents.upsert([])).resolves.toBeUndefined();
-    },
-  );
+        const rows = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0].updatedAt?.toISOString()).toBe(
+          '2026-06-02T12:00:00.000Z',
+        );
+        expect(rows[0].resolutionAt?.toISOString()).toBe(
+          '2026-06-02T12:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'no-ops when upserting an empty list - %p',
+      async databaseId => {
+        const { incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        await expect(incidents.upsert([])).resolves.toBeUndefined();
+      },
+    );
+  });
+
+  describe('readByEntityCollectorAndWindow', () => {
+    it.each(databases.eachSupportedId())(
+      'returns rows in the window for the given collector - %p',
+      async databaseId => {
+        const { incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = 'jira:incidents';
+
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-before',
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+            updatedAt: new Date('2026-05-31T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-1',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-01T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-2',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-10T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+        ]);
+
+        const rows = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(rows.map(row => row.originalIncidentId)).toEqual([
+          'INC-1',
+          'INC-2',
+        ]);
+      },
+    );
+  });
 });
