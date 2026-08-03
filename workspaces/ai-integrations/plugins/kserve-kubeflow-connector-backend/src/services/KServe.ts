@@ -18,6 +18,7 @@
 
 import {
   PropertyKeys,
+  type InferenceService,
   type ModelCatalog,
   type Model,
   type ModelServer,
@@ -40,66 +41,6 @@ const FRAMEWORK_PMML = 'pmml';
 const FRAMEWORK_LIGHTGBM = 'lightgbm';
 const FRAMEWORK_PADDLE = 'paddle';
 
-// InferenceService interface (matching KServe API)
-export interface KServeInferenceService {
-  metadata: {
-    name: string;
-    namespace: string;
-    labels?: { [key: string]: string };
-    annotations?: { [key: string]: string };
-  };
-  spec: {
-    predictor: {
-      sklearn?: any;
-      xgboost?: any;
-      tensorflow?: any;
-      pytorch?: any;
-      triton?: any;
-      onnx?: any;
-      huggingface?: any;
-      pmml?: any;
-      lightgbm?: any;
-      paddle?: any;
-      model?: {
-        modelFormat: {
-          name: string;
-          version?: string;
-        };
-        storageURI?: string;
-        storage?: {
-          path?: string;
-        };
-      };
-    };
-    explainer?: {
-      art?: {
-        type: string;
-      };
-    };
-  };
-  status?: {
-    url?: {
-      toString(): string;
-    };
-    address?: {
-      url: string;
-    };
-    components?: {
-      [key: string]: {
-        url?: {
-          toString(): string;
-        };
-        restURL?: {
-          toString(): string;
-        };
-        grpcURL?: {
-          toString(): string;
-        };
-      };
-    };
-  };
-}
-
 // Re-export types from @redhat-ai-dev/model-catalog-types for use by consumers
 export type { ModelCatalog, Model, ModelServer };
 
@@ -117,7 +58,7 @@ function fixKeyForAnnotation(key: string): string {
 // Helper function: Get string property value from annotations (kserve.go line 322)
 function getStringPropVal(
   key: string,
-  is: KServeInferenceService,
+  is: InferenceService,
 ): string | undefined {
   if (!is || !is.metadata.annotations) {
     return undefined;
@@ -130,17 +71,17 @@ function getStringPropVal(
 }
 
 // Get name (namespace_name format) - kserve.go line 54
-function getName(is: KServeInferenceService): string {
+function getName(is: InferenceService): string {
   return `${is.metadata.namespace}_${is.metadata.name}`;
 }
 
 // Get description - kserve.go line 60
-function getDescription(is: KServeInferenceService): string {
+function getDescription(is: InferenceService): string {
   return `KServe instance ${is.metadata.namespace}:${is.metadata.name}`;
 }
 
 // Get tags from predictor spec - kserve.go line 113
-function getTags(is: KServeInferenceService): string[] {
+function getTags(is: InferenceService): string[] {
   const tags: string[] = [];
 
   if (!is) {
@@ -180,7 +121,7 @@ function getTags(is: KServeInferenceService): string[] {
 }
 
 // Get tags from labels - used for ModelServer and API - kserve.go line 391
-function getTagsFromLabels(is: KServeInferenceService): string[] {
+function getTagsFromLabels(is: InferenceService): string[] {
   const tags: string[] = [];
 
   if (!is.metadata.labels) {
@@ -196,9 +137,7 @@ function getTagsFromLabels(is: KServeInferenceService): string[] {
 }
 
 // Get artifact location URL - kserve.go line 580
-function getArtifactLocationURL(
-  is: KServeInferenceService,
-): string | undefined {
+function getArtifactLocationURL(is: InferenceService): string | undefined {
   const model = is.spec.predictor.model;
 
   if (model?.storageURI) {
@@ -217,7 +156,7 @@ function getArtifactLocationURL(
 export async function callBackstagePrinters(
   owner: string,
   lifecycle: string,
-  is: KServeInferenceService,
+  is: InferenceService,
   authentication: boolean = false,
   connectorBaseUrl?: string,
 ): Promise<ModelCatalog> {
@@ -238,7 +177,7 @@ export async function callBackstagePrinters(
 function generateModelCatalog(
   owner: string,
   lifecycle: string,
-  is: KServeInferenceService,
+  is: InferenceService,
   authentication: boolean,
   connectorBaseUrl?: string,
 ): ModelCatalog {

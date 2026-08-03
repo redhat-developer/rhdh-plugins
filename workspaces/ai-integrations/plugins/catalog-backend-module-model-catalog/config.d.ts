@@ -29,13 +29,13 @@ export interface Config {
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
           [clusterKey: string]:
             | {
-                /** @visibility frontend */
+                /** @visibility backend */
                 name?: string;
-                /** @visibility frontend */
+                /** @visibility backend */
                 'kubeflow-model-catalog-url'?: string;
-                /** @visibility frontend */
+                /** @visibility backend */
                 'default-owner'?: string;
-                /** @visibility frontend */
+                /** @visibility backend */
                 'default-lifecycle'?: string;
               }
             | string
