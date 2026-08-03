@@ -202,13 +202,8 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
             await ModeCatalogBridgeTechdocUrlReader.auth.getOwnServiceCredentials(),
           targetPluginId: 'kserve-kubeflow-connector',
         });
-      let tok = token.token;
-      if (process.env.RHDH_TOKEN && process.env.RHDH_TOKEN.length > 0) {
-        tok = process.env.RHDH_TOKEN;
-        this.logger.info(`Using RHDH_TOKEN static admin token for ${url}`);
-      } else {
-        this.logger.info(`Using service-to-service token for ${url}`);
-      }
+      const tok = token.token;
+      this.logger.info(`Using service-to-service token for ${url}`);
       response = await fetch(url, {
         method: 'GET',
         headers: {
