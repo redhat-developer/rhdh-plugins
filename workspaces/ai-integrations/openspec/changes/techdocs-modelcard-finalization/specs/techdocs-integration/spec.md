@@ -1,37 +1,15 @@
-## Connector Self-Discovery
-
-### Requirement: Connector resolves its own base URL at startup
-
-The connector plugin SHALL use `coreServices.discovery` to determine its own HTTP base URL, so that TechDocsKey paths can be resolved into full URLs by downstream consumers.
-
-#### Scenario: connectorBaseUrl is populated at init
-
-- **WHEN** the connector plugin initializes
-- **THEN** `discovery.getBaseUrl('kserve-kubeflow-connector')` is called
-- **AND** the result is stored as `connectorBaseUrl` on `ConnectorConfig`
-- **AND** `connectorBaseUrl` is threaded through to `ReconcilerConfig`
-
-#### Scenario: connectorBaseUrl reaches KServe.ts
-
-- **WHEN** `callKServeBackstagePrinters` is called during InferenceService reconciliation
-- **THEN** `connectorBaseUrl` is passed as a parameter
-- **AND** it is available inside `generateModelCatalog` for TechDocsKey construction
-
----
-
 ## Auto TechDocsKey Annotation
 
 ### Requirement: TechDocsKey is auto-set when catalog annotations are present
 
-When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `model-catalog-bridge.ai.redhat.com/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint.
+When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `model-catalog-bridge.ai.redhat.com/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint. The entity provider's `ModelCatalogGenerator.ts` discovers the connector's base URL via `discovery.getBaseUrl()` and prepends it when constructing the final `backstage.io/techdocs-ref` annotation.
 
 #### Scenario: Auto-set TechDocsKey for annotated InferenceService
 
 - **WHEN** an InferenceService has `rhdh.io/catalog-source` = `<sourceId>` and `rhdh.io/catalog-model` = `<modelName>`
 - **AND** no `model-catalog-bridge.ai.redhat.com/techdocs` annotation is set
-- **AND** `connectorBaseUrl` is defined
 - **THEN** `techdocsUrl` is set to `/modelcard/<sourceId>/<modelName>`
-- **AND** the value is a path only — no `url:` prefix, no `connectorBaseUrl` prefix
+- **AND** the value is a path only — no `url:` prefix, no base URL prefix
 - **AND** the `TechDocs` key in the model annotations contains this path
 
 #### Scenario: Explicit TechDocsKey takes precedence
@@ -52,7 +30,7 @@ When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-mo
 
 ### Requirement: TechDocsKey path is correctly transformed into a full techdocs-ref annotation
 
-The entity provider's `ModelCatalogGenerator.ts` SHALL prepend `svcUrl` and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation.
+The entity provider's `ModelCatalogGenerator.ts` SHALL resolve the connector's base URL via `discovery.getBaseUrl()`, prepend it as `svcUrl`, and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation.
 
 #### Scenario: Full URL construction
 

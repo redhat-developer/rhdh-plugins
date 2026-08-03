@@ -264,7 +264,6 @@ async function reconcileInferenceService(
     config.defaultLifecycle,
     is,
     authentication,
-    config.connectorBaseUrl,
   );
   console.log(
     `Generated KServe catalog data with ${
@@ -558,7 +557,6 @@ export interface ConnectorConfig {
   catalogUrl?: string;
   defaultOwner?: string;
   defaultLifecycle?: string;
-  connectorBaseUrl?: string;
 }
 
 export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
@@ -589,7 +587,6 @@ export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
   const config: ReconcilerConfig = {
     catalogRoute: undefined,
     catalogUrl: connectorConfig?.catalogUrl,
-    connectorBaseUrl: connectorConfig?.connectorBaseUrl,
     defaultLifecycle:
       connectorConfig?.defaultLifecycle ||
       process.env.LIFECYCLE ||

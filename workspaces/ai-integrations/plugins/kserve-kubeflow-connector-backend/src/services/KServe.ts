@@ -158,19 +158,12 @@ export async function callBackstagePrinters(
   lifecycle: string,
   is: InferenceService,
   authentication: boolean = false,
-  connectorBaseUrl?: string,
 ): Promise<ModelCatalog> {
   console.log(
     `KServe.callBackstagePrinters: namespace=${is.metadata.namespace}, name=${is.metadata.name}, authentication=${authentication}`,
   );
 
-  return generateModelCatalog(
-    owner,
-    lifecycle,
-    is,
-    authentication,
-    connectorBaseUrl,
-  );
+  return generateModelCatalog(owner, lifecycle, is, authentication);
 }
 
 // Generate model catalog (kserve.go line 269-276)
@@ -179,7 +172,6 @@ function generateModelCatalog(
   lifecycle: string,
   is: InferenceService,
   authentication: boolean,
-  connectorBaseUrl?: string,
 ): ModelCatalog {
   const name = `${sanitizeName(getName(is))}`;
 
@@ -194,11 +186,7 @@ function generateModelCatalog(
 
   // Auto-set TechDocsKey when catalog annotations are present and
   // techdocsUrl is not already set via an explicit annotation.
-  if (
-    techdocsUrl === undefined &&
-    connectorBaseUrl !== undefined &&
-    is.metadata.annotations
-  ) {
+  if (techdocsUrl === undefined && is.metadata.annotations) {
     const sourceId = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
     const modelName = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
     if (sourceId && modelName) {

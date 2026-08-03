@@ -37,14 +37,9 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
-        discovery: coreServices.discovery,
       },
-      async init({ logger, httpRouter, config, discovery }) {
+      async init({ logger, httpRouter, config }) {
         let connectorConfig: ConnectorConfig | undefined;
-
-        const connectorBaseUrl = await discovery.getBaseUrl(
-          'kserve-kubeflow-connector',
-        );
 
         const providerConfigs = config.getOptionalConfig(
           'catalog.providers.modelCatalog',
@@ -76,7 +71,6 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
               defaultLifecycle:
                 clusterConfig.getOptionalString('default-lifecycle') ||
                 undefined,
-              connectorBaseUrl,
             };
           }
         }
