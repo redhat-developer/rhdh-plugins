@@ -181,10 +181,13 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.document.delete.success':
       '「{{documentName}}」が正常に削除されました。',
     'notebook.document.delete.title': 'リソースを削除しますか？',
-    'notebook.overwrite.modal.action': '上書き',
+    'notebook.overwrite.modal.action': 'アップロード ({{count}})',
+    'notebook.overwrite.modal.back': '戻る',
     'notebook.overwrite.modal.description':
-      '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
-    'notebook.overwrite.modal.title': 'ファイルを上書きしますか？',
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
+    'notebook.overwrite.modal.ignore': '重複ファイルを無視',
+    'notebook.overwrite.modal.replace': '既存のファイルを置換',
+    'notebook.overwrite.modal.title': 'ファイルが既に存在します',
     'notebook.upload.error.fileTooLarge':
       'アップロードエラー: ファイルサイズが 25 MB の制限を超えています。',
     'notebook.upload.error.tooManyFiles':
@@ -193,15 +196,19 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'アップロードエラー: サポートされていないファイル形式が見つかりました。サポートされているファイル形式のみをアップロードしてください。',
     'notebook.upload.failed': '「{{fileName}}」のアップロードに失敗しました。',
     'notebook.upload.modal.addButton': '追加 ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': '追加',
     'notebook.upload.modal.browseButton': 'アップロード',
-    'notebook.upload.modal.dragDropTitle': 'ここにファイルをドラッグ&ドロップ',
+    'notebook.upload.modal.dragDropTitle':
+      'ここにファイルをドラッグ&ドロップ、またはクリックして参照',
     'notebook.upload.modal.infoText':
       '対応ファイル形式: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize': '最大ファイルサイズは 25 MB です。',
+    'notebook.upload.modal.supportedFormats': 'サポートされている形式:',
     'notebook.upload.modal.removeFile': '{{fileName}} を削除',
     'notebook.upload.modal.selectedFiles':
       '{{max}} 件中 {{count}} 件のファイルを選択',
     'notebook.upload.modal.separator': 'または',
-    'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
+    'notebook.upload.modal.title': 'リソースを追加',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
     'notebook.view.documents.count': '{{count}} 件のドキュメント',
@@ -230,6 +237,9 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートブックを削除しました！',
     'notebooks.documents': 'ドキュメント',
+    'notebooks.documents.none': 'ドキュメントなし',
+    'notebooks.documents.one': '1 件のドキュメント',
+    'notebooks.documents.other': '{{count}} 件のドキュメント',
     'notebooks.empty.action': '新しいノートブックを作成',
     'notebooks.empty.description':
       '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',

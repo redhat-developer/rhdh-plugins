@@ -184,10 +184,13 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.document.delete.success':
       '«{{documentName}}» rimosso con successo.',
     'notebook.document.delete.title': 'Rimuovere la risorsa?',
-    'notebook.overwrite.modal.action': 'Sovrascrivi',
+    'notebook.overwrite.modal.action': 'Carica ({{count}})',
+    'notebook.overwrite.modal.back': 'Indietro',
     'notebook.overwrite.modal.description':
-      'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
-    'notebook.overwrite.modal.title': 'Sovrascrivere i file?',
+      '{{duplicateCount}} file esistono già in questo quaderno. {{newCount}} nuove risorse verranno aggiunte comunque.',
+    'notebook.overwrite.modal.ignore': 'Ignora file duplicati',
+    'notebook.overwrite.modal.replace': 'Sostituisci file esistenti',
+    'notebook.overwrite.modal.title': 'Il file esiste già',
     'notebook.upload.error.fileTooLarge':
       'Errore di caricamento: la dimensione del file supera il limite di 25 MB.',
     'notebook.upload.error.tooManyFiles':
@@ -196,15 +199,20 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       'Errore di caricamento: trovati tipi di file non supportati. Caricare solo tipi di file supportati.',
     'notebook.upload.failed': 'Caricamento di "{{fileName}}" non riuscito.',
     'notebook.upload.modal.addButton': 'Aggiungi ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Aggiungi',
     'notebook.upload.modal.browseButton': 'Carica',
-    'notebook.upload.modal.dragDropTitle': 'Trascina e rilascia i file qui',
+    'notebook.upload.modal.dragDropTitle':
+      'Trascina e rilascia i file qui o fai clic per sfogliare',
     'notebook.upload.modal.infoText':
       'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize':
+      'La dimensione massima del file è 25 MB.',
+    'notebook.upload.modal.supportedFormats': 'Formati supportati:',
     'notebook.upload.modal.removeFile': 'Rimuovi {{fileName}}',
     'notebook.upload.modal.selectedFiles':
       '{{count}} di {{max}} file selezionati',
     'notebook.upload.modal.separator': 'o',
-    'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
+    'notebook.upload.modal.title': 'Aggiungi risorse',
     'notebook.view.close': 'Chiudi quaderno',
     'notebook.view.documents.add': 'Aggiungi',
     'notebook.view.documents.count': '{{count}} Documenti',
@@ -233,6 +241,9 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebooks.delete.title': 'Eliminare {{name}}?',
     'notebooks.delete.toast': 'Quaderno eliminato!',
     'notebooks.documents': 'Documenti',
+    'notebooks.documents.none': 'Nessun documento',
+    'notebooks.documents.one': '1 documento',
+    'notebooks.documents.other': '{{count}} documenti',
     'notebooks.empty.action': 'Crea un nuovo quaderno',
     'notebooks.empty.description':
       'Crea un nuovo quaderno per organizzare le tue fonti e generare insight basati su IA.',

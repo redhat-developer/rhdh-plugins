@@ -186,10 +186,13 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.document.delete.success':
       '„{{documentName}}" wurde erfolgreich entfernt.',
     'notebook.document.delete.title': 'Ressource entfernen?',
-    'notebook.overwrite.modal.action': 'Überschreiben',
+    'notebook.overwrite.modal.action': 'Hochladen ({{count}})',
+    'notebook.overwrite.modal.back': 'Zurück',
     'notebook.overwrite.modal.description':
-      'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
-    'notebook.overwrite.modal.title': 'Dateien überschreiben?',
+      '{{duplicateCount}} Dateien existieren bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.ignore': 'Doppelte Dateien ignorieren',
+    'notebook.overwrite.modal.replace': 'Bestehende Dateien ersetzen',
+    'notebook.overwrite.modal.title': 'Datei existiert bereits',
     'notebook.upload.error.fileTooLarge':
       'Upload-Fehler: Dateigröße überschreitet das Limit von 25 MB.',
     'notebook.upload.error.tooManyFiles':
@@ -198,15 +201,19 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Bitte laden Sie nur unterstützte Dateitypen hoch.',
     'notebook.upload.failed': 'Hochladen von "{{fileName}}" fehlgeschlagen.',
     'notebook.upload.modal.addButton': 'Hinzufügen ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Hinzufügen',
     'notebook.upload.modal.browseButton': 'Hochladen',
-    'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
+    'notebook.upload.modal.dragDropTitle':
+      'Dateien hierher ziehen und ablegen oder zum Durchsuchen klicken',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize': 'Maximale Dateigröße beträgt 25 MB.',
+    'notebook.upload.modal.supportedFormats': 'Unterstützte Formate:',
     'notebook.upload.modal.removeFile': '{{fileName}} entfernen',
     'notebook.upload.modal.selectedFiles':
       '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
-    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.title': 'Ressourcen hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
     'notebook.view.documents.count': '{{count}} Dokumente',
@@ -235,6 +242,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
     'notebooks.documents': 'Dokumente',
+    'notebooks.documents.none': 'Keine Dokumente',
+    'notebooks.documents.one': '1 Dokument',
+    'notebooks.documents.other': '{{count}} Dokumente',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',

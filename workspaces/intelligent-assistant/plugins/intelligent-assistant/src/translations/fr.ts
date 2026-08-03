@@ -186,10 +186,13 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.document.delete.success':
       '« {{documentName}} » supprimé avec succès.',
     'notebook.document.delete.title': 'Supprimer la ressource ?',
-    'notebook.overwrite.modal.action': 'Écraser',
+    'notebook.overwrite.modal.action': 'Charger ({{count}})',
+    'notebook.overwrite.modal.back': 'Retour',
     'notebook.overwrite.modal.description':
-      'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
-    'notebook.overwrite.modal.title': 'Écraser les fichiers ?',
+      '{{duplicateCount}} fichiers existent déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
+    'notebook.overwrite.modal.ignore': 'Ignorer les fichiers en double',
+    'notebook.overwrite.modal.replace': 'Remplacer les fichiers existants',
+    'notebook.overwrite.modal.title': 'Le fichier existe déjà',
     'notebook.upload.error.fileTooLarge':
       'Erreur de chargement : la taille du fichier dépasse la limite de 25 Mo.',
     'notebook.upload.error.tooManyFiles':
@@ -198,15 +201,20 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Erreur de chargement : type(s) de fichier non pris en charge. Veuillez charger uniquement des types de fichiers pris en charge.',
     'notebook.upload.failed': 'Échec du chargement de "{{fileName}}".',
     'notebook.upload.modal.addButton': 'Ajouter ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Ajouter',
     'notebook.upload.modal.browseButton': 'Charger',
-    'notebook.upload.modal.dragDropTitle': 'Glissez-déposez les fichiers ici',
+    'notebook.upload.modal.dragDropTitle':
+      'Glissez-déposez les fichiers ici ou cliquez pour parcourir',
     'notebook.upload.modal.infoText':
       'Types de fichiers acceptés : .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize':
+      'La taille maximale du fichier est de 25 Mo.',
+    'notebook.upload.modal.supportedFormats': 'Formats pris en charge :',
     'notebook.upload.modal.removeFile': 'Supprimer {{fileName}}',
     'notebook.upload.modal.selectedFiles':
       '{{count}} sur {{max}} fichiers sélectionnés',
     'notebook.upload.modal.separator': 'ou',
-    'notebook.upload.modal.title': 'Ajouter un document au carnet',
+    'notebook.upload.modal.title': 'Ajouter des ressources',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
     'notebook.view.documents.count': '{{count}} Documents',
@@ -235,6 +243,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebooks.delete.title': 'Supprimer {{name}} ?',
     'notebooks.delete.toast': 'Carnet supprimé !',
     'notebooks.documents': 'Documents',
+    'notebooks.documents.none': 'Aucun document',
+    'notebooks.documents.one': '1 document',
+    'notebooks.documents.other': '{{count}} documents',
     'notebooks.empty.action': 'Créer un nouveau carnet',
     'notebooks.empty.description':
       'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',
