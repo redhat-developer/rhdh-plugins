@@ -23,6 +23,7 @@ import {
   type ModelServer,
   Type as APIType,
 } from './types';
+import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
 // Annotation prefix (from brdgtypes package)
 const ANNOTATION_PREFIX = 'model-catalog-bridge.ai.redhat.com/';
@@ -218,12 +219,19 @@ export async function callBackstagePrinters(
   lifecycle: string,
   is: KServeInferenceService,
   authentication: boolean = false,
+  connectorBaseUrl?: string,
 ): Promise<ModelCatalog> {
   console.log(
     `KServe.callBackstagePrinters: namespace=${is.metadata.namespace}, name=${is.metadata.name}, authentication=${authentication}`,
   );
 
-  return generateModelCatalog(owner, lifecycle, is, authentication);
+  return generateModelCatalog(
+    owner,
+    lifecycle,
+    is,
+    authentication,
+    connectorBaseUrl,
+  );
 }
 
 // Generate model catalog (kserve.go line 269-276)
@@ -232,6 +240,7 @@ function generateModelCatalog(
   lifecycle: string,
   is: KServeInferenceService,
   authentication: boolean,
+  connectorBaseUrl?: string,
 ): ModelCatalog {
   const name = `${sanitizeName(getName(is))}`;
 
@@ -242,7 +251,23 @@ function generateModelCatalog(
     getStringPropVal(PropertyKeys.Lifecycle, is) || lifecycle;
   const description =
     getStringPropVal(PropertyKeys.DescriptionKey, is) || getDescription(is);
-  const techdocsUrl = getStringPropVal(PropertyKeys.TechDocsKey, is);
+  let techdocsUrl = getStringPropVal(PropertyKeys.TechDocsKey, is);
+
+  // Auto-set TechDocsKey when catalog annotations are present and
+  // techdocsUrl is not already set via an explicit annotation.
+  if (
+    techdocsUrl === undefined &&
+    connectorBaseUrl !== undefined &&
+    is.metadata.annotations
+  ) {
+    const sourceId = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+    const modelName = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+    if (sourceId && modelName) {
+      // Path only — ModelCatalogGenerator.ts prepends svcUrl and wraps
+      // in the url: prefix.
+      techdocsUrl = `/modelcard/${sourceId}/${modelName}`;
+    }
+  }
 
   // Build model object (kserve.go line 646-674)
   const model: Model = {

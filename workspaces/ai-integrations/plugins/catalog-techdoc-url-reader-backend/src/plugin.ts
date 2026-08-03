@@ -75,6 +75,16 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
         platformPath.join(this.workDir, 'backstage-'),
       ));
 
+    // Write a minimal mkdocs.yml that the TechDocs builder (mkdocs)
+    // requires at the project root.
+    const mkdocsPath = platformPath.join(dir, 'mkdocs.yml');
+    const mkdocsContent = 'site_name: Model Card\nnav:\n  - Home: index.md\n';
+    try {
+      await fs.promises.writeFile(mkdocsPath, mkdocsContent);
+    } catch (error) {
+      this.logger.error(`Error writing mkdocs.yml to ${mkdocsPath}:`, error);
+    }
+
     const subDir = platformPath.join(dir, 'docs');
     const filePath = platformPath.join(subDir, 'index.md');
     try {
@@ -91,7 +101,10 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
 
 export type BridgeConfig = {
   id: string;
-  baseUrl: string;
+  name: string;
+  kubeflowModelCatalogUrl: string;
+  defaultOwner: string;
+  defaultLifecycle: string;
 };
 
 export function readBridgeConfigs(config: Config): BridgeConfig[] {
@@ -99,15 +112,29 @@ export function readBridgeConfigs(config: Config): BridgeConfig[] {
   if (!configs) {
     return [];
   }
-  return configs.keys().map(id => readBridgeConfig(id, configs.getConfig(id)));
+  const result: BridgeConfig[] = [];
+  for (const connectorId of configs.keys()) {
+    const connectorConfig = configs.getConfig(connectorId);
+    for (const clusterKey of connectorConfig.keys()) {
+      const clusterConfig = connectorConfig.getOptionalConfig(clusterKey);
+      if (!clusterConfig || !clusterConfig.has('kubeflow-model-catalog-url')) {
+        continue; // skip connector-level non-cluster objects (e.g., schedule)
+      }
+      result.push(readBridgeConfig(connectorId, clusterConfig));
+    }
+  }
+  return result;
 }
 
 export function readBridgeConfig(id: string, config: Config): BridgeConfig {
-  let url = '';
-  if (config.has('baseUrl')) {
-    url = config.getString('baseUrl');
-  }
-  return { id, baseUrl: url };
+  return {
+    id,
+    name: config.getOptionalString('name') ?? '',
+    kubeflowModelCatalogUrl:
+      config.getOptionalString('kubeflow-model-catalog-url') ?? '',
+    defaultOwner: config.getOptionalString('default-owner') ?? '',
+    defaultLifecycle: config.getOptionalString('default-lifecycle') ?? '',
+  };
 }
 
 export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {

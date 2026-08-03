@@ -27,6 +27,20 @@ export interface Config {
           system?: string;
           owner?: string;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          [clusterKey: string]:
+            | {
+                /** @visibility frontend */
+                name?: string;
+                /** @visibility frontend */
+                'kubeflow-model-catalog-url'?: string;
+                /** @visibility frontend */
+                'default-owner'?: string;
+                /** @visibility frontend */
+                'default-lifecycle'?: string;
+              }
+            | string
+            | SchedulerServiceTaskScheduleDefinitionConfig
+            | undefined;
         };
       };
     };
