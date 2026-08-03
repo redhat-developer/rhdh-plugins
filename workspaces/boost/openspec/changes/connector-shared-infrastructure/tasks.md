@@ -75,11 +75,13 @@
 - [ ] 6.6 Add air-gapped deployment variant showing zero-internet configuration
 - [ ] 6.7 Place reference YAML in `workspaces/boost/examples/` or alongside connector README files
 
-## 7. Connector Integration (P2)
+## ~~7. Connector Integration (P2) — deferred~~
 
-- [ ] 7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.4 Verify all three connectors use consistent CA bundle loading pattern
-- [ ] 7.5 Verify all three connectors use consistent enable/disable config
-- [ ] 7.6 Verify all three connectors use consistent structured error logging
+~~These tasks require connectors that are created in Tier 1 (Issues 9–16). Each connector issue will consume `boost-connector-utils` as part of its own implementation. See Issues 9 (OCI), 13–14 (MCP Registry), 15–16 (RHOAI).~~
+
+- ~~7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.4 Verify all three connectors use consistent CA bundle loading pattern~~
+- ~~7.5 Verify all three connectors use consistent enable/disable config~~
+- ~~7.6 Verify all three connectors use consistent structured error logging~~

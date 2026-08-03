@@ -54,6 +54,8 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4039
 
 Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples.
 
+**Config note:** `ai-catalog.providers.<id>.enabled` controls **startup registration** (YAML-only). `boost.connectors.<id>.enabled` controls **runtime sync-skip** (db-overridable). Do not treat them as the same flag — see `openspec/changes/connector-config-hot-reload/design.md`.
+
 ### Tasks
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 1 (RHIDP-15329):
@@ -324,7 +326,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 2 (RHIDP-15335
 - 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - 2.4 Add `?includeDisabled=true` query parameter support
 - ~~2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)~~ — deferred to Issue 26
-- 2.6 Add audit logging for health API requests (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
+- 2.6 Add structured logging for health API requests via Backstage `LoggerService` (full audit event emitters deferred to Issue 21 / RHIDP-15277)
 - 2.7 Implement empty state handling
 - 2.8 Add health API integration tests
 
@@ -358,6 +360,8 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4044
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
 Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). AI catalog connectors (MCP Registry, RHOAI, OCI) will add their own Zod schemas when created in Issues 7–16. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+
+**Config note:** `ai-catalog.providers.<id>.enabled` controls **startup registration** (YAML-only). `boost.connectors.<id>.enabled` controls **runtime sync-skip** (db-overridable). Do not treat them as the same flag — see `openspec/changes/connector-config-hot-reload/design.md`.
 
 ### Tasks
 
