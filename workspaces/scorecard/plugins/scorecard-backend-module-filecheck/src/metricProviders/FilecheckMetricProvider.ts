@@ -38,7 +38,7 @@ export class FilecheckMetricProvider implements MetricProvider<'boolean'> {
   }
 
   getProviderId(): string {
-    return 'filecheck';
+    return 'filecheck.fileExistence';
   }
 
   getMetrics(): Metric<'boolean'>[] {

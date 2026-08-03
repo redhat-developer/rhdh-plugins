@@ -16,8 +16,8 @@
 
 import { ConfigReader } from '@backstage/config';
 import {
-  MockBooleanProvider,
   MockNumberProvider,
+  MockBatchBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { ThresholdResolver } from './ThresholdResolver';
@@ -25,15 +25,19 @@ import { ThresholdResolver } from './ThresholdResolver';
 describe('ThresholdResolver', () => {
   const customThresholds = {
     scorecard: {
-      plugins: {
+      metricProviders: {
         github: {
           numberMetric: {
-            thresholds: {
-              rules: [
-                { key: 'error', expression: '>100' },
-                { key: 'warning', expression: '>50' },
-                { key: 'success', expression: '<=50' },
-              ],
+            metrics: {
+              numberMetric: {
+                thresholds: {
+                  rules: [
+                    { key: 'error', expression: '>100' },
+                    { key: 'warning', expression: '>50' },
+                    { key: 'success', expression: '<=50' },
+                  ],
+                },
+              },
             },
           },
         },
@@ -46,9 +50,45 @@ describe('ThresholdResolver', () => {
     const resolver = new ThresholdResolver(
       new ConfigReader({
         scorecard: {
-          plugins: {
+          metricProviders: {
             github: {
               otherMetric: {
+                metrics: {
+                  otherMetric: {
+                    thresholds: {
+                      rules: [
+                        { key: 'error', expression: '>100' },
+                        { key: 'warning', expression: '>50' },
+                        { key: 'success', expression: '<=50' },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+      [provider, new MockNumberProvider('github.otherMetric', 'github')],
+    );
+
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
+      rules: [
+        { key: 'error', expression: '>40' },
+        { key: 'warning', expression: '>20' },
+        { key: 'success', expression: '<=20' },
+      ],
+    });
+  });
+
+  it('uses configured provider-level thresholds when configured metric thresholds are absent', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          metricProviders: {
+            github: {
+              numberMetric: {
                 thresholds: {
                   rules: [
                     { key: 'error', expression: '>100' },
@@ -61,36 +101,10 @@ describe('ThresholdResolver', () => {
           },
         },
       }),
-      [provider, new MockNumberProvider('github.otherMetric', 'github')],
+      [provider],
     );
 
-    expect(
-      resolver.resolveMetricThresholds(
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
-    ).toEqual({
-      rules: [
-        { key: 'error', expression: '>40' },
-        { key: 'warning', expression: '>20' },
-        { key: 'success', expression: '<=20' },
-      ],
-    });
-  });
-
-  it('uses configured thresholds before provider default thresholds', () => {
-    const provider = new MockNumberProvider('github.numberMetric', 'github');
-    const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      new MockNumberProvider('github.otherMetric', 'github'),
-      provider,
-    ]);
-
-    expect(
-      resolver.resolveMetricThresholds(
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
-    ).toEqual({
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
         { key: 'warning', expression: '>50' },
@@ -99,42 +113,93 @@ describe('ThresholdResolver', () => {
     });
   });
 
-  it('uses configured thresholds before provider default thresholds for batch provider', () => {
-    const provider = new MockBooleanProvider('filecheck', 'filecheck');
+  it('uses configured metric-level thresholds over configured provider-level thresholds', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
     const resolver = new ThresholdResolver(
       new ConfigReader({
         scorecard: {
-          plugins: {
-            filecheck: {
-              thresholds: {
-                rules: [
-                  {
-                    key: 'present',
-                    expression: '==true',
-                    color: 'success.main',
-                    icon: 'scorecardSuccessStatusIcon',
+          metricProviders: {
+            github: {
+              numberMetric: {
+                thresholds: {
+                  rules: [
+                    { key: 'error', expression: '>150' },
+                    { key: 'warning', expression: '>75' },
+                    { key: 'success', expression: '<=75' },
+                  ],
+                },
+                metrics: {
+                  numberMetric: {
+                    thresholds: {
+                      rules: [
+                        { key: 'error', expression: '>100' },
+                        { key: 'warning', expression: '>50' },
+                        { key: 'success', expression: '<=50' },
+                      ],
+                    },
                   },
-                  {
-                    key: 'absent',
-                    expression: '==false',
-                    color: 'error.main',
-                    icon: 'scorecardErrorStatusIcon',
-                  },
-                ],
+                },
               },
             },
           },
         },
       }),
-      [new MockNumberProvider('github.otherMetric', 'github'), provider],
+      [provider],
     );
 
-    expect(
-      resolver.resolveMetricThresholds(
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
-    ).toEqual({
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
+      rules: [
+        { key: 'error', expression: '>100' },
+        { key: 'warning', expression: '>50' },
+        { key: 'success', expression: '<=50' },
+      ],
+    });
+  });
+
+  it('uses configured thresholds per metric for batch providers', () => {
+    const provider = new MockBatchBooleanProvider(
+      'filecheck',
+      'filecheck.fileExistence',
+      [
+        { id: 'readme', path: 'README.md' },
+        { id: 'license', path: 'LICENSE' },
+      ],
+    );
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          metricProviders: {
+            filecheck: {
+              fileExistence: {
+                metrics: {
+                  readme: {
+                    thresholds: {
+                      rules: [
+                        {
+                          key: 'present',
+                          expression: '==true',
+                          color: 'success.main',
+                          icon: 'scorecardSuccessStatusIcon',
+                        },
+                        {
+                          key: 'absent',
+                          expression: '==false',
+                          color: 'error.main',
+                          icon: 'scorecardErrorStatusIcon',
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+      [provider],
+    );
+
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
       rules: [
         {
           key: 'present',
@@ -150,6 +215,14 @@ describe('ThresholdResolver', () => {
         },
       ],
     });
+
+    // license has no config override — falls back to metric defaults
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[1])).toEqual({
+      rules: [
+        { key: 'success', expression: '==true' },
+        { key: 'error', expression: '==false' },
+      ],
+    });
   });
 
   it('merges entity annotation overrides on top of default provider thresholds', () => {
@@ -163,11 +236,7 @@ describe('ThresholdResolver', () => {
       .build();
 
     expect(
-      resolver.resolveEntityThresholds(
-        entity,
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
     ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
@@ -188,11 +257,7 @@ describe('ThresholdResolver', () => {
       .build();
 
     expect(
-      resolver.resolveEntityThresholds(
-        entity,
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
     ).toEqual({
       rules: [
         { key: 'error', expression: '>40' },
@@ -215,11 +280,7 @@ describe('ThresholdResolver', () => {
       .build();
 
     expect(
-      resolver.resolveEntityThresholds(
-        entity,
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
     ).toEqual({
       rules: [
         { key: 'error', expression: '>100' },
@@ -229,67 +290,56 @@ describe('ThresholdResolver', () => {
     });
   });
 
-  it('merges entity annotation overrides on top of custom provider thresholds for batch provider', () => {
-    const provider = new MockBooleanProvider('filecheck', 'filecheck');
-    const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      provider,
-    ]);
-    const entity = new MockEntityBuilder()
-      .withAnnotations({
-        'scorecard.io/filecheck.thresholds.rules.success': '==false',
-        'scorecard.io/filecheck.thresholds.rules.error': '==true',
-      })
-      .build();
-
-    expect(
-      resolver.resolveEntityThresholds(
-        entity,
-        provider.getMetrics()[0],
-        provider.getProviderId(),
-      ),
-    ).toEqual({
-      rules: [
-        { key: 'success', expression: '==false' },
-        { key: 'error', expression: '==true' },
-      ],
-    });
-  });
-
   it('loads configured thresholds once at startup', () => {
-    const mockConfig = {
-      getOptional: jest.fn().mockReturnValue({
-        rules: [
-          { key: 'error', expression: '>100' },
-          { key: 'warning', expression: '>50' },
-          { key: 'success', expression: '<=50' },
-        ],
-      }),
-    } as any;
+    const config = new ConfigReader({
+      scorecard: {
+        metricProviders: {
+          github: {
+            numberMetric: {
+              metrics: {
+                numberMetric: {
+                  thresholds: {
+                    rules: [
+                      { key: 'error', expression: '>100' },
+                      { key: 'warning', expression: '>50' },
+                      { key: 'success', expression: '<=50' },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const getOptionalSpy = jest.spyOn(config, 'getOptional');
     const provider = new MockNumberProvider('github.numberMetric', 'github');
-    const resolver = new ThresholdResolver(mockConfig, [provider]);
+    const resolver = new ThresholdResolver(config, [provider]);
 
-    resolver.resolveMetricThresholds(
-      provider.getMetrics()[0],
-      provider.getProviderId(),
-    );
-    resolver.resolveMetricThresholds(
-      provider.getMetrics()[0],
-      provider.getProviderId(),
-    );
+    resolver.resolveMetricThresholds(provider.getMetrics()[0]);
+    resolver.resolveMetricThresholds(provider.getMetrics()[0]);
 
-    expect(mockConfig.getOptional).toHaveBeenCalledTimes(1);
+    expect(getOptionalSpy).toHaveBeenCalledTimes(1);
   });
 
   it('validates configured thresholds at startup', () => {
-    const mockConfig = {
-      getOptional: jest.fn().mockReturnValue({
-        rules: [{ key: 'error', expression: 'INVALID' }],
-      }),
-    } as any;
+    const config = new ConfigReader({
+      scorecard: {
+        metricProviders: {
+          github: {
+            numberMetric: {
+              thresholds: {
+                rules: [{ key: 'error', expression: 'INVALID' }],
+              },
+            },
+          },
+        },
+      },
+    });
     const provider = new MockNumberProvider('github.numberMetric', 'github');
 
-    expect(() => new ThresholdResolver(mockConfig, [provider])).toThrow(
-      'Invalid thresholds configuration at scorecard.plugins.github.numberMetric.thresholds',
+    expect(() => new ThresholdResolver(config, [provider])).toThrow(
+      'Invalid thresholds configuration at scorecard.metricProviders.github.numberMetric.thresholds',
     );
   });
 });

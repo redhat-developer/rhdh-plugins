@@ -66,29 +66,36 @@ export interface Config {
         except?: string[];
       };
     };
-    /** Configuration for scorecard metric providers */
-    plugins?: {
-      /** Configuration for datasource */
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
+      /** Datasource ID, matches `getProviderDatasourceId()` of a provider (e.g., `jira`, `github`, `filecheck`). */
       [datasource: string]: {
-        /** Configuration for metric providers within the datasource.
-         * Each key corresponds to the metric name part of the provider ID (datasource.metricName).
+        /** Configuration for a specific metric provider.
+         * Use the local name without datasource prefix (e.g., `openPRs` instead of `github.openPRs`).
          */
-        [metricName: string]: {
-          /** Threshold configuration for the metric */
-          thresholds?: ThresholdConfig;
-          /**
-           * Schedule for collecting this metric. If not set, the default hourly schedule is used.
-           *
-           * Default schedule:
-           * ```ts
-           * {
-           *   frequency: { hours: 1 },
-           *   timeout: { minutes: 15 },
-           *   initialDelay: { minutes: 1 },
-           * }
-           * ```
-           */
+        [providerName: string]: {
+          /** How often metrics will be calculated for this provider. */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /**
+           * How metric values are categorized for all metrics of this provider.
+           * Overridden by metric-level thresholds when set.
+           */
+          thresholds?: ThresholdConfig;
+          /** Per-metric configuration. */
+          metrics?: {
+            /** Configuration for a specific metric.
+             * Use the local name without datasource prefix (e.g., 'openPRs' instead of 'github.openPRs').
+             */
+            [metricName: string]: {
+              /**
+               * How metric values are categorized for this metric.
+               * Overrides provider-level thresholds.
+               */
+              thresholds?: ThresholdConfig;
+            };
+          };
+          /** Provider-specific options (shape defined by each module). */
+          options?: unknown;
         };
       };
     };

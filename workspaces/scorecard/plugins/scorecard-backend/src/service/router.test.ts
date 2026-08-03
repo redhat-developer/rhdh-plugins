@@ -737,12 +737,8 @@ describe('createRouter', () => {
       const emptyAggregatedMetric = AggregatedMetricMapper.toAggregatedMetric();
       const { AggregatedMetricMapper: ActualAggregatedMetricMapper } =
         jest.requireActual<typeof import('./mappers')>('./mappers');
-      const provider = metricProvidersRegistry.getProvider('github.openPRs');
       const metric = metricProvidersRegistry.getMetric('github.openPRs');
-      const thresholds = thresholdResolver.resolveMetricThresholds(
-        metric,
-        provider.getProviderId(),
-      );
+      const thresholds = thresholdResolver.resolveMetricThresholds(metric);
       const emptyAggregatedMetricResult =
         ActualAggregatedMetricMapper.toAggregatedMetricResult(
           metric,
@@ -837,7 +833,7 @@ describe('createRouter', () => {
     it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1080,7 +1076,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1338,7 +1334,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric metadata for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },

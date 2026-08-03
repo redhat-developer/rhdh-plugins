@@ -17,7 +17,6 @@
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import {
   AuthService,
-  readSchedulerServiceTaskScheduleDefinitionFromConfig,
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
   LoggerService,
@@ -28,6 +27,7 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { isMetricIdDisabled } from '../../utils/metricUtils';
 import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
+import { resolveScheduleFromConfig } from '../../utils/metricProviderConfigKeys';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
@@ -85,8 +85,12 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   }
 
   async start(): Promise<void> {
-    const scheduleConfigPath = `scorecard.plugins.${this.providerId}.schedule`;
-    const schedule = this.getScheduleFromConfig(scheduleConfigPath);
+    const schedule =
+      resolveScheduleFromConfig(
+        this.config,
+        this.provider.getProviderDatasourceId(),
+        this.providerId,
+      ) ?? PullMetricsByProviderTask.DEFAULT_SCHEDULE;
 
     const taskRunner = this.scheduler.createScheduledTaskRunner(schedule);
 
@@ -109,16 +113,6 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         }
       },
     });
-  }
-
-  private getScheduleFromConfig(
-    schedulePath: string,
-  ): SchedulerServiceTaskScheduleDefinition {
-    return this.config.has(schedulePath)
-      ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
-          this.config.getConfig(schedulePath),
-        )
-      : PullMetricsByProviderTask.DEFAULT_SCHEDULE;
   }
 
   private async pullProviderMetrics(
@@ -188,7 +182,6 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                     this.thresholdResolver.resolveEntityThresholds(
                       entity,
                       metric,
-                      provider.getProviderId(),
                     );
 
                   const status =
@@ -242,11 +235,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              const result = curr.value;
-              if (Array.isArray(result)) {
-                return [...acc, ...result];
-              }
-              return [...acc, result];
+              return [...acc, ...curr.value];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),

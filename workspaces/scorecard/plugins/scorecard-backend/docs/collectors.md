@@ -109,7 +109,7 @@ export const scorecardModuleCustomDatasource = createBackendModule({
 
 ## Use collectors from a metric provider
 
-To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetric`:
+To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetrics`:
 
 ```ts
 import { createBackendModule } from '@backstage/backend-plugin-api';
@@ -160,7 +160,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
   // Other MetricProvider methods omitted
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const collected = await this.collectorsService.collect({
       collectorId: 'customDatasource:customDeployments',
       contract: {
@@ -174,7 +174,9 @@ export class MyMetricProvider implements MetricProvider<'number'> {
       },
     });
 
-    return collected.deployments.length;
+    const results = new Map<string, number>();
+    results.set('myDatasource.exampleMetric', collected.deployments.length);
+    return results;
   }
 }
 ```

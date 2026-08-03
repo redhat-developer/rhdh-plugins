@@ -274,7 +274,7 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
       metricId: filecheck.license
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         schedule:
@@ -288,10 +288,12 @@ scorecard:
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     filecheck:
-      files:
-        license: 'LICENSE'
-        codeowners: 'CODEOWNERS'
-      schedule:
-        frequency: { minutes: 5 }
-        timeout: { minutes: 10 }
-        initialDelay: { seconds: 10 }
+      fileExistence:
+        options:
+          files:
+            license: 'LICENSE'
+            codeowners: 'CODEOWNERS'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

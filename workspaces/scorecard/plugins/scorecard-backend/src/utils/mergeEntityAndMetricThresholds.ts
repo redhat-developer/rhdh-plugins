@@ -27,18 +27,18 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { isError } from '@backstage/errors';
 
-const thresholdRulesAnnotationPrefix = (providerId: string) =>
-  `scorecard.io/${providerId}.thresholds.rules.`;
+const thresholdRulesAnnotationPrefix = (metricId: string) =>
+  `scorecard.io/${metricId}.thresholds.rules.`;
 
 /**
- * Extract threshold override rules from entity annotations for a given provider, doesn't validate rules.
+ * Extract threshold override rules from entity annotations for a given metric, doesn't validate rules.
  */
 function parseEntityAnnotationThresholds(
   entity: Entity,
-  providerId: string,
+  metricId: string,
 ): ThresholdRule[] {
   const annotations = entity.metadata?.annotations || {};
-  const prefix = thresholdRulesAnnotationPrefix(providerId);
+  const prefix = thresholdRulesAnnotationPrefix(metricId);
   const overrides: ThresholdRule[] = [];
 
   for (const [annotationKey, expression] of Object.entries(annotations)) {
@@ -51,22 +51,22 @@ function parseEntityAnnotationThresholds(
   return overrides;
 }
 
-export function mergeEntityAndProviderThresholds(
+export function mergeEntityAndMetricThresholds(
   entity: Entity,
   metric: Metric,
-  providerId: string,
   baseThresholds?: ThresholdConfig,
 ): ThresholdConfig {
   let isRulesMerged = false;
 
-  const providerThresholds = baseThresholds ?? metric.thresholds;
+  const metricThresholds = baseThresholds ?? metric.thresholds;
   const metricType = metric.type;
+  const metricId = metric.id;
   const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,
-    providerId,
+    metricId,
   );
 
-  const mergedRules = [...providerThresholds.rules];
+  const mergedRules = [...metricThresholds.rules];
   for (const override of entityAnnotationThresholds) {
     const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
     if (foundKey === -1) {
@@ -75,7 +75,7 @@ export function mergeEntityAndProviderThresholds(
           entity,
         )} thresholds by ${JSON.stringify(
           override,
-        )}, metric provider ${providerId} does not support key ${override.key}`,
+        )}, metric ${metricId} does not support key ${override.key}`,
       );
     }
 
@@ -88,7 +88,7 @@ export function mergeEntityAndProviderThresholds(
       if (isError(e)) {
         throw new ThresholdConfigFormatError(
           `Invalid threshold annotation '${thresholdRulesAnnotationPrefix(
-            providerId,
+            metricId,
           )}${override.key}: ${
             override.expression
           }' in entity '${stringifyEntityRef(entity)}': ${e.message}`,

@@ -24,10 +24,11 @@ import {
   getThresholdsFromConfig,
   type MetricProvider,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
+import { mergeEntityAndMetricThresholds } from '../utils/mergeEntityAndMetricThresholds';
+import { resolveThresholdsConfigPath } from '../utils/metricProviderConfigKeys';
 
 export class ThresholdResolver {
-  private readonly configuredThresholds = new Map<string, ThresholdConfig>(); // providerId: thresholds
+  private readonly configuredThresholds = new Map<string, ThresholdConfig>(); // metricId: thresholds
 
   constructor(private readonly config: Config, providers: MetricProvider[]) {
     for (const provider of providers) {
@@ -35,36 +36,41 @@ export class ThresholdResolver {
     }
   }
 
-  resolveMetricThresholds(metric: Metric, providerId: string): ThresholdConfig {
-    return this.configuredThresholds.get(providerId) ?? metric.thresholds;
+  resolveMetricThresholds(metric: Metric): ThresholdConfig {
+    return this.configuredThresholds.get(metric.id) ?? metric.thresholds;
   }
 
-  resolveEntityThresholds(
-    entity: Entity,
-    metric: Metric,
-    providerId: string,
-  ): ThresholdConfig {
-    return mergeEntityAndProviderThresholds(
+  resolveEntityThresholds(entity: Entity, metric: Metric): ThresholdConfig {
+    return mergeEntityAndMetricThresholds(
       entity,
       metric,
-      providerId,
-      this.resolveMetricThresholds(metric, providerId),
+      this.resolveMetricThresholds(metric),
     );
   }
 
   private setConfiguredThresholds(provider: MetricProvider): void {
+    const datasourceId = provider.getProviderDatasourceId();
     const providerId = provider.getProviderId();
-    const metrics = provider.getMetrics();
-    if (metrics.length === 0) return;
 
-    const thresholds = getThresholdsFromConfig(
-      this.config,
-      `scorecard.plugins.${providerId}.thresholds`,
-      metrics[0].type,
-    );
+    for (const metric of provider.getMetrics()) {
+      const thresholdsPath = resolveThresholdsConfigPath(
+        this.config,
+        datasourceId,
+        providerId,
+        metric.id,
+      );
+      if (!thresholdsPath) {
+        continue;
+      }
 
-    if (thresholds) {
-      this.configuredThresholds.set(providerId, thresholds);
+      const thresholds = getThresholdsFromConfig(
+        this.config,
+        thresholdsPath,
+        metric.type,
+      );
+      if (thresholds) {
+        this.configuredThresholds.set(metric.id, thresholds);
+      }
     }
   }
 }

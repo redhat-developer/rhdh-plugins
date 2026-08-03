@@ -15,6 +15,7 @@
  */
 
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
   /** Configuration for jira plugin */
@@ -34,8 +35,8 @@ export interface Config {
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /** Configuration for scorecard plugins/datasources */
-    plugins?: {
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
       /** JIRA datasource configuration */
       jira?: {
         openIssues?: {
@@ -43,14 +44,10 @@ export interface Config {
             mandatoryFilter?: string;
             customFilter?: string;
           };
-          thresholds?: {
-            rules?: Array<{
-              key: 'error' | 'warning' | 'success';
-              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
-              expression: string;
-            }>;
-          };
+          /** How often jira.openIssues metrics will be calculated */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /** How jira.openIssues metric values are categorized */
+          thresholds?: ThresholdConfig;
         };
       };
     };
