@@ -229,16 +229,16 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
-    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.title': 'Ressource zum Notizbuch hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
-    'notebook.view.documents.count': '{{count}} Dokumente',
+    'notebook.view.documents.count': '{{count}} Ressourcen',
     'notebook.view.documents.maxReached':
-      'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
-    'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+      'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
+    'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
-    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Ressourcen...',
     'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
     'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
@@ -257,7 +257,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
-    'notebooks.documents': 'Dokumente',
+    'notebooks.documents': 'Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',

@@ -226,17 +226,17 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} di {{max}} file selezionati',
     'notebook.upload.modal.separator': 'o',
-    'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
+    'notebook.upload.modal.title': 'Aggiungi una risorsa al quaderno',
     'notebook.view.close': 'Chiudi quaderno',
     'notebook.view.documents.add': 'Aggiungi',
-    'notebook.view.documents.count': '{{count}} Documenti',
+    'notebook.view.documents.count': '{{count}} Risorse',
     'notebook.view.documents.maxReached':
-      'Sono consentiti al massimo 10 documenti. Elimina un documento per caricarne uno nuovo.',
-    'notebook.view.documents.uploading': 'Caricamento documento',
+      'Sono consentite al massimo 10 risorse. Elimina una risorsa per caricarne una nuova.',
+    'notebook.view.documents.uploading': 'Caricamento risorsa',
     'notebook.view.input.disabledTooltip':
       'Seleziona almeno una risorsa caricata per iniziare a chattare',
     'notebook.view.input.placeholder':
-      'Chiedi informazioni sui tuoi documenti...',
+      'Chiedi informazioni sulle tue risorse...',
     'notebook.view.sidebar.collapse': 'Comprimi barra laterale',
     'notebook.view.sidebar.expand': 'Espandi barra laterale',
     'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
@@ -254,7 +254,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività.',
     'notebooks.delete.title': 'Eliminare {{name}}?',
     'notebooks.delete.toast': 'Quaderno eliminato!',
-    'notebooks.documents': 'Documenti',
+    'notebooks.documents': 'Risorse',
     'notebooks.empty.action': 'Crea un nuovo quaderno',
     'notebooks.empty.description':
       'Crea un nuovo quaderno per organizzare le tue fonti e generare insight basati su IA.',
