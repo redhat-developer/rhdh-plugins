@@ -126,14 +126,26 @@ export function readBridgeConfigs(config: Config): BridgeConfig[] {
   return result;
 }
 
+function safeGetOptionalString(config: Config, key: string): string {
+  try {
+    return config.getOptionalString(key) ?? '';
+  } catch {
+    // Backstage ConfigReader throws TypeError for empty-string values
+    // (e.g. from env var substitution like ${VAR:-}).
+    return '';
+  }
+}
+
 export function readBridgeConfig(id: string, config: Config): BridgeConfig {
   return {
     id,
-    name: config.getOptionalString('name') ?? '',
-    kubeflowModelCatalogUrl:
-      config.getOptionalString('kubeflow-model-catalog-url') ?? '',
-    defaultOwner: config.getOptionalString('default-owner') ?? '',
-    defaultLifecycle: config.getOptionalString('default-lifecycle') ?? '',
+    name: safeGetOptionalString(config, 'name'),
+    kubeflowModelCatalogUrl: safeGetOptionalString(
+      config,
+      'kubeflow-model-catalog-url',
+    ),
+    defaultOwner: safeGetOptionalString(config, 'default-owner'),
+    defaultLifecycle: safeGetOptionalString(config, 'default-lifecycle'),
   };
 }
 
@@ -186,20 +198,11 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     this.logger.info(`ModelCatalogBridgeTechdocUrlReader.readUrl of ${url}`);
     let response: Response;
     try {
-      // TODO so the token obtained here looks like a toke, but it still got
-      // 401 / unauthorized when trying to access the router REST endpoints
-      // of the kserve-kubeflow-connector; hence, are using of the static
-      // admin token 'RHDH_TOKEN' that immediately follows; *IF* we determin
-      // that the model card integration works with the upstream version
-      // of kubeflow model catalog/registry, we'll need to dive into possible
-      // alternatives to this work around.  Possibly merging the techdoc
-      // reader extension into the kserve-kubeflow-connector and byppassing
-      // the need for the plugin to plugin REST call might be required here.
       const token =
         await ModeCatalogBridgeTechdocUrlReader.auth.getPluginRequestToken({
           onBehalfOf:
             await ModeCatalogBridgeTechdocUrlReader.auth.getOwnServiceCredentials(),
-          targetPluginId: urlReaderFactoriesServiceRef.id,
+          targetPluginId: 'kserve-kubeflow-connector',
         });
       let tok = token.token;
       if (process.env.RHDH_TOKEN && process.env.RHDH_TOKEN.length > 0) {
