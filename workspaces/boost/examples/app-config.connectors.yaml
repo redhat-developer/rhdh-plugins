@@ -1,0 +1,162 @@
+# Reference App-Config for AI Catalog Connectors
+#
+# This file demonstrates the configurable fields for all three AI catalog
+# connectors (MCP Registry, RHOAI MCP Catalog, OCI Skill Registry).
+# Copy the relevant sections into your app-config.yaml and adjust values
+# for your deployment environment.
+#
+# Config root: ai-catalog.providers.<connectorId>
+# Each connector reads its own Config subtree — shared utilities do not
+# hard-code config paths.
+#
+# See also: workspaces/boost/plugins/boost-connector-utils/README.md
+
+# --------------------------------------------------------------------------
+# Internet-Connected Deployment (default)
+# --------------------------------------------------------------------------
+
+ai-catalog:
+  providers:
+    # --- MCP Registry Connector ---
+    mcpRegistry:
+      # Whether this connector is registered at startup (default: true)
+      enabled: true
+
+      # MCP Registry endpoint URL (required, must be HTTPS)
+      # Falls back to public registry.modelcontextprotocol.io when omitted
+      endpoint: https://registry.modelcontextprotocol.io
+
+      # TLS configuration for custom CA bundles (optional)
+      # Use when the registry has a self-signed or internal CA certificate
+      tls:
+        # Option 1: Path to a PEM file mounted from a K8s Secret/ConfigMap
+        # caFile: /etc/ssl/certs/custom-ca-bundle.crt
+
+        # Option 2: PEM content from an environment variable
+        # The env var is populated by K8s via Secret mount
+        # caSecret:
+        #   $env: MCP_REGISTRY_CA_BUNDLE
+
+      # Registry credentials via mounted K8s Secret (optional)
+      # Values MUST use $env references — plaintext is rejected at startup
+      auth:
+        token:
+          $env: MCP_REGISTRY_TOKEN
+
+      # Sync schedule (optional)
+      schedule:
+        frequency: { minutes: 30 }
+        timeout: { minutes: 10 }
+
+    # --- RHOAI MCP Catalog Connector ---
+    rhoai:
+      mcpCatalog:
+        # Whether this connector is registered at startup (default: true)
+        enabled: true
+
+        # Cross-cluster RHOAI MCP catalog API endpoint (required, must be HTTPS)
+        endpoint: https://mcp-catalog.rhoai-cluster.example.com
+
+        # TLS configuration for custom CA bundles (optional)
+        tls:
+          # Path to a PEM file mounted from a K8s Secret/ConfigMap
+          caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
+
+        # RHOAI credentials via mounted K8s Secret (required)
+        # Values MUST use $env references — plaintext is rejected at startup
+        auth:
+          clientId:
+            $env: RHOAI_CLIENT_ID
+          clientSecret:
+            $env: RHOAI_CLIENT_SECRET
+
+        # Sync schedule (optional)
+        schedule:
+          frequency: { minutes: 15 }
+          timeout: { minutes: 5 }
+
+    # --- OCI Skill Registry Connector ---
+    ociSkill:
+      # Whether this connector is registered at startup (default: true)
+      enabled: true
+
+      # Multiple OCI registries can be configured
+      registries:
+        - # Public or internal OCI registry URL (required, must be HTTPS)
+          url: https://quay.io
+          # OCI namespace containing skill artifacts
+          namespace: skills
+          # Path to K8s pull secret in Docker config.json format (optional)
+          pullSecretPath: /var/run/secrets/quay-pull-secret/.dockerconfigjson
+
+        - url: https://harbor.internal.example.com
+          namespace: ai-assets
+          pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
+          # Per-registry TLS configuration
+          tls:
+            caFile: /etc/ssl/certs/harbor-ca.crt
+
+      # Discovery settings (optional)
+      discovery:
+        # Parallel manifest fetch concurrency (default: 20)
+        concurrency: 20
+
+      # Sync schedule (optional)
+      schedule:
+        frequency: { minutes: 30 }
+        timeout: { minutes: 15 }
+
+# --------------------------------------------------------------------------
+# Air-Gapped Deployment Variant
+# --------------------------------------------------------------------------
+# Use this variant when the RHDH instance has no internet access.
+# All endpoints point to internal mirrors. No public endpoint traffic
+# will occur.
+#
+# Uncomment and replace the section above with this configuration:
+#
+# ai-catalog:
+#   providers:
+#     # --- MCP Registry (internal mirror) ---
+#     mcpRegistry:
+#       enabled: true
+#       endpoint: https://registry.internal.example.com
+#       tls:
+#         caFile: /etc/ssl/certs/internal-ca-bundle.pem
+#       auth:
+#         token:
+#           $env: MCP_REGISTRY_TOKEN
+#       schedule:
+#         frequency: { minutes: 30 }
+#         timeout: { minutes: 10 }
+#
+#     # --- RHOAI MCP Catalog (internal cluster) ---
+#     rhoai:
+#       mcpCatalog:
+#         enabled: true
+#         endpoint: https://mcp-catalog.rhoai.internal.example.com
+#         tls:
+#           caFile: /etc/ssl/certs/internal-ca-bundle.pem
+#         auth:
+#           clientId:
+#             $env: RHOAI_CLIENT_ID
+#           clientSecret:
+#             $env: RHOAI_CLIENT_SECRET
+#         schedule:
+#           frequency: { minutes: 15 }
+#           timeout: { minutes: 5 }
+#
+#     # --- OCI Skill Registry (internal Harbor/Quay mirror) ---
+#     ociSkill:
+#       enabled: true
+#       registries:
+#         - url: https://harbor.internal.example.com
+#           namespace: ai-skills
+#           pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
+#           tls:
+#             caFile: /etc/ssl/certs/internal-ca-bundle.pem
+#       discovery:
+#         concurrency: 10
+#       schedule:
+#         frequency: { minutes: 30 }
+#         timeout: { minutes: 15 }
