@@ -110,19 +110,39 @@ export type BridgeConfig = {
 export function readBridgeConfigs(config: Config): BridgeConfig[] {
   const configs = config.getOptionalConfig('catalog.providers.modelCatalog');
   if (!configs) {
+    console.log(
+      '>>> readBridgeConfigs: catalog.providers.modelCatalog NOT FOUND in config',
+    );
     return [];
   }
+  console.log(
+    `>>> readBridgeConfigs: found modelCatalog config, keys = [${configs
+      .keys()
+      .join(', ')}]`,
+  );
   const result: BridgeConfig[] = [];
   for (const connectorId of configs.keys()) {
     const connectorConfig = configs.getConfig(connectorId);
+    console.log(
+      `>>> readBridgeConfigs: connectorId=${connectorId}, clusterKeys = [${connectorConfig
+        .keys()
+        .join(', ')}]`,
+    );
     for (const clusterKey of connectorConfig.keys()) {
       const clusterConfig = connectorConfig.getOptionalConfig(clusterKey);
       if (!clusterConfig || !clusterConfig.has('kubeflow-model-catalog-url')) {
+        console.log(
+          `>>> readBridgeConfigs: SKIPPING clusterKey=${clusterKey} (no kubeflow-model-catalog-url)`,
+        );
         continue; // skip connector-level non-cluster objects (e.g., schedule)
       }
+      console.log(
+        `>>> readBridgeConfigs: ADDING bridgeConfig for connectorId=${connectorId}, clusterKey=${clusterKey}`,
+      );
       result.push(readBridgeConfig(connectorId, clusterConfig));
     }
   }
+  console.log(`>>> readBridgeConfigs: returning ${result.length} configs`);
   return result;
 }
 
@@ -152,7 +172,7 @@ export function readBridgeConfig(id: string, config: Config): BridgeConfig {
 export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   private readonly workDir: string;
   private readonly logger: LoggerService;
-  private readonly bridgeConfigs: BridgeConfig[];
+  readonly bridgeConfigs: BridgeConfig[];
 
   // TODO we are limited in which core services can be passed into the ReaderFactory, so as a work around we
   // define these globals that are set in the plugin init method; if we merge this plugin with the
@@ -162,8 +182,23 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   static auth: AuthService;
 
   static factory: ReaderFactory = ({ config, logger }) => {
+    const flog = logger.child({
+      source: 'ModeCatalogBridgeTechdocUrlReader.factory',
+    });
+    flog.info('>>> FACTORY CALLED — creating reader instance');
     const reader = new ModeCatalogBridgeTechdocUrlReader(config, logger);
-    const predicate = (url: URL) => reader.bridgePredicate(url);
+    flog.info(
+      `>>> FACTORY: bridgeConfigs count = ${
+        reader.bridgeConfigs.length
+      }, ids = [${reader.bridgeConfigs.map(bc => bc.id).join(', ')}]`,
+    );
+    const predicate = (url: URL) => {
+      const result = reader.bridgePredicate(url);
+      flog.info(
+        `>>> PREDICATE CHECK: url=${url.href}, pathname=${url.pathname}, result=${result}`,
+      );
+      return result;
+    };
 
     return [{ reader, predicate }];
   };
