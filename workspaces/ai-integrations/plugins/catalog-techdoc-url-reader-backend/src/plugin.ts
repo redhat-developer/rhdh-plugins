@@ -207,6 +207,11 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       let tok = token.token;
       if (process.env.RHDH_TOKEN && process.env.RHDH_TOKEN.length > 0) {
         tok = process.env.RHDH_TOKEN;
+        this.logger.info(`>>> USING RHDH_TOKEN STATIC ADMIN TOKEN for ${url}`);
+      } else {
+        this.logger.info(
+          `>>> USING SERVICE-TO-SERVICE TOKEN (targetPluginId=kserve-kubeflow-connector) for ${url}`,
+        );
       }
       response = await fetch(url, {
         method: 'GET',
