@@ -11072,6 +11072,7 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^1.20.0"
     "@backstage/types": "npm:^1.2.2"
     "@kubernetes/client-node": "npm:^0.22.0"
+    "@redhat-ai-dev/model-catalog-types": "npm:^1.1.0"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"

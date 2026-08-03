@@ -1,44 +1,23 @@
-## Connector Self-Discovery
-
-### Requirement: Connector resolves its own base URL at startup
-
-The connector plugin SHALL use `coreServices.discovery` to determine its own HTTP base URL, so that TechDocsKey paths can be resolved into full URLs by downstream consumers.
-
-#### Scenario: connectorBaseUrl is populated at init
-
-- **WHEN** the connector plugin initializes
-- **THEN** `discovery.getBaseUrl('kserve-kubeflow-connector')` is called
-- **AND** the result is stored as `connectorBaseUrl` on `ConnectorConfig`
-- **AND** `connectorBaseUrl` is threaded through to `ReconcilerConfig`
-
-#### Scenario: connectorBaseUrl reaches KServe.ts
-
-- **WHEN** `callKServeBackstagePrinters` is called during InferenceService reconciliation
-- **THEN** `connectorBaseUrl` is passed as a parameter
-- **AND** it is available inside `generateModelCatalog` for TechDocsKey construction
-
----
-
 ## Auto TechDocsKey Annotation
 
 ### Requirement: TechDocsKey is auto-set when catalog annotations are present
 
-When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `model-catalog-bridge.ai.redhat.com/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint.
+When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations but no explicit `rhdh.io/techdocs` annotation, the connector SHALL automatically set TechDocsKey as a path to the model card endpoint. The entity provider's `ModelCatalogGenerator.ts` discovers the connector's base URL via `discovery.getBaseUrl()` and prepends it when constructing the final `backstage.io/techdocs-ref` annotation.
 
 #### Scenario: Auto-set TechDocsKey for annotated InferenceService
 
 - **WHEN** an InferenceService has `rhdh.io/catalog-source` = `<sourceId>` and `rhdh.io/catalog-model` = `<modelName>`
-- **AND** no `model-catalog-bridge.ai.redhat.com/techdocs` annotation is set
-- **AND** `connectorBaseUrl` is defined
+- **AND** no `rhdh.io/techdocs` annotation is set
 - **THEN** `techdocsUrl` is set to `/modelcard/<sourceId>/<modelName>`
-- **AND** the value is a path only — no `url:` prefix, no `connectorBaseUrl` prefix
+- **AND** the value is a path only — no `url:` prefix, no base URL prefix
 - **AND** the `TechDocs` key in the model annotations contains this path
 
 #### Scenario: Explicit TechDocsKey takes precedence
 
-- **WHEN** an InferenceService has a `model-catalog-bridge.ai.redhat.com/techdocs` annotation set
+- **WHEN** an InferenceService has a `rhdh.io/techdocs` annotation set to a full URL (e.g., `https://github.com/redhat-ai-dev/granite-docs/tree/main`)
 - **THEN** the explicit value is used as `techdocsUrl`
 - **AND** the auto-set logic is skipped
+- **AND** the entity provider does NOT prepend `svcUrl` (only relative paths starting with `/` get the prefix)
 
 #### Scenario: No catalog annotations skips auto-set
 
@@ -52,7 +31,7 @@ When an InferenceService CR has `rhdh.io/catalog-source` and `rhdh.io/catalog-mo
 
 ### Requirement: TechDocsKey path is correctly transformed into a full techdocs-ref annotation
 
-The entity provider's `ModelCatalogGenerator.ts` SHALL prepend `svcUrl` and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation.
+The entity provider's `ModelCatalogGenerator.ts` SHALL resolve the connector's base URL via `discovery.getBaseUrl()`, prepend it as `svcUrl` only when the TechDocsKey value is a relative path (starts with `/`), and add the `url:` prefix to produce the final `backstage.io/techdocs-ref` annotation. Full URLs (explicit `rhdh.io/techdocs` annotations) are used as-is.
 
 #### Scenario: Full URL construction
 
@@ -157,6 +136,50 @@ The config schema in `catalog-backend-module-model-catalog/config.d.ts` SHALL de
 
 - **WHEN** `app-config.yaml` contains `system`, `owner`, `schedule` at the connector level
 - **THEN** these fields continue to pass validation and are accessible via the config API
+
+---
+
+## Service-to-Service Token Auth
+
+### Requirement: URL reader authenticates to the connector using Backstage service-to-service tokens
+
+The url-reader SHALL use `getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'` to obtain a service-to-service token for authenticating requests to the connector's `/modelcard` endpoint.
+
+#### Scenario: Service-to-service token is used
+
+- **WHEN** the url-reader's `readUrl` method fetches a model card URL
+- **THEN** it calls `auth.getPluginRequestToken` with `targetPluginId: 'kserve-kubeflow-connector'`
+- **AND** the resulting token is sent in the `Authorization: Bearer <token>` header
+- **AND** no static admin token (`RHDH_TOKEN`) fallback is used
+
+#### Scenario: Correct targetPluginId
+
+- **WHEN** `getPluginRequestToken` is called
+- **THEN** `targetPluginId` is `'kserve-kubeflow-connector'` (matching the connector's `pluginId`)
+- **AND** the connector's auth middleware accepts the token
+
+---
+
+## Config Robustness
+
+### Requirement: Config reading handles empty env var substitution
+
+The url-reader's config reading SHALL handle edge cases in Backstage's `ConfigReader` when config values come from env var substitution with empty defaults (e.g., `${VAR:-}`).
+
+#### Scenario: safeGetOptionalString handles TypeError
+
+- **GIVEN** a config key whose value is an empty string from env var substitution (e.g., `${KUBEFLOW_MODEL_CATALOG_URL:-}`)
+- **WHEN** `readBridgeConfig` reads that key
+- **THEN** `safeGetOptionalString` catches the Backstage ConfigReader TypeError
+- **AND** returns `''` instead of throwing
+
+#### Scenario: readBridgeConfigs does not gate on kubeflow-model-catalog-url
+
+- **GIVEN** a cluster sub-config exists under the connector key
+- **AND** `kubeflow-model-catalog-url` is not present or has an empty env var default
+- **WHEN** `readBridgeConfigs` iterates cluster sub-keys
+- **THEN** the cluster config is still accepted (not skipped)
+- **AND** a `BridgeConfig` entry is created with `kubeflowModelCatalogUrl: ''`
 
 ---
 
