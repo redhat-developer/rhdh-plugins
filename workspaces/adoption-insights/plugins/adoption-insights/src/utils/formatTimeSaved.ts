@@ -39,11 +39,37 @@ export function computeTotalTimeSaved(
   return { days, hours, minutes };
 }
 
-export function formatTimeSavedCompact(result: TimeSavedResult): string {
+export type TranslateFunction = (
+  key: string,
+  options: Record<string, string>,
+) => string;
+
+export function formatTimeSavedCompact(
+  result: TimeSavedResult,
+  t?: TranslateFunction,
+): string {
   if (!result) return '—';
   const parts: string[] = [];
-  if (result.days > 0) parts.push(`${result.days}d`);
-  if (result.hours > 0) parts.push(`${result.hours}h`);
-  if (result.minutes > 0 && result.days === 0) parts.push(`${result.minutes}m`);
+  if (result.days > 0) {
+    parts.push(
+      t
+        ? t('units.days' as any, { value: String(result.days) })
+        : `${result.days}d`,
+    );
+  }
+  if (result.hours > 0) {
+    parts.push(
+      t
+        ? t('units.hours' as any, { value: String(result.hours) })
+        : `${result.hours}h`,
+    );
+  }
+  if (result.minutes > 0 && result.days === 0) {
+    parts.push(
+      t
+        ? t('units.minutes' as any, { value: String(result.minutes) })
+        : `${result.minutes}m`,
+    );
+  }
   return parts.join(' ') || '—';
 }

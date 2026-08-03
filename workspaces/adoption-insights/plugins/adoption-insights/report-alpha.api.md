@@ -98,13 +98,6 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.invalidDateFormat': string;
     readonly 'common.csvFilename': string;
     readonly 'common.loading': string;
-    readonly 'notifications.title': string;
-    readonly 'notifications.daily': string;
-    readonly 'notifications.weekly': string;
-    readonly 'notifications.monthly': string;
-    readonly 'notifications.none': string;
-    readonly 'notifications.description': string;
-    readonly 'notifications.frequencyLabel': string;
     readonly 'units.days': string;
     readonly 'units.hours': string;
     readonly 'units.minutes': string;

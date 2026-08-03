@@ -128,16 +128,6 @@ export const adoptionInsightsMessages = {
     csvFilename: 'active_users',
     loading: 'Loading',
   },
-  notifications: {
-    title: 'Time saved notifications',
-    description:
-      'Choose how often you receive a summary of time saved using software templates.',
-    frequencyLabel: 'Notification frequency',
-    daily: 'Daily',
-    weekly: 'Weekly',
-    monthly: 'Monthly',
-    none: 'No notifications',
-  },
   units: {
     days: '{{value}} d',
     hours: '{{value}} h',

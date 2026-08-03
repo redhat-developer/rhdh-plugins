@@ -218,6 +218,7 @@ const Templates = () => {
                           entityMetadataMap[template.entityref]?.timeSaved,
                           template.count,
                         ),
+                        t as any,
                       )}
                     </TableCell>
                   </TableRow>

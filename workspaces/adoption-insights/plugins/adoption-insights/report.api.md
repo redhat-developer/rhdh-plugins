@@ -12,9 +12,6 @@ import { RouteRef } from '@backstage/core-plugin-api';
 export const AdoptionInsightsIcon: IconComponent;
 
 // @public
-export const AdoptionInsightsNotificationSettings: () => JSX_2.Element | null;
-
-// @public
 export const AdoptionInsightsPage: () => JSX_2.Element | null;
 
 // @public

@@ -151,7 +151,7 @@ describe('Templates', () => {
   it('should display correct data in table rows', () => {
     renderComponent();
     verifyTableData([
-      ['Example Go Template 1', '10', '1d 6h'],
+      ['Example Go Template 1', '10', '1 d 6 h'],
       ['Example Go Template 2', '20', '—'],
     ]);
   });

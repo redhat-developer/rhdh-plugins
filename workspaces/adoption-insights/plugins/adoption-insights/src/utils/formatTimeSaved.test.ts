@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { computeTotalTimeSaved } from './formatTimeSaved';
+import {
+  computeTotalTimeSaved,
+  formatTimeSavedCompact,
+  TranslateFunction,
+} from './formatTimeSaved';
 
 describe('computeTotalTimeSaved', () => {
   it('returns null when annotation is undefined', () => {
@@ -86,5 +90,72 @@ describe('computeTotalTimeSaved', () => {
       hours: 0,
       minutes: 0,
     });
+  });
+});
+
+describe('formatTimeSavedCompact', () => {
+  it('returns em dash for null result', () => {
+    expect(formatTimeSavedCompact(null)).toBe('—');
+  });
+
+  it('returns em dash for all-zero result', () => {
+    expect(formatTimeSavedCompact({ days: 0, hours: 0, minutes: 0 })).toBe('—');
+  });
+
+  it('formats minutes only', () => {
+    expect(formatTimeSavedCompact({ days: 0, hours: 0, minutes: 30 })).toBe(
+      '30m',
+    );
+  });
+
+  it('formats hours only', () => {
+    expect(formatTimeSavedCompact({ days: 0, hours: 3, minutes: 0 })).toBe(
+      '3h',
+    );
+  });
+
+  it('formats hours and minutes', () => {
+    expect(formatTimeSavedCompact({ days: 0, hours: 1, minutes: 30 })).toBe(
+      '1h 30m',
+    );
+  });
+
+  it('formats days and hours', () => {
+    expect(formatTimeSavedCompact({ days: 1, hours: 6, minutes: 0 })).toBe(
+      '1d 6h',
+    );
+  });
+
+  it('suppresses minutes when days are present', () => {
+    expect(formatTimeSavedCompact({ days: 2, hours: 3, minutes: 15 })).toBe(
+      '2d 3h',
+    );
+  });
+
+  it('formats days only', () => {
+    expect(formatTimeSavedCompact({ days: 5, hours: 0, minutes: 0 })).toBe(
+      '5d',
+    );
+  });
+
+  it('uses translation function when provided', () => {
+    const t: TranslateFunction = (key, opts) => {
+      const labels: Record<string, string> = {
+        'units.days': `${opts.value} 日`,
+        'units.hours': `${opts.value} 時間`,
+        'units.minutes': `${opts.value} 分`,
+      };
+      return labels[key] ?? key;
+    };
+
+    expect(formatTimeSavedCompact({ days: 1, hours: 6, minutes: 0 }, t)).toBe(
+      '1 日 6 時間',
+    );
+  });
+
+  it('falls back to English when no translation function', () => {
+    expect(
+      formatTimeSavedCompact({ days: 1, hours: 6, minutes: 0 }, undefined),
+    ).toBe('1d 6h');
   });
 });
