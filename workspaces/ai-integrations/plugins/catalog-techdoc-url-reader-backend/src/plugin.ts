@@ -32,7 +32,6 @@ import {
   UrlReaderServiceReadTreeResponseFile,
   UrlReaderServiceReadTreeResponseDirOptions,
   LoggerService,
-  DiscoveryService,
   AuthService,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
@@ -156,9 +155,8 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
 
   // TODO we are limited in which core services can be passed into the ReaderFactory, so as a work around we
   // define these globals that are set in the plugin init method; if we merge this plugin with the
-  // kserve-kubeflow-connector plugins, and bypass the need for plugin to plug REST calls, we can
-  // bypass the need for the discover and auth services.
-  static discovery: DiscoveryService;
+  // kserve-kubeflow-connector plugins, and bypass the need for plugin to plugin REST calls, we can
+  // bypass the need for the auth service.
   static auth: AuthService;
 
   static factory: ReaderFactory = ({ config, logger }) => {
@@ -307,15 +305,13 @@ export const catalogTechdocUrlReaderPlugin = createServiceFactory({
   service: urlReaderFactoriesServiceRef,
   deps: {
     logger: coreServices.logger,
-    discovery: coreServices.discovery,
     auth: coreServices.auth,
   },
-  async factory({ logger, discovery, auth }) {
+  async factory({ logger, auth }) {
     logger
       .child({ source: 'catalogTechdocUrlReaderPlugin"' })
       .info('Registering the model catalog bridge URL reader ');
 
-    ModeCatalogBridgeTechdocUrlReader.discovery = discovery;
     ModeCatalogBridgeTechdocUrlReader.auth = auth;
 
     return ModeCatalogBridgeTechdocUrlReader.factory;
