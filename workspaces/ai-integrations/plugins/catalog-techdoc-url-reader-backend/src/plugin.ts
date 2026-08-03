@@ -180,14 +180,18 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     }
   }
 
-  bridgePredicate = (url: URL): boolean => {
+  private matchingBridgeConfig(url: URL): BridgeConfig | undefined {
     for (let index = 0; index < this.bridgeConfigs.length; index++) {
       const bc = this.bridgeConfigs[index];
       if (url.pathname.includes('modelcard') && url.pathname.includes(bc.id)) {
-        return true;
+        return bc;
       }
     }
-    return false;
+    return undefined;
+  }
+
+  bridgePredicate = (url: URL): boolean => {
+    return this.matchingBridgeConfig(url) !== undefined;
   };
 
   async readUrl(
@@ -195,13 +199,18 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     options?: UrlReaderServiceReadUrlOptions,
   ): Promise<UrlReaderServiceReadUrlResponse> {
     this.logger.info(`ModelCatalogBridgeTechdocUrlReader.readUrl of ${url}`);
+    const parsedUrl = new URL(url);
+    const bc = this.matchingBridgeConfig(parsedUrl);
+    if (!bc) {
+      throw new Error(`No matching bridge config for ${url}`);
+    }
     let response: Response;
     try {
       const token =
         await ModeCatalogBridgeTechdocUrlReader.auth.getPluginRequestToken({
           onBehalfOf:
             await ModeCatalogBridgeTechdocUrlReader.auth.getOwnServiceCredentials(),
-          targetPluginId: 'kserve-kubeflow-connector',
+          targetPluginId: bc.id,
         });
       const tok = token.token;
       this.logger.info(`Using service-to-service token for ${url}`);
