@@ -3421,22 +3421,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-kubernetes-common@npm:^0.9.11":
-  version: 0.9.11
-  resolution: "@backstage/plugin-kubernetes-common@npm:0.9.11"
-  dependencies:
-    "@backstage/catalog-model": "npm:^1.8.0"
-    "@backstage/plugin-permission-common": "npm:^0.9.8"
-    "@backstage/types": "npm:^1.2.2"
-    "@kubernetes/client-node": "npm:1.4.0"
-    kubernetes-models: "npm:^4.3.1"
-    lodash: "npm:^4.17.21"
-    luxon: "npm:^3.0.0"
-  checksum: 10c0/1cc0a06ed32162851e9a0bd828fd99006c862b6c37edf939bf72a4c8bd0c8c0abd1d5dd17b9adb86c5aec066c96e9d1e24bde1bf1d1d6ac061ee144f09afef5e
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-kubernetes-common@npm:^0.9.12":
+"@backstage/plugin-kubernetes-common@npm:^0.9.11, @backstage/plugin-kubernetes-common@npm:^0.9.12":
   version: 0.9.12
   resolution: "@backstage/plugin-kubernetes-common@npm:0.9.12"
   dependencies:
