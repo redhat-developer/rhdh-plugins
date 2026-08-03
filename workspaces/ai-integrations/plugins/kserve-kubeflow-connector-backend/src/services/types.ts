@@ -109,27 +109,6 @@ export interface CatalogModel {
   repositoryName?: string;
 }
 
-export interface KServeInferenceService {
-  metadata: {
-    name: string;
-    namespace: string;
-    uid?: string;
-    labels?: { [key: string]: string };
-    annotations?: { [key: string]: string };
-  };
-  spec: any;
-  status?: {
-    conditions?: Array<{
-      type: string;
-      status: string;
-    }>;
-    url?: string;
-    address?: {
-      url: string;
-    };
-  };
-}
-
 // ReconcilerConfig interface
 export interface ReconcilerConfig {
   catalogRoute?: Route;

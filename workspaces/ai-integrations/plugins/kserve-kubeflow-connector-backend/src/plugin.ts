@@ -57,10 +57,11 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
             let clusterConfig = connectorLevelConfig;
             for (const ck of clusterKeys) {
               const sub = connectorLevelConfig.getOptionalConfig(ck);
-              if (sub && sub.has('kubeflow-model-catalog-url')) {
-                clusterConfig = sub;
-                break;
+              if (!sub || sub.has('frequency') || sub.has('timeout')) {
+                continue;
               }
+              clusterConfig = sub;
+              break;
             }
             connectorConfig = {
               catalogUrl: clusterConfig.getOptionalString(
