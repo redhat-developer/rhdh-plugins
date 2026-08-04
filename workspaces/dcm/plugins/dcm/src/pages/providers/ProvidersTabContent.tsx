@@ -49,7 +49,7 @@ import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CopyButton } from './components/CopyButton';
@@ -72,15 +72,26 @@ export function ProvidersTabContent() {
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
-  const crud = useCrudTab<Provider, ProviderForm>({
-    loadFn: async () => {
-      const [providerList, serviceTypeList] = await Promise.all([
-        providersApi.listProviders().then(r => r.providers ?? []),
-        catalogApi.listServiceTypes().then(r => r.results ?? []),
+  const crud = usePaginatedCrudTab<Provider, ProviderForm>({
+    loadFn: async ({ pageToken, pageSize: ps }) => {
+      const [providerResult, serviceTypeList] = await Promise.all([
+        providersApi
+          .listProviders({
+            page_token: pageToken,
+            max_page_size: ps,
+          })
+          .then(r => ({
+            items: r.providers ?? [],
+            nextPageToken: r.next_page_token,
+          })),
+        catalogApi
+          .listServiceTypes({ max_page_size: 25 })
+          .then(r => r.results ?? []),
       ]);
       setServiceTypes(serviceTypeList);
-      return providerList;
+      return providerResult;
     },
+    storageKey: 'providers',
     createFn: form => providersApi.createProvider(formToProvider(form)),
     updateFn: (id, form) =>
       providersApi.applyProvider(id, formToProvider(form)),
@@ -90,7 +101,6 @@ export function ProvidersTabContent() {
     emptyForm: emptyProviderForm,
     isValid: isProviderFormValid,
     itemToForm: providerToForm,
-    storageKey: 'providers',
     createSuccessMessage: t('providers.createSuccess'),
     editSuccessMessage: t('providers.updateSuccess'),
     deleteSuccessMessage: t('providers.deleteSuccess'),
@@ -298,7 +308,7 @@ export function ProvidersTabContent() {
       <DcmCrudTabLayout<Provider>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
@@ -306,19 +316,14 @@ export function ProvidersTabContent() {
         actionError={null}
         onDismissActionError={undefined}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('providers.emptyTitle')}
         emptyDescription={t('providers.emptyDescription')}
         primaryActionLabel={t('providers.registerButton')}
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel={t('providers.entityLabel')}
-        onRefresh={crud.reload}
-        refreshing={crud.refreshing}
       />
 
       {formDialog({

@@ -15,17 +15,18 @@
  */
 
 import type { PaginationParams } from '../types/common';
-import type { Provider, ProviderList } from '../types/providers';
 
 /**
- * Interface for the DCM Providers API client.
+ * Builds a URL query string from pagination params.
+ * Returns an empty string when no params are set.
  *
  * @public
  */
-export interface ProvidersApi {
-  listProviders(params?: PaginationParams): Promise<ProviderList>;
-  getProvider(providerId: string): Promise<Provider>;
-  createProvider(provider: Provider): Promise<Provider>;
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  deleteProvider(providerId: string): Promise<void>;
+export function buildPaginationQuery(params: PaginationParams): string {
+  const q = new URLSearchParams();
+  if (params.max_page_size !== undefined)
+    q.set('max_page_size', String(params.max_page_size));
+  if (params.page_token) q.set('page_token', params.page_token);
+  const qs = q.toString();
+  return qs ? `?${qs}` : '';
 }

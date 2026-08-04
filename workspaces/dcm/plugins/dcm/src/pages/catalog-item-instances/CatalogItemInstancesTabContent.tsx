@@ -45,7 +45,7 @@ import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { InstanceFormFields } from './components/InstanceFormFields';
@@ -87,15 +87,26 @@ export function CatalogItemInstancesTabContent() {
   const [rehydrateConfirmInst, setRehydrateConfirmInst] =
     useState<CatalogItemInstance | null>(null);
 
-  const crud = useCrudTab<CatalogItemInstance, InstanceForm>({
-    loadFn: async () => {
-      const [instanceList, itemList] = await Promise.all([
-        catalogApi.listCatalogItemInstances().then(r => r.results ?? []),
-        catalogApi.listCatalogItems().then(r => r.results ?? []),
+  const crud = usePaginatedCrudTab<CatalogItemInstance, InstanceForm>({
+    loadFn: async ({ pageToken, pageSize: ps }) => {
+      const [instanceResult, itemList] = await Promise.all([
+        catalogApi
+          .listCatalogItemInstances({
+            page_token: pageToken,
+            max_page_size: ps,
+          })
+          .then(r => ({
+            items: r.results ?? [],
+            nextPageToken: r.next_page_token,
+          })),
+        catalogApi
+          .listCatalogItems({ max_page_size: 25 })
+          .then(r => r.results ?? []),
       ]);
       setCatalogItems(itemList);
-      return instanceList;
+      return instanceResult;
     },
+    storageKey: 'catalog-item-instances',
     createFn: form =>
       catalogApi.createCatalogItemInstance(formToInstance(form)),
     deleteFn: id => catalogApi.deleteCatalogItemInstance(id),
@@ -108,7 +119,6 @@ export function CatalogItemInstancesTabContent() {
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
-    storageKey: 'catalog-item-instances',
   });
 
   const { handleOpenDelete, setItems } = crud;
@@ -276,7 +286,7 @@ export function CatalogItemInstancesTabContent() {
       <DcmCrudTabLayout<CatalogItemInstance>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
@@ -284,11 +294,8 @@ export function CatalogItemInstancesTabContent() {
         actionError={rehydrateError}
         onDismissActionError={() => setRehydrateError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('instances.emptyTitle')}
         emptyDescription={t('instances.emptyDescription')}
         primaryActionLabel={t('instances.createButton')}

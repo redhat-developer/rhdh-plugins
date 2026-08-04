@@ -33,6 +33,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
 import { DcmSearchCardAction } from './dcmTabListHelpers';
+import { CursorPaginatedTable } from './CursorPaginationControls';
 import { useDcmStyles } from './dcmStyles';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -60,11 +61,27 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   search: string;
   onSearchChange: Dispatch<SetStateAction<string>>;
 
-  // ── Pagination ───────────────────────────────────────────────────────────
-  page: number;
-  pageSize: number;
-  onPageChange: (page: number, pageSize: number) => void;
-  onRowsPerPageChange: (pageSize: number) => void;
+  // ── Client-side pagination (mutually exclusive with cursorPagination) ────
+  page?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, pageSize: number) => void;
+  onRowsPerPageChange?: (pageSize: number) => void;
+
+  /**
+   * When provided, server-side cursor-based pagination is used instead of the
+   * Backstage Table's built-in pager. The table is rendered with `paging:
+   * false` and {@link CursorPaginationControls} is shown below it.
+   */
+  cursorPagination?: {
+    hasNext: boolean;
+    hasPrev: boolean;
+    onNext: () => void;
+    onPrev: () => void;
+    loading?: boolean;
+    pageSize?: number;
+    onPageSizeChange?: (size: number) => void;
+    pageSizeOptions?: number[];
+  };
 
   // ── Empty state ──────────────────────────────────────────────────────────
   emptyTitle: string;
@@ -131,10 +148,11 @@ export function DcmCrudTabLayout<T extends object>({
   onDismissActionError,
   search,
   onSearchChange,
-  page,
-  pageSize,
+  page = 1,
+  pageSize = 5,
   onPageChange,
   onRowsPerPageChange,
+  cursorPagination,
   emptyTitle,
   emptyDescription,
   primaryActionLabel,
@@ -237,28 +255,38 @@ export function DcmCrudTabLayout<T extends object>({
           />
         )}
         <Box className={classes.cardContent}>
-          <Table<T>
-            data={paginated}
-            columns={columns}
-            options={{
-              paging: true,
-              pageSize,
-              pageSizeOptions: [5, 10, 25],
-              search: false,
-              sorting: true,
-              padding: 'default',
-              toolbar: false,
-              /** Avoid blank rows padding the table to `pageSize` when fewer rows exist. */
-              emptyRowsWhenPaging: false,
-            }}
-            totalCount={filtered.length}
-            page={page}
-            onPageChange={onPageChange}
-            onRowsPerPageChange={onRowsPerPageChange}
-            localization={{
-              pagination: { labelRowsPerPage: t('common.rows') },
-            }}
-          />
+          {cursorPagination ? (
+            <CursorPaginatedTable<T>
+              data={filtered}
+              columns={columns}
+              pagination={cursorPagination}
+            />
+          ) : (
+            <Table<T>
+              data={paginated}
+              columns={columns}
+              options={{
+                paging: true,
+                pageSize,
+                pageSizeOptions: [5, 10, 25],
+                search: false,
+                sorting: true,
+                padding: 'default',
+                toolbar: false,
+                /** Avoid blank rows padding the table to `pageSize` when fewer rows exist. */
+                emptyRowsWhenPaging: false,
+              }}
+              totalCount={filtered.length}
+              page={Math.max(0, page - 1)}
+              onPageChange={
+                onPageChange ? (p, ps) => onPageChange(p + 1, ps) : undefined
+              }
+              onRowsPerPageChange={onRowsPerPageChange}
+              localization={{
+                pagination: { labelRowsPerPage: t('common.rows') },
+              }}
+            />
+          )}
         </Box>
       </InfoCard>
     </Box>

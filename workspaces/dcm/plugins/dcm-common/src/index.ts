@@ -38,3 +38,4 @@ export * from './types';
 export * from './clients';
 export { DcmClientError } from './errors/DcmClientError';
 export { extractApiError } from './utils/extractApiError';
+export { buildPaginationQuery } from './utils/buildPaginationQuery';
