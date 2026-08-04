@@ -1,16 +1,18 @@
-# @red-hat-developer-hub/backstage-plugin-boost-backend
+# @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack
 
-## 0.1.4
+## 0.2.0
+
+### Minor Changes
+
+- 54345de: Rename all Llama Stack references to OGX across the boost workspace. The upstream project has been renamed from llamastack to ogx. This changes npm package names, module IDs, cache key prefixes, config paths, provider identifiers, and entity name prefixes. Consumers must update imports from `@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack` to `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx` and from `@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider` to `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`.
 
 ### Patch Changes
 
-- 46f6034: Upgrade `boost.agent.list` from `BasicPermission` to `ResourcePermission` for conditional RBAC filtering via `authorizeConditional()`. Add `BoostAuthorizedRequest` type for attaching permission conditions to list-endpoint requests.
-- 54345de: Rename all Llama Stack references to OGX across the boost workspace. The upstream project has been renamed from llamastack to ogx. This changes npm package names, module IDs, cache key prefixes, config paths, provider identifiers, and entity name prefixes. Consumers must update imports from `@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack` to `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx` and from `@red-hat-developer-hub/backstage-plugin-llamastack-entity-provider` to `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`.
 - Updated dependencies [46f6034]
 - Updated dependencies [54345de]
   - @red-hat-developer-hub/backstage-plugin-boost-common@0.1.4
 
-## 0.1.3
+## 0.1.2
 
 ### Patch Changes
 
@@ -18,8 +20,9 @@
 - Updated dependencies [5551345]
   - @red-hat-developer-hub/backstage-plugin-boost-common@0.1.3
   - @red-hat-developer-hub/backstage-plugin-boost-node@0.1.3
+  - @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@0.1.2
 
-## 0.1.2
+## 0.1.1
 
 ### Patch Changes
 
@@ -27,3 +30,4 @@
 - Updated dependencies [2bf1ba5]
   - @red-hat-developer-hub/backstage-plugin-boost-common@0.1.2
   - @red-hat-developer-hub/backstage-plugin-boost-node@0.1.2
+  - @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@0.1.1

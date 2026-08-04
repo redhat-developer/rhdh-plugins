@@ -286,13 +286,13 @@ describe('boost-common', () => {
   describe('no provider-specific types', () => {
     it('does not export provider-specific configuration types', () => {
       // This is a static verification — the common package must not
-      // contain LlamaStackConfig, KagentiConfig, or similar types.
+      // contain OgxConfig, KagentiConfig, or similar types.
       // If someone adds them, they must add them to this deny list
       // and this test will fail the review.
       const exports = require('./index');
       const exportNames = Object.keys(exports);
       const providerSpecificPatterns = [
-        /LlamaStack/i,
+        /Ogx/i,
         /Kagenti(?!Admin)/i,
         /ResponsesApi/i,
       ];
