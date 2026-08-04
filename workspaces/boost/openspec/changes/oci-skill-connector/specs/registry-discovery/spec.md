@@ -16,7 +16,7 @@ The connector MUST discover skill repositories by listing tags from configurable
 
 #### Scenario: Registry connection and tag listing
 
-- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].url: https://quay.io` and `namespace: skills`
+- **WHEN** the connector is configured with `ai-catalog.providers.ociSkill.registries[0].url: https://quay.io` and `namespace: skills`
 - **THEN** it sends `GET https://quay.io/v2/skills/<repository>/tags/list` for each repository in the namespace
 - **AND** on HTTP 200, it parses the JSON response body `{ "name": "<repository>", "tags": ["v1.0", "v1.1", "latest"] }` to extract tag names
 - **AND** on HTTP 401, it treats the error as non-retryable and logs an authentication failure (see fault isolation spec)
@@ -25,13 +25,13 @@ The connector MUST discover skill repositories by listing tags from configurable
 
 #### Scenario: Namespace filtering
 
-- **WHEN** the connector is configured with `catalog.providers.ociSkill.registries[0].namespace: skills/community`
+- **WHEN** the connector is configured with `ai-catalog.providers.ociSkill.registries[0].namespace: skills/community`
 - **THEN** it only lists tags for repositories under `skills/community/` prefix
 - **AND** repositories outside this namespace are ignored
 
 #### Scenario: Multiple registry support
 
-- **WHEN** the connector is configured with multiple registries in `catalog.providers.ociSkill.registries[]`
+- **WHEN** the connector is configured with multiple registries in `ai-catalog.providers.ociSkill.registries[]`
 - **THEN** it discovers skills from all configured registries in parallel
 - **AND** skill entity references include the registry URL to avoid name collisions (e.g., `quay.io/skills/my-skill` vs. `harbor.internal/skills/my-skill` stored in `rhdh.io/oci-image-ref`)
 

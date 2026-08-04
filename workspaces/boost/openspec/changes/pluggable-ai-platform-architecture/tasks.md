@@ -45,9 +45,9 @@
 
 ## 5. Standalone Package Extraction (P2)
 
-- [ ] 5.1 Create `@boost/toolscope` package with injectable cache interface (`CacheAdapter`)
-- [ ] 5.2 Create `@boost/responses-api-toolkit` for shared Responses API utilities
-- [ ] 5.3 Update llamastack module to import Responses API types and utilities from `@boost/responses-api-toolkit`, removing duplicate type definitions from module-local `types.ts`
+- [ ] 5.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` package with injectable cache interface (`CacheAdapter`)
+- [ ] 5.2 Create `@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit` for shared Responses API utilities
+- [ ] 5.3 Update llamastack module to import Responses API types and utilities from `@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit`, removing duplicate type definitions from module-local `types.ts`
 
 ## 6. Dynamic Plugin Packaging (P2)
 
