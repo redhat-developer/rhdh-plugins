@@ -308,7 +308,7 @@ export const ActiveDropdown: Widget<
         label={label}
         disabled={isReadOnly}
         onChange={event => handleChange(event.target.value as string, true)}
-        onBlur={() => onBlur(id, value)}
+        onBlur={() => onBlur?.(id, value)}
         MenuProps={{
           PaperProps: { sx: { maxHeight: '20rem' } },
         }}

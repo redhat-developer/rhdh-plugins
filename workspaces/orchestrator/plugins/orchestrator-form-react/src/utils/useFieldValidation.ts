@@ -77,14 +77,17 @@ export function useFieldValidation({
       try {
         const formData = formDataRef.current;
 
-        // Run async validation if the field has a validate:url
         let asyncErrors: ErrorSchema<JsonObject> = {};
         if (getExtraErrorsForField) {
-          asyncErrors = await getExtraErrorsForField(
-            formData,
-            fieldPath,
-            fieldUiSchema,
-          );
+          try {
+            asyncErrors = await getExtraErrorsForField(
+              formData,
+              fieldPath,
+              fieldUiSchema,
+            );
+          } catch {
+            // Network or evaluation failure — treat as no extra errors
+          }
         }
 
         if (requestIdRef.current.get(fieldPath) !== currentId) return;

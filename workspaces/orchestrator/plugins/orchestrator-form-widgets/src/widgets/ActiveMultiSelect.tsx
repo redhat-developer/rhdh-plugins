@@ -357,7 +357,7 @@ export const ActiveMultiSelect: Widget<
             freeSolo={allowNewItems}
             data-testid={`${id}-autocomplete`}
             disabled={isReadOnly}
-            onBlur={() => onBlur(id, value)}
+            onBlur={() => onBlur?.(id, value)}
             options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}

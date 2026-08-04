@@ -227,7 +227,7 @@ export const ActiveTextInput: Widget<
         {...params}
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
-        onBlur={() => onBlur(id, value)}
+        onBlur={() => onBlur?.(id, value)}
         label={label}
         disabled={isReadOnly}
       />
@@ -268,7 +268,7 @@ export const ActiveTextInput: Widget<
         value={value ?? ''}
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
-        onBlur={() => onBlur(id, value)}
+        onBlur={() => onBlur?.(id, value)}
         label={label}
         disabled={isReadOnly}
       />

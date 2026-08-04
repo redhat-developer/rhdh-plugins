@@ -181,7 +181,9 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     const fieldPath = rjsfIdToFieldPath(id);
     setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
     setValidationError(undefined);
-    setFormData(e.formData || {});
+    const latestFormData = e.formData || {};
+    formDataRef.current = latestFormData;
+    setFormData(latestFormData);
     if (decoratorProps.onChange) {
       decoratorProps.onChange(e, id);
     }
