@@ -32,6 +32,8 @@ export interface ConnectorErrorContext {
   retryable: boolean;
   /** ISO timestamp of next scheduled retry (present only when retryable). */
   nextRetryAt?: string;
+  /** Index signature for compatibility with Backstage LoggerService metadata (JsonObject). */
+  [key: string]: string | boolean | undefined;
 }
 
 /**
