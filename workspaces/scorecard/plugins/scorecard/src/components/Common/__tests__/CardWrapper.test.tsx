@@ -15,6 +15,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { CardWrapper } from '../CardWrapper';
 
@@ -37,5 +38,21 @@ describe('CardWrapper Component', () => {
       </CardWrapper>,
     );
     expect(screen.getByRole('separator')).toBeInTheDocument();
+  });
+
+  it('should show full description in tooltip on hover', async () => {
+    const user = userEvent.setup();
+    const description =
+      'This is a long scorecard description that should appear in full on hover';
+
+    render(
+      <CardWrapper title="Test Title" description={description}>
+        <p>Test Content</p>
+      </CardWrapper>,
+    );
+
+    await user.hover(screen.getByText(description));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(description);
   });
 });

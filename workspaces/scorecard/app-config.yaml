@@ -363,3 +363,32 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+    dora:
+      deploymentFrequency:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      medianLeadTimeForChanges:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            deploymentPullRequests:
+              id: github:deploymentPullRequests
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

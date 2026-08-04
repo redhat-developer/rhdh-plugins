@@ -1,0 +1,14 @@
+---
+# Component with DORA Scorecard
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: dora-scorecard
+  annotations:
+    github.com/project-slug: dzemanov/test-scorecard-github-dora
+    backstage.io/source-location: url:https://github.com/dzemanov/test-scorecard-github-dora
+    scorecard.io/dora: 'true'
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

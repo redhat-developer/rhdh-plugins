@@ -95,6 +95,13 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
+    'metric.dora.deploymentFrequency.description':
+      '過去 30 日間にコードが本番環境に正常にデプロイされた頻度を追跡します。エリートパフォーマーはオンデマンドでデプロイします (1 日に複数回)。',
+    'metric.dora.deploymentFrequency.title': 'DORA - デプロイ頻度',
+    'metric.dora.medianLeadTimeForChanges.description':
+      '過去 30 日間におけるコードコミットから本番デプロイまでの時間を測定します。エリートパフォーマーのリードタイムは 24 時間未満です。',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - 変更のリードタイム中央値',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',

@@ -68,6 +68,71 @@ This metric counts all pull requests that are currently in an "open" state for t
 - **Metric Provider ID**: `github.openPRs`
 - **Type**: Number
 - **Datasource**: `github`
+- **Unit**: open pull requests (count)
+
+## Collectors
+
+This module registers collectors to collect data from GitHub to be used by composite metric providers:
+
+- `scorecard-backend-module-dora`:
+
+  - `github:deployments`
+  - `github:deploymentWorkflowRuns`
+  - `github:deploymentPullRequests`
+
+### Collector contracts
+
+Collectors in Scorecard are schema-validated at runtime. Any custom collector replacing a GitHub collector must return data that conforms to the same contract expected by consumers.
+
+Required entity annotations for GitHub collectors:
+
+```yaml
+metadata:
+  annotations:
+    github.com/project-slug: myorg/my-service
+```
+
+`github:deployments`
+
+- **Input schema**
+  - `from: string` (ISO datetime)
+  - `to: string` (ISO datetime)
+- **Output schema**
+  - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Ordering**
+  - Records are returned in ascending `createdAt` order (oldest to newest).
+
+`github:deploymentWorkflowRuns`
+
+- **Input schema**
+  - `workflowName: string` (non-empty)
+  - `from: string` (ISO datetime)
+  - `to: string` (ISO datetime)
+- **Output schema**
+  - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Ordering**
+  - Records are returned in ascending `createdAt` order (oldest to newest).
+- **Workflow selection**
+  - `workflowName` can match the workflow display name, the full workflow path (for example `.github/workflows/deploy.yml`), or a filename suffix (for example `deploy.yml`).
+
+`github:deploymentPullRequests`
+
+- **Input schema**
+  - `baseCommitSha: string` (non-empty)
+  - `headCommitSha: string` (non-empty)
+- **Output schema**
+  - `pullRequests: Array<{ id: string; firstCommitAt: string }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Behavior**
+  - The collector resolves commits between `baseCommitSha` and `headCommitSha`, collects associated pull requests for those commits, and de-duplicates pull requests by PR number.
+  - `firstCommitAt` is the timestamp of the first commit returned for that pull request (Pull requests with missing `firstCommitAt` are skipped)
+
+For a complete collector implementation guide, see [collectors.md](../scorecard-backend/docs/collectors.md).
 
 ## Default thresholds
 

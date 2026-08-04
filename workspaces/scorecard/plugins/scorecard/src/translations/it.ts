@@ -98,6 +98,13 @@ const scorecardTranslationIt = createTranslationMessages({
       'Punteggio totale {{total}}',
     'metric.drillDownCalculationFailures':
       'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
+    'metric.dora.deploymentFrequency.description':
+      'Monitora la frequenza con cui il codice viene distribuito correttamente in produzione negli ultimi 30 giorni. I team di elite effettuano il deployment on demand (più volte al giorno).',
+    'metric.dora.deploymentFrequency.title': 'DORA - Frequenza di deployment',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Misura il tempo dal commit del codice al deployment in produzione negli ultimi 30 giorni. I team di elite hanno un tempo di consegna inferiore a 24 ore.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Tempo mediano di consegna delle modifiche',
     'metric.filecheck.description':
       'Verifica se il file {{name}} esiste nel repository.',
     'metric.filecheck.title': 'Verifica del file: {{name}}',

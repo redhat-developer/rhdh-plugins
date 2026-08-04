@@ -81,6 +81,16 @@ export const scorecardMessages = {
 
   // Metric translations
   metric: {
+    'dora.deploymentFrequency': {
+      title: 'DORA - Deployment Frequency',
+      description:
+        'Tracks how often code is successfully deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).',
+    },
+    'dora.medianLeadTimeForChanges': {
+      title: 'DORA - Median Lead Time for Changes',
+      description:
+        'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
+    },
     'github.openPRs': {
       title: 'GitHub open PRs',
       description:

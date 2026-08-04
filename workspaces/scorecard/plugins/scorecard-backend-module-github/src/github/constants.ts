@@ -15,3 +15,4 @@
  */
 
 export const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
+export const GITHUB_BATCH_SIZE = 100;

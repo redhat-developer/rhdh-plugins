@@ -20,13 +20,27 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { graphql } from '@octokit/graphql';
-import { GithubRepository } from './types';
+import { Octokit } from '@octokit/rest';
+import {
+  GithubDeployment,
+  GithubWorkflowRun,
+  GithubPullRequest,
+  GithubRepository,
+  GithubDeploymentsQueryResponse,
+  GithubCommitsPullRequestsQueryResponse,
+} from './types';
+import { GITHUB_BATCH_SIZE } from './constants';
+import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
+import { mapCommitsPullRequests } from './mappers';
 
 export class GithubClient {
   private readonly integrations: ScmIntegrations;
+  private readonly credentialsProvider: DefaultGithubCredentialsProvider;
 
   constructor(config: Config) {
     this.integrations = ScmIntegrations.fromConfig(config);
+    this.credentialsProvider =
+      DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
   }
 
   private async getOctokitClient(url: string): Promise<typeof graphql> {
@@ -35,15 +49,28 @@ export class GithubClient {
       throw new Error(`Missing GitHub integration for '${url}'`);
     }
 
-    const credentialsProvider =
-      DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
-
-    const { headers } = await credentialsProvider.getCredentials({
+    const { headers } = await this.credentialsProvider.getCredentials({
       url,
     });
 
     return graphql.defaults({
       headers,
+      baseUrl: githubIntegration.config.apiBaseUrl,
+    });
+  }
+
+  private async getOctokitRestClient(url: string): Promise<Octokit> {
+    const githubIntegration = this.integrations.github.byUrl(url);
+    if (!githubIntegration) {
+      throw new Error(`Missing GitHub integration for '${url}'`);
+    }
+
+    const { token } = await this.credentialsProvider.getCredentials({
+      url,
+    });
+
+    return new Octokit({
+      auth: token,
       baseUrl: githubIntegration.config.apiBaseUrl,
     });
   }
@@ -69,12 +96,247 @@ export class GithubClient {
         pullRequests: {
           totalCount: number;
         };
-      };
+      } | null;
     }>(query, {
       owner: repository.owner,
       repo: repository.repo,
     });
 
+    if (!response.repository) {
+      throw new Error(
+        `GitHub repository '${repository.owner}/${repository.repo}' was not found or is inaccessible`,
+      );
+    }
+
     return response.repository.pullRequests.totalCount;
+  }
+
+  async getDeployments(
+    url: string,
+    repository: GithubRepository,
+    from: Date,
+    to: Date,
+  ): Promise<GithubDeployment[]> {
+    const octokit = await this.getOctokitClient(url);
+    const deployments: GithubDeployment[] = [];
+    const query = `
+      query getDeployments($owner: String!, $repo: String!, $after: String) {
+        repository(owner: $owner, name: $repo) {
+          deployments(
+            first: 100
+            orderBy: { field: CREATED_AT, direction: DESC }
+            after: $after
+          ) {
+            nodes {
+              databaseId
+              commitOid
+              createdAt
+              environment
+              latestStatus {
+                state
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    `;
+    const fromTimestamp = from.getTime();
+    const toTimestamp = to.getTime();
+    let after: string | null = null;
+    let hasMorePages = true;
+    let reachedOlderThanWindow = false;
+
+    while (hasMorePages) {
+      const response: GithubDeploymentsQueryResponse = await octokit(query, {
+        owner: repository.owner,
+        repo: repository.repo,
+        after: after,
+      });
+
+      if (!response.repository) {
+        throw new Error(
+          `GitHub repository '${repository.owner}/${repository.repo}' was not found or is inaccessible`,
+        );
+      }
+
+      const pageDeployments = response.repository.deployments?.nodes ?? [];
+
+      if (pageDeployments.length === 0) {
+        break;
+      }
+
+      for (const deployment of pageDeployments) {
+        if (!deployment || !deployment.databaseId || !deployment.commitOid) {
+          continue;
+        }
+
+        const deployedAt = Date.parse(deployment.createdAt);
+        if (Number.isNaN(deployedAt)) {
+          continue;
+        }
+
+        if (deployedAt < fromTimestamp) {
+          reachedOlderThanWindow = true;
+        }
+
+        if (deployedAt >= fromTimestamp && deployedAt <= toTimestamp) {
+          deployments.push({
+            id: deployment.databaseId,
+            sha: deployment.commitOid,
+            createdAt: deployment.createdAt,
+            environment: deployment.environment ?? null,
+            status: deployment.latestStatus?.state ?? null,
+          });
+        }
+      }
+
+      hasMorePages =
+        !reachedOlderThanWindow &&
+        Boolean(response.repository.deployments?.pageInfo.hasNextPage);
+      after = response.repository.deployments?.pageInfo.endCursor ?? null;
+    }
+
+    // GitHub returns DESC by createdAt so we can stop early when outside of time range;
+    // normalize to ASC for chronological processing (oldest -> newest).
+    return deployments.reverse();
+  }
+
+  async getCommitShasBetween(
+    url: string,
+    repository: GithubRepository,
+    baseSha: string,
+    headSha: string,
+  ): Promise<string[]> {
+    const octokit = await this.getOctokitRestClient(url);
+
+    const basehead = `${baseSha}...${headSha}`;
+    const commitShas: string[] = [];
+
+    // compareCommitsWithBasehead returns a mixed object (commits/files/url), not a list endpoint,
+    // page manually instead of octokit.paginate because it is unable to handle typing correctly.
+    const firstPage = await octokit.repos.compareCommitsWithBasehead({
+      owner: repository.owner,
+      repo: repository.repo,
+      basehead,
+      per_page: GITHUB_BATCH_SIZE,
+      page: 1,
+    });
+    commitShas.push(...firstPage.data.commits.map(commit => commit.sha));
+
+    const totalPages = Math.ceil(
+      firstPage.data.total_commits / GITHUB_BATCH_SIZE,
+    );
+    for (let page = 2; page <= totalPages; page++) {
+      const response = await octokit.repos.compareCommitsWithBasehead({
+        owner: repository.owner,
+        repo: repository.repo,
+        basehead,
+        per_page: GITHUB_BATCH_SIZE,
+        page,
+      });
+      commitShas.push(...response.data.commits.map(commit => commit.sha));
+    }
+
+    return Array.from(new Set(commitShas));
+  }
+
+  async getCommitsPullRequests(
+    url: string,
+    repository: GithubRepository,
+    shas: string[],
+  ): Promise<Map<string, GithubPullRequest[]>> {
+    const pullRequestsBySha = new Map<string, GithubPullRequest[]>();
+    if (shas.length === 0) {
+      return pullRequestsBySha;
+    }
+
+    const octokit = await this.getOctokitClient(url);
+    for (let offset = 0; offset < shas.length; offset += GITHUB_BATCH_SIZE) {
+      const batch = shas.slice(offset, offset + GITHUB_BATCH_SIZE);
+      const { query, variables } = buildCommitsPullRequestsQuery(
+        repository,
+        batch,
+      );
+
+      const response = await octokit<GithubCommitsPullRequestsQueryResponse>(
+        query,
+        variables,
+      );
+
+      if (!response.repository) {
+        throw new Error(
+          `GitHub repository '${repository.owner}/${repository.repo}' was not found or is inaccessible`,
+        );
+      }
+
+      for (const [sha, pullRequests] of mapCommitsPullRequests(
+        response.repository,
+        batch,
+      )) {
+        pullRequestsBySha.set(sha, pullRequests);
+      }
+    }
+
+    return pullRequestsBySha;
+  }
+
+  async getWorkflowRuns(
+    url: string,
+    repository: GithubRepository,
+    workflowName: string,
+    from: Date,
+    to: Date,
+  ): Promise<GithubWorkflowRun[]> {
+    const octokit = await this.getOctokitRestClient(url);
+
+    const workflows = await octokit.paginate(
+      octokit.actions.listRepoWorkflows,
+      {
+        owner: repository.owner,
+        repo: repository.repo,
+        per_page: GITHUB_BATCH_SIZE,
+      },
+      response => response.data,
+    );
+
+    const workflow = workflows.find(
+      item =>
+        item.name === workflowName ||
+        item.path === workflowName ||
+        item.path.endsWith(`/${workflowName}`),
+    );
+
+    if (!workflow) {
+      throw new Error(
+        `Workflow '${workflowName}' was not found in '${repository.owner}/${repository.repo}'`,
+      );
+    }
+
+    const workflowRuns = await octokit.paginate(
+      octokit.actions.listWorkflowRuns,
+      {
+        owner: repository.owner,
+        repo: repository.repo,
+        workflow_id: workflow.id,
+        created: `${from.toISOString()}..${to.toISOString()}`,
+        per_page: 100,
+      },
+      response =>
+        response.data.map(run => ({
+          id: run.id,
+          sha: run.head_sha,
+          createdAt: run.created_at,
+          status: run.status ?? null,
+          conclusion: run.conclusion ?? null,
+        })),
+    );
+
+    // GitHub returns DESC by createdAt
+    // normalize to ASC for chronological processing (oldest -> newest).
+    return workflowRuns.reverse();
   }
 }
