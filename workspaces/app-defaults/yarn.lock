@@ -9430,7 +9430,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.11"
     "@backstage/core-plugin-api": "npm:^1.12.7"
     "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/plugin-app": "npm:^0.5.0"
+    "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/test-utils": "npm:^1.7.19"
     "@mui/material": "npm:5.18.0"
     "@testing-library/jest-dom": "npm:^6.0.0"

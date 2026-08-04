@@ -24,7 +24,7 @@ import {
   ApiBlueprint,
   createFrontendModule,
 } from '@backstage/frontend-plugin-api';
-import appPlugin from '@backstage/plugin-app';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 
 import {
   auth0AuthApiRef,
@@ -33,7 +33,6 @@ import {
   pingfederateAuthApiRef,
   samlAuthApiRef,
 } from './AuthApiRefs';
-import { SignInPage } from './components/SignInPage';
 
 const oidcAuthApi = ApiBlueprint.make({
   name: 'oidc-auth',
@@ -159,10 +158,13 @@ const samlAuthApi = ApiBlueprint.make({
     }),
 });
 
-const signInPageOverride = appPlugin.getExtension('sign-in-page:app').override({
+/**
+ * Replaces the default app sign-in page. The page component is loaded via
+ * dynamic import so core-components / MUI stay off the NFS alpha sync chunk.
+ */
+const signInPage = SignInPageBlueprint.make({
   params: {
-    loader: async () => (props: Parameters<typeof SignInPage>[0]) =>
-      <SignInPage {...props} />,
+    loader: () => import('./components/SignInPage').then(m => m.SignInPage),
   },
 });
 
@@ -175,7 +177,7 @@ const signInPageOverride = appPlugin.getExtension('sign-in-page:app').override({
 export const appAuthModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
-    signInPageOverride,
+    signInPage,
     oidcAuthApi,
     keycloakAuthApi,
     pingfederateAuthApi,
