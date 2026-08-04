@@ -18,7 +18,7 @@ import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-rea
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import {
   quickstartInitModule,
   quickstartTranslationsModule,

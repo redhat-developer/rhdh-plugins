@@ -15,7 +15,7 @@
  */
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 import { QUICKSTART_DRAWER_ID } from './const';
 
