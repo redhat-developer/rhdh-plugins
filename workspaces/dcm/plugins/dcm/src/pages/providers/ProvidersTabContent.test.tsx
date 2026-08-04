@@ -114,7 +114,7 @@ describe('ProvidersTabContent', () => {
       );
     });
 
-    it('calls listServiceTypes with max_page_size: 25 for the dropdown', async () => {
+    it('calls listServiceTypes with max_page_size: 100 for the dropdown (once on mount)', async () => {
       const apis = buildApis();
       await renderProvidersTab(apis);
 
@@ -122,7 +122,7 @@ describe('ProvidersTabContent', () => {
         expect(apis.catalog.listServiceTypes).toHaveBeenCalledTimes(1),
       );
       expect(apis.catalog.listServiceTypes).toHaveBeenCalledWith({
-        max_page_size: 25,
+        max_page_size: 100,
       });
     });
 
@@ -255,13 +255,13 @@ describe('ProvidersTabContent', () => {
       // The trigger renders as a button inside the pagination controls.
       fireEvent.mouseDown(screen.getByRole('button', { name: /rows/i }));
 
-      // Pick "15" from the opened dropdown menu.
-      const option15 = await screen.findByRole('option', { name: '15' });
-      fireEvent.click(option15);
+      // Pick "10" from the opened dropdown menu.
+      const option10 = await screen.findByRole('option', { name: '10' });
+      fireEvent.click(option10);
 
       await waitFor(() =>
         expect(listProviders).toHaveBeenCalledWith(
-          expect.objectContaining({ max_page_size: 15 }),
+          expect.objectContaining({ max_page_size: 10 }),
         ),
       );
     });

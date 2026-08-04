@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
@@ -103,25 +103,22 @@ export function CatalogItemsTabContent() {
   const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
   const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
 
+  // Fetch dropdown options once on mount; page navigation does not re-fetch.
+  useEffect(() => {
+    catalogApi
+      .listServiceTypes({ max_page_size: 100 })
+      .then(r => setServiceTypes(r.results ?? []))
+      .catch(() => {});
+  }, [catalogApi]);
+
   const crud = usePaginatedCrudTab<CatalogItem, CatalogItemForm>({
-    loadFn: async ({ pageToken, pageSize: ps }) => {
-      const [itemList, serviceTypeList] = await Promise.all([
-        catalogApi
-          .listCatalogItems({
-            page_token: pageToken,
-            max_page_size: ps,
-          })
-          .then(r => ({
-            items: r.results ?? [],
-            nextPageToken: r.next_page_token,
-          })),
-        catalogApi
-          .listServiceTypes({ max_page_size: 25 })
-          .then(r => r.results ?? []),
-      ]);
-      setServiceTypes(serviceTypeList);
-      return itemList;
-    },
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listCatalogItems({ page_token: pageToken, max_page_size: ps })
+        .then(r => ({
+          items: r.results ?? [],
+          nextPageToken: r.next_page_token,
+        })),
     storageKey: 'catalog-items',
     createFn: form => catalogApi.createCatalogItem(formToCatalogItem(form)),
     updateFn: (id, form) =>

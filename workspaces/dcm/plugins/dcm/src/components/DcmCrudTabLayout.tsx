@@ -187,7 +187,11 @@ export function DcmCrudTabLayout<T extends object>({
     );
   }
 
-  if (items.length === 0) {
+  // Show global empty-state only when we are certain the dataset is truly
+  // empty (i.e. not just an empty cursor page on page 2+). If hasPrev is true
+  // the user deleted the last row on a non-first page — fall through to the
+  // table view so cursor controls remain accessible.
+  if (items.length === 0 && !cursorPagination?.hasPrev) {
     return (
       <>
         {actionError && (

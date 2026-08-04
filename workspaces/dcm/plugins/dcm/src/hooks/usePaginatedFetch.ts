@@ -51,12 +51,6 @@ export interface UsePaginatedFetchResult<T> {
   refresh: () => void;
   /** Resets cursor to the first page and re-fetches. */
   resetToFirstPage: () => void;
-  /**
-   * Resets only the navigation state (token stack + next token) without
-   * triggering a new API request. Use when client-side filtering changes so
-   * the cursor controls reflect "page 1" without an extra round-trip.
-   */
-  resetCursor: () => void;
 }
 
 /**
@@ -177,13 +171,6 @@ export function usePaginatedFetch<T>(
     fetch();
   }, [fetch]);
 
-  const resetCursor = useCallback(() => {
-    currentTokenRef.current = undefined;
-    tokenStackRef.current = [];
-    setTokenStack([]);
-    setNextToken('');
-  }, []);
-
   return {
     data,
     loading,
@@ -194,6 +181,5 @@ export function usePaginatedFetch<T>(
     goPrev,
     refresh,
     resetToFirstPage,
-    resetCursor,
   };
 }

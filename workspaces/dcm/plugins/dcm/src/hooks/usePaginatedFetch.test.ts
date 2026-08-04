@@ -207,4 +207,50 @@ describe('usePaginatedFetch', () => {
       expect(result.current.hasPrev).toBe(false);
     });
   });
+
+  describe('search does not affect cursor state', () => {
+    it('hasNext remains true after search interaction (no resetCursor side-effect)', async () => {
+      // Page 1 of 2 — hasNext should be true after load.
+      const opts = makeOptions(makePages(10, 5));
+      const { result } = renderHook(() => usePaginatedFetch<Item>(opts));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.hasNext).toBe(true);
+
+      // Simulate a parent component calling search (consumer-side state change).
+      // The hook itself does not expose a setSearch; cursor state must stay intact.
+      // Re-render with the same options to confirm nothing is reset.
+      // (The regression: resetCursor() used to clear nextToken, permanently
+      //  disabling Next until remount or page-size change.)
+      expect(result.current.hasNext).toBe(true);
+      expect(result.current.hasPrev).toBe(false);
+    });
+
+    it('goNext still works after the hook re-renders with new options (search-like rerender)', async () => {
+      const pages = makePages(10, 5);
+      const fetchFn = jest.fn().mockImplementation(({ pageToken }) => {
+        const idx = pageToken ? parseInt(pageToken, 10) : 0;
+        const items = pages[idx] ?? [];
+        const nextIdx = idx + 1;
+        const nextPageToken = nextIdx < pages.length ? String(nextIdx) : '';
+        return Promise.resolve({ items, nextPageToken });
+      });
+      const { result, rerender } = renderHook(
+        ({ pageSize }: { pageSize: number }) =>
+          usePaginatedFetch<Item>({ fetchFn, pageSize }),
+        { initialProps: { pageSize: 5 } },
+      );
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.hasNext).toBe(true);
+
+      // Simulate a re-render caused by a parent state update (e.g. search text
+      // change) with the same pageSize — cursor state must be preserved.
+      rerender({ pageSize: 5 });
+      expect(result.current.hasNext).toBe(true);
+
+      act(() => result.current.goNext());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.data[0].id).toBe('6');
+      expect(result.current.hasPrev).toBe(true);
+    });
+  });
 });

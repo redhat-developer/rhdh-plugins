@@ -30,7 +30,10 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import SearchIcon from '@material-ui/icons/Search';
 import { useTranslation } from '../hooks/useTranslation';
-import { CursorPaginatedTable } from './CursorPaginationControls';
+import {
+  CursorPaginatedTable,
+  type CursorPaginationControlsProps,
+} from './CursorPaginationControls';
 
 const useStyles = makeStyles({
   filterInput: { minWidth: 200 },
@@ -108,19 +111,8 @@ function ActionsCell({ onEdit, onDelete }: ActionsCellProps) {
   );
 }
 
-export type CursorPaginationProps = Readonly<{
-  hasNext: boolean;
-  hasPrev: boolean;
-  onNext: () => void;
-  onPrev: () => void;
-  loading?: boolean;
-  /** Currently selected page size. Required when `onPageSizeChange` is provided. */
-  pageSize?: number;
-  /** Called with the newly selected page size. When omitted, the size selector is hidden. */
-  onPageSizeChange?: (size: number) => void;
-  /** Options shown in the page-size dropdown. Defaults to [5, 15, 25]. */
-  pageSizeOptions?: number[];
-}>;
+/** Alias kept for backwards compatibility — use {@link CursorPaginationControlsProps} directly when possible. */
+export type CursorPaginationProps = CursorPaginationControlsProps;
 
 export type DcmSearchTableCardProps<T extends object> = Readonly<{
   title: string;

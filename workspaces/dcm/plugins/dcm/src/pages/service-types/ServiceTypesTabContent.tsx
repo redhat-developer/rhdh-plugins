@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import { usePaginatedFetch } from '../../hooks/usePaginatedFetch';
 import { TableColumn, Progress } from '@backstage/core-components';
@@ -49,7 +49,6 @@ export function ServiceTypesTabContent() {
     goNext,
     goPrev,
     resetToFirstPage,
-    resetCursor,
   } = usePaginatedFetch<ServiceType>({
     fetchFn: ({ pageToken, pageSize: ps }) =>
       catalogApi
@@ -60,13 +59,6 @@ export function ServiceTypesTabContent() {
         })),
     pageSize,
   });
-
-  // When the search query changes, reset cursor navigation state so that
-  // the Previous/Next controls reflect "page 1". No API call is needed
-  // because search filtering happens client-side on the current page.
-  useEffect(() => {
-    resetCursor();
-  }, [search, resetCursor]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data;

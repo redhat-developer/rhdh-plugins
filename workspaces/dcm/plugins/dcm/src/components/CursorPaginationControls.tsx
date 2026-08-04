@@ -63,7 +63,7 @@ export function CursorPaginationControls({
   loading = false,
   pageSize,
   onPageSizeChange,
-  pageSizeOptions = [5, 15, 25],
+  pageSizeOptions = [5, 10, 25],
 }: CursorPaginationControlsProps) {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -87,7 +87,7 @@ export function CursorPaginationControls({
         </Select>
       )}
       <Tooltip title={t('common.previousPage')}>
-        <span>
+        <Box component="span">
           <IconButton
             size="small"
             disabled={!hasPrev || loading}
@@ -96,10 +96,10 @@ export function CursorPaginationControls({
           >
             <ChevronLeftIcon />
           </IconButton>
-        </span>
+        </Box>
       </Tooltip>
       <Tooltip title={t('common.nextPage')}>
-        <span>
+        <Box component="span">
           <IconButton
             size="small"
             disabled={!hasNext || loading}
@@ -108,7 +108,7 @@ export function CursorPaginationControls({
           >
             <ChevronRightIcon />
           </IconButton>
-        </span>
+        </Box>
       </Tooltip>
     </Box>
   );

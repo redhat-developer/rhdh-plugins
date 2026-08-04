@@ -22,6 +22,7 @@ import {
   type UseCrudTabResult,
 } from './useCrudTab';
 import { usePersistedPageSize } from './usePersistedPageSize';
+import type { CursorPaginationControlsProps } from '../components/CursorPaginationControls';
 
 /** Parameters injected into the load function on every page request. */
 export interface PaginatedLoadParams {
@@ -55,18 +56,8 @@ export interface UsePaginatedCrudTabOptions<
   storageKey: string;
 }
 
-/** Props that can be passed directly to {@link DcmCrudTabLayout}'s `cursorPagination`. */
-export interface CursorPaginationProps {
-  hasNext: boolean;
-  hasPrev: boolean;
-  onNext: () => void;
-  onPrev: () => void;
-  loading: boolean;
-  /** Currently selected page size. */
-  pageSize: number;
-  /** Called with the newly selected page size; resets cursor to page 1 and reloads. */
-  onPageSizeChange: (size: number) => void;
-}
+/** Alias kept for backwards compatibility — use {@link CursorPaginationControlsProps} directly when possible. */
+export type CursorPaginationProps = CursorPaginationControlsProps;
 
 /**
  * Result returned by {@link usePaginatedCrudTab}.
@@ -79,8 +70,8 @@ export interface UsePaginatedCrudTabResult<T, F extends Record<string, unknown>>
   goNext: () => void;
   goPrev: () => void;
   /**
-   * Drop-in replacement for `crud.setSearch` that also resets cursor navigation
-   * to page 1 without triggering an extra API call.
+   * Drop-in replacement for `crud.setSearch`. Search is client-side filtering
+   * on the loaded page; cursor state (Prev/Next) is unchanged.
    */
   handleSearchChange: (value: React.SetStateAction<string>) => void;
   /**
@@ -119,7 +110,11 @@ export interface UsePaginatedCrudTabResult<T, F extends Record<string, unknown>>
 export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
   options: UsePaginatedCrudTabOptions<T, F>,
 ): UsePaginatedCrudTabResult<T, F> {
-  const [pageSize, setPageSize] = usePersistedPageSize(options.storageKey);
+  // Destructure storageKey so it is NOT forwarded to useCrudTab, which would
+  // create a second usePersistedPageSize call on the same localStorage key.
+  const { storageKey, ...crudOptions } = options;
+
+  const [pageSize, setPageSize] = usePersistedPageSize(storageKey);
   const pageSizeRef = useRef(pageSize);
   pageSizeRef.current = pageSize;
 
@@ -136,7 +131,7 @@ export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
   optsRef.current = options;
 
   const crud = useCrudTab<T, F>({
-    ...options,
+    ...crudOptions,
     loadFn: () =>
       optsRef.current.loadFn({
         pageToken: currentTokenRef.current,
@@ -180,13 +175,10 @@ export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
     [setPageSize, crudReload],
   );
 
-  // When the search changes, reset cursor navigation state (no API call
-  // needed — search filters the current page client-side).
+  // Search is client-side filtering on the already-loaded page; cursor state
+  // (Prev/Next) stays tied to the server page that was fetched.
   const handleSearchChange = useCallback(
     (value: React.SetStateAction<string>) => {
-      currentTokenRef.current = undefined;
-      tokenStackRef.current = [];
-      setTokenStack([]);
       setCrudSearch(value);
     },
     [setCrudSearch],

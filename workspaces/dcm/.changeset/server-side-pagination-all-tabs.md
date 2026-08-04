@@ -9,7 +9,7 @@ Add server-side cursor pagination to all tabs and harden pagination handling acr
 
 Previously only Service Types, Catalog Items, and Catalog Item Instances fetched data page-by-page from the backend. Providers, Policies, and Resources loaded everything in a single call and silently lost records beyond the first page.
 
-- **Providers** and **Policies** — converted to the `useCrudTab` + manual token-stack pattern (same as Catalog Items). Next / Previous buttons appear below the table; search resets to page 1 client-side without an extra round-trip.
+- **Providers** and **Policies** — converted to `usePaginatedCrudTab` (same pattern as Catalog Items). Next / Previous buttons appear below the table; search filters the current page client-side without an extra round-trip.
 - **Resources** — converted to `usePaginatedFetch` (same as Service Types). Retains the same read-only layout.
 
 **`dcm-common`: new pagination utilities and updated API interfaces**
@@ -19,9 +19,9 @@ Previously only Service Types, Catalog Items, and Catalog Item Instances fetched
 - `PolicyManagerApi` / `PolicyManagerClient` — `listPolicies` now accepts an optional `PaginationParams` argument.
 - `ServiceTypeList`, `CatalogItemList`, `CatalogItemInstanceList` — `next_page_token` is now optional (`?`) to match the real backend behaviour where the field is absent (not just empty) when there is only one page of results.
 
-**Dropdown calls capped at 25 items**
+**Dropdown options loaded once on mount**
 
-Service-type dropdown loads (used in the Providers and Catalog Items create/edit forms) and the catalog-item dropdown load (used in the Instances create form) now pass `max_page_size: 25`. This prevents the select from silently showing an incomplete list when there are more than the default page size of items.
+Service-type dropdown loads (used in the Providers and Catalog Items create/edit forms) are now fetched once on component mount via a dedicated `useEffect`, not on every page navigation. The request uses `max_page_size: 100` to avoid silently truncating valid options.
 
 **Test coverage**
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Chip, Tooltip, Typography } from '@material-ui/core';
@@ -72,25 +72,22 @@ export function ProvidersTabContent() {
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
+  // Fetch dropdown options once on mount; page navigation does not re-fetch.
+  useEffect(() => {
+    catalogApi
+      .listServiceTypes({ max_page_size: 100 })
+      .then(r => setServiceTypes(r.results ?? []))
+      .catch(() => {});
+  }, [catalogApi]);
+
   const crud = usePaginatedCrudTab<Provider, ProviderForm>({
-    loadFn: async ({ pageToken, pageSize: ps }) => {
-      const [providerResult, serviceTypeList] = await Promise.all([
-        providersApi
-          .listProviders({
-            page_token: pageToken,
-            max_page_size: ps,
-          })
-          .then(r => ({
-            items: r.providers ?? [],
-            nextPageToken: r.next_page_token,
-          })),
-        catalogApi
-          .listServiceTypes({ max_page_size: 25 })
-          .then(r => r.results ?? []),
-      ]);
-      setServiceTypes(serviceTypeList);
-      return providerResult;
-    },
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      providersApi
+        .listProviders({ page_token: pageToken, max_page_size: ps })
+        .then(r => ({
+          items: r.providers ?? [],
+          nextPageToken: r.next_page_token,
+        })),
     storageKey: 'providers',
     createFn: form => providersApi.createProvider(formToProvider(form)),
     updateFn: (id, form) =>
