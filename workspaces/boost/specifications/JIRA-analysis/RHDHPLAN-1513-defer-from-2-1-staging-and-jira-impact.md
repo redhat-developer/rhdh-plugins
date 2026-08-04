@@ -20,13 +20,13 @@ Note: RHIDP-15333 (Ingestion Audit Metrics) was originally a 1513 epic but was c
 
 | RHIDP Story | Description               | Start Issue | Start Tier | Complete Issue | Complete Tier |
 | ----------- | ------------------------- | ----------- | ---------- | -------------- | ------------- |
-| RHIDP-15335 | Health API + Data Model   | Issue 5     | Tier 0     | Issue 26       | Tier 2        |
+| RHIDP-15335 | Health API + Data Model   | Issue 5     | Tier 0     | Issue 26       | Tier 1        |
 | RHIDP-15337 | Error Classification      | Issue 5     | Tier 0     | Issue 5        | Tier 0        |
-| RHIDP-15336 | Admin Health UI           | Issue 26    | Tier 2     | Issue 26       | Tier 2        |
+| RHIDP-15336 | Admin Health UI           | Issue 26    | Tier 1     | Issue 26       | Tier 1        |
 | RHIDP-15338 | Neo4j Sync Status Panel   | Issue 27    | Tier 2     | Issue 27       | Tier 2        |
-| RHIDP-15339 | Disconnected Cluster View | Issue 26    | Tier 2     | Issue 26       | Tier 2        |
+| RHIDP-15339 | Disconnected Cluster View | Issue 26    | Tier 1     | Issue 26       | Tier 1        |
 
-RHIDP-15335 is the only multi-issue split in this epic: the health API and data model are defined in Issue 5 (Tier 0), but the force-sync backend routes consuming that data are in Issue 26 (Tier 2, task group 6 tagged `RHIDP-15335, RHIDP-15336`).
+RHIDP-15335 is the only multi-issue split in this epic: the health API and data model are defined in Issue 5 (Tier 0), but the force-sync backend routes consuming that data are in Issue 26 (Tier 1, task group 6 tagged `RHIDP-15335, RHIDP-15336`).
 
 ### Epic RHIDP-15332 (Hot-Reload) — 3 stories
 
@@ -49,12 +49,12 @@ Note: RHIDP-15302 (Migration Design Document) is also in Issue 4 but belongs to 
 
 ## 1513 Footprint Across Tiers
 
-| Tier      | 1513 Issues       | Issue Count | Share of Tier |
-| --------- | ----------------- | ----------- | ------------- |
-| Tier 0    | Issues 4, 5, 6    | 3 of 7      | 43%           |
-| Tier 1    | Issue 22          | 1 of 15     | 7%            |
-| Tier 2    | Issues 26, 27, 28 | 3 of 7      | 43%           |
-| **Total** |                   | **7 of 29** | **24%**       |
+| Tier      | 1513 Issues    | Issue Count | Share of Tier |
+| --------- | -------------- | ----------- | ------------- |
+| Tier 0    | Issues 4, 5, 6 | 3 of 7      | 43%           |
+| Tier 1    | Issues 22, 26  | 2 of 18     | 11%           |
+| Tier 2    | Issues 27, 28  | 2 of 4      | 50%           |
+| **Total** |                | **7 of 29** | **24%**       |
 
 ## Cross-Feature Entanglements
 
@@ -85,7 +85,7 @@ The 1513 decision does not block most of the staged work. Only issues whose depe
 | Issue 3 | RHDHPLAN-1508 | AI Catalog Permissions, Backend Enforcement, Conditional Rules |
 | Issue 7 | RHDHPLAN-1510 | MCP Mirror Endpoint + RHOAI Version Normalization              |
 
-**Tier 1 (14 of 15) — all except Issue 22 (depends on Issue 6):**
+**Tier 1 (16 of 18) — all except Issues 22 and 26 (depend on Issues 6 and 5):**
 
 | Issue    | Feature       | Description                           | Depends On |
 | -------- | ------------- | ------------------------------------- | ---------- |
@@ -103,14 +103,14 @@ The 1513 decision does not block most of the staged work. Only issues whose depe
 | Issue 19 | RHDHPLAN-1507 | Neo4j Docs + Observability            | 17, 18     |
 | Issue 20 | RHDHPLAN-1508 | Version Policy Cascade + Default-Deny | 3          |
 | Issue 21 | RHDHPLAN-1508 | RBAC Audit Logging                    | 3          |
+| Issue 23 | RHDHPLAN-1508 | SkillBundle RBAC Filtering            | 3          |
+| Issue 24 | RHDHPLAN-1508 | Graduated Visibility Frontend         | 3, 1509    |
 
-**Tier 2 (3 of 7):**
+**Tier 2 (1 of 4):**
 
-| Issue    | Feature       | Description                   | Depends On |
-| -------- | ------------- | ----------------------------- | ---------- |
-| Issue 23 | RHDHPLAN-1508 | SkillBundle RBAC Filtering    | 3          |
-| Issue 24 | RHDHPLAN-1508 | Graduated Visibility Frontend | 3, 1509    |
-| Issue 25 | RHDHPLAN-1508 | RBAC Admin UI                 | 3, 20      |
+| Issue    | Feature       | Description   | Depends On |
+| -------- | ------------- | ------------- | ---------- |
+| Issue 25 | RHDHPLAN-1508 | RBAC Admin UI | 3, 20      |
 
 **Total: 21 of 29 issues (72%) can proceed without the 1513 decision.**
 
@@ -120,7 +120,7 @@ Issues blocked pending the decision (8 of 29):
 - **Issue 5** (Tier 0) — cross-feature dependency from 1508 (Issue 29) and 1509 (RHIDP-15167)
 - **Issue 6** (Tier 0) — pure 1513, isolated chain, but no reason to start if deferring
 - **Issue 22** (Tier 1) — depends on Issue 6
-- **Issue 26** (Tier 2) — depends on Issue 5
+- **Issue 26** (Tier 1) — depends on Issue 5
 - **Issue 27** (Tier 2) — depends on Issues 5, 17
 - **Issue 28** (Tier 2) — depends on Issues 6, 22
 - **Issue 29** (Tier 2) — depends on Issues 5, 21 (1508-owned but health data dependency)
