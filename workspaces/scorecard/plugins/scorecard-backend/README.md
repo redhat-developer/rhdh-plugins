@@ -112,7 +112,7 @@ To use these providers, install the corresponding backend modules:
 
 ### Disabling Metrics
 
-Administrators can disable metric checks globally via app-config, and users can disable them for concrete entity via `scorecard.io/disabled-metrics` annotation. For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
+Administrators can disable metric checks globally via `scorecard.disabledMetrics`, and users can disable them per entity via the `scorecard.io/disabled-metrics` annotation. Whether that annotation is honored is controlled by `scorecard.entityAnnotations.enabled` (global switch for all scorecard entity annotations) and `scorecard.entityAnnotations.disabledMetrics` (`enabled` / `except`). For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
 
 ## Thresholds
 
@@ -120,7 +120,7 @@ Thresholds define conditions to assign metric values to specific visual categori
 
 - **Provider Defaults**: Metric providers define default thresholds
 - **App Configuration**: Override defaults through `app-config.yaml`
-- **Entity Annotations**: Override specific thresholds per entity using catalog annotations
+- **Entity Annotations**: Override specific thresholds per entity using catalog annotations, can be disabled or restricted per metric via `scorecard.entityAnnotations.enabled` and `scorecard.entityAnnotations.thresholds`, see [threshold entity annotations](./docs/thresholds.md#3-entity-annotation-overrides)
 
 Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals); **`weightedStatusScore`** KPI **`options.thresholds`** follow the same rule.
 

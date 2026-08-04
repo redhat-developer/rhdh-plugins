@@ -34,17 +34,17 @@ export function areThresholdAnnotationOverridesAllowed(
     return false;
   }
 
-  const thresholdsAnnotationConfig = config.getOptionalConfig(
+  const entityAnnotationsThresholdsConfig = config.getOptionalConfig(
     'scorecard.entityAnnotations.thresholds',
   );
-  const thresholdsAnnotationEnabled =
-    thresholdsAnnotationConfig?.getOptionalBoolean('enabled');
-  if (thresholdsAnnotationEnabled === false) {
+  const entityAnnotationsThresholdsEnabled =
+    entityAnnotationsThresholdsConfig?.getOptionalBoolean('enabled');
+  if (entityAnnotationsThresholdsEnabled === false) {
     return false;
   }
 
   const exceptList =
-    thresholdsAnnotationConfig?.getOptionalStringArray('except') ?? [];
+    entityAnnotationsThresholdsConfig?.getOptionalStringArray('except') ?? [];
   if (exceptList.includes(metricId)) {
     return false;
   }
