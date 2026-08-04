@@ -56,7 +56,7 @@ export class ProviderManager {
     if (!this.activeProvider) {
       throw new NotFoundError(
         'No AI provider is registered. Install a provider module ' +
-          '(e.g., boost-backend-module-llamastack) to register a provider.',
+          '(e.g., boost-backend-module-ogx) to register a provider.',
       );
     }
     return this.activeProvider;
