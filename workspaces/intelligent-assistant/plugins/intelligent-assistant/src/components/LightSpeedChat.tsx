@@ -135,7 +135,10 @@ import {
   type NotebookViewHandle,
 } from './notebooks/NotebookView';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
-import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
+import {
+  SidebarCollapseIcon,
+  SidebarExpandIcon,
+} from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
@@ -779,6 +782,11 @@ export const LightspeedChat = ({
   const notebookViewRef = useRef<NotebookViewHandle>(null);
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
+  const [notebookUploadsInProgress, setNotebookUploadsInProgress] =
+    useState(false);
+  const [notebookSidebarCollapsed, setNotebookSidebarCollapsed] =
+    useState(true);
+  const [notebookUploadModalOpen, setNotebookUploadModalOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
   const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
@@ -1985,7 +1993,14 @@ export const LightspeedChat = ({
               />
             )}
             {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
-              <div className={classes.notebookHeaderActions}>
+              <div
+                className={classes.notebookHeaderActions}
+                style={
+                  notebookUploadModalOpen
+                    ? { opacity: 0.4, pointerEvents: 'none' }
+                    : undefined
+                }
+              >
                 <Tooltip content={t('notebook.view.close')} position="bottom">
                   <PFButton
                     variant="plain"
@@ -1997,7 +2012,11 @@ export const LightspeedChat = ({
                   </PFButton>
                 </Tooltip>
                 <Tooltip
-                  content={t('notebook.view.documents.add')}
+                  content={
+                    notebookUploadsInProgress
+                      ? t('notebook.view.documents.uploadsInProgress')
+                      : t('notebook.view.documents.add')
+                  }
                   position="bottom"
                 >
                   <PFButton
@@ -2005,21 +2024,34 @@ export const LightspeedChat = ({
                     onClick={() => notebookViewRef.current?.openUploadModal()}
                     aria-label={t('notebook.view.documents.add')}
                     size="sm"
+                    isDisabled={notebookUploadsInProgress}
                   >
                     <PlusCircleIcon />
                   </PFButton>
                 </Tooltip>
                 <Tooltip
-                  content={t('notebook.view.sidebar.expand')}
+                  content={
+                    notebookSidebarCollapsed
+                      ? t('notebook.view.sidebar.expand')
+                      : t('notebook.view.sidebar.collapse')
+                  }
                   position="bottom"
                 >
                   <PFButton
                     variant="plain"
                     onClick={() => notebookViewRef.current?.toggleSidebar()}
-                    aria-label={t('notebook.view.sidebar.expand')}
+                    aria-label={
+                      notebookSidebarCollapsed
+                        ? t('notebook.view.sidebar.expand')
+                        : t('notebook.view.sidebar.collapse')
+                    }
                     size="sm"
                   >
-                    <SidebarExpandIcon />
+                    {notebookSidebarCollapsed ? (
+                      <SidebarExpandIcon size={18} />
+                    ) : (
+                      <SidebarCollapseIcon size={18} />
+                    )}
                   </PFButton>
                 </Tooltip>
               </div>
@@ -2249,6 +2281,9 @@ export const LightspeedChat = ({
               topicRestrictionEnabled={topicRestrictionEnabled}
               onClose={handleCloseNotebook}
               isCompact={!isFullscreenMode}
+              onUploadsInProgressChange={setNotebookUploadsInProgress}
+              onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+              onUploadModalOpenChange={setNotebookUploadModalOpen}
             />
           )}
         {showNotebooksPanel &&

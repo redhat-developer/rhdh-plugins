@@ -311,6 +311,9 @@ type NotebookViewProps = {
   topicRestrictionEnabled: boolean;
   onClose: () => void;
   isCompact?: boolean;
+  onUploadsInProgressChange?: (inProgress: boolean) => void;
+  onSidebarCollapsedChange?: (collapsed: boolean) => void;
+  onUploadModalOpenChange?: (open: boolean) => void;
 };
 
 export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
@@ -328,6 +331,9 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
       topicRestrictionEnabled,
       onClose,
       isCompact = false,
+      onUploadsInProgressChange,
+      onSidebarCollapsedChange,
+      onUploadModalOpenChange,
     },
     ref,
   ) => {
@@ -600,6 +606,18 @@ export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
     const hasNoDocuments = documents.length === 0;
     const isAddDisabled =
       totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
+
+    useEffect(() => {
+      onUploadsInProgressChange?.(hasUploadsInProgress);
+    }, [hasUploadsInProgress, onUploadsInProgressChange]);
+
+    useEffect(() => {
+      onSidebarCollapsedChange?.(sidebarCollapsed);
+    }, [sidebarCollapsed, onSidebarCollapsedChange]);
+
+    useEffect(() => {
+      onUploadModalOpenChange?.(isUploadModalOpen);
+    }, [isUploadModalOpen, onUploadModalOpenChange]);
 
     const panelContent = (
       <DrawerPanelContent
