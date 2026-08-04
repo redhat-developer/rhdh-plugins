@@ -6,6 +6,43 @@
 import type { Entity } from '@backstage/catalog-model';
 import { EntityFilterQuery } from '@backstage/catalog-client';
 import { GetEntitiesRequest } from '@backstage/catalog-client';
+import type { JsonValue } from '@backstage/types';
+import { KindValidator } from '@backstage/catalog-model';
+
+// @public
+export interface AgentAiResourceEntityV1alpha1 extends Entity {
+  // (undocumented)
+  apiVersion: 'backstage.io/v1alpha1';
+  // (undocumented)
+  kind: 'AiResource';
+  // (undocumented)
+  spec: {
+    type: 'agent';
+    lifecycle: string;
+    owner: string;
+    system?: string;
+    instructions: string;
+    handoffDescription?: string;
+    model?: string;
+    handoffs?: string[];
+    tools?: string[];
+    toolUseBehavior?: string | string[];
+    resetToolChoice?: boolean;
+    modelSettings?: AgentAiResourceModelSettings;
+    outputSchema?: Record<string, JsonValue | undefined> | string;
+  };
+}
+
+// @public
+export const agentAiResourceEntityV1alpha1Validator: KindValidator;
+
+// @public
+export interface AgentAiResourceModelSettings {
+  [key: string]: JsonValue | undefined;
+  maxTokens?: number;
+  temperature?: number;
+  toolChoice?: string | Record<string, JsonValue | undefined>;
+}
 
 // @public (undocumented)
 export interface AIModel extends Entity {
@@ -54,6 +91,11 @@ export interface GetEntitiesResponse<T> {
   // (undocumented)
   totalItems: number;
 }
+
+// @public
+export function isAgentAiResourceEntity(
+  entity: Entity,
+): entity is AgentAiResourceEntityV1alpha1;
 
 // @public (undocumented)
 export interface ModelServiceApi {

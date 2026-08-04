@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-/**
- * Common functionalities for the ai-experience plugin.
- *
- * @packageDocumentation
- */
-
-/**
- * In this package you might for example declare types that are common
- * between the frontend and backend plugin packages.
- */
-export * from './utils';
-export * from './types';
-export * from './agent';
+export type {
+  AgentAiResourceEntityV1alpha1,
+  AgentAiResourceModelSettings,
+} from './types';
+export {
+  agentAiResourceEntityV1alpha1Validator,
+  isAgentAiResourceEntity,
+} from './AgentAiResourceEntityV1alpha1';
