@@ -12,14 +12,14 @@ Each connector can configure a custom CA bundle for HTTPS verification via confi
 
 #### Scenario: CA loaded from file path
 
-- **WHEN** a connector is configured with `catalog.providers.<connectorId>.tls.caFile: /etc/ssl/certs/custom-ca.pem` (must be an absolute path)
+- **WHEN** a connector is configured with `ai-catalog.providers.<connectorId>.tls.caFile: /etc/ssl/certs/custom-ca.pem` (must be an absolute path)
 - **THEN** `loadCaBundle(connectorConfig)` reads the PEM file from the `tls.caFile` path within the provided Config subtree
 - **AND** returns a `Buffer` containing the CA certificate(s)
 - **AND** the connector uses this buffer to create an `https.Agent` with custom CA
 
 #### Scenario: CA loaded from K8s Secret mount
 
-- **WHEN** a connector is configured with `catalog.providers.<connectorId>.tls.caSecret.$env: CONNECTOR_CA_BUNDLE`
+- **WHEN** a connector is configured with `ai-catalog.providers.<connectorId>.tls.caSecret.$env: CONNECTOR_CA_BUNDLE`
 - **THEN** `loadCaBundle()` reads the PEM content from the environment variable `CONNECTOR_CA_BUNDLE`
 - **AND** returns a `Buffer` containing the CA certificate(s)
 - **AND** the environment variable is populated by K8s via Secret mount (operator responsibility)
@@ -28,8 +28,8 @@ Each connector can configure a custom CA bundle for HTTPS verification via confi
 
 - **WHEN** MCP Registry connector has `tls.caFile: /etc/ssl/mcp-ca.pem`
 - **AND** RHOAI connector has `tls.caFile: /etc/ssl/rhoai-ca.pem`
-- **THEN** `loadCaBundle(mcpRegistryConfig)` returns only the MCP Registry CA bundle (where `mcpRegistryConfig = config.getConfig('catalog.providers.mcpRegistry')`)
-- **AND** `loadCaBundle(rhoaiMcpCatalogConfig)` returns only the RHOAI CA bundle (where `rhoaiMcpCatalogConfig = config.getConfig('catalog.providers.rhoai.mcpCatalog')`)
+- **THEN** `loadCaBundle(mcpRegistryConfig)` returns only the MCP Registry CA bundle (where `mcpRegistryConfig = config.getConfig('ai-catalog.providers.mcpRegistry')`)
+- **AND** `loadCaBundle(rhoaiMcpCatalogConfig)` returns only the RHOAI CA bundle (where `rhoaiMcpCatalogConfig = config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`)
 - **AND** each connector's `https.Agent` uses its own CA, not the other connector's CA
 
 ### Requirement: Graceful Failure Handling

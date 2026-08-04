@@ -20,7 +20,7 @@ The MCP catalog source must be toggleable via app-config.
 
 - **WHEN** app-config includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       rhoai:
         mcpCatalog:
@@ -44,7 +44,7 @@ The MCP catalog source must support cross-cluster API endpoints with dedicated c
 
 - **WHEN** app-config includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       rhoai:
         mcpCatalog:

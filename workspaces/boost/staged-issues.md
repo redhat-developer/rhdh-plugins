@@ -406,22 +406,22 @@ https://github.com/redhat-developer/rhdh-plugins/issues/3310
 **Labels:** `ready-to-code`
 **Depends on:** Issue 10
 
-Extract toolscope as `@boost/toolscope` (zero Backstage dependencies, injectable `CacheAdapter`) and create `@boost/responses-api-toolkit` for shared Responses API utilities.
+Extract toolscope as `@red-hat-developer-hub/backstage-plugin-boost-toolscope` (zero Backstage dependencies, injectable `CacheAdapter`) and create `@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit` for shared Responses API utilities.
 
 ### Tasks
 
 From `openspec/changes/agent-creation-discovery/tasks.md` section 3:
 
-- 3.1 Create `@boost/toolscope` package (29 files)
+- 3.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` package (29 files)
 - 3.2 Define `CacheAdapter` interface
 - 3.3 Create default in-memory `CacheAdapter`
 - 3.4 Create Backstage `CacheAdapter` wrapping `coreServices.cache`
-- 3.5 Import `@boost/toolscope` from `boost-backend`
+- 3.5 Import `@red-hat-developer-hub/backstage-plugin-boost-toolscope` from `boost-backend`
 
 From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 5:
 
-- 5.1 Create `@boost/toolscope` with injectable cache interface
-- 5.2 Create `@boost/responses-api-toolkit`
+- 5.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` with injectable cache interface
+- 5.2 Create `@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit`
 
 ### Specifications
 
