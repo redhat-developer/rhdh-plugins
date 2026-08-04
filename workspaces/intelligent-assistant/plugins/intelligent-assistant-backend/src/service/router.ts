@@ -984,18 +984,6 @@ export async function createRouter(
         if (testResponse.ok) {
           ModelCapabilitiesCache.set(cacheKey, true);
           response.json({ model, provider, supportsVision: true });
-        } else if (testResponse.status >= 500) {
-          logger.warn(
-            `Vision test for ${cacheKey}: ${testResponse.status} ${testResponse.statusText}, not caching`,
-          );
-          response.status(502).json({
-            error: `Unable to verify vision support for model — upstream returned ${testResponse.status}`,
-            model,
-            provider,
-          });
-        } else {
-          ModelCapabilitiesCache.set(cacheKey, false);
-          response.json({ model, provider, supportsVision: false });
         }
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);
