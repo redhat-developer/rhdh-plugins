@@ -87,29 +87,35 @@ export function classifyConnectorError(error: unknown): boolean {
     status?: number;
     statusCode?: number;
     cause?: Error & { code?: string };
+    response?: { status?: number };
   };
 
-  // Non-retryable by error type
-  if (NON_RETRYABLE_TYPES.has(err.constructor.name)) {
-    return false;
-  }
+  const code = err.code;
+  const causeCode = err.cause?.code;
 
   // Non-retryable TLS errors (check code and cause.code)
-  if (err.code && NON_RETRYABLE_TLS_CODES.has(err.code)) {
+  if (code && NON_RETRYABLE_TLS_CODES.has(code)) {
     return false;
   }
-  if (err.cause?.code && NON_RETRYABLE_TLS_CODES.has(err.cause.code)) {
+  if (causeCode && NON_RETRYABLE_TLS_CODES.has(causeCode)) {
     return false;
   }
 
+  // HTTP status: support err.status, err.statusCode, and
+  // axios-shaped err.response.status
+  const httpStatus = err.status ?? err.statusCode ?? err.response?.status;
+
   // Non-retryable HTTP statuses
-  const httpStatus = err.status ?? err.statusCode;
   if (httpStatus && NON_RETRYABLE_HTTP_STATUSES.has(httpStatus)) {
     return false;
   }
 
-  // Retryable by error code
-  if (err.code && RETRYABLE_CODES.has(err.code)) {
+  // Retryable by error code (check both err.code and err.cause?.code
+  // so native-fetch TypeErrors with a network cause are retryable)
+  if (code && RETRYABLE_CODES.has(code)) {
+    return true;
+  }
+  if (causeCode && RETRYABLE_CODES.has(causeCode)) {
     return true;
   }
 
@@ -118,8 +124,33 @@ export function classifyConnectorError(error: unknown): boolean {
     return true;
   }
 
+  // Non-retryable by error type — checked AFTER code/cause so that
+  // native-fetch TypeErrors with a retryable network cause (e.g.
+  // TypeError("fetch failed") + cause.code=ECONNREFUSED) are not
+  // short-circuited.  Only bare TypeErrors (malformed URL, etc.)
+  // reach here.
+  if (NON_RETRYABLE_TYPES.has(err.constructor.name)) {
+    return false;
+  }
+
   // Default: non-retryable
   return false;
+}
+
+/**
+ * Optional context that connectors pass to fault-isolation wrappers.
+ *
+ * @public
+ */
+export interface FaultIsolationContext {
+  /** External API endpoint that failed (if known). */
+  endpoint?: string;
+  /**
+   * ISO-8601 timestamp of the next scheduled retry.  Connector-owned —
+   * the wrapper utilities log this value but never compute it; connectors
+   * that schedule retries should supply it.
+   */
+  nextRetryAt?: string;
 }
 
 /**
@@ -130,17 +161,20 @@ export function classifyConnectorError(error: unknown): boolean {
 function buildErrorContext(
   error: unknown,
   connectorId: string,
-  endpoint?: string,
+  ctx?: FaultIsolationContext,
 ): ConnectorErrorContext {
   const err = error instanceof Error ? error : new Error(String(error));
   const retryable = classifyConnectorError(error);
 
   return {
     connectorId,
-    endpoint,
+    endpoint: ctx?.endpoint,
     errorType: err.constructor.name,
     errorMessage: err.message,
     retryable,
+    ...(retryable && ctx?.nextRetryAt
+      ? { nextRetryAt: ctx.nextRetryAt }
+      : undefined),
   };
 }
 
@@ -150,7 +184,7 @@ function buildErrorContext(
  *
  * @param provider - The original entity provider.
  * @param logger - Backstage LoggerService for structured logging.
- * @param ctx - Optional context with the endpoint URL.
+ * @param ctx - Optional context with endpoint URL and retry schedule.
  * @returns A wrapped EntityProvider that never throws from `connect()`.
  *
  * @public
@@ -158,7 +192,7 @@ function buildErrorContext(
 export function createProviderWrapper(
   provider: ConnectorEntityProvider,
   logger: LoggerService,
-  ctx?: { endpoint?: string },
+  ctx?: FaultIsolationContext,
 ): ConnectorEntityProvider {
   return {
     getProviderName: () => provider.getProviderName(),
@@ -169,7 +203,7 @@ export function createProviderWrapper(
         const errorCtx = buildErrorContext(
           error,
           provider.getProviderName(),
-          ctx?.endpoint,
+          ctx,
         );
         logger.error('Connector connect() failed', errorCtx);
         // Don't rethrow — allow other providers to continue
@@ -185,7 +219,7 @@ export function createProviderWrapper(
  * @param refreshFn - The refresh callback to wrap.
  * @param connectorId - Provider identifier for error context.
  * @param logger - Backstage LoggerService for structured logging.
- * @param ctx - Optional context with the endpoint URL.
+ * @param ctx - Optional context with endpoint URL and retry schedule.
  * @returns A wrapped callback that never throws.
  *
  * @public
@@ -194,13 +228,13 @@ export function createSafeRefresh(
   refreshFn: () => Promise<void>,
   connectorId: string,
   logger: LoggerService,
-  ctx?: { endpoint?: string },
+  ctx?: FaultIsolationContext,
 ): () => Promise<void> {
   return async () => {
     try {
       await refreshFn();
     } catch (error) {
-      const errorCtx = buildErrorContext(error, connectorId, ctx?.endpoint);
+      const errorCtx = buildErrorContext(error, connectorId, ctx);
       logger.error('Connector refresh failed', errorCtx);
       // Don't rethrow — allow catalog backend to continue
     }

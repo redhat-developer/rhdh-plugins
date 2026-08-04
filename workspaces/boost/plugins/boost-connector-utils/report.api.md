@@ -34,9 +34,7 @@ export function createHttpsAgent(caBundle?: Buffer): Agent | undefined;
 export function createProviderWrapper(
   provider: ConnectorEntityProvider,
   logger: LoggerService,
-  ctx?: {
-    endpoint?: string;
-  },
+  ctx?: FaultIsolationContext,
 ): ConnectorEntityProvider;
 
 // @public
@@ -44,10 +42,14 @@ export function createSafeRefresh(
   refreshFn: () => Promise<void>,
   connectorId: string,
   logger: LoggerService,
-  ctx?: {
-    endpoint?: string;
-  },
+  ctx?: FaultIsolationContext,
 ): () => Promise<void>;
+
+// @public
+export interface FaultIsolationContext {
+  endpoint?: string;
+  nextRetryAt?: string;
+}
 
 // @public
 export function isConnectorEnabled(connectorConfig: Config): boolean;

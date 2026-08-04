@@ -79,8 +79,45 @@ describe('classifyConnectorError', () => {
     expect(classifyConnectorError(error)).toBe(false);
   });
 
-  it('classifies TypeError as non-retryable', () => {
+  it('classifies axios-shaped response.status 503 as retryable', () => {
+    const error = new Error('Request failed with status 503') as Error & {
+      response: { status: number };
+    };
+    error.response = { status: 503 };
+    expect(classifyConnectorError(error)).toBe(true);
+  });
+
+  it('classifies axios-shaped response.status 401 as non-retryable', () => {
+    const error = new Error('Request failed with status 401') as Error & {
+      response: { status: number };
+    };
+    error.response = { status: 401 };
+    expect(classifyConnectorError(error)).toBe(false);
+  });
+
+  it('classifies bare TypeError as non-retryable', () => {
     const error = new TypeError('Invalid URL');
+    expect(classifyConnectorError(error)).toBe(false);
+  });
+
+  it('classifies TypeError with retryable cause.code as retryable (native fetch)', () => {
+    const cause = new Error('connect ECONNREFUSED 127.0.0.1:443');
+    (cause as NodeJS.ErrnoException).code = 'ECONNREFUSED';
+    const error = new TypeError('fetch failed', { cause });
+    expect(classifyConnectorError(error)).toBe(true);
+  });
+
+  it('classifies TypeError with ETIMEDOUT cause as retryable', () => {
+    const cause = new Error('connection timed out');
+    (cause as NodeJS.ErrnoException).code = 'ETIMEDOUT';
+    const error = new TypeError('fetch failed', { cause });
+    expect(classifyConnectorError(error)).toBe(true);
+  });
+
+  it('classifies TypeError with non-retryable TLS cause as non-retryable', () => {
+    const cause = new Error('certificate has expired');
+    (cause as NodeJS.ErrnoException).code = 'CERT_HAS_EXPIRED';
+    const error = new TypeError('fetch failed', { cause });
     expect(classifyConnectorError(error)).toBe(false);
   });
 
@@ -169,6 +206,47 @@ describe('createProviderWrapper', () => {
 
     // This should NOT throw
     await expect(wrapped.connect({} as never)).resolves.toBeUndefined();
+  });
+
+  it('includes nextRetryAt in error context when provided', async () => {
+    const logger = createMockLogger();
+    const crashError = new Error('Connection refused');
+    (crashError as NodeJS.ErrnoException).code = 'ECONNREFUSED';
+    const provider = createMockProvider('mcpRegistry', async () => {
+      throw crashError;
+    });
+
+    const wrapped = createProviderWrapper(provider, logger, {
+      endpoint: 'https://registry.example.com',
+      nextRetryAt: '2025-01-01T00:05:00Z',
+    });
+    await wrapped.connect({} as never);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      'Connector connect() failed',
+      expect.objectContaining({
+        connectorId: 'mcpRegistry',
+        retryable: true,
+        nextRetryAt: '2025-01-01T00:05:00Z',
+      }),
+    );
+  });
+
+  it('omits nextRetryAt for non-retryable errors even if provided', async () => {
+    const logger = createMockLogger();
+    const provider = createMockProvider('mcpRegistry', async () => {
+      throw new TypeError('Invalid URL');
+    });
+
+    const wrapped = createProviderWrapper(provider, logger, {
+      endpoint: 'https://registry.example.com',
+      nextRetryAt: '2025-01-01T00:05:00Z',
+    });
+    await wrapped.connect({} as never);
+
+    const loggedCtx = (logger.error as jest.Mock).mock.calls[0][1];
+    expect(loggedCtx.retryable).toBe(false);
+    expect(loggedCtx.nextRetryAt).toBeUndefined();
   });
 
   it('allows multiple providers to fail independently', async () => {
