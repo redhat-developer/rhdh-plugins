@@ -359,7 +359,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4044
 **RHIDP Stories:** RHIDP-15340
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). `boost.connectors.*` Zod schemas, `RuntimeConfigResolver` hot-reload, and admin UI cover **existing** Jira, GitHub, and GitLab entity-provider connectors (Issues 6, 22, 28). MCP Registry, RHOAI, and OCI connectors use **`ai-catalog.providers.<id>.*` startup registration** (YAML-only `enabled`); runtime `boost.connectors` Zod/hot-reload for those connectors is **out of scope for this staging plan** and may be added in a follow-up if needed. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). MCP/RHOAI/OCI connectors use `ai-catalog.providers.<id>.*` startup registration (YAML-only `enabled`); runtime `boost.connectors` Zod/hot-reload for those connectors is out of scope for this staging plan; the Issue 6 → 22 → 28 chain stays Jira/GitHub/GitLab. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
 
 **Config note:** `ai-catalog.providers.<id>.enabled` controls **startup registration** (YAML-only). `boost.connectors.<id>.enabled` controls **runtime sync-skip** (db-overridable). Do not treat them as the same flag — see `openspec/changes/connector-config-hot-reload/design.md`.
 
@@ -1265,7 +1265,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4066
 **RHIDP Stories:** RHIDP-15342
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Create connector config section in admin panel at `/admin/connectors` with toggle switches for enable/disable, form fields for endpoint URL and sync schedule, read-only K8s Secret reference display, client-side and server-side Zod validation, RBAC gating, and config change history view from audit log.
+Create connector config section in admin panel at `/admin/connectors` for Jira, GitHub, and GitLab connectors with toggle switches for enable/disable, form fields for endpoint URL and sync schedule, read-only K8s Secret reference display, client-side and server-side Zod validation, RBAC gating, and config change history view from audit log.
 
 ### Tasks
 
