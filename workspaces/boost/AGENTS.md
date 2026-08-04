@@ -30,7 +30,9 @@ workspaces/boost/
 │           ├── design.md          # Architecture decisions
 │           ├── tasks.md           # Implementation task breakdown
 │           └── specs/             # Behavioral specs (Given/When/Then)
-└── plugins/                       # Plugin packages (implementation target)
+├── plugins/                       # Plugin packages (implementation target)
+└── scripts/                       # Dev/deployment helper scripts
+    └── load-secrets.sh            # Loads env vars from K8s secrets for local dev
 ```
 
 When implementing an issue:
@@ -112,3 +114,9 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+
+## Scripts directory
+
+`scripts/load-secrets.sh` is sourced before local development to populate environment variables from a Kubernetes secret. The env var names it exports (e.g., `BOOST_OGX_URL`, `BOOST_MODEL`) and the route-discovery function names (e.g., `_discover_ogx_route`) must stay synchronized with the config keys in `app-config.yaml` (under `boost.providers.*`).
+
+When renaming or refactoring config keys in `app-config.yaml`, also check and update `scripts/load-secrets.sh` for corresponding env var names, function names, and log messages.
