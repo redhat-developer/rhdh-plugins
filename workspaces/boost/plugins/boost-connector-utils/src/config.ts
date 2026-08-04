@@ -110,7 +110,7 @@ function validateCredentialField(config: Config, field: string): void {
     );
   }
 
-  if (value !== undefined && value.trim() === '') {
+  if (value?.trim() === '') {
     throw new Error(
       `Credential field '${field}' is empty. ` +
         `Use { $env: "ENV_VAR_NAME" } backed by mounted K8s Secrets. ` +
@@ -155,7 +155,7 @@ function validateEndpointField(config: Config, field: string): void {
  */
 function toEnvVarName(field: string): string {
   return field
-    .replace(/\./g, '_')
-    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replaceAll('.', '_')
+    .replaceAll(/([a-z])([A-Z])/g, '$1_$2')
     .toUpperCase();
 }

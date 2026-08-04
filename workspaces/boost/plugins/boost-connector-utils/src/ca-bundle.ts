@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { readFileSync } from 'fs';
-import { Agent as HttpsAgent } from 'https';
+import { readFileSync } from 'node:fs';
+import { Agent as HttpsAgent } from 'node:https';
 import type { Config } from '@backstage/config';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 

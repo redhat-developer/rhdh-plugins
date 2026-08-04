@@ -41,21 +41,13 @@ function createMockProvider(
 }
 
 describe('classifyConnectorError', () => {
-  it('classifies ECONNREFUSED as retryable', () => {
-    const error = new Error('Connection refused');
-    (error as NodeJS.ErrnoException).code = 'ECONNREFUSED';
-    expect(classifyConnectorError(error)).toBe(true);
-  });
-
-  it('classifies ECONNRESET as retryable', () => {
-    const error = new Error('Connection reset');
-    (error as NodeJS.ErrnoException).code = 'ECONNRESET';
-    expect(classifyConnectorError(error)).toBe(true);
-  });
-
-  it('classifies ETIMEDOUT as retryable', () => {
-    const error = new Error('Timed out');
-    (error as NodeJS.ErrnoException).code = 'ETIMEDOUT';
+  it.each([
+    ['ECONNREFUSED', 'Connection refused'],
+    ['ECONNRESET', 'Connection reset'],
+    ['ETIMEDOUT', 'Timed out'],
+  ])('classifies %s as retryable', (code, message) => {
+    const error = new Error(message);
+    (error as NodeJS.ErrnoException).code = code;
     expect(classifyConnectorError(error)).toBe(true);
   });
 
