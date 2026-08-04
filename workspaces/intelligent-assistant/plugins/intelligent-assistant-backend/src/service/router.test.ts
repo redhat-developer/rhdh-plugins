@@ -640,6 +640,26 @@ describe('intelligent-assistant router tests', () => {
         expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
       });
 
+      it('returns empty prompts array and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, ({ request: req }) => {
+            upstreamUrls.push(new URL(req.url));
+            return HttpResponse.json({ prompts: [] });
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body.prompts).toEqual([]);
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
       it('returns 403 when permission is denied', async () => {
         const backendServer = await startBackendServer(
           {},
@@ -734,6 +754,37 @@ describe('intelligent-assistant router tests', () => {
           'Error from lightspeed-core server',
         );
         expect(response.body.error).not.toContain('max_display_name_length');
+      });
+
+      it('relays Core 422 for per-user limit exceeded with sanitized error', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Saved prompt limit exceeded',
+                  cause:
+                    'Saved prompt limit exceeded: 50 existing prompts, maximum is 50',
+                },
+              }),
+              {
+                status: 422,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(422);
+        expect(response.body.error).toContain(
+          'Error from lightspeed-core server',
+        );
+        expect(response.body.error).not.toContain('50 existing prompts');
       });
 
       it('relays Core 409 with sanitized error', async () => {

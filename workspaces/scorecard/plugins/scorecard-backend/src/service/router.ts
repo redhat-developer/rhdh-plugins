@@ -43,7 +43,7 @@ import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownM
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateDatasourceQueryParams } from '../middlewares/validateDatasourceQueryParams';
-import { AggregationsService } from './aggregations/AggregationService';
+import { AggregationsService } from './aggregations/AggregationsService';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 export type ScorecardRouterOptions = {
@@ -188,8 +188,10 @@ export async function createRouter({
         `Deprecated Scorecard API: GET /metrics/${metricId}/catalog/aggregations is deprecated; use GET /aggregations/:aggregationId (e.g. when the aggregation id matches the metric id, GET /aggregations/${metricId}).`,
       );
 
-      const aggregationConfig =
-        aggregationsService.getAggregationConfig(metricId);
+      const aggregationConfig = aggregationsService.getAggregationConfig(
+        metricId,
+        metricProvidersRegistry,
+      );
 
       res.json(
         await aggregationsService.getAggregatedMetricByEntityRefs({
@@ -278,11 +280,13 @@ export async function createRouter({
 
       const userEntityRef = await getUserEntityRef(credentials);
 
-      const aggregationConfig =
-        aggregationsService.getAggregationConfig(aggregationId);
+      const aggregationConfig = aggregationsService.getAggregationConfig(
+        aggregationId,
+        metricProvidersRegistry,
+      );
 
       const metric = metricProvidersRegistry.getMetric(
-        aggregationConfig?.metricId ?? aggregationId,
+        aggregationConfig.metricId,
       );
 
       const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
@@ -320,11 +324,13 @@ export async function createRouter({
     async (req, res) => {
       const { aggregationId } = req.params;
 
-      const aggregationConfig =
-        aggregationsService.getAggregationConfig(aggregationId);
+      const aggregationConfig = aggregationsService.getAggregationConfig(
+        aggregationId,
+        metricProvidersRegistry,
+      );
 
       const metric = metricProvidersRegistry.getMetric(
-        aggregationConfig?.metricId ?? aggregationId,
+        aggregationConfig.metricId,
       );
 
       res.json(

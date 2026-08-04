@@ -54,10 +54,10 @@ The MCP catalog API is developer preview in RHOAI 3.4. Older RHOAI versions (< 3
 
 RHOAI clusters may be separate from the RHDH cluster. The connector must support cross-cluster API endpoints with K8s Secret credentials and custom CA bundles.
 
-**How to apply:** Config schema under `catalog.providers.rhoai.mcpCatalog` includes:
+**How to apply:** Config schema under `ai-catalog.providers.rhoai.mcpCatalog` includes:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     rhoai:
       mcpCatalog:

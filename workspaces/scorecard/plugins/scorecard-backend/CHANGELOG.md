@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.1.0
+
+### Minor Changes
+
+- 3af0fb2: This update introduces new scalar aggregation KPIs in the scorecard configuration, including:
+
+  - **`sum`**: Single numeric total of latest metric values across owned entities
+  - **`average`**: Mean of latest metric values across owned entities
+  - **`max`**: Maximum latest metric value across owned entities
+  - **`min`**: Minimum latest metric value across owned entities
+  - **`count`**: Number of entities with a non-null latest stored value
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.1.0
+
 ## 4.0.0
 
 ### Major Changes
