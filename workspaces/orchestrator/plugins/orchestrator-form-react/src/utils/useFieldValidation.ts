@@ -109,7 +109,7 @@ export function useFieldValidation({
   const triggerFieldValidation = useCallback(
     (fieldPath: string, mode: ValidateOnMode) => {
       const config = getFieldValidationConfig(uiSchema, fieldPath);
-      if (!config || !config.validateOn.includes(mode)) return;
+      if (!config?.validateOn.includes(mode)) return;
 
       if (mode === 'change') {
         const existing = debounceTimers.current.get(fieldPath);

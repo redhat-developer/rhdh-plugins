@@ -25,11 +25,11 @@ import { parseValidationErrorBody } from './parseValidationErrorBody';
 import { safeSet } from './safeSet';
 import { getRequestInit } from './useRequestInit';
 
-const VALIDATABLE_WIDGETS = [
+const VALIDATABLE_WIDGETS = new Set([
   'ActiveTextInput',
   'ActiveDropdown',
   'ActiveMultiSelect',
-];
+]);
 
 export async function validateSingleField(params: {
   formData: JsonObject;
@@ -52,9 +52,7 @@ export async function validateSingleField(params: {
 
   if (
     !validateUrl ||
-    !VALIDATABLE_WIDGETS.includes(
-      uiSchemaProperty?.['ui:widget']?.toString() ?? '',
-    )
+    !VALIDATABLE_WIDGETS.has(uiSchemaProperty?.['ui:widget']?.toString() ?? '')
   ) {
     return errors;
   }
