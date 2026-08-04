@@ -49,12 +49,12 @@ Note: RHIDP-15302 (Migration Design Document) is also in Issue 4 but belongs to 
 
 ## 1513 Footprint Across Tiers
 
-| Tier      | 1513 Issues       | Issue Count | Share of Tier |
-| --------- | ----------------- | ----------- | ------------- |
-| Tier 0    | Issues 4, 5, 6    | 3 of 7      | 43%           |
-| Tier 1    | Issues 22, 26     | 2 of 18     | 11%           |
-| Tier 2    | Issues 27, 28     | 2 of 4      | 50%           |
-| **Total** |                   | **7 of 29** | **24%**       |
+| Tier      | 1513 Issues    | Issue Count | Share of Tier |
+| --------- | -------------- | ----------- | ------------- |
+| Tier 0    | Issues 4, 5, 6 | 3 of 7      | 43%           |
+| Tier 1    | Issues 22, 26  | 2 of 18     | 11%           |
+| Tier 2    | Issues 27, 28  | 2 of 4      | 50%           |
+| **Total** |                | **7 of 29** | **24%**       |
 
 ## Cross-Feature Entanglements
 
@@ -108,9 +108,9 @@ The 1513 decision does not block most of the staged work. Only issues whose depe
 
 **Tier 2 (1 of 4):**
 
-| Issue    | Feature       | Description                   | Depends On |
-| -------- | ------------- | ----------------------------- | ---------- |
-| Issue 25 | RHDHPLAN-1508 | RBAC Admin UI                 | 3, 20      |
+| Issue    | Feature       | Description   | Depends On |
+| -------- | ------------- | ------------- | ---------- |
+| Issue 25 | RHDHPLAN-1508 | RBAC Admin UI | 3, 20      |
 
 **Total: 21 of 29 issues (72%) can proceed without the 1513 decision.**
 
