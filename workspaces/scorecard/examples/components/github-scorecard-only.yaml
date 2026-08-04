@@ -5,6 +5,9 @@ metadata:
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
+    # scorecard.io/disabled-metrics: github.openPRs
+    # scorecard.io/github.openPRs.thresholds.rules.warning: '10-25'
+    # scorecard.io/github.openPRs.thresholds.rules.error: '>25'
 spec:
   type: service
   owner: group:development/guests
