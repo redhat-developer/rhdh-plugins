@@ -32,22 +32,19 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-app-react', () => ({
   }),
 }));
 
-jest.mock(
-  '@red-hat-developer-hub/backstage-plugin-global-header/alpha',
-  () => ({
-    GlobalHeaderMenuItem: ({
-      title,
-      onClick,
-    }: {
-      title?: string;
-      onClick?: () => void;
-    }) => (
-      <button type="button" role="menuitem" onClick={onClick}>
-        {title}
-      </button>
-    ),
-  }),
-);
+jest.mock('@red-hat-developer-hub/backstage-plugin-global-header', () => ({
+  GlobalHeaderMenuItem: ({
+    title,
+    onClick,
+  }: {
+    title?: string;
+    onClick?: () => void;
+  }) => (
+    <button type="button" role="menuitem" onClick={onClick}>
+      {title}
+    </button>
+  ),
+}));
 
 describe('QuickstartHelpMenuItem', () => {
   beforeEach(() => {
