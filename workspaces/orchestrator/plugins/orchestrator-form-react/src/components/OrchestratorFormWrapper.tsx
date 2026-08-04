@@ -37,6 +37,7 @@ import {
   clearExtraErrorAtPath,
   rjsfIdToFieldPath,
 } from '../utils/clearExtraErrorAtPath';
+import { getFieldValidationConfig } from '../utils/fieldValidationConfig';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { normalizeErrorSchema } from '../utils/resolveStepErrorSchema';
 import { useStepperContext } from '../utils/StepperContext';
@@ -179,7 +180,15 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     id?: string,
   ) => {
     const fieldPath = rjsfIdToFieldPath(id);
-    setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    const hasChangeValidation =
+      fieldPath &&
+      getFieldValidationConfig(
+        formContext.uiSchema,
+        fieldPath,
+      )?.validateOn.includes('change');
+    if (!hasChangeValidation) {
+      setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    }
     setValidationError(undefined);
     const latestFormData = e.formData || {};
     formDataRef.current = latestFormData;
