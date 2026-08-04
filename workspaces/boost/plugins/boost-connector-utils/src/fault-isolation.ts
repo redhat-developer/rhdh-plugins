@@ -15,21 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { ConnectorErrorContext } from './types';
-
-/**
- * Minimal entity provider interface matching Backstage's EntityProvider
- * contract. Defined locally to avoid a dependency on
- * `@backstage/plugin-catalog-node`.
- *
- * @public
- */
-export interface ConnectorEntityProvider {
-  /** Returns the provider's unique name. */
-  getProviderName(): string;
-  /** Connects the provider to the catalog. */
-  connect(connection: unknown): Promise<void>;
-}
+import type { ConnectorEntityProvider, ConnectorErrorContext } from './types';
 
 /**
  * Retryable (transient) error codes and HTTP status codes.

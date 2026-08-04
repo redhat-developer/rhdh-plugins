@@ -61,26 +61,13 @@ export function validateConnectorStartupConfig(
 }
 
 /**
- * Validate that a credential field uses a Backstage `$env` reference
- * rather than a plaintext string.
+ * Validate that a credential field is non-empty when present.
  *
- * The Backstage config system resolves `$env` references before the
- * application sees the value, so we cannot directly detect `$env` vs
- * plaintext at runtime. Instead, we check that the value is NOT a
- * simple string that looks like plaintext credentials (i.e., we reject
- * values that are present as simple strings, which indicates the
- * deployer did not use `$env`).
- *
- * In practice, when `$env` is used correctly, the config value will
- * either be absent (env var not set) or will be the resolved env var
- * value. The key insight is that Backstage config with `$env` is an
- * object `{ $env: "VAR_NAME" }`, not a string. If `getString()` on
- * the field succeeds, the deployer used a plaintext string.
- *
- * We attempt to read the field as a config object first — if it has
- * a nested structure (i.e., `getConfig()` succeeds), it is likely
- * using `$env`. If it resolves as a plain string via `getString()`,
- * it is plaintext.
+ * Backstage resolves `$env` references at config-load time, so
+ * runtime code only sees the resolved string value.  We validate
+ * that the value is present and non-empty; the deployer is expected
+ * to back credential fields with `{ $env: "ENV_VAR_NAME" }` mounted
+ * from K8s Secrets.
  *
  * @internal
  */
@@ -90,29 +77,14 @@ function validateCredentialField(config: Config, field: string): void {
     return;
   }
 
-  // Backstage's config reader resolves $env references at load time.
-  // At this point the value is already resolved. We validate that
-  // credential fields are non-empty when present. The deployer is
-  // expected to use { $env: "ENV_VAR_NAME" } backed by mounted K8s
-  // Secrets — not plaintext.
-  //
-  // Note: Backstage's ConfigReader.getOptionalString() throws on
-  // empty strings and objects, so we catch those errors and re-throw
-  // with a descriptive message.
-  let value: string | undefined;
+  // Backstage's ConfigReader.getOptionalString() throws on empty
+  // strings and object values, so we catch and re-throw with a
+  // descriptive message pointing the deployer to $env usage.
   try {
-    value = config.getOptionalString(field);
+    config.getOptionalString(field);
   } catch {
     throw new Error(
       `Credential field '${field}' is invalid. ` +
-        `Use { $env: "ENV_VAR_NAME" } backed by mounted K8s Secrets. ` +
-        `Example: ${field}: { $env: "${toEnvVarName(field)}" }`,
-    );
-  }
-
-  if (value?.trim() === '') {
-    throw new Error(
-      `Credential field '${field}' is empty. ` +
         `Use { $env: "ENV_VAR_NAME" } backed by mounted K8s Secrets. ` +
         `Example: ${field}: { $env: "${toEnvVarName(field)}" }`,
     );

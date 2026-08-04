@@ -29,11 +29,11 @@ export {
   createProviderWrapper,
   createSafeRefresh,
   classifyConnectorError,
-  type ConnectorEntityProvider,
   type FaultIsolationContext,
 } from './fault-isolation';
 export { isConnectorEnabled, validateConnectorStartupConfig } from './config';
 export type {
+  ConnectorEntityProvider,
   ConnectorErrorContext,
   ValidateConnectorStartupConfigOptions,
 } from './types';
