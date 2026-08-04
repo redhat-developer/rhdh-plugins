@@ -20,7 +20,7 @@
  * @public
  */
 export interface ProviderDescriptor {
-  /** Unique identifier for the provider (e.g., 'llamastack', 'kagenti'). */
+  /** Unique identifier for the provider (e.g., 'ogx', 'kagenti'). */
   id: string;
   /** Human-readable display name. */
   name: string;

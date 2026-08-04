@@ -18,7 +18,8 @@ import type {
   CacheService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { ConversationAgentCache } from './ConversationAgentCache';
+import { ModelListCache } from './ModelListCache';
+import type { OgxModel } from '../types';
 
 function createMockLogger(): LoggerService {
   return {
@@ -45,39 +46,46 @@ function createMockCache(): CacheService {
   return cache;
 }
 
-describe('ConversationAgentCache', () => {
+describe('ModelListCache', () => {
   let cache: CacheService;
-  let conversationCache: ConversationAgentCache;
+  let modelListCache: ModelListCache;
 
   beforeEach(() => {
     cache = createMockCache();
-    conversationCache = new ConversationAgentCache({
+    modelListCache = new ModelListCache({
       cache,
       logger: createMockLogger(),
     });
   });
 
-  it('stores and retrieves a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    const result = await conversationCache.get('conv-1');
-    expect(result).toBe('ogx');
-  });
-
-  it('returns undefined for unknown conversation', async () => {
-    const result = await conversationCache.get('unknown');
-    expect(result).toBeUndefined();
-  });
-
-  it('deletes a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    await conversationCache.delete('conv-1');
-    const result = await conversationCache.get('conv-1');
-    expect(result).toBeUndefined();
-  });
-
-  it('uses cacheService withOptions for namespace isolation', () => {
+  it('uses cacheService withOptions with 60s TTL', () => {
     expect(cache.withOptions).toHaveBeenCalledWith({
-      defaultTtl: 24 * 60 * 60 * 1000,
+      defaultTtl: { seconds: 60 },
     });
+  });
+
+  it('stores and retrieves models', async () => {
+    const models: OgxModel[] = [
+      { identifier: 'model-1', displayName: 'Model One' },
+      { identifier: 'model-2', displayName: 'Model Two' },
+    ];
+
+    await modelListCache.set(models);
+    const result = await modelListCache.get();
+    expect(result).toEqual(models);
+  });
+
+  it('returns undefined when no models are cached', async () => {
+    const result = await modelListCache.get();
+    expect(result).toBeUndefined();
+  });
+
+  it('invalidates cached models', async () => {
+    const models: OgxModel[] = [{ identifier: 'model-1' }];
+
+    await modelListCache.set(models);
+    await modelListCache.invalidate();
+    const result = await modelListCache.get();
+    expect(result).toBeUndefined();
   });
 });

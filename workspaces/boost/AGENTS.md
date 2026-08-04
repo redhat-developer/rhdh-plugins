@@ -48,7 +48,7 @@ Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catal
 
 ### Provider isolation
 
-Each AI provider (`boost-backend-module-llamastack`, `boost-backend-module-kagenti`) is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
+Each AI provider (`boost-backend-module-ogx`, `boost-backend-module-kagenti`) is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
 
 ### Capability checks, not identity checks
 
@@ -70,16 +70,16 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ### Package structure
 
-| Package                           | Purpose                                                              |
-| --------------------------------- | -------------------------------------------------------------------- |
-| `boost`                           | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)      |
-| `boost-node`                      | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
-| `boost-backend`                   | Core routes, services, middleware, ProviderManager                   |
-| `boost-backend-module-llamastack` | Llama Stack provider module                                          |
-| `boost-backend-module-kagenti`    | Kagenti provider module                                              |
-| `llamastack-entity-provider`      | Independently deployable catalog entity provider                     |
-| `kagenti-entity-provider`         | Independently deployable catalog entity provider                     |
+| Package                        | Purpose                                                              |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions |
+| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)      |
+| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
+| `boost-backend`                | Core routes, services, middleware, ProviderManager                   |
+| `boost-backend-module-ogx`     | OGX provider module                                                  |
+| `boost-backend-module-kagenti` | Kagenti provider module                                              |
+| `ogx-entity-provider`          | Independently deployable catalog entity provider                     |
+| `kagenti-entity-provider`      | Independently deployable catalog entity provider                     |
 
 ### Naming
 

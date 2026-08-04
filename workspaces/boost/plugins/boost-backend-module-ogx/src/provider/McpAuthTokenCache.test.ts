@@ -18,7 +18,7 @@ import type {
   CacheService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { ConversationAgentCache } from './ConversationAgentCache';
+import { McpAuthTokenCache } from './McpAuthTokenCache';
 
 function createMockLogger(): LoggerService {
   return {
@@ -45,39 +45,58 @@ function createMockCache(): CacheService {
   return cache;
 }
 
-describe('ConversationAgentCache', () => {
+describe('McpAuthTokenCache', () => {
   let cache: CacheService;
-  let conversationCache: ConversationAgentCache;
+  let tokenCache: McpAuthTokenCache;
 
   beforeEach(() => {
     cache = createMockCache();
-    conversationCache = new ConversationAgentCache({
+    tokenCache = new McpAuthTokenCache({
       cache,
       logger: createMockLogger(),
     });
   });
 
-  it('stores and retrieves a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    const result = await conversationCache.get('conv-1');
-    expect(result).toBe('ogx');
+  it('stores and retrieves a token', async () => {
+    await tokenCache.set('my-server', 'token-abc', 300);
+    const result = await tokenCache.get('my-server');
+    expect(result).toBe('token-abc');
   });
 
-  it('returns undefined for unknown conversation', async () => {
-    const result = await conversationCache.get('unknown');
+  it('returns undefined for unknown server', async () => {
+    const result = await tokenCache.get('unknown');
     expect(result).toBeUndefined();
   });
 
-  it('deletes a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    await conversationCache.delete('conv-1');
-    const result = await conversationCache.get('conv-1');
+  it('stores token with TTL in milliseconds', async () => {
+    await tokenCache.set('my-server', 'token-abc', 300);
+    expect(cache.set).toHaveBeenCalledWith(
+      'ogx:mcp-token:my-server',
+      'token-abc',
+      { ttl: 300000 },
+    );
+  });
+
+  it('invalidates a cached token', async () => {
+    await tokenCache.set('my-server', 'token-abc', 300);
+    await tokenCache.invalidate('my-server');
+    const result = await tokenCache.get('my-server');
     expect(result).toBeUndefined();
   });
 
-  it('uses cacheService withOptions for namespace isolation', () => {
-    expect(cache.withOptions).toHaveBeenCalledWith({
-      defaultTtl: 24 * 60 * 60 * 1000,
-    });
+  it('uses key prefix for namespace isolation', async () => {
+    await tokenCache.set('server-a', 'token-a', 60);
+    await tokenCache.set('server-b', 'token-b', 120);
+
+    expect(cache.set).toHaveBeenCalledWith(
+      'ogx:mcp-token:server-a',
+      'token-a',
+      { ttl: 60000 },
+    );
+    expect(cache.set).toHaveBeenCalledWith(
+      'ogx:mcp-token:server-b',
+      'token-b',
+      { ttl: 120000 },
+    );
   });
 });

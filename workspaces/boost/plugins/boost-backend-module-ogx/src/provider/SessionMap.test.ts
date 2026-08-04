@@ -18,7 +18,7 @@ import type {
   CacheService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { ConversationAgentCache } from './ConversationAgentCache';
+import { SessionMap, type SessionData } from './SessionMap';
 
 function createMockLogger(): LoggerService {
   return {
@@ -45,39 +45,63 @@ function createMockCache(): CacheService {
   return cache;
 }
 
-describe('ConversationAgentCache', () => {
+describe('SessionMap', () => {
   let cache: CacheService;
-  let conversationCache: ConversationAgentCache;
+  let sessionMap: SessionMap;
 
   beforeEach(() => {
     cache = createMockCache();
-    conversationCache = new ConversationAgentCache({
+    sessionMap = new SessionMap({
       cache,
       logger: createMockLogger(),
     });
   });
 
-  it('stores and retrieves a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    const result = await conversationCache.get('conv-1');
-    expect(result).toBe('ogx');
+  it('stores and retrieves session data', async () => {
+    const data: SessionData = {
+      responseId: 'resp-123',
+      model: 'meta-llama/Llama-3.1-8B-Instruct',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      lastActivity: '2025-01-01T00:01:00.000Z',
+    };
+
+    await sessionMap.set('conv-1', data);
+    const result = await sessionMap.get('conv-1');
+    expect(result).toEqual(data);
   });
 
   it('returns undefined for unknown conversation', async () => {
-    const result = await conversationCache.get('unknown');
+    const result = await sessionMap.get('unknown');
     expect(result).toBeUndefined();
   });
 
-  it('deletes a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'ogx');
-    await conversationCache.delete('conv-1');
-    const result = await conversationCache.get('conv-1');
-    expect(result).toBeUndefined();
+  it('stores session with 24-hour TTL', async () => {
+    const data: SessionData = {
+      responseId: 'resp-123',
+      model: 'meta-llama/Llama-3.1-8B-Instruct',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      lastActivity: '2025-01-01T00:01:00.000Z',
+    };
+
+    await sessionMap.set('conv-1', data);
+    expect(cache.set).toHaveBeenCalledWith(
+      'ogx:session:conv-1',
+      JSON.stringify(data),
+      { ttl: 86400000 },
+    );
   });
 
-  it('uses cacheService withOptions for namespace isolation', () => {
-    expect(cache.withOptions).toHaveBeenCalledWith({
-      defaultTtl: 24 * 60 * 60 * 1000,
-    });
+  it('removes session data', async () => {
+    const data: SessionData = {
+      responseId: 'resp-123',
+      model: 'meta-llama/Llama-3.1-8B-Instruct',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      lastActivity: '2025-01-01T00:01:00.000Z',
+    };
+
+    await sessionMap.set('conv-1', data);
+    await sessionMap.delete('conv-1');
+    const result = await sessionMap.get('conv-1');
+    expect(result).toBeUndefined();
   });
 });
