@@ -3,7 +3,7 @@
 ## 1. CA Bundle Resolution Utility (P0) — RHIDP-15329
 
 - [ ] 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
-- [ ] 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
+- [ ] 1.2 Define `loadCaBundle(connectorConfig: Config, logger: LoggerService): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
 - [ ] 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
 - [ ] 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
 - [ ] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('ai-catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs';
-import * as https from 'https';
+import { readFileSync } from 'fs';
+import { Agent as HttpsAgent } from 'https';
 import type { Config } from '@backstage/config';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 
@@ -73,7 +73,7 @@ function loadCaFromFile(
   logger: LoggerService,
 ): Buffer | undefined {
   try {
-    const content = fs.readFileSync(filePath);
+    const content = readFileSync(filePath);
     if (!isValidPem(content)) {
       logger.error('CA file does not contain valid PEM data', {
         caFile: filePath,
@@ -136,9 +136,9 @@ function isValidPem(content: Buffer): boolean {
  *
  * @public
  */
-export function createHttpsAgent(caBundle?: Buffer): https.Agent | undefined {
+export function createHttpsAgent(caBundle?: Buffer): HttpsAgent | undefined {
   if (!caBundle) {
     return undefined;
   }
-  return new https.Agent({ ca: caBundle });
+  return new HttpsAgent({ ca: caBundle, rejectUnauthorized: true });
 }

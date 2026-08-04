@@ -118,15 +118,6 @@ export function classifyConnectorError(error: unknown): boolean {
     return true;
   }
 
-  // FetchError with network cause is retryable
-  if (
-    err.constructor.name === 'FetchError' &&
-    err.code &&
-    RETRYABLE_CODES.has(err.code)
-  ) {
-    return true;
-  }
-
   // Default: non-retryable
   return false;
 }
